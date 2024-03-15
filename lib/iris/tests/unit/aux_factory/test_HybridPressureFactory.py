@@ -6,34 +6,40 @@
 `iris.aux_factory.HybridPressureFactory` class.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+from unittest.mock import Mock
 
 import cf_units
 import numpy as np
+import pytest
 
 import iris
 from iris.aux_factory import HybridPressureFactory
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
-        self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
-        self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
+def create_default_sample_parts(self):
+    self.delta = Mock(units=cf_units.Unit("Pa"), nbounds=0)
+    self.sigma = Mock(units=cf_units.Unit("1"), nbounds=0)
+    self.surface_air_pressure = Mock(units=cf_units.Unit("Pa"), nbounds=0)
+    self.factory = HybridPressureFactory(
+        delta=self.delta,
+        sigma=self.sigma,
+        surface_air_pressure=self.surface_air_pressure,
+    )
+
+
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        create_default_sample_parts(self)
 
     def test_insufficient_coords(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=None, sigma=self.sigma, surface_air_pressure=None
             )
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=None,
                 sigma=None,
@@ -42,7 +48,7 @@ class Test___init__(tests.IrisTest):
 
     def test_incompatible_delta_units(self):
         self.delta.units = cf_units.Unit("m")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -51,7 +57,7 @@ class Test___init__(tests.IrisTest):
 
     def test_incompatible_sigma_units(self):
         self.sigma.units = cf_units.Unit("Pa")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -60,7 +66,7 @@ class Test___init__(tests.IrisTest):
 
     def test_incompatible_surface_air_pressure_units(self):
         self.surface_air_pressure.units = cf_units.Unit("unknown")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -70,7 +76,7 @@ class Test___init__(tests.IrisTest):
     def test_different_pressure_units(self):
         self.delta.units = cf_units.Unit("hPa")
         self.surface_air_pressure.units = cf_units.Unit("Pa")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -79,7 +85,7 @@ class Test___init__(tests.IrisTest):
 
     def test_too_many_delta_bounds(self):
         self.delta.nbounds = 4
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -88,7 +94,7 @@ class Test___init__(tests.IrisTest):
 
     def test_too_many_sigma_bounds(self):
         self.sigma.nbounds = 4
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -101,29 +107,28 @@ class Test___init__(tests.IrisTest):
             sigma=self.sigma,
             surface_air_pressure=self.surface_air_pressure,
         )
-        self.assertEqual(factory.standard_name, "air_pressure")
-        self.assertIsNone(factory.long_name)
-        self.assertIsNone(factory.var_name)
-        self.assertEqual(factory.units, self.delta.units)
-        self.assertEqual(factory.units, self.surface_air_pressure.units)
-        self.assertIsNone(factory.coord_system)
-        self.assertEqual(factory.attributes, {})
+        assert factory.standard_name == "air_pressure"
+        assert factory.long_name is None
+        assert factory.var_name is None
+        assert factory.units == self.delta.units
+        assert factory.units == self.surface_air_pressure.units
+        assert factory.coord_system is None
+        assert factory.attributes == {}
 
     def test_promote_sigma_units_unknown_to_dimensionless(self):
-        sigma = mock.Mock(units=cf_units.Unit("unknown"), nbounds=0)
+        sigma = Mock(units=cf_units.Unit("unknown"), nbounds=0)
         factory = HybridPressureFactory(
             delta=self.delta,
             sigma=sigma,
             surface_air_pressure=self.surface_air_pressure,
         )
-        self.assertEqual("1", factory.dependencies["sigma"].units)
+        assert factory.dependencies["sigma"].units == "1"
 
 
-class Test_dependencies(tests.IrisTest):
-    def setUp(self):
-        self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
-        self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
+class Test_dependencies:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        create_default_sample_parts(self)
 
     def test_value(self):
         kwargs = dict(
@@ -132,16 +137,18 @@ class Test_dependencies(tests.IrisTest):
             surface_air_pressure=self.surface_air_pressure,
         )
         factory = HybridPressureFactory(**kwargs)
-        self.assertEqual(factory.dependencies, kwargs)
+        assert factory.dependencies == kwargs
 
 
-class Test_make_coord(tests.IrisTest):
+class Test_make_coord:
     @staticmethod
     def coords_dims_func(coord):
         mapping = dict(level_pressure=(0,), sigma=(0,), surface_air_pressure=(1, 2))
         return mapping[coord.name()]
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # Create standard data objects for coord testing
         self.delta = iris.coords.DimCoord(
             [0.0, 1.0, 2.0], long_name="level_pressure", units="Pa"
         )
@@ -166,7 +173,7 @@ class Test_make_coord(tests.IrisTest):
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        self.assertEqual(expected_coord, derived_coord)
+        assert derived_coord == expected_coord
 
     def test_none_delta(self):
         delta_pts = 0
@@ -177,10 +184,11 @@ class Test_make_coord(tests.IrisTest):
             expected_points, standard_name="air_pressure", units="Pa"
         )
         factory = HybridPressureFactory(
-            sigma=self.sigma, surface_air_pressure=self.surface_air_pressure
+            sigma=self.sigma,
+            surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        self.assertEqual(expected_coord, derived_coord)
+        assert derived_coord == expected_coord
 
     def test_none_sigma(self):
         delta_pts = self.delta.points[..., np.newaxis, np.newaxis]
@@ -191,10 +199,11 @@ class Test_make_coord(tests.IrisTest):
             expected_points, standard_name="air_pressure", units="Pa"
         )
         factory = HybridPressureFactory(
-            delta=self.delta, surface_air_pressure=self.surface_air_pressure
+            delta=self.delta,
+            surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        self.assertEqual(expected_coord, derived_coord)
+        assert derived_coord == expected_coord
 
     def test_none_surface_air_pressure(self):
         # Note absence of broadcasting as multidimensional coord
@@ -205,7 +214,7 @@ class Test_make_coord(tests.IrisTest):
         )
         factory = HybridPressureFactory(delta=self.delta, sigma=self.sigma)
         derived_coord = factory.make_coord(self.coords_dims_func)
-        self.assertEqual(expected_coord, derived_coord)
+        assert derived_coord == expected_coord
 
     def test_with_bounds(self):
         self.delta.guess_bounds(0)
@@ -232,66 +241,55 @@ class Test_make_coord(tests.IrisTest):
             surface_air_pressure=self.surface_air_pressure,
         )
         derived_coord = factory.make_coord(self.coords_dims_func)
-        self.assertEqual(expected_coord, derived_coord)
+        assert derived_coord == expected_coord
 
 
-class Test_update(tests.IrisTest):
-    def setUp(self):
-        self.delta = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
-        self.sigma = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
-
-        self.factory = HybridPressureFactory(
-            delta=self.delta,
-            sigma=self.sigma,
-            surface_air_pressure=self.surface_air_pressure,
-        )
+class Test_update:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        create_default_sample_parts(self)
 
     def test_good_delta(self):
-        new_delta_coord = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
+        new_delta_coord = Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.factory.update(self.delta, new_delta_coord)
-        self.assertIs(self.factory.delta, new_delta_coord)
+        assert self.factory.delta is new_delta_coord
 
     def test_bad_delta(self):
-        new_delta_coord = mock.Mock(units=cf_units.Unit("1"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_delta_coord = Mock(units=cf_units.Unit("1"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_alternative_bad_delta(self):
-        new_delta_coord = mock.Mock(units=cf_units.Unit("Pa"), nbounds=4)
-        with self.assertRaises(ValueError):
+        new_delta_coord = Mock(units=cf_units.Unit("Pa"), nbounds=4)
+        with pytest.raises(ValueError):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_good_surface_air_pressure(self):
-        new_surface_p_coord = mock.Mock(units=cf_units.Unit("Pa"), nbounds=0)
+        new_surface_p_coord = Mock(units=cf_units.Unit("Pa"), nbounds=0)
         self.factory.update(self.surface_air_pressure, new_surface_p_coord)
-        self.assertIs(self.factory.surface_air_pressure, new_surface_p_coord)
+        assert self.factory.surface_air_pressure is new_surface_p_coord
 
     def test_bad_surface_air_pressure(self):
-        new_surface_p_coord = mock.Mock(units=cf_units.Unit("km"), nbounds=0)
-        with self.assertRaises(ValueError):
+        new_surface_p_coord = Mock(units=cf_units.Unit("km"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.surface_air_pressure, new_surface_p_coord)
 
     def test_non_dependency(self):
-        old_coord = mock.Mock()
-        new_coord = mock.Mock()
+        old_coord = Mock()
+        new_coord = Mock()
         orig_dependencies = self.factory.dependencies
         self.factory.update(old_coord, new_coord)
-        self.assertEqual(orig_dependencies, self.factory.dependencies)
+        assert self.factory.dependencies == orig_dependencies
 
     def test_none_delta(self):
         self.factory.update(self.delta, None)
-        self.assertIsNone(self.factory.delta)
+        assert self.factory.delta is None
 
     def test_none_sigma(self):
         self.factory.update(self.sigma, None)
-        self.assertIsNone(self.factory.sigma)
+        assert self.factory.sigma is None
 
     def test_insufficient_coords(self):
         self.factory.update(self.delta, None)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             self.factory.update(self.surface_air_pressure, None)
-
-
-if __name__ == "__main__":
-    tests.main()

@@ -4,179 +4,166 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.common.lenient.Lenient`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
 
-from unittest.mock import sentinel
-
-from iris.common.lenient import _LENIENT, Lenient
+from iris.common.lenient import _LENIENT, _LENIENT_PROTECTED, Lenient
 
 
-class Test___init__(tests.IrisTest):
-    def test_default(self):
-        lenient = Lenient()
+@pytest.fixture()
+def lenient():
+    # setup
+    state = {key: _LENIENT.__dict__[key] for key in _LENIENT_PROTECTED}
+    # call
+    yield Lenient()
+    # teardown
+    for key, value in state.items():
+        _LENIENT.__dict__[key] = value
+
+
+class Test___init__:
+    def test_default(self, lenient):
         expected = dict(maths=True)
-        self.assertEqual(expected, lenient.__dict__)
+        assert lenient.__dict__ == expected
 
-    def test_kwargs(self):
-        lenient = Lenient(maths=False)
+    def test_kwargs(self, lenient):
+        actual = Lenient(maths=False)
         expected = dict(maths=False)
-        self.assertEqual(expected, lenient.__dict__)
+        assert actual.__dict__ == expected
 
-    def test_kwargs_invalid(self):
+    def test_kwargs_invalid(self, lenient):
         emsg = "Invalid .* option, got 'merge'."
-        with self.assertRaisesRegex(KeyError, emsg):
+        with pytest.raises(KeyError, match=emsg):
             _ = Lenient(merge=True)
 
 
-class Test___contains__(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
+class Test___contains__:
+    def test_in(self, lenient):
+        assert "maths" in lenient
 
-    def test_in(self):
-        self.assertIn("maths", self.lenient)
-
-    def test_not_in(self):
-        self.assertNotIn("concatenate", self.lenient)
+    def test_not_in(self, lenient):
+        assert "concatenate" not in lenient
 
 
-class Test___getitem__(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
+class Test___getitem__:
+    def test_in(self, lenient):
+        assert bool(lenient["maths"]) is True
 
-    def test_in(self):
-        self.assertTrue(self.lenient["maths"])
-
-    def test_not_in(self):
+    def test_not_in(self, lenient):
         emsg = "Invalid .* option, got 'MATHS'."
-        with self.assertRaisesRegex(KeyError, emsg):
-            _ = self.lenient["MATHS"]
+        with pytest.raises(KeyError, match=emsg):
+            _ = lenient["MATHS"]
 
 
-class Test___repr__(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
-
-    def test(self):
+class Test___repr__:
+    def test(self, lenient):
         expected = "Lenient(maths=True)"
-        self.assertEqual(expected, repr(self.lenient))
+        assert repr(lenient) == expected
 
 
-class Test___setitem__(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
-
-    def test_key_invalid(self):
+class Test___setitem__:
+    def test_key_invalid(self, lenient):
         emsg = "Invalid .* option, got 'MATHS."
-        with self.assertRaisesRegex(KeyError, emsg):
-            self.lenient["MATHS"] = False
+        with pytest.raises(KeyError, match=emsg):
+            lenient["MATHS"] = False
 
-    def test_maths_value_invalid(self):
-        value = sentinel.value
+    def test_maths_value_invalid(self, mocker, lenient):
+        value = mocker.sentinel.value
         emsg = f"Invalid .* option 'maths' value, got {value!r}."
-        with self.assertRaisesRegex(ValueError, emsg):
-            self.lenient["maths"] = value
+        with pytest.raises(ValueError, match=emsg):
+            lenient["maths"] = value
 
-    def test_maths_disable__lenient_enable_true(self):
-        self.assertTrue(_LENIENT.enable)
-        self.lenient["maths"] = False
-        self.assertFalse(self.lenient.__dict__["maths"])
-        self.assertFalse(_LENIENT.enable)
+    def test_maths_disable__lenient_enable_true(self, lenient):
+        assert bool(_LENIENT.enable) is True
+        lenient["maths"] = False
+        assert bool(lenient.__dict__["maths"]) is False
+        assert bool(_LENIENT.enable) is False
 
-    def test_maths_disable__lenient_enable_false(self):
+    def test_maths_disable__lenient_enable_false(self, lenient):
         _LENIENT.__dict__["enable"] = False
-        self.assertFalse(_LENIENT.enable)
-        self.lenient["maths"] = False
-        self.assertFalse(self.lenient.__dict__["maths"])
-        self.assertFalse(_LENIENT.enable)
+        assert bool(_LENIENT.enable) is False
+        lenient["maths"] = False
+        assert bool(lenient.__dict__["maths"]) is False
+        assert bool(_LENIENT.enable) is False
 
-    def test_maths_enable__lenient_enable_true(self):
-        self.assertTrue(_LENIENT.enable)
-        self.lenient["maths"] = True
-        self.assertTrue(self.lenient.__dict__["maths"])
-        self.assertTrue(_LENIENT.enable)
+    def test_maths_enable__lenient_enable_true(self, lenient):
+        assert bool(_LENIENT.enable) is True
+        lenient["maths"] = True
+        assert bool(lenient.__dict__["maths"]) is True
+        assert bool(_LENIENT.enable) is True
 
-    def test_maths_enable__lenient_enable_false(self):
+    def test_maths_enable__lenient_enable_false(self, lenient):
         _LENIENT.__dict__["enable"] = False
-        self.assertFalse(_LENIENT.enable)
-        self.lenient["maths"] = True
-        self.assertTrue(self.lenient.__dict__["maths"])
-        self.assertTrue(_LENIENT.enable)
+        assert bool(_LENIENT.enable) is False
+        lenient["maths"] = True
+        assert bool(lenient.__dict__["maths"]) is True
+        assert bool(_LENIENT.enable) is True
 
 
-class Test_context(tests.IrisTest):
-    def setUp(self):
-        self.lenient = Lenient()
+class Test_context:
+    def test_nop(self, lenient):
+        assert bool(lenient["maths"]) is True
 
-    def test_nop(self):
-        self.assertTrue(self.lenient["maths"])
+        with lenient.context():
+            assert bool(lenient["maths"]) is True
 
-        with self.lenient.context():
-            self.assertTrue(self.lenient["maths"])
+        assert bool(lenient["maths"]) is True
 
-        self.assertTrue(self.lenient["maths"])
-
-    def test_maths_disable__lenient_true(self):
+    def test_maths_disable__lenient_true(self, lenient):
         # synchronised
-        self.assertTrue(_LENIENT.enable)
-        self.assertTrue(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
-        with self.lenient.context(maths=False):
+        with lenient.context(maths=False):
             # still synchronised
-            self.assertFalse(_LENIENT.enable)
-            self.assertFalse(self.lenient["maths"])
+            assert bool(_LENIENT.enable) is False
+            assert bool(lenient["maths"]) is False
 
         # still synchronised
-        self.assertTrue(_LENIENT.enable)
-        self.assertTrue(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
-    def test_maths_disable__lenient_false(self):
+    def test_maths_disable__lenient_false(self, lenient):
         # not synchronised
         _LENIENT.__dict__["enable"] = False
-        self.assertFalse(_LENIENT.enable)
-        self.assertTrue(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is True
 
-        with self.lenient.context(maths=False):
+        with lenient.context(maths=False):
             # now synchronised
-            self.assertFalse(_LENIENT.enable)
-            self.assertFalse(self.lenient["maths"])
+            assert bool(_LENIENT.enable) is False
+            assert bool(lenient["maths"]) is False
 
         # still synchronised
-        self.assertTrue(_LENIENT.enable)
-        self.assertTrue(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is True
+        assert bool(lenient["maths"]) is True
 
-    def test_maths_enable__lenient_true(self):
+    def test_maths_enable__lenient_true(self, lenient):
         # not synchronised
-        self.assertTrue(_LENIENT.enable)
-        self.lenient.__dict__["maths"] = False
-        self.assertFalse(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is True
+        lenient.__dict__["maths"] = False
+        assert bool(lenient["maths"]) is False
 
-        with self.lenient.context(maths=True):
+        with lenient.context(maths=True):
             # now synchronised
-            self.assertTrue(_LENIENT.enable)
-            self.assertTrue(self.lenient["maths"])
+            assert bool(_LENIENT.enable) is True
+            assert bool(lenient["maths"]) is True
 
         # still synchronised
-        self.assertFalse(_LENIENT.enable)
-        self.assertFalse(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is False
 
-    def test_maths_enable__lenient_false(self):
+    def test_maths_enable__lenient_false(self, lenient):
         # synchronised
         _LENIENT.__dict__["enable"] = False
-        self.assertFalse(_LENIENT.enable)
-        self.lenient.__dict__["maths"] = False
-        self.assertFalse(self.lenient["maths"])
+        assert bool(_LENIENT.enable) is False
+        lenient.__dict__["maths"] = False
+        assert bool(lenient["maths"]) is False
 
-        with self.lenient.context(maths=True):
+        with lenient.context(maths=True):
             # still synchronised
-            self.assertTrue(_LENIENT.enable)
-            self.assertTrue(self.lenient["maths"])
+            assert bool(_LENIENT.enable) is True
+            assert bool(lenient["maths"]) is True
 
         # still synchronised
-        self.assertFalse(_LENIENT.enable)
-        self.assertFalse(self.lenient["maths"])
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert bool(_LENIENT.enable) is False
+        assert bool(lenient["maths"]) is False

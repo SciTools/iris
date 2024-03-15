@@ -6,25 +6,20 @@
 `iris.aux_factory.AtmosphereSigmaFactory` class.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris.aux_factory import AtmosphereSigmaFactory
 from iris.coords import AuxCoord, DimCoord
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
-        self.pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=())
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=Unit("Pa"), nbounds=0)
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
+        self.sigma = mocker.Mock(units=Unit("1"), nbounds=0)
+        self.surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
         self.kwargs = dict(
             pressure_at_top=self.pressure_at_top,
             sigma=self.sigma,
@@ -32,11 +27,11 @@ class Test___init__(tests.IrisTest):
         )
 
     def test_insufficient_coordinates_no_args(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             AtmosphereSigmaFactory()
 
     def test_insufficient_coordinates_no_ptop(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=None,
                 sigma=self.sigma,
@@ -44,7 +39,7 @@ class Test___init__(tests.IrisTest):
             )
 
     def test_insufficient_coordinates_no_sigma(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
                 sigma=None,
@@ -52,7 +47,7 @@ class Test___init__(tests.IrisTest):
             )
 
     def test_insufficient_coordinates_no_ps(self):
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
                 sigma=self.sigma,
@@ -67,7 +62,7 @@ class Test___init__(tests.IrisTest):
     def test_ptop_invalid_shapes(self):
         for shape in [(2,), (1, 1)]:
             self.pressure_at_top.shape = shape
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_sigma_bounds(self):
@@ -78,7 +73,7 @@ class Test___init__(tests.IrisTest):
     def test_sigma_invalid_bounds(self):
         for n_bounds in [-1, 1, 3]:
             self.sigma.nbounds = n_bounds
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_sigma_units(self):
@@ -89,7 +84,7 @@ class Test___init__(tests.IrisTest):
     def test_sigma_invalid_units(self):
         for units in ["Pa", "m"]:
             self.sigma.units = Unit(units)
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_ptop_ps_units(self):
@@ -102,7 +97,7 @@ class Test___init__(tests.IrisTest):
         for units in [("Pa", "1"), ("1", "Pa"), ("bar", "Pa"), ("Pa", "hPa")]:
             self.pressure_at_top.units = Unit(units[0])
             self.surface_air_pressure.units = Unit(units[1])
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_ptop_units(self):
@@ -115,27 +110,29 @@ class Test___init__(tests.IrisTest):
         for units in ["1", "m", "kg", None]:
             self.pressure_at_top.units = Unit(units)
             self.surface_air_pressure.units = Unit(units)
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 AtmosphereSigmaFactory(**self.kwargs)
 
 
-class Test_dependencies(tests.IrisTest):
-    def setUp(self):
-        self.pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=())
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=Unit("Pa"), nbounds=0)
-        self.kwargs = dict(
-            pressure_at_top=self.pressure_at_top,
-            sigma=self.sigma,
-            surface_air_pressure=self.surface_air_pressure,
+class Test_dependencies:
+    @pytest.fixture()
+    def sample_kwargs(self, mocker):
+        pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
+        sigma = mocker.Mock(units=Unit("1"), nbounds=0)
+        surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
+        kwargs = dict(
+            pressure_at_top=pressure_at_top,
+            sigma=sigma,
+            surface_air_pressure=surface_air_pressure,
         )
+        return kwargs
 
-    def test_values(self):
-        factory = AtmosphereSigmaFactory(**self.kwargs)
-        self.assertEqual(factory.dependencies, self.kwargs)
+    def test_values(self, sample_kwargs):
+        factory = AtmosphereSigmaFactory(**sample_kwargs)
+        assert factory.dependencies == sample_kwargs
 
 
-class Test__derive(tests.IrisTest):
+class Test__derive:
     def test_function_scalar(self):
         assert AtmosphereSigmaFactory._derive(0, 0, 0) == 0
         assert AtmosphereSigmaFactory._derive(3, 0, 0) == 3
@@ -156,7 +153,7 @@ class Test__derive(tests.IrisTest):
         )
 
 
-class Test_make_coord(tests.IrisTest):
+class Test_make_coord:
     @staticmethod
     def coord_dims(coord):
         mapping = dict(
@@ -178,7 +175,8 @@ class Test_make_coord(tests.IrisTest):
             )
         return result
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.pressure_at_top = AuxCoord(
             [3.0],
             long_name="pressure_at_top",
@@ -225,14 +223,15 @@ class Test_make_coord(tests.IrisTest):
         coord.bounds = None
 
         # Check points and metadata
-        self.assertEqual(expected_coord, coord)
+        assert coord == expected_coord
 
 
-class Test_update(tests.IrisTest):
-    def setUp(self):
-        self.pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=())
-        self.sigma = mock.Mock(units=Unit("1"), nbounds=0)
-        self.surface_air_pressure = mock.Mock(units=Unit("Pa"), nbounds=0)
+class Test_update:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
+        self.sigma = mocker.Mock(units=Unit("1"), nbounds=0)
+        self.surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
         self.kwargs = dict(
             pressure_at_top=self.pressure_at_top,
             sigma=self.sigma,
@@ -240,41 +239,37 @@ class Test_update(tests.IrisTest):
         )
         self.factory = AtmosphereSigmaFactory(**self.kwargs)
 
-    def test_pressure_at_top(self):
-        new_pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=())
+    def test_pressure_at_top(self, mocker):
+        new_pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
         self.factory.update(self.pressure_at_top, new_pressure_at_top)
-        self.assertIs(self.factory.pressure_at_top, new_pressure_at_top)
+        assert self.factory.pressure_at_top is new_pressure_at_top
 
-    def test_pressure_at_top_wrong_shape(self):
-        new_pressure_at_top = mock.Mock(units=Unit("Pa"), nbounds=0, shape=(2,))
-        with self.assertRaises(ValueError):
+    def test_pressure_at_top_wrong_shape(self, mocker):
+        new_pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=(2,))
+        with pytest.raises(ValueError):
             self.factory.update(self.pressure_at_top, new_pressure_at_top)
 
-    def test_sigma(self):
-        new_sigma = mock.Mock(units=Unit("1"), nbounds=0)
+    def test_sigma(self, mocker):
+        new_sigma = mocker.Mock(units=Unit("1"), nbounds=0)
         self.factory.update(self.sigma, new_sigma)
-        self.assertIs(self.factory.sigma, new_sigma)
+        assert self.factory.sigma is new_sigma
 
-    def test_sigma_too_many_bounds(self):
-        new_sigma = mock.Mock(units=Unit("1"), nbounds=4)
-        with self.assertRaises(ValueError):
+    def test_sigma_too_many_bounds(self, mocker):
+        new_sigma = mocker.Mock(units=Unit("1"), nbounds=4)
+        with pytest.raises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
-    def test_sigma_incompatible_units(self):
-        new_sigma = mock.Mock(units=Unit("Pa"), nbounds=0)
-        with self.assertRaises(ValueError):
+    def test_sigma_incompatible_units(self, mocker):
+        new_sigma = mocker.Mock(units=Unit("Pa"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.sigma, new_sigma)
 
-    def test_surface_air_pressure(self):
-        new_surface_air_pressure = mock.Mock(units=Unit("Pa"), nbounds=0)
+    def test_surface_air_pressure(self, mocker):
+        new_surface_air_pressure = mocker.Mock(units=Unit("Pa"), nbounds=0)
         self.factory.update(self.surface_air_pressure, new_surface_air_pressure)
-        self.assertIs(self.factory.surface_air_pressure, new_surface_air_pressure)
+        assert self.factory.surface_air_pressure is new_surface_air_pressure
 
-    def test_surface_air_pressure_incompatible_units(self):
-        new_surface_air_pressure = mock.Mock(units=Unit("mbar"), nbounds=0)
-        with self.assertRaises(ValueError):
+    def test_surface_air_pressure_incompatible_units(self, mocker):
+        new_surface_air_pressure = mocker.Mock(units=Unit("mbar"), nbounds=0)
+        with pytest.raises(ValueError):
             self.factory.update(self.surface_air_pressure, new_surface_air_pressure)
-
-
-if __name__ == "__main__":
-    tests.main()

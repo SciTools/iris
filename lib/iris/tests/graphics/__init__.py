@@ -19,9 +19,9 @@ from pathlib import Path
 import sys
 import threading
 from typing import Callable, Dict, Union
-import unittest
 
 import filelock
+import pytest
 
 # Test for availability of matplotlib.
 # (And remove matplotlib as an iris.tests dependency.)
@@ -50,7 +50,7 @@ if MPL_AVAILABLE and "-d" in sys.argv:
     _DISPLAY_FIGURES = True
 
 # Threading non re-entrant blocking lock to ensure thread-safe plotting in the
-# GraphicsTestMixin.
+# GraphicsTestMixin and check_graphics_caller.
 _lock = threading.Lock()
 
 #: Default perceptual hash size.
@@ -241,6 +241,7 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
 
 
 class GraphicsTestMixin:
+    # TODO: deprecate this in favour of check_graphic_caller.
     def setUp(self) -> None:
         # Acquire threading non re-entrant blocking lock to ensure
         # thread-safe plotting.
@@ -263,15 +264,57 @@ def skip_plot(fn: Callable) -> Callable:
     """Decorator to choose whether to run tests, based on the availability of the
     matplotlib library.
 
-    Example usage:
-        @skip_plot
-        class MyPlotTests(test.GraphicsTest):
-            ...
+    Examples
+    --------
+    >>> @skip_plot
+    >>> class TestMyPlots:
+    ...     def test_my_plot(self, check_graphic_caller):
+    ...         pass
+    ...
+    >>> @skip_plot
+    >>> def test_my_plot(check_graphic_caller):
+    ...     pass
 
     """
-    skip = unittest.skipIf(
+    skip = pytest.mark.skipIf(
         condition=not MPL_AVAILABLE,
         reason="Graphics tests require the matplotlib library.",
     )
 
     return skip(fn)
+
+
+@pytest.fixture
+def _check_graphic_caller(_unique_id) -> callable:
+    """Provide a function calling :func:`check_graphic` with safe configuration.
+
+    Ensures a safe Matplotlib setup (and tears down afterwards), and generates
+    a unique test id for each call.
+
+    Examples
+    --------
+    >>> def test_my_plot(check_graphic_caller):
+    ...     # ... do some plotting ...
+    ...     check_graphic_caller()
+    """
+    from iris.tests import _RESULT_PATH
+
+    # Acquire threading non re-entrant blocking lock to ensure
+    # thread-safe plotting.
+    _lock.acquire()
+    # Make sure we have no unclosed plots from previous tests before
+    # generating this one.
+    if MPL_AVAILABLE:
+        plt.close("all")
+
+    def call_check_graphic():
+        check_graphic(_unique_id(), _RESULT_PATH)
+
+    yield call_check_graphic
+
+    # If a plotting test bombs out it can leave the current figure
+    # in an odd state, so we make sure it's been disposed of.
+    if MPL_AVAILABLE:
+        plt.close("all")
+    # Release the non re-entrant blocking lock.
+    _lock.release()
