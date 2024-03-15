@@ -3,18 +3,14 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.non_lazy`."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, is_lazy_data, non_lazy
+from iris.tests._shared_utils import assert_array_equal
 
 
-class Test_non_lazy(tests.IrisTest):
-    def setUp(self):
+class Test_non_lazy:
+    def setup_method(self):
         self.array = np.arange(8).reshape(2, 4)
         self.lazy_array = as_lazy_data(self.array)
         self.func = non_lazy(lambda array: array.sum(axis=0))
@@ -22,15 +18,11 @@ class Test_non_lazy(tests.IrisTest):
 
     def test_lazy_input(self):
         result = self.func(self.lazy_array)
-        self.assertFalse(is_lazy_data(result))
-        self.assertArrayEqual(result, self.func_result)
+        assert not is_lazy_data(result)
+        assert_array_equal(result, self.func_result)
 
     def test_non_lazy_input(self):
         # Check that a non-lazy input doesn't trip up the functionality.
         result = self.func(self.array)
-        self.assertFalse(is_lazy_data(result))
-        self.assertArrayEqual(result, self.func_result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert not is_lazy_data(result)
+        assert_array_equal(result, self.func_result)
