@@ -658,8 +658,8 @@ class Test_collapsed__warning:
         aggregator.cell_method = None
         coords = ["latitude", "longitude"]
 
-        with mocker.patch("warnings.warn") as warn:
-            self.cube.collapsed(coords, aggregator, somekeyword="bla")
+        warn = mocker.patch("warnings.warn")
+        self.cube.collapsed(coords, aggregator, somekeyword="bla")
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
@@ -669,8 +669,8 @@ class Test_collapsed__warning:
         aggregator = self._aggregator(False)
         coords = ["latitude", "longitude"]
 
-        with mocker.patch("warnings.warn") as warn:
-            self.cube.collapsed(coords, aggregator)
+        warn = mocker.patch("warnings.warn")
+        self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if "latitude" in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
@@ -682,8 +682,8 @@ class Test_collapsed__warning:
         aggregator = self._aggregator(True)
         coords = ["latitude", "longitude"]
 
-        with mocker.patch("warnings.warn") as warn:
-            self.cube.collapsed(coords, aggregator, weights=weights)
+        warn = mocker.patch("warnings.warn")
+        self.cube.collapsed(coords, aggregator, weights=weights)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
@@ -693,8 +693,8 @@ class Test_collapsed__warning:
         aggregator = self._aggregator(False)
         coords = ["grid_latitude", "grid_longitude"]
 
-        with mocker.patch("warnings.warn") as warn:
-            self.cube.collapsed(coords, aggregator)
+        warn = mocker.patch("warnings.warn")
+        self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if "latitude" in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
@@ -706,8 +706,8 @@ class Test_collapsed__warning:
         aggregator = self._aggregator(False)
         coords = ["wibble"]
 
-        with mocker.patch("warnings.warn") as warn:
-            self.cube.collapsed(coords, aggregator)
+        warn = mocker.patch("warnings.warn")
+        self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
@@ -752,22 +752,22 @@ class Test_collapsed_coord_with_3_bounds:
 
     def test_collapsed_lat_with_3_bounds(self, mocker):
         """Collapse latitude with 3 bounds."""
-        with mocker.patch("warnings.warn") as warn:
-            collapsed_cube = self.cube.collapsed("latitude", SUM)
+        warn = mocker.patch("warnings.warn")
+        collapsed_cube = self.cube.collapsed("latitude", SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
 
     def test_collapsed_lon_with_3_bounds(self, mocker):
         """Collapse longitude with 3 bounds."""
-        with mocker.patch("warnings.warn") as warn:
-            collapsed_cube = self.cube.collapsed("longitude", SUM)
+        warn = mocker.patch("warnings.warn")
+        collapsed_cube = self.cube.collapsed("longitude", SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
 
     def test_collapsed_lat_lon_with_3_bounds(self, mocker):
         """Collapse latitude and longitude with 3 bounds."""
-        with mocker.patch("warnings.warn") as warn:
-            collapsed_cube = self.cube.collapsed(["latitude", "longitude"], SUM)
+        warn = mocker.patch("warnings.warn")
+        collapsed_cube = self.cube.collapsed(["latitude", "longitude"], SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
 
@@ -1846,8 +1846,8 @@ class Test_intersection__ModulusBounds:
         lons.bounds = lons.bounds / 10
         result = cube.intersection(longitude=(-60, 60))
         result_lons = result.coord("longitude")
-        _shared_utils.assert_almost_equal(result_lons.points[0], -60.05)
-        _shared_utils.assert_almost_equal(result_lons.points[-1], 60.05)
+        _shared_utils.assert_array_almost_equal(result_lons.points[0], -60.05)
+        _shared_utils.assert_array_almost_equal(result_lons.points[-1], 60.05)
         dtype = result_lons.dtype
         np.testing.assert_array_almost_equal(
             result_lons.bounds[0], np.array([-60.1, -60.0], dtype=dtype)
@@ -3206,8 +3206,8 @@ class TestReprs:
         instance_mock = mock.MagicMock(
             to_string=mock.MagicMock(return_value="")  # NB this must return a string
         )
-        with mocker.patch(target, return_value=instance_mock) as class_mock:
-            yield class_mock, instance_mock
+        class_mock = mocker.patch(target, return_value=instance_mock)
+        yield class_mock, instance_mock
 
     @staticmethod
     def _check_expected_effects(simplecube, patched_cubeprinter, oneline, padding):
@@ -3263,8 +3263,8 @@ class TestHtmlRepr:
         instance_mock = mock.MagicMock(
             repr_html=mock.MagicMock(return_value="")  # NB this must return a string
         )
-        with mocker.patch(target, return_value=instance_mock) as class_mock:
-            yield class_mock, instance_mock
+        class_mock = mocker.patch(target, return_value=instance_mock)
+        yield class_mock, instance_mock
 
     @staticmethod
     def test__repr_html__effects(simplecube, patched_cubehtml):
