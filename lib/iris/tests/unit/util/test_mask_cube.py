@@ -26,7 +26,7 @@ def full2d_global():
 
 
 class MaskCubeMixin:
-    def assertOriginalMetadata(self, cube, func, request):
+    def assertOriginalMetadata(self, request, cube, func):
         """Check metadata matches that of input cube.  func is a string indicating
         which function created the original cube.
 
@@ -45,7 +45,8 @@ class TestArrayMask(MaskCubeMixin):
     """Tests with mask specified as numpy array."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup(self, request):
+        self.request = request
         # Set up a 2d cube with a masked discontiguity to test masking
         # of 2-dimensional cubes
         self.cube_2d = full2d_global()
@@ -63,7 +64,7 @@ class TestArrayMask(MaskCubeMixin):
         cube.data = cube.data.data
         returned = mask_cube(cube, discontiguity_array, in_place=True)
         _shared_utils.assert_array_equal(expected.data.mask, cube.data.mask)
-        self.assertOriginalMetadata(cube, "full2d_global")
+        self.assertOriginalMetadata(self.request, cube, "full2d_global")
         assert returned is None
 
     def test_mask_cube_2d_not_in_place(self):
@@ -78,7 +79,7 @@ class TestArrayMask(MaskCubeMixin):
         cube.data = cube.data.data
         returned = mask_cube(cube, discontiguity_array, in_place=False)
         _shared_utils.assert_array_equal(expected.data.mask, returned.data.mask)
-        self.assertOriginalMetadata(returned, "full2d_global")
+        self.assertOriginalMetadata(self.request, returned, "full2d_global")
         assert not ma.is_masked(cube.data)
 
     def test_mask_cube_lazy_in_place_broadcast(self):
@@ -89,7 +90,7 @@ class TestArrayMask(MaskCubeMixin):
         assert cube.has_lazy_data()
         # Touch the data so lazyness status doesn't affect CML check.
         cube.data
-        self.assertOriginalMetadata(cube, "simple_2d")
+        self.assertOriginalMetadata(self.request, cube, "simple_2d")
         for subcube in cube.slices("foo"):
             # Mask should have been broadcast across "bar" dimension.
             _shared_utils.assert_array_equal(subcube.data.mask, mask)
@@ -100,7 +101,8 @@ class TestCoordMask(MaskCubeMixin):
     """Tests with mask specified as a Coord."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup(self, request):
+        self.request = request
         self.cube = simple_2d()
 
     def test_mask_cube_2d_first_dim(self):
@@ -110,7 +112,7 @@ class TestCoordMask(MaskCubeMixin):
         returned = mask_cube(self.cube, mask_coord, in_place=False)
         # Remove extra coord so we can check against original metadata.
         returned.remove_coord(mask_coord)
-        self.assertOriginalMetadata(returned, "simple_2d")
+        self.assertOriginalMetadata(self.request, returned, "simple_2d")
         for subcube in returned.slices("bar"):
             # Mask should have been broadcast across "foo" dimension.
             _shared_utils.assert_array_equal(subcube.data.mask, mask_coord.points)
@@ -118,7 +120,7 @@ class TestCoordMask(MaskCubeMixin):
     def test_mask_cube_2d_second_dim(self):
         mask_coord = iris.coords.AuxCoord([0, 0, 1, 1], long_name="mask", units=1)
         returned = mask_cube(self.cube, mask_coord, in_place=False, dim=1)
-        self.assertOriginalMetadata(returned, "simple_2d")
+        self.assertOriginalMetadata(self.request, returned, "simple_2d")
         for subcube in returned.slices("foo"):
             # Mask should have been broadcast across "bar" dimension.
             _shared_utils.assert_array_equal(subcube.data.mask, mask_coord.points)
@@ -128,7 +130,8 @@ class TestCubeMask(MaskCubeMixin):
     """Tests with mask specified as a Cube."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup(self, request):
+        self.request = request
         self.cube = simple_2d()
 
     def test_mask_cube_2d_first_dim_not_in_place(self):
@@ -136,7 +139,7 @@ class TestCubeMask(MaskCubeMixin):
         mask.add_dim_coord(self.cube.coord("bar"), 0)
 
         returned = mask_cube(self.cube, mask, in_place=False)
-        self.assertOriginalMetadata(returned, "simple_2d")
+        self.assertOriginalMetadata(self.request, returned, "simple_2d")
         for subcube in returned.slices("bar"):
             # Mask should have been broadcast across 'foo' dimension.
             _shared_utils.assert_array_equal(subcube.data.mask, mask.data)
@@ -146,7 +149,7 @@ class TestCubeMask(MaskCubeMixin):
         mask.add_dim_coord(self.cube.coord("bar"), 0)
 
         returned = mask_cube(self.cube, mask, in_place=True)
-        self.assertOriginalMetadata(self.cube, "simple_2d")
+        self.assertOriginalMetadata(self.request, self.cube, "simple_2d")
         for subcube in self.cube.slices("bar"):
             # Mask should have been broadcast across 'foo' dimension.
             _shared_utils.assert_array_equal(subcube.data.mask, mask.data)
@@ -182,5 +185,5 @@ class TestCubeMask(MaskCubeMixin):
         assert cube.has_lazy_data()
         # Touch the data so lazyness status doesn't interfere with CML check.
         cube.data
-        self.assertOriginalMetadata(cube, "simple_1d")
+        self.assertOriginalMetadata(self.request, cube, "simple_1d")
         _shared_utils.assert_array_equal(cube.data.mask, mask.data)

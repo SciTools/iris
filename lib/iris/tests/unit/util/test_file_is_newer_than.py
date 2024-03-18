@@ -95,20 +95,20 @@ class TestFileIsNewer:
     def test_error_missing_result(self):
         with pytest.raises(OSError) as error_trap:
             self._test(False, "non_exist", ["older_sour*"])
-        error = error_trap.exception
+        error = error_trap.value
         assert error.strerror == "No such file or directory"
         assert error.filename == self._name2path("non_exist")
 
     def test_error_missing_source(self):
         with pytest.raises(IOError) as error_trap:
             self._test(False, "example_result", ["older_sour*", "non_exist"])
-        assert "One or more of the files specified did not exist" in str(
-            error_trap.exception
+        assert (
+            "One or more of the files specified did not exist" in error_trap.exconly()
         )
 
     def test_error_missing_wild(self):
         with pytest.raises(IOError) as error_trap:
             self._test(False, "example_result", ["older_sour*", "unknown_*"])
-        assert "One or more of the files specified did not exist" in str(
-            error_trap.exception
+        assert (
+            "One or more of the files specified did not exist" in error_trap.exconly()
         )
