@@ -350,7 +350,7 @@ class Test_collapsed__lazy:
 
 class Test_collapsed__multidim_weighted_with_arr:
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def multidim_arr_setup(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
         # Test cubes with (same-valued) real and lazy data
@@ -509,9 +509,7 @@ class Test_collapsed__multidim_weighted_with_cube(
     Test_collapsed__multidim_weighted_with_arr
 ):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        super()._setup()
-
+    def multidim_cube_setup(self, multidim_arr_setup):
         self.y_weights_original = self.y_weights
         self.full_weights_y_original = self.full_weights_y
         self.x_weights_original = self.x_weights
@@ -546,9 +544,7 @@ class Test_collapsed__multidim_weighted_with_str(
     Test_collapsed__multidim_weighted_with_cube
 ):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        super()._setup()
-
+    def multidim_str_setup(self, multidim_cube_setup):
         self.full_weights_y = "full_y"
         self.full_weights_x = "full_x"
         self.y_weights = "y"
@@ -583,9 +579,7 @@ class Test_collapsed__multidim_weighted_with_dim_metadata(
     Test_collapsed__multidim_weighted_with_str
 ):
     @pytest.fixture(autouse=True)
-    def _setup(self):
-        super()._setup()
-
+    def _setup(self, multidim_str_setup):
         self.full_weights_y = self.dim_metadata_full_y
         self.full_weights_x = self.dim_metadata_full_x
         self.y_weights = self.dim_metadata_1d_y
@@ -658,61 +652,61 @@ class Test_collapsed__warning:
         for coord in coords:
             assert not mock.call(msg.format(coord)) in warn.call_args_list
 
-    def test_lat_lon_noweighted_aggregator(self):
+    def test_lat_lon_noweighted_aggregator(self, mocker):
         # Collapse latitude coordinate with unweighted aggregator.
         aggregator = mock.Mock(spec=Aggregator, lazy_func=None)
         aggregator.cell_method = None
         coords = ["latitude", "longitude"]
 
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             self.cube.collapsed(coords, aggregator, somekeyword="bla")
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
-    def test_lat_lon_weighted_aggregator(self):
+    def test_lat_lon_weighted_aggregator(self, mocker):
         # Collapse latitude coordinate with weighted aggregator without
         # providing weights.
         aggregator = self._aggregator(False)
         coords = ["latitude", "longitude"]
 
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if "latitude" in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
-    def test_lat_lon_weighted_aggregator_with_weights(self):
+    def test_lat_lon_weighted_aggregator_with_weights(self, mocker):
         # Collapse latitude coordinate with a weighted aggregators and
         # providing suitable weights.
         weights = np.array([[0.1, 0.5], [0.3, 0.2]])
         aggregator = self._aggregator(True)
         coords = ["latitude", "longitude"]
 
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             self.cube.collapsed(coords, aggregator, weights=weights)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
 
-    def test_lat_lon_weighted_aggregator_alt(self):
+    def test_lat_lon_weighted_aggregator_alt(self, mocker):
         # Collapse grid_latitude coordinate with weighted aggregator without
         # providing weights.  Tests coordinate matching logic.
         aggregator = self._aggregator(False)
         coords = ["grid_latitude", "grid_longitude"]
 
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             self.cube.collapsed(coords, aggregator)
 
         coords = [coord for coord in coords if "latitude" in coord]
         self._assert_warn_collapse_without_weight(coords, warn)
 
-    def test_no_lat_weighted_aggregator_mixed(self):
+    def test_no_lat_weighted_aggregator_mixed(self, mocker):
         # Collapse grid_latitude and an unmatched coordinate (not lat/lon)
         # with weighted aggregator without providing weights.
         # Tests coordinate matching logic.
         aggregator = self._aggregator(False)
         coords = ["wibble"]
 
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             self.cube.collapsed(coords, aggregator)
 
         self._assert_nowarn_collapse_without_weight(coords, warn)
@@ -756,23 +750,23 @@ class Test_collapsed_coord_with_3_bounds:
         _shared_utils.assert_array_almost_equal(lon.points, np.array([1.5]))
         _shared_utils.assert_array_almost_equal(lon.bounds, np.array([[1.0, 2.0]]))
 
-    def test_collapsed_lat_with_3_bounds(self):
+    def test_collapsed_lat_with_3_bounds(self, mocker):
         """Collapse latitude with 3 bounds."""
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             collapsed_cube = self.cube.collapsed("latitude", SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
 
-    def test_collapsed_lon_with_3_bounds(self):
+    def test_collapsed_lon_with_3_bounds(self, mocker):
         """Collapse longitude with 3 bounds."""
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             collapsed_cube = self.cube.collapsed("longitude", SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
 
-    def test_collapsed_lat_lon_with_3_bounds(self):
+    def test_collapsed_lat_lon_with_3_bounds(self, mocker):
         """Collapse latitude and longitude with 3 bounds."""
-        with mock.patch("warnings.warn") as warn:
+        with mocker.patch("warnings.warn") as warn:
             collapsed_cube = self.cube.collapsed(["latitude", "longitude"], SUM)
         self._assert_warn_cannot_check_contiguity(warn)
         self._assert_cube_as_expected(collapsed_cube)
@@ -1833,8 +1827,8 @@ class Test_intersection__ModulusBounds:
         cube = create_cube(28.5, 68.5, bounds=True)
         result = cube.intersection(longitude=(27.74, 68.61))
         result_lons = result.coord("longitude")
-        _shared_utils.assert_almost_equal(result_lons.points[0], 28.5)
-        _shared_utils.assert_almost_equal(result_lons.points[-1], 67.5)
+        _shared_utils.assert_array_almost_equal(result_lons.points[0], 28.5)
+        _shared_utils.assert_array_almost_equal(result_lons.points[-1], 67.5)
         dtype = result_lons.dtype
         np.testing.assert_array_almost_equal(
             result_lons.bounds[0], np.array([28.0, 29.0], dtype=dtype)
@@ -2957,7 +2951,7 @@ class Test_convert_units:
             "Cannot convert from unknown units. "
             'The "cube.units" attribute may be set directly.'
         )
-        with self.pytest.raises(UnitConversionError, match=emsg):
+        with pytest.raises(UnitConversionError, match=emsg):
             cube.convert_units("mm day-1")
 
     def test_preserves_lazy(self):
@@ -3207,12 +3201,12 @@ class TestReprs:
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
     @pytest.fixture()
-    def patched_cubeprinter(self):
+    def patched_cubeprinter(self, mocker):
         target = "iris._representation.cube_printout.CubePrinter"
         instance_mock = mock.MagicMock(
             to_string=mock.MagicMock(return_value="")  # NB this must return a string
         )
-        with mock.patch(target, return_value=instance_mock) as class_mock:
+        with mocker.patch(target, return_value=instance_mock) as class_mock:
             yield class_mock, instance_mock
 
     @staticmethod
@@ -3264,12 +3258,12 @@ class TestHtmlRepr:
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
     @pytest.fixture()
-    def patched_cubehtml(self):
+    def patched_cubehtml(self, mocker):
         target = "iris.experimental.representation.CubeRepresentation"
         instance_mock = mock.MagicMock(
             repr_html=mock.MagicMock(return_value="")  # NB this must return a string
         )
-        with mock.patch(target, return_value=instance_mock) as class_mock:
+        with mocker.patch(target, return_value=instance_mock) as class_mock:
             yield class_mock, instance_mock
 
     @staticmethod

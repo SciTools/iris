@@ -712,11 +712,11 @@ class TestHtmlRepr:
     """
 
     @staticmethod
-    def test__repr_html_():
+    def test__repr_html_(mocker):
         test_cubelist = CubeList([])
 
         target = "iris.experimental.representation.CubeListRepresentation"
-        with mock.patch(target) as class_mock:
+        with mocker.patch(target) as class_mock:
             # Exercise the function-under-test.
             test_cubelist._repr_html_()
 
