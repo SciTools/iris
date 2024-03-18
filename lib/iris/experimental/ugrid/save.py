@@ -8,6 +8,7 @@
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
+
 from collections.abc import Iterable
 
 from ...fileformats import netcdf

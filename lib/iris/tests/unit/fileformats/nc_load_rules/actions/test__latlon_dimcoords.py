@@ -9,6 +9,7 @@ Tests for rules behaviour in identifying latitude/longitude dim-coords, both
 rotated and non-rotated.
 
 """
+
 import iris.tests as tests  # isort: skip
 
 from iris.coord_systems import GeogCS, RotatedGeogCS

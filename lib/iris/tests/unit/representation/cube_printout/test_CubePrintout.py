@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.CubePrintout`."""
+
 import iris.tests as tests  # isort:skip
 
 import numpy as np
@@ -124,9 +125,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_columns_long_attribute(self):
         cube = Cube([0], long_name="short", units=1)
-        cube.attributes[
-            "very_very_very_very_very_long_name"
-        ] = "longish string extends beyond dim columns"
+        cube.attributes["very_very_very_very_very_long_name"] = (
+            "longish string extends beyond dim columns"
+        )
         rep = cube_replines(cube)
         expected = [
             "short / (1)                                (-- : 1)",
