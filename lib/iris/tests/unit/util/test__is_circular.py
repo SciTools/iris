@@ -16,11 +16,11 @@ from iris.util import _is_circular
 class Test(tests.IrisTest):
     def test_simple(self):
         data = np.arange(12) * 30
-        self.assertTrue(_is_circular(data, 360))
+        assert _is_circular(data, 360)
 
     def test_negative_diff(self):
         data = (np.arange(96) * -3.749998) + 3.56249908e02
-        self.assertTrue(_is_circular(data, 360))
+        assert _is_circular(data, 360)
 
 
 if __name__ == "__main__":

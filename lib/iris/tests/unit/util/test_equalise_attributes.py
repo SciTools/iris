@@ -21,7 +21,7 @@ from iris.util import equalise_attributes
 
 
 class TestEqualiseAttributes(tests.IrisTest):
-    def setUp(self):
+    def setup_method(self):
         empty = Cube([])
 
         self.cube_no_attrs = empty.copy()
@@ -66,21 +66,21 @@ class TestEqualiseAttributes(tests.IrisTest):
         # Exercise basic operation
         actual_removed = equalise_attributes(working_cubes)
         # Check they are the same cubes
-        self.assertEqual(working_cubes, original_working_list)
+        assert working_cubes == original_working_list
         # Check resulting attributes all match the expected set
         for cube in working_cubes:
-            self.assertEqual(cube.attributes, expect_attributes)
+            assert cube.attributes == expect_attributes
         # Check removed attributes all match as expected
-        self.assertEqual(len(actual_removed), len(expect_removed))
+        assert len(actual_removed) == len(expect_removed)
         for actual, expect in zip(actual_removed, expect_removed):
-            self.assertEqual(actual, expect)
+            assert actual == expect
         # Check everything else remains the same
         for new_cube, old_cube in zip(working_cubes, cubes):
             cube_before_noatts = old_cube.copy()
             cube_before_noatts.attributes.clear()
             cube_after_noatts = new_cube.copy()
             cube_after_noatts.attributes.clear()
-            self.assertEqual(cube_after_noatts, cube_before_noatts)
+            assert cube_after_noatts == cube_before_noatts
 
     def test_no_attrs(self):
         cubes = [self.cube_no_attrs]

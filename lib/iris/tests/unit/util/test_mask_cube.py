@@ -46,7 +46,7 @@ class MaskCubeMixin:
 class TestArrayMask(tests.IrisTest, MaskCubeMixin):
     """Tests with mask specified as numpy array."""
 
-    def setUp(self):
+    def setup_method(self):
         # Set up a 2d cube with a masked discontiguity to test masking
         # of 2-dimensional cubes
         self.cube_2d = full2d_global()
@@ -65,7 +65,7 @@ class TestArrayMask(tests.IrisTest, MaskCubeMixin):
         returned = mask_cube(cube, discontiguity_array, in_place=True)
         np.testing.assert_array_equal(expected.data.mask, cube.data.mask)
         self.assertOriginalMetadata(cube, "full2d_global")
-        self.assertIs(returned, None)
+        assert returned is None
 
     def test_mask_cube_2d_not_in_place(self):
         # This tests the masking of a 2d data array
@@ -80,27 +80,27 @@ class TestArrayMask(tests.IrisTest, MaskCubeMixin):
         returned = mask_cube(cube, discontiguity_array, in_place=False)
         np.testing.assert_array_equal(expected.data.mask, returned.data.mask)
         self.assertOriginalMetadata(returned, "full2d_global")
-        self.assertFalse(ma.is_masked(cube.data))
+        assert not ma.is_masked(cube.data)
 
     def test_mask_cube_lazy_in_place_broadcast(self):
         cube = simple_2d()
         cube.data = cube.lazy_data()
         mask = [0, 1, 1, 0]
         returned = mask_cube(cube, mask, in_place=True)
-        self.assertTrue(cube.has_lazy_data())
+        assert cube.has_lazy_data()
         # Touch the data so lazyness status doesn't affect CML check.
         cube.data
         self.assertOriginalMetadata(cube, "simple_2d")
         for subcube in cube.slices("foo"):
             # Mask should have been broadcast across "bar" dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask)
-        self.assertIs(returned, None)
+        assert returned is None
 
 
 class TestCoordMask(tests.IrisTest, MaskCubeMixin):
     """Tests with mask specified as a Coord."""
 
-    def setUp(self):
+    def setup_method(self):
         self.cube = simple_2d()
 
     def test_mask_cube_2d_first_dim(self):
@@ -127,7 +127,7 @@ class TestCoordMask(tests.IrisTest, MaskCubeMixin):
 class TestCubeMask(tests.IrisTest, MaskCubeMixin):
     """Tests with mask specified as a Cube."""
 
-    def setUp(self):
+    def setup_method(self):
         self.cube = simple_2d()
 
     def test_mask_cube_2d_first_dim_not_in_place(self):
@@ -149,7 +149,7 @@ class TestCubeMask(tests.IrisTest, MaskCubeMixin):
         for subcube in self.cube.slices("bar"):
             # Mask should have been broadcast across 'foo' dimension.
             np.testing.assert_array_equal(subcube.data.mask, mask.data)
-        self.assertIs(returned, None)
+        assert returned is None
 
     def test_mask_cube_2d_create_new_dim(self):
         mask = iris.cube.Cube([[0, 1, 0], [0, 0, 1]], long_name="mask", units=1)
@@ -177,8 +177,8 @@ class TestCubeMask(tests.IrisTest, MaskCubeMixin):
         cube = simple_1d()
         mask = cube.copy(da.from_array([0, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1]))
         returned = mask_cube(cube, mask, in_place=True)
-        self.assertIs(returned, None)
-        self.assertTrue(cube.has_lazy_data())
+        assert returned is None
+        assert cube.has_lazy_data()
         # Touch the data so lazyness status doesn't interfere with CML check.
         cube.data
         self.assertOriginalMetadata(cube, "simple_1d")

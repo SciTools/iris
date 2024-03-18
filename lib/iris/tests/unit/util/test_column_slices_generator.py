@@ -18,8 +18,8 @@ class Test_int_types(tests.IrisTest):
         full_slice = (key,)
         ndims = 1
         mapping, iterable = column_slices_generator(full_slice, ndims)
-        self.assertEqual(mapping, {0: None, None: None})
-        self.assertEqual(list(iterable), [(0,)])
+        assert mapping == {0: None, None: None}
+        assert list(iterable) == [(0,)]
 
     def test_int(self):
         self._test(0)

@@ -6,6 +6,8 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
+import pytest
+
 import iris.tests as tests  # isort:skip
 
 import os
@@ -23,7 +25,7 @@ class TestFileIsNewer(tests.IrisTest):
         """Add the temporary dirpath to a filename to make a full path."""
         return os.path.join(self.temp_dir, filename)
 
-    def setUp(self):
+    def setup_method(self):
         # make a temporary directory with testfiles of known timestamp order.
         self.temp_dir = tempfile.mkdtemp("_testfiles_tempdir")
         # define the names of some files to create
@@ -44,7 +46,7 @@ class TestFileIsNewer(tests.IrisTest):
             mtime += 5.0 + 10.0 * i_file
             os.utime(file_path, (mtime, mtime))
 
-    def tearDown(self):
+    def teardown_method(self):
         # destroy whole contents of temporary directory
         shutil.rmtree(self.temp_dir)
 
@@ -57,7 +59,7 @@ class TestFileIsNewer(tests.IrisTest):
         else:
             source_paths = [self._name2path(name) for name in source_names]
         # Check result is as expected.
-        self.assertEqual(boolean_result, file_is_newer_than(result_path, source_paths))
+        assert boolean_result == file_is_newer_than(result_path, source_paths)
 
     def test_no_sources(self):
         self._test(True, "example_result", [])
@@ -95,26 +97,24 @@ class TestFileIsNewer(tests.IrisTest):
         self._test(False, "example_result", ["older_sour*", "newer_sour*"])
 
     def test_error_missing_result(self):
-        with self.assertRaises(OSError) as error_trap:
+        with pytest.raises(OSError) as error_trap:
             self._test(False, "non_exist", ["older_sour*"])
         error = error_trap.exception
-        self.assertEqual(error.strerror, "No such file or directory")
-        self.assertEqual(error.filename, self._name2path("non_exist"))
+        assert error.strerror == "No such file or directory"
+        assert error.filename == self._name2path("non_exist")
 
     def test_error_missing_source(self):
-        with self.assertRaises(IOError) as error_trap:
+        with pytest.raises(IOError) as error_trap:
             self._test(False, "example_result", ["older_sour*", "non_exist"])
-        self.assertIn(
-            "One or more of the files specified did not exist",
-            str(error_trap.exception),
+        assert "One or more of the files specified did not exist" in str(
+            error_trap.exception
         )
 
     def test_error_missing_wild(self):
-        with self.assertRaises(IOError) as error_trap:
+        with pytest.raises(IOError) as error_trap:
             self._test(False, "example_result", ["older_sour*", "unknown_*"])
-        self.assertIn(
-            "One or more of the files specified did not exist",
-            str(error_trap.exception),
+        assert "One or more of the files specified did not exist" in str(
+            error_trap.exception
         )
 
 

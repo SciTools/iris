@@ -77,12 +77,9 @@ class MixinIndexingTest:
                 msg += "\n]"
                 return msg
 
-            self.assertTrue(
-                equal,
-                errmsg.format(showkeys(calls_got), showkeys(expect_call_keys)),
-            )
+            assert equal, errmsg.format(showkeys(calls_got), showkeys(expect_call_keys))
         if expect_map is not None:
-            self.assertEqual(dim_map, expect_map)
+            assert dim_map == expect_map
 
 
 class Test_indexing(MixinIndexingTest, tests.IrisTest):
@@ -248,8 +245,8 @@ class TestResults(tests.IrisTest):
         lazy_result = as_concrete_data(lazy_result)
         self.assertArrayEqual(real_result, expect_result)
         self.assertArrayEqual(lazy_result, expect_result)
-        self.assertEqual(real_dim_map, expect_map)
-        self.assertEqual(lazy_dim_map, expect_map)
+        assert real_dim_map == expect_map
+        assert lazy_dim_map == expect_map
 
     def test_1d_int(self):
         self.check([1, 2, 3, 4], Index[2], [3], {None: None, 0: None})

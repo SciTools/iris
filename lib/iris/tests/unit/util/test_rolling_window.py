@@ -6,6 +6,8 @@
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
+import pytest
+
 import iris.tests as tests  # isort:skip
 
 import numpy as np
@@ -95,20 +97,20 @@ class Test_rolling_window(tests.IrisTest):
     def test_window_too_short(self):
         # raise an error if the window length is less than 1
         a = np.empty([5])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             rolling_window(a, window=0)
 
     def test_window_too_long(self):
         # raise an error if the window length is longer than the
         # corresponding array dimension
         a = np.empty([7, 5])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             rolling_window(a, window=6, axis=1)
 
     def test_invalid_step(self):
         # raise an error if the step between windows is less than 1
         a = np.empty([5])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             rolling_window(a, step=0)
 
 

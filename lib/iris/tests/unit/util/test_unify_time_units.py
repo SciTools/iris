@@ -51,7 +51,7 @@ class Test(tests.IrisTest):
             except iris.exceptions.CoordinateNotFoundError:
                 pass
             else:
-                self.assertEqual(expected, epoch)
+                assert expected == epoch
 
     def test_cubelist_with_time_coords(self):
         # Tests an :class:`iris.cube.CubeList` containing cubes with time
@@ -78,7 +78,7 @@ class Test(tests.IrisTest):
         cubes = iris.cube.CubeList([cube0, cube1])
         result = copy.copy(cubes)
         unify_time_units(result)
-        self.assertEqual(cubes, result)
+        assert cubes == result
 
     def test_time_coord_only_in_some_cubes(self):
         list_of_cubes = self.simple_1d_time_cubes()
