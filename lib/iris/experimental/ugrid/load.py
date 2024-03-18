@@ -11,6 +11,7 @@ Extensions to Iris' NetCDF loading to allow the construction of
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
+
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path

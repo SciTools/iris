@@ -133,8 +133,9 @@ def test_invalid_var_name(tmp_filepath, save_cubelist_with_sigma):
 
 def test_control_multiple(tmp_filepath, save_cubelist_with_sigma):
     cube_varname, sigma_varname = save_cubelist_with_sigma
-    with CHUNK_CONTROL.set(cube_varname, model_level_number=2), CHUNK_CONTROL.set(
-        sigma_varname, model_level_number=3
+    with (
+        CHUNK_CONTROL.set(cube_varname, model_level_number=2),
+        CHUNK_CONTROL.set(sigma_varname, model_level_number=3),
     ):
         cubes = CubeList(loader.load_cubes(tmp_filepath))
         cube = cubes.extract_cube(cube_varname)

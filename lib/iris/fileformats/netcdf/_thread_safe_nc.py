@@ -7,6 +7,7 @@
 Intention is that no other Iris module should import the netCDF4 module.
 
 """
+
 from abc import ABC
 from threading import Lock
 import typing

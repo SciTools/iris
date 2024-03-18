@@ -8,6 +8,7 @@
 Eventual destination: :mod:`iris.common.metadata`.
 
 """
+
 from functools import wraps
 
 from ...common import BaseMetadata

@@ -16,6 +16,7 @@ Notes
     discuss how to replace it or to retain it.
 
 """
+
 import copy
 import functools
 import warnings

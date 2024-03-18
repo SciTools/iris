@@ -34,11 +34,14 @@ class Test(tests.IrisTest):
             return result
 
         open_func = "builtins.open"
-        with mock.patch("numpy.fromfile", return_value=[0]), mock.patch(
-            open_func
-        ), mock.patch("struct.unpack_from", return_value=[4]), mock.patch(
-            "iris.fileformats.pp.make_pp_field",
-            side_effect=make_pp_field_override,
+        with (
+            mock.patch("numpy.fromfile", return_value=[0]),
+            mock.patch(open_func),
+            mock.patch("struct.unpack_from", return_value=[4]),
+            mock.patch(
+                "iris.fileformats.pp.make_pp_field",
+                side_effect=make_pp_field_override,
+            ),
         ):
             yield
 
