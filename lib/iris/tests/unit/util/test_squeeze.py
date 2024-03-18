@@ -3,19 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.squeeze`."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-import unittest
+import pytest
 
 import iris
 import iris.tests.stock as stock
 
 
-class Test(tests.IrisTest):
-    def setup_method(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_2d_w_multidim_and_scalars()
 
     def test_no_change(self):
@@ -44,7 +40,3 @@ class Test(tests.IrisTest):
         cube_1d = iris.util.new_axis(cube_scalar)
 
         assert cube_scalar == iris.util.squeeze(cube_1d)
-
-
-if __name__ == "__main__":
-    unittest.main()

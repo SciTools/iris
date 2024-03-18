@@ -4,20 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.demote_dim_coord_to_aux_coord`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import pytest
-
-import iris.tests as tests  # isort:skip
-
 import unittest
 
+import pytest
+
 import iris
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.util import demote_dim_coord_to_aux_coord
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_argument_is_basestring(self):
         cube_a = stock.simple_3d()
         cube_b = cube_a.copy()
@@ -27,7 +24,7 @@ class Test(tests.IrisTest):
             cube_a.coord("longitude"),
         )
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_argument_is_coord_instance(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()

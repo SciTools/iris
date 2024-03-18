@@ -3,22 +3,18 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.array_equal`."""
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import copy
 
 import cf_units
 import numpy as np
 
 import iris
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.util import unify_time_units
 
 
-class Test(tests.IrisTest):
+class Test:
     def simple_1d_time_cubes(self, calendar="standard"):
         coord_points = [1, 2, 3, 4, 5]
         data_points = [273, 275, 278, 277, 274]
@@ -69,10 +65,10 @@ class Test(tests.IrisTest):
         unify_time_units(list_of_cubes)
         self._common(expected, list_of_cubes)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_no_time_coord_in_cubes(self):
-        path0 = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
-        path1 = tests.get_data_path(("PP", "aPPglob1", "global_t_forecast.pp"))
+        path0 = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
+        path1 = _shared_utils.get_data_path(("PP", "aPPglob1", "global_t_forecast.pp"))
         cube0 = iris.load_cube(path0)
         cube1 = iris.load_cube(path1)
         cubes = iris.cube.CubeList([cube0, cube1])
@@ -136,7 +132,3 @@ class Test(tests.IrisTest):
         cubelist = iris.cube.CubeList([cube0, cube1])
         unify_time_units(cubelist)
         assert len(cubelist.concatenate()) == 1
-
-
-if __name__ == "__main__":
-    tests.main()

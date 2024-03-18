@@ -11,15 +11,15 @@ import shapely
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
 import iris.cube
-import iris.tests as tests
 from iris.util import mask_cube_from_shapefile
 from iris.warnings import IrisUserWarning
 
 
-class TestBasicCubeMasking(tests.IrisTest):
+class TestBasicCubeMasking:
     """Unit tests for mask_cube_from_shapefile function."""
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         basic_data = np.array([[1, 2, 3], [4, 8, 12]])
         self.basic_cube = iris.cube.Cube(basic_data)
         coord = DimCoord(

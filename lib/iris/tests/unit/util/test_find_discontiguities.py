@@ -4,14 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.find_discontiguities."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
+import numpy as np
 import pytest
 
-import iris.tests as tests  # isort:skip
-
-import numpy as np
-
+from iris.tests import _shared_utils
 from iris.tests.stock import (
     make_bounds_discontiguous_at_point,
     sample_2d_latlons,
@@ -24,9 +20,10 @@ def full2d_global():
     return sample_2d_latlons(transformed=True)
 
 
-@tests.skip_data
-class Test(tests.IrisTest):
-    def setup_method(self):
+@_shared_utils.skip_data
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Set up a 2d lat-lon cube with 2d coordinates that have been
         # transformed so they are not in a regular lat-lon grid.
         # Then generate a discontiguity at a single lat-lon point.
@@ -109,7 +106,3 @@ class Test(tests.IrisTest):
         expected = np.zeros(cube.shape, dtype=bool)
         returned = find_discontiguities(cube, rel_tol=rtol)
         assert np.all(expected == returned)
-
-
-if __name__ == "__main__":
-    tests.main()

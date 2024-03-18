@@ -3,29 +3,25 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.test_file_is_newer`."""
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import pytest
-
-import iris.tests as tests  # isort:skip
-
 import os
 import os.path
 import shutil
 import tempfile
 
+import pytest
+
 from iris.util import file_is_newer_than
 
 
-class TestFileIsNewer(tests.IrisTest):
+class TestFileIsNewer:
     """Test the :func:`iris.util.file_is_newer_than` function."""
 
     def _name2path(self, filename):
         """Add the temporary dirpath to a filename to make a full path."""
         return os.path.join(self.temp_dir, filename)
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # make a temporary directory with testfiles of known timestamp order.
         self.temp_dir = tempfile.mkdtemp("_testfiles_tempdir")
         # define the names of some files to create
@@ -116,7 +112,3 @@ class TestFileIsNewer(tests.IrisTest):
         assert "One or more of the files specified did not exist" in str(
             error_trap.exception
         )
-
-
-if __name__ == "__main__":
-    tests.main()

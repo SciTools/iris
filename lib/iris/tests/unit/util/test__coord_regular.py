@@ -12,9 +12,6 @@ Specifically, this module tests the following functions:
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
 import numpy as np
 import pytest
 
@@ -104,7 +101,3 @@ class Test_points_step:
         result_avdiff, result = points_step(no_points)
         assert np.isnan(result_avdiff)
         assert result
-
-
-if __name__ == "__main__":
-    tests.main()

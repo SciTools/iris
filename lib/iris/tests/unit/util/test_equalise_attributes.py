@@ -4,14 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.util.equalise_attributes` function."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeAttrsDict
+from iris.tests import _shared_utils
 import iris.tests.stock
 from iris.tests.unit.common.metadata.test_CubeMetadata import (
     _TEST_ATTRNAME,
@@ -20,8 +18,9 @@ from iris.tests.unit.common.metadata.test_CubeMetadata import (
 from iris.util import equalise_attributes
 
 
-class TestEqualiseAttributes(tests.IrisTest):
-    def setup_method(self):
+class TestEqualiseAttributes:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         empty = Cube([])
 
         self.cube_no_attrs = empty.copy()
@@ -126,7 +125,7 @@ class TestEqualiseAttributes(tests.IrisTest):
         cubes = [self.cube_a1b5v1, self.cube_a1b6v1]
         self._test(cubes, {"a": 1, "v": self.v1}, [{"b": 5}, {"b": 6}])
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_complex_nonecommon(self):
         # Example with cell methods and factories, but no common attributes.
         cubes = [
@@ -136,7 +135,7 @@ class TestEqualiseAttributes(tests.IrisTest):
         removed = cubes[0].attributes.copy()
         self._test(cubes, {}, [removed, {}])
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_complex_somecommon(self):
         # Example with cell methods and factories, plus some common attributes.
         cubes = [iris.tests.stock.global_pp(), iris.tests.stock.simple_pp()]
@@ -250,7 +249,3 @@ class TestNonCube:
         ]
         equalise_attributes(coords)
         assert all(coord.attributes == {"b": "all_the_same"} for coord in coords)
-
-
-if __name__ == "__main__":
-    tests.main()

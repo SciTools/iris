@@ -536,8 +536,8 @@ def assert_string(request: pytest.FixtureRequest, string, reference_filename=Non
     _check_same(string, reference_path, type_comparison_name="Strings")
 
 
-def assert_repr(obj, reference_filename):
-    assert_string(repr(obj), reference_filename)
+def assert_repr(request: pytest.FixtureRequest, obj, reference_filename):
+    assert_string(request, repr(obj), reference_filename)
 
 
 def _check_same(item, reference_path, type_comparison_name="CML"):

@@ -3,26 +3,21 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.rolling_window`."""
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import pytest
-
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 import numpy.ma as ma
+import pytest
 
+from iris.tests import _shared_utils
 from iris.util import rolling_window
 
 
-class Test_rolling_window(tests.IrisTest):
+class Test_rolling_window:
     def test_1d(self):
         # 1-d array input
         a = np.array([0, 1, 2, 3, 4], dtype=np.int32)
         expected_result = np.array([[0, 1], [1, 2], [2, 3], [3, 4]], dtype=np.int32)
         result = rolling_window(a, window=2)
-        self.assertArrayEqual(result, expected_result)
+        _shared_utils.assert_array_equal(result, expected_result)
 
     def test_2d(self):
         # 2-d array input
@@ -35,7 +30,7 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.int32,
         )
         result = rolling_window(a, window=3, axis=1)
-        self.assertArrayEqual(result, expected_result)
+        _shared_utils.assert_array_equal(result, expected_result)
 
     def test_1d_masked(self):
         # 1-d masked array input
@@ -46,7 +41,7 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.int32,
         )
         result = rolling_window(a, window=2)
-        self.assertMaskedArrayEqual(result, expected_result)
+        _shared_utils.assert_masked_array_equal(result, expected_result)
 
     def test_2d_masked(self):
         # 2-d masked array input
@@ -67,7 +62,7 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.int32,
         )
         result = rolling_window(a, window=3, axis=1)
-        self.assertMaskedArrayEqual(result, expected_result)
+        _shared_utils.assert_masked_array_equal(result, expected_result)
 
     def test_degenerate_mask(self):
         a = ma.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32)
@@ -83,7 +78,7 @@ class Test_rolling_window(tests.IrisTest):
             dtype=np.int32,
         )
         result = rolling_window(a, window=3, axis=1)
-        self.assertMaskedArrayEqual(result, expected_result)
+        _shared_utils.assert_masked_array_equal(result, expected_result)
 
     def test_step(self):
         # step should control how far apart consecutive windows are
@@ -92,7 +87,7 @@ class Test_rolling_window(tests.IrisTest):
             [[[0, 1, 2], [2, 3, 4]], [[5, 6, 7], [7, 8, 9]]], dtype=np.int32
         )
         result = rolling_window(a, window=3, step=2, axis=1)
-        self.assertArrayEqual(result, expected_result)
+        _shared_utils.assert_array_equal(result, expected_result)
 
     def test_window_too_short(self):
         # raise an error if the window length is less than 1
@@ -112,7 +107,3 @@ class Test_rolling_window(tests.IrisTest):
         a = np.empty([5])
         with pytest.raises(ValueError):
             rolling_window(a, step=0)
-
-
-if __name__ == "__main__":
-    tests.main()

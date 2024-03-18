@@ -4,32 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.column_slices_generator`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.util import column_slices_generator
 
 
-class Test_int_types(tests.IrisTest):
+class Test_int_types:
+    @pytest.mark.parametrize("key", [0, np.int32(0), np.int64(0)])
     def _test(self, key):
         full_slice = (key,)
         ndims = 1
         mapping, iterable = column_slices_generator(full_slice, ndims)
         assert mapping == {0: None, None: None}
         assert list(iterable) == [(0,)]
-
-    def test_int(self):
-        self._test(0)
-
-    def test_int_32(self):
-        self._test(np.int32(0))
-
-    def test_int_64(self):
-        self._test(np.int64(0))
-
-
-if __name__ == "__main__":
-    tests.main()

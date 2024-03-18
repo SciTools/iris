@@ -11,14 +11,11 @@ However, it is relatively simple to test multiple aspects of all three here
 in combination.
 
 """
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_concrete_data, as_lazy_data
+from iris.tests import _shared_utils
 from iris.util import _slice_data_with_keys
 
 
@@ -82,7 +79,7 @@ class MixinIndexingTest:
             assert dim_map == expect_map
 
 
-class Test_indexing(MixinIndexingTest, tests.IrisTest):
+class Test_indexing(MixinIndexingTest):
     # Check the indexing operations performed for various requested keys.
 
     def test_0d_nokeys(self):
@@ -102,12 +99,12 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = "More slices .* than dimensions"
-        with self.assertRaisesRegex(IndexError, msg):
+        with pytest.raises(IndexError, match=msg):
             self.check((3,), Index[1, 2])
 
     def test_fail_empty_slice(self):
         msg = "Cannot index with zero length slice"
-        with self.assertRaisesRegex(IndexError, msg):
+        with pytest.raises(IndexError, match=msg):
             self.check((3,), Index[1:1])
 
     def test_2d_tuple(self):
@@ -189,7 +186,7 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
         # That's just what it does at present.
 
 
-class Test_dimensions_mapping(MixinIndexingTest, tests.IrisTest):
+class Test_dimensions_mapping(MixinIndexingTest):
     # Check the dimensions map returned for various requested keys.
 
     def test_1d_nochange(self):
@@ -233,7 +230,7 @@ class Test_dimensions_mapping(MixinIndexingTest, tests.IrisTest):
         )
 
 
-class TestResults(tests.IrisTest):
+class TestResults:
     # Integration-style test, exercising (mostly) the same cases as above,
     # but checking actual results, for both real and lazy array inputs.
 
@@ -243,8 +240,8 @@ class TestResults(tests.IrisTest):
         real_dim_map, real_result = _slice_data_with_keys(real_data, keys)
         lazy_dim_map, lazy_result = _slice_data_with_keys(lazy_data, keys)
         lazy_result = as_concrete_data(lazy_result)
-        self.assertArrayEqual(real_result, expect_result)
-        self.assertArrayEqual(lazy_result, expect_result)
+        _shared_utils.assert_array_equal(real_result, expect_result)
+        _shared_utils.assert_array_equal(lazy_result, expect_result)
         assert real_dim_map == expect_map
         assert lazy_dim_map == expect_map
 
@@ -259,12 +256,12 @@ class TestResults(tests.IrisTest):
 
     def test_fail_1d_2keys(self):
         msg = "More slices .* than dimensions"
-        with self.assertRaisesRegex(IndexError, msg):
+        with pytest.raises(IndexError, match=msg):
             self.check([1, 2, 3], Index[1, 2], None, None)
 
     def test_fail_empty_slice(self):
         msg = "Cannot index with zero length slice"
-        with self.assertRaisesRegex(IndexError, msg):
+        with pytest.raises(IndexError, match=msg):
             self.check([1, 2, 3], Index[1:1], None, None)
 
     def test_2d_tuple(self):
@@ -415,7 +412,3 @@ class TestResults(tests.IrisTest):
         )
         # NOTE: there seem to be an extra initial [:, :, :].
         # That's just what it does at present.
-
-
-if __name__ == "__main__":
-    tests.main()

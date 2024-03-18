@@ -4,17 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.array_equal`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 import numpy.ma as ma
 
 from iris.util import array_equal
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_0d(self):
         array_a = np.array(23)
         array_b = np.array(23)
@@ -121,7 +117,3 @@ class Test(tests.IrisTest):
         array_a = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
         array_b = np.array([1.0, np.nan, 2.0, np.nan, 4.0])
         assert not array_equal(array_a, array_b, withnans=True)
-
-
-if __name__ == "__main__":
-    tests.main()

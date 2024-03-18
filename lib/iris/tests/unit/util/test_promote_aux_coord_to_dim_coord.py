@@ -4,20 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.promote_aux_coord_to_dim_coord`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import pytest
-
-import iris.tests as tests  # isort:skip
-
 import unittest
 
+import pytest
+
 import iris
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.util import promote_aux_coord_to_dim_coord
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_dimension_already_has_dimcoord(self):
         cube_a = stock.hybrid_height()
         cube_b = cube_a.copy()
@@ -30,7 +27,7 @@ class Test(tests.IrisTest):
         promote_aux_coord_to_dim_coord(cube_b, "model_level_number")
         assert cube_a.coord("level_height") in cube_b.aux_coords
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_argument_is_coord_instance(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()
@@ -42,7 +39,7 @@ class Test(tests.IrisTest):
             cube_a.coord("grid_longitude"),
         )
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_dimension_is_anonymous(self):
         cube_a = stock.realistic_4d()
         cube_b = cube_a.copy()
