@@ -3,12 +3,8 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
-import unittest
-
 import numpy as np
+import pytest
 
 import iris
 import iris.analysis.calculus
@@ -16,18 +12,19 @@ import iris.coord_systems
 import iris.coords
 from iris.coords import DimCoord
 import iris.cube
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
-class TestCubeDelta(tests.IrisTest):
-    @tests.skip_data
+class TestCubeDelta:
+    @_shared_utils.skip_data
     def test_invalid(self):
         cube = iris.tests.stock.realistic_4d()
-        with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
+        with pytest.raises(iris.exceptions.CoordinateMultiDimError):
             _ = iris.analysis.calculus.cube_delta(cube, "surface_altitude")
-        with self.assertRaises(iris.exceptions.CoordinateMultiDimError):
+        with pytest.raises(iris.exceptions.CoordinateMultiDimError):
             _ = iris.analysis.calculus.cube_delta(cube, "altitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             _ = iris.analysis.calculus.cube_delta(cube, "forecast_period")
 
     def test_delta_coord_lookup(self):
@@ -44,13 +41,13 @@ class TestCubeDelta(tests.IrisTest):
         cube.add_dim_coord(coord, 0)
         delta = iris.analysis.calculus.cube_delta(cube, "projection_x_coordinate")
         delta_coord = delta.coord("projection_x_coordinate")
-        self.assertEqual(delta_coord, delta.coord(coord))
-        self.assertEqual(coord, cube.coord(delta_coord))
+        assert delta_coord == delta.coord(coord)
+        assert coord == cube.coord(delta_coord)
 
 
-class TestDeltaAndMidpoint(tests.IrisTest):
+class TestDeltaAndMidpoint:
     def _simple_filename(self, suffix):
-        return tests.get_result_path(
+        return _shared_utils.get_result_path(
             ("analysis", "delta_and_midpoint", "simple%s.cml" % suffix)
         )
 
@@ -61,13 +58,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
             units="degrees",
             circular=True,
         )
-        self.assertXMLElement(a, self._simple_filename("1"))
+        _shared_utils.assert_XML_element(a, self._simple_filename("1"))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        self.assertXMLElement(delta, self._simple_filename("1_delta"))
+        _shared_utils.assert_XML_element(delta, self._simple_filename("1_delta"))
 
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        self.assertXMLElement(midpoint, self._simple_filename("1_midpoint"))
+        _shared_utils.assert_XML_element(midpoint, self._simple_filename("1_midpoint"))
 
     def test_simple2_delta_midpoint(self):
         a = iris.coords.DimCoord(
@@ -76,13 +73,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
             units="degrees",
             circular=True,
         )
-        self.assertXMLElement(a, self._simple_filename("2"))
+        _shared_utils.assert_XML_element(a, self._simple_filename("2"))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        self.assertXMLElement(delta, self._simple_filename("2_delta"))
+        _shared_utils.assert_XML_element(delta, self._simple_filename("2_delta"))
 
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        self.assertXMLElement(midpoint, self._simple_filename("2_midpoint"))
+        _shared_utils.assert_XML_element(midpoint, self._simple_filename("2_midpoint"))
 
     def test_simple3_delta_midpoint(self):
         a = iris.coords.DimCoord(
@@ -92,13 +89,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
             circular=True,
         )
         a.guess_bounds(0.5)
-        self.assertXMLElement(a, self._simple_filename("3"))
+        _shared_utils.assert_XML_element(a, self._simple_filename("3"))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        self.assertXMLElement(delta, self._simple_filename("3_delta"))
+        _shared_utils.assert_XML_element(delta, self._simple_filename("3_delta"))
 
         midpoint = iris.analysis.calculus._construct_midpoint_coord(a)
-        self.assertXMLElement(midpoint, self._simple_filename("3_midpoint"))
+        _shared_utils.assert_XML_element(midpoint, self._simple_filename("3_midpoint"))
 
     def test_simple4_delta_midpoint(self):
         a = iris.coords.AuxCoord(
@@ -108,13 +105,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         )
         a.guess_bounds()
         b = a.copy()
-        self.assertXMLElement(b, self._simple_filename("4"))
+        _shared_utils.assert_XML_element(b, self._simple_filename("4"))
 
         delta = iris.analysis.calculus._construct_delta_coord(b)
-        self.assertXMLElement(delta, self._simple_filename("4_delta"))
+        _shared_utils.assert_XML_element(delta, self._simple_filename("4_delta"))
 
         midpoint = iris.analysis.calculus._construct_midpoint_coord(b)
-        self.assertXMLElement(midpoint, self._simple_filename("4_midpoint"))
+        _shared_utils.assert_XML_element(midpoint, self._simple_filename("4_midpoint"))
 
     def test_simple5_not_degrees_delta_midpoint(self):
         # Not sure it makes sense to have a circular coordinate which does not have a modulus but test it anyway.
@@ -124,13 +121,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
             units="meter",
             circular=True,
         )
-        self.assertXMLElement(a, self._simple_filename("5"))
+        _shared_utils.assert_XML_element(a, self._simple_filename("5"))
 
         delta = iris.analysis.calculus._construct_delta_coord(a)
-        self.assertXMLElement(delta, self._simple_filename("5_delta"))
+        _shared_utils.assert_XML_element(delta, self._simple_filename("5_delta"))
 
         midpoints = iris.analysis.calculus._construct_midpoint_coord(a)
-        self.assertXMLElement(midpoints, self._simple_filename("5_midpoint"))
+        _shared_utils.assert_XML_element(midpoints, self._simple_filename("5_midpoint"))
 
     def test_simple6_delta_midpoint(self):
         a = iris.coords.DimCoord(
@@ -140,7 +137,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
             circular=True,
         )
         midpoints = iris.analysis.calculus._construct_midpoint_coord(a)
-        self.assertXMLElement(midpoints, self._simple_filename("6"))
+        _shared_utils.assert_XML_element(midpoints, self._simple_filename("6"))
 
     def test_singular_delta(self):
         # Test single valued coordinate mid-points when circular
@@ -149,7 +146,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         )
 
         r_expl = iris.analysis.calculus._construct_delta_coord(lon)
-        self.assertXMLElement(
+        _shared_utils.assert_XML_element(
             r_expl,
             (
                 "analysis",
@@ -160,7 +157,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             iris.analysis.calculus._construct_delta_coord(lon)
 
     def test_singular_midpoint(self):
@@ -170,7 +167,7 @@ class TestDeltaAndMidpoint(tests.IrisTest):
         )
 
         r_expl = iris.analysis.calculus._construct_midpoint_coord(lon)
-        self.assertXMLElement(
+        _shared_utils.assert_XML_element(
             r_expl,
             (
                 "analysis",
@@ -181,12 +178,13 @@ class TestDeltaAndMidpoint(tests.IrisTest):
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             iris.analysis.calculus._construct_midpoint_coord(lon)
 
 
-class TestCoordTrig(tests.IrisTest):
-    def setUp(self):
+class TestCoordTrig:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         points = np.arange(20, dtype=np.float32) * 2.3
         bounds = np.concatenate([[points - 0.5 * 2.3], [points + 0.5 * 2.3]]).T
         self.lat = iris.coords.AuxCoord(
@@ -219,8 +217,8 @@ class TestCoordTrig(tests.IrisTest):
             sin_of_coord.bounds, sin_of_coord_radians.bounds
         )
 
-        self.assertEqual(sin_of_coord.name(), "sin(latitude)")
-        self.assertEqual(sin_of_coord.units, "1")
+        assert sin_of_coord.name() == "sin(latitude)"
+        assert sin_of_coord.units == "1"
 
     def test_cos(self):
         cos_of_coord = iris.analysis.calculus._coord_cos(self.lat)
@@ -248,15 +246,19 @@ class TestCoordTrig(tests.IrisTest):
             points=np.array([1], dtype=np.float32)
         )
 
-        self.assertXMLElement(cos_of_coord, ("analysis", "calculus", "cos_simple.xml"))
-        self.assertXMLElement(
+        _shared_utils.assert_XML_element(
+            cos_of_coord, ("analysis", "calculus", "cos_simple.xml")
+        )
+        _shared_utils.assert_XML_element(
             cos_of_coord_radians,
             ("analysis", "calculus", "cos_simple_radians.xml"),
         )
 
 
-class TestCalculusSimple3(tests.IrisTest):
-    def setUp(self):
+class TestCalculusSimple3:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
         data = np.arange(2500, dtype=np.float32).reshape(50, 50)
         cube = iris.cube.Cube(data, standard_name="x_wind", units="km/h")
 
@@ -285,15 +287,21 @@ class TestCalculusSimple3(tests.IrisTest):
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
 
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade2_wrt_lon.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade2_wrt_lon.cml")
+        )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade2_wrt_lat.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade2_wrt_lat.cml")
+        )
 
 
-class TestCalculusSimple2(tests.IrisTest):
-    def setUp(self):
+class TestCalculusSimple2:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
         data = np.array(
             [
                 [1, 2, 3, 4, 5],
@@ -344,47 +352,57 @@ class TestCalculusSimple2(tests.IrisTest):
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_x.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade_wrt_x.cml")
+        )
 
     def test_diff_wrt_y(self):
         t = iris.analysis.calculus.differentiate(self.cube, "y")
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_y.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade_wrt_y.cml")
+        )
 
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_lon.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade_wrt_lon.cml")
+        )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        self.assertCMLApproxData(t, ("analysis", "calculus", "handmade_wrt_lat.cml"))
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade_wrt_lat.cml")
+        )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "delta_handmade_wrt_x.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_x.cml")
         )
 
     def test_delta_wrt_y(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "y")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "delta_handmade_wrt_y.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_y.cml")
         )
 
     def test_delta_wrt_lon(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "longitude")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "delta_handmade_wrt_lon.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lon.cml")
         )
 
     def test_delta_wrt_lat(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "latitude")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "delta_handmade_wrt_lat.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lat.cml")
         )
 
 
-class TestCalculusSimple1(tests.IrisTest):
-    def setUp(self):
+class TestCalculusSimple1:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
         data = np.array(
             [
                 [1, 2, 3, 4, 5],
@@ -410,14 +428,14 @@ class TestCalculusSimple1(tests.IrisTest):
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "handmade_simple_wrt_x.cml")
         )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        self.assertCMLApproxData(
-            t, ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML_approx_data(
+            self.request, t, ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml")
         )
 
 
@@ -501,7 +519,11 @@ def build_cube(data, spherical=False):
     return cube
 
 
-class TestCalculusWKnownSolutions(tests.IrisTest):
+class TestCalculusWKnownSolutions:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
+
     def get_coord_pts(self, cube):
         """Return (x_pts, x_ones, y_pts, y_ones, z_pts, z_ones) for the given cube."""
         x = cube.coord(axis="X")
@@ -604,15 +626,16 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         r = iris.analysis.calculus.curl(u, v)
 
         # Curl returns None when there is no components of Curl
-        self.assertEqual(r[0], None)
-        self.assertEqual(r[1], None)
+        assert r[0] is None
+        assert r[1] is None
         cube = r[2]
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             cube,
             ("analysis", "calculus", "grad_contrived_non_spherical1.cml"),
             checksum=False,
         )
-        self.assertTrue(np.all(np.abs(cube.data - (-1.0)) < 1.0e-7))
+        assert np.all(np.abs(cube.data - (-1.0)) < 1.0e-7)
 
     def test_contrived_non_spherical_curl2(self):
         # testing :
@@ -650,7 +673,8 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         result.data = result.data * 0 + 1
         np.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             r,
             ("analysis", "calculus", "curl_contrived_cartesian2.cml"),
             checksum=False,
@@ -684,8 +708,11 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         np.testing.assert_array_almost_equal(
             result.data[5:-5], r.data[5:-5] / 1000.0, decimal=1
         )
-        self.assertCML(
-            r, ("analysis", "calculus", "grad_contrived1.cml"), checksum=False
+        _shared_utils.assert_CML(
+            self.request,
+            r,
+            ("analysis", "calculus", "grad_contrived1.cml"),
+            checksum=False,
         )
 
     def test_contrived_spherical_curl2(self):
@@ -733,19 +760,22 @@ class TestCalculusWKnownSolutions(tests.IrisTest):
         np.testing.assert_array_almost_equal(
             result.data[30:-30, :], r.data[30:-30, :] / 1000.0, decimal=1
         )
-        self.assertCML(
-            r, ("analysis", "calculus", "grad_contrived2.cml"), checksum=False
+        _shared_utils.assert_CML(
+            self.request,
+            r,
+            ("analysis", "calculus", "grad_contrived2.cml"),
+            checksum=False,
         )
 
 
-class TestCurlInterface(tests.IrisTest):
+class TestCurlInterface:
     def test_non_conformed(self):
         u = build_cube(np.empty((50, 20)), spherical=True)
 
         v = u.copy()
         y = v.coord("latitude")
         y.points = y.points + 5
-        self.assertRaises(ValueError, iris.analysis.calculus.curl, u, v)
+        pytest.raises(ValueError, iris.analysis.calculus.curl, u, v)
 
     def test_standard_name(self):
         nx = 20
@@ -758,26 +788,26 @@ class TestCurlInterface(tests.IrisTest):
         w.rename("w_wind")
 
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v)
-        self.assertEqual(r, (("u", "v", "w"), "wind"))
+        assert r == (("u", "v", "w"), "wind")
 
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v, w)
-        self.assertEqual(r, (("u", "v", "w"), "wind"))
+        assert r == (("u", "v", "w"), "wind")
 
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             u,
             None,
             w,
         )
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             None,
             None,
             w,
         )
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             None,
@@ -789,22 +819,22 @@ class TestCurlInterface(tests.IrisTest):
         v.rename("y foobar wibble")
         w.rename("z foobar wibble")
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v)
-        self.assertEqual(r, (("x", "y", "z"), "foobar wibble"))
+        assert r == (("x", "y", "z"), "foobar wibble")
 
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v, w)
-        self.assertEqual(r, (("x", "y", "z"), "foobar wibble"))
+        assert r == (("x", "y", "z"), "foobar wibble")
 
         u.rename("wibble foobar")
         v.rename("wobble foobar")
         w.rename("tipple foobar")
         #        r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v, w) #should raise a Value Error...
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             u,
             v,
         )
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             u,
@@ -816,14 +846,14 @@ class TestCurlInterface(tests.IrisTest):
         v.rename("northward_foobar")
         w.rename("upward_foobar")
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v)
-        self.assertEqual(r, (("eastward", "northward", "upward"), "foobar"))
+        assert r == (("eastward", "northward", "upward"), "foobar")
 
         r = iris.analysis.calculus.spatial_vectors_with_phenom_name(u, v, w)
-        self.assertEqual(r, (("eastward", "northward", "upward"), "foobar"))
+        assert r == (("eastward", "northward", "upward"), "foobar")
 
         # Change it to have an inconsistent phenomenon
         v.rename("northward_foobar2")
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             iris.analysis.calculus.spatial_vectors_with_phenom_name,
             u,
@@ -837,8 +867,4 @@ class TestCurlInterface(tests.IrisTest):
         v.rename("v_wind")
 
         x, y, z = iris.analysis.calculus.curl(u, v)
-        self.assertEqual(z.coord_system(), u.coord_system())
-
-
-if __name__ == "__main__":
-    unittest.main()
+        assert z.coord_system() == u.coord_system()
