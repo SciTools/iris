@@ -6,14 +6,11 @@
 
 from inspect import getmodule
 
-import pytest
-
 from iris.common.lenient import _qualname
 
 
 class Test:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
+    def setup_method(self):
         module_name = getmodule(self).__name__
         self.locals = f"{module_name}" + ".Test.{}.<locals>.{}"
 
