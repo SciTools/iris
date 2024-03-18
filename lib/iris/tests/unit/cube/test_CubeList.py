@@ -716,9 +716,9 @@ class TestHtmlRepr:
         test_cubelist = CubeList([])
 
         target = "iris.experimental.representation.CubeListRepresentation"
-        with mocker.patch(target) as class_mock:
-            # Exercise the function-under-test.
-            test_cubelist._repr_html_()
+        class_mock = mocker.patch(target)
+        # Exercise the function-under-test.
+        test_cubelist._repr_html_()
 
         assert class_mock.call_args_list == [
             # "CubeListRepresentation()" was called exactly once, with the cubelist as arg
