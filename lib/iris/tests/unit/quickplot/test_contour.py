@@ -4,20 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.quickplot.contour` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
+from iris.tests import _shared_utils
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import MixinCoords, TestGraphicStringCoord
 
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.quickplot as qplt
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
         qplt.contour(self.cube, coords=("bar", "str_coord"))
@@ -28,9 +26,10 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         self.assert_points_tick_labels("xaxis")
 
 
-@tests.skip_plot
-class TestCoords(tests.IrisTest, MixinCoords):
-    def setUp(self):
+@_shared_utils.skip_plot
+class TestCoords(MixinCoords):
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=False)
         self.foo = self.cube.coord("foo").points
@@ -39,9 +38,5 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = self.cube.data
         self.dataT = self.data.T
-        self.mpl_patch = self.patch("matplotlib.pyplot.contour")
+        self.mpl_patch = mocker.patch("matplotlib.pyplot.contour")
         self.draw_func = qplt.contour
-
-
-if __name__ == "__main__":
-    tests.main()
