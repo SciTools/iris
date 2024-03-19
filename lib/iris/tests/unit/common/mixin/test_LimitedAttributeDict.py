@@ -11,7 +11,8 @@ from iris.common.mixin import LimitedAttributeDict
 
 
 class Test:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.forbidden_keys = LimitedAttributeDict.CF_ATTRS_FORBIDDEN
         self.emsg = "{!r} is not a permitted attribute"
 
