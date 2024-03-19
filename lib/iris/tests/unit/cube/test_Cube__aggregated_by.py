@@ -4,14 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class aggregated_by method."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 from unittest import mock
 
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_lazy_data
 import iris.analysis
@@ -20,11 +17,13 @@ import iris.aux_factory
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
 
-class Test_aggregated_by(tests.IrisTest):
-    def setUp(self):
+class Test_aggregated_by:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube(np.arange(44).reshape(4, 11))
 
         val_coord = AuxCoord([0, 0, 0, 1, 1, 2, 0, 0, 2, 0, 1], long_name="val")
@@ -99,13 +98,8 @@ class Test_aggregated_by(tests.IrisTest):
             res_cube.slices("simple_agg"), self.cube.slices("simple_agg")
         ):
             cube_slice_agg = cube_slice.aggregated_by("simple_agg", self.mock_agg)
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
-            self.assertEqual(
-                res_slice.coord("span_label"),
-                cube_slice_agg.coord("span_label"),
-            )
+            assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
+            assert res_slice.coord("span_label") == cube_slice_agg.coord("span_label")
 
     def test_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
@@ -122,8 +116,8 @@ class Test_aggregated_by(tests.IrisTest):
             long_name="label",
             units="no_unit",
         )
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("label") == label_coord
 
     def test_agg_by_label_bounded(self):
         # Aggregate a cube on a string coordinate label where label
@@ -142,8 +136,8 @@ class Test_aggregated_by(tests.IrisTest):
             long_name="label",
             units="no_unit",
         )
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("label") == label_coord
 
     def test_2d_agg_by_label(self):
         res_cube = self.cube.aggregated_by("label", self.mock_agg)
@@ -153,9 +147,7 @@ class Test_aggregated_by(tests.IrisTest):
             res_cube.slices("val"), self.cube.slices("val")
         ):
             cube_slice_agg = cube_slice.aggregated_by("label", self.mock_agg)
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
+            assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
 
     def test_agg_by_val(self):
         # Aggregate a cube on a numeric coordinate val where label
@@ -169,8 +161,8 @@ class Test_aggregated_by(tests.IrisTest):
         label_coord = AuxCoord(
             np.array((exp0, exp1, exp2)), long_name="label", units="no_unit"
         )
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("label") == label_coord
 
     def test_2d_agg_by_val(self):
         res_cube = self.cube.aggregated_by("val", self.mock_agg)
@@ -180,9 +172,7 @@ class Test_aggregated_by(tests.IrisTest):
             res_cube.slices("val"), self.cube.slices("val")
         ):
             cube_slice_agg = cube_slice.aggregated_by("val", self.mock_agg)
-            self.assertEqual(
-                res_slice.coord("spanning"), cube_slice_agg.coord("spanning")
-            )
+            assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
 
     def test_single_string_aggregation(self):
         aux_coords = [
@@ -193,31 +183,31 @@ class Test_aggregated_by(tests.IrisTest):
             np.arange(12).reshape(3, 4), aux_coords_and_dims=aux_coords
         )
         result = cube.aggregated_by("foo", MEAN)
-        self.assertEqual(result.shape, (2, 4))
-        self.assertEqual(result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar"))
+        assert result.shape == (2, 4)
+        assert result.coord("bar") == AuxCoord(["a|a", "a"], long_name="bar")
 
     def test_ancillary_variables_and_cell_measures_kept(self):
         cube_agg = self.cube.aggregated_by("val", self.mock_agg)
-        self.assertEqual(cube_agg.ancillary_variables(), [self.ancillary_variable])
-        self.assertEqual(cube_agg.cell_measures(), [self.cell_measure])
+        assert cube_agg.ancillary_variables() == [self.ancillary_variable]
+        assert cube_agg.cell_measures() == [self.cell_measure]
 
     def test_ancillary_variables_and_cell_measures_removed(self):
         cube_agg = self.cube.aggregated_by("simple_agg", self.mock_agg)
-        self.assertEqual(cube_agg.ancillary_variables(), [])
-        self.assertEqual(cube_agg.cell_measures(), [])
+        assert cube_agg.ancillary_variables() == []
+        assert cube_agg.cell_measures() == []
 
     def test_1d_weights(self):
         self.cube.aggregated_by(
             "simple_agg", self.mock_weighted_agg, weights=self.simple_weights
         )
 
-        self.assertEqual(self.mock_weighted_agg.aggregate.call_count, 2)
+        assert self.mock_weighted_agg.aggregate.call_count == 2
 
         # A simple mock.assert_called_with does not work due to ValueError: The
         # truth value of an array with more than one element is ambiguous. Use
         # a.any() or a.all()
         call_1 = self.mock_weighted_agg.aggregate.mock_calls[0]
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             call_1.args[0],
             np.array(
                 [
@@ -226,8 +216,8 @@ class Test_aggregated_by(tests.IrisTest):
                 ]
             ),
         )
-        self.assertEqual(call_1.kwargs["axis"], 0)
-        np.testing.assert_array_almost_equal(
+        assert call_1.kwargs["axis"] == 0
+        _shared_utils.assert_array_almost_equal(
             call_1.kwargs["weights"],
             np.array(
                 [
@@ -238,7 +228,7 @@ class Test_aggregated_by(tests.IrisTest):
         )
 
         call_2 = self.mock_weighted_agg.aggregate.mock_calls[1]
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             call_2.args[0],
             np.array(
                 [
@@ -247,8 +237,8 @@ class Test_aggregated_by(tests.IrisTest):
                 ]
             ),
         )
-        self.assertEqual(call_2.kwargs["axis"], 0)
-        np.testing.assert_array_almost_equal(
+        assert call_2.kwargs["axis"] == 0
+        _shared_utils.assert_array_almost_equal(
             call_2.kwargs["weights"],
             np.array(
                 [
@@ -261,13 +251,13 @@ class Test_aggregated_by(tests.IrisTest):
     def test_2d_weights(self):
         self.cube.aggregated_by("val", self.mock_weighted_agg, weights=self.val_weights)
 
-        self.assertEqual(self.mock_weighted_agg.aggregate.call_count, 3)
+        assert self.mock_weighted_agg.aggregate.call_count == 3
 
         # A simple mock.assert_called_with does not work due to ValueError: The
         # truth value of an array with more than one element is ambiguous. Use
         # a.any() or a.all()
         call_1 = self.mock_weighted_agg.aggregate.mock_calls[0]
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             call_1.args[0],
             np.array(
                 [
@@ -278,33 +268,39 @@ class Test_aggregated_by(tests.IrisTest):
                 ]
             ),
         )
-        self.assertEqual(call_1.kwargs["axis"], 1)
-        np.testing.assert_array_almost_equal(call_1.kwargs["weights"], np.ones((4, 6)))
+        assert call_1.kwargs["axis"] == 1
+        _shared_utils.assert_array_almost_equal(
+            call_1.kwargs["weights"], np.ones((4, 6))
+        )
 
         call_2 = self.mock_weighted_agg.aggregate.mock_calls[1]
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             call_2.args[0],
             np.array([[3, 4, 10], [14, 15, 21], [25, 26, 32], [36, 37, 43]]),
         )
-        self.assertEqual(call_2.kwargs["axis"], 1)
-        np.testing.assert_array_almost_equal(call_2.kwargs["weights"], np.ones((4, 3)))
+        assert call_2.kwargs["axis"] == 1
+        _shared_utils.assert_array_almost_equal(
+            call_2.kwargs["weights"], np.ones((4, 3))
+        )
 
         call_3 = self.mock_weighted_agg.aggregate.mock_calls[2]
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             call_3.args[0], np.array([[5, 8], [16, 19], [27, 30], [38, 41]])
         )
-        self.assertEqual(call_3.kwargs["axis"], 1)
-        np.testing.assert_array_almost_equal(call_3.kwargs["weights"], np.ones((4, 2)))
+        assert call_3.kwargs["axis"] == 1
+        _shared_utils.assert_array_almost_equal(
+            call_3.kwargs["weights"], np.ones((4, 2))
+        )
 
     def test_returned(self):
         output = self.cube.aggregated_by(
             "simple_agg", self.mock_weighted_agg, returned=True
         )
 
-        self.assertTrue(isinstance(output, tuple))
-        self.assertEqual(len(output), 2)
-        self.assertEqual(output[0].shape, (2, 11))
-        self.assertEqual(output[1].shape, (2, 11))
+        assert isinstance(output, tuple)
+        assert len(output) == 2
+        assert output[0].shape == (2, 11)
+        assert output[1].shape == (2, 11)
 
     def test_fail_1d_weights_wrong_len(self):
         wrong_weights = np.array([1.0, 2.0])
@@ -312,7 +308,7 @@ class Test_aggregated_by(tests.IrisTest):
             r"1D weights must have the same length as the dimension that is "
             r"aggregated, got 2, expected 11"
         )
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.cube.aggregated_by(
                 "val", self.mock_weighted_agg, weights=wrong_weights
             )
@@ -323,14 +319,15 @@ class Test_aggregated_by(tests.IrisTest):
             r"Weights must either be 1D or have the same shape as the cube, "
             r"got shape \(42, 1\) for weights, \(4, 11\) for cube"
         )
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.cube.aggregated_by(
                 "val", self.mock_weighted_agg, weights=wrong_weights
             )
 
 
-class Test_aggregated_by__lazy(tests.IrisTest):
-    def setUp(self):
+class Test_aggregated_by__lazy:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(44).reshape(4, 11)
         self.lazydata = as_lazy_data(self.data)
         self.cube = Cube(self.lazydata)
@@ -394,11 +391,11 @@ class Test_aggregated_by__lazy(tests.IrisTest):
             long_name="label",
             units="no_unit",
         )
-        self.assertTrue(res_cube.has_lazy_data())
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-        self.assertArrayEqual(res_cube.data, self.label_mean)
-        self.assertFalse(res_cube.has_lazy_data())
+        assert res_cube.has_lazy_data()
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("label") == label_coord
+        _shared_utils.assert_array_equal(res_cube.data, self.label_mean)
+        assert not res_cube.has_lazy_data()
 
     def test_agg_by_val__lazy(self):
         # Aggregate a cube on a numeric coordinate val where label
@@ -412,11 +409,11 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         label_coord = AuxCoord(
             np.array((exp0, exp1, exp2)), long_name="label", units="no_unit"
         )
-        self.assertTrue(res_cube.has_lazy_data())
-        self.assertEqual(res_cube.coord("val"), val_coord)
-        self.assertEqual(res_cube.coord("label"), label_coord)
-        self.assertArrayEqual(res_cube.data, self.val_mean)
-        self.assertFalse(res_cube.has_lazy_data())
+        assert res_cube.has_lazy_data()
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("label") == label_coord
+        _shared_utils.assert_array_equal(res_cube.data, self.val_mean)
+        assert not res_cube.has_lazy_data()
 
     def test_single_string_aggregation__lazy(self):
         aux_coords = [
@@ -429,22 +426,22 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         )
         means = np.array([[4.0, 5.0, 6.0, 7.0], [4.0, 5.0, 6.0, 7.0]])
         result = cube.aggregated_by("foo", MEAN)
-        self.assertTrue(result.has_lazy_data())
-        self.assertEqual(result.shape, (2, 4))
-        self.assertEqual(result.coord("bar"), AuxCoord(["a|a", "a"], long_name="bar"))
-        self.assertArrayEqual(result.data, means)
-        self.assertFalse(result.has_lazy_data())
+        assert result.has_lazy_data()
+        assert result.shape == (2, 4)
+        assert result.coord("bar") == AuxCoord(["a|a", "a"], long_name="bar")
+        _shared_utils.assert_array_equal(result.data, means)
+        assert not result.has_lazy_data()
 
     def test_1d_weights__lazy(self):
-        self.assertTrue(self.cube.has_lazy_data())
+        assert self.cube.has_lazy_data()
 
         cube_agg = self.cube.aggregated_by(
             "simple_agg", SUM, weights=self.simple_weights
         )
 
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(cube_agg.has_lazy_data())
-        self.assertEqual(cube_agg.shape, (2, 11))
+        assert self.cube.has_lazy_data()
+        assert cube_agg.has_lazy_data()
+        assert cube_agg.shape == (2, 11)
 
         row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
         row_1 = [
@@ -460,18 +457,18 @@ class Test_aggregated_by__lazy(tests.IrisTest):
             146.0,
             150.0,
         ]
-        np.testing.assert_array_almost_equal(cube_agg.data, np.array([row_0, row_1]))
+        _shared_utils.assert_array_almost_equal(cube_agg.data, np.array([row_0, row_1]))
 
     def test_2d_weights__lazy(self):
-        self.assertTrue(self.cube.has_lazy_data())
+        assert self.cube.has_lazy_data()
 
         cube_agg = self.cube.aggregated_by("val", SUM, weights=self.val_weights)
 
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(cube_agg.has_lazy_data())
+        assert self.cube.has_lazy_data()
+        assert cube_agg.has_lazy_data()
 
-        self.assertEqual(cube_agg.shape, (4, 3))
-        np.testing.assert_array_almost_equal(
+        assert cube_agg.shape == (4, 3)
+        _shared_utils.assert_array_almost_equal(
             cube_agg.data,
             np.array(
                 [
@@ -484,21 +481,21 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         )
 
     def test_returned__lazy(self):
-        self.assertTrue(self.cube.has_lazy_data())
+        assert self.cube.has_lazy_data()
 
         output = self.cube.aggregated_by(
             "simple_agg", SUM, weights=self.simple_weights, returned=True
         )
 
-        self.assertTrue(self.cube.has_lazy_data())
+        assert self.cube.has_lazy_data()
 
-        self.assertTrue(isinstance(output, tuple))
-        self.assertEqual(len(output), 2)
+        assert isinstance(output, tuple)
+        assert len(output) == 2
 
         cube = output[0]
-        self.assertTrue(isinstance(cube, Cube))
-        self.assertTrue(cube.has_lazy_data())
-        self.assertEqual(cube.shape, (2, 11))
+        assert isinstance(cube, Cube)
+        assert cube.has_lazy_data()
+        assert cube.shape == (2, 11)
         row_0 = [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0]
         row_1 = [
             110.0,
@@ -513,11 +510,11 @@ class Test_aggregated_by__lazy(tests.IrisTest):
             146.0,
             150.0,
         ]
-        np.testing.assert_array_almost_equal(cube.data, np.array([row_0, row_1]))
+        _shared_utils.assert_array_almost_equal(cube.data, np.array([row_0, row_1]))
 
         weights = output[1]
-        self.assertEqual(weights.shape, (2, 11))
-        np.testing.assert_array_almost_equal(
+        assert weights.shape == (2, 11)
+        _shared_utils.assert_array_almost_equal(
             weights,
             np.array(
                 [
@@ -528,8 +525,9 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         )
 
 
-class Test_aggregated_by__climatology(tests.IrisTest):
-    def setUp(self):
+class Test_aggregated_by__climatology:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = np.arange(100).reshape(20, 5)
         self.aggregator = iris.analysis.MEAN
 
@@ -623,15 +621,17 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result()
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
-        self.assertArrayEqual(aligned_coord.bounds, np.array([[0, 18], [1, 19]]))
-        self.assertTrue(aligned_coord.climatological)
-        self.assertIn(aligned_coord, result.dim_coords)
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(2))
+        _shared_utils.assert_array_equal(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        assert aligned_coord.climatological
+        assert aligned_coord in result.dim_coords
 
         categorised_coord = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord.points, np.arange(2))
-        self.assertIsNone(categorised_coord.bounds)
-        self.assertFalse(categorised_coord.climatological)
+        _shared_utils.assert_array_equal(categorised_coord.points, np.arange(2))
+        assert categorised_coord.bounds is None
+        assert not categorised_coord.climatological
 
     def test_2d_other_coord(self):
         """Check that we can handle aggregation applying to a 2d AuxCoord that
@@ -640,19 +640,21 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result(partially_aligned=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
-        self.assertArrayEqual(aligned_coord.bounds, np.array([[0, 18], [1, 19]]))
-        self.assertTrue(aligned_coord.climatological)
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(2))
+        _shared_utils.assert_array_equal(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        assert aligned_coord.climatological
 
         part_aligned_coord = result.coord("part_aligned")
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             part_aligned_coord.points, np.arange(46, 56).reshape(2, 5)
         )
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             part_aligned_coord.bounds,
             np.array([np.arange(1, 11), np.arange(91, 101)]).T.reshape(2, 5, 2),
         )
-        self.assertFalse(part_aligned_coord.climatological)
+        assert not part_aligned_coord.climatological
 
     def test_2d_timelike_other_coord(self):
         """Check that we can handle aggregation applying to a 2d AuxCoord that
@@ -663,64 +665,74 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         )
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
-        self.assertArrayEqual(aligned_coord.bounds, np.array([[0, 18], [1, 19]]))
-        self.assertTrue(aligned_coord.climatological)
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(2))
+        _shared_utils.assert_array_equal(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        assert aligned_coord.climatological
 
         part_aligned_coord = result.coord("part_aligned")
-        self.assertArrayEqual(part_aligned_coord.points, np.arange(1, 11).reshape(2, 5))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
+            part_aligned_coord.points, np.arange(1, 11).reshape(2, 5)
+        )
+        _shared_utils.assert_array_equal(
             part_aligned_coord.bounds,
             np.array([np.arange(1, 11), np.arange(91, 101)]).T.reshape(2, 5, 2),
         )
-        self.assertTrue(part_aligned_coord.climatological)
+        assert part_aligned_coord.climatological
 
     def test_transposed(self):
         """Check that we can handle the axis of aggregation being a different one."""
         result = self.get_result(transpose=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(2))
-        self.assertArrayEqual(aligned_coord.bounds, np.array([[0, 18], [1, 19]]))
-        self.assertTrue(aligned_coord.climatological)
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(2))
+        _shared_utils.assert_array_equal(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        assert aligned_coord.climatological
 
         categorised_coord = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord.points, np.arange(2))
-        self.assertIsNone(categorised_coord.bounds)
-        self.assertFalse(categorised_coord.climatological)
+        _shared_utils.assert_array_equal(categorised_coord.points, np.arange(2))
+        assert categorised_coord.bounds is None
+        assert not categorised_coord.climatological
 
     def test_bounded(self):
         """Check that we handle bounds correctly."""
         result = self.get_result(bounds=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, [-0.5, 0.5])
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(aligned_coord.points, [-0.5, 0.5])
+        _shared_utils.assert_array_equal(
             aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
         )
-        self.assertTrue(aligned_coord.climatological)
+        assert aligned_coord.climatological
 
     def test_multiple_agg_coords(self):
         """Check that we can aggregate on multiple coords on the same axis."""
         result = self.get_result(second_categorised=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(10))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(10))
+        _shared_utils.assert_array_equal(
             aligned_coord.bounds,
             np.array([np.arange(10), np.arange(10, 20)]).T,
         )
-        self.assertTrue(aligned_coord.climatological)
+        assert aligned_coord.climatological
 
         categorised_coord1 = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord1.points, np.tile(np.arange(2), 5))
-        self.assertIsNone(categorised_coord1.bounds)
-        self.assertFalse(categorised_coord1.climatological)
+        _shared_utils.assert_array_equal(
+            categorised_coord1.points, np.tile(np.arange(2), 5)
+        )
+        assert categorised_coord1.bounds is None
+        assert not categorised_coord1.climatological
 
         categorised_coord2 = result.coord("cat2")
-        self.assertArrayEqual(categorised_coord2.points, np.tile(np.arange(5), 2))
-        self.assertIsNone(categorised_coord2.bounds)
-        self.assertFalse(categorised_coord2.climatological)
+        _shared_utils.assert_array_equal(
+            categorised_coord2.points, np.tile(np.arange(5), 2)
+        )
+        assert categorised_coord2.bounds is None
+        assert not categorised_coord2.climatological
 
     def test_non_climatological_units(self):
         """Check that the failure to set the climatological flag on an incompatible
@@ -729,9 +741,11 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result(invalid_units=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(9, 11))
-        self.assertArrayEqual(aligned_coord.bounds, np.array([[0, 18], [1, 19]]))
-        self.assertFalse(aligned_coord.climatological)
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(9, 11))
+        _shared_utils.assert_array_equal(
+            aligned_coord.bounds, np.array([[0, 18], [1, 19]])
+        )
+        assert not aligned_coord.climatological
 
     def test_clim_in_clim_op(self):
         """Check the least complicated version works (set climatological, set
@@ -741,16 +755,16 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         result = self.get_result(bounds=True, already_climatological=True)
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, [-0.5, 0.5])
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(aligned_coord.points, [-0.5, 0.5])
+        _shared_utils.assert_array_equal(
             aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
         )
-        self.assertTrue(aligned_coord.climatological)
+        assert aligned_coord.climatological
 
         categorised_coord = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord.points, np.arange(2))
-        self.assertIsNone(categorised_coord.bounds)
-        self.assertFalse(categorised_coord.climatological)
+        _shared_utils.assert_array_equal(categorised_coord.points, np.arange(2))
+        assert categorised_coord.bounds is None
+        assert not categorised_coord.climatological
 
     def test_clim_in_no_clim_op(self):
         """Check the least complicated version works (set climatological, set
@@ -762,20 +776,21 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         )
 
         aligned_coord = result.coord("aligned")
-        self.assertArrayEqual(aligned_coord.points, np.arange(9, 11))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(aligned_coord.points, np.arange(9, 11))
+        _shared_utils.assert_array_equal(
             aligned_coord.bounds, np.array([[-0.5, 18.5], [0.5, 19.5]])
         )
-        self.assertTrue(aligned_coord.climatological)
+        assert aligned_coord.climatological
 
         categorised_coord = result.coord("cat1")
-        self.assertArrayEqual(categorised_coord.points, np.arange(2))
-        self.assertIsNone(categorised_coord.bounds)
-        self.assertFalse(categorised_coord.climatological)
+        _shared_utils.assert_array_equal(categorised_coord.points, np.arange(2))
+        assert categorised_coord.bounds is None
+        assert not categorised_coord.climatological
 
 
-class Test_aggregated_by__derived(tests.IrisTest):
-    def setUp(self):
+class Test_aggregated_by__derived:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = realistic_4d()[:, :10, :6, :8]
         self.time_cat_coord = AuxCoord([0, 0, 1, 1, 2, 2], long_name="time_cat")
         self.cube.add_aux_coord(self.time_cat_coord, 0)
@@ -815,7 +830,3 @@ class Test_aggregated_by__derived(tests.IrisTest):
         assert len(result.aux_factories) == 1
         altitude = result.coord("altitude")
         assert altitude == self.cube.coord("altitude")
-
-
-if __name__ == "__main__":
-    tests.main()
