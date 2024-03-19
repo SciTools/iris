@@ -6,6 +6,7 @@
 `iris.aux_factory.AtmosphereSigmaFactory` class.
 
 """
+
 from cf_units import Unit
 import numpy as np
 import pytest

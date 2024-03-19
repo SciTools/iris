@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.map_complete_blocks`."""
+
 from unittest.mock import Mock, PropertyMock
 
 import dask.array as da

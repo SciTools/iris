@@ -6,6 +6,7 @@
 `iris.aux_factory.OceanSg2Factory` class.
 
 """
+
 from unittest.mock import Mock
 
 from cf_units import Unit

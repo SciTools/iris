@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.as_concrete_data`."""
+
 import numpy as np
 import numpy.ma as ma
 

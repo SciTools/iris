@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.co_realise_cubes`."""
+
 import numpy as np
 
 from iris._lazy_data import as_lazy_data, co_realise_cubes
