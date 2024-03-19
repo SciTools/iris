@@ -151,7 +151,8 @@ class Test___eq__:
 
 
 class Test___lt__:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cls = AncillaryVariableMetadata
         self.one = self.cls(1, 1, 1, 1, 1)
         self.two = self.cls(1, 1, 1, 2, 1)
@@ -424,7 +425,8 @@ class Test_difference:
 
 
 class Test_equal:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cls = AncillaryVariableMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
