@@ -71,7 +71,7 @@ class Test___eq__:
         self.cls = AncillaryVariableMetadata
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.__eq__.__doc__ == self.cls.__eq__.__doc__
+        assert self.cls.__eq__.__doc__ == BaseMetadata.__eq__.__doc__
 
     def test_lenient_service(self):
         qualname___eq__ = _qualname(self.cls.__eq__)
@@ -197,7 +197,7 @@ class Test_combine:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.combine.__doc__ == self.cls.combine.__doc__
+        assert self.cls.combine.__doc__ == BaseMetadata.combine.__doc__
 
     def test_lenient_service(self):
         qualname_combine = _qualname(self.cls.combine)
@@ -315,7 +315,7 @@ class Test_difference:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.difference.__doc__ == self.cls.difference.__doc__
+        assert self.cls.difference.__doc__ == BaseMetadata.difference.__doc__
 
     def test_lenient_service(self):
         qualname_difference = _qualname(self.cls.difference)
@@ -431,7 +431,7 @@ class Test_equal:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.equal.__doc__ == self.cls.equal.__doc__
+        assert self.cls.equal.__doc__ == BaseMetadata.equal.__doc__
 
     def test_lenient_service(self):
         qualname_equal = _qualname(self.cls.equal)
