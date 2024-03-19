@@ -75,7 +75,7 @@ class TestEqualiseAttributes:
             if isinstance(actual, dict):
                 _shared_utils.assert_dict_equal(actual, expect)
             else:
-                assert actual.all() == expect.all()
+                _shared_utils.assert_array_equal(actual, expect)
 
         # Check everything else remains the same
         for new_cube, old_cube in zip(working_cubes, cubes):
