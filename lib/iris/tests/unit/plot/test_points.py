@@ -3,29 +3,26 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot.points` function."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
+from iris.tests import _shared_utils
 from iris.tests.stock import simple_2d
 from iris.tests.unit.plot import MixinCoords, TestGraphicStringCoord
 
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
         iplt.points(self.cube, coords=("bar", "str_coord"))
-        self.assertBoundsTickLabels("yaxis")
+        self.assert_bounds_tick_labels("yaxis")
 
     def test_xaxis_labels(self):
         iplt.points(self.cube, coords=("str_coord", "bar"))
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
     def test_xaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -35,7 +32,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax.set_xlim(0, 3)
         iplt.points(self.cube, coords=("str_coord", "bar"), axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels("xaxis", ax)
+        self.assert_points_tick_labels("xaxis", ax)
 
     def test_yaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -45,20 +42,21 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax.set_ylim(0, 3)
         iplt.points(self.cube, coords=("bar", "str_coord"), axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels("yaxis", ax)
+        self.assert_points_tick_labels("yaxis", ax)
 
     def test_geoaxes_exception(self):
         import matplotlib.pyplot as plt
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        self.assertRaises(TypeError, iplt.points, self.lat_lon_cube, axes=ax)
+        pytest.raises(TypeError, iplt.points, self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 
-@tests.skip_plot
-class TestCoords(tests.IrisTest, MixinCoords):
-    def setUp(self):
+@_shared_utils.skip_plot
+class TestCoords(MixinCoords):
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         # We have a 2d cube with dimensionality (bar: 3; foo: 4)
         self.cube = simple_2d(with_bounds=False)
         self.foo = self.cube.coord("foo").points
@@ -67,9 +65,5 @@ class TestCoords(tests.IrisTest, MixinCoords):
         self.bar_index = np.arange(self.bar.size)
         self.data = None
         self.dataT = None
-        self.mpl_patch = self.patch("matplotlib.pyplot.scatter")
+        self.mpl_patch = mocker.patch("matplotlib.pyplot.scatter")
         self.draw_func = iplt.points
-
-
-if __name__ == "__main__":
-    tests.main()

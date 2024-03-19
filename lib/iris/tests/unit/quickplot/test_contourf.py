@@ -24,11 +24,11 @@ if tests.MPL_AVAILABLE:
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
         qplt.contourf(self.cube, coords=("bar", "str_coord"))
-        self.assertPointsTickLabels("yaxis")
+        self.assert_points_tick_labels("yaxis")
 
     def test_xaxis_labels(self):
         qplt.contourf(self.cube, coords=("str_coord", "bar"))
-        self.assertPointsTickLabels("xaxis")
+        self.assert_points_tick_labels("xaxis")
 
 
 @tests.skip_plot

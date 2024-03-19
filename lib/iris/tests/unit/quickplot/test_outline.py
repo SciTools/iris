@@ -21,11 +21,11 @@ if tests.MPL_AVAILABLE:
 class TestStringCoordPlot(TestGraphicStringCoord):
     def test_yaxis_labels(self):
         qplt.outline(self.cube, coords=("bar", "str_coord"))
-        self.assertBoundsTickLabels("yaxis")
+        self.assert_bounds_tick_labels("yaxis")
 
     def test_xaxis_labels(self):
         qplt.outline(self.cube, coords=("str_coord", "bar"))
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
 
 @tests.skip_plot

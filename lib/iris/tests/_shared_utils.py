@@ -926,19 +926,19 @@ skip_plot = graphics.skip_plot
 
 skip_sample_data = pytest.mark.skipif(
     not SAMPLE_DATA_AVAILABLE,
-    ('Test(s) require "iris-sample-data", ' "which is not available."),
+    reason=('Test(s) require "iris-sample-data", ' "which is not available."),
 )
 
 
 skip_nc_time_axis = pytest.mark.skipif(
     not NC_TIME_AXIS_AVAILABLE,
-    'Test(s) require "nc_time_axis", which is not available.',
+    reason='Test(s) require "nc_time_axis", which is not available.',
 )
 
 
 skip_inet = pytest.mark.skipif(
     not INET_AVAILABLE,
-    ('Test(s) require an "internet connection", ' "which is not available."),
+    reason=('Test(s) require an "internet connection", ' "which is not available."),
 )
 
 

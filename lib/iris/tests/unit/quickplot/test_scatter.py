@@ -21,11 +21,11 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
     def test_xaxis_labels(self):
         qplt.scatter(self.cube.coord("str_coord"), self.cube)
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
     def test_yaxis_labels(self):
         qplt.scatter(self.cube, self.cube.coord("str_coord"))
-        self.assertBoundsTickLabels("yaxis")
+        self.assert_bounds_tick_labels("yaxis")
 
 
 if __name__ == "__main__":
