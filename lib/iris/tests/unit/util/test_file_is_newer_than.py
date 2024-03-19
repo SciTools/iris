@@ -5,8 +5,6 @@
 """Test function :func:`iris.util.test_file_is_newer`."""
 import os
 import os.path
-import shutil
-import tempfile
 
 import pytest
 
@@ -21,9 +19,10 @@ class TestFileIsNewer:
         return os.path.join(self.temp_dir, filename)
 
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup(self, tmp_path):
         # make a temporary directory with testfiles of known timestamp order.
-        self.temp_dir = tempfile.mkdtemp("_testfiles_tempdir")
+        self.temp_dir = tmp_path / "_testfiles_tempdir"
+        self.temp_dir.mkdir()
         # define the names of some files to create
         create_file_names = [
             "older_source_1",
@@ -41,10 +40,6 @@ class TestFileIsNewer:
             mtime = os.stat(file_path).st_mtime
             mtime += 5.0 + 10.0 * i_file
             os.utime(file_path, (mtime, mtime))
-
-    def teardown_method(self):
-        # destroy whole contents of temporary directory
-        shutil.rmtree(self.temp_dir)
 
     def _test(self, boolean_result, result_name, source_names):
         """Test expected result of executing with given args."""

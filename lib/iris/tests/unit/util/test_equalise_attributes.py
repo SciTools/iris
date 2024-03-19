@@ -72,7 +72,11 @@ class TestEqualiseAttributes:
         # Check removed attributes all match as expected
         assert len(actual_removed) == len(expect_removed)
         for actual, expect in zip(actual_removed, expect_removed):
-            assert all(actual) == all(expect)
+            if isinstance(actual, dict):
+                _shared_utils.assert_dict_equal(actual, expect)
+            else:
+                assert actual.all() == expect.all()
+
         # Check everything else remains the same
         for new_cube, old_cube in zip(working_cubes, cubes):
             cube_before_noatts = old_cube.copy()
