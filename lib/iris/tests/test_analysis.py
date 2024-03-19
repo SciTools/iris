@@ -278,7 +278,7 @@ class TestAnalysisWeights:
         # check it's a 0d, scalar cube
         assert g.shape == ()
         # check the value - pp_area_avg's result of 287.927 differs by factor of 1.00002959
-        np.testing.assert_approx_equal(g.data, 287.935, significant=5)
+        _shared_utils.assert_array_almost_equal(g.data, 287.935, decimal=2)
 
         # check we get summed weights even if we don't give any
         h, summed_weights = e.collapsed("latitude", iris.analysis.MEAN, returned=True)
@@ -413,24 +413,24 @@ class TestMissingData:
 
     def test_max(self):
         cube = self.cube_with_nan.collapsed("foo", iris.analysis.MAX)
-        np.testing.assert_array_equal(cube.data, np.array([3, np.nan, np.nan]))
+        _shared_utils.assert_array_equal(cube.data, np.array([3, np.nan, np.nan]))
 
         cube = self.cube_with_mask.collapsed("foo", iris.analysis.MAX)
-        np.testing.assert_array_equal(cube.data, np.array([3, 7, 9]))
+        _shared_utils.assert_array_equal(cube.data, np.array([3, 7, 9]))
 
     def test_min(self):
         cube = self.cube_with_nan.collapsed("foo", iris.analysis.MIN)
-        np.testing.assert_array_equal(cube.data, np.array([0, np.nan, np.nan]))
+        _shared_utils.assert_array_equal(cube.data, np.array([0, np.nan, np.nan]))
 
         cube = self.cube_with_mask.collapsed("foo", iris.analysis.MIN)
-        np.testing.assert_array_equal(cube.data, np.array([0, 5, 8]))
+        _shared_utils.assert_array_equal(cube.data, np.array([0, 5, 8]))
 
     def test_sum(self):
         cube = self.cube_with_nan.collapsed("foo", iris.analysis.SUM)
-        np.testing.assert_array_equal(cube.data, np.array([6, np.nan, np.nan]))
+        _shared_utils.assert_array_equal(cube.data, np.array([6, np.nan, np.nan]))
 
         cube = self.cube_with_mask.collapsed("foo", iris.analysis.SUM)
-        np.testing.assert_array_equal(cube.data, np.array([6, 18, 17]))
+        _shared_utils.assert_array_equal(cube.data, np.array([6, 18, 17]))
 
 
 class TestAuxCoordCollapse:
@@ -444,12 +444,12 @@ class TestAuxCoordCollapse:
 
     def test_max(self):
         cube = self.cube_with_aux_coord.collapsed("grid_latitude", iris.analysis.MAX)
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").points,
             np.array([112, 113, 114, 115, 116, 117]),
         )
 
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").bounds,
             np.array(
                 [
@@ -466,22 +466,22 @@ class TestAuxCoordCollapse:
         # Check collapsing over the whole coord still works
         cube = self.cube_with_aux_coord.collapsed("altitude", iris.analysis.MAX)
 
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").points, np.array([114])
         )
 
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").bounds, np.array([[100, 129]])
         )
 
         cube = self.cube_with_aux_coord.collapsed("grid_longitude", iris.analysis.MAX)
 
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").points,
             np.array([102, 108, 114, 120, 126]),
         )
 
-        np.testing.assert_array_equal(
+        _shared_utils.assert_array_equal(
             cube.coord("surface_altitude").bounds,
             np.array([[100, 105], [106, 111], [112, 117], [118, 123], [124, 129]]),
         )
@@ -567,7 +567,7 @@ class TestAggregators:
             percent=percents,
             **kwargs,
         )
-        np.testing.assert_array_almost_equal(result.data, expected_result)
+        _shared_utils.assert_array_almost_equal(result.data, expected_result)
         assert type(result.data) is cube_data_type
         if CML_filename is not None:
             _shared_utils.assert_CML(
@@ -576,7 +576,7 @@ class TestAggregators:
 
     def _check_percentile(self, data, axis, percents, expected_result, **kwargs):
         result = iris.analysis._percentile(data, axis, percents, **kwargs)
-        np.testing.assert_array_almost_equal(result, expected_result)
+        _shared_utils.assert_array_almost_equal(result, expected_result)
         assert type(result) is type(expected_result)
 
     def test_percentile_1d_25_percent(self):
@@ -842,7 +842,7 @@ class TestAggregators:
         gt5 = cube.collapsed(
             "foo", iris.analysis.PROPORTION, function=lambda val: val >= 5
         )
-        np.testing.assert_array_almost_equal(gt5.data, np.array([6 / 11.0]))
+        _shared_utils.assert_array_almost_equal(gt5.data, np.array([6 / 11.0]))
         _shared_utils.assert_CML(
             self.request, gt5, ("analysis", "proportion_foo_1d.cml"), checksum=False
         )
@@ -853,7 +853,7 @@ class TestAggregators:
         gt6 = cube.collapsed(
             "foo", iris.analysis.PROPORTION, function=lambda val: val >= 6
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6.data, np.array([0, 0.5, 1], dtype=np.float32)
         )
         _shared_utils.assert_CML(
@@ -863,7 +863,7 @@ class TestAggregators:
         gt6 = cube.collapsed(
             "bar", iris.analysis.PROPORTION, function=lambda val: val >= 6
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6.data, np.array([1 / 3, 1 / 3, 2 / 3, 2 / 3], dtype=np.float32)
         )
         _shared_utils.assert_CML(
@@ -875,7 +875,7 @@ class TestAggregators:
             iris.analysis.PROPORTION,
             function=lambda val: val >= 6,
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6.data, np.array([0.5], dtype=np.float32)
         )
         _shared_utils.assert_CML(
@@ -888,7 +888,7 @@ class TestAggregators:
         gt6_masked = cube.collapsed(
             "bar", iris.analysis.PROPORTION, function=lambda val: val >= 6
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6_masked.data,
             ma.array(
                 [1 / 3, None, 1 / 2, None],
@@ -906,7 +906,7 @@ class TestAggregators:
     def test_count(self):
         cube = stock.simple_1d()
         gt5 = cube.collapsed("foo", iris.analysis.COUNT, function=lambda val: val >= 5)
-        np.testing.assert_array_almost_equal(gt5.data, np.array([6]))
+        _shared_utils.assert_array_almost_equal(gt5.data, np.array([6]))
         gt5.data = gt5.data.astype("i8")
         _shared_utils.assert_CML(
             self.request, gt5, ("analysis", "count_foo_1d.cml"), checksum=False
@@ -916,7 +916,7 @@ class TestAggregators:
         cube = stock.simple_2d()
 
         gt6 = cube.collapsed("foo", iris.analysis.COUNT, function=lambda val: val >= 6)
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6.data, np.array([0, 2, 4], dtype=np.float32)
         )
         gt6.data = gt6.data.astype("i8")
@@ -925,7 +925,7 @@ class TestAggregators:
         )
 
         gt6 = cube.collapsed("bar", iris.analysis.COUNT, function=lambda val: val >= 6)
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             gt6.data, np.array([1, 1, 2, 2], dtype=np.float32)
         )
         gt6.data = gt6.data.astype("i8")
@@ -936,7 +936,9 @@ class TestAggregators:
         gt6 = cube.collapsed(
             ("foo", "bar"), iris.analysis.COUNT, function=lambda val: val >= 6
         )
-        np.testing.assert_array_almost_equal(gt6.data, np.array([6], dtype=np.float32))
+        _shared_utils.assert_array_almost_equal(
+            gt6.data, np.array([6], dtype=np.float32)
+        )
         gt6.data = gt6.data.astype("i8")
         _shared_utils.assert_CML(
             self.request, gt6, ("analysis", "count_foo_bar_2d.cml"), checksum=False
@@ -1738,28 +1740,28 @@ class TestWeights:
         # DimCoord always realizes points
         assert isinstance(weights.array, np.ndarray)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
+        _shared_utils.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
         assert weights.units == "degrees"
 
     def test_init_with_str_aux_coord(self):
         weights = _Weights("auxcoord", self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
+        _shared_utils.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
 
     def test_init_with_str_ancillary_variable(self):
         weights = _Weights("ancvar", self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
+        _shared_utils.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
 
     def test_init_with_str_cell_measure(self):
         weights = _Weights("cell_area", self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, self.data)
+        _shared_utils.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
 
     def test_init_with_dim_coord(self):
@@ -1767,28 +1769,28 @@ class TestWeights:
         # DimCoord always realizes points
         assert isinstance(weights.array, np.ndarray)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
+        _shared_utils.assert_array_equal(weights.array, [[0, 0, 0], [1, 1, 1]])
         assert weights.units == "degrees"
 
     def test_init_with_aux_coord(self):
         weights = _Weights(self.aux_coord, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
+        _shared_utils.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
 
     def test_init_with_ancillary_variable(self):
         weights = _Weights(self.ancillary_variable, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
+        _shared_utils.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
 
     def test_init_with_cell_measure(self):
         weights = _Weights(self.cell_measure, self.cube)
         assert isinstance(weights.array, self.target_type)
         assert isinstance(weights.units, cf_units.Unit)
-        np.testing.assert_array_equal(weights.array, self.data)
+        _shared_utils.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
 
     def test_init_with_list(self):

@@ -202,18 +202,18 @@ class TestCoordTrig:
         sin_of_coord_radians = iris.analysis.calculus._coord_sin(self.rlat)
 
         # Check the values are correct (within a tolerance)
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             np.sin(self.rlat.points), sin_of_coord.points
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             np.sin(self.rlat.bounds), sin_of_coord.bounds
         )
 
         # Check that the results of the sin function are almost equal when operating on a coord with degrees and radians
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             sin_of_coord.points, sin_of_coord_radians.points
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             sin_of_coord.bounds, sin_of_coord_radians.bounds
         )
 
@@ -225,18 +225,18 @@ class TestCoordTrig:
         cos_of_coord_radians = iris.analysis.calculus._coord_cos(self.rlat)
 
         # Check the values are correct (within a tolerance)
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             np.cos(self.rlat.points), cos_of_coord.points
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             np.cos(self.rlat.bounds), cos_of_coord.bounds
         )
 
         # Check that the results of the cos function are almost equal when operating on a coord with degrees and radians
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             cos_of_coord.points, cos_of_coord_radians.points
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             cos_of_coord.bounds, cos_of_coord_radians.bounds
         )
 
@@ -590,7 +590,7 @@ class TestCalculusWKnownSolutions:
         data = -sin_x_pts * y_ones
         result = df_dlon.copy(data=data)
 
-        np.testing.assert_array_almost_equal(result.data, df_dlon.data, decimal=3)
+        _shared_utils.assert_array_almost_equal(result.data, df_dlon.data, decimal=3)
 
     def test_contrived_differential2(self):
         # testing :
@@ -607,7 +607,7 @@ class TestCalculusWKnownSolutions:
         x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(r)
         result = r.copy(data=y_pts * 2.0 * x_ones * z_ones)
 
-        np.testing.assert_array_almost_equal(result.data, r.data, decimal=6)
+        _shared_utils.assert_array_almost_equal(result.data, r.data, decimal=6)
 
     def test_contrived_non_spherical_curl1(self):
         # testing :
@@ -662,16 +662,16 @@ class TestCalculusWKnownSolutions:
         #        result.data = y_pts * 2. * x_ones * z_ones
         #        print(repr(r[0].data[0:1, 0:5, 0:25:5]))
         #        print(repr(result.data[0:1, 0:5, 0:25:5]))
-        #        np.testing.assert_array_almost_equal(result.data, r[0].data, decimal=2)
+        #        _shared_utils.assert_array_almost_equal(result.data, r[0].data, decimal=2)
         #
         #        result = r[1].copy(data=True)
         #        x_pts, x_ones, y_pts, y_ones, z_pts, z_ones = self.get_coord_pts(result)
         #        result.data = pow(z_pts, 2) * x_ones * y_ones
-        #        np.testing.assert_array_almost_equal(result.data, r[1].data, decimal=6)
+        #        _shared_utils.assert_array_almost_equal(result.data, r[1].data, decimal=6)
 
         result = r[2].copy()
         result.data = result.data * 0 + 1
-        np.testing.assert_array_almost_equal(result.data, r[2].data, decimal=4)
+        _shared_utils.assert_array_almost_equal(result.data, r[2].data, decimal=4)
 
         _shared_utils.assert_CML(
             self.request,
@@ -705,7 +705,7 @@ class TestCalculusWKnownSolutions:
         result = r.copy(data=r.data * 0)
 
         # Note: This numerical comparison was created when the radius was 1000 times smaller
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result.data[5:-5], r.data[5:-5] / 1000.0, decimal=1
         )
         _shared_utils.assert_CML(
@@ -757,7 +757,7 @@ class TestCalculusWKnownSolutions:
         result = r.copy(data=-2 * cos_x_pts * cos_y_pts)
 
         # Note: This numerical comparison was created when the radius was 1000 times smaller
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result.data[30:-30, :], r.data[30:-30, :] / 1000.0, decimal=1
         )
         _shared_utils.assert_CML(
