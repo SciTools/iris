@@ -6,11 +6,6 @@
 :func:`iris.fileformats.pp_load_rules._convert_time_coords`.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from cf_units import CALENDAR_360_DAY, CALENDAR_STANDARD, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
@@ -18,7 +13,7 @@ import numpy as np
 from iris.coords import AuxCoord, DimCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_load_rules import _convert_time_coords
-from iris.tests import IrisTest as TestField
+from iris.tests._shared_utils import assert_array_all_close
 from iris.tests.unit.fileformats.pp_load_rules import assert_coords_and_dims_lists_match
 
 
@@ -41,7 +36,7 @@ _EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
 _HOURS_UNIT = Unit("hours")
 
 
-class TestLBTIMx0x_SingleTimepoint(TestField):
+class TestLBTIMx0x_SingleTimepoint:
     def _check_timepoint(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=0, ic=1)
         t1 = nc_datetime(1970, 1, 1, hour=6, minute=0, second=0)
@@ -82,7 +77,7 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
         self._check_timepoint(_lbcode(ix=1, iy=20), expect_match=False)
 
 
-class TestLBTIMx1x_Forecast(TestField):
+class TestLBTIMx1x_Forecast:
     def _check_forecast(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=1, ic=1)
         # Validity time
@@ -152,8 +147,8 @@ class TestLBTIMx1x_Forecast(TestField):
         )
         (fp, _), (t, _), (frt, _) = coords_and_dims
         # These should both be exact whole numbers.
-        self.assertEqual(fp.points[0], 7)
-        self.assertEqual(t.points[0], 394927)
+        assert fp.points[0] == 7
+        assert t.points[0] == 394927
 
     def test_not_exact_hours(self):
         lbtim = _lbtim(ib=1, ic=1)
@@ -168,11 +163,11 @@ class TestLBTIMx1x_Forecast(TestField):
             lbft=None,
         )
         (fp, _), (t, _), (frt, _) = coords_and_dims
-        self.assertArrayAllClose(fp.points[0], 7.1666666, atol=0.0001, rtol=0)
-        self.assertArrayAllClose(t.points[0], 394927.166666, atol=0.01, rtol=0)
+        assert_array_all_close(fp.points[0], 7.1666666, atol=0.0001, rtol=0)
+        assert_array_all_close(t.points[0], 394927.166666, atol=0.01, rtol=0)
 
 
-class TestLBTIMx2x_TimePeriod(TestField):
+class TestLBTIMx2x_TimePeriod:
     def _check_period(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=2, ic=1)
         # Start time
@@ -231,7 +226,7 @@ class TestLBTIMx2x_TimePeriod(TestField):
         self._check_period(_lbcode(ix=1, iy=20), expect_match=False)
 
 
-class TestLBTIMx3x_YearlyAggregation(TestField):
+class TestLBTIMx3x_YearlyAggregation:
     def _check_yearly(self, lbcode, expect_match=True):
         lbtim = _lbtim(ib=3, ic=1)
         # Start time
@@ -293,7 +288,7 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
         self._check_yearly(_lbcode(ix=1, iy=20), expect_match=False)
 
 
-class TestLBTIMx2x_ZeroYear(TestField):
+class TestLBTIMx2x_ZeroYear:
     def test_(self):
         lbtim = _lbtim(ib=2, ic=1)
         t1 = nc_datetime(0, 1, 1, has_year_zero=True)
@@ -308,10 +303,10 @@ class TestLBTIMx2x_ZeroYear(TestField):
             t2=t2,
             lbft=lbft,
         )
-        self.assertEqual(coords_and_dims, [])
+        assert coords_and_dims == []
 
 
-class TestLBTIMxxx_Unhandled(TestField):
+class TestLBTIMxxx_Unhandled:
     def test_unrecognised(self):
         lbtim = _lbtim(ib=4, ic=1)
         t1 = nc_datetime(0, 0, 0, calendar=None, has_year_zero=True)
@@ -326,10 +321,10 @@ class TestLBTIMxxx_Unhandled(TestField):
             t2=t2,
             lbft=lbft,
         )
-        self.assertEqual(coords_and_dims, [])
+        assert coords_and_dims == []
 
 
-class TestLBCODE3xx(TestField):
+class TestLBCODE3xx:
     def test(self):
         lbcode = _lbcode(value=31323)
         lbtim = _lbtim(ib=2, ic=2)
@@ -359,7 +354,7 @@ class TestLBCODE3xx(TestField):
         assert_coords_and_dims_lists_match(coords_and_dims, expected_result)
 
 
-class TestArrayInputWithLBTIM_0_0_1(TestField):
+class TestArrayInputWithLBTIM_0_0_1:
     def test_t1_list(self):
         # lbtim ia = 0, ib = 0, ic = 1
         # with a series of times (t1).
@@ -391,7 +386,7 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
         assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
-class TestArrayInputWithLBTIM_0_1_1(TestField):
+class TestArrayInputWithLBTIM_0_1_1:
     def test_t1_list_t2_scalar(self):
         # lbtim ia = 0, ib = 1, ic = 1
         # with a single forecast reference time (t2) and a series
@@ -643,7 +638,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
-class TestArrayInputWithLBTIM_0_2_1(TestField):
+class TestArrayInputWithLBTIM_0_2_1:
     def test_t1_list_t2_scalar(self):
         lbtim = _lbtim(ib=2, ic=1)
         lbcode = _lbcode(1)
@@ -698,7 +693,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
         assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
-class TestArrayInputWithLBTIM_0_3_1(TestField):
+class TestArrayInputWithLBTIM_0_3_1:
     def test_t1_scalar_t2_list(self):
         lbtim = _lbtim(ib=3, ic=1)
         lbcode = _lbcode(1)
@@ -756,7 +751,3 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
             (fref_time_coord, (0,)),
         ]
         assert_coords_and_dims_lists_match(coords_and_dims, expected)
-
-
-if __name__ == "__main__":
-    tests.main()

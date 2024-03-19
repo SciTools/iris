@@ -4,41 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.fileformats.pp_load_rules` module."""
 
-# general utility functions for PP field tests
-from iris.tests._shared_utils import assert_array_equal
 
-
-def assert_test_for_coord(
-    field, convert, coord_predicate, expected_points, expected_bounds
-):
-    (
-        factories,
-        references,
-        standard_name,
-        long_name,
-        units,
-        attributes,
-        cell_methods,
-        dim_coords_and_dims,
-        aux_coords_and_dims,
-    ) = convert(field)
-
-    # Check for one and only one matching coordinate.
-    coords_and_dims = dim_coords_and_dims + aux_coords_and_dims
-    matching_coords = [coord for coord, _ in coords_and_dims if coord_predicate(coord)]
-    assert len(matching_coords) == 1, str(matching_coords)
-    coord = matching_coords[0]
-
-    # Check points and bounds.
-    if expected_points is not None:
-        assert_array_equal(coord.points, expected_points)
-
-    if expected_bounds is None:
-        assert coord.bounds is None
-    else:
-        assert_array_equal(coord.bounds, expected_bounds)
-
-
+# a general utility function for PP field tests
 def assert_coords_and_dims_lists_match(coords_and_dims_got, coords_and_dims_expected):
     """Check that coords_and_dims lists are equivalent.
 
