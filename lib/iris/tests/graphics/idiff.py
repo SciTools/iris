@@ -28,6 +28,7 @@ import matplotlib.widgets as mwidget  # noqa
 
 from iris.warnings import IrisIgnoringWarning  # noqa
 import iris.tests  # noqa
+from iris.tests import _shared_utils
 import iris.tests.graphics as graphics  # noqa
 
 # Allows restoration of test id from result image name
@@ -118,7 +119,7 @@ def step_over_diffs(result_dir, display=True):
     for fname in result_dir.glob(f"*{_POSTFIX_DIFF}"):
         fname.unlink()
 
-    reference_image_dir = Path(iris.tests.get_data_path("images"))
+    reference_image_dir = Path(_shared_utils.get_data_path("images"))
     repo = graphics.read_repo_json()
 
     # Filter out all non-test result image files.

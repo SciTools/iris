@@ -4,31 +4,31 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.common.lenient._lenient_service`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from inspect import getmodule
-from unittest.mock import sentinel
+
+import pytest
 
 from iris.common.lenient import _LENIENT, _lenient_service
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         module_name = getmodule(self).__name__
         self.service = f"{module_name}" + ".Test.{}.<locals>.myservice"
-        self.args_in = sentinel.arg1, sentinel.arg2
-        self.kwargs_in = dict(kwarg1=sentinel.kwarg1, kwarg2=sentinel.kwarg2)
+        self.args_in = mocker.sentinel.arg1, mocker.sentinel.arg2
+        self.kwargs_in = dict(
+            kwarg1=mocker.sentinel.kwarg1, kwarg2=mocker.sentinel.kwarg2
+        )
 
     def test_args_too_many(self):
         emsg = "Invalid lenient service arguments, expecting 1"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        with pytest.raises(AssertionError, match=emsg):
             _lenient_service(None, None)
 
     def test_args_not_callable(self):
         emsg = "Invalid lenient service argument, expecting a callable"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        with pytest.raises(AssertionError, match=emsg):
             _lenient_service(None)
 
     def test_call_naked(self):
@@ -38,11 +38,11 @@ class Test(tests.IrisTest):
 
         qualname_service = self.service.format("test_call_naked")
         state = _LENIENT.__dict__
-        self.assertIn(qualname_service, state)
-        self.assertTrue(state[qualname_service])
+        assert qualname_service in state
+        assert state[qualname_service]
         result = myservice()
-        self.assertIn(qualname_service, result)
-        self.assertTrue(result[qualname_service])
+        assert qualname_service in result
+        assert result[qualname_service]
 
     def test_call_naked_alternative(self):
         def myservice():
@@ -50,8 +50,8 @@ class Test(tests.IrisTest):
 
         qualname_service = self.service.format("test_call_naked_alternative")
         result = _lenient_service(myservice)()
-        self.assertIn(qualname_service, result)
-        self.assertTrue(result[qualname_service])
+        assert qualname_service in result
+        assert result[qualname_service]
 
     def test_call_naked_service_args_kwargs(self):
         @_lenient_service
@@ -59,15 +59,15 @@ class Test(tests.IrisTest):
             return args, kwargs
 
         args_out, kwargs_out = myservice(*self.args_in, **self.kwargs_in)
-        self.assertEqual(args_out, self.args_in)
-        self.assertEqual(kwargs_out, self.kwargs_in)
+        assert args_out == self.args_in
+        assert kwargs_out == self.kwargs_in
 
     def test_call_naked_doc(self):
         @_lenient_service
         def myservice():
             """Myservice doc-string."""
 
-        self.assertEqual(myservice.__doc__, "Myservice doc-string.")
+        assert myservice.__doc__ == "Myservice doc-string."
 
     def test_call(self):
         @_lenient_service()
@@ -76,11 +76,11 @@ class Test(tests.IrisTest):
 
         qualname_service = self.service.format("test_call")
         state = _LENIENT.__dict__
-        self.assertIn(qualname_service, state)
-        self.assertTrue(state[qualname_service])
+        assert qualname_service in state
+        assert state[qualname_service]
         result = myservice()
-        self.assertIn(qualname_service, result)
-        self.assertTrue(result[qualname_service])
+        assert qualname_service in result
+        assert result[qualname_service]
 
     def test_call_alternative(self):
         def myservice():
@@ -88,8 +88,8 @@ class Test(tests.IrisTest):
 
         qualname_service = self.service.format("test_call_alternative")
         result = (_lenient_service())(myservice)()
-        self.assertIn(qualname_service, result)
-        self.assertTrue(result[qualname_service])
+        assert qualname_service in result
+        assert result[qualname_service]
 
     def test_call_service_args_kwargs(self):
         @_lenient_service()
@@ -97,16 +97,12 @@ class Test(tests.IrisTest):
             return args, kwargs
 
         args_out, kwargs_out = myservice(*self.args_in, **self.kwargs_in)
-        self.assertEqual(args_out, self.args_in)
-        self.assertEqual(kwargs_out, self.kwargs_in)
+        assert args_out == self.args_in
+        assert kwargs_out == self.kwargs_in
 
     def test_call_doc(self):
         @_lenient_service()
         def myservice():
             """Myservice doc-string."""
 
-        self.assertEqual(myservice.__doc__, "Myservice doc-string.")
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert myservice.__doc__ == "Myservice doc-string."

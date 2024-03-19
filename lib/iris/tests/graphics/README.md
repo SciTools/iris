@@ -24,8 +24,9 @@ perceived as it may be a simple pixel shift.
 
 ## Testing Strategy
 
-The `iris.tests.IrisTest.check_graphic` test routine calls out to
-`iris.tests.graphics.check_graphic` which tests against the **acceptable**
+The `iris.tests.graphics.check_graphic` function - accessed via the
+`check_graphic_caller` fixture (PyTest) or `iris.tests.IrisTest.check_graphic`
+(unittest) - tests against the **acceptable**
 result. It does this using an image **hash** comparison technique which allows
 us to be robust against minor variations based on underlying library updates.
 

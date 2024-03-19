@@ -135,6 +135,7 @@ version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
 addopts = "-ra"
+required_plugins = "pytest-mock"
 testpaths = "lib/iris"
 
 [tool.coverage.run]
