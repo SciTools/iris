@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class operators."""
+
 import operator
 
 import dask.array as da
