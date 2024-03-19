@@ -13,10 +13,10 @@ import iris.tests as tests  # isort:skip
 
 from iris.coords import DimCoord
 from iris.fileformats.pp_load_rules import _convert_scalar_realization_coords
-from iris.tests.unit.fileformats import TestField
+from iris.tests import IrisTest
 
 
-class Test(TestField):
+class Test(IrisTest):
     def test_valid(self):
         coords_and_dims = _convert_scalar_realization_coords(lbrsvd4=21)
         self.assertEqual(
