@@ -311,7 +311,7 @@ def assert_CML_approx_data(
             fname[-1] = fname[-1][:-4]
         fname[-1] += ".data.%d.json" % i
         assert_data_almost_equal(cube.data, fname, **kwargs)
-    assert_CML(cubes, reference_filename, checksum=False)
+    assert_CML(request, cubes, reference_filename, checksum=False)
 
 
 def assert_CDL(
@@ -459,8 +459,8 @@ def assert_data_almost_equal(data, reference_filename, **kwargs):
         kwargs.setdefault("err_msg", "Reference file %s" % reference_path)
         with open(reference_path, "r") as reference_file:
             stats = json.load(reference_file)
-            assert stats.get("shape", []), list(data.shape)
-            assert stats.get("masked", False), ma.is_masked(data)
+            assert stats.get("shape", []) == list(data.shape)
+            assert stats.get("masked", False) == ma.is_masked(data)
             nstats = np.array(
                 (
                     stats.get("mean", 0.0),
