@@ -3,19 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.CubeList` class."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import pytest
-
-import iris.tests as tests  # isort:skip
-
 import collections
 import copy
 from unittest import mock
 
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris import Constraint
 import iris.coord_systems
@@ -30,7 +24,7 @@ NOT_CUBE_MSG = "cannot be put in a cubelist, as it is not a Cube."
 NON_ITERABLE_MSG = "object is not iterable"
 
 
-class Test_append(tests.IrisTest):
+class Test_append:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cubelist = iris.cube.CubeList()
@@ -48,7 +42,7 @@ class Test_append(tests.IrisTest):
             self.cubelist.append(None)
 
 
-class Test_concatenate_cube(tests.IrisTest):
+class Test_concatenate_cube:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.units = Unit("days since 1970-01-01 00:00:00", calendar="standard")
@@ -83,7 +77,7 @@ class Test_concatenate_cube(tests.IrisTest):
             CubeList([]).concatenate_cube()
 
 
-class Test_extend(tests.IrisTest):
+class Test_extend:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
@@ -107,7 +101,7 @@ class Test_extend(tests.IrisTest):
             self.cubelist1.extend(range(3))
 
 
-class Test_extract_overlapping(tests.IrisTest):
+class Test_extract_overlapping:
     @pytest.fixture(autouse=True)
     def _setup(self):
         shape = (6, 14, 19)
@@ -164,7 +158,7 @@ class Test_extract_overlapping(tests.IrisTest):
         assert b.coord("time") == self.cube.coord("time")[2:4]
 
 
-class Test_iadd(tests.IrisTest):
+class Test_iadd:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
@@ -188,7 +182,7 @@ class Test_iadd(tests.IrisTest):
             self.cubelist1 += range(3)
 
 
-class Test_insert(tests.IrisTest):
+class Test_insert:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
@@ -204,7 +198,7 @@ class Test_insert(tests.IrisTest):
             self.cubelist.insert(0, None)
 
 
-class Test_merge_cube(tests.IrisTest):
+class Test_merge_cube:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
@@ -236,7 +230,7 @@ class Test_merge_cube(tests.IrisTest):
             CubeList([self.cube1, self.cube1]).merge_cube()
 
 
-class Test_merge__time_triple(tests.IrisTest):
+class Test_merge__time_triple:
     @pytest.fixture(autouse=True)
     def _setup(self, request):
         self.request = request
@@ -337,7 +331,7 @@ class Test_merge__time_triple(tests.IrisTest):
         _shared_utils.assert_CML(self.request, cube, checksum=False)
 
 
-class Test_setitem(tests.IrisTest):
+class Test_setitem:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube1 = iris.cube.Cube(1, long_name="foo")
@@ -363,7 +357,7 @@ class Test_setitem(tests.IrisTest):
             self.cubelist[:1] = self.cube1
 
 
-class Test_xml(tests.IrisTest):
+class Test_xml:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cubes = CubeList([Cube(np.arange(3)), Cube(np.arange(3))])
@@ -378,7 +372,7 @@ class Test_xml(tests.IrisTest):
         assert "byteorder" in self.cubes.xml(byteorder=True)
 
 
-class Test_extract(tests.IrisTest):
+class Test_extract:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.scalar_cubes = CubeList()
@@ -447,7 +441,7 @@ class ExtractMixin:
                 raise ValueError(msg.format(type(expected), expected))
 
 
-class Test_extract_cube(ExtractMixin, tests.IrisTest):
+class Test_extract_cube(ExtractMixin):
     method_name = "extract_cube"
 
     def test_empty(self):
@@ -506,7 +500,7 @@ class ExtractCubesMixin(ExtractMixin):
     method_name = "extract_cubes"
 
 
-class Test_extract_cubes__noconstraint(ExtractCubesMixin, tests.IrisTest):
+class Test_extract_cubes__noconstraint(ExtractCubesMixin):
     """Test with an empty list of constraints."""
 
     def test_empty(self):
@@ -566,23 +560,19 @@ class ExtractCubesSingleConstraintMixin(ExtractCubesMixin):
         )
 
 
-class Test_extract_cubes__bare_single_constraint(
-    ExtractCubesSingleConstraintMixin, tests.IrisTest
-):
+class Test_extract_cubes__bare_single_constraint(ExtractCubesSingleConstraintMixin):
     """Testing with a single constraint as the argument."""
 
     wrap_test_constraint_as_list_of_one = False
 
 
-class Test_extract_cubes__list_single_constraint(
-    ExtractCubesSingleConstraintMixin, tests.IrisTest
-):
+class Test_extract_cubes__list_single_constraint(ExtractCubesSingleConstraintMixin):
     """Testing with a list of one constraint as the argument."""
 
     wrap_test_constraint_as_list_of_one = True
 
 
-class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
+class Test_extract_cubes__multi_constraints(ExtractCubesMixin):
     """Testing when the 'constraints' arg is a list of multiple constraints."""
 
     def test_empty(self):
@@ -640,7 +630,7 @@ class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
         )
 
 
-class Test_iteration(tests.IrisTest):
+class Test_iteration:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.scalar_cubes = CubeList()
@@ -657,7 +647,7 @@ class Test_iteration(tests.IrisTest):
             assert cube.long_name == letters[i]
 
 
-class TestPrint(tests.IrisTest):
+class TestPrint:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cubes = CubeList([iris.tests.stock.lat_lon_cube()])
@@ -678,7 +668,7 @@ class TestPrint(tests.IrisTest):
         assert str(self.cubes) == expected
 
 
-class TestRealiseData(tests.IrisTest):
+class TestRealiseData:
     def test_realise_data(self):
         # Simply check that calling CubeList.realise_data is calling
         # _lazy_data.co_realise_cubes.
@@ -690,7 +680,7 @@ class TestRealiseData(tests.IrisTest):
         assert call_patch.call_args_list == [mock.call(*mock_cubes_list)]
 
 
-class Test_CubeList_copy(tests.IrisTest):
+class Test_CubeList_copy:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube_list = iris.cube.CubeList()
@@ -728,7 +718,3 @@ class TestHtmlRepr:
             # "CubeListRepresentation(cubelist).repr_html()" was called exactly once, with no args
             mock.call()
         ]
-
-
-if __name__ == "__main__":
-    tests.main()

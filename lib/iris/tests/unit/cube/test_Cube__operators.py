@@ -3,10 +3,6 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class operators."""
-
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
 import operator
 
 import dask.array as da
@@ -20,7 +16,7 @@ from iris.coords import DimCoord
 from iris.tests import _shared_utils
 
 
-class Test_lazy_maths(tests.IrisTest):
+class Test_lazy_maths:
     def build_lazy_cube(self, points, dtype=np.float64, bounds=None, nx=10):
         data = np.arange(len(points) * nx, dtype=dtype) + 1  # Just avoid 0.
         data = data.reshape(len(points), nx)
@@ -140,7 +136,7 @@ class Test_lazy_maths(tests.IrisTest):
         self.cube_scalar_math_op(c1, scalar, op, commutative=False)
 
 
-class Test_lazy_maths__scalar_cube(tests.IrisTest):
+class Test_lazy_maths__scalar_cube:
     def build_lazy_cube(self, value, dtype=np.float64):
         data = as_lazy_data(np.array(value, dtype=dtype))
         return iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -223,7 +219,7 @@ class Test_lazy_maths__scalar_cube(tests.IrisTest):
         self.check_common(c1, c2, op)
 
 
-class Test_lazy_maths__masked_data(tests.IrisTest):
+class Test_lazy_maths__masked_data:
     def build_lazy_cube(self, dtype=np.float64):
         data = ma.array(
             [[1.0, 1.0], [1.0, 100000.0]], mask=[[0, 0], [0, 1]], dtype=dtype
@@ -247,7 +243,3 @@ class Test_lazy_maths__masked_data(tests.IrisTest):
         cube_b = self.build_lazy_cube(dtype=np.int64)
         cube_c = cube_a - cube_b
         assert ma.isMaskedArray(cube_c.data)
-
-
-if __name__ == "__main__":
-    tests.main()

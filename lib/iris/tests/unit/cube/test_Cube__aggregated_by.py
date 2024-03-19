@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class aggregated_by method."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 from unittest import mock
 
 from cf_units import Unit
@@ -25,7 +21,7 @@ from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
 
-class Test_aggregated_by(tests.IrisTest):
+class Test_aggregated_by:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube = Cube(np.arange(44).reshape(4, 11))
@@ -329,7 +325,7 @@ class Test_aggregated_by(tests.IrisTest):
             )
 
 
-class Test_aggregated_by__lazy(tests.IrisTest):
+class Test_aggregated_by__lazy:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.data = np.arange(44).reshape(4, 11)
@@ -529,7 +525,7 @@ class Test_aggregated_by__lazy(tests.IrisTest):
         )
 
 
-class Test_aggregated_by__climatology(tests.IrisTest):
+class Test_aggregated_by__climatology:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.data = np.arange(100).reshape(20, 5)
@@ -792,7 +788,7 @@ class Test_aggregated_by__climatology(tests.IrisTest):
         assert not categorised_coord.climatological
 
 
-class Test_aggregated_by__derived(tests.IrisTest):
+class Test_aggregated_by__derived:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube = realistic_4d()[:, :10, :6, :8]
@@ -834,7 +830,3 @@ class Test_aggregated_by__derived(tests.IrisTest):
         assert len(result.aux_factories) == 1
         altitude = result.coord("altitude")
         assert altitude == self.cube.coord("altitude")
-
-
-if __name__ == "__main__":
-    tests.main()

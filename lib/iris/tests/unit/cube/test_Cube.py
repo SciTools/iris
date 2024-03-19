@@ -350,7 +350,7 @@ class Test_collapsed__lazy:
 
 class Test_collapsed__multidim_weighted_with_arr:
     @pytest.fixture(autouse=True)
-    def multidim_arr_setup(self):
+    def _multidim_arr_setup(self):
         self.data = np.arange(6.0).reshape((2, 3))
         self.lazydata = as_lazy_data(self.data)
         # Test cubes with (same-valued) real and lazy data
@@ -509,7 +509,7 @@ class Test_collapsed__multidim_weighted_with_cube(
     Test_collapsed__multidim_weighted_with_arr
 ):
     @pytest.fixture(autouse=True)
-    def multidim_cube_setup(self, multidim_arr_setup):
+    def _multidim_cube_setup(self, multidim_arr_setup):
         self.y_weights_original = self.y_weights
         self.full_weights_y_original = self.full_weights_y
         self.x_weights_original = self.x_weights
@@ -544,7 +544,7 @@ class Test_collapsed__multidim_weighted_with_str(
     Test_collapsed__multidim_weighted_with_cube
 ):
     @pytest.fixture(autouse=True)
-    def multidim_str_setup(self, multidim_cube_setup):
+    def _multidim_str_setup(self, multidim_cube_setup):
         self.full_weights_y = "full_y"
         self.full_weights_x = "full_x"
         self.y_weights = "y"
@@ -951,25 +951,25 @@ class Test_rolling_window:
     def test_weights_arr(self):
         weights = np.array([0, 0, 1, 0, 2])
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        np.testing.assert_array_equal(res_cube.data, [10, 13])
+        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg"
 
     def test_weights_cube(self):
         weights = Cube([0, 0, 1, 0, 2], units="m2")
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        np.testing.assert_array_equal(res_cube.data, [10, 13])
+        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg m2"
 
     def test_weights_str(self):
         weights = "val"
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        np.testing.assert_array_equal(res_cube.data, [55])
+        _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
     def test_weights_dim_coord(self):
         weights = self.cube.coord("val")
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        np.testing.assert_array_equal(res_cube.data, [55])
+        _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
 
@@ -1053,7 +1053,7 @@ class Test_slices_dim_order:
             self.check_order(*perm)
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 class Test_slices_over:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -1830,10 +1830,10 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_almost_equal(result_lons.points[0], 28.5)
         _shared_utils.assert_array_almost_equal(result_lons.points[-1], 67.5)
         dtype = result_lons.dtype
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result_lons.bounds[0], np.array([28.0, 29.0], dtype=dtype)
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result_lons.bounds[-1], np.array([67.0, 68.0], dtype=dtype)
         )
 
@@ -1849,10 +1849,10 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_almost_equal(result_lons.points[0], -60.05)
         _shared_utils.assert_array_almost_equal(result_lons.points[-1], 60.05)
         dtype = result_lons.dtype
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result_lons.bounds[0], np.array([-60.1, -60.0], dtype=dtype)
         )
-        np.testing.assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
         )
 
