@@ -669,12 +669,12 @@ class TestPrint:
 
 
 class TestRealiseData:
-    def test_realise_data(self):
+    def test_realise_data(self, mocker):
         # Simply check that calling CubeList.realise_data is calling
         # _lazy_data.co_realise_cubes.
         mock_cubes_list = [mock.Mock(ident=count) for count in range(3)]
         test_cubelist = CubeList(mock_cubes_list)
-        call_patch = self.patch("iris._lazy_data.co_realise_cubes")
+        call_patch = mocker.patch("iris._lazy_data.co_realise_cubes")
         test_cubelist.realise_data()
         # Check it was called once, passing cubes as *args.
         assert call_patch.call_args_list == [mock.call(*mock_cubes_list)]

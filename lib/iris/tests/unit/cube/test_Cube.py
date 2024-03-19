@@ -509,7 +509,7 @@ class Test_collapsed__multidim_weighted_with_cube(
     Test_collapsed__multidim_weighted_with_arr
 ):
     @pytest.fixture(autouse=True)
-    def _multidim_cube_setup(self, multidim_arr_setup):
+    def _multidim_cube_setup(self, _multidim_arr_setup):
         self.y_weights_original = self.y_weights
         self.full_weights_y_original = self.full_weights_y
         self.x_weights_original = self.x_weights
@@ -544,7 +544,7 @@ class Test_collapsed__multidim_weighted_with_str(
     Test_collapsed__multidim_weighted_with_cube
 ):
     @pytest.fixture(autouse=True)
-    def _multidim_str_setup(self, multidim_cube_setup):
+    def _multidim_str_setup(self, _multidim_cube_setup):
         self.full_weights_y = "full_y"
         self.full_weights_x = "full_x"
         self.y_weights = "y"
@@ -579,7 +579,7 @@ class Test_collapsed__multidim_weighted_with_dim_metadata(
     Test_collapsed__multidim_weighted_with_str
 ):
     @pytest.fixture(autouse=True)
-    def _setup(self, multidim_str_setup):
+    def _setup(self, _multidim_str_setup):
         self.full_weights_y = self.dim_metadata_full_y
         self.full_weights_x = self.dim_metadata_full_x
         self.y_weights = self.dim_metadata_1d_y
