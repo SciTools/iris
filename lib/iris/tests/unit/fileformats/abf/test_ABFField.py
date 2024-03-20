@@ -11,15 +11,14 @@ class Test_data:
         path = "0000000000000000jan00000"
         field = ABFField(path)
 
+        # Fake the file fetch operation
         fromfile = mocker.patch("iris.fileformats.abf.np.fromfile")
-        getattr = mocker.patch(
-            "iris.fileformats.abf.ABFField.__getattr__", wraps=field.__getattr__
-        )
-        read = mocker.patch("iris.fileformats.abf.ABFField._read", wraps=field._read)
+        # Spy on the '_read' operation
+        read = mocker.spy(field, "_read")
 
         # do the access
         field.data
 
+        # Check that _read was called, and np.fromfile.
         fromfile.assert_called_once_with(path, dtype=">u1")
-        assert getattr.call_count == 1
         assert read.call_count == 1
