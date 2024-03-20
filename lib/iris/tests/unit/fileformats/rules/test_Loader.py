@@ -3,41 +3,29 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.rules.Loader`."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 from iris.fileformats.rules import Loader
+from iris.tests._shared_utils import assert_no_warnings_regexp
 
 
-class Test___init__(tests.IrisTest):
-    def test_normal(self):
-        with mock.patch("warnings.warn") as warn:
+class Test___init__:
+    def test_normal(self, mocker):
+        with assert_no_warnings_regexp():
             loader = Loader(
-                mock.sentinel.GEN_FUNC,
-                mock.sentinel.GEN_FUNC_KWARGS,
-                mock.sentinel.CONVERTER,
+                mocker.sentinel.GEN_FUNC,
+                mocker.sentinel.GEN_FUNC_KWARGS,
+                mocker.sentinel.CONVERTER,
             )
-        self.assertEqual(warn.call_count, 0)
-        self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
-        self.assertIs(loader.converter, mock.sentinel.CONVERTER)
+        assert loader.field_generator is mocker.sentinel.GEN_FUNC
+        assert loader.field_generator_kwargs is mocker.sentinel.GEN_FUNC_KWARGS
+        assert loader.converter is mocker.sentinel.CONVERTER
 
-    def test_normal_with_explicit_none(self):
-        with mock.patch("warnings.warn") as warn:
+    def test_normal_with_explicit_none(self, mocker):
+        with assert_no_warnings_regexp():
             loader = Loader(
-                mock.sentinel.GEN_FUNC,
-                mock.sentinel.GEN_FUNC_KWARGS,
-                mock.sentinel.CONVERTER,
+                mocker.sentinel.GEN_FUNC,
+                mocker.sentinel.GEN_FUNC_KWARGS,
+                mocker.sentinel.CONVERTER,
             )
-        self.assertEqual(warn.call_count, 0)
-        self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
-        self.assertIs(loader.converter, mock.sentinel.CONVERTER)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert loader.field_generator is mocker.sentinel.GEN_FUNC
+        assert loader.field_generator_kwargs is mocker.sentinel.GEN_FUNC_KWARGS
+        assert loader.converter is mocker.sentinel.CONVERTER

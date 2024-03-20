@@ -3,15 +3,11 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test iris.fileformats.rules.py - metadata translation rules."""
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import types
 from unittest import mock
 
 import numpy as np
+import pytest
 
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import CellMethod
@@ -26,30 +22,31 @@ from iris.fileformats.rules import (
     load_cubes,
     scalar_cell_method,
 )
+from iris.tests._shared_utils import skip_data
 import iris.tests.stock as stock
 
 
-class TestConcreteReferenceTarget(tests.IrisTest):
+class TestConcreteReferenceTarget:
     def test_attributes(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             target = ConcreteReferenceTarget()
 
         target = ConcreteReferenceTarget("foo")
-        self.assertEqual(target.name, "foo")
-        self.assertIsNone(target.transform)
+        assert target.name == "foo"
+        assert target.transform is None
 
         def transform(_):
             return _
 
         target = ConcreteReferenceTarget("foo", transform)
-        self.assertEqual(target.name, "foo")
-        self.assertIs(target.transform, transform)
+        assert target.name == "foo"
+        assert target.transform is transform
 
     def test_single_cube_no_transform(self):
         target = ConcreteReferenceTarget("foo")
         src = stock.simple_2d()
         target.add_cube(src)
-        self.assertIs(target.as_cube(), src)
+        assert target.as_cube() is src
 
     def test_single_cube_with_transform(self):
         def transform(cube):
@@ -59,22 +56,22 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         src = stock.simple_2d()
         target.add_cube(src)
         dest = target.as_cube()
-        self.assertEqual(dest.long_name, "wibble")
-        self.assertNotEqual(dest, src)
+        assert dest.long_name == "wibble"
+        assert dest != src
         dest.long_name = src.long_name
-        self.assertEqual(dest, src)
+        assert dest == src
 
-    @tests.skip_data
+    @skip_data
     def test_multiple_cubes_no_transform(self):
         target = ConcreteReferenceTarget("foo")
         src = stock.realistic_4d()
         for i in range(src.shape[0]):
             target.add_cube(src[i])
         dest = target.as_cube()
-        self.assertIsNot(dest, src)
-        self.assertEqual(dest, src)
+        assert dest is not src
+        assert dest == src
 
-    @tests.skip_data
+    @skip_data
     def test_multiple_cubes_with_transform(self):
         def transform(cube):
             return {"long_name": "wibble"}
@@ -84,13 +81,13 @@ class TestConcreteReferenceTarget(tests.IrisTest):
         for i in range(src.shape[0]):
             target.add_cube(src[i])
         dest = target.as_cube()
-        self.assertEqual(dest.long_name, "wibble")
-        self.assertNotEqual(dest, src)
+        assert dest.long_name == "wibble"
+        assert dest != src
         dest.long_name = src.long_name
-        self.assertEqual(dest, src)
+        assert dest == src
 
 
-class TestLoadCubes(tests.IrisTest):
+class TestLoadCubes:
     def test_simple_factory(self):
         # Test the creation process for a factory definition which only
         # uses simple dict arguments.
@@ -124,7 +121,7 @@ class TestLoadCubes(tests.IrisTest):
         cubes = load_cubes(["fake_filename"], None, fake_loader)
 
         # Check the result is a generator with a single entry.
-        self.assertIsInstance(cubes, types.GeneratorType)
+        assert isinstance(cubes, types.GeneratorType)
         try:
             # Suppress the normal Cube.coord() and Cube.add_aux_factory()
             # methods.
@@ -139,15 +136,15 @@ class TestLoadCubes(tests.IrisTest):
         finally:
             Cube.coord = coord_method
             Cube.add_aux_factory = add_aux_factory_method
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
         # Check the "cube" has an "aux_factory" added, which itself
         # must have been created with the correct arguments.
-        self.assertTrue(hasattr(cubes[0], "fake_aux_factory"))
-        self.assertIs(cubes[0].fake_aux_factory, aux_factory)
-        self.assertTrue(hasattr(aux_factory, "fake_args"))
-        self.assertEqual(aux_factory.fake_args, ({"name": "foo"},))
+        assert hasattr(cubes[0], "fake_aux_factory")
+        assert cubes[0].fake_aux_factory is aux_factory
+        assert hasattr(aux_factory, "fake_args")
+        assert aux_factory.fake_args == ({"name": "foo"},)
 
-    @tests.skip_data
+    @skip_data
     def test_cross_reference(self):
         # Test the creation process for a factory definition which uses
         # a cross-reference.
@@ -219,42 +216,38 @@ class TestLoadCubes(tests.IrisTest):
         cubes = load_cubes(["fake_filename"], None, fake_loader)
 
         # Check the result is a generator containing two Cubes.
-        self.assertIsInstance(cubes, types.GeneratorType)
+        assert isinstance(cubes, types.GeneratorType)
         cubes = list(cubes)
-        self.assertEqual(len(cubes), 2)
+        assert len(cubes) == 2
         # Check the "cube" has an "aux_factory" added, which itself
         # must have been created with the correct arguments.
-        self.assertEqual(len(cubes[1].aux_factories), 1)
-        self.assertEqual(len(cubes[1].coords("surface_altitude")), 1)
+        assert len(cubes[1].aux_factories) == 1
+        assert len(cubes[1].coords("surface_altitude")) == 1
 
 
-class Test_scalar_cell_method(tests.IrisTest):
+class Test_scalar_cell_method:
     """Tests for iris.fileformats.rules.scalar_cell_method() function."""
 
-    def setUp(self):
+    def setup_method(self):
         self.cube = stock.simple_2d()
         self.cm = CellMethod("mean", "foo", "1 hour")
         self.cube.cell_methods = (self.cm,)
 
     def test_cell_method_found(self):
         actual = scalar_cell_method(self.cube, "mean", "foo")
-        self.assertEqual(actual, self.cm)
+        assert actual == self.cm
 
     def test_method_different(self):
         actual = scalar_cell_method(self.cube, "average", "foo")
-        self.assertIsNone(actual)
+        assert actual is None
 
     def test_coord_name_different(self):
         actual = scalar_cell_method(self.cube, "average", "bar")
-        self.assertIsNone(actual)
+        assert actual is None
 
     def test_double_coord_fails(self):
         self.cube.cell_methods = (
             CellMethod("mean", ("foo", "bar"), ("1 hour", "1 hour")),
         )
         actual = scalar_cell_method(self.cube, "mean", "foo")
-        self.assertIsNone(actual)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert actual is None
