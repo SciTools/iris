@@ -3,7 +3,6 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.cf.CFGroup` class."""
-
 from unittest.mock import MagicMock
 
 from iris.fileformats.cf import (
@@ -13,14 +12,10 @@ from iris.fileformats.cf import (
     CFGroup,
 )
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 
-
-class Tests(tests.IrisTest):
+class Tests:
     # TODO: unit tests for existing functionality pre 2021-03-11.
-    def setUp(self):
+    def setup_method(self):
         self.cf_group = CFGroup()
 
     def test_non_data_names(self):
@@ -41,4 +36,4 @@ class Tests(tests.IrisTest):
 
         expected_names = [var.cf_name for var in (aux_var, coord_var, coord_var2)]
         expected = set(expected_names)
-        self.assertEqual(expected, self.cf_group.non_data_variable_names)
+        assert expected == self.cf_group.non_data_variable_names
