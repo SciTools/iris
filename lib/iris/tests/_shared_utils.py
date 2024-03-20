@@ -732,7 +732,7 @@ def assert_array_shape_stats(result, shape, mean, std_dev, rtol=1e-6):
     assert_array_all_close(result.data.std(), std_dev, rtol=rtol)
 
 
-def assert_dict_equal(lhs, rhs, msg=None):
+def assert_dict_equal(lhs, rhs):
     """Dictionary Comparison.
 
     This allows us to cope with dictionary comparison where the value of a key
