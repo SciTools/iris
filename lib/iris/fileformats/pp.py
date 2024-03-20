@@ -2177,15 +2177,12 @@ def save(cube, target, append=False, field_coords=None):
     of cubes to be saved to a PP file.
 
     """
-    fields = as_fields(cube, field_coords, target)
+    fields = as_fields(cube, field_coords)
     save_fields(fields, target, append=append)
 
 
-def save_pairs_from_cube(cube, field_coords=None, target=None):
-    """Use the PP saving rules to convert a cube.
-
-    Use the PP saving rules to convert a cube or
-    iterable of cubes to an iterable of (2D cube, PP field) pairs.
+def save_pairs_from_cube(cube, field_coords=None):
+    """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
     Parameters
     ----------
@@ -2196,8 +2193,11 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
-    target : optional
-        A filename or open file handle.
+
+    Yields
+    ------
+    :class:`iris.cube.Cube`, :class:`iris.fileformats.pp.PPField`.
+        2-dimensional slices of the input cube together with their associated pp-fields.
 
     """
     # Open issues
@@ -2298,7 +2298,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None, target=None):
+def as_fields(cube, field_coords=None):
     """Use the PP saving rules to convert a cube to an iterable of PP fields.
 
     Use the PP saving rules (and any user rules) to convert a cube to
@@ -2312,16 +2312,9 @@ def as_fields(cube, field_coords=None, target=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
-    target : optional
-        A filename or open file handle.
 
     """
-    return (
-        field
-        for cube, field in save_pairs_from_cube(
-            cube, field_coords=field_coords, target=target
-        )
-    )
+    return (field for _, field in save_pairs_from_cube(cube, field_coords=field_coords))
 
 
 def save_fields(fields, target, append: bool = False):
