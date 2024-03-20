@@ -6,12 +6,7 @@
 function.
 
 """
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+import pytest
 
 from iris.fileformats.nimrod import NimrodField
 from iris.fileformats.nimrod_load_rules import (
@@ -19,13 +14,13 @@ from iris.fileformats.nimrod_load_rules import (
     TranslationWarning,
     vertical_coord,
 )
+from iris.tests._shared_utils import assert_no_warnings_regexp
 
 
-class Test(tests.IrisTest):
-    NIMROD_LOCATION = "iris.fileformats.nimrod_load_rules"
-
-    def setUp(self):
-        self.field = mock.Mock(
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.field = mocker.Mock(
             vertical_coord=NIMROD_DEFAULT,
             vertical_coord_type=NIMROD_DEFAULT,
             reference_vertical_coord=NIMROD_DEFAULT,
@@ -34,7 +29,7 @@ class Test(tests.IrisTest):
             float32_mdi=NIMROD_DEFAULT,
             spec=NimrodField,
         )
-        self.cube = mock.Mock()
+        self.cube = mocker.Mock()
 
     def _call_vertical_coord(
         self,
@@ -54,23 +49,15 @@ class Test(tests.IrisTest):
         vertical_coord(self.cube, self.field)
 
     def test_unhandled(self):
-        with mock.patch("warnings.warn") as warn:
+        message_regexp = "Vertical coord -1 not yet handled"
+        with pytest.warns(TranslationWarning, match=message_regexp):
             self._call_vertical_coord(vertical_coord_val=1.0, vertical_coord_type=-1)
-        warn.assert_called_once_with(
-            "Vertical coord -1 not yet handled", category=TranslationWarning
-        )
 
     def test_null(self):
-        with mock.patch("warnings.warn") as warn:
+        with assert_no_warnings_regexp():
             self._call_vertical_coord(vertical_coord_type=NIMROD_DEFAULT)
             self._call_vertical_coord(vertical_coord_type=self.field.int_mdi)
-        self.assertEqual(warn.call_count, 0)
 
     def test_ground_level(self):
-        with mock.patch("warnings.warn") as warn:
+        with assert_no_warnings_regexp():
             self._call_vertical_coord(vertical_coord_val=9999.0, vertical_coord_type=0)
-        self.assertEqual(warn.call_count, 0)
-
-
-if __name__ == "__main__":
-    tests.main()
