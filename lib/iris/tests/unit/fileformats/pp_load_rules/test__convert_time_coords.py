@@ -18,7 +18,8 @@ import numpy as np
 from iris.coords import AuxCoord, DimCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_load_rules import _convert_time_coords
-from iris.tests.unit.fileformats import TestField
+from iris.tests import IrisTest as TestField
+from iris.tests.unit.fileformats.pp_load_rules import assert_coords_and_dims_lists_match
 
 
 def _lbtim(ia=0, ib=0, ic=0):
@@ -69,7 +70,7 @@ class TestLBTIMx0x_SingleTimepoint(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
 
     def test_normal_xy_dims(self):
         self._check_timepoint(_lbcode(1))
@@ -126,7 +127,7 @@ class TestLBTIMx1x_Forecast(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
 
     def test_normal_xy(self):
         self._check_forecast(_lbcode(1))
@@ -218,7 +219,7 @@ class TestLBTIMx2x_TimePeriod(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
 
     def test_normal_xy(self):
         self._check_period(_lbcode(1))
@@ -280,7 +281,7 @@ class TestLBTIMx3x_YearlyAggregation(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
 
     def test_normal_xy(self):
         self._check_yearly(_lbcode(1))
@@ -355,7 +356,7 @@ class TestLBCODE3xx(TestField):
                 None,
             )
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected_result)
 
 
 class TestArrayInputWithLBTIM_0_0_1(TestField):
@@ -387,7 +388,7 @@ class TestArrayInputWithLBTIM_0_0_1(TestField):
             (24 * 8) + 3 + hours, standard_name="time", units=_EPOCH_HOURS_UNIT
         )
         expected = [(time_coord, (0,))]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
 class TestArrayInputWithLBTIM_0_1_1(TestField):
@@ -436,7 +437,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, None),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
     def test_t1_and_t2_list(self):
         # lbtim ia = 0, ib = 1, ic = 1
@@ -485,7 +486,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, None),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
     def test_t1_and_t2_orthogonal_lists(self):
         # lbtim ia = 0, ib = 1, ic = 1
@@ -532,7 +533,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, (1,)),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
     def test_t1_multi_dim_list_t2_scalar(self):
         # Another case of lbtim ia = 0, ib = 1, ic = 1 but
@@ -586,7 +587,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             (time_coord, (0, 1)),
             (fref_time_coord, None),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
     def test_t1_and_t2_nparrays(self):
         # lbtim ia = 0, ib = 1, ic = 1
@@ -639,7 +640,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, None),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
 class TestArrayInputWithLBTIM_0_2_1(TestField):
@@ -694,7 +695,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, None),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):
@@ -754,7 +755,7 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
             (time_coord, (0,)),
             (fref_time_coord, (0,)),
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expected)
+        assert_coords_and_dims_lists_match(coords_and_dims, expected)
 
 
 if __name__ == "__main__":

@@ -17,7 +17,8 @@ from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, DimCoord
 from iris.fileformats.pp import STASH, SplittableInt
 from iris.fileformats.pp_load_rules import Reference, _convert_vertical_coords
-from iris.tests.unit.fileformats import TestField
+from iris.tests import IrisTest
+from iris.tests.unit.fileformats.pp_load_rules import assert_coords_and_dims_lists_match
 
 
 def _lbcode(value=None, ix=None, iy=None):
@@ -31,7 +32,7 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-class TestLBVC001_Height(TestField):
+class TestLBVC001_Height(IrisTest):
     def _check_height(
         self,
         blev,
@@ -89,7 +90,7 @@ class TestLBVC001_Height(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_normal_height__present(self):
@@ -172,7 +173,7 @@ class TestLBVC001_Height(TestField):
                 )
 
 
-class TestLBVC002_Depth(TestField):
+class TestLBVC002_Depth(IrisTest):
     def _check_depth(
         self,
         lbcode,
@@ -248,7 +249,7 @@ class TestLBVC002_Depth(TestField):
                 )
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_unbounded(self):
@@ -323,7 +324,7 @@ class TestLBVC002_Depth(TestField):
         )
 
 
-class TestLBVC006_SoilLevel(TestField):
+class TestLBVC006_SoilLevel(IrisTest):
     def _check_soil_level(self, lbcode, lblev=12.3, expect_match=True, dim=None):
         lbvc = 6
         stash = STASH(1, 1, 1)
@@ -354,7 +355,7 @@ class TestLBVC006_SoilLevel(TestField):
                 units="1",
             )
             expect_result = [(coord, dim)]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_normal(self):
@@ -374,7 +375,7 @@ class TestLBVC006_SoilLevel(TestField):
         )
 
 
-class TestLBVC006_SoilDepth(TestField):
+class TestLBVC006_SoilDepth(IrisTest):
     def _check_soil_depth(
         self,
         lbcode,
@@ -410,7 +411,7 @@ class TestLBVC006_SoilDepth(TestField):
                 attributes={"positive": "down"},
             )
             expect_result = [(coord, dim)]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_normal(self):
@@ -450,7 +451,7 @@ class TestLBVC006_SoilDepth(TestField):
         )
 
 
-class TestLBVC008_Pressure(TestField):
+class TestLBVC008_Pressure(IrisTest):
     def _check_pressure(self, lbcode, blev=250.3, expect_match=True, dim=None):
         lbvc = 8
         stash = STASH(1, 1, 1)
@@ -479,7 +480,7 @@ class TestLBVC008_Pressure(TestField):
             expect_result = [(DimCoord(blev, long_name="pressure", units="hPa"), dim)]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_normal(self):
@@ -504,7 +505,7 @@ class TestLBVC008_Pressure(TestField):
         self._check_pressure(_lbcode(ix=10, iy=1), blev=blev, dim=1, expect_match=False)
 
 
-class TestLBVC019_PotentialTemperature(TestField):
+class TestLBVC019_PotentialTemperature(IrisTest):
     def _check_potm(self, lbcode, blev=130.6, expect_match=True, dim=None):
         lbvc = 19
         stash = STASH(1, 1, 1)
@@ -543,7 +544,7 @@ class TestLBVC019_PotentialTemperature(TestField):
             ]
         else:
             expect_result = []
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_result)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_result)
         self.assertEqual(factories, [])
 
     def test_normal(self):
@@ -561,7 +562,7 @@ class TestLBVC019_PotentialTemperature(TestField):
         self._check_potm(_lbcode(ix=10, iy=11), blev=blev, dim=1, expect_match=False)
 
 
-class TestLBVC009_HybridPressure(TestField):
+class TestLBVC009_HybridPressure(IrisTest):
     def _check(
         self,
         lblev=37.0,
@@ -638,7 +639,7 @@ class TestLBVC009_HybridPressure(TestField):
                 ],
             )
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_coords_and_dims)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
 
     def test_normal(self):
@@ -664,7 +665,7 @@ class TestLBVC009_HybridPressure(TestField):
         )
 
 
-class TestLBVC065_HybridHeight(TestField):
+class TestLBVC065_HybridHeight(IrisTest):
     def _check(
         self,
         lblev=37.0,
@@ -740,7 +741,7 @@ class TestLBVC065_HybridHeight(TestField):
                 ],
             )
         ]
-        self.assertCoordsAndDimsListsMatch(coords_and_dims, expect_coords_and_dims)
+        assert_coords_and_dims_lists_match(coords_and_dims, expect_coords_and_dims)
         self.assertEqual(factories, expect_factories)
 
     def test_normal(self):
@@ -767,7 +768,7 @@ class TestLBVC065_HybridHeight(TestField):
         )
 
 
-class TestLBVCxxx_Unhandled(TestField):
+class TestLBVCxxx_Unhandled(IrisTest):
     def test_unknown_lbvc(self):
         lbvc = 999
         blev, lblev, bhlev, bhrlev, brsvd1, brsvd2, brlev = (

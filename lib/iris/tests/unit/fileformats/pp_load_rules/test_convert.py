@@ -18,6 +18,7 @@ import numpy as np
 from iris.fileformats.pp import STASH, PPField3, SplittableInt
 from iris.fileformats.pp_load_rules import convert
 import iris.tests.unit.fileformats
+from iris.tests.unit.fileformats.pp_load_rules import assert_test_for_coord
 from iris.util import guess_coord_axis
 
 
@@ -31,7 +32,7 @@ def _mock_field(**kwargs):
     return field
 
 
-class TestLBCODE(iris.tests.unit.fileformats.TestField):
+class TestLBCODE(iris.tests.IrisTest):
     @staticmethod
     def _is_cross_section_height_coord(coord):
         return (
@@ -45,7 +46,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         points = np.array([10, 20, 30, 40])
         bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
         field = _mock_field(lbcode=lbcode, bdy=0, y=points, y_bounds=bounds)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBCODE._is_cross_section_height_coord,
@@ -61,7 +62,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         field = _mock_field(
             lbcode=lbcode, bdy=bmdi, bmdi=bmdi, y=points, y_bounds=bounds
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBCODE._is_cross_section_height_coord,
@@ -70,7 +71,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBVC(iris.tests.unit.fileformats.TestField):
+class TestLBVC(iris.tests.IrisTest):
     @staticmethod
     def _is_potm_level_coord(coord):
         return (
@@ -113,7 +114,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_soil_levels(self):
         level = 1234
         field = _mock_field(lbvc=6, lblev=level, brsvd=[0, 0], brlev=0)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self._is_soil_model_level_number_coord,
@@ -124,7 +125,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_soil_depth(self):
         lower, point, upper = 1.2, 3.4, 5.6
         field = _mock_field(lbvc=6, blev=point, brsvd=[lower, 0], brlev=upper)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self._is_soil_depth_coord,
@@ -143,7 +144,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=45,
             brsvd=[17, 40],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_model_level_number_coord,
@@ -164,7 +165,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=delta_lower_bound,
             brsvd=[17, delta_upper_bound],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_level_pressure_coord,
@@ -185,7 +186,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=11,
             brsvd=[sigma_upper_bound, 13],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_sigma_coord,
@@ -196,7 +197,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_potential_temperature_levels(self):
         potm_value = 27.32
         field = _mock_field(lbvc=19, blev=potm_value)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_potm_level_coord,
@@ -205,7 +206,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBTIM(iris.tests.unit.fileformats.TestField):
+class TestLBTIM(iris.tests.IrisTest):
     def test_365_calendar(self):
         f = mock.MagicMock(
             lbtim=SplittableInt(4, {"ia": 2, "ib": 1, "ic": 0}),
@@ -278,7 +279,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbyrd, field.lbmond, field.lbdatd = 1970, 1, 2
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_forecast_period,
@@ -286,7 +287,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             expected_bounds=[[6, 9]],
         )
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_time,
@@ -306,7 +307,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbyrd, field.lbmond, field.lbdatd = 1971, 1, 2
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_forecast_period,
@@ -314,7 +315,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             expected_bounds=[[36 - 30, lbft]],
         )
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_time,
@@ -323,7 +324,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBRSVD(iris.tests.unit.fileformats.TestField):
+class TestLBRSVD(iris.tests.IrisTest):
     @staticmethod
     def _is_realization(coord):
         return coord.standard_name == "realization" and coord.units == "1"
@@ -334,7 +335,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
         points = np.array([71])
         bounds = None
         field = _mock_field(lbrsvd=lbrsvd)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBRSVD._is_realization,
@@ -384,7 +385,7 @@ class TestLBSRCE(iris.tests.IrisTest):
         )
 
 
-class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
+class Test_STASH_CF(iris.tests.IrisTest):
     def test_stash_cf_air_temp(self):
         lbuser = [1, 0, 0, 16203, 0, 0, 1]
         lbfc = 16
@@ -424,7 +425,7 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
         self.assertIsNone(units)
 
 
-class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
+class Test_LBFC_CF(iris.tests.IrisTest):
     def test_fc_cf_air_temp(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 16

@@ -17,7 +17,8 @@ import numpy as np
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.fileformats.pp import SplittableInt
 from iris.fileformats.pp_load_rules import _all_other_rules
-from iris.tests.unit.fileformats import TestField
+from iris.tests import IrisTest
+from iris.tests.unit.fileformats.pp_load_rules import assert_coords_and_dims_lists_match
 
 # iris.fileformats.pp_load_rules._all_other_rules() returns a tuple of
 # of various metadata. This constant is the index into this
@@ -142,7 +143,7 @@ class TestCellMethods(tests.IrisTest):
         self.assertEqual(res, expected)
 
 
-class TestCrossSectionalTime(TestField):
+class TestCrossSectionalTime(IrisTest):
     def test_lbcode3x23(self):
         time_bounds = np.array(
             [[0.875, 1.125], [1.125, 1.375], [1.375, 1.625], [1.625, 1.875]]
@@ -201,10 +202,10 @@ class TestCrossSectionalTime(TestField):
                 0,
             )
         ]
-        self.assertCoordsAndDimsListsMatch(res, expected)
+        assert_coords_and_dims_lists_match(res, expected)
 
 
-class TestLBTIMx2x_ZeroYears(TestField):
+class TestLBTIMx2x_ZeroYears(IrisTest):
     _spec = [
         "lbtim",
         "lbcode",
@@ -272,28 +273,28 @@ class TestLBTIMx2x_ZeroYears(TestField):
                 None,
             ),
         ]
-        self.assertCoordsAndDimsListsMatch(res, expected)
+        assert_coords_and_dims_lists_match(res, expected)
 
     def test_diff_month(self):
         field = self._make_field(lbmon=3, lbmond=4)
         field.mock_add_spec(self._spec)
         res = _all_other_rules(field)[AUX_COORDS_INDEX]
 
-        self.assertCoordsAndDimsListsMatch(res, [])
+        assert_coords_and_dims_lists_match(res, [])
 
     def test_nonzero_year(self):
         field = self._make_field(lbyr=1)
         field.mock_add_spec(self._spec)
         res = _all_other_rules(field)[AUX_COORDS_INDEX]
 
-        self.assertCoordsAndDimsListsMatch(res, [])
+        assert_coords_and_dims_lists_match(res, [])
 
     def test_nonzero_yeard(self):
         field = self._make_field(lbyrd=1)
         field.mock_add_spec(self._spec)
         res = _all_other_rules(field)[AUX_COORDS_INDEX]
 
-        self.assertCoordsAndDimsListsMatch(res, [])
+        assert_coords_and_dims_lists_match(res, [])
 
 
 if __name__ == "__main__":
