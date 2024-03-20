@@ -22,7 +22,8 @@ from iris.tests._shared_utils import assert_array_all_close
 
 
 class TestEpochHours__standard:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.calendar = cf_units.CALENDAR_STANDARD
         self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
@@ -72,7 +73,8 @@ class TestEpochHours__standard:
 
 
 class TestEpochHours__360day:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.calendar = cf_units.CALENDAR_360_DAY
         self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
@@ -98,7 +100,8 @@ class TestEpochHours__360day:
 
 
 class TestEpochHours__365day:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.calendar = cf_units.CALENDAR_365_DAY
         self.hrs_unit = Unit("hours since epoch", calendar=self.calendar)
 
