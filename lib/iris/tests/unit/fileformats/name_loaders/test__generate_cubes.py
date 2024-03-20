@@ -3,21 +3,17 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.analysis.name_loaders._generate_cubes`."""
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from datetime import datetime, timedelta
 from unittest import mock
 
 import numpy as np
 
 from iris.fileformats.name_loaders import NAMECoord, _generate_cubes
+from iris.tests._shared_utils import assert_array_equal
 
 
-class TestCellMethods(tests.IrisTest):
-    def test_cell_methods(self):
+class TestCellMethods:
+    def test_cell_methods(self, mocker):
         header = mock.MagicMock()
         column_headings = {
             "Species": [1, 2, 3],
@@ -29,8 +25,8 @@ class TestCellMethods(tests.IrisTest):
         data_arrays = [mock.Mock(), mock.Mock()]
         cell_methods = ["cell_method_1", "cell_method_2"]
 
-        self.patch("iris.fileformats.name_loaders._cf_height_from_name")
-        self.patch("iris.cube.Cube")
+        mocker.patch("iris.fileformats.name_loaders._cf_height_from_name")
+        mocker.patch("iris.cube.Cube")
         cubes = list(
             _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
         )
@@ -39,8 +35,9 @@ class TestCellMethods(tests.IrisTest):
         cubes[1].assert_has_calls([mock.call.add_cell_method("cell_method_2")])
 
 
-class TestCircularLongitudes(tests.IrisTest):
-    def _simulate_with_coords(self, names, values, dimensions):
+class TestCircularLongitudes:
+    @staticmethod
+    def _simulate_with_coords(mocker, names, values, dimensions):
         header = mock.MagicMock()
         column_headings = {
             "Species": [1, 2, 3],
@@ -54,50 +51,53 @@ class TestCircularLongitudes(tests.IrisTest):
         ]
         data_arrays = [mock.Mock()]
 
-        self.patch("iris.fileformats.name_loaders._cf_height_from_name")
-        self.patch("iris.cube.Cube")
+        mocker.patch("iris.fileformats.name_loaders._cf_height_from_name")
+        mocker.patch("iris.cube.Cube")
         cubes = list(_generate_cubes(header, column_headings, coords, data_arrays))
         return cubes
 
-    def test_non_circular(self):
+    def test_non_circular(self, mocker):
         results = self._simulate_with_coords(
-            names=["longitude"], values=[[1, 7, 23]], dimensions=[0]
+            mocker, names=["longitude"], values=[[1, 7, 23]], dimensions=[0]
         )
-        self.assertEqual(len(results), 1)
+        assert len(results) == 1
         add_coord_calls = results[0].add_dim_coord.call_args_list
-        self.assertEqual(len(add_coord_calls), 1)
+        assert len(add_coord_calls) == 1
         coord = add_coord_calls[0][0][0]
-        self.assertEqual(coord.circular, False)
+        assert coord.circular is False
 
-    def test_circular(self):
+    def test_circular(self, mocker):
         results = self._simulate_with_coords(
+            mocker,
             names=["longitude"],
             values=[[5.0, 95.0, 185.0, 275.0]],
             dimensions=[0],
         )
-        self.assertEqual(len(results), 1)
+        assert len(results) == 1
         add_coord_calls = results[0].add_dim_coord.call_args_list
-        self.assertEqual(len(add_coord_calls), 1)
+        assert len(add_coord_calls) == 1
         coord = add_coord_calls[0][0][0]
-        self.assertEqual(coord.circular, True)
+        assert coord.circular is True
 
-    def test_lat_lon_byname(self):
+    def test_lat_lon_byname(self, mocker):
         results = self._simulate_with_coords(
+            mocker,
             names=["longitude", "latitude"],
             values=[[5.0, 95.0, 185.0, 275.0], [5.0, 95.0, 185.0, 275.0]],
             dimensions=[0, 1],
         )
-        self.assertEqual(len(results), 1)
+        assert len(results) == 1
         add_coord_calls = results[0].add_dim_coord.call_args_list
-        self.assertEqual(len(add_coord_calls), 2)
+        assert len(add_coord_calls) == 2
         lon_coord = add_coord_calls[0][0][0]
         lat_coord = add_coord_calls[1][0][0]
-        self.assertEqual(lon_coord.circular, True)
-        self.assertEqual(lat_coord.circular, False)
+        assert lon_coord.circular is True
+        assert lat_coord.circular is False
 
 
-class TestTimeCoord(tests.IrisTest):
-    def _simulate_with_coords(self, names, values, dimensions):
+class TestTimeCoord:
+    @staticmethod
+    def _simulate_with_coords(mocker, names, values, dimensions):
         header = mock.MagicMock()
         column_headings = {
             "Species": [1, 2, 3],
@@ -111,13 +111,14 @@ class TestTimeCoord(tests.IrisTest):
         ]
         data_arrays = [mock.Mock()]
 
-        self.patch("iris.fileformats.name_loaders._cf_height_from_name")
-        self.patch("iris.cube.Cube")
+        mocker.patch("iris.fileformats.name_loaders._cf_height_from_name")
+        mocker.patch("iris.cube.Cube")
         cubes = list(_generate_cubes(header, column_headings, coords, data_arrays))
         return cubes
 
-    def test_time_dim(self):
+    def test_time_dim(self, mocker):
         results = self._simulate_with_coords(
+            mocker,
             names=["longitude", "latitude", "time"],
             values=[
                 [10, 20],
@@ -126,33 +127,30 @@ class TestTimeCoord(tests.IrisTest):
             ],
             dimensions=[0, 1, 2],
         )
-        self.assertEqual(len(results), 1)
+        assert len(results) == 1
         result = results[0]
         dim_coord_calls = result.add_dim_coord.call_args_list
-        self.assertEqual(len(dim_coord_calls), 3)  # lon, lat, time
+        assert len(dim_coord_calls) == 3  # lon, lat, time
         t_coord = dim_coord_calls[2][0][0]
-        self.assertEqual(t_coord.standard_name, "time")
-        self.assertArrayEqual(t_coord.points, [398232, 398256])
-        self.assertArrayEqual(t_coord.bounds[0], [398208, 398232])
-        self.assertArrayEqual(t_coord.bounds[-1], [398232, 398256])
+        assert t_coord.standard_name == "time"
+        assert_array_equal(t_coord.points, [398232, 398256])
+        assert_array_equal(t_coord.bounds[0], [398208, 398232])
+        assert_array_equal(t_coord.bounds[-1], [398232, 398256])
 
-    def test_time_scalar(self):
+    def test_time_scalar(self, mocker):
         results = self._simulate_with_coords(
+            mocker,
             names=["longitude", "latitude", "time"],
             values=[[10, 20], [30, 40], [datetime(2015, 6, 7)]],
             dimensions=[0, 1, None],
         )
-        self.assertEqual(len(results), 1)
+        assert len(results) == 1
         result = results[0]
         dim_coord_calls = result.add_dim_coord.call_args_list
-        self.assertEqual(len(dim_coord_calls), 2)
+        assert len(dim_coord_calls) == 2
         aux_coord_calls = result.add_aux_coord.call_args_list
-        self.assertEqual(len(aux_coord_calls), 1)
+        assert len(aux_coord_calls) == 1
         t_coord = aux_coord_calls[0][0][0]
-        self.assertEqual(t_coord.standard_name, "time")
-        self.assertArrayEqual(t_coord.points, [398232])
-        self.assertArrayEqual(t_coord.bounds, [[398208, 398232]])
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert t_coord.standard_name == "time"
+        assert_array_equal(t_coord.points, [398232])
+        assert_array_equal(t_coord.bounds, [[398208, 398232]])
