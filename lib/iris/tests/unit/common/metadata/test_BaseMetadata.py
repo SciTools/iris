@@ -89,12 +89,12 @@ class Test___eq__:
 
     def test_cannot_compare_non_class(self):
         result = self.metadata.__eq__(None)
-        assert NotImplemented is result
+        assert result is NotImplemented
 
     def test_cannot_compare_different_class(self):
         other = CubeMetadata(*(None,) * len(CubeMetadata._fields))
         result = self.metadata.__eq__(other)
-        assert NotImplemented is result
+        assert result is NotImplemented
 
     def test_lenient(self, mocker):
         return_value = mocker.sentinel.return_value
@@ -107,7 +107,7 @@ class Test___eq__:
         assert result == return_value
         assert mcompare.call_count == 1
         (arg,), kwargs = mcompare.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
         assert mlenient.call_count == 1
@@ -698,7 +698,7 @@ class Test__compare_lenient:
         rmetadata = self.cls(**right)
 
         assert lmetadata._compare_lenient(rmetadata)
-        assert rmetadata._combine_lenient(lmetadata)
+        assert rmetadata._compare_lenient(lmetadata)
 
 
 class Test__compare_lenient_attributes:
@@ -1086,13 +1086,13 @@ class Test__difference_lenient_attributes:
             del right[key]
         expected_left, expected_right = (left, right)
         result_left, result_right = result
-        assert result_left == expected_left
-        assert result_right == expected_right
+        assert_dict_equal(result_left, expected_left)
+        assert_dict_equal(result_right, expected_right)
 
         result = self.metadata._difference_lenient_attributes(right, left)
         result_left, result_right = result
-        assert result_left == expected_right
-        assert result_right == expected_left
+        assert_dict_equal(result_left, expected_right)
+        assert_dict_equal(result_right, expected_left)
 
     def test_different_none(self):
         left = self.values.copy()
@@ -1105,13 +1105,13 @@ class Test__difference_lenient_attributes:
             del right[key]
         expected_left, expected_right = (left, right)
         result_left, result_right = result
-        assert result_left == expected_left
-        assert result_right == expected_right
+        assert_dict_equal(result_left, expected_left)
+        assert_dict_equal(result_right, expected_right)
 
         result = self.metadata._difference_lenient_attributes(right, left)
         result_left, result_right = result
-        assert result_left == expected_right
-        assert result_right == expected_left
+        assert_dict_equal(result_left, expected_right)
+        assert_dict_equal(result_right, expected_left)
 
     def test_extra(self, mocker):
         left = self.values.copy()
@@ -1160,13 +1160,13 @@ class Test__difference_strict_attributes:
             del expected_left[key]
             del expected_right[key]
         result_left, result_right = result
-        assert result_left == expected_left
-        assert result_right == expected_right
+        assert_dict_equal(result_left, expected_left)
+        assert_dict_equal(result_right, expected_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
         result_left, result_right = result
-        assert result_left == expected_right
-        assert result_right == expected_left
+        assert_dict_equal(result_left, expected_right)
+        assert_dict_equal(result_right, expected_left)
 
     def test_different_none(self):
         left = self.values.copy()
@@ -1180,13 +1180,13 @@ class Test__difference_strict_attributes:
             del expected_left[key]
             del expected_right[key]
         result_left, result_right = result
-        assert result_left == expected_left
-        assert result_right == expected_right
+        assert_dict_equal(result_left, expected_left)
+        assert_dict_equal(result_right, expected_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
         result_left, result_right = result
-        assert expected_right == result_left
-        assert expected_left == result_right
+        assert_dict_equal(result_left, expected_right)
+        assert_dict_equal(result_right, expected_left)
 
     def test_extra(self, mocker):
         left = self.values.copy()
@@ -1198,13 +1198,13 @@ class Test__difference_strict_attributes:
         expected_left = dict(extra_left=left["extra_left"])
         expected_right = dict(extra_right=right["extra_right"])
         result_left, result_right = result
-        assert result_left == expected_left
-        assert result_right == expected_right
+        assert_dict_equal(result_left, expected_left)
+        assert_dict_equal(result_right, expected_right)
 
         result = self.metadata._difference_strict_attributes(right, left)
         result_left, result_right = result
-        assert result_left == expected_right
-        assert result_right == expected_left
+        assert_dict_equal(result_left, expected_right)
+        assert_dict_equal(result_right, expected_left)
 
 
 class Test__is_attributes:
@@ -1272,7 +1272,7 @@ class Test_combine:
         assert result._asdict() == self.mock_kwargs
         assert patcher.call_count == 1
         (arg,), kwargs = patcher.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_true(self, mocker):
@@ -1289,7 +1289,7 @@ class Test_combine:
         assert result._asdict() == self.mock_kwargs
         assert mcombine.call_count == 1
         (arg,), kwargs = mcombine.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_false(self, mocker):
@@ -1306,7 +1306,7 @@ class Test_combine:
         assert result._asdict() == self.mock_kwargs
         assert mcombine.call_count == 1
         (arg,), kwargs = mcombine.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
 
@@ -1357,7 +1357,7 @@ class Test_difference:
         assert result._asdict() == self.mock_kwargs
         assert patcher.call_count == 1
         (arg,), kwargs = patcher.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_true(self, mocker):
@@ -1376,7 +1376,7 @@ class Test_difference:
         assert result._asdict() == self.mock_kwargs
         assert mdifference.call_count == 1
         (arg,), kwargs = mdifference.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_false(self, mocker):
@@ -1395,7 +1395,7 @@ class Test_difference:
         assert result._asdict() == self.mock_kwargs
         assert mdifference.call_count == 1
         (arg,), kwargs = mdifference.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
 
@@ -1437,7 +1437,7 @@ class Test_equal:
         assert result == return_value
         assert patcher.call_count == 1
         (arg,), kwargs = patcher.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_true(self, mocker):
@@ -1454,7 +1454,7 @@ class Test_equal:
 
         assert m__eq__.call_count == 1
         (arg,), kwargs = m__eq__.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
     def test_lenient_false(self, mocker):
@@ -1471,7 +1471,7 @@ class Test_equal:
         assert result == return_value
         assert m__eq__.call_count == 1
         (arg,), kwargs = m__eq__.call_args
-        assert id(arg) == id(self.metadata)
+        assert arg is self.metadata
         assert kwargs == {}
 
 
