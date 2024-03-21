@@ -944,7 +944,7 @@ skip_inet = pytest.mark.skipif(
 
 skip_stratify = pytest.mark.skipif(
     not STRATIFY_AVAILABLE,
-    'Test(s) require "python-stratify", which is not available.',
+    reason='Test(s) require "python-stratify", which is not available.',
 )
 
 

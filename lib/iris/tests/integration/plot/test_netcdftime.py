@@ -3,25 +3,21 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test plot of time coord with non-standard calendar."""
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 from cf_units import Unit
 import cftime
 import numpy as np
 
 from iris.coords import AuxCoord
+from iris.tests import _shared_utils
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
-@tests.skip_nc_time_axis
-@tests.skip_plot
-class Test(tests.GraphicsTest):
+@_shared_utils.skip_nc_time_axis
+@_shared_utils.skip_plot
+class Test(_shared_utils.GraphicsTest):
     def test_360_day_calendar(self):
         n = 360
         calendar = "360_day"
@@ -44,8 +40,4 @@ class Test(tests.GraphicsTest):
         expected_ydata = times
         (line1,) = iplt.plot(time_coord)
         result_ydata = line1.get_ydata()
-        self.assertArrayEqual(expected_ydata, result_ydata)
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_equal(expected_ydata, result_ydata)
