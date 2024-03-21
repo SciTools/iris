@@ -5,6 +5,8 @@
 """Unit tests for the :class:`iris.fileformats.cf.CFGroup` class."""
 from unittest.mock import MagicMock
 
+import pytest
+
 from iris.fileformats.cf import (
     CFAuxiliaryCoordinateVariable,
     CFCoordinateVariable,
@@ -15,7 +17,8 @@ from iris.fileformats.cf import (
 
 class Tests:
     # TODO: unit tests for existing functionality pre 2021-03-11.
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cf_group = CFGroup()
 
     def test_non_data_names(self):
@@ -36,4 +39,4 @@ class Tests:
 
         expected_names = [var.cf_name for var in (aux_var, coord_var, coord_var2)]
         expected = set(expected_names)
-        assert expected == self.cf_group.non_data_variable_names
+        assert self.cf_group.non_data_variable_names == expected
