@@ -76,7 +76,7 @@ class Test___eq__:
         self.cls = CellMeasureMetadata
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.__eq__.__doc__ == self.cls.__eq__.__doc__
+        assert self.cls.__eq__.__doc__ == BaseMetadata.__eq__.__doc__
 
     def test_lenient_service(self):
         qualname___eq__ = _qualname(self.cls.__eq__)
