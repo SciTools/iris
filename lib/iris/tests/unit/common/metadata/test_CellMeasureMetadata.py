@@ -408,7 +408,7 @@ class Test_difference:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.difference.__doc__ == self.cls.difference.__doc__
+        assert self.cls.difference.__doc__ = BaseMetadata.difference.__doc__
 
     def test_lenient_service(self):
         qualname_difference = _qualname(self.cls.difference)
