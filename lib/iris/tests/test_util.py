@@ -89,36 +89,32 @@ class TestClipString:
         result = iris.util.clip_string(self.test_string, clip_length, self.rider)
 
         # Check the length is between what we requested ( + rider length) and the length of the original string
-        assert (
-            clip_length + len(self.rider) <= len(result) < len(self.test_string)
-        ), "String was not clipped."
+        fail_message = "String was not clipped."
+        clip_rider_len = clip_length + len(self.rider)
+        assert clip_rider_len <= len(result) < len(self.test_string), fail_message
 
         # Also test the rider was added
-        assert (
-            self.rider in result
-        ), "Rider was not added to the string when it should have been."
+        fail_message = "Rider was not added to the string when it should have been."
+        assert self.rider in result, fail_message
 
     def test_undersize_string(self):
         # Test with a clip length that is longer than the string
 
         clip_length = 10999
         result = iris.util.clip_string(self.test_string, clip_length, self.rider)
-        assert len(result) == len(
-            self.test_string
-        ), "String was clipped when it should not have been."
+        fail_message = "String was clipped when it should not have been."
+        assert len(result) == len(self.test_string), fail_message
 
         # Also test that no rider was added on the end if the string was not clipped
-        assert (
-            self.rider not in result
-        ), "Rider was adding to the string when it should not have been."
+        fail_message = "Rider was adding to the string when it should not have been."
+        assert self.rider not in result, fail_message
 
     def test_invalid_clip_lengths(self):
         # Clip values less than or equal to zero are not valid
         for clip_length in [0, -100]:
             result = iris.util.clip_string(self.test_string, clip_length, self.rider)
-            assert len(result) == len(
-                self.test_string
-            ), "String was clipped when it should not have been."
+            fail_message = "String was clipped when it should not have been."
+            assert len(result) == len(self.test_string), fail_message
 
     def test_default_values(self):
         # Get the default values specified in the function
