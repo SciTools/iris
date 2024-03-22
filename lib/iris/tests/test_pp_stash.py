@@ -3,104 +3,93 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
+import pytest
 
 import iris
 import iris.fileformats.pp
 import iris.io
+from iris.tests import _shared_utils
 import iris.tests.stock
 import iris.util
 
 
-class TestPPStash(tests.IrisTest):
-    @tests.skip_data
+class TestPPStash:
+    @_shared_utils.skip_data
     def test_cube_attributes(self):
-        cube = tests.stock.simple_pp()
-        self.assertEqual("m01s16i203", cube.attributes["STASH"])
-        self.assertNotEqual("m01s16i999", cube.attributes["STASH"])
-        self.assertEqual(cube.attributes["STASH"], "m01s16i203")
-        self.assertNotEqual(cube.attributes["STASH"], "m01s16i999")
+        cube = iris.tests.stock.simple_pp()
+        assert "m01s16i203" == cube.attributes["STASH"]
+        assert "m01s16i999" != cube.attributes["STASH"]
+        assert cube.attributes["STASH"] == "m01s16i203"
+        assert cube.attributes["STASH"] != "m01s16i999"
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_ppfield(self):
-        data_path = tests.get_data_path(("PP", "simple_pp", "global.pp"))
+        data_path = _shared_utils.get_data_path(("PP", "simple_pp", "global.pp"))
         pps = iris.fileformats.pp.load(data_path)
         for pp in pps:
-            self.assertEqual("m01s16i203", pp.stash)
-            self.assertNotEqual("m01s16i999", pp.stash)
-            self.assertEqual(pp.stash, "m01s16i203")
-            self.assertNotEqual(pp.stash, "m01s16i999")
+            assert "m01s16i203" == pp.stash
+            assert "m01s16i999" != pp.stash
+            assert pp.stash == "m01s16i203"
+            assert pp.stash != "m01s16i999"
 
     def test_stash_against_stash(self):
-        self.assertEqual(
-            iris.fileformats.pp.STASH(1, 2, 3),
-            iris.fileformats.pp.STASH(1, 2, 3),
-        )
-        self.assertNotEqual(
-            iris.fileformats.pp.STASH(1, 2, 3),
-            iris.fileformats.pp.STASH(2, 3, 4),
-        )
+        assert iris.fileformats.pp.STASH(1, 2, 3) == iris.fileformats.pp.STASH(1, 2, 3)
+        assert iris.fileformats.pp.STASH(1, 2, 3) != iris.fileformats.pp.STASH(2, 3, 4)
 
     def test_stash_against_str(self):
-        self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), "m01s02i003")
-        self.assertEqual("m01s02i003", iris.fileformats.pp.STASH(1, 2, 3))
-        self.assertNotEqual(iris.fileformats.pp.STASH(1, 2, 3), "m02s03i004")
-        self.assertNotEqual("m02s03i004", iris.fileformats.pp.STASH(1, 2, 3))
+        assert iris.fileformats.pp.STASH(1, 2, 3) == "m01s02i003"
+        assert "m01s02i003" == iris.fileformats.pp.STASH(1, 2, 3)
+        assert iris.fileformats.pp.STASH(1, 2, 3) != "m02s03i004"
+        assert "m02s03i004" != iris.fileformats.pp.STASH(1, 2, 3)
 
     def test_irregular_stash_str(self):
-        self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), "m01s02i0000000003")
-        self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), "m01s02i3")
-        self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), "m01s2i3")
-        self.assertEqual(iris.fileformats.pp.STASH(1, 2, 3), "m1s2i3")
+        assert iris.fileformats.pp.STASH(1, 2, 3) == "m01s02i0000000003"
+        assert iris.fileformats.pp.STASH(1, 2, 3) == "m01s02i3"
+        assert iris.fileformats.pp.STASH(1, 2, 3) == "m01s2i3"
+        assert iris.fileformats.pp.STASH(1, 2, 3) == "m1s2i3"
 
-        self.assertEqual("m01s02i0000000003", iris.fileformats.pp.STASH(1, 2, 3))
-        self.assertEqual("m01s02i3", iris.fileformats.pp.STASH(1, 2, 3))
-        self.assertEqual("m01s2i3", iris.fileformats.pp.STASH(1, 2, 3))
-        self.assertEqual("m1s2i3", iris.fileformats.pp.STASH(1, 2, 3))
+        assert "m01s02i0000000003" == iris.fileformats.pp.STASH(1, 2, 3)
+        assert "m01s02i3" == iris.fileformats.pp.STASH(1, 2, 3)
+        assert "m01s2i3" == iris.fileformats.pp.STASH(1, 2, 3)
+        assert "m1s2i3" == iris.fileformats.pp.STASH(1, 2, 3)
 
-        self.assertNotEqual(iris.fileformats.pp.STASH(2, 3, 4), "m01s02i0000000003")
-        self.assertNotEqual(iris.fileformats.pp.STASH(2, 3, 4), "m01s02i3")
-        self.assertNotEqual(iris.fileformats.pp.STASH(2, 3, 4), "m01s2i3")
-        self.assertNotEqual(iris.fileformats.pp.STASH(2, 3, 4), "m1s2i3")
+        assert iris.fileformats.pp.STASH(2, 3, 4) != "m01s02i0000000003"
+        assert iris.fileformats.pp.STASH(2, 3, 4) != "m01s02i3"
+        assert iris.fileformats.pp.STASH(2, 3, 4) != "m01s2i3"
+        assert iris.fileformats.pp.STASH(2, 3, 4) != "m1s2i3"
 
-        self.assertNotEqual("m01s02i0000000003", iris.fileformats.pp.STASH(2, 3, 4))
-        self.assertNotEqual("m01s02i3", iris.fileformats.pp.STASH(2, 3, 4))
-        self.assertNotEqual("m01s2i3", iris.fileformats.pp.STASH(2, 3, 4))
-        self.assertNotEqual("m1s2i3", iris.fileformats.pp.STASH(2, 3, 4))
+        assert "m01s02i0000000003" != iris.fileformats.pp.STASH(2, 3, 4)
+        assert "m01s02i3" != iris.fileformats.pp.STASH(2, 3, 4)
+        assert "m01s2i3" != iris.fileformats.pp.STASH(2, 3, 4)
+        assert "m1s2i3" != iris.fileformats.pp.STASH(2, 3, 4)
 
-        self.assertEqual(iris.fileformats.pp.STASH.from_msi("M01s02i003"), "m01s02i003")
-        self.assertEqual("m01s02i003", iris.fileformats.pp.STASH.from_msi("M01s02i003"))
+        assert iris.fileformats.pp.STASH.from_msi("M01s02i003") == "m01s02i003"
+        assert "m01s02i003" == iris.fileformats.pp.STASH.from_msi("M01s02i003")
 
     def test_illegal_stash_str_range(self):
-        self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), "m??s02i003")
-        self.assertNotEqual(iris.fileformats.pp.STASH(0, 2, 3), "m01s02i003")
+        assert iris.fileformats.pp.STASH(0, 2, 3) == "m??s02i003"
+        assert iris.fileformats.pp.STASH(0, 2, 3) != "m01s02i003"
 
-        self.assertEqual("m??s02i003", iris.fileformats.pp.STASH(0, 2, 3))
-        self.assertNotEqual("m01s02i003", iris.fileformats.pp.STASH(0, 2, 3))
+        assert "m??s02i003" == iris.fileformats.pp.STASH(0, 2, 3)
+        assert "m01s02i003" != iris.fileformats.pp.STASH(0, 2, 3)
 
-        self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), "m??s02i003")
-        self.assertEqual(iris.fileformats.pp.STASH(0, 2, 3), "m00s02i003")
-        self.assertEqual("m??s02i003", iris.fileformats.pp.STASH(0, 2, 3))
-        self.assertEqual("m00s02i003", iris.fileformats.pp.STASH(0, 2, 3))
+        assert iris.fileformats.pp.STASH(0, 2, 3) == "m??s02i003"
+        assert iris.fileformats.pp.STASH(0, 2, 3) == "m00s02i003"
+        assert "m??s02i003" == iris.fileformats.pp.STASH(0, 2, 3)
+        assert "m00s02i003" == iris.fileformats.pp.STASH(0, 2, 3)
 
-        self.assertEqual(iris.fileformats.pp.STASH(100, 2, 3), "m??s02i003")
-        self.assertEqual(iris.fileformats.pp.STASH(100, 2, 3), "m100s02i003")
-        self.assertEqual("m??s02i003", iris.fileformats.pp.STASH(100, 2, 3))
-        self.assertEqual("m100s02i003", iris.fileformats.pp.STASH(100, 2, 3))
+        assert iris.fileformats.pp.STASH(100, 2, 3) == "m??s02i003"
+        assert iris.fileformats.pp.STASH(100, 2, 3) == "m100s02i003"
+        assert "m??s02i003" == iris.fileformats.pp.STASH(100, 2, 3)
+        assert "m100s02i003" == iris.fileformats.pp.STASH(100, 2, 3)
 
     def test_illegal_stash_stash_range(self):
-        self.assertEqual(
-            iris.fileformats.pp.STASH(0, 2, 3),
-            iris.fileformats.pp.STASH(0, 2, 3),
+        assert iris.fileformats.pp.STASH(0, 2, 3) == iris.fileformats.pp.STASH(0, 2, 3)
+        assert iris.fileformats.pp.STASH(100, 2, 3) == iris.fileformats.pp.STASH(
+            100, 2, 3
         )
-        self.assertEqual(
-            iris.fileformats.pp.STASH(100, 2, 3),
-            iris.fileformats.pp.STASH(100, 2, 3),
-        )
-        self.assertEqual(
-            iris.fileformats.pp.STASH(100, 2, 3),
-            iris.fileformats.pp.STASH(999, 2, 3),
+        assert iris.fileformats.pp.STASH(100, 2, 3) == iris.fileformats.pp.STASH(
+            999, 2, 3
         )
 
     def test_illegal_stash_format(self):
@@ -112,9 +101,9 @@ class TestPPStash(tests.IrisTest):
 
         for test_value, reference in test_values:
             msg = "Expected STASH code .* {!r}".format(test_value)
-            with self.assertRaisesRegex(ValueError, msg):
+            with pytest.raises(ValueError, match=msg):
                 test_value == iris.fileformats.pp.STASH(*reference)
-            with self.assertRaisesRegex(ValueError, msg):
+            with pytest.raises(ValueError, match=msg):
                 iris.fileformats.pp.STASH(*reference) == test_value
 
     def test_illegal_stash_type(self):
@@ -125,16 +114,12 @@ class TestPPStash(tests.IrisTest):
 
         for test_value, reference in test_values:
             msg = "Expected STASH code .* {!r}".format(test_value)
-            with self.assertRaisesRegex(TypeError, msg):
+            with pytest.raises(TypeError, match=msg):
                 iris.fileformats.pp.STASH.from_msi(test_value) == reference
-            with self.assertRaisesRegex(TypeError, msg):
+            with pytest.raises(TypeError, match=msg):
                 reference == iris.fileformats.pp.STASH.from_msi(test_value)
 
     def test_stash_lbuser(self):
         stash = iris.fileformats.pp.STASH(2, 32, 456)
-        self.assertEqual(stash.lbuser6(), 2)
-        self.assertEqual(stash.lbuser3(), 32456)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert stash.lbuser6() == 2
+        assert stash.lbuser3() == 32456

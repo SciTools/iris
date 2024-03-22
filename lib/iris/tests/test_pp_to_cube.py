@@ -3,26 +3,28 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
+from uuid import uuid4
 
-import os
+import pytest
 
 import iris
 import iris.fileformats.pp
 import iris.fileformats.pp_load_rules
 import iris.fileformats.rules
 import iris.io
+from iris.tests import _shared_utils
 import iris.tests.stock
 import iris.util
 
 
-@tests.skip_data
-class TestPPLoadCustom(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestPPLoadCustom:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
         self.subcubes = iris.cube.CubeList()
-        filename = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+        filename = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
         self.template = next(iris.fileformats.pp.load(filename))
+        self.request = request
 
     def _field_to_cube(self, field):
         cube, _, _ = iris.fileformats.rules._make_cube(
@@ -38,7 +40,7 @@ class TestPPLoadCustom(tests.IrisTest):
             cube = self._field_to_cube(field)
             self.subcubes.append(cube)
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ("pp_load_rules", "lbtim_2.cml"))
+        _shared_utils.assert_CML(self.request, cube, ("pp_load_rules", "lbtim_2.cml"))
 
     def _ocean_depth(self, bounded=False):
         lbuser = list(self.template.lbuser)
@@ -62,16 +64,21 @@ class TestPPLoadCustom(tests.IrisTest):
     def test_ocean_depth(self):
         self._ocean_depth()
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ("pp_load_rules", "ocean_depth.cml"))
+        _shared_utils.assert_CML(
+            self.request, cube, ("pp_load_rules", "ocean_depth.cml")
+        )
 
     def test_ocean_depth_bounded(self):
         self._ocean_depth(bounded=True)
         cube = self.subcubes.merge()[0]
-        self.assertCML(cube, ("pp_load_rules", "ocean_depth_bounded.cml"))
+        _shared_utils.assert_CML(
+            self.request, cube, ("pp_load_rules", "ocean_depth_bounded.cml")
+        )
 
 
-class TestReferences(tests.IrisTest):
-    def setUp(self):
+class TestReferences:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         target = iris.tests.stock.simple_2d()
         target.data = target.data.astype("f4")
         self.target = target
@@ -82,7 +89,7 @@ class TestReferences(tests.IrisTest):
         # coords, ensure the re-grid fails nicely - i.e. returns None.
         self.target.remove_coord("bar")
         new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
-        self.assertIsNone(new_ref)
+        assert new_ref is None
 
     def test_regrid_codimension(self):
         # If the target cube has two of the source dimension coords
@@ -93,48 +100,56 @@ class TestReferences(tests.IrisTest):
         new_foo.rename("foo")
         self.target.add_aux_coord(new_foo, 0)
         new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
-        self.assertIsNone(new_ref)
+        assert new_ref is None
 
     def test_regrid_identity(self):
         new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
         # Bounds don't make it through the re-grid process
         self.ref.coord("bar").bounds = None
         self.ref.coord("foo").bounds = None
-        self.assertEqual(new_ref, self.ref)
+        assert new_ref == self.ref
 
 
-@tests.skip_data
-class TestPPLoading(tests.IrisTest):
-    def test_simple(self):
+@_shared_utils.skip_data
+class TestPPLoading:
+    def test_simple(self, request):
         cube = iris.tests.stock.simple_pp()
-        self.assertCML(cube, ("cube_io", "pp", "load", "global.cml"))
+        _shared_utils.assert_CML(request, cube, ("cube_io", "pp", "load", "global.cml"))
 
 
-@tests.skip_data
-class TestPPLoadRules(tests.IrisTest):
+@_shared_utils.skip_data
+class TestPPLoadRules:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
+
     def test_pp_load_rules(self):
         # Test PP loading and rule evaluation.
 
         cube = iris.tests.stock.simple_pp()
-        self.assertCML(cube, ("pp_load_rules", "global.cml"))
+        _shared_utils.assert_CML(self.request, cube, ("pp_load_rules", "global.cml"))
 
-        data_path = tests.get_data_path(("PP", "rotated_uk", "rotated_uk.pp"))
+        data_path = _shared_utils.get_data_path(("PP", "rotated_uk", "rotated_uk.pp"))
         cube = iris.load(data_path)[0]
-        self.assertCML(cube, ("pp_load_rules", "rotated_uk.cml"))
+        _shared_utils.assert_CML(
+            self.request, cube, ("pp_load_rules", "rotated_uk.cml")
+        )
 
     def test_lbproc(self):
-        data_path = tests.get_data_path(
+        data_path = _shared_utils.get_data_path(
             ("PP", "meanMaxMin", "200806081200__qwpb.T24.pp")
         )
         # Set up standard name and T+24 constraint
         constraint = iris.Constraint("air_temperature", forecast_period=24)
         cubes = iris.load(data_path, constraint)
         cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]])
-        self.assertCML(cubes, ("pp_load_rules", "lbproc_mean_max_min.cml"))
+        _shared_utils.assert_CML(
+            self.request, cubes, ("pp_load_rules", "lbproc_mean_max_min.cml")
+        )
 
-    def test_cell_methods(self):
+    def test_cell_methods(self, tmp_path):
         # Test cell methods are created for correct values of lbproc
-        orig_file = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+        orig_file = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
 
         # Values that result in cell methods being created
         cell_method_values = {
@@ -158,7 +173,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.lbproc = value  # set value
 
             # Write out pp file
-            temp_filename = iris.util.create_temp_filename(".pp")
+            temp_filename = (tmp_path / str(uuid4())).with_suffix(".pp")
             with open(temp_filename, "wb") as temp_fh:
                 f.save(temp_fh)
 
@@ -167,16 +182,14 @@ class TestPPLoadRules(tests.IrisTest):
 
             if value in cell_method_values:
                 # Check for cell method on cube
-                self.assertEqual(cube.cell_methods[0].method, cell_method_values[value])
+                assert cube.cell_methods[0].method == cell_method_values[value]
             else:
                 # Check no cell method was created for values other than 128, 4096, 8192
-                self.assertEqual(len(cube.cell_methods), 0)
+                assert len(cube.cell_methods) == 0
 
-            os.remove(temp_filename)
-
-    def test_process_flags(self):
+    def test_process_flags(self, tmp_path):
         # Test that process flags are created for correct values of lbproc
-        orig_file = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+        orig_file = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
 
         # Values that result in process flags attribute NOT being created
         omit_process_flags_values = (64, 128, 4096, 8192)
@@ -187,7 +200,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.lbproc = value  # set value
 
             # Write out pp file
-            temp_filename = iris.util.create_temp_filename(".pp")
+            temp_filename = (tmp_path / str(uuid4())).with_suffix(".pp")
             with open(temp_filename, "wb") as temp_fh:
                 f.save(temp_fh)
 
@@ -196,15 +209,13 @@ class TestPPLoadRules(tests.IrisTest):
 
             if value in omit_process_flags_values:
                 # Check ukmo__process_flags attribute not created
-                self.assertEqual(cube.attributes.get("ukmo__process_flags", None), None)
+                assert cube.attributes.get("ukmo__process_flags", None) is None
             else:
                 # Check ukmo__process_flags attribute contains correct values
-                self.assertIn(
-                    iris.fileformats.pp.lbproc_map[value],
-                    cube.attributes["ukmo__process_flags"],
+                assert (
+                    iris.fileformats.pp.lbproc_map[value]
+                    in cube.attributes["ukmo__process_flags"]
                 )
-
-            os.remove(temp_filename)
 
         # Test multiple flag values
         multiple_bit_values = ((128, 32), (4096, 1024), (8192, 1024))
@@ -220,7 +231,7 @@ class TestPPLoadRules(tests.IrisTest):
             f.lbproc = sum(bit_values)  # set value
 
             # Write out pp file
-            temp_filename = iris.util.create_temp_filename(".pp")
+            temp_filename = (tmp_path / str(uuid4())).with_suffix(".pp")
             with open(temp_filename, "wb") as temp_fh:
                 f.save(temp_fh)
 
@@ -228,14 +239,6 @@ class TestPPLoadRules(tests.IrisTest):
             cube = iris.load_cube(temp_filename)
 
             # Check the process flags created
-            self.assertEqual(
-                set(cube.attributes["ukmo__process_flags"]),
-                set(multiple_map[sum(bit_values)]),
-                "Mismatch between expected and actual process flags.",
-            )
-
-            os.remove(temp_filename)
-
-
-if __name__ == "__main__":
-    tests.main()
+            assert set(cube.attributes["ukmo__process_flags"]) == set(
+                multiple_map[sum(bit_values)]
+            ), "Mismatch between expected and actual process flags."
