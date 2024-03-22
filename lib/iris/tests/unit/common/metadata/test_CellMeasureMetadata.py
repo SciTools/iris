@@ -242,7 +242,7 @@ class Test_combine:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.combine.__doc__ == self.cls.combine.__doc__
+        assert self.cls.combine.__doc__ == BaseMetadata.combine.__doc__
 
     def test_lenient_service(self):
         qualname_combine = _qualname(self.cls.combine)
