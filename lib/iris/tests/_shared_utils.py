@@ -802,7 +802,7 @@ def assert_equal_and_kind(value, expected):
 
 
 @contextlib.contextmanager
-def cube_save_test(
+def pp_cube_save_test(
     reference_txt_path,
     reference_cubes=None,
     reference_pp_path=None,
@@ -827,7 +827,7 @@ def cube_save_test(
     into which the PP data to be tested should be saved.
 
     Example::
-        with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
+        with self.pp_cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
             iris.save(cubes, temp_pp_path)
 
     """
