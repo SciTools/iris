@@ -583,7 +583,7 @@ class Test_equal:
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self):
-        assert BaseMetadata.equal.__doc__ == self.cls.equal.__doc__
+        assert self.cls.equal.__doc__ == BaseMetadata.equal.__doc__
 
     def test_lenient_service(self):
         qualname_equal = _qualname(self.cls.equal)
