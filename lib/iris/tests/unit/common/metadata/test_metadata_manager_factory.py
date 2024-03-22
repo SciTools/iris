@@ -177,7 +177,7 @@ class Test_instance__fields:
             metadata = metadata_manager_factory(base)
             assert metadata.fields == fields
             for field in fields:
-                hasattr(metadata, field)
+                assert hasattr(metadata, field)
 
 
 class Test_instance__values:
