@@ -877,7 +877,7 @@ class Test_rolling_window(tests.IrisTest):
         self.cell_measure = CellMeasure([0, 1, 2, 0, 1, 2], long_name="bar")
         self.multi_dim_cube.add_cell_measure(self.cell_measure, 1)
 
-        self.mock_agg = mock.Mock(spec=Aggregator)
+        self.mock_agg = mock.Mock(spec=Aggregator, lazy_func=None)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
