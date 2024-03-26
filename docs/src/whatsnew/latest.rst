@@ -24,7 +24,10 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. ⏱️ Performance benchmarking has shown that loading
+   :term:`Fields File (FF) Format` with a large number of fields via
+   :func:`iris.fileformats.um.structured_um_loading` has become ~30% slower
+   since `Dask version 2024.2.1`_.
 
 
 ✨ Features
@@ -102,3 +105,4 @@ This document explains the changes made to Iris for this release
 .. _Pull Request Labeler GitHub action: https://github.com/actions/labeler
 .. _NPY002: https://docs.astral.sh/ruff/rules/numpy-legacy-random/
 .. _numpydoc validation: https://numpydoc.readthedocs.io/en/latest/validation.html#
+.. _Dask version 2024.2.1: https://docs.dask.org/en/stable/changelog.html#v2024-2-1
