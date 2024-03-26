@@ -87,10 +87,7 @@ class Test__lazy_stream_data:
         cf_var = self.mock_var(
             data.shape, with_data_array=(data_form == "emulateddata")
         )
-        fill_value = -1.0  # not occurring in data
-        saver._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
         if data_form == "lazydata":
             expect_n_setitem = 0
             expect_n_delayed = 1

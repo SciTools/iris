@@ -161,15 +161,6 @@ _FACTORY_DEFNS = {
 }
 
 
-class _WarnComboMaskSave(
-    iris.warnings.IrisMaskValueMatchWarning,
-    iris.warnings.IrisSaveWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
 class CFNameCoordMap:
     """Provide a simple CF name to CF coordinate mapping."""
 
@@ -356,7 +347,7 @@ class Saver:
         self._formula_terms_cache = {}
         #: Target filepath
         self.filepath = None  # this line just for the API page -- value is set later
-        #: Whether to complete delayed saves on exit (and raise associated warnings).
+        #: Whether to complete delayed saves on exit.
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
         #: A per-file write lock to prevent dask attempting overlapping writes.
@@ -365,7 +356,7 @@ class Saver:
         )
 
         # A list of delayed writes for lazy saving
-        # a list of triples (source, target, fill-info).
+        # a list of couples (source, target).
         self._delayed_writes = []
 
         # Detect if we were passed a pre-opened dataset (or something like one)
@@ -1446,12 +1437,7 @@ class Saver:
                 bounds.dtype.newbyteorder("="),
                 cf_var.dimensions + (bounds_dimension_name,),
             )
-            self._lazy_stream_data(
-                data=bounds,
-                fill_value=None,
-                fill_warn=True,
-                cf_var=cf_var_bounds,
-            )
+            self._lazy_stream_data(data=bounds, cf_var=cf_var_bounds)
 
     def _get_cube_variable_name(self, cube):
         """Return a CF-netCDF variable name for the given cube.
@@ -1784,9 +1770,7 @@ class Saver:
             self._create_cf_bounds(element, cf_var, cf_name)
 
         # Add the data to the CF-netCDF variable.
-        self._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var)
 
         # Add names + units
         self._set_cf_var_attributes(cf_var, element)
@@ -2191,12 +2175,7 @@ class Saver:
         )
 
         set_packing_ncattrs(cf_var)
-        self._lazy_stream_data(
-            data=data,
-            fill_value=fill_value,
-            fill_warn=(not packing),
-            cf_var=cf_var,
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var)
 
         if cube.standard_name:
             _setncattr(cf_var, "standard_name", cube.standard_name)
@@ -2289,7 +2268,7 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    def _lazy_stream_data(self, data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(self, data, cf_var):
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2305,34 +2284,9 @@ class Saver:
             # data to/from netcdf data container objects in other packages, such as
             # xarray.
             # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
-            # N.B. also, in this case there is no need for fill-value checking as the
-            # data is not being translated to an in-file representation.
             cf_var._data_array = data
-        else:
-            # Decide whether we are checking for fill-value collisions.
-            dtype = cf_var.dtype
-            # fill_warn allows us to skip warning if packing attributes have been
-            #  specified. It would require much more complex operations to work out
-            #  what the values and fill_value _would_ be in such a case.
-            if fill_warn:
-                if fill_value is not None:
-                    fill_value_to_check = fill_value
-                else:
-                    # Retain 'fill_value == None', to show that no specific value was given.
-                    # But set 'fill_value_to_check' to a calculated value
-                    fill_value_to_check = _thread_safe_nc.default_fillvals[
-                        dtype.str[1:]
-                    ]
-                # Cast the check-value to the correct dtype.
-                # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
-                # does not have a compatible type.  This causes a deprecation warning at
-                # numpy 1.24, *and* was preventing correct fill-value checking of character
-                # data, since they are actually bytes (dtype 'S1').
-                fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
-            else:
-                # A None means we will NOT check for collisions.
-                fill_value_to_check = None
 
+        else:
             doing_delayed_save = is_lazy_data(data)
             if doing_delayed_save:
                 # save lazy data with a delayed operation.  For now, we just record the
@@ -2349,7 +2303,6 @@ class Saver:
 
             else:
                 # Real data is always written directly, i.e. not via lazy save.
-                # We also check it immediately for any fill-value problems.
                 def store(data, cf_var):
                     cf_var[:] = data
 
@@ -2390,16 +2343,6 @@ class Saver:
         """Complete file by computing any delayed variable saves.
 
         This requires that the Saver has closed the dataset (exited its context).
-
-        Parameters
-        ----------
-        issue_warnings : bool, default = True
-            If true, issue all the resulting warnings with :func:`warnings.warn`.
-
-        Returns
-        -------
-        list of Warning
-            Any warnings that were raised while writing delayed data.
 
         """
         if self._dataset.isopen():
@@ -2561,11 +2504,6 @@ def save(
         stream all the lazy content via :meth:`dask.store`, to complete the file.
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
-
-        .. note::
-            when computed, the returned :class:`dask.delayed.Delayed` object returns
-            a list of :class:`Warning` :  These are any warnings which *would* have
-            been issued in the save call, if ``compute`` had been ``True``.
 
         .. note::
             If saving to an open dataset instead of a filepath, then the caller
