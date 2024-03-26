@@ -275,6 +275,13 @@ def _setncattr(variable, name, attribute):
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
+
+    # TODO: remove at the next major release.
+    pass
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
