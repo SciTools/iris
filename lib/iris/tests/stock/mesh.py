@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Helper functions making objects for unstructured mesh testing."""
 
-
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord

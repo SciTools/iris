@@ -1,4 +1,5 @@
 """Global cube masked to Brazil and plotted with quickplot."""
+
 import cartopy.io.shapereader as shpreader
 import matplotlib.pyplot as plt
 

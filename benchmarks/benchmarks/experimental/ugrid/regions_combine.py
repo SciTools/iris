@@ -16,6 +16,7 @@ Where possible benchmarks should be parameterised for two sizes of input data:
   run-time that scale with data size.
 
 """
+
 import os
 
 import dask.array as da

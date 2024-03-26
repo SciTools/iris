@@ -36,6 +36,21 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+v3.7.1 (04 Mar 2024)
+====================
+
+.. dropdown:: v3.7.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   #. `@stephenworsley`_ fixed a potential memory leak for Iris uses of
+      :func:`dask.array.map_blocks`; known specifically to be a problem in the
+      :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
+
+
 📢 Announcements
 ================
 

@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.Table`."""
+
 from iris._representation.cube_printout import Table
 import iris.tests as tests
 
