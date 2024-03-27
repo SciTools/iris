@@ -32,3 +32,5 @@ def test_face_region_extraction():
 
     assert extracted_cube.ndim == 2
     assert extracted_cube.shape == (72, 101)
+    assert global_cube.shape == (72, 864)
+    assert global_cube.ndim == 2

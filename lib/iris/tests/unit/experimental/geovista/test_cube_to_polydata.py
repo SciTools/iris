@@ -103,7 +103,7 @@ class Test2dToPoly(ParentClass):
             "xs": cube_2d.coord(axis="X").contiguous_bounds(),
             "ys": cube_2d.coord(axis="Y").contiguous_bounds(),
             "data": cube_2d.data,
-            "name": cube_2d.name() + " / " + "(" + str(cube_2d.units) + ")",
+            "name": f"{cube_2d.name()} / ({cube_2d.units})",
         }
 
     @pytest.fixture()
@@ -120,7 +120,7 @@ class Test1dToPoly(ParentClass):
             "xs": cube_1d.coord(axis="X").contiguous_bounds(),
             "ys": cube_1d.coord(axis="Y").contiguous_bounds(),
             "data": cube_1d.data,
-            "name": cube_1d.name() + " / " + "(" + str(cube_1d.units) + ")",
+            "name": f"{cube_1d.name()} / ({cube_1d.units})",
         }
 
     @pytest.fixture()

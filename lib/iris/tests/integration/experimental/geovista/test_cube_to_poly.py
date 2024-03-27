@@ -20,13 +20,14 @@ def test_integration_2d():
             "votemper.nc",
         ]
     )
-    with PARSE_UGRID_ON_LOAD:
-        global_cube = load_cube(file_path, "votemper")
 
-    polydata = cube_to_polydata(global_cube[0, 1, :])
+    cube = load_cube(file_path, "votemper")
+
+    polydata = cube_to_polydata(cube[0, 1, :])
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 26640
     assert polydata.GetNumberOfPoints() == 26969
+    np.testing.assert_array_equal(cube[0, 1, :].data.flatten(), polydata.active_scalars)
 
 
 def test_integration_1d():
@@ -38,13 +39,13 @@ def test_integration_1d():
             "SMALL_hires_wind_u_for_ipcc4.nc",
         ]
     )
-    with PARSE_UGRID_ON_LOAD:
-        global_cube = load_cube(file_path)
+    cube = load_cube(file_path)
 
-    polydata = cube_to_polydata(global_cube[0, :])
+    polydata = cube_to_polydata(cube[0, :])
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 51200
     assert polydata.GetNumberOfPoints() == 51681
+    np.testing.assert_array_equal(cube[0, :].data.flatten(), polydata.active_scalars)
 
 
 def test_integration_mesh():
@@ -57,10 +58,10 @@ def test_integration_mesh():
     )
 
     with PARSE_UGRID_ON_LOAD.context():
-        global_cube = load_cube(file_path, "conv_rain")
+        cube = load_cube(file_path, "conv_rain")
 
-    polydata = cube_to_polydata(global_cube[0, :])
+    polydata = cube_to_polydata(cube[0, :])
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 864
     assert polydata.GetNumberOfPoints() == 866
-    np.testing.assert_array_equal(polydata.active_scalars, global_cube[0, :].data)
+    np.testing.assert_array_equal(polydata.active_scalars, cube[0, :].data)

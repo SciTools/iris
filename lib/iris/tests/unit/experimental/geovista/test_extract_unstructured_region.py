@@ -126,7 +126,8 @@ class TestRegionExtraction:
     def test_edge_location(self, cube_mesh_edge):
         with pytest.raises(
             NotImplementedError,
-            match=f"Must be on face or node." f" Found: {cube_mesh_edge.location}.",
+            match=f"cube.location must be `face` or `node`."
+            f" Found: {cube_mesh_edge.location}.",
         ):
             extract_unstructured_region(
                 cube_mesh_edge, self.mocked_polydata, self.mocked_region

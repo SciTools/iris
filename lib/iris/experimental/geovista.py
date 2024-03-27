@@ -298,7 +298,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
             indices_key = VTK_POINT_IDS
         else:
             raise NotImplementedError(
-                f"Must be on face or node. Found: {cube.location}."
+                f"cube.location must be `face` or `node`. Found: {cube.location}."
             )
 
         if cube.shape[mesh_dim] != polydata_length:
