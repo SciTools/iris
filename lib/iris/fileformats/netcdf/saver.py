@@ -20,6 +20,7 @@ import os
 import os.path
 import re
 import string
+import typing
 import warnings
 
 import cf_units
@@ -280,6 +281,15 @@ class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
 
     # TODO: remove at the next major release.
     pass
+
+
+class VariableEmulator(typing.Protocol):
+    """Duck-type-hinting for a ncdata object.
+
+    https://github.com/pp-mo/ncdata
+    """
+
+    _data_array: np.typing.ArrayLike
 
 
 class Saver:
@@ -2275,7 +2285,11 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    def _lazy_stream_data(self, data, cf_var):
+    def _lazy_stream_data(
+        self,
+        data: np.typing.ArrayLike,
+        cf_var: _thread_safe_nc.VariableWrapper | VariableEmulator,
+    ) -> None:
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2299,7 +2313,10 @@ class Saver:
                 # save lazy data with a delayed operation.  For now, we just record the
                 # necessary information -- a single, complete delayed action is constructed
                 # later by a call to delayed_completion().
-                def store(data, cf_var):
+                def store(
+                    data: np.typing.ArrayLike,
+                    cf_var: _thread_safe_nc.VariableWrapper | VariableEmulator,
+                ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
@@ -2310,7 +2327,10 @@ class Saver:
 
             else:
                 # Real data is always written directly, i.e. not via lazy save.
-                def store(data, cf_var):
+                def store(
+                    data: np.typing.ArrayLike,
+                    cf_var: _thread_safe_nc.VariableWrapper | VariableEmulator,
+                ) -> None:
                     cf_var[:] = data
 
             # Store the data.
