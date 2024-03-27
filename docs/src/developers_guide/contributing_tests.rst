@@ -6,8 +6,7 @@
 Contributing Iris Tests
 ***********************
 
-.. _developer_test_categories:
-
+.. _developer_pytest_categories:
 
 Test Categories
 ===============
@@ -24,7 +23,7 @@ But if in any doubt about what tests to add or how to write them please
 feel free to submit a pull-request in any state and ask for assistance.
 
 
-.. _testing.unit_test:
+.. _pytesting.unit_test:
 
 Unit Tests
 ----------
@@ -42,7 +41,7 @@ All unit tests must be placed and named according to the following
 structure:
 
 
-.. _testing.classes:
+.. _pytesting.classes:
 
 Classes
 -------
@@ -93,7 +92,7 @@ Within that file the tests might look something like:
             ...
 
 
-.. _testing.functions:
+.. _pytesting.functions:
 
 Functions
 ---------
@@ -136,7 +135,7 @@ Within that file the tests might look something like:
             ...
 
 
-.. _testing.integration:
+.. _pytesting.integration:
 
 Integration Tests
 -----------------
@@ -153,7 +152,7 @@ according to the capabilities under test, e.g.
 ``metadata/test_pp_preservation.py``, and not named according to the
 module(s) under test.
 
-.. _testing_style_guide:
+.. _pytesting_style_guide:
 
 PyTest Style Guide
 ==================
@@ -224,7 +223,7 @@ Any mocking should be done with ``pytest.mock``, and monkeypatching where suitab
     If you think we're missing anything important here, please consider creating an
     issue or discussion and share your ideas with the team!
 
-.. _testing_tools:
+.. _pytesting_tools:
 
 =============
 Testing tools
@@ -253,7 +252,7 @@ Custom assertions
 assertions, such as :meth:`~iris.tests._shared_utils.assert_array_equal`, and
 :meth:`~iris.tests._shared_utils.assert_array_almost_equal`.
 
-.. _create-missing:
+.. _pycreate-missing:
 
 Saving results
 --------------
