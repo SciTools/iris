@@ -308,7 +308,7 @@ def _reshape_vector_args(values_and_dims):
 
     Returns
     -------
-    reshaped_arrays : iterable of arrays
+    iterable object of arrays
         The inputs, transposed and reshaped onto common target dimensions.
 
     """
@@ -357,7 +357,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     bounds : :class:`numpy.ndarray`, optional
         Array of bounds values. This array should have an additional vertex
         dimension (typically of length 2) when compared to the  points array
-        i.e. bounds.shape = points.shape + (nvertex,)
+        i.e. bounds.shape = points.shape + (nvertex,).
     rtol : optional, default=1.0e-7
 
     Returns
@@ -451,18 +451,18 @@ def _new_coord_and_dims(
 
     * dimensions with all points and bounds values the same are removed.
     * the result coordinate may be an AuxCoord if a DimCoord cannot be made
-        (e.g. if values are non-monotonic).
+      (e.g. if values are non-monotonic).
 
     Parameters
     ----------
     is_vector_operation : bool
         If True, perform 'vector' style operation.
-    points : array-like
-        Coordinate point values.
     name : str
         Standard name of coordinate.
     units : str or cf_unit.Unit
         Units of coordinate.
+    points : array-like
+        Coordinate point values.
     lower_and_upper_bounds : pair of array-like or None, optional
         Corresponding bounds values (lower, upper), if any.
 
@@ -932,7 +932,7 @@ def convert(f):
 
 
 def _all_other_rules(f):
-    """Deals with all the other rules.
+    """Deal with all the other rules.
 
     Deals with all the other rules that have not been factored into any of
     the other convert_scalar_coordinate functions above.

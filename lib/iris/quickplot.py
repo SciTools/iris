@@ -135,7 +135,7 @@ def _label_1d_plot(*args, **kwargs):
 
 
 def contour(cube, *args, **kwargs):
-    """Draws contour lines on a labelled plot based on the given Cube.
+    """Draw contour lines on a labelled plot based on the given Cube.
 
     With the basic call signature, contour "level" values are chosen
     automatically::
@@ -166,7 +166,7 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """Draws filled contours on a labelled plot based on the given Cube.
+    """Draw filled contours on a labelled plot based on the given Cube.
 
     With the basic call signature, contour "level" values are chosen
     automatically::
@@ -196,7 +196,7 @@ def contourf(cube, *args, **kwargs):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """Draws cell outlines on a labelled plot based on the given Cube.
+    """Draw cell outlines on a labelled plot based on the given Cube.
 
     Parameters
     ----------
@@ -227,7 +227,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """Draws a labelled pseudocolor plot based on the given Cube.
+    """Draw a labelled pseudocolor plot based on the given Cube.
 
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
@@ -244,7 +244,7 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """Draws a labelled pseudocolour plot based on the given Cube.
+    """Draw a labelled pseudocolour plot based on the given Cube.
 
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
@@ -262,7 +262,7 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """Draws sample point positions on a labelled plot based on the given Cube.
+    """Draw sample point positions on a labelled plot based on the given Cube.
 
     See :func:`iris.plot.points` for details of valid keyword arguments.
 
@@ -280,7 +280,7 @@ def points(cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a labelled line plot based on the given cube(s) or coordinate(s).
+    """Draw a labelled line plot based on the given cube(s) or coordinate(s).
 
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
@@ -298,7 +298,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a labelled scatter plot based on the given cubes or coordinates.
+    """Draw a labelled scatter plot based on the given cubes or coordinates.
 
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
@@ -316,7 +316,7 @@ def scatter(x, y, *args, **kwargs):
 
 
 def fill_between(x, y1, y2, *args, **kwargs):
-    """Draws a labelled fill_between plot based on the given cubes or coordinates.
+    """Draw a labelled fill_between plot based on the given cubes or coordinates.
 
     See :func:`iris.plot.fill_between` for details of valid arguments and
     keyword arguments.

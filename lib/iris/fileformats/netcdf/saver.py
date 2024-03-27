@@ -13,6 +13,7 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
+
 import collections
 from itertools import repeat, zip_longest
 import os
@@ -49,6 +50,7 @@ import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
+import iris.warnings
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
@@ -161,8 +163,8 @@ _FACTORY_DEFNS = {
 
 
 class _WarnComboMaskSave(
-    iris.exceptions.IrisMaskValueMatchWarning,
-    iris.exceptions.IrisSaveWarning,
+    iris.warnings.IrisMaskValueMatchWarning,
+    iris.warnings.IrisSaveWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -296,10 +298,10 @@ def _data_fillvalue_check(arraylib, data, check_value):
     arraylib : module
         Either numpy or dask.array : When dask, results are lazy computations.
     data : array-like
-        Array to check (numpy or dask)
+        Array to check (numpy or dask).
     check_value : number or None
         If not None, fill-value to check for existence in the array.
-        If None, do not do value-in-array check
+        If None, do not do value-in-array check.
 
     Returns
     -------
@@ -318,8 +320,8 @@ def _data_fillvalue_check(arraylib, data, check_value):
     return is_masked, contains_value
 
 
-class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`."""
+class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -334,18 +336,18 @@ def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
     Parameters
     ----------
     fill_info : _FillvalueCheckInfo
-        A named-tuple containing the context of the fill-value check
+        A named-tuple containing the context of the fill-value check.
     is_masked : bool
-        whether the data array was masked
+        Whether the data array was masked.
     contains_fill_value : bool
-        whether the data array contained the fill-value
+        Whether the data array contained the fill-value.
     warn : bool, default=False
-        if True, also issue any resulting warning immediately.
+        If True, also issue any resulting warning immediately.
 
     Returns
     -------
     None or :class:`Warning`
-        If not None, indicates a known or possible problem with filling
+        If not None, indicates a known or possible problem with filling.
 
     """
     varname = fill_info.varname
@@ -737,7 +739,7 @@ class Saver:
                 cf_patch(profile, self._dataset, cf_var_cube)
             else:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -843,21 +845,22 @@ class Saver:
         Add the cube's mesh, and all related variables to the dataset.
         Includes all the mesh-element coordinate and connectivity variables.
 
-        ..note::
+        .. note::
 
             Here, we do *not* add the relevant referencing attributes to the
             data-variable, because we want to create the data-variable later.
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube`or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
         -------
-        cf_mesh_name : str or None
+        str or None
             The name of the mesh variable created, or None if the cube does not
             have a mesh.
+
         """
         cf_mesh_name = None
 
@@ -1020,7 +1023,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
@@ -1060,7 +1063,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
@@ -1079,7 +1082,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
@@ -1121,7 +1124,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube: :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`netcdf.netcdf_variable`
             CF variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -1133,7 +1136,7 @@ class Saver:
                 msg = "Unable to determine formula terms for AuxFactory: {!r}".format(
                     factory
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -1211,7 +1214,7 @@ class Saver:
         mesh_dimensions : list of str
             A list of the mesh dimensions of the attached mesh, if any.
         cube_dimensions : list of str
-            A lists of dimension names for each dimension of the cube
+            A lists of dimension names for each dimension of the cube.
 
         Notes
         -----
@@ -1417,12 +1420,12 @@ class Saver:
         Parameters
         ----------
         var_name : str
-            The var_name to normalise
+            The var_name to normalise.
 
         Returns
         -------
         str
-            var_name suitable for passing through for variable creation.
+            The var_name suitable for passing through for variable creation.
 
         """
         # Replace invalid characters with an underscore ("_").
@@ -1498,9 +1501,9 @@ class Saver:
         coord : :class:`iris.coords.Coord`
             A coordinate of a cube.
         cf_var :
-            CF-netCDF variable
+            CF-netCDF variable.
         cf_name : str
-            name of the CF-NetCDF variable.
+            Name of the CF-NetCDF variable.
 
         Returns
         -------
@@ -1749,7 +1752,7 @@ class Saver:
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
 
-        ..note::
+        .. note::
             If the metadata element is a coord, it may also contain bounds.
             In which case, an additional var is created and linked to it.
 
@@ -1951,7 +1954,7 @@ class Saver:
             A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
             cubes to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
 
         Returns
         -------
@@ -2084,7 +2087,7 @@ class Saver:
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn(
                         "OSGB coordinate system not yet handled",
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 # lambert azimuthal equal area
@@ -2172,7 +2175,7 @@ class Saver:
                         "Unable to represent the horizontal "
                         "coordinate system. The coordinate system "
                         "type %r is not yet implemented." % type(cs),
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 self._coord_systems.append(cs)
@@ -2201,11 +2204,11 @@ class Saver:
         dimension_names : list
             String names for each dimension of the cube.
         local_keys : iterable of str, optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
         packing : type or str or dict or list, optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
         fill_value : optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
 
         Notes
         -----
@@ -2342,7 +2345,7 @@ class Saver:
                     "attribute, but {attr_name!r} should only be a CF "
                     "global attribute.".format(attr_name=attr_name)
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2548,7 +2551,7 @@ class Saver:
 
         Returns
         -------
-        warnings : list of Warning
+        list of Warning
             Any warnings that were raised while writing delayed data.
 
         """
@@ -2565,7 +2568,7 @@ class Saver:
         if issue_warnings:
             # Issue any delayed warnings from the compute.
             for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning, category=iris.exceptions.IrisSaveWarning)
+                warnings.warn(delayed_warning, category=iris.warnings.IrisSaveWarning)
 
         return result_warnings
 
@@ -2617,7 +2620,7 @@ def save(
         Name of the netCDF file to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
-        .. Note::
+        .. note::
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 
@@ -2734,7 +2737,7 @@ def save(
 
     Returns
     -------
-    result : None or dask.delayed.Delayed
+    None or dask.delayed.Delayed
         If `compute=True`, returns `None`.
         Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
         writing to fill in the variables data.
@@ -2815,7 +2818,7 @@ def save(
                 f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes.",
-                category=iris.exceptions.IrisSaveWarning,
+                category=iris.warnings.IrisSaveWarning,
             )
             cubes = cubes.copy()  # avoiding modifying the actual input arg.
             for i_cube in range(len(cubes)):
@@ -2831,7 +2834,7 @@ def save(
                             f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names.",
-                            category=iris.exceptions.IrisSaveWarning,
+                            category=iris.warnings.IrisSaveWarning,
                         )
                     demote_attrs -= blocked_attrs
                     if demote_attrs:
@@ -2973,7 +2976,7 @@ def save(
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch_conventions"
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
         # Add conventions attribute.
         if iris.FUTURE.save_split_attrs:

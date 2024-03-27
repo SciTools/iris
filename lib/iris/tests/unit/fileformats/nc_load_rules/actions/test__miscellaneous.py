@@ -12,6 +12,7 @@ Tests for rules activation relating to some isolated aspects :
     * ancillary variables
 
 """
+
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure

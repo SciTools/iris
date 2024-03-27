@@ -29,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.2.1"
+    rev: "v0.3.4"
     hooks:
     -   id: ruff
         types: [file, python]
@@ -60,4 +60,11 @@ repos:
     rev: v1.2.0
     hooks:
     -   id: sort-all
+        types: [file, python]
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.7.0rc0
+    hooks:
+      - id: numpydoc-validation
+        exclude: "^lib/iris/tests/|docs/gallery_code/"
         types: [file, python]

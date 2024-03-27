@@ -19,8 +19,9 @@ import pytest
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisVagueMetadataWarning, UnitConversionError
+from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
+from iris.warnings import IrisVagueMetadataWarning
 
 Pair = collections.namedtuple("Pair", "points bounds")
 
