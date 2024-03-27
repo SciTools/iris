@@ -5,27 +5,28 @@
 Testing tools
 *************
 
+.. note::
+    :class:`iris.tests.IrisTest` has been deprecated, and replaced with
+    the :mod:`iris.tests._shared_utils` module.
+
 Iris has various internal convenience functions and utilities available to
 support writing tests. Using these makes tests quicker and easier to write, and
 also consistent with the rest of Iris (which makes it easier to work with the
 code). Most of these conveniences are accessed through the
-:class:`iris.tests.IrisTest` class, from
-which Iris' test classes then inherit.
+:mod:`iris.tests._shared_utils` module.
 
 .. tip::
 
     All functions listed on this page are defined within
-    :mod:`iris.tests.__init__.py` as methods of
-    :class:`iris.tests.IrisTest_nometa` (which :class:`iris.tests.IrisTest`
-    inherits from). They can be accessed within a test using
-    ``self.exampleFunction``.
+    :mod:`iris.tests._shared_utils`. They can be accessed within a test using
+    ``_shared_utils.exampleFunction``.
 
 Custom assertions
 =================
 
-:class:`iris.tests.IrisTest` supports a variety of custom unittest-style
-assertions, such as :meth:`~iris.tests.IrisTest_nometa.assertArrayEqual`,
-:meth:`~iris.tests.IrisTest_nometa.assertArrayAlmostEqual`.
+:mod:`iris.tests._shared_utils` supports a variety of custom pytest-style
+assertions, such as :meth:`~iris.tests._shared_utils.assert_array_equal`, and
+:meth:`~iris.tests._shared_utils.assert_array_almost_equal`.
 
 .. _create-missing:
 
@@ -34,10 +35,10 @@ Saving results
 
 Some tests compare the generated output to the expected result contained in a
 file. Custom assertions for this include
-:meth:`~iris.tests.IrisTest_nometa.assertCMLApproxData`
-:meth:`~iris.tests.IrisTest_nometa.assertCDL`
-:meth:`~iris.tests.IrisTest_nometa.assertCML` and
-:meth:`~iris.tests.IrisTest_nometa.assertTextFile`. See docstrings for more
+:meth:`~iris.tests._shared_utils.assert_CML_approx_data`
+:meth:`~iris.tests._shared_utils.assert_CDL`
+:meth:`~iris.tests._shared_utils.assert_CML` and
+:meth:`~iris.tests._shared_utils.assert_text_file`. See docstrings for more
 information.
 
 .. note::
@@ -55,22 +56,18 @@ Context managers
 Capturing exceptions and logging
 --------------------------------
 
-:class:`iris.tests.IrisTest` includes several context managers that can be used
+:mod:`~iris.tests._shared_utils` includes several context managers that can be used
 to make test code tidier and easier to read. These include
-:meth:`~iris.tests.IrisTest_nometa.assertWarnsRegexp` and
-:meth:`~iris.tests.IrisTest_nometa.assertLogs`.
-
-Temporary files
----------------
-
-It's also possible to generate temporary files in a concise fashion with
-:meth:`~iris.tests.IrisTest_nometa.temp_filename`.
+:meth:`~iris.tests.IrisTest_nometa.assert_no_warnings_regexp` and
+:meth:`~iris.tests.IrisTest_nometa.assert_logs`.
 
 Patching
 ========
 
-:meth:`~iris.tests.IrisTest_nometa.patch` is a wrapper around ``unittest.patch``
-that will be automatically cleaned up at the end of the test.
+After the change from ``unittest`` to ``pytest``, ``IrisTest.patch`` has been
+converted into :meth:`~iris.tests._shared_utils.patch`.
+
+This is currently not implemented, and will raise an error if called.
 
 Graphic tests
 =============
