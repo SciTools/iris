@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
-
 from unittest.mock import Mock
 
 from geovista import Transform

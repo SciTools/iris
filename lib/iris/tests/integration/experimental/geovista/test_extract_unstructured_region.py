@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for the `iris.experimental.geovista.extract_unstructured_region` function."""
 
-
 from geovista.geodesic import BBox
 
 from iris import load_cube

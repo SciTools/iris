@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
-
 import numpy as np
 
 from iris import load_cube
