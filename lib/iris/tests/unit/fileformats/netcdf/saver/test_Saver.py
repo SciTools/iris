@@ -32,9 +32,9 @@ from iris.coord_systems import (
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisMaskValueMatchWarning
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
+from iris.warnings import IrisMaskValueMatchWarning
 
 
 class Test_write(tests.IrisTest):

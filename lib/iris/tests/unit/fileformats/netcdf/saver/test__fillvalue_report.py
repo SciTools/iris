@@ -3,14 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.netcdf.saver._fillvalue_report`."""
+
 import warnings
 
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.fileformats.netcdf.saver import _fillvalue_report, _FillvalueCheckInfo
+from iris.warnings import IrisSaverFillValueWarning
 
 
 class Test__fillvaluereport:

@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides the infrastructure to support the common metadata API."""
 
-
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
@@ -734,7 +733,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         Parameters
         ----------
         name : str
-            The string name to verify
+            The string name to verify.
 
         Returns
         -------

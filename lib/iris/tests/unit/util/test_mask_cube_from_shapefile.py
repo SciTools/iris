@@ -11,9 +11,9 @@ import shapely
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
 import iris.cube
-from iris.exceptions import IrisUserWarning
 import iris.tests as tests
 from iris.util import mask_cube_from_shapefile
+from iris.warnings import IrisUserWarning
 
 
 class TestBasicCubeMasking(tests.IrisTest):

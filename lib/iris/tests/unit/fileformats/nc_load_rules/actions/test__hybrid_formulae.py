@@ -8,6 +8,7 @@
 Test rules activation relating to hybrid vertical coordinates.
 
 """
+
 import iris.tests as tests  # isort: skip
 
 import iris.fileformats._nc_load_rules.helpers as hh

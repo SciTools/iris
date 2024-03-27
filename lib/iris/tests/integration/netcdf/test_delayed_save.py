@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for delayed saving."""
+
 import re
 import warnings
 
@@ -15,10 +16,10 @@ import numpy as np
 import pytest
 
 import iris
-from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 import iris.tests
 from iris.tests.stock import realistic_4d
+from iris.warnings import IrisSaverFillValueWarning
 
 
 class Test__lazy_stream_data:

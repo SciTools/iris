@@ -32,6 +32,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
 DEFAULT_IGNORE_AXIS = False
@@ -288,7 +289,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Returns
         -------
-        result : str
+        str
             Output text, with embedded newlines when :attr:`shorten`\ =False.
 
         Notes
@@ -1167,12 +1168,12 @@ def _get_2d_coord_bound_grid(bounds):
     Parameters
     ----------
     bounds : array
-        Coordinate bounds array of shape (Y, X, 4)
+        Coordinate bounds array of shape (Y, X, 4).
 
     Returns
     -------
     array
-        Grid of shape (Y+1, X+1)
+        Grid of shape (Y+1, X+1).
 
     """
     # Check bds has the shape (ny, nx, 4)
@@ -1951,7 +1952,7 @@ class Coord(_DimensionalMetadata):
             contiguous = False
         return contiguous
 
-    def contiguous_bounds(self):
+    def contiguous_bounds(self):  # numpydoc ignore=SS05
         """Contiguous bounds of 1D coordinate.
 
         Return the N+1 bound values for a contiguous bounded 1D coordinate
@@ -1977,7 +1978,7 @@ class Coord(_DimensionalMetadata):
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
                     "contiguous bounds.".format(self.name()),
-                    category=iris.exceptions.IrisGuessBoundsWarning,
+                    category=iris.warnings.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2138,7 +2139,7 @@ class Coord(_DimensionalMetadata):
                 )
                 warnings.warn(
                     msg.format(self.name()),
-                    category=iris.exceptions.IrisVagueMetadataWarning,
+                    category=iris.warnings.IrisVagueMetadataWarning,
                 )
             else:
                 try:
@@ -2151,7 +2152,7 @@ class Coord(_DimensionalMetadata):
                     )
                     warnings.warn(
                         msg.format(str(exc), self.name()),
-                        category=iris.exceptions.IrisVagueMetadataWarning,
+                        category=iris.warnings.IrisVagueMetadataWarning,
                     )
                     self.bounds = None
                 else:
@@ -2162,7 +2163,7 @@ class Coord(_DimensionalMetadata):
                         )
                         warnings.warn(
                             msg.format(self.name()),
-                            category=iris.exceptions.IrisVagueMetadataWarning,
+                            category=iris.warnings.IrisVagueMetadataWarning,
                         )
 
             if self.has_bounds():
@@ -2613,7 +2614,7 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
         """coord.__deepcopy__() -> Deep copy of coordinate.
 
         Used if copy.deepcopy is called on a coordinate.

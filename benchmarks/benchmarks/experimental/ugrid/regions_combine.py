@@ -16,6 +16,7 @@ Where possible benchmarks should be parameterised for two sizes of input data:
   run-time that scale with data size.
 
 """
+
 import os
 
 import dask.array as da
@@ -92,7 +93,7 @@ class MixinCombineRegions:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """Combine-tests "standard" setup operation.
+        """Combine tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.

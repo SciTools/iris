@@ -33,12 +33,11 @@ from iris.exceptions import (
     AncillaryVariableNotFoundError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
-    IrisUserWarning,
-    IrisVagueMetadataWarning,
     UnitConversionError,
 )
 import iris.tests.stock as stock
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube, sample_meshcoord
+from iris.warnings import IrisUserWarning, IrisVagueMetadataWarning
 
 
 class Test___init___data(tests.IrisTest):

@@ -300,7 +300,7 @@ class GroupStructure:
     """
 
     def __init__(self, length, component_structure, array_order="c"):
-        """group_component_to_array - a dictionary. See also TODO."""
+        """Group_component_to_array - a dictionary. See also TODO."""
         #: The size common to all of the original arrays and used to determine
         #: possible shape configurations.
         self.length = length

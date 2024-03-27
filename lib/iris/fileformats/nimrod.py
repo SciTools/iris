@@ -295,15 +295,13 @@ def load_cubes(filenames, callback=None):
     Parameters
     ----------
     filenames :
-        List of NIMROD filenames to load
+        List of NIMROD filenames to load.
     callback : optional
-        A function which can be passed on to :func:`iris.io.run_callback`
+        A function which can be passed on to :func:`iris.io.run_callback`.
 
     Notes
     -----
-    .. note::
-
-        The resultant cubes may not be in the same order as in the files.
+    The resultant cubes may not be in the same order as in the files.
 
     """
     if isinstance(filenames, str):

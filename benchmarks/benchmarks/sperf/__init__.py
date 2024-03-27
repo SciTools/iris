@@ -7,6 +7,7 @@
 SPerf = assessing performance against a series of increasingly large LFRic
 datasets.
 """
+
 from iris import load_cube
 
 # TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.
