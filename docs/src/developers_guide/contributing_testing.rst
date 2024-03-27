@@ -45,18 +45,19 @@ When testing a class all the tests must reside in the module:
 
     :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<ClassName>.py`
 
-Within this test module each tested method must have one or more
-corresponding test classes, for example:
+
+Within this test module each tested method may corresponding test classes,
+for example:
 
 * ``Test_<name of public method>``
 * ``Test_<name of public method>__<aspect of method>``
 
-And within those test classes, the test methods must be named according
+Within test classes, the test methods must be named according
 to the aspect of the tested method which they address.
 
 **Examples**:
 
-All unit tests for :py:class:`iris.cube.Cube` must reside in:
+All unit tests for :py:class:`iris.cube.Cube` reside in:
 
     :literal:`lib/iris/tests/unit/cube/test_Cube.py`
 
@@ -95,12 +96,12 @@ When testing a function all the tests must reside in the module:
 
     :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
 
-Within this test module there must be one or more test classes, for example:
+Within this test module there may be test classes, for example:
 
 * ``Test``
 * ``TestAspectOfFunction``
 
-And within those test classes, the test methods must be named according
+Within those test classes, the test methods must be named according
 to the aspect of the tested function which they address.
 
 **Examples**:

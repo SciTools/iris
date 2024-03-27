@@ -87,7 +87,7 @@ experimental dependency not being present.
       SKIPPED [1] lib/iris/tests/unit/util/test_demote_dim_coord_to_aux_coord.py:29: Test(s) require external data.
       
    All Python decorators that skip tests will be defined in
-   ``lib/iris/tests/__init__.py`` with a function name with a prefix of
+   ``lib/iris/tests/_shared_utils.py`` with a function name with a prefix of
    ``skip_``.
 
 You can also run a specific test module.  The example below runs the tests for
