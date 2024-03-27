@@ -319,8 +319,8 @@ class Test_combine:
             right[member] = None
             rmetadata = self.cls(**right)
             expected = right.copy()
-            assert expected, lmetadata.combine(rmetadata)._asdict()
-            assert expected, rmetadata.combine(lmetadata)._asdict()
+            assert lmetadata.combine(rmetadata)._asdict() == expected
+            assert rmetadata.combine(lmetadata)._asdict() == expected
 
     def test_op_lenient_different(self, mocker):
         lmetadata = self.cls(**self.values)
