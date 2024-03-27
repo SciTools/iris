@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.experimental.geobridge.cube_faces_to_polydata` function."""
-
+"""Unit tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
 from unittest.mock import Mock
 
@@ -13,7 +12,7 @@ import pytest
 
 import iris.analysis.cartography
 import iris.coord_systems
-from iris.experimental.geovista import cube_faces_to_polydata
+from iris.experimental.geovista import cube_to_polydata
 from iris.tests.stock import lat_lon_cube, sample_2d_latlons
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -73,7 +72,7 @@ class ParentClass:
 
     @staticmethod
     def test_to_poly(expected, mocked_operation, cube):
-        cube_faces_to_polydata(cube)
+        cube_to_polydata(cube)
         actual = mocked_operation.call_args.kwargs
         for key, expected_value in expected.items():
             if hasattr(expected_value, "shape"):
@@ -83,14 +82,14 @@ class ParentClass:
 
     @staticmethod
     def test_to_poly_crs(mocked_operation, default_cs, cube_with_crs):
-        cube_faces_to_polydata(cube_with_crs)
+        cube_to_polydata(cube_with_crs)
         actual = mocked_operation.call_args.kwargs
         assert actual["crs"] == default_cs.as_cartopy_crs().proj4_init
 
     @staticmethod
     def test_to_poly_kwargs(mocked_operation, cube):
         kwargs = {"test": "test"}
-        cube_faces_to_polydata(cube, **kwargs)
+        cube_to_polydata(cube, **kwargs)
         actual = mocked_operation.call_args.kwargs
         assert actual["test"] == "test"
 
@@ -106,10 +105,6 @@ class Test2dToPoly(ParentClass):
             "data": cube_2d.data,
             "name": cube_2d.name() + " / " + str(cube_2d.units),
         }
-
-    @pytest.fixture()
-    def operation(self):
-        return "from_2d"
 
     @pytest.fixture()
     def cube(self, cube_2d):
@@ -129,10 +124,6 @@ class Test1dToPoly(ParentClass):
         }
 
     @pytest.fixture()
-    def operation(self):
-        return "from_1d"
-
-    @pytest.fixture()
     def cube(self, cube_1d):
         return cube_1d
 
@@ -146,10 +137,17 @@ class TestMeshToPoly(ParentClass):
             "xs": cube_mesh.mesh.node_coords[0].points,
             "ys": cube_mesh.mesh.node_coords[1].points,
             "connectivity": cube_mesh.mesh.face_node_connectivity.indices_by_location(),
-            "data": cube_mesh.data,
+            "data": cube_mesh.data[0],
             "name": cube_mesh.name() + " / " + str(cube_mesh.units),
             "start_index": 0,
         }
+
+    def test_if_1d(self, cube_mesh):
+        with pytest.raises(
+            NotImplementedError,
+            match=r"Cubes with a mesh must be one dimensional",
+        ):
+            cube_to_polydata(cube_mesh)
 
     @pytest.fixture()
     def operation(self):
@@ -157,7 +155,7 @@ class TestMeshToPoly(ParentClass):
 
     @pytest.fixture()
     def cube(self, cube_mesh):
-        return cube_mesh
+        return cube_mesh[0]
 
     @pytest.mark.skip(reason="Meshes do not support crs currently")
     def test_to_poly_crs(self, expected, actual):
@@ -181,7 +179,7 @@ class TestExtras:
             NotImplementedError,
             match=r"Only 1D and 2D coordinates are supported",
         ):
-            cube_faces_to_polydata(cube_1d_2d)
+            cube_to_polydata(cube_1d_2d)
 
     def test_no_mesh_or_2d(self, cube_1d):
         cube = cube_1d[0]
@@ -189,4 +187,4 @@ class TestExtras:
             NotImplementedError,
             match=r"Cube must have a mesh or have 2 dimensions",
         ):
-            cube_faces_to_polydata(cube)
+            cube_to_polydata(cube)

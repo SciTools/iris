@@ -20,7 +20,7 @@ def _get_coord(cube, axis):
     return coord
 
 
-def cube_faces_to_polydata(cube, **kwargs):
+def cube_to_polydata(cube, **kwargs):
     r"""Create a :class:`pyvista.PolyData` object from a :class:`~iris.cube.Cube`.
 
     The resulting :class:`~pyvista.PolyData` object can be plotted using
@@ -66,14 +66,14 @@ def cube_faces_to_polydata(cube, **kwargs):
         with PARSE_UGRID_ON_LOAD.context():
             cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
 
-    >>> from iris.experimental.geovista import cube_faces_to_polydata
+    >>> from iris.experimental.geovista import cube_to_polydata
 
     Converting a standard 2-dimensional :class:`~iris.cube.Cube` with
     1-dimensional coordinates:
 
     >>> print(cube.summary(shorten=True))
     air_temperature / (K)               (latitude: 73; longitude: 96)
-    >>> print(cube_faces_to_polydata(cube))
+    >>> print(cube_to_polydata(cube))
     PolyData (...
       N Cells:    7008
       N Points:   7178
@@ -85,7 +85,7 @@ def cube_faces_to_polydata(cube, **kwargs):
 
     Configure the conversion by passing additional keyword arguments:
 
-    >>> print(cube_faces_to_polydata(cube, radius=2))
+    >>> print(cube_to_polydata(cube, radius=2))
     PolyData (...
       N Cells:    7008
       N Points:   7178
@@ -100,7 +100,7 @@ def cube_faces_to_polydata(cube, **kwargs):
 
     >>> print(cube_mesh.summary(shorten=True))
     synthetic / (1)                     (-- : 96)
-    >>> print(cube_faces_to_polydata(cube_mesh))
+    >>> print(cube_to_polydata(cube_mesh))
     PolyData (...
       N Cells:    96
       N Points:   98
@@ -115,7 +115,7 @@ def cube_faces_to_polydata(cube, **kwargs):
 
     >>> print(cube_w_time.summary(shorten=True))
     air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-    >>> print(cube_faces_to_polydata(cube_w_time[0, :, :]))
+    >>> print(cube_to_polydata(cube_w_time[0, :, :]))
     PolyData (...
       N Cells:    1813
       N Points:   1900
@@ -142,6 +142,7 @@ def cube_faces_to_polydata(cube, **kwargs):
             start_index=face_node.start_index,
             **kwargs,
         )
+    # TODO: Add support for point clouds
     elif cube.ndim == 2:
         x_coord = _get_coord(cube, "X")
         y_coord = _get_coord(cube, "Y")
@@ -170,7 +171,7 @@ def cube_faces_to_polydata(cube, **kwargs):
     return polydata
 
 
-def region_extraction(cube, polydata, region, **kwargs):
+def extract_unstructured_region(cube, polydata, region, **kwargs):
     """Index a :class:`~iris.cube.Cube` with a :attr:`~iris.cube.Cube.mesh` to a specific region.
 
     Uses :meth:`geovista.geodesic.BBox.enclosed` to identify the `cube` indices
@@ -185,7 +186,7 @@ def region_extraction(cube, polydata, region, **kwargs):
         A :class:`~pyvista.PolyData` representing the same horizontal space as
         `cube`. The region extraction is first applied to `polydata`, with the
         resulting indices then applied to `cube`. In many cases `polydata` can
-        be created by applying :func:`cube_faces_to_polydata` to `cube`.
+        be created by applying :func:`cube_to_polydata` to `cube`.
     region : :class:`geovista.geodesic.BBox`
         A :class:`~geovista.geodesic.BBox` representing the region to be
         extracted.
@@ -227,18 +228,18 @@ def region_extraction(cube, polydata, region, **kwargs):
         cube_w_mesh = level_cubes.merge_cube()
         other_cube_w_mesh = cube_w_mesh[:20, :]
 
-    The parameters of :func:`region_extraction` have been designed with
+    The parameters of :func:`extract_unstructured_region` have been designed with
     flexibility and reuse in mind. This is demonstrated below.
 
     >>> from geovista import BBox
-    >>> from iris.experimental.geovista import cube_faces_to_polydata, region_extraction
+    >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
     >>> print(cube_w_mesh.shape)
     (72, 96)
     >>> # The mesh dimension represents the horizontal space of the cube.
     >>> print(cube_w_mesh.shape[cube_w_mesh.mesh_dim()])
     96
-    >>> cube_polydata = cube_faces_to_polydata(cube_w_mesh[0, :])
-    >>> extracted_cube = region_extraction(
+    >>> cube_polydata = cube_to_polydata(cube_w_mesh[0, :])
+    >>> extracted_cube = extract_unstructured_region(
     ...     cube=cube_w_mesh,
     ...     polydata=cube_polydata,
     ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
@@ -249,7 +250,7 @@ def region_extraction(cube, polydata, region, **kwargs):
     Now reuse the same `cube` and `polydata` to extract a different region:
 
     >>> new_region = BBox(lons=[0, 35, 35, 0], lats=[-25, -25, 45, 45])
-    >>> extracted_cube = region_extraction(
+    >>> extracted_cube = extract_unstructured_region(
     ...     cube=cube_w_mesh,
     ...     polydata=cube_polydata,
     ...     region=new_region,
@@ -262,7 +263,7 @@ def region_extraction(cube, polydata, region, **kwargs):
 
     >>> print(other_cube_w_mesh.shape)
     (20, 96)
-    >>> extracted_cube = region_extraction(
+    >>> extracted_cube = extract_unstructured_region(
     ...     cube=other_cube_w_mesh,
     ...     polydata=cube_polydata,
     ...     region=new_region,
@@ -273,7 +274,7 @@ def region_extraction(cube, polydata, region, **kwargs):
     Arbitrary keywords can be passed down to
     :meth:`geovista.geodesic.BBox.enclosed` (``outside`` in this example):
 
-    >>> extracted_cube = region_extraction(
+    >>> extracted_cube = extract_unstructured_region(
     ...     cube=other_cube_w_mesh,
     ...     polydata=cube_polydata,
     ...     region=new_region,
@@ -296,11 +297,16 @@ def region_extraction(cube, polydata, region, **kwargs):
             polydata_length = polydata.GetNumberOfPoints()
             indices_key = VTK_POINT_IDS
         else:
-            raise NotImplementedError("Must be on face or node.")
+            raise NotImplementedError(
+                f"Must be on face or node. Found: {cube.location}."
+            )
 
         if cube.shape[mesh_dim] != polydata_length:
             raise ValueError(
-                "The mesh on the cube and the polydata must have the" " same shape."
+                f"The mesh on the cube and the polydata"
+                f"must have the same shape."
+                f" Found Mesh: {cube.shape[mesh_dim]},"
+                f" Polydata: {polydata_length}."
             )
 
         region_polydata = region.enclosed(polydata, **kwargs)

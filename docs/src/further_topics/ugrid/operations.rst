@@ -475,7 +475,7 @@ easy to explore the data in detail.
 
 Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
 easy via this convenience:
-:func:`iris.experimental.geovista.cube_faces_to_polydata`.
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
 Below is an example of using GeoVista to plot a low-res
 sample :attr:`~iris.cube.Cube.mesh` based :class:`~iris.cube.Cube`. For
@@ -492,7 +492,7 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
         >>> import matplotlib.pyplot as plt
 
         >>> from iris import load_cube, sample_data_path
-        >>> from iris.experimental.geovista import cube_faces_to_polydata
+        >>> from iris.experimental.geovista import cube_to_polydata
         >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
@@ -511,7 +511,7 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
                 nco_openmp_thread_number    1
 
         # Convert our mesh+data to a PolyData object.
-        >>> face_polydata = cube_faces_to_polydata(sample_mesh_cube)
+        >>> face_polydata = cube_to_polydata(sample_mesh_cube)
         >>> print(face_polydata)
         PolyData (...
           N Cells:    96
@@ -580,10 +580,10 @@ selected region. The recommended way to do this is using tools provided by
 
 Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
 easy via this convenience:
-:func:`iris.experimental.geovista.cube_faces_to_polydata`.
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
 An Iris convenience for regional extraction is also provided:
-:func:`iris.experimental.geovista.region_extraction`; demonstrated
+:func:`iris.experimental.geovista.extract_unstructured_region`; demonstrated
 below:
 
 
@@ -594,7 +594,7 @@ below:
 
         >>> from geovista.geodesic import BBox
         >>> from iris import load_cube, sample_data_path
-        >>> from iris.experimental.geovista import cube_faces_to_polydata, region_extraction
+        >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
         >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
@@ -612,9 +612,9 @@ below:
                 history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
                 nco_openmp_thread_number    1
 
-        >>> regional_cube = region_extraction(
+        >>> regional_cube = extract_unstructured_region(
         ...     cube=sample_mesh_cube,
-        ...     polydata=cube_faces_to_polydata(sample_mesh_cube),
+        ...     polydata=cube_to_polydata(sample_mesh_cube),
         ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
         ...     preference="center",
         ... )
