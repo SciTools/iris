@@ -488,7 +488,7 @@ earlier:
 
 
         # We'll re-use this to plot some real global data later.
-        >>> def cube_faces_to_polydata(cube):
+        >>> def cube_to_polydata(cube):
         ...     lons, lats = cube.mesh.node_coords
         ...     face_node = cube.mesh.face_node_connectivity
         ...     indices = face_node.indices_by_location()
@@ -515,7 +515,7 @@ earlier:
 
         # Convert our mesh+data to a PolyData object.
         # Just plotting a single height level.
-        >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
+        >>> face_polydata = cube_to_polydata(face_cube[:, 0])
         >>> print(face_polydata)
         PolyData (0x7ff4861ff4c0)
           N Cells:	2
@@ -590,7 +590,7 @@ Here's another example using a global cubed-sphere data set:
                 title                       Created by xios
                 uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
 
-        >>> global_polydata = cube_faces_to_polydata(global_cube)
+        >>> global_polydata = cube_to_polydata(global_cube)
         >>> print(global_polydata)
         PolyData (0x7f761b536160)
           N Cells:	13824

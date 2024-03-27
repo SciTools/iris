@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.experimental.geobridge.region_extraction` function."""
+"""Unit tests for the `iris.experimental.geovista.extract_unstructured_region` function."""
 
 from unittest.mock import MagicMock, Mock
 
@@ -10,7 +10,7 @@ from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 import numpy as np
 import pytest
 
-from iris.experimental.geovista import region_extraction
+from iris.experimental.geovista import extract_unstructured_region
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -47,11 +47,13 @@ class TestRegionExtraction:
         self.mocked_region = region
 
     def test_called_with(self):
-        region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)
+        extract_unstructured_region(
+            self.cube_mesh, self.mocked_polydata, self.mocked_region
+        )
         self.mocked_region.enclosed.assert_called_with(self.mocked_polydata)
 
     def test_kwarg(self):
-        region_extraction(
+        extract_unstructured_region(
             self.cube_mesh,
             self.mocked_polydata,
             self.mocked_region,
@@ -66,7 +68,7 @@ class TestRegionExtraction:
     def test_indices(self, transpose_cube):
         if transpose_cube:
             self.cube_mesh.transpose()
-        extracted_region = region_extraction(
+        extracted_region = extract_unstructured_region(
             self.cube_mesh, self.mocked_polydata, self.mocked_region
         )
         if self.cube_mesh.location == "face":
@@ -86,10 +88,12 @@ class TestRegionExtraction:
         with pytest.raises(
             IndexError, match="No part of `polydata` falls within `region`."
         ):
-            region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)
+            extract_unstructured_region(
+                self.cube_mesh, self.mocked_polydata, self.mocked_region
+            )
 
     def test_recreate_mesh(self):
-        extracted_region = region_extraction(
+        extracted_region = extract_unstructured_region(
             self.cube_mesh, self.mocked_polydata, self.mocked_region
         )
         if self.cube_mesh.location == "face":
@@ -98,7 +102,7 @@ class TestRegionExtraction:
             assert extracted_region.mesh is None
 
     def test_new_mesh_coords(self):
-        extracted_region = region_extraction(
+        extracted_region = extract_unstructured_region(
             self.cube_mesh, self.mocked_polydata, self.mocked_region
         )
         if self.cube_mesh.location == "face":
@@ -117,17 +121,32 @@ class TestRegionExtraction:
     def test_no_mesh(self, cube_2d):
         cube = cube_2d
         with pytest.raises(ValueError, match="Cube must have a mesh"):
-            region_extraction(cube, self.mocked_polydata, self.mocked_region)
+            extract_unstructured_region(cube, self.mocked_polydata, self.mocked_region)
 
     def test_edge_location(self, cube_mesh_edge):
-        with pytest.raises(NotImplementedError, match="Must be on face or node."):
-            region_extraction(cube_mesh_edge, self.mocked_polydata, self.mocked_region)
+        with pytest.raises(
+            NotImplementedError,
+            match=f"Must be on face or node." f" Found: {cube_mesh_edge.location}.",
+        ):
+            extract_unstructured_region(
+                cube_mesh_edge, self.mocked_polydata, self.mocked_region
+            )
 
     def test_cube_and_poly_shapes_mismatch(self):
         self.mocked_polydata.GetNumberOfCells.return_value = 4
         self.mocked_polydata.GetNumberOfPoints.return_value = 16
+        polydata_length = ()
+        if self.cube_mesh.location == "face":
+            polydata_length = self.mocked_polydata.GetNumberOfCells()
+        elif self.cube_mesh.location == "node":
+            polydata_length = self.mocked_polydata.GetNumberOfPoints()
         with pytest.raises(
             ValueError,
-            match="The mesh on the cube and the polydata must have the same shape.",
+            match=f"The mesh on the cube and the polydata"
+            f"must have the same shape."
+            f" Found Mesh: {self.cube_mesh.shape[self.cube_mesh.mesh_dim()]},"
+            f" Polydata: {polydata_length}.",
         ):
-            region_extraction(self.cube_mesh, self.mocked_polydata, self.mocked_region)
+            extract_unstructured_region(
+                self.cube_mesh, self.mocked_polydata, self.mocked_region
+            )

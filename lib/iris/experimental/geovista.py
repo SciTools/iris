@@ -12,7 +12,6 @@ from iris.experimental.ugrid import Mesh
 
 
 def _get_coord(cube, axis):
-    """Helper function to get the coordinates from the cube."""
     try:
         coord = cube.coord(axis=axis, dim_coords=True)
     except CoordinateNotFoundError:
@@ -20,20 +19,7 @@ def _get_coord(cube, axis):
     return coord
 
 
-def cube_faces_to_polydata(cube, **kwargs):
-    """Function to convert a cube or the mesh attached to a cube into a polydata
-    object that can be used by GeoVista to generate plots.
-
-    Parameters
-    ----------
-    cube : :class:`~iris.cube.Cube`
-        Incoming cube containing the arrays or the mesh to be converted into the
-        polydata object.
-
-    **kwargs : dict
-        Additional keyword arguments to be passed to the Transform method.
-
-    """
+def cube_to_polydata(cube, **kwargs):
     if cube.mesh:
         if cube.ndim != 1:
             raise NotImplementedError("Cubes with a mesh must be one dimensional")
@@ -50,6 +36,7 @@ def cube_faces_to_polydata(cube, **kwargs):
             start_index=face_node.start_index,
             **kwargs,
         )
+    # TODO: Add support for point clouds
     elif cube.ndim == 2:
         x_coord = _get_coord(cube, "X")
         y_coord = _get_coord(cube, "Y")
@@ -78,11 +65,7 @@ def cube_faces_to_polydata(cube, **kwargs):
     return polydata
 
 
-def region_extraction(cube, polydata, region, **kwargs):
-    """Function to extract a region from a cube and its associated mesh and return
-    a new cube containing the region.
-
-    """
+def extract_unstructured_region(cube, polydata, region, **kwargs):
     if cube.mesh:
         # Find what dimension the mesh is in on the cube
         mesh_dim = cube.mesh_dim()
@@ -96,11 +79,16 @@ def region_extraction(cube, polydata, region, **kwargs):
             polydata_length = polydata.GetNumberOfPoints()
             indices_key = VTK_POINT_IDS
         else:
-            raise NotImplementedError("Must be on face or node.")
+            raise NotImplementedError(
+                f"Must be on face or node. Found: {cube.location}."
+            )
 
         if cube.shape[mesh_dim] != polydata_length:
             raise ValueError(
-                "The mesh on the cube and the polydata must have the" " same shape."
+                f"The mesh on the cube and the polydata"
+                f"must have the same shape."
+                f" Found Mesh: {cube.shape[mesh_dim]},"
+                f" Polydata: {polydata_length}."
             )
 
         region_polydata = region.enclosed(polydata, **kwargs)
