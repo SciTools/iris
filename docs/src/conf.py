@@ -252,6 +252,8 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
