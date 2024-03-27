@@ -73,7 +73,7 @@ and complex parallel I/O operations unfortunately made this feature
 un-maintainable and it was retired in Iris 3.9 (:pull:`5833`).
 
 If you need to know about collisions then you can perform your own checks ahead
-of saving. Such operations be run lazily (:term:`Lazy Data`). Here is an
+of saving. Such operations can be run lazily (:term:`Lazy Data`). Here is an
 example::
 
     >>> default_fill = netCDF4.default_fillvals[my_cube.dtype.str[1:]]
