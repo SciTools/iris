@@ -863,6 +863,7 @@ class Mesh(CFVariableMixin):
 
         #####
         # TODO: remove axis assignment once Mesh supports arbitrary coords.
+        # TODO: consider filtering coords as the first action in this method.
         axes_present = [guess_coord_axis(coord) for coord in coords]
         axes_required = ("X", "Y")
         if all([req in axes_present for req in axes_required]):
