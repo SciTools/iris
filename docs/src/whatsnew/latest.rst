@@ -39,7 +39,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
+   :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
 💣 Incompatible Changes
