@@ -32,7 +32,7 @@ def cube_to_polydata(cube, **kwargs):
             ys=lats.points,
             connectivity=indices,
             data=cube.data,
-            name=f"{cube.name()} / {cube.units}",
+            name=f"{cube.name()} / ({cube.units})",
             start_index=face_node.start_index,
             **kwargs,
         )
@@ -44,7 +44,7 @@ def cube_to_polydata(cube, **kwargs):
             xs=x_coord.contiguous_bounds(),
             ys=y_coord.contiguous_bounds(),
             data=cube.data,
-            name=f"{cube.name()} / {cube.units}",
+            name=f"{cube.name()} / ({cube.units})",
             **kwargs,
         )
         coord_system = cube.coord_system()

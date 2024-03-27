@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
-
 from unittest.mock import Mock
 
 from geovista import Transform
@@ -104,7 +103,7 @@ class Test2dToPoly(ParentClass):
             "xs": cube_2d.coord(axis="X").contiguous_bounds(),
             "ys": cube_2d.coord(axis="Y").contiguous_bounds(),
             "data": cube_2d.data,
-            "name": cube_2d.name() + " / " + str(cube_2d.units),
+            "name": cube_2d.name() + " / " + "(" + str(cube_2d.units) + ")",
         }
 
     @pytest.fixture()
@@ -121,7 +120,7 @@ class Test1dToPoly(ParentClass):
             "xs": cube_1d.coord(axis="X").contiguous_bounds(),
             "ys": cube_1d.coord(axis="Y").contiguous_bounds(),
             "data": cube_1d.data,
-            "name": cube_1d.name() + " / " + str(cube_1d.units),
+            "name": cube_1d.name() + " / " + "(" + str(cube_1d.units) + ")",
         }
 
     @pytest.fixture()
@@ -139,7 +138,7 @@ class TestMeshToPoly(ParentClass):
             "ys": cube_mesh.mesh.node_coords[1].points,
             "connectivity": cube_mesh.mesh.face_node_connectivity.indices_by_location(),
             "data": cube_mesh.data[0],
-            "name": cube_mesh.name() + " / " + str(cube_mesh.units),
+            "name": cube_mesh.name() + " / " + "(" + str(cube_mesh.units) + ")",
             "start_index": 0,
         }
 
