@@ -263,7 +263,7 @@ def as_lazy_data(
             raise ValueError(
                 f"Dask chunking chosen, but chunks already assigned value {chunks}"
             )
-        lazy_params = {"asarray": asarray, "meta": np.ndarray}
+        lazy_params = {"asarray": asarray}
     else:
         if chunks is None:
             # No existing chunks : Make a chunk the shape of the entire input array
@@ -284,7 +284,6 @@ def as_lazy_data(
         lazy_params = {
             "chunks": chunks,
             "asarray": asarray,
-            "meta": np.ndarray,
         }
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
