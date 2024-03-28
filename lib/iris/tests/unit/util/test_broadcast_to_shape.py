@@ -81,6 +81,31 @@ class Test_broadcast_to_shape(tests.IrisTest):
             for j in range(4):
                 self.assertMaskedArrayEqual(b[i, :, j, :].compute().T, m.compute())
 
+    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
+    def test_lazy_chunks(self, mocked_compute):
+        # chunks can be specified along with the target shape and are only used
+        # along new dimensions or on dimensions that have size 1 in the source
+        # array.
+        m = da.ma.masked_array(
+            data=[[1, 2, 3, 4, 5]],
+            mask=[[0, 1, 0, 0, 0]],
+        ).rechunk((1, 2))
+        b = broadcast_to_shape(
+            m,
+            dim_map=(1, 2),
+            shape=(3, 4, 5),
+            chunks=(
+                1,  # used because target is new dim
+                2,  # used because input size 1
+                3,  # not used because broadcast does not rechunk
+            ),
+        )
+        mocked_compute.assert_not_called()
+        for i in range(3):
+            for j in range(4):
+                self.assertMaskedArrayEqual(b[i, j, :].compute(), m[0].compute())
+        assert b.chunks == ((1, 1, 1), (2, 2), (2, 2, 1))
+
     def test_masked_degenerate(self):
         # masked arrays can have degenerate masks too
         rng = np.random.default_rng()

@@ -58,6 +58,8 @@ This document explains the changes made to Iris for this release
    :func:`dask.array.map_blocks`; known specifically to be a problem in the
    :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
 
+#. `@bouweandela`_ added the option to specify the Dask chunks of the target
+   array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
 
 🔥 Deprecations
 ===============
