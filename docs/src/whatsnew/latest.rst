@@ -33,7 +33,12 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@HGWright`_ and `@trexfeathers`_ added the
+   :mod:`iris.experimental.geovista` module, providing conveniences for using
+   :ref:`ugrid geovista` with Iris. To see some of this in action, check out
+   :ref:`ugrid operations`. Note that GeoVista is an **optional** dependency
+   so you will need to explicitly install it into your environment.
+   (:pull:`5740`)
 
 
 🐛 Bugs Fixed
