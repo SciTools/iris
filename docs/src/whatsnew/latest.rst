@@ -41,6 +41,9 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` to set
+   `pp.lbelv` of surface fields to 9999. (:issue:`3280`, :pull:`5734`)
+
 
 💣 Incompatible Changes
 =======================
