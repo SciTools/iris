@@ -48,7 +48,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@fnattino`_ and `@pp-mo`_ prevented cube printout from showing the values of lazy
+   scalar coordinates, since this can involve a lengthy computation that must be
+   re-computed each time.  (:pull:`5896`)
 
 
 🔥 Deprecations
@@ -83,7 +85,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@fnattino: https://github.com/fnattino
 
 
 .. comment
