@@ -64,6 +64,10 @@ This document explains the changes made to Iris for this release
    :func:`dask.array.map_blocks`; known specifically to be a problem in the
    :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
 
+#. `@fnattino`_ and `@pp-mo`_ prevented cube printout from showing the values of lazy
+   scalar coordinates, since this can involve a lengthy computation that must be
+   re-computed each time.  (:pull:`5896`)
+
 
 🔥 Deprecations
 ===============
@@ -105,7 +109,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@jfrost-mo: https://github.com/jfrost-mo
-
+.. _@fnattino: https://github.com/fnattino
 
 
 .. comment
