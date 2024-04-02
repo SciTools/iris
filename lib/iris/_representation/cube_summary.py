@@ -175,7 +175,7 @@ class ScalarCoordSummary(CoordSummary):
                         safe_to_print = True
 
         if safe_to_print:
-            coord_cell = coord_cell = coord.cell(0)
+            coord_cell = coord.cell(0)
         else:
             coord_cell = None
 
