@@ -87,7 +87,7 @@ def _prep_data_gen_env() -> None:
         # Find the environment built above, set it to be the data generation
         #  environment.
         data_gen_python = next(
-            (ROOT_DIR / ".nox").rglob(f"tests*/bin/python{python_version}")
+            (ROOT_DIR / ".nox").rglob("tests*/bin/python3.12")
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
