@@ -63,7 +63,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/numpy/numpydoc
-    rev: v1.7.0rc0
+    rev: v1.7.0
     hooks:
       - id: numpydoc-validation
         exclude: "^lib/iris/tests/|docs/gallery_code/"
