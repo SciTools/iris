@@ -151,9 +151,34 @@ class ScalarCoordSummary(CoordSummary):
             self.unit = ""
         else:
             self.unit = " {!s}".format(coord.units)
-        coord_cell = None
-        if not _lazy.is_lazy_data(coord.core_points()):
-            coord_cell = coord.cell(0)
+
+        # Don't print values of lazy coords, as computing them could cost a lot.
+        safe_to_print = not _lazy.is_lazy_data(coord.core_points())
+        if not safe_to_print:
+            # However there is a special case: If it is a *factory* coord, then those
+            # are generally lazy.  If all the dependencies are real, then it is useful
+            # (and safe) to compute + print the value.
+            for factory in cube._aux_factories:
+                # Note : a factory doesn't have a ".metadata" which can be matched
+                # against a coord.  For now, just assume that it has a 'standard_name'
+                # property (also not actually guaranteed), and require them to match.
+                if coord.standard_name == factory.standard_name:
+                    all_deps_real = True
+                    for dependency_coord in factory.dependencies.values():
+                        if (
+                            dependency_coord.has_lazy_points()
+                            or dependency_coord.has_lazy_bounds()
+                        ):
+                            all_deps_real = False
+
+                    if all_deps_real:
+                        safe_to_print = True
+
+        if safe_to_print:
+            coord_cell = coord_cell = coord.cell(0)
+        else:
+            coord_cell = None
+
         if coord.dtype.type is np.str_:
             self.string_type = True
             if coord_cell is not None:
