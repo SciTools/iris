@@ -3,10 +3,12 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_summary.CubeSummary`."""
+import dask.array as da
 import numpy as np
 import pytest
 
 from iris._representation.cube_summary import CubeSummary
+from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 from iris.tests.stock.mesh import sample_mesh_cube
@@ -135,6 +137,59 @@ class Test_CubeSummary:
         assert text_summary_awkward.content == r"'a is\nb\n and c'"
         assert text_summary_awkward.lines == ["a is", "b", " and c"]
         assert text_summary_awkward.extra == ""
+
+    @pytest.mark.parametrize("bounds", ["withbounds", "nobounds"])
+    def test_lazy_scalar_coord(self, bounds):
+        """Check when we print 'lazy' instead of values for a lazy scalar coord."""
+        coord = AuxCoord(da.ones((), dtype=float), long_name="foo")
+        if bounds == "withbounds":
+            # These might be real or lazy -- it makes no difference.
+            coord.bounds = np.arange(2.0)
+        cube = Cube([0.0], aux_coords_and_dims=[(coord, ())])
+
+        rep = CubeSummary(cube)
+
+        summary = rep.scalar_sections["Scalar coordinates:"].contents[0]
+        assert summary.name == "foo"
+        expect_content = "<lazy>"
+        if bounds == "withbounds":
+            expect_content += "+bound"
+        assert summary.content == expect_content
+
+    @pytest.mark.parametrize("deps", ["deps_all_real", "deps_some_lazy"])
+    def test_hybrid_scalar_coord(self, deps):
+        """Check whether we print a value or '<lazy>', for a hybrid scalar coord."""
+        # NOTE: hybrid coords are *always* lazy (at least for now).  However, as long as
+        # no dependencies are lazy, then we print a value rather than "<lazy>".
+
+        # Construct a test hybrid coord, using HybridHeight as a template because that
+        # is both a common case and a fairly simple one (only 3 dependencies).
+        # Note: *not* testing with bounds, since lazy bounds always print the same way.
+        all_deps_real = deps == "deps_all_real"
+        aux_coords = [
+            AuxCoord(1.0, long_name=name, units=units)
+            for name, units in (("delta", "m"), ("sigma", "1"), ("orography", "m"))
+        ]
+        if not all_deps_real:
+            # Make one dependency lazy
+            aux_coords[0].points = aux_coords[0].lazy_points()
+
+        cube = Cube(
+            [0.0],
+            aux_coords_and_dims=[(co, ()) for co in aux_coords],
+            aux_factories=[HybridHeightFactory(*aux_coords)],
+        )
+
+        rep = CubeSummary(cube)
+
+        summary = rep.scalar_sections["Scalar coordinates:"].contents[0]
+        assert summary.name == "altitude"
+        # Check that the result shows lazy with lazy deps, or value when all real
+        if all_deps_real:
+            expect_content = "2.0 m"
+        else:
+            expect_content = "<lazy> m"
+        assert summary.content == expect_content
 
     def test_cell_measure(self):
         cube = self.cube
