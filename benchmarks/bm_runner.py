@@ -67,7 +67,7 @@ def _check_requirements(package: str) -> None:
 
 def _prep_data_gen_env() -> None:
     """Create or access a separate, unchanging environment for generating test data."""
-    python_version = "3.11"
+    python_version = "3.12"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")
@@ -87,7 +87,7 @@ def _prep_data_gen_env() -> None:
         # Find the environment built above, set it to be the data generation
         #  environment.
         data_gen_python = next(
-            (ROOT_DIR / ".nox").rglob("tests*/bin/python3.12")
+            (ROOT_DIR / ".nox").rglob(f"tests*/bin/python{python_version}")
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 

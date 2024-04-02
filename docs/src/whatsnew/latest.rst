@@ -74,7 +74,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@bjlittle`_ dropped support for ``py39`` and adopted support for ``py312`` as per
+   the `NEP-29`_ schedule. (:pull:`5894`)
 
 
 📚 Documentation
@@ -100,6 +101,7 @@ This document explains the changes made to Iris for this release
 
 #. `@jfrost-mo`_ enabled colour output for pytest on GitHub Actions. (:pull:`5895`)
 
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
@@ -115,3 +117,4 @@ This document explains the changes made to Iris for this release
 .. _NPY002: https://docs.astral.sh/ruff/rules/numpy-legacy-random/
 .. _numpydoc validation: https://numpydoc.readthedocs.io/en/latest/validation.html#
 .. _Dask version 2024.2.1: https://docs.dask.org/en/stable/changelog.html#v2024-2-1
+.. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule
