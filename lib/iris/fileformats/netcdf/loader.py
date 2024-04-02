@@ -243,6 +243,9 @@ def _get_cf_var_data(cf_var, filename):
                 result = as_lazy_data(proxy, chunks=None, dask_chunking=True)
             else:
                 chunks = cf_var.cf_data.chunking()
+                if chunks is None:
+                    # Occurs for non-version-4 netcdf
+                    chunks = "contiguous"
                 # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
                 if chunks == "contiguous":
                     if (
