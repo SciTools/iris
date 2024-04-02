@@ -136,6 +136,8 @@ jobs:
       - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
+          # Force coloured output on GitHub Actions.
+          PY_COLORS: "1"
         run: |
           nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
 
