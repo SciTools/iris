@@ -469,14 +469,18 @@ SEM microscopy), so there is a wealth of tooling available, which
 :ref:`ugrid geovista` harnesses for cartographic plotting.
 
 GeoVista's default behaviour is to convert lat-lon information into full XYZ
-coordinates so the data is visualised on the surface of a 3D globe. The plots
-are interactive by default, so it's easy to explore the data in detail.
+coordinates so the data is visualised on the surface of a 3D globe; 2D
+projections are also supported. The plots are interactive by default, so it's
+easy to explore the data in detail.
 
-2D projections have also been demonstrated in proofs of concept, and will
-be added to API in the near future.
+Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
+easy via this convenience:
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
-This first example uses GeoVista to plot the ``face_cube`` that we created
-earlier:
+Below is an example of using GeoVista to plot a low-res
+sample :attr:`~iris.cube.Cube.mesh` based :class:`~iris.cube.Cube`. For
+some truly spectacular visualisations of high-res data please see the
+GeoVista :external+geovista:doc:`generated/gallery/index`.
 
 .. dropdown:: Code
     :icon: code
@@ -484,130 +488,48 @@ earlier:
     .. code-block:: python
 
         >>> from geovista import GeoPlotter, Transform
-        >>> from geovista.common import to_xyz
+        >>> from geovista.common import to_cartesian
+        >>> import matplotlib.pyplot as plt
 
+        >>> from iris import load_cube, sample_data_path
+        >>> from iris.experimental.geovista import cube_to_polydata
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-        # We'll re-use this to plot some real global data later.
-        >>> def cube_faces_to_polydata(cube):
-        ...     lons, lats = cube.mesh.node_coords
-        ...     face_node = cube.mesh.face_node_connectivity
-        ...     indices = face_node.indices_by_location()
-        ...
-        ...     mesh = Transform.from_unstructured(
-        ...         lons.points,
-        ...         lats.points,
-        ...         indices,
-        ...         data=cube.data,
-        ...         name=f"{cube.name()} / {cube.units}",
-        ...         start_index=face_node.start_index,
-        ...     )
-        ...     return mesh
-
-        >>> print(face_cube)
-        face_data / (K)                     (-- : 2; height: 3)
-            Dimension coordinates:
-                height                          -          x
+        >>> with PARSE_UGRID_ON_LOAD.context():
+        ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> print(sample_mesh_cube)
+        synthetic / (1)                     (-- : 96)
             Mesh coordinates:
-                latitude                        x          -
-                longitude                       x          -
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        Topology data of 2D unstructured mesh
+                location                    face
             Attributes:
-                Conventions                 'CF-1.7'
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    1
 
         # Convert our mesh+data to a PolyData object.
-        # Just plotting a single height level.
-        >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
+        >>> face_polydata = cube_to_polydata(sample_mesh_cube)
         >>> print(face_polydata)
-        PolyData (0x7ff4861ff4c0)
-          N Cells:	2
-          N Points:	5
-          X Bounds:	9.903e-01, 1.000e+00
-          Y Bounds:	0.000e+00, 1.392e-01
-          Z Bounds:	6.123e-17, 5.234e-02
-          N Arrays:	2
+        PolyData (...
+          N Cells:    96
+          N Points:   98
+          N Strips:   0
+          X Bounds:   -1.000e+00, 1.000e+00
+          Y Bounds:   -1.000e+00, 1.000e+00
+          Z Bounds:   -1.000e+00, 1.000e+00
+          N Arrays:   4
 
         # Create the GeoVista plotter and add our mesh+data to it.
         >>> my_plotter = GeoPlotter()
-        >>> my_plotter.add_coastlines(color="black")
-        >>> my_plotter.add_base_layer(color="grey")
-        >>> my_plotter.add_mesh(face_polydata)
-
-        # Centre the camera on the data.
-        >>> camera_region = to_xyz(
-        ...     face_cube.coord("longitude").points,
-        ...     face_cube.coord("latitude").points,
-        ...     radius=3,
-        ... )
-        >>> camera_pos = camera_region.mean(axis=0)
-        >>> my_plotter.camera.position = camera_pos
-
-        >>> my_plotter.show()
-
-    ..  image:: images/plotting_basic.png
-        :alt: A GeoVista plot of the basic example Mesh.
-
-    This artificial data makes West Africa rather chilly!
-
-Here's another example using a global cubed-sphere data set:
-
-.. dropdown:: Code
-    :icon: code
-
-    .. code-block:: python
-
-        >>> from iris import load_cube
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-
-        # Demonstrating with a global data set.
-        # You could also download this file from github.com/SciTools/iris-test-data.
-        >>> from iris.tests import get_data_path
-        >>> file_path = get_data_path(
-        ...     [
-        ...         "NetCDF",
-        ...         "unstructured_grid",
-        ...         "lfric_surface_mean.nc",
-        ...     ]
-        ... )
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     global_cube = load_cube(file_path, "tstar_sea")
-        >>> print(global_cube)
-        sea_surface_temperature / (K)       (-- : 1; -- : 13824)
-            Mesh coordinates:
-                latitude                        -       x
-                longitude                       -       x
-            Auxiliary coordinates:
-                time                            x       -
-            Cell methods:
-                0                           time: mean (interval: 300 s)
-                1                           time_counter: mean
-            Attributes:
-                Conventions                 UGRID
-                description                 Created by xios
-                interval_operation          300 s
-                interval_write              1 d
-                name                        lfric_surface
-                online_operation            average
-                timeStamp                   2020-Feb-07 16:23:14 GMT
-                title                       Created by xios
-                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
-
-        >>> global_polydata = cube_faces_to_polydata(global_cube)
-        >>> print(global_polydata)
-        PolyData (0x7f761b536160)
-          N Cells:	13824
-          N Points:	13826
-          X Bounds:	-1.000e+00, 1.000e+00
-          Y Bounds:	-1.000e+00, 1.000e+00
-          Z Bounds:	-1.000e+00, 1.000e+00
-          N Arrays:	2
-
-        >>> my_plotter = GeoPlotter()
         >>> my_plotter.add_coastlines()
-        >>> my_plotter.add_mesh(global_polydata, show_edges=True)
-
+        >>> my_plotter.add_mesh(face_polydata)
         >>> my_plotter.show()
 
-    ..  image:: images/plotting_global.png
-        :alt: A GeoVista plot of a global sea surface temperature Mesh.
+    .. image:: images/plotting.png
+       :alt: A GeoVista plot of low-res sample data.
 
 Region Extraction
 -----------------
@@ -656,118 +578,59 @@ position of the data points before they can be analysed as inside/outside the
 selected region. The recommended way to do this is using tools provided by
 :ref:`ugrid geovista`, which is optimised for performant mesh analysis.
 
-This approach centres around using :meth:`geovista.geodesic.BBox.enclosed` to
-get the subset of the original mesh that is inside the
-:class:`~geovista.geodesic.BBox`. This subset :class:`pyvista.PolyData` object
-includes the original indices of each datapoint - the ``vtkOriginalCellIds``
-array, which can be used to index the original :class:`~iris.cube.Cube`. Since
-we **know** that this subset :class:`~iris.cube.Cube` represents a regional
-mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
-:class:`~iris.cube.Cube`\'s :attr:`~iris.cube.Cube.aux_coords` using
-:meth:`iris.experimental.ugrid.Mesh.from_coords`:
+Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
+easy via this convenience:
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
-..
-    Not using doctest here as want to keep GeoVista as optional dependency.
+An Iris convenience for regional extraction is also provided:
+:func:`iris.experimental.geovista.extract_unstructured_region`; demonstrated
+below:
+
 
 .. dropdown:: Code
     :icon: code
 
-    .. code-block:: python
+    .. doctest:: ugrid_operations
 
-        >>> from geovista import Transform
         >>> from geovista.geodesic import BBox
-        >>> from iris import load_cube
-        >>> from iris.experimental.ugrid import Mesh, PARSE_UGRID_ON_LOAD
-
-        # Need a larger dataset to demonstrate this operation.
-        # You could also download this file from github.com/SciTools/iris-test-data.
-        >>> from iris.tests import get_data_path
-        >>> file_path = get_data_path(
-        ...     [
-        ...         "NetCDF",
-        ...         "unstructured_grid",
-        ...         "lfric_ngvat_2D_72t_face_half_levels_main_conv_rain.nc",
-        ...     ]
-        ... )
+        >>> from iris import load_cube, sample_data_path
+        >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
+        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     global_cube = load_cube(file_path, "conv_rain")
-        >>> print(global_cube)
-        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 864)
+        ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> print(sample_mesh_cube)
+        synthetic / (1)                     (-- : 96)
             Mesh coordinates:
-                latitude                                    -        x
-                longitude                                   -        x
-            Auxiliary coordinates:
-                time                                        x        -
-            Cell methods:
-                0                                       time: point
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        Topology data of 2D unstructured mesh
+                location                    face
             Attributes:
-                Conventions                             UGRID
-                description                             Created by xios
-                interval_operation                      300 s
-                interval_write                          300 s
-                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
-                online_operation                        instant
-                timeStamp                               2020-Oct-18 21:18:35 GMT
-                title                                   Created by xios
-                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    1
 
-        # Convert the Mesh to a GeoVista PolyData object.
-        >>> lons, lats = global_cube.mesh.node_coords
-        >>> face_node = global_cube.mesh.face_node_connectivity
-        >>> indices = face_node.indices_by_location()
-        >>> global_polydata = Transform.from_unstructured(
-        ...     lons.points, lats.points, indices, start_index=face_node.start_index
+        >>> regional_cube = extract_unstructured_region(
+        ...     cube=sample_mesh_cube,
+        ...     polydata=cube_to_polydata(sample_mesh_cube),
+        ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
+        ...     preference="center",
         ... )
-
-        # Define a region of 4 corners connected by great circles.
-        #  Specialised sub-classes of BBox are also available e.g. panel/wedge.
-        >>> region = BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45])
-        # 'Apply' the region to the PolyData object.
-        >>> region_polydata = region.enclosed(global_polydata, preference="center")
-        # Get the remaining face indices, to use for indexing the Cube.
-        >>> indices = region_polydata["vtkOriginalCellIds"]
-
-        >>> print(type(indices))
-        <class 'numpy.ndarray'>
-        # 101 is smaller than the original 864.
-        >>> print(len(indices))
-        101
-        >>> print(indices[:10])
-        [ 6  7  8  9 10 11 18 19 20 21]
-
-        # Use the face indices to subset the global cube.
-        >>> region_cube = global_cube[:, indices]
-
-        # In this case we **know** the indices correspond to a contiguous
-        #  region, so we will convert the sub-setted Cube back into a
-        #  Cube-with-Mesh.
-        >>> new_mesh = Mesh.from_coords(*region_cube.coords(dimensions=1))
-        >>> new_mesh_coords = new_mesh.to_MeshCoords(global_cube.location)
-        >>> for coord in new_mesh_coords:
-        ...     region_cube.remove_coord(coord.name())
-        ...     region_cube.add_aux_coord(coord, 1)
-
-        # A Mesh-Cube with a subset (101) of the original 864 faces.
-        >>> print(region_cube)
-        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 101)
+        >>> print(regional_cube)
+        synthetic / (1)                     (-- : 11)
             Mesh coordinates:
-                latitude                                    -        x
-                longitude                                   -        x
-            Auxiliary coordinates:
-                time                                        x        -
-            Cell methods:
-                0                                       time: point
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        unknown
+                location                    face
             Attributes:
-                Conventions                             UGRID
-                description                             Created by xios
-                interval_operation                      300 s
-                interval_write                          300 s
-                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
-                online_operation                        instant
-                timeStamp                               2020-Oct-18 21:18:35 GMT
-                title                                   Created by xios
-                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    1
+
 
 Regridding
 ----------

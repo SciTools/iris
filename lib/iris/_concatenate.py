@@ -160,7 +160,7 @@ class _DerivedCoordAndDims(
     Parameters
     ----------
     coord : :class:`iris.coord.DimCoord` or :class:`iris.coord.AuxCoord`
-    dims: tuple
+    dims : tuple
         A tuple of the data dimension(s) spanned by the coordinate.
     aux_factory : :class:`iris.aux_factory.AuxCoordFactory`
 
@@ -196,7 +196,7 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
 
         Parameters
         ----------
-        ancil : :class:`iris.coord.CellMeasure` or :class:`iris.coord.AncillaryVariable`.
+        ancil : :class:`iris.coord.CellMeasure` or :class:`iris.coord.AncillaryVariable`
         dims :
             The dimension(s) associated with ancil.
 
@@ -271,7 +271,6 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     ----------
     points : :class:`_Extent`
         The :class:`_Extent` of the coordinate point values.
-
     bounds :
         A list containing the :class:`_Extent` of the coordinate lower
         bound and the upper bound. Defaults to None if no associated
@@ -297,7 +296,7 @@ def concatenate(
     cubes : iterable of :class:`iris.cube.Cube`
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
-    error_on_mismatch: bool, default=False
+    error_on_mismatch : bool, default=False
         If True, raise an informative
         :class:`~iris.exceptions.ContatenateError` if registration fails.
     check_aux_coords : bool, default=True
@@ -491,7 +490,7 @@ class _CubeSignature:
             between `self` and `other`.
         reason : str, default="metadata"
             The reason to give for mismatch (function is normally, but not
-            always, testing metadata)
+            always, testing metadata).
 
         Returns
         -------
@@ -763,9 +762,9 @@ class _ProtoCube:
         return self._axis
 
     def concatenate(self):
-        """Concatenates all the source-cubes registered with the :class:`_ProtoCube`.
+        """Concatenate all the source-cubes registered with the :class:`_ProtoCube`.
 
-        Concatenates all the source-cubes registered with the
+        Concatenate all the source-cubes registered with the
         :class:`_ProtoCube` over the nominated common dimension.
 
         Returns

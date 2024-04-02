@@ -10,6 +10,7 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
+
 from collections.abc import Iterable, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
@@ -515,9 +516,10 @@ def _translate_constraints_to_var_callback(constraints):
 
     Returns
     -------
-    function : (cf_var:CFDataVariable)
-        bool, or None.
+    bool or None
 
+    Notes
+    -----
     For now, ONLY handles a single NameConstraint with no 'STASH' component.
 
     """
@@ -705,7 +707,7 @@ class ChunkControl(threading.local):
         Parameters
         ----------
         var_names : str or list of str, default=None
-            apply the `dimension_chunksizes` controls only to these variables,
+            Apply the `dimension_chunksizes` controls only to these variables,
             or when building :class:`~iris.cube.Cube` from these data variables.
             If ``None``, settings apply to all loaded variables.
         **dimension_chunksizes : dict of {str: int}
@@ -794,7 +796,7 @@ class ChunkControl(threading.local):
 
     @contextmanager
     def as_dask(self) -> None:
-        """Relies on Dask :external+dask:doc:`array` to control chunk sizes.
+        """Rely on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes
         -----

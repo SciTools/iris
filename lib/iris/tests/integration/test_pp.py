@@ -280,9 +280,10 @@ class TestVertical(tests.IrisTest):
             return_value=iter([data_field, pressure_field, pressure_field])
         )
         msg = "Multiple reference cubes for surface_air_pressure"
-        with mock.patch("iris.fileformats.pp.load", new=load) as load, mock.patch(
-            "warnings.warn"
-        ) as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             _, _, _ = iris.fileformats.pp.load_cubes("DUMMY")
             warn.assert_called_with(msg, category=IrisUserWarning)
 
@@ -396,9 +397,10 @@ class TestVertical(tests.IrisTest):
 
         # Convert field to a cube.
         load = mock.Mock(return_value=iter([data_field]))
-        with mock.patch("iris.fileformats.pp.load", new=load) as load, mock.patch(
-            "warnings.warn"
-        ) as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             (data_cube,) = iris.fileformats.pp.load_cubes("DUMMY")
 
         msg = (

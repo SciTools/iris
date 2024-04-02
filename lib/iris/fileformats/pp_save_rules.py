@@ -26,7 +26,7 @@ from iris.warnings import IrisPpClimModifiedWarning
 
 
 def _basic_coord_system_rules(cube, pp):
-    """Rules for setting the coord system of the PP field.
+    """Rule for setting the coord system of the PP field.
 
     Parameters
     ----------
@@ -80,7 +80,7 @@ def _um_version_rules(cube, pp):
 
 
 def _stash_rules(cube, pp):
-    """Attributes rules for setting the STASH attribute of the PP field.
+    """Attribute rules for setting the STASH attribute of the PP field.
 
     Parameters
     ----------
@@ -103,7 +103,7 @@ def _stash_rules(cube, pp):
 
 
 def _general_time_rules(cube, pp):
-    """Rules for setting time metadata of the PP field.
+    """Rule for setting time metadata of the PP field.
 
     Parameters
     ----------
@@ -377,7 +377,7 @@ def _general_time_rules(cube, pp):
 
 
 def _calendar_rules(cube, pp):
-    """Rules for setting the calendar of the PP field.
+    """Rule for setting the calendar of the PP field.
 
     Parameters
     ----------
@@ -403,7 +403,7 @@ def _calendar_rules(cube, pp):
 
 
 def _grid_and_pole_rules(cube, pp):
-    """Rules for setting the horizontal grid and pole location of the PP field.
+    """Rule for setting the horizontal grid and pole location of the PP field.
 
     Parameters
     ----------
@@ -485,7 +485,7 @@ def _grid_and_pole_rules(cube, pp):
 
 
 def _non_std_cross_section_rules(cube, pp):
-    """Rules for applying non-standard cross-sections to the PP field.
+    """Rule for applying non-standard cross-sections to the PP field.
 
     Parameters
     ----------
@@ -616,7 +616,7 @@ def _non_std_cross_section_rules(cube, pp):
 
 
 def _lbproc_rules(cube, pp):
-    """Rules for setting the processing code of the PP field.
+    """Rule for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
@@ -664,7 +664,7 @@ def _lbproc_rules(cube, pp):
 
 
 def _vertical_rules(cube, pp):
-    """Rules for setting vertical levels for the PP field.
+    """Rule for setting vertical levels for the PP field.
 
     Parameters
     ----------
@@ -849,7 +849,7 @@ def _vertical_rules(cube, pp):
 
 
 def _all_other_rules(cube, pp):
-    """Fields currently managed by these rules.
+    """Field currently managed by these rules.
 
     * lbfc (field code)
     * lbrsvd[3] (ensemble member number)

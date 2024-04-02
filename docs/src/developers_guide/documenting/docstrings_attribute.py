@@ -1,4 +1,4 @@
-"""docstring attribute example."""
+"""Docstring attribute example."""
 
 
 class ExampleClass:

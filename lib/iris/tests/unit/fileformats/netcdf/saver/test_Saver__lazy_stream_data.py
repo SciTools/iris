@@ -9,16 +9,15 @@ The testing of the dask delayed operations and file writing are instead covered 
 integration tests.
 
 """
+
 from unittest import mock
-import warnings
 
 import dask.array as da
 import numpy as np
 import pytest
 
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
-from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
-from iris.warnings import IrisMaskValueMatchWarning
+from iris.fileformats.netcdf.saver import Saver
 
 
 class Test__lazy_stream_data:
@@ -88,10 +87,7 @@ class Test__lazy_stream_data:
         cf_var = self.mock_var(
             data.shape, with_data_array=(data_form == "emulateddata")
         )
-        fill_value = -1.0  # not occurring in data
-        saver._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
         if data_form == "lazydata":
             expect_n_setitem = 0
             expect_n_delayed = 1
@@ -107,73 +103,11 @@ class Test__lazy_stream_data:
         assert len(saver._delayed_writes) == expect_n_delayed
 
         if data_form == "lazydata":
-            result_data, result_writer, fill_info = saver._delayed_writes[0]
+            result_data, result_writer = saver._delayed_writes[0]
             assert result_data is data
             assert isinstance(result_writer, threadsafe_nc.NetCDFWriteProxy)
-            assert isinstance(fill_info, _FillvalueCheckInfo)
         elif data_form == "realdata":
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
             cf_var._data_array == mock.sentinel.exact_data_array
-
-    def test_warnings(self, compute, data_form):
-        """For real data, fill-value warnings are issued immediately.
-        For lazy data, warnings are returned from computing a delayed completion.
-        For 'emulated' data (direct array transfer), no checks + no warnings ever.
-
-        N.B. The 'compute' keyword has **no effect** on this :  It only causes delayed
-        writes to be automatically actioned on exiting a Saver context.
-        Streaming *always* creates delayed writes for lazy data, since this is required
-        to make dask distributed operation work.
-        """
-        saver = self.saver(compute=compute)
-
-        data = np.arange(5.0)
-        if data_form == "lazydata":
-            data = da.from_array(data)
-
-        fill_value = 2.0  # IS occurring in data
-        cf_var = self.mock_var(
-            data.shape, with_data_array=(data_form == "emulateddata")
-        )
-
-        # Do initial save.  When compute=True, this issues warnings
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            saver._lazy_stream_data(
-                data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-            )
-
-        # Check warnings issued by initial call.
-        issued_warnings = [log.message for log in logged_warnings]
-        if data_form == "lazydata":
-            n_expected_warnings = 0
-        elif data_form == "realdata":
-            n_expected_warnings = 1
-        else:
-            # No checks in the emulated case
-            assert data_form == "emulateddata"
-            n_expected_warnings = 0
-        assert len(issued_warnings) == n_expected_warnings
-
-        # Complete the write : any delayed warnings should be *returned*.
-        # NOTE:
-        #   (1) this still works when there are no delayed writes.
-        #   (2) the Saver 'compute' keyword makes no difference to this usage, as it
-        #       *only* affects what happens when the saver context exits.
-        result2 = saver.delayed_completion().compute()
-        issued_warnings += list(result2)
-
-        # Check warnings issued during 'completion'.
-        if data_form == "emulateddata":
-            # No checks in this case, ever.
-            n_expected_warnings = 0
-        else:
-            # Otherwise, either way, a suitable warning should now have been produced.
-            n_expected_warnings = 1
-        assert len(issued_warnings) == n_expected_warnings
-        if n_expected_warnings > 0:
-            warning = issued_warnings[0]
-            msg = "contains unmasked data points equal to the fill-value, 2.0"
-            assert isinstance(warning, IrisMaskValueMatchWarning)
-            assert msg in warning.args[0]

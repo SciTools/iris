@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Provides text printouts of Iris cubes."""
+
 from copy import deepcopy
 
 from iris._representation.cube_summary import CubeSummary

@@ -8,6 +8,7 @@
 Eventual destination: dedicated module in :mod:`iris` root.
 
 """
+
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
@@ -862,6 +863,7 @@ class Mesh(CFVariableMixin):
 
         #####
         # TODO: remove axis assignment once Mesh supports arbitrary coords.
+        # TODO: consider filtering coords as the first action in this method.
         axes_present = [guess_coord_axis(coord) for coord in coords]
         axes_required = ("X", "Y")
         if all([req in axes_present for req in axes_required]):
@@ -933,7 +935,7 @@ class Mesh(CFVariableMixin):
 
         Returns
         -------
-        result : str
+        str
 
         """
         if shorten:
@@ -1888,7 +1890,7 @@ class Mesh(CFVariableMixin):
         Returns
         -------
         tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`
-            tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`
+            Tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`
             referencing the current :class:`Mesh`. One for each value in
             :attr:`AXES`, using the value for the ``axis`` argument.
 
@@ -2957,8 +2959,9 @@ class MeshCoord(AuxCoord):
 
         Returns
         -------
-        points, bounds : array or None
-            lazy arrays which calculate the correct points and bounds from the
+        array or None
+            Tuple of (points, bounds).
+            Lazy arrays which calculate the correct points and bounds from the
             Mesh data, based on the location and axis.
             The Mesh coordinates accessed are not identified on construction,
             but discovered from the Mesh at the time of calculation, so that

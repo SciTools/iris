@@ -79,7 +79,7 @@ def cache_venv(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -96,7 +96,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -117,7 +117,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     Notes
@@ -174,7 +174,7 @@ def tests(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -198,7 +198,7 @@ def doctest(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -225,7 +225,7 @@ def gallery(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -246,7 +246,7 @@ def linkcheck(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -272,7 +272,7 @@ def wheel(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
