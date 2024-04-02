@@ -292,9 +292,7 @@ class VariableEmulator(typing.Protocol):
     _data_array: np.typing.ArrayLike
 
 
-CFVariable: typing.TypeAlias = typing.Union[
-    _thread_safe_nc.VariableWrapper, VariableEmulator
-]
+CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
 
 
 class Saver:
