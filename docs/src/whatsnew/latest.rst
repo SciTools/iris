@@ -104,6 +104,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@jfrost-mo: https://github.com/jfrost-mo
 
 
 
@@ -114,4 +115,3 @@ This document explains the changes made to Iris for this release
 .. _NPY002: https://docs.astral.sh/ruff/rules/numpy-legacy-random/
 .. _numpydoc validation: https://numpydoc.readthedocs.io/en/latest/validation.html#
 .. _Dask version 2024.2.1: https://docs.dask.org/en/stable/changelog.html#v2024-2-1
-.. _@jfrost-mo: https://github.com/jfrost-mo
