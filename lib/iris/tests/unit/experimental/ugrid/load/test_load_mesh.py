@@ -24,7 +24,8 @@ class Tests(tests.IrisTest):
         args = [("file_1", "file_2"), "my_var_name"]
         with PARSE_UGRID_ON_LOAD.context():
             _ = load_mesh(args)
-        self.assertTrue(self.load_meshes_mock.called_with(args))
+        assert self.load_meshes_mock.call_count == 1
+        assert self.load_meshes_mock.call_args == ((args, None),)
 
     def test_returns_mesh(self):
         with PARSE_UGRID_ON_LOAD.context():
