@@ -50,7 +50,8 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. Warnings are no longer produced for fill value 'collisions' in NetCDF
+   saving. :ref:`Read more <missing_data_saving>`. (:pull:`5833`)
 
 
 🚀 Performance Enhancements
