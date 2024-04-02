@@ -98,10 +98,13 @@ This document explains the changes made to Iris for this release
    have been updated to comply and some rules have been ignored for now.
    (:pull:`5762`)
 
+#. `@jfrost-mo`_ enabled colour output for pytest on GitHub Actions. (:pull:`5895`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@jfrost-mo: https://github.com/jfrost-mo
 
 
 
