@@ -292,6 +292,11 @@ class VariableEmulator(typing.Protocol):
     _data_array: np.typing.ArrayLike
 
 
+CFVariable: typing.TypeAlias = typing.Union[
+    _thread_safe_nc.VariableWrapper, VariableEmulator
+]
+
+
 class Saver:
     """A manager for saving netcdf files."""
 
@@ -2288,7 +2293,7 @@ class Saver:
     def _lazy_stream_data(
         self,
         data: np.typing.ArrayLike,
-        cf_var: typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator],
+        cf_var: CFVariable,
     ) -> None:
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
@@ -2315,9 +2320,7 @@ class Saver:
                 # later by a call to delayed_completion().
                 def store(
                     data: np.typing.ArrayLike,
-                    cf_var: typing.Union[
-                        _thread_safe_nc.VariableWrapper, VariableEmulator
-                    ],
+                    cf_var: CFVariable,
                 ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
@@ -2331,9 +2334,7 @@ class Saver:
                 # Real data is always written directly, i.e. not via lazy save.
                 def store(
                     data: np.typing.ArrayLike,
-                    cf_var: typing.Union[
-                        _thread_safe_nc.VariableWrapper, VariableEmulator
-                    ],
+                    cf_var: CFVariable,
                 ) -> None:
                     cf_var[:] = data
 
