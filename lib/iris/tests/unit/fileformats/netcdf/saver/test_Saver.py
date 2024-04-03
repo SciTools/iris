@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -33,7 +32,6 @@ from iris.coord_systems import (
 )
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisMaskValueMatchWarning
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
 
@@ -245,9 +243,7 @@ class Test_write(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, least_significant_digit=1)
             cube_saved = iris.load_cube(nc_path)
-            self.assertEqual(
-                cube_saved.attributes["least_significant_digit"], 1
-            )
+            self.assertEqual(cube_saved.attributes["least_significant_digit"], 1)
             self.assertFalse(np.all(cube.data == cube_saved.data))
             self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
 
@@ -457,9 +453,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
             ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(
-                ds.variables["longitude"].valid_range, vrange
-            )
+            self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
             ds.close()
 
     def test_valid_min_saved(self):
@@ -553,76 +547,6 @@ class Test_write_fill_value(tests.IrisTest):
             self.assertNotIn("_FillValue", var.ncattrs())
             self.assertTrue(var[index].mask)
 
-    def test_contains_fill_value_passed(self):
-        # Test that a warning is raised if the data contains the fill value.
-        cube = self._make_cube(">f4")
-        fill_value = 1
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_contains_fill_value_byte(self):
-        # Test that a warning is raised if the data contains the fill value
-        # when it is of a byte type.
-        cube = self._make_cube(">i1")
-        fill_value = 1
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_contains_default_fill_value(self):
-        # Test that a warning is raised if the data contains the default fill
-        # value if no fill_value argument is supplied.
-        cube = self._make_cube(">f4")
-        cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_contains_default_fill_value_byte(self):
-        # Test that no warning is raised if the data contains the default fill
-        # value if no fill_value argument is supplied when the data is of a
-        # byte type.
-        cube = self._make_cube(">i1")
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_contains_masked_fill_value(self):
-        # Test that no warning is raised if the data contains the fill_value at
-        # a masked point.
-        fill_value = 1
-        cube = self._make_cube(">f4", masked_value=fill_value)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_masked_byte_default_fill_value(self):
-        # Test that a warning is raised when saving masked byte data with no
-        # fill value supplied.
-        cube = self._make_cube(">i1", masked_value=1)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_masked_byte_fill_value_passed(self):
-        # Test that no warning is raised when saving masked byte data with a
-        # fill value supplied if the the data does not contain the fill_value.
-        fill_value = 100
-        cube = self._make_cube(">i1", masked_value=2)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
 
 class Test_cf_valid_var_name(tests.IrisTest):
     def test_no_replacement(self):
@@ -642,9 +566,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
     def test_no_hyphen(self):
         # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
-        self.assertEqual(
-            Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf"
-        )
+        self.assertEqual(Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf")
 
 
 class _Common__check_attribute_compliance:
@@ -790,9 +712,7 @@ class Test_check_attribute_compliance__exception_handling(
         msg = 'Both "valid_range" and "valid_min"'
         with Saver("nonexistent test file", "NETCDF4") as saver:
             with self.assertRaisesRegex(ValueError, msg):
-                saver.check_attribute_compliance(
-                    self.container, self.data_dtype
-                )
+                saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
 class Test__cf_coord_identity(tests.IrisTest):
@@ -856,8 +776,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         return cube
 
     def _grid_mapping_variable(self, coord_system):
-        """
-        Return a mock netCDF variable that represents the conversion
+        """Return a mock netCDF variable that represents the conversion
         of the given coordinate system.
 
         """
@@ -879,14 +798,11 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         Saver._create_cf_grid_mapping(saver, cube, variable)
 
         self.assertEqual(create_var_fn.call_count, 1)
-        self.assertEqual(
-            variable.grid_mapping, grid_variable.grid_mapping_name
-        )
+        self.assertEqual(variable.grid_mapping, grid_variable.grid_mapping_name)
         return grid_variable
 
     def _variable_attributes(self, coord_system):
-        """
-        Return the attributes dictionary for the grid mapping variable
+        """Return the attributes dictionary for the grid mapping variable
         that is created from the given coordinate system.
 
         """

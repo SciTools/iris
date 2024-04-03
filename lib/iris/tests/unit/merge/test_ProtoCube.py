@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris._merge.ProtoCube` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -305,33 +304,21 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         self.check_fail("aux_coords (scalar)", "latitude", "longitude")
 
     def test_vector_dim_coords_and_dims_one_extra(self):
-        self.cube2.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
         self.check_fail("dim_coords", "latitude")
 
     def test_vector_dim_coords_and_dims_both_extra(self):
-        self.cube2.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="longitude"), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], standard_name="longitude"), 0)
         self.check_fail("dim_coords", "latitude", "longitude")
 
     def test_vector_aux_coords_and_dims_one_extra(self):
-        self.cube2.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
+        self.cube2.add_aux_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
         self.check_fail("aux_coords (non-scalar)", "latitude")
 
     def test_vector_aux_coords_and_dims_both_extra(self):
-        self.cube2.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
-        self.cube1.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="longitude"), 0
-        )
+        self.cube2.add_aux_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
+        self.cube1.add_aux_coord(DimCoord([1, 2, 3], standard_name="longitude"), 0)
         self.check_fail("aux_coords (non-scalar)", "latitude", "longitude")
 
     def test_factory_defns_one_extra(self):
@@ -368,15 +355,9 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="longitude"), 1)
         cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="altitude"), 2)
 
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinimity"), 0
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinomity"), 1
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinumity"), 2
-        )
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinimity"), 0)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinomity"), 1)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinumity"), 2)
 
         # dim
         cube2.add_aux_coord(DimCoord([1, 2, 3], var_name="one"), 0)
@@ -409,9 +390,7 @@ class _MergeTest_coordprops(_MergeTest):
         proto_cube.register(self.cube2, error_on_mismatch=True)
 
     def _props_fail(self, *terms):
-        self.check_fail(
-            self._mergetest_type, self.coord_to_change.name(), *terms
-        )
+        self.check_fail(self._mergetest_type, self.coord_to_change.name(), *terms)
 
     def test_standard_name(self):
         self.coord_to_change.standard_name = "soil_temperature"

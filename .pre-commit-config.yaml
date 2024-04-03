@@ -28,6 +28,15 @@ repos:
         # Don't commit to main branch.
     -   id: no-commit-to-branch
 
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.3.4"
+    hooks:
+    -   id: ruff
+        types: [file, python]
+        args: [--fix, --show-fixes]
+    -   id: ruff-format
+        types: [file, python]
+
 -   repo: https://github.com/codespell-project/codespell
     rev: "v2.2.6"
     hooks:
@@ -35,25 +44,11 @@ repos:
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
--   repo: https://github.com/psf/black
-    rev: 23.10.1
-    hooks:
-    -   id: black
-        pass_filenames: false
-        args: [--config=./pyproject.toml, .]
-
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.1.0
+    rev: 7.0.0
     hooks:
     -   id: flake8
         types: [file, python]
-
--   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-    -   id: isort
-        types: [file, python]
-        args: [--filter-files]
 
 -   repo: https://github.com/asottile/blacken-docs
     rev: 1.16.0
@@ -65,4 +60,11 @@ repos:
     rev: v1.2.0
     hooks:
     -   id: sort-all
+        types: [file, python]
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.7.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: "^lib/iris/tests/|docs/gallery_code/"
         types: [file, python]

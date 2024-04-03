@@ -1,12 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-A collection of routines which create standard Cubes/files for test purposes.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""A collection of routines which create standard Cubes/files for test purposes."""
 
-"""
 import iris.tests as tests  # isort:skip
 
 from datetime import datetime
@@ -20,13 +17,7 @@ import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 
 from ._stock_2d_latlons import (  # noqa
@@ -36,8 +27,7 @@ from ._stock_2d_latlons import (  # noqa
 
 
 def lat_lon_cube():
-    """
-    Returns a cube with a latitude and longitude suitable for testing
+    """Returns a cube with a latitude and longitude suitable for testing
     saving to PP/NetCDF etc.
 
     """
@@ -61,8 +51,7 @@ def lat_lon_cube():
 
 
 def global_pp():
-    """
-    Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
+    """Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
 
     The standard_name and unit attributes are added to compensate for the
     broken STASH encoding in that file.
@@ -86,8 +75,7 @@ def simple_pp():
 
 
 def simple_1d(with_bounds=True):
-    """
-    Returns an abstract, one-dimensional cube.
+    """Returns an abstract, one-dimensional cube.
 
     >>> print(simple_1d())
     thingness                           (foo: 11)
@@ -116,8 +104,7 @@ def simple_1d(with_bounds=True):
 
 
 def simple_2d(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d())
     thingness                           (bar: 3; foo: 4)
@@ -144,9 +131,7 @@ def simple_2d(with_bounds=True):
         bounds=y_bounds if with_bounds else None,
     )
     x_points = np.array([-7.5, 7.5, 22.5, 37.5])
-    x_bounds = np.array(
-        [[-15, 0], [0, 15], [15, 30], [30, 45]], dtype=np.int32
-    )
+    x_bounds = np.array([[-15, 0], [0, 15], [15, 30], [30, 45]], dtype=np.int32)
     x_coord = DimCoord(
         x_points,
         long_name="foo",
@@ -160,8 +145,7 @@ def simple_2d(with_bounds=True):
 
 
 def simple_2d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d_w_multidim_coords())
     thingness                           (*ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -182,8 +166,7 @@ def simple_2d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_3d_w_multidim_coords())
     thingness                           (wibble: 2; *ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -260,8 +243,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d():
-    """
-    Returns an abstract three dimensional cube.
+    """Returns an abstract three dimensional cube.
 
     >>> print(simple_3d())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -300,8 +282,7 @@ def simple_3d():
 
 
 def simple_3d_mask():
-    """
-    Returns an abstract three dimensional cube that has data masked.
+    """Returns an abstract three dimensional cube that has data masked.
 
     >>> print(simple_3d_mask())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -327,8 +308,7 @@ def simple_3d_mask():
 
 
 def track_1d(duplicate_x=False):
-    """
-    Returns a one-dimensional track through two-dimensional space.
+    """Returns a one-dimensional track through two-dimensional space.
 
     >>> print(track_1d())
     air_temperature                     (y, x: 11)
@@ -353,22 +333,16 @@ def track_1d(duplicate_x=False):
     coord = AuxCoord(pts, "projection_x_coordinate", units="1", bounds=bounds)
     cube.add_aux_coord(coord, [0])
     if duplicate_x:
-        coord = AuxCoord(
-            pts, "projection_x_coordinate", units="1", bounds=bounds
-        )
+        coord = AuxCoord(pts, "projection_x_coordinate", units="1", bounds=bounds)
         cube.add_aux_coord(coord, [0])
-    coord = AuxCoord(
-        pts * 2, "projection_y_coordinate", units="1", bounds=bounds * 2
-    )
+    coord = AuxCoord(pts * 2, "projection_y_coordinate", units="1", bounds=bounds * 2)
     cube.add_aux_coord(coord, 0)
     return cube
 
 
 def simple_2d_w_multidim_and_scalars():
     data = np.arange(50, dtype=np.int32).reshape((5, 10))
-    cube = iris.cube.Cube(
-        data, long_name="test 2d dimensional cube", units="meters"
-    )
+    cube = iris.cube.Cube(data, long_name="test 2d dimensional cube", units="meters")
 
     # DimCoords
     dim1 = DimCoord(
@@ -411,8 +385,7 @@ def simple_2d_w_multidim_and_scalars():
 
 
 def simple_2d_w_cell_measure_ancil_var():
-    """
-    Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
+    """Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
 
     >>> print(simple_2d_w_cell_measure_ancil_var())
     thingness / (1)                     (bar: 3; foo: 4)
@@ -440,8 +413,7 @@ def simple_2d_w_cell_measure_ancil_var():
 
 
 def hybrid_height():
-    """
-    Returns a two-dimensional (Z, X), hybrid-height cube.
+    """Returns a two-dimensional (Z, X), hybrid-height cube.
 
     >>> print(hybrid_height())
     TODO: Update!
@@ -463,9 +435,7 @@ def hybrid_height():
     """
     data = np.arange(12, dtype="i8").reshape((3, 4))
 
-    orography = AuxCoord(
-        [10, 25, 50, 5], standard_name="surface_altitude", units="m"
-    )
+    orography = AuxCoord([10, 25, 50, 5], standard_name="surface_altitude", units="m")
     model_level = AuxCoord([2, 1, 0], standard_name="model_level_number")
     level_height = DimCoord(
         [100, 50, 10],
@@ -479,9 +449,7 @@ def hybrid_height():
         long_name="sigma",
         bounds=[[0.7, 0.85], [0.85, 0.97], [0.97, 1.0]],
     )
-    hybrid_height = iris.aux_factory.HybridHeightFactory(
-        level_height, sigma, orography
-    )
+    hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
 
     cube = iris.cube.Cube(
         data,
@@ -506,28 +474,20 @@ def simple_4d_with_hybrid_height():
         0,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(4, dtype="i8") + 10, "model_level_number", units="1"
-        ),
+        DimCoord(np.arange(4, dtype="i8") + 10, "model_level_number", units="1"),
         1,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(5, dtype="i8") + 20, "grid_latitude", units="degrees"
-        ),
+        DimCoord(np.arange(5, dtype="i8") + 20, "grid_latitude", units="degrees"),
         2,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(6, dtype="i8") + 30, "grid_longitude", units="degrees"
-        ),
+        DimCoord(np.arange(6, dtype="i8") + 30, "grid_longitude", units="degrees"),
         3,
     )
 
     cube.add_aux_coord(
-        AuxCoord(
-            np.arange(4, dtype="i8") + 40, long_name="level_height", units="m"
-        ),
+        AuxCoord(np.arange(4, dtype="i8") + 40, long_name="level_height", units="m"),
         1,
     )
     cube.add_aux_coord(
@@ -554,8 +514,7 @@ def simple_4d_with_hybrid_height():
 
 
 def realistic_3d():
-    """
-    Returns a realistic 3d cube.
+    """Returns a realistic 3d cube.
 
     >>> print(repr(realistic_3d()))
     <iris 'Cube' of air_potential_temperature (time: 7; grid_latitude: 9;
@@ -600,8 +559,7 @@ def realistic_3d():
 
 
 def realistic_4d():
-    """
-    Returns a realistic 4d cube.
+    """Returns a realistic 4d cube.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -662,12 +620,8 @@ def realistic_4d():
         units="1",
         attributes={"positive": "up"},
     )
-    sigma = icoords.AuxCoord(
-        sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds
-    )
-    orography = icoords.AuxCoord(
-        orography, standard_name="surface_altitude", units="m"
-    )
+    sigma = icoords.AuxCoord(sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds)
+    orography = icoords.AuxCoord(orography, standard_name="surface_altitude", units="m")
     time = icoords.DimCoord(
         time_pts, standard_name="time", units="hours since 1970-01-01 00:00:00"
     )
@@ -675,9 +629,7 @@ def realistic_4d():
         forecast_period_pts, standard_name="forecast_period", units="hours"
     )
 
-    hybrid_height = iris.aux_factory.HybridHeightFactory(
-        level_height, sigma, orography
-    )
+    hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
 
     cube = iris.cube.Cube(
         data,
@@ -697,8 +649,7 @@ def realistic_4d():
 
 
 def realistic_4d_no_derived():
-    """
-    Returns a realistic 4d cube without hybrid height
+    """Returns a realistic 4d cube without hybrid height.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -763,8 +714,7 @@ def realistic_4d_w_missing_data():
 
 
 def ocean_sigma_z():
-    """
-    Return a sample cube with an
+    """Return a sample cube with an
     :class:`iris.aux_factory.OceanSigmaZFactory` vertical coordinate.
 
     This is a fairly small cube with real coordinate arrays.  The coordinate

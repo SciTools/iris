@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for cube arithmetic involving MeshCoords."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -60,8 +59,7 @@ class TestBroadcastingWithMesh(
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
-    """
-    Run all the broadcasting tests on cubes with meshes.
+    """Run all the broadcasting tests on cubes with meshes.
 
     NOTE: there is a fair amount of special-case code to support this, built
     into the CubeArithmeticBroadcastingTestMixin baseclass.

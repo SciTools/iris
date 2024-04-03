@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Tests the high-level plotting interface.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tests the high-level plotting interface."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -51,12 +47,8 @@ def _load_theta():
 class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
     def setUp(self):
         tests.GraphicsTest.setUp(self)
-        filename = tests.get_data_path(
-            ("PP", "COLPEX", "theta_and_orog_subset.pp")
-        )
-        self.cube = test_plot.load_cube_once(
-            filename, "air_potential_temperature"
-        )
+        filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
+        self.cube = test_plot.load_cube_once(filename, "air_potential_temperature")
 
         self.draw_module = iris.quickplot
         self.contourf = test_plot.LambdaStr(
@@ -67,9 +59,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
         )
         self.contour = test_plot.LambdaStr(
             "iris.quickplot.contour",
-            lambda cube, *args, **kwargs: iris.quickplot.contour(
-                cube, *args, **kwargs
-            ),
+            lambda cube, *args, **kwargs: iris.quickplot.contour(cube, *args, **kwargs),
         )
         self.points = test_plot.LambdaStr(
             "iris.quickplot.points",
@@ -79,9 +69,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
         )
         self.plot = test_plot.LambdaStr(
             "iris.quickplot.plot",
-            lambda cube, *args, **kwargs: iris.quickplot.plot(
-                cube, *args, **kwargs
-            ),
+            lambda cube, *args, **kwargs: iris.quickplot.plot(cube, *args, **kwargs),
         )
 
         self.results = {
@@ -136,9 +124,7 @@ class TestLabels(tests.GraphicsTest):
         qplt.contour(self._small())
         self.check_graphic()
 
-        qplt.contourf(
-            self._small(), coords=["model_level_number", "grid_longitude"]
-        )
+        qplt.contourf(self._small(), coords=["model_level_number", "grid_longitude"])
         self.check_graphic()
 
     def test_contourf(self):
@@ -149,14 +135,10 @@ class TestLabels(tests.GraphicsTest):
 
         self.check_graphic()
 
-        qplt.contourf(
-            self._small(), coords=["model_level_number", "grid_longitude"]
-        )
+        qplt.contourf(self._small(), coords=["model_level_number", "grid_longitude"])
         self.check_graphic()
 
-        qplt.contourf(
-            self._small(), coords=["grid_longitude", "model_level_number"]
-        )
+        qplt.contourf(self._small(), coords=["grid_longitude", "model_level_number"])
         self.check_graphic()
 
     def test_contourf_axes_specified(self):
@@ -294,9 +276,7 @@ class TestPlotHist(tests.GraphicsTest):
 
     def test_vertical(self):
         cube = test_plot.simple_cube()[0]
-        qplt.hist(
-            cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal"
-        )
+        qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal")
         self.check_graphic()
 
 

@@ -115,7 +115,7 @@ Notice that the calculation of the *anomaly* involves subtracting a
 because cube broadcasting is performed during cube arithmetic operations.
 
 Cube broadcasting follows similar broadcasting rules as
-`NumPy <http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_, but
+`NumPy <https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html>`_, but
 the additional richness of Iris coordinate meta-data provides an enhanced
 capability beyond the basic broadcasting behaviour of NumPy.
 

@@ -16,7 +16,7 @@ GloSea4 model, which is then used to produce two types of plot:
   better approach would be to take the climatological mean, calibrated to the
   model, from each ensemble member.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker
@@ -27,7 +27,8 @@ import iris.plot as iplt
 
 
 def realization_metadata(cube, field, fname):
-    """
+    """Modify the cube's metadata to add a "realization" coordinate.
+
     A function which modifies the cube's metadata to add a "realization"
     (ensemble member) coordinate from the filename if one doesn't already exist
     in the cube.
@@ -47,9 +48,7 @@ def realization_metadata(cube, field, fname):
 def main():
     # Create a constraint to extract surface temperature cubes which have a
     # "realization" coordinate.
-    constraint = iris.Constraint(
-        "surface_temperature", realization=lambda value: True
-    )
+    constraint = iris.Constraint("surface_temperature", realization=lambda value: True)
     # Use this to load our ensemble.  The callback ensures all our members
     # have the "realization" coordinate and therefore they will all be loaded.
     surface_temp = iris.load_cube(
@@ -128,9 +127,7 @@ def main():
 
     # Nino 3.4 lies between: 170W and 120W, 5N and 5S, so use the intersection
     # method to restrict to this region.
-    nino_cube = surface_temp.intersection(
-        latitude=[-5, 5], longitude=[-170, -120]
-    )
+    nino_cube = surface_temp.intersection(latitude=[-5, 5], longitude=[-170, -120])
 
     # Calculate the horizontal mean for the nino region.
     mean = nino_cube.collapsed(["latitude", "longitude"], iris.analysis.MEAN)

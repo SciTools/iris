@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the class
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the class
 :class:`iris.fileformats.um._fast_load.FieldCollation`.
 
 This only tests the additional functionality for recording file locations of
@@ -44,24 +42,16 @@ class TestFastCallbackLocationInfo(Mixin_FieldTest, tests.IrisTest):
 
     def test_callback_collations_filepaths(self):
         self.assertEqual(len(self.callback_collations), 2)
-        self.assertEqual(
-            self.callback_collations[0].data_filepath, self.test_filepath
-        )
-        self.assertEqual(
-            self.callback_collations[1].data_filepath, self.test_filepath
-        )
+        self.assertEqual(self.callback_collations[0].data_filepath, self.test_filepath)
+        self.assertEqual(self.callback_collations[1].data_filepath, self.test_filepath)
 
     def test_callback_collations_field_indices(self):
-        self.assertEqual(
-            self.callback_collations[0].data_field_indices.dtype, np.int64
-        )
+        self.assertEqual(self.callback_collations[0].data_field_indices.dtype, np.int64)
         self.assertArrayEqual(
             self.callback_collations[0].data_field_indices, [[1, 3], [5, 7]]
         )
 
-        self.assertEqual(
-            self.callback_collations[1].data_field_indices.dtype, np.int64
-        )
+        self.assertEqual(self.callback_collations[1].data_field_indices.dtype, np.int64)
         self.assertArrayEqual(
             self.callback_collations[1].data_field_indices, [[0, 2], [4, 6]]
         )

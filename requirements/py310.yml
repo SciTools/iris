@@ -16,9 +16,9 @@ dependencies:
   - cftime >=1.5
   - dask-core >=2022.9.0
   - libnetcdf !=4.9.1
-  - matplotlib >=3.5
+  - matplotlib-base >=3.5
   - netcdf4
-  - numpy >1.21, !=1.24.3
+  - numpy >=1.23, !=1.24.3
   - python-xxhash
   - pyproj
   - scipy
@@ -26,6 +26,7 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
+  - geovista
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack

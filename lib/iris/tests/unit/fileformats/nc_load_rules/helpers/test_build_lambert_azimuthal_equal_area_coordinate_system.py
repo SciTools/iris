@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.fileformats._nc_load_rules.helpers.\
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
 build_lambert_azimuthal_equal_area_coordinate_system`.
 
 """
@@ -54,15 +52,11 @@ class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(tests.IrisTest):
             )
         else:
             gridvar_props["semi_minor_axis"] = 6356256.909
-            expected_ellipsoid = iris.coord_systems.GeogCS(
-                6377563.396, 6356256.909
-            )
+            expected_ellipsoid = iris.coord_systems.GeogCS(6377563.396, 6356256.909)
 
         cf_grid_var = mock.Mock(spec=[], **gridvar_props)
 
-        cs = build_lambert_azimuthal_equal_area_coordinate_system(
-            None, cf_grid_var
-        )
+        cs = build_lambert_azimuthal_equal_area_coordinate_system(None, cf_grid_var)
 
         expected = LambertAzimuthalEqualArea(
             latitude_of_projection_origin=test_lat,

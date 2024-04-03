@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :class:`iris.cube.Cube`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -26,12 +25,8 @@ class Test_aggregated_by(tests.IrisTest):
             ("NetCDF", "testing", "small_theta_colpex.nc")
         )
         # While loading, "turn off" loading small variables as real data.
-        with mock.patch(
-            "iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0
-        ):
-            cube = iris.load_cube(
-                problem_test_file, "air_potential_temperature"
-            )
+        with mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0):
+            cube = iris.load_cube(problem_test_file, "air_potential_temperature")
 
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `cube`, whose `_points` attribute is a lazy array.

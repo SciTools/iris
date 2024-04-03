@@ -1,14 +1,13 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Replacement code for the Pyke rules.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Replacement code for the Pyke rules.
 
 For now, we are still emulating various aspects of how our original Pyke-based
 code used the Pyke 'engine' to hold translation data, both Pyke-specific and
 not :
+
 1) basic details from the iris.fileformats.cf analysis of the file are
    recorded before translating each output cube, using
    "engine.assert_case_specific_fact(name, args)".
@@ -44,9 +43,9 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
-import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
+import iris.warnings
 
 from . import helpers as hh
 
@@ -55,8 +54,8 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 class _WarnComboCfLoadIgnoring(
-    iris.exceptions.IrisCfLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisCfLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -64,8 +63,8 @@ class _WarnComboCfLoadIgnoring(
 
 
 class _WarnComboLoadIgnoring(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -105,7 +104,7 @@ def action_function(func):
 
 @action_function
 def action_default(engine):
-    """Standard operations for every cube."""
+    """Perform standard operations for every cube."""
     hh.build_cube_metadata(engine)
 
 
@@ -287,9 +286,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[
-        coord_type
-    ]
+    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -540,8 +537,7 @@ def action_formula_term(engine, formula_term_fact):
 
 
 def run_actions(engine):
-    """
-    Run all actions for a cube.
+    """Run all actions for a cube.
 
     This is the top-level "activation" function which runs all the appropriate
     rules actions to translate facts and build all the cube elements.
@@ -549,7 +545,6 @@ def run_actions(engine):
     The specific cube being translated is "engine.cube".
 
     """
-
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 

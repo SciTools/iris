@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import itertools
 
@@ -31,8 +30,5 @@ LBPROC_PAIRS = (
 # lbproc_map is dict mapping lbproc->English and English->lbproc
 # essentially a one to one mapping
 LBPROC_MAP = {
-    x: y
-    for x, y in itertools.chain(
-        LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS)
-    )
+    x: y for x, y in itertools.chain(LBPROC_PAIRS, ((y, x) for x, y in LBPROC_PAIRS))
 }

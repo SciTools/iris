@@ -1,9 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""Test function :func:`iris.analysis.cartography._get_lon_lat_coords"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.analysis.cartography._get_lon_lat_coords."""
 
 import pytest
 

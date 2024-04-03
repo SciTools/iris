@@ -1,15 +1,14 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridGroup` class.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.experimental.ugrid.cf.CFUGridGroup` class.
 
 todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -59,9 +58,7 @@ class Test_build_cf_groups(tests.IrisTest):
         cls.node_y = netcdf_ugrid_variable("node_y", "node", float)
         cls.face_x = netcdf_ugrid_variable("face_x", "face", float)
         cls.face_y = netcdf_ugrid_variable("face_y", "face", float)
-        cls.face_nodes = netcdf_ugrid_variable(
-            "face_nodes", "face vertex", int
-        )
+        cls.face_nodes = netcdf_ugrid_variable("face_nodes", "face vertex", int)
         cls.levels = netcdf_ugrid_variable("levels", "levels", int)
         cls.data = netcdf_ugrid_variable(
             "data", "levels face", float, coordinates="face_x face_y"
@@ -110,9 +107,7 @@ class Test_build_cf_groups(tests.IrisTest):
             self.assertDictEqual(expected, getattr(self.cf_group, collection))
 
     def test_connectivities(self):
-        expected_var = CFUGridConnectivityVariable(
-            "face_nodes", self.face_nodes
-        )
+        expected_var = CFUGridConnectivityVariable("face_nodes", self.face_nodes)
         expected = {expected_var.cf_name: expected_var}
         self.assertDictEqual(expected, self.cf_group.connectivities)
 
@@ -122,9 +117,7 @@ class Test_build_cf_groups(tests.IrisTest):
         self.assertDictEqual(expected, self.cf_group.meshes)
 
     def test_ugrid_coords(self):
-        names = [
-            f"{loc}_{ax}" for loc in ("node", "face") for ax in ("x", "y")
-        ]
+        names = [f"{loc}_{ax}" for loc in ("node", "face") for ax in ("x", "y")]
         expected = {
             name: CFUGridAuxiliaryCoordinateVariable(name, getattr(self, name))
             for name in names

@@ -1,13 +1,14 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides objects describing cube summaries.
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides objects describing cube summaries."""
+
 import re
 
+import numpy as np
+
+import iris._lazy_data as _lazy
 from iris.common.metadata import hexdigest
 import iris.util
 
@@ -23,9 +24,7 @@ class DimensionHeader:
             self.scalar = False
             self.dim_names = []
             for dim in range(len(cube.shape)):
-                dim_coords = cube.coords(
-                    contains_dimension=dim, dim_coords=True
-                )
+                dim_coords = cube.coords(contains_dimension=dim, dim_coords=True)
                 if dim_coords:
                     self.dim_names.append(dim_coords[0].name())
                 else:
@@ -41,9 +40,7 @@ class FullHeader:
     def __init__(self, cube, name_padding=35):
         self.name = cube.name()
         self.unit = cube.units
-        self.nameunit = "{name} / ({units})".format(
-            name=self.name, units=self.unit
-        )
+        self.nameunit = "{name} / ({units})".format(name=self.name, units=self.unit)
         self.name_padding = name_padding
         self.dimension_header = DimensionHeader(cube)
 
@@ -81,9 +78,7 @@ def array_repr(arr):
 
 
 def value_repr(value, quote_strings=False, clip_strings=False):
-    """
-    Produce a single-line printable version of an attribute or scalar value.
-    """
+    """Produce a single-line printable version of an attribute or scalar value."""
     if hasattr(value, "dtype"):
         value = array_repr(value)
     elif isinstance(value, str):
@@ -139,9 +134,7 @@ class VectorSummary(CoordSummary):
     def __init__(self, cube, vector, iscoord):
         self.name = iris.util.clip_string(vector.name())
         dims = vector.cube_dims(cube)
-        self.dim_chars = [
-            "x" if dim in dims else "-" for dim in range(len(cube.shape))
-        ]
+        self.dim_chars = ["x" if dim in dims else "-" for dim in range(len(cube.shape))]
         if iscoord:
             extra = self._summary_coord_extra(cube, vector)
             self.extra = iris.util.clip_string(extra)
@@ -159,25 +152,61 @@ class ScalarCoordSummary(CoordSummary):
             self.unit = ""
         else:
             self.unit = " {!s}".format(coord.units)
-        coord_cell = coord.cell(0)
-        if isinstance(coord_cell.point, str):
+
+        # Don't print values of lazy coords, as computing them could cost a lot.
+        safe_to_print = not _lazy.is_lazy_data(coord.core_points())
+        if not safe_to_print:
+            # However there is a special case: If it is a *factory* coord, then those
+            # are generally lazy.  If all the dependencies are real, then it is useful
+            # (and safe) to compute + print the value.
+            for factory in cube._aux_factories:
+                # Note : a factory doesn't have a ".metadata" which can be matched
+                # against a coord.  For now, just assume that it has a 'standard_name'
+                # property (also not actually guaranteed), and require them to match.
+                if coord.standard_name == factory.standard_name:
+                    all_deps_real = True
+                    for dependency_coord in factory.dependencies.values():
+                        if (
+                            dependency_coord.has_lazy_points()
+                            or dependency_coord.has_lazy_bounds()
+                        ):
+                            all_deps_real = False
+
+                    if all_deps_real:
+                        safe_to_print = True
+
+        if safe_to_print:
+            coord_cell = coord.cell(0)
+        else:
+            coord_cell = None
+
+        if coord.dtype.type is np.str_:
             self.string_type = True
-            # 'lines' is value split on '\n', and _each one_ length-clipped.
-            self.lines = [
-                iris.util.clip_string(str(item))
-                for item in coord_cell.point.split("\n")
-            ]
+            if coord_cell is not None:
+                # 'lines' is value split on '\n', and _each one_ length-clipped.
+                self.lines = [
+                    iris.util.clip_string(str(item))
+                    for item in coord_cell.point.split("\n")
+                ]
+                # 'content' contains a one-line printable version of the string,
+                content = string_repr(coord_cell.point)
+                content = iris.util.clip_string(content)
+            else:
+                content = "<lazy>"
+                self.lines = [content]
             self.point = None
             self.bound = None
-            # 'content' contains a one-line printable version of the string,
-            content = string_repr(coord_cell.point)
-            content = iris.util.clip_string(content)
             self.content = content
         else:
             self.string_type = False
             self.lines = None
-            self.point = "{!s}".format(coord_cell.point)
-            coord_cell_cbound = coord_cell.bound
+            coord_cell_cbound = None
+            if coord_cell is not None:
+                self.point = "{!s}".format(coord_cell.point)
+                coord_cell_cbound = coord_cell.bound
+            else:
+                self.point = "<lazy>"
+
             if coord_cell_cbound is not None:
                 self.bound = "({})".format(
                     ", ".join(str(val) for val in coord_cell_cbound)
@@ -185,6 +214,9 @@ class ScalarCoordSummary(CoordSummary):
                 self.content = "{}{}, bound={}{}".format(
                     self.point, self.unit, self.bound, self.unit
                 )
+            elif coord.has_bounds():
+                self.bound = "+bound"
+                self.content = "{}{}".format(self.point, self.bound)
             else:
                 self.bound = None
                 self.content = "{}{}".format(self.point, self.unit)
@@ -200,17 +232,13 @@ class Section:
 class VectorSection(Section):
     def __init__(self, title, cube, vectors, iscoord):
         self.title = title
-        self.contents = [
-            VectorSummary(cube, vector, iscoord) for vector in vectors
-        ]
+        self.contents = [VectorSummary(cube, vector, iscoord) for vector in vectors]
 
 
 class ScalarCoordSection(Section):
     def __init__(self, title, cube, scalars):
         self.title = title
-        self.contents = [
-            ScalarCoordSummary(cube, scalar) for scalar in scalars
-        ]
+        self.contents = [ScalarCoordSummary(cube, scalar) for scalar in scalars]
 
 
 class ScalarCellMeasureSection(Section):
@@ -273,10 +301,7 @@ class CellMethodSection(Section):
 
 
 class CubeSummary:
-    """
-    This class provides a structure for output representations of an Iris cube.
-
-    """
+    """Provide a structure for output representations of an Iris cube."""
 
     def __init__(self, cube, name_padding=35):
         self.header = FullHeader(cube, name_padding)
@@ -303,9 +328,7 @@ class CubeSummary:
         if cube.mesh is None:
             mesh_coords = []
         else:
-            mesh_coords = [
-                coord for coord in aux_coords if hasattr(coord, "mesh")
-            ]
+            mesh_coords = [coord for coord in aux_coords if hasattr(coord, "mesh")]
 
         vector_aux_coords = [
             coord
@@ -313,9 +336,7 @@ class CubeSummary:
             if (id(coord) not in scalar_coord_ids and coord not in mesh_coords)
         ]
         vector_derived_coords = [
-            coord
-            for coord in derived_coords
-            if id(coord) not in scalar_coord_ids
+            coord for coord in derived_coords if id(coord) not in scalar_coord_ids
         ]
 
         # Ancillary Variables
@@ -339,12 +360,8 @@ class CubeSummary:
         # Sort scalar coordinates by name.
         scalar_coords.sort(key=lambda coord: coord.name())
         # Sort vector coordinates by data dimension and name.
-        vector_dim_coords.sort(
-            key=lambda coord: (cube.coord_dims(coord), coord.name())
-        )
-        vector_aux_coords.sort(
-            key=lambda coord: (cube.coord_dims(coord), coord.name())
-        )
+        vector_dim_coords.sort(key=lambda coord: (cube.coord_dims(coord), coord.name()))
+        vector_aux_coords.sort(key=lambda coord: (cube.coord_dims(coord), coord.name()))
         vector_derived_coords.sort(
             key=lambda coord: (cube.coord_dims(coord), coord.name())
         )
@@ -352,18 +369,14 @@ class CubeSummary:
         self.vector_sections = {}
 
         def add_vector_section(title, contents, iscoord=True):
-            self.vector_sections[title] = VectorSection(
-                title, cube, contents, iscoord
-            )
+            self.vector_sections[title] = VectorSection(title, cube, contents, iscoord)
 
         add_vector_section("Dimension coordinates:", vector_dim_coords)
         add_vector_section("Mesh coordinates:", mesh_coords)
         add_vector_section("Auxiliary coordinates:", vector_aux_coords)
         add_vector_section("Derived coordinates:", vector_derived_coords)
         add_vector_section("Cell measures:", vector_cell_measures, False)
-        add_vector_section(
-            "Ancillary variables:", vector_ancillary_variables, False
-        )
+        add_vector_section("Ancillary variables:", vector_ancillary_variables, False)
 
         self.scalar_sections = {}
 
@@ -385,7 +398,5 @@ class CubeSummary:
             "Scalar ancillary variables:",
             scalar_ancillary_variables,
         )
-        add_scalar_section(
-            CellMethodSection, "Cell methods:", cube.cell_methods
-        )
+        add_scalar_section(CellMethodSection, "Cell methods:", cube.cell_methods)
         add_scalar_section(AttributeSection, "Attributes:", cube.attributes)

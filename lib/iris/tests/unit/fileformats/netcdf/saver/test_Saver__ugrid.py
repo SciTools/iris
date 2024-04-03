@@ -1,15 +1,14 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.fileformats.netcdf.Saver` class.
 
 WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
 :mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
 
 """
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -42,23 +41,22 @@ def build_mesh(
     conn_role_kwargs=None,  # mapping {connectivity-role: connectivity-kwargs}
     mesh_kwargs=None,
 ):
-    """
-    Make a test mesh.
+    """Make a test mesh.
 
     Mesh has faces edges, face-coords and edge-coords, numbers of which can be
     controlled.
 
-    Args:
-
-    * n_nodes, n_faces, n_edges (int):
+    Parameters
+    ----------
+    n_nodes, n_faces, n_edges : int
         Basic dimensions of mesh components.  Zero means no such location.
-    * nodecoord_xyargs, edgecoord_xyargs, facecoord_xyargs (pair of dict):
+    nodecoord_xyargs, edgecoord_xyargs, facecoord_xyargs : pair of dict
         Pairs (x,y) of settings kwargs, applied after initial creation the
         relevant location coordinates.
-    * conn_role_kwargs (dict of string:dict):
+    conn_role_kwargs : dict of str
         Mapping from cf_role name to settings kwargs for connectivities,
         applied after initially creating them.
-    * mesh_kwargs (dict):
+    mesh_kwargs : dict
         Dictionary of key settings to apply to the Mesh, after creating it.
 
     """
@@ -90,8 +88,7 @@ def build_mesh(
             np.zeros((n_edges, 2), np.int32), cf_role="edge_node_connectivity"
         )
         edge_coords = [
-            AuxCoord(np.arange(n_edges), standard_name=name)
-            for name in XY_NAMES
+            AuxCoord(np.arange(n_edges), standard_name=name) for name in XY_NAMES
         ]
         apply_xyargs(edge_coords, edgecoord_xyargs)
 
@@ -101,8 +98,7 @@ def build_mesh(
             np.zeros((n_faces, 4), np.int32), cf_role="face_node_connectivity"
         )
         face_coords = [
-            AuxCoord(np.arange(n_faces), standard_name=name)
-            for name in XY_NAMES
+            AuxCoord(np.arange(n_faces), standard_name=name) for name in XY_NAMES
         ]
         apply_xyargs(face_coords, facecoord_xyargs)
 
@@ -115,9 +111,7 @@ def build_mesh(
             else:
                 loc_from, loc_to, _ = role.split("_")
                 dims = [mesh_dims[loc] for loc in (loc_from, loc_to)]
-                conn = Connectivity(
-                    np.zeros(dims, dtype=np.int32), cf_role=role
-                )
+                conn = Connectivity(np.zeros(dims, dtype=np.int32), cf_role=role)
                 connectivities[role] = conn
             applyargs(conn, kwargs)
 
@@ -134,14 +128,13 @@ def build_mesh(
 
 
 def make_mesh(basic=True, **kwargs):
-    """
-    Create a test mesh, with some built-in 'standard' settings.
+    """Create a test mesh, with some built-in 'standard' settings.
 
-    Kwargs:
-
-    * basic (bool):
+    Parameters
+    ----------
+    basic : bool
         If true (default), create with 'standard' set of test properties.
-    * kwargs (dict):
+    **kwargs : dict
         Additional kwargs, passed through to 'build_mesh'.
         Items here override the 'standard' settings.
 
@@ -151,12 +144,8 @@ def make_mesh(basic=True, **kwargs):
         use_kwargs = dict(
             n_nodes=5,
             n_faces=2,
-            nodecoord_xyargs=tuple(
-                dict(var_name=f"node_{loc}") for loc in XY_LOCS
-            ),
-            facecoord_xyargs=tuple(
-                dict(var_name=f"face_{loc}") for loc in XY_LOCS
-            ),
+            nodecoord_xyargs=tuple(dict(var_name=f"node_{loc}") for loc in XY_LOCS),
+            facecoord_xyargs=tuple(dict(var_name=f"face_{loc}") for loc in XY_LOCS),
             mesh_kwargs=dict(
                 var_name="Mesh2d",
                 node_dimension="Mesh2d_nodes",
@@ -203,16 +192,15 @@ def default_mesh():
 
 
 def make_cube(mesh=None, location="face", **kwargs):
-    """
-    Create a test cube, based on a given mesh + location.
+    """Create a test cube, based on a given mesh + location.
 
-    Kwargs:
-
-    * mesh (:class:`iris.experimental.ugrid.mesh.Mesh` or None):
+    Parameters
+    ----------
+    mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None, optional
         If None, use 'default_mesh()'
-    * location (string):
+    location : str, optional, default="face"
         Which mesh element to map the cube to.
-    * kwargs (dict):
+    **kwargs : dict, optional
         Additional property settings to apply to the cube (after creation).
 
     """
@@ -245,18 +233,17 @@ _VAR_DIMS = "<variable dimensions>"
 
 
 def scan_dataset(filepath):
-    """
-    Snapshot a netcdf dataset (the key metadata).
+    """Snapshot a netcdf dataset (the key metadata).
 
-    Returns:
-        dimsdict, varsdict
-        * dimsdict (dict):
-            A map of dimension-name: length.
-        * varsdict (dict):
-            A map of each variable's properties, {var_name: propsdict}
-            Each propsdict is {attribute-name: value} over the var's ncattrs().
-            Each propsdict ALSO contains a [_VAR_DIMS] entry listing the
-            variable's dims.
+    Returns
+    -------
+    dimsdict : dict
+        A map of dimension-name: length.
+    varsdict : dict
+        A map of each variable's properties, {var_name: propsdict}
+        Each propsdict is {attribute-name: value} over the var's ncattrs().
+        Each propsdict ALSO contains a [_VAR_DIMS] entry listing the
+        variable's dims.
 
     """
     ds = _thread_safe_nc.DatasetWrapper(filepath)
@@ -272,8 +259,7 @@ def scan_dataset(filepath):
 
 
 def vars_w_props(varsdict, **kwargs):
-    """
-    Subset a vars dict, {name:props}, returning only those where each
+    """Subset a vars dict, {name:props}, returning only those where each
     <attribute>=<value>, defined by the given keywords.
     Except that '<key>="*"' means that '<key>' merely _exists_, with any value.
 
@@ -291,9 +277,7 @@ def vars_w_props(varsdict, **kwargs):
         return result
 
     varsdict = {
-        name: attrs
-        for name, attrs in varsdict.items()
-        if check_attrs_match(attrs)
+        name: attrs for name, attrs in varsdict.items() if check_attrs_match(attrs)
     }
     return varsdict
 
@@ -314,22 +298,25 @@ def vars_meshnames(vars):
 
 
 def vars_meshdim(vars, location, mesh_name=None):
-    """
-    Extract a dim-name for a given element location.
+    """Extract a dim-name for a given element location.
 
-    Args:
-        * vars (varsdict):
-            file varsdict, as returned from 'snapshot_dataset'.
-        * location (string):
-            a mesh location : 'node' / 'edge' / 'face'
-        * mesh_name (string or None):
-            If given, identifies the mesh var.
-            Otherwise, find a unique mesh var (i.e. there must be exactly 1).
+    Parameters
+    ----------
+    vars : varsdict
+        file varsdict, as returned from 'snapshot_dataset'.
+    location : string
+        a mesh location : 'node' / 'edge' / 'face'
+    mesh_name : str or None, optional, default=None
+        If given, identifies the mesh var.
+        Otherwise, find a unique mesh var (i.e. there must be exactly 1).
 
-    Returns:
-        dim_name (string)
-            The dim-name of the mesh dim for the given location.
+    Returns
+    -------
+    dim_name : str
+        The dim-name of the mesh dim for the given location.
 
+    Notes
+    -----
     TODO: relies on the element having coordinates, which in future will not
         always be the case. This can be fixed
 
@@ -355,8 +342,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         shutil.rmtree(cls.temp_dir)
 
     def check_save_cubes(self, cube_or_cubes):
-        """
-        Write cubes to a new file in the common temporary directory.
+        """Write cubes to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
 
@@ -399,9 +385,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # The face coords should both map that single dim.
         face_dim = vars_meshdim(vars, "face")
-        self.assertTrue(
-            all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords)
-        )
+        self.assertTrue(all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords))
 
         # The face coordinates should be referenced by the data variable.
         for coord in face_coords:
@@ -421,9 +405,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # There are no edges.
         self.assertNotIn("edge_node_connectivity", mesh_props)
-        self.assertEqual(
-            len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0
-        )
+        self.assertEqual(len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0)
 
         # The dims are precisely (nodes, faces, nodes-per-face), in that order.
         self.assertEqual(
@@ -512,12 +494,8 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(sorted(mesh_names), ["Mesh2d"])
 
         # same dimensions
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
-        )
+        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
+        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
 
         # there are exactly two data-variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
@@ -643,9 +621,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # have just 1 data-variable, which maps to hybrid-height and mesh dims
         ((data_name, data_props),) = vars_w_props(vars, mesh="*").items()
-        self.assertEqual(
-            data_props[_VAR_DIMS], ["model_level_number", face_dim]
-        )
+        self.assertEqual(data_props[_VAR_DIMS], ["model_level_number", face_dim])
         self.assertEqual(data_props["mesh"], mesh_name)
         self.assertEqual(data_props["location"], "face")
 
@@ -678,10 +654,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         self.assertEqual(v_b[_VAR_DIMS], ["Mesh2d_faces", "height"])
 
     def test_mixed_aux_coords(self):
-        """
-        ``coordinates`` attribute should include mesh location coords and 'normal' coords.
-        """
-
+        """``coordinates`` attribute should include mesh location coords and 'normal' coords."""
         cube = make_cube()
         mesh_dim = cube.mesh_dim()
         mesh_len = cube.shape[mesh_dim]
@@ -715,8 +688,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         shutil.rmtree(cls.temp_dir)
 
     def check_save_mesh(self, mesh):
-        """
-        Write a mesh to a new file in the common temporary directory.
+        """Write a mesh to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
 
@@ -733,8 +705,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         return tempfile_path
 
     def test_connectivity_dim_order(self):
-        """
-        Test a mesh with some connectivities in the 'other' order.
+        """Test a mesh with some connectivities in the 'other' order.
 
         This should also create a property with the dimension name.
 
@@ -850,9 +821,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         # check that the connectivity has the corrects dims and fill-property
         ff_props = vars[ff_conn_name]
-        self.assertEqual(
-            ff_props[_VAR_DIMS], ["Mesh2d_faces", "Mesh2d_face_N_faces"]
-        )
+        self.assertEqual(ff_props[_VAR_DIMS], ["Mesh2d_faces", "Mesh2d_face_N_faces"])
         self.assertIn("_FillValue", ff_props)
         self.assertEqual(ff_props["_FillValue"], -1)
 
@@ -875,9 +844,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
     def test_one_dimensional(self):
         # Test a mesh with edges only.
-        mesh = make_mesh(
-            n_edges=5, n_faces=0, mesh_kwargs={"var_name": "Mesh1d"}
-        )
+        mesh = make_mesh(n_edges=5, n_faces=0, mesh_kwargs={"var_name": "Mesh1d"})
 
         # Save and snapshot the result
         tempfile_path = self.check_save_mesh(mesh)
@@ -1212,12 +1179,8 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         # they use different dimensions
         # mesh1
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces"
-        )
+        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
+        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
         if "edge_coordinates" in vars["Mesh2d"]:
             self.assertEqual(
                 vars_meshdim(vars, "edge", mesh_name="Mesh2d"), "Mesh2d_edge"

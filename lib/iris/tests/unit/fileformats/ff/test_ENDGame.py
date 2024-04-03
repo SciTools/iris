@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformat.ff.ENDGame`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -33,9 +32,7 @@ class Test__y_vectors(tests.IrisTest):
         self._test(row=None, yp=None, yv=None)
 
     def test_1d(self):
-        self._test(
-            row=np.array([[0], [1], [2], [3]]), yp=np.array([0, 1, 2]), yv=None
-        )
+        self._test(row=np.array([[0], [1], [2], [3]]), yp=np.array([0, 1, 2]), yv=None)
 
     def test_2d(self):
         self._test(

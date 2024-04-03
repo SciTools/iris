@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -82,9 +81,7 @@ class TestReferences(tests.IrisTest):
         # If the target cube is missing one of the source dimension
         # coords, ensure the re-grid fails nicely - i.e. returns None.
         self.target.remove_coord("bar")
-        new_ref = iris.fileformats.rules._ensure_aligned(
-            {}, self.ref, self.target
-        )
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
         self.assertIsNone(new_ref)
 
     def test_regrid_codimension(self):
@@ -95,15 +92,11 @@ class TestReferences(tests.IrisTest):
         new_foo = self.target.coord("bar").copy()
         new_foo.rename("foo")
         self.target.add_aux_coord(new_foo, 0)
-        new_ref = iris.fileformats.rules._ensure_aligned(
-            {}, self.ref, self.target
-        )
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
         self.assertIsNone(new_ref)
 
     def test_regrid_identity(self):
-        new_ref = iris.fileformats.rules._ensure_aligned(
-            {}, self.ref, self.target
-        )
+        new_ref = iris.fileformats.rules._ensure_aligned({}, self.ref, self.target)
         # Bounds don't make it through the re-grid process
         self.ref.coord("bar").bounds = None
         self.ref.coord("foo").bounds = None
@@ -136,9 +129,7 @@ class TestPPLoadRules(tests.IrisTest):
         # Set up standard name and T+24 constraint
         constraint = iris.Constraint("air_temperature", forecast_period=24)
         cubes = iris.load(data_path, constraint)
-        cubes = iris.cube.CubeList(
-            [cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]]
-        )
+        cubes = iris.cube.CubeList([cubes[0], cubes[3], cubes[1], cubes[2], cubes[4]])
         self.assertCML(cubes, ("pp_load_rules", "lbproc_mean_max_min.cml"))
 
     def test_cell_methods(self):
@@ -176,9 +167,7 @@ class TestPPLoadRules(tests.IrisTest):
 
             if value in cell_method_values:
                 # Check for cell method on cube
-                self.assertEqual(
-                    cube.cell_methods[0].method, cell_method_values[value]
-                )
+                self.assertEqual(cube.cell_methods[0].method, cell_method_values[value])
             else:
                 # Check no cell method was created for values other than 128, 4096, 8192
                 self.assertEqual(len(cube.cell_methods), 0)
@@ -207,9 +196,7 @@ class TestPPLoadRules(tests.IrisTest):
 
             if value in omit_process_flags_values:
                 # Check ukmo__process_flags attribute not created
-                self.assertEqual(
-                    cube.attributes.get("ukmo__process_flags", None), None
-                )
+                self.assertEqual(cube.attributes.get("ukmo__process_flags", None), None)
             else:
                 # Check ukmo__process_flags attribute contains correct values
                 self.assertIn(
@@ -244,7 +231,7 @@ class TestPPLoadRules(tests.IrisTest):
             self.assertEqual(
                 set(cube.attributes["ukmo__process_flags"]),
                 set(multiple_map[sum(bit_values)]),
-                "Mismatch between expected and actual process " "flags.",
+                "Mismatch between expected and actual process flags.",
             )
 
             os.remove(temp_filename)

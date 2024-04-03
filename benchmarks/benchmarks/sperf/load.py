@@ -1,13 +1,11 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-File loading benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
-"""
-from . import FileMixin
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""File loading benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
+
 from .. import on_demand_benchmark
+from . import FileMixin
 
 
 @on_demand_benchmark

@@ -14,10 +14,7 @@ from scipy.sparse import csr_matrix
 
 
 def _ndim_coords_from_arrays(points, ndim=None):
-    """
-    Convert a tuple of coordinate arrays to a (..., ndim)-shaped array.
-
-    """
+    """Convert a tuple of coordinate arrays to a (..., ndim)-shaped array."""
     if isinstance(points, tuple) and len(points) == 1:
         # handle argument tuple
         points = points[0]
@@ -25,9 +22,7 @@ def _ndim_coords_from_arrays(points, ndim=None):
         p = np.broadcast_arrays(*points)
         for j in range(1, len(p)):
             if p[j].shape != p[0].shape:
-                raise ValueError(
-                    "coordinate arrays do not have the same shape"
-                )
+                raise ValueError("coordinate arrays do not have the same shape")
         points = np.empty(p[0].shape + (len(points),), dtype=float)
         for j, item in enumerate(p):
             points[..., j] = item
@@ -45,9 +40,7 @@ def _ndim_coords_from_arrays(points, ndim=None):
 # source: https://github.com/scipy/scipy/blob/b94a5d5ccc08dddbc88453477ff2625\
 # 9aeaafb32/scipy/interpolate/interpolate.py#L1400
 class _RegularGridInterpolator:
-
-    """
-    Interpolation on a regular grid in arbitrary dimensions
+    """Interpolation on a regular grid in arbitrary dimensions.
 
     The data must be defined on a regular grid; the grid spacing however may be
     uneven.  Linear and nearest-neighbour interpolation are supported. After
@@ -123,9 +116,7 @@ class _RegularGridInterpolator:
 
         self.fill_value = fill_value
         if fill_value is not None:
-            if hasattr(values, "dtype") and not np.can_cast(
-                fill_value, values.dtype
-            ):
+            if hasattr(values, "dtype") and not np.can_cast(fill_value, values.dtype):
                 raise ValueError(
                     "fill_value must be either 'None' or "
                     "of a type compatible with values"
@@ -134,13 +125,10 @@ class _RegularGridInterpolator:
         for i, p in enumerate(points):
             if not np.all(np.diff(p) > 0.0):
                 raise ValueError(
-                    "The points in dimension %d must be strictly "
-                    "ascending" % i
+                    "The points in dimension %d must be strictly ascending" % i
                 )
             if not np.asarray(p).ndim == 1:
-                raise ValueError(
-                    "The points in dimension %d must be " "1-dimensional" % i
-                )
+                raise ValueError("The points in dimension %d must be 1-dimensional" % i)
             if not values.shape[i] == len(p):
                 raise ValueError(
                     "There are %d points and %d values in "
@@ -150,8 +138,7 @@ class _RegularGridInterpolator:
         self.values = values
 
     def __call__(self, xi, method=None):
-        """
-        Interpolation at coordinates
+        """Interpolation at coordinates.
 
         Parameters
         ----------
@@ -169,8 +156,7 @@ class _RegularGridInterpolator:
         return self.interp_using_pre_computed_weights(weights)
 
     def compute_interp_weights(self, xi, method=None):
-        """
-        Prepare the interpolator for interpolation to the given sample points.
+        """Prepare the interpolator for interpolation to the given sample points.
 
         .. note::
             This interface provides the ability to reuse weights on multiple
@@ -240,18 +226,13 @@ class _RegularGridInterpolator:
             )
 
             corners = itertools.product(
-                *[
-                    [(i, 1 - n), (i + 1, n)]
-                    for i, n in zip(indices, norm_distances)
-                ]
+                *[[(i, 1 - n), (i + 1, n)] for i, n in zip(indices, norm_distances)]
             )
             shape = self.values.shape[:ndim]
 
             for i, corner in enumerate(corners):
                 corner_indices = [ci for ci, cw in corner]
-                n_indices = np.ravel_multi_index(
-                    corner_indices, shape, mode="wrap"
-                )
+                n_indices = np.ravel_multi_index(corner_indices, shape, mode="wrap")
                 col_indices[i::n_src_values_per_result_value] = n_indices
                 for ci, cw in corner:
                     weights[i::n_src_values_per_result_value] *= cw
@@ -267,8 +248,7 @@ class _RegularGridInterpolator:
         return prepared
 
     def interp_using_pre_computed_weights(self, computed_weights):
-        """
-        Perform the interpolation using pre-computed interpolation weights.
+        """Perform the interpolation using pre-computed interpolation weights.
 
         .. note::
             This interface provides the ability to reuse weights on multiple
@@ -300,9 +280,7 @@ class _RegularGridInterpolator:
         if method == "linear":
             result = self._evaluate_linear_sparse(indices)
         elif method == "nearest":
-            result = self._evaluate_nearest(
-                indices, norm_distances, out_of_bounds
-            )
+            result = self._evaluate_nearest(indices, norm_distances, out_of_bounds)
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.cf.CFGroup` class."""
 
 from unittest.mock import MagicMock
@@ -26,14 +25,10 @@ class Tests(tests.IrisTest):
 
     def test_non_data_names(self):
         data_var = MagicMock(spec=CFDataVariable, cf_name="data_var")
-        aux_var = MagicMock(
-            spec=CFAuxiliaryCoordinateVariable, cf_name="aux_var"
-        )
+        aux_var = MagicMock(spec=CFAuxiliaryCoordinateVariable, cf_name="aux_var")
         coord_var = MagicMock(spec=CFCoordinateVariable, cf_name="coord_var")
         coord_var2 = MagicMock(spec=CFCoordinateVariable, cf_name="coord_var2")
-        duplicate_name_var = MagicMock(
-            spec=CFCoordinateVariable, cf_name="aux_var"
-        )
+        duplicate_name_var = MagicMock(spec=CFCoordinateVariable, cf_name="aux_var")
 
         for var in (
             data_var,
@@ -44,8 +39,6 @@ class Tests(tests.IrisTest):
         ):
             self.cf_group[var.cf_name] = var
 
-        expected_names = [
-            var.cf_name for var in (aux_var, coord_var, coord_var2)
-        ]
+        expected_names = [var.cf_name for var in (aux_var, coord_var, coord_var2)]
         expected = set(expected_names)
         self.assertEqual(expected, self.cf_group.non_data_variable_names)

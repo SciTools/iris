@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`."""
 
 import os
 import subprocess
@@ -42,9 +38,7 @@ def _dot_path():
             if not os.path.isabs(path):
                 try:
                     # Check PATH
-                    subprocess.check_output(
-                        [path, "-V"], stderr=subprocess.STDOUT
-                    )
+                    subprocess.check_output([path, "-V"], stderr=subprocess.STDOUT)
                 except (OSError, subprocess.CalledProcessError):
                     path = None
             else:
@@ -59,18 +53,18 @@ DOT_AVAILABLE = _dot_path() is not None
 
 
 def save(cube, target):
-    """
-    Save a dot representation of the cube.
+    """Save a dot representation of the cube.
 
-    Args
-    ----
-    cube: :class:`iris.cube.Cube`.
-    target
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+    target :
         A filename or open file handle.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     if isinstance(target, str):
@@ -90,24 +84,24 @@ def save(cube, target):
 
 
 def save_png(source, target, launch=False):
-    """
+    """Produce a "dot" instance diagram by calling dot.
+
     Produce a "dot" instance diagram by calling dot and optionally launching
     the resulting image.
 
-    Args
-    ----
-    source: :class:`iris.cube.Cube`, or dot filename.
-    target
+    Parameters
+    ----------
+    source : :class:`iris.cube.Cube`, or dot filename
+    target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.
-
-    **kwargs
-        * launch
-            Display the image. Default is False.
+    launch : bool, default=False
+        Display the image. Default is False.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # From cube or dot file?
@@ -123,20 +117,15 @@ def save_png(source, target, launch=False):
     # Create png data
     if not _dot_path():
         raise ValueError(
-            'Executable "dot" not found: '
-            "Review dot_path setting in site.cfg."
+            'Executable "dot" not found: ' "Review dot_path setting in site.cfg."
         )
     # To filename or open file handle?
     if isinstance(target, str):
-        subprocess.call(
-            [_dot_path(), "-T", "png", "-o", target, dot_file_path]
-        )
+        subprocess.call([_dot_path(), "-T", "png", "-o", target, dot_file_path])
     elif hasattr(target, "write"):
         if hasattr(target, "mode") and "b" not in target.mode:
             raise ValueError("Target not binary")
-        subprocess.call(
-            [_dot_path(), "-T", "png", dot_file_path], stdout=target
-        )
+        subprocess.call([_dot_path(), "-T", "png", dot_file_path], stdout=target)
     else:
         raise ValueError("Can only write dot png for a filename or writable")
 
@@ -150,8 +139,7 @@ def save_png(source, target, launch=False):
             subprocess.call(("firefox", target))
         else:
             raise iris.exceptions.NotYetImplementedError(
-                "Unhandled operating system. The image has been created in %s"
-                % target
+                "Unhandled operating system. The image has been created in %s" % target
             )
 
     # Remove the dot file if we created it
@@ -160,12 +148,11 @@ def save_png(source, target, launch=False):
 
 
 def cube_text(cube):
-    """
-    Return a DOT text representation a `iris.cube.Cube`.
+    """Return a DOT text representation a `iris.cube.Cube`.
 
-    Args
-    ----
-    cube
+    Parameters
+    ----------
+    cube :
        The cube for which to create DOT text.
 
     """
@@ -224,8 +211,9 @@ def cube_text(cube):
         # Are there any relationships to data dimensions?
         dims = cube.coord_dims(coord)
         for dim in dims:
-            relationships_association += (
-                '\n    "%s" -> "CubeDimension_%s":w' % (coord_label, dim)
+            relationships_association += '\n    "%s" -> "CubeDimension_%s":w' % (
+                coord_label,
+                dim,
             )
 
     dimension_nodes += """
@@ -276,9 +264,7 @@ digraph CubeGraph{
     %(associations)s
 }
     """
-    cube_attributes = list(
-        sorted(cube.attributes.items(), key=lambda item: item[0])
-    )
+    cube_attributes = list(sorted(cube.attributes.items(), key=lambda item: item[0]))
     cube_node = _dot_node(_GRAPH_INDENT, ":Cube", "Cube", cube_attributes)
     res_string = template % {
         "cube_node": cube_node,
@@ -292,15 +278,13 @@ digraph CubeGraph{
 
 
 def _coord_text(label, coord):
-    """
-    Return a string containing the dot representation for a single coordinate
-    node.
+    """Return a string containing the dot representation for a single coordinate node.
 
-    Args
-    ----
-    label
+    Parameters
+    ----------
+    label :
         The dot ID of the coordinate node.
-    coord
+    coord :
         The coordinate to convert.
 
     """
@@ -315,9 +299,7 @@ def _coord_text(label, coord):
     attrs = [(name, getattr(coord, name)) for name in _dot_attrs]
 
     if coord.attributes:
-        custom_attrs = sorted(
-            coord.attributes.items(), key=lambda item: item[0]
-        )
+        custom_attrs = sorted(coord.attributes.items(), key=lambda item: item[0])
         attrs.extend(custom_attrs)
 
     node = _dot_node(_SUBGRAPH_INDENT, label, coord.__class__.__name__, attrs)
@@ -325,15 +307,13 @@ def _coord_text(label, coord):
 
 
 def _coord_system_text(cs, uid):
-    """
-    Return a string containing the dot representation for a single coordinate
-    system node.
+    """Return string containing dot representation for a single coordinate system node.
 
-    Args
-    ----
-    cs
+    Parameters
+    ----------
+    cs :
         The coordinate system to convert.
-    uid
+    uid :
         The uid allows/distinguishes non-identical CoordSystems of the same
         type.
 
@@ -353,19 +333,18 @@ def _coord_system_text(cs, uid):
 
 
 def _dot_node(indent, id, name, attributes):
-    """
-    Return a string containing the dot representation for a single node.
+    """Return a string containing the dot representation for a single node.
 
-    Args
-    ----
-    id
+    Parameters
+    ----------
+    id :
         The ID of the node.
-    name
+    name :
         The visual name of the node.
-    attributes
+    attributes :
         An iterable of (name, value) attribute pairs.
 
-    """
+    """  # noqa: D410, D411
     attributes = r"\n".join("%s: %s" % item for item in attributes)
     template = """%(indent)s"%(id)s" [
 %(indent)s    label = "%(name)s|%(attributes)s"

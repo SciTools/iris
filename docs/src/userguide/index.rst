@@ -18,6 +18,12 @@ they may serve as a useful reference for future exploration.
    sequentially using the ``next`` and ``previous`` links at the bottom
    of each page.
 
+.. note:: 
+   
+   There is also useful learning material held in the
+   https://github.com/scitools-classroom repo, including tutorials, courses
+   and presentations.
+
 
 .. toctree::
    :maxdepth: 2
@@ -36,15 +42,4 @@ they may serve as a useful reference for future exploration.
    citation
    code_maintenance
    glossary
-
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Further Topics
-
-   ../further_topics/filtering_warnings
-   ../further_topics/metadata
-   ../further_topics/lenient_metadata
-   ../further_topics/lenient_maths
-   ../further_topics/dask_best_practices/index
-   ../further_topics/ugrid/index
+   ../further_topics/index

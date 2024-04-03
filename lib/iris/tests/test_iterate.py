@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the iteration of cubes in step.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the iteration of cubes in step."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -22,9 +18,9 @@ import numpy as np
 
 import iris
 import iris.analysis
-from iris.exceptions import IrisUserWarning
 import iris.iterate
 import iris.tests.stock
+from iris.warnings import IrisUserWarning
 
 
 @tests.skip_data
@@ -98,9 +94,7 @@ class TestIterateFunctions(tests.IrisTest):
         self.cube_b.coord("grid_latitude").rename("latitude")
         self.cube_b.coord("grid_longitude").rename("longitude")
         with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
-            iris.iterate.izip(
-                self.cube_a, self.cube_b, coords=self.coord_names
-            )
+            iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
 
     def test_izip_onecube_no_coords(self):
         # Should do the same as slices() but bearing in mind izip.next()
@@ -223,9 +217,7 @@ class TestIterateFunctions(tests.IrisTest):
             for super_slice, sub_slice in iris.iterate.izip(
                 super_cube, sub_cube, coords=self.coord_names
             ):
-                self.assertEqual(
-                    sub_slice, sub_cube
-                )  # This cube should not change
+                self.assertEqual(sub_slice, sub_cube)  # This cube should not change
                 # as lat and long are the only
                 # data dimensions in this cube)
                 self.assertEqual(super_slice, next(super_slice_iterator))
@@ -339,9 +331,7 @@ class TestIterateFunctions(tests.IrisTest):
             i, j = next(ij_iterator)
             if random.random() < check_eq_probability:
                 big_slice_truth = big_cube[i, :, j]
-                little_slice_truth = (
-                    little_cube  # Just 1d so slice is entire cube
-                )
+                little_slice_truth = little_cube  # Just 1d so slice is entire cube
                 self.assertEqual(little_slice_truth, little_slice)
                 self.assertEqual(big_slice_truth, big_slice)
             count += 1
@@ -363,13 +353,9 @@ class TestIterateFunctions(tests.IrisTest):
         longitude = self.cube_b.coord("grid_longitude")
         # Same coord metadata and shape, but different values - check it produces a warning
         with warnings.catch_warnings():
-            warnings.simplefilter(
-                "error"
-            )  # Cause all warnings to raise Exceptions
+            warnings.simplefilter("error")  # Cause all warnings to raise Exceptions
             with self.assertRaises(IrisUserWarning):
-                iris.iterate.izip(
-                    self.cube_a, self.cube_b, coords=self.coord_names
-                )
+                iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
             # Call with coordinates, rather than names
             with self.assertRaises(IrisUserWarning):
                 iris.iterate.izip(
@@ -456,9 +442,7 @@ class TestIterateFunctions(tests.IrisTest):
 
     def test_izip_nd_non_ortho(self):
         cube1 = iris.cube.Cube(np.zeros((5, 5, 5)))
-        cube1.add_aux_coord(
-            iris.coords.AuxCoord(np.arange(5), long_name="z"), [0]
-        )
+        cube1.add_aux_coord(iris.coords.AuxCoord(np.arange(5), long_name="z"), [0])
         cube1.add_aux_coord(
             iris.coords.AuxCoord(np.arange(25).reshape(5, 5), long_name="y"),
             [1, 2],
@@ -476,9 +460,7 @@ class TestIterateFunctions(tests.IrisTest):
     def test_izip_nd_ortho(self):
         cube1 = iris.cube.Cube(np.zeros((5, 5, 5, 5, 5), dtype="f8"))
         cube1.add_dim_coord(
-            iris.coords.DimCoord(
-                np.arange(5, dtype="i8"), long_name="z", units="1"
-            ),
+            iris.coords.DimCoord(np.arange(5, dtype="i8"), long_name="z", units="1"),
             [0],
         )
         cube1.add_aux_coord(
@@ -568,9 +550,7 @@ class TestIterateFunctions(tests.IrisTest):
         # izip should step through them as a product.
         slice_a_iterator = self.cube_a.slices(self.coord_names)
         slice_b_iterator = self.cube_b.slices(self.coord_names)
-        product_iterator = itertools.product(
-            slice_a_iterator, slice_b_iterator
-        )
+        product_iterator = itertools.product(slice_a_iterator, slice_b_iterator)
         nslices = self.cube_a.shape[0] * self.cube_b.shape[0]
         count = 0
         for slice_a, slice_b in iris.iterate.izip(

@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-v3.7 (16 Aug 2023)
+v3.7 (31 Aug 2023)
 ******************
 
 This document explains the changes made to Iris for this release
@@ -18,21 +18,37 @@ This document explains the changes made to Iris for this release
    we have made a number of improvements for user-experience and usability,
    notably :
 
-   * improved messaging for :ref:`CubeList.concatenate() <concat_warnings>`
-     and  :ref:`Cube.convert_units() <convert_docs>`.
+   * We added :ref:`Dark mode support <docs_dark>` for the documentation.
 
-   * avoid warnings which may occur in :ref:`pp loading <cftime_warnings>`
-     and :ref:`contourf <contour_future>`.
-
-   * :ref:`documentation supports Dark mode <docs_dark>`.
-
-   * :ref:`added a "Dask Best Practices" guide <dask_guide>`
+   * We :ref:`added a "Dask Best Practices" guide <dask_guide>`
      ( :ref:`here <dask best practices>` ) .
 
-   * :ref:`improved the Installation Guide <installdocs_update>`.
+   * We :ref:`improved the Installation Guide <installdocs_update>`.
+
+   * We improved the information in
+     :ref:`warnings from CubeList.concatenate() <concat_warnings>`
+     and :ref:`documentation of Cube.convert_units() <convert_docs>`.
+
+   * We prevented some warnings occurring in :ref:`pp loading <cftime_warnings>`
+     and :ref:`contourf <contour_future>`.
 
    Please do get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
+
+
+v3.7.1 (04 Mar 2024)
+====================
+
+.. dropdown:: v3.7.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   #. `@stephenworsley`_ fixed a potential memory leak for Iris uses of
+      :func:`dask.array.map_blocks`; known specifically to be a problem in the
+      :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
 
 
 📢 Announcements

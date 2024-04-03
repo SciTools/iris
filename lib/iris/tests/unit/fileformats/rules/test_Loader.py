@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.rules.Loader`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -24,9 +23,7 @@ class Test___init__(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(
-            loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS
-        )
+        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
 
     def test_normal_with_explicit_none(self):
@@ -38,9 +35,7 @@ class Test___init__(tests.IrisTest):
             )
         self.assertEqual(warn.call_count, 0)
         self.assertIs(loader.field_generator, mock.sentinel.GEN_FUNC)
-        self.assertIs(
-            loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS
-        )
+        self.assertIs(loader.field_generator_kwargs, mock.sentinel.GEN_FUNC_KWARGS)
         self.assertIs(loader.converter, mock.sentinel.CONVERTER)
 
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformat.ff.FF2PP` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -15,10 +14,11 @@ from unittest import mock
 
 import numpy as np
 
-from iris.exceptions import IrisLoadWarning, NotYetImplementedError
+from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
 from iris.fileformats._ff import FF2PP
 import iris.fileformats.pp as pp
+from iris.warnings import IrisLoadWarning
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0
@@ -31,11 +31,11 @@ _INTEGER = 2
 
 
 _DummyField = collections.namedtuple(
-    "_DummyField", "lbext lblrec lbnrec raw_lbpack " "lbuser boundary_packing"
+    "_DummyField", "lbext lblrec lbnrec raw_lbpack lbuser boundary_packing"
 )
 _DummyFieldWithSize = collections.namedtuple(
     "_DummyFieldWithSize",
-    "lbext lblrec lbnrec raw_lbpack " "lbuser boundary_packing " "lbnpt lbrow",
+    "lbext lblrec lbnrec raw_lbpack lbuser boundary_packing lbnpt lbrow",
 )
 _DummyBoundaryPacking = collections.namedtuple(
     "_DummyBoundaryPacking", "x_halo y_halo rim_width"
@@ -70,8 +70,7 @@ class Test____iter__(tests.IrisTest):
 class Test__extract_field__LBC_format(tests.IrisTest):
     @contextlib.contextmanager
     def mock_for_extract_field(self, fields, x=None, y=None):
-        """
-        A context manager to ensure FF2PP._extract_field gets a field
+        """A context manager to ensure FF2PP._extract_field gets a field
         instance looking like the next one in the "fields" iterable from
         the "make_pp_field" call.
 
@@ -86,14 +85,12 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
         open_func = "builtins.open"
-        with mock.patch(
-            "iris.fileformats._ff._parse_binary_stream", return_value=[0]
-        ), mock.patch(open_func), mock.patch(
-            "struct.unpack_from", return_value=[4]
-        ), mock.patch(
-            "iris.fileformats.pp.make_pp_field", side_effect=fields
-        ), mock.patch(
-            "iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)
+        with (
+            mock.patch("iris.fileformats._ff._parse_binary_stream", return_value=[0]),
+            mock.patch(open_func),
+            mock.patch("struct.unpack_from", return_value=[4]),
+            mock.patch("iris.fileformats.pp.make_pp_field", side_effect=fields),
+            mock.patch("iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)),
         ):
             yield ff2pp
 
@@ -229,9 +226,7 @@ class Test__payload(tests.IrisTest):
         field.lbnrec = 50
         field.boundary_packing = None
 
-    def _test(
-        self, mock_field, expected_depth, expected_dtype, word_depth=None
-    ):
+    def _test(self, mock_field, expected_depth, expected_dtype, word_depth=None):
         with mock.patch("iris.fileformats._ff.FFHeader", return_value=None):
             kwargs = {}
             if word_depth is not None:
@@ -400,9 +395,7 @@ class Test__payload(tests.IrisTest):
             self._test(mock_field, None, None)
 
     def test_lbc_unpacked(self):
-        boundary_packing = _DummyBoundaryPacking(
-            x_halo=11, y_halo=7, rim_width=3
-        )
+        boundary_packing = _DummyBoundaryPacking(x_halo=11, y_halo=7, rim_width=3)
         mock_field = _DummyFieldWithSize(
             lbext=10,
             lblrec=200,
@@ -425,15 +418,11 @@ class Test__payload(tests.IrisTest):
             # Anything not None will do here.
             boundary_packing=0,
         )
-        with self.assertRaisesRegex(
-            ValueError, "packed LBC data is not supported"
-        ):
+        with self.assertRaisesRegex(ValueError, "packed LBC data is not supported"):
             self._test(mock_field, None, None)
 
     def test_lbc_cray(self):
-        boundary_packing = _DummyBoundaryPacking(
-            x_halo=11, y_halo=7, rim_width=3
-        )
+        boundary_packing = _DummyBoundaryPacking(x_halo=11, y_halo=7, rim_width=3)
         mock_field = _DummyFieldWithSize(
             lbext=10,
             lblrec=200,
@@ -527,17 +516,13 @@ class Test__adjust_field_for_lbc(tests.IrisTest):
     def test__bad_lbtim(self):
         self.mock_field.lbtim = 717
         ff2pp = FF2PP("dummy_filename")
-        with self.assertRaisesRegex(
-            ValueError, "LBTIM of 717, expected only 0 or 11"
-        ):
+        with self.assertRaisesRegex(ValueError, "LBTIM of 717, expected only 0 or 11"):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
     def test__bad_lbvc(self):
         self.mock_field.lbvc = 312
         ff2pp = FF2PP("dummy_filename")
-        with self.assertRaisesRegex(
-            ValueError, "LBVC of 312, expected only 0 or 65"
-        ):
+        with self.assertRaisesRegex(ValueError, "LBVC of 312, expected only 0 or 65"):
             ff2pp._adjust_field_for_lbc(self.mock_field)
 
 
@@ -549,9 +534,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
 
         # Fake the level constants to look like 3 model levels.
         self.n_all_levels = 3
-        self.mock_ff_header.level_dependent_constants = np.zeros(
-            (self.n_all_levels)
-        )
+        self.mock_ff_header.level_dependent_constants = np.zeros((self.n_all_levels))
         self.mock_ff = self.patch(
             "iris.fileformats._ff.FFHeader", return_value=self.mock_ff_header
         )
@@ -569,9 +552,7 @@ class Test__fields_over_all_levels(tests.IrisTest):
             self.assertEqual(results[0].lblev, self.original_lblev)
         else:
             self.assertEqual(len(results), n_levels)
-            self.assertEqual(
-                [fld.lblev for fld in results], list(range(n_levels))
-            )
+            self.assertEqual([fld.lblev for fld in results], list(range(n_levels)))
 
     def test__is_lbc(self):
         ff2pp = FF2PP("dummy_filename")

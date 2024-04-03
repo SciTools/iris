@@ -6,12 +6,12 @@ Why Iris
 **A powerful, format-agnostic, community-driven Python package for analysing
 and visualising Earth science data.**
 
-Iris implements a data model based on the `CF conventions <http://cfconventions.org>`_
+Iris implements a data model based on the `CF conventions <https://cfconventions.org>`_
 giving you a powerful, format-agnostic interface for working with your data.
 It excels when working with multi-dimensional Earth Science data, where tabular
 representations become unwieldy and inefficient.
 
-`CF Standard names <http://cfconventions.org/standard-names.html>`_,
+`CF Standard names <https://cfconventions.org/standard-names.html>`_,
 `units <https://github.com/SciTools/cf_units>`_, and coordinate metadata
 are built into Iris, giving you a rich and expressive interface for maintaining
 an accurate representation of your data. Its treatment of data and
@@ -33,7 +33,7 @@ A number of file formats are recognised by Iris, including CF-compliant NetCDF,
 GRIB, and PP, and it has a plugin architecture to allow other formats to be
 added seamlessly.
 
-Building upon `NumPy <http://www.numpy.org/>`_ and
+Building upon `NumPy <https://www.numpy.org/>`_ and
 `dask <https://dask.pydata.org/en/latest/>`_, Iris scales from efficient
 single-machine workflows right through to multi-core clusters and HPC.
 Interoperability with packages from the wider scientific Python ecosystem comes

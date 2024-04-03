@@ -83,7 +83,7 @@ CF Name                                                                         
 For convenience, Iris also includes the :class:`~iris.coord_systems.OSGB`
 class which provides a simple way to create the transverse Mercator
 coordinate system used by the British
-`Ordnance Survey <http://www.ordnancesurvey.co.uk/>`_.
+`Ordnance Survey <https://www.ordnancesurvey.co.uk/>`_.
 
 
 .. _whats-new-cartopy:
@@ -92,7 +92,7 @@ Using Cartopy for Mapping in Matplotlib
 ---------------------------------------
 
 The underlying map drawing package has now been updated to use
-`Cartopy <http://scitools.github.com/cartopy>`_. Cartopy provides a
+`Cartopy <https://scitools.github.com/cartopy>`_. Cartopy provides a
 highly flexible set of mapping tools, with a consistent, intuitive
 interface. As yet it doesn't have feature-parity with basemap, but its
 goal is to make maps "just work", making it the perfect complement to Iris.
@@ -132,7 +132,7 @@ interface:
     and :func:`matplotlib.pyplot.gca` should be used instead.
 
 For more examples of what can be done with Cartopy, see the Iris gallery and
-`Cartopy's documentation  <http://scitools.github.com/cartopy>`_.
+`Cartopy's documentation  <https://scitools.github.com/cartopy>`_.
 
 
 Hybrid-Pressure
@@ -202,7 +202,7 @@ function. The recommended text for the Cynthia Brewer citation is provided
 by :data:`iris.plot.BREWER_CITE`.
 
 To include a reference in a journal article or report please refer to
-`section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+`section 5 <https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
 in the citation guidance provided by Cynthia Brewer.
 
 

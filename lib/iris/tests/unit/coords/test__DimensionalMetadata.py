@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords._DimensionalMetadata` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -29,17 +28,13 @@ from iris.tests.stock.mesh import sample_meshcoord
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
-        emsg = (
-            "Can't instantiate abstract class _DimensionalMetadata with "
-            "abstract methods __init__"
-        )
+        emsg = "Can't instantiate abstract class _DimensionalMetadata"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = _DimensionalMetadata(0)
 
 
 class Mixin__string_representations:
-    """
-    Common testcode for generic `__str__`, `__repr__` and `summary` methods.
+    """Common testcode for generic `__str__`, `__repr__` and `summary` methods.
 
     Effectively, __str__ and __repr__ are thin wrappers around `summary`.
     These are used by all the subclasses : notably Coord/DimCoord/AuxCoord,
@@ -61,8 +56,7 @@ class Mixin__string_representations:
     """
 
     def repr_str_strings(self, dm, linewidth=55):
-        """
-        Return a simple combination of repr and str printouts.
+        """Return a simple combination of repr and str printouts.
 
         N.B. we control linewidth to make the outputs easier to compare.
         """
@@ -166,8 +160,7 @@ class Mixin__string_representations:
         return coord
 
     def coord_representations(self, *args, **kwargs):
-        """
-        Create a test coord and return its string representations.
+        """Create a test coord and return its string representations.
 
         Pass args+kwargs to 'sample_coord' and return the 'repr_str_strings'.
 
@@ -176,8 +169,7 @@ class Mixin__string_representations:
         return self.repr_str_strings(coord)
 
     def assertLines(self, list_of_expected_lines, string_result):
-        """
-        Assert equality between a result and expected output lines.
+        r"""Assert equality between a result and expected output lines.
 
         For convenience, the 'expected lines' are joined with a '\\n',
         because a list of strings is nicer to construct in code.
@@ -188,8 +180,7 @@ class Mixin__string_representations:
 
 
 class Test__print_common(Mixin__string_representations, tests.IrisTest):
-    """
-    Test aspects of __str__ and __repr__ output common to all
+    """Test aspects of __str__ and __repr__ output common to all
     _DimensionalMetadata instances.
     I.E. those from CFVariableMixin, plus values array (data-manager).
 
@@ -217,9 +208,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_minimal(self):
-        result = self.coord_representations(
-            long_name=None, units=None, shape=(1,)
-        )
+        result = self.coord_representations(long_name=None, units=None, shape=(1,))
         expected = [
             "<AuxCoord: unknown / (unknown)  [0.]>",
             "AuxCoord :  unknown / (unknown)",
@@ -288,19 +277,11 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
     def test_dtype_date(self):
         # Note: test with a date 'longer' than the built-in one in
         # 'sample_coord(dates=True)', because it includes a time-of-day
-        full_date_unit = Unit(
-            "days since 1892-05-17 03:00:25", calendar="360_day"
-        )
+        full_date_unit = Unit("days since 1892-05-17 03:00:25", calendar="360_day")
         result = self.coord_representations(units=full_date_unit)
         expected = [
-            (
-                "<AuxCoord: x / (days since 1892-05-17 03:00:25)  "
-                "[...]  shape(5,)>"
-            ),
-            (
-                "AuxCoord :  x / (days since 1892-05-17 03:00:25, "
-                "360_day calendar)"
-            ),
+            ("<AuxCoord: x / (days since 1892-05-17 03:00:25)  [...]  shape(5,)>"),
+            ("AuxCoord :  x / (days since 1892-05-17 03:00:25, 360_day calendar)"),
             "    points: [",
             "        1892-05-17 03:00:25, 1892-05-18 03:00:25,",
             "        1892-05-19 03:00:25, 1892-05-20 03:00:25,",
@@ -404,9 +385,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_scalar_masked(self):
-        result = self.coord_representations(
-            shape=(1,), bounded=True, masked=True
-        )
+        result = self.coord_representations(shape=(1,), bounded=True, masked=True)
         expected = [
             "<AuxCoord: x / (m)  [--]+bounds>",
             "AuxCoord :  x / (m)",
@@ -458,10 +437,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         # Completely truncated representations
         result = self.coord_representations(shape=(150,), bounded=True)
         expected = [
-            (
-                "<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]+bounds  "
-                "shape(150,)>"
-            ),
+            ("<AuxCoord: x / (m)  [ 0., 1., ..., 148., 149.]+bounds  shape(150,)>"),
             "AuxCoord :  x / (m)",
             "    points: [  0.,   1., ..., 148., 149.]",
             "    bounds: [",
@@ -686,9 +662,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
         self.assertLines(expected, result)
 
     def test_integers_masked_long(self):
-        result = self.coord_representations(
-            shape=(20,), datatype=int, masked=True
-        )
+        result = self.coord_representations(shape=(20,), datatype=int, masked=True)
         expected = [
             "<AuxCoord: x / (m)  [0 , --, ..., 18, --]  shape(20,)>",
             "AuxCoord :  x / (m)",
@@ -701,8 +675,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
 
 
 class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
-    """
-    Test Coord-specific aspects of __str__ and __repr__ output.
+    """Test Coord-specific aspects of __str__ and __repr__ output.
 
     Aspects :
     * DimCoord / AuxCoord
@@ -743,10 +716,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
         coord = coord[:1]  # Just to make it a bit shorter
         result = self.repr_str_strings(coord)
         expected = [
-            (
-                "<DimCoord: time / (days since 1970-01-01 00:00:00-00)  "
-                "[...]+bounds>"
-            ),
+            ("<DimCoord: time / (days since 1970-01-01 00:00:00-00)  [...]+bounds>"),
             (
                 "DimCoord :  time / (days since 1970-01-01 00:00:00-00, "
                 "standard calendar)"
@@ -777,8 +747,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
 
 
 class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
-    """
-    Limited testing of other _DimensionalMetadata subclasses.
+    """Limited testing of other _DimensionalMetadata subclasses.
 
     * AncillaryVariable
     * CellMeasure
@@ -932,9 +901,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
 
 
 class Test_summary(Mixin__string_representations, tests.IrisTest):
-    """
-    Test the controls of the 'summary' method.
-    """
+    """Test the controls of the 'summary' method."""
 
     def test_shorten(self):
         coord = self.sample_coord()

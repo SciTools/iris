@@ -1,13 +1,10 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Experimental module for importing/exporting raster data from Iris cubes using
-the GDAL library.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Experimental module for importing/exporting raster data from Iris cubes using the GDAL library.
 
-See also: `GDAL - Geospatial Data Abstraction Library <http://www.gdal.org>`_.
+See also: `GDAL - Geospatial Data Abstraction Library <https://www.gdal.org>`_.
 
 TODO: If this module graduates from experimental the (optional) GDAL
       dependency should be added to INSTALL
@@ -42,28 +39,34 @@ _GDAL_DATATYPES = {
 }
 
 
-def _gdal_write_array(
-    x_min, x_step, y_max, y_step, coord_system, data, fname, ftype
-):
-    """
-    Use GDAL WriteArray to export data as a 32-bit raster image.
+def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, ftype):
+    """Use GDAL WriteArray to export data as a 32-bit raster image.
+
     Requires the array data to be of the form: North-at-top
     and West-on-left.
 
-    Args:
-        * x_min: Minimum X coordinate bounds value.
-        * x_step: Change in X coordinate per cell.
-        * y_max: Maximum Y coordinate bounds value.
-        * y_step: Change in Y coordinate per cell.
-        * coord_system (iris.coord_systems.CoordSystem):
-            Coordinate system for X and Y.
-        * data (numpy.ndarray): 2d array of values to export
-        * fname (string): Output file name.
-        * ftype (string): Export file type.
+    Parameters
+    ----------
+    x_min :
+        Minimum X coordinate bounds value.
+    x_step :
+        Change in X coordinate per cell.
+    y_max :
+        Maximum Y coordinate bounds value.
+    y_step :
+        Change in Y coordinate per cell.
+    coord_system : iris.coord_systems.CoordSystem
+        Coordinate system for X and Y.
+    data : numpy.ndarray
+        2d array of values to export.
+    fname : str
+        Output file name.
+    ftype : str
+        Export file type.
 
-    .. note::
-
-        Projection information is currently not written to the output.
+    Notes
+    -----
+    Projection information is currently not written to the output.
 
     """
     byte_order = data.dtype.str[0]
@@ -102,8 +105,20 @@ def _gdal_write_array(
 
 
 def export_geotiff(cube, fname):
-    """
-    Writes cube data to raster file format as a PixelIsArea GeoTiff image.
+    """Write cube data to raster file format as a PixelIsArea GeoTiff image.
+
+    Parameters
+    ----------
+    cube : Cube
+        The 2D regularly gridded cube slice to be exported.
+        The cube must have regular, contiguous bounds.
+    fname : str
+        Output file name.
+
+    Notes
+    -----
+    For more details on GeoTiff specification and PixelIsArea, see:
+    https://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
 
     .. deprecated:: 3.2.0
 
@@ -112,16 +127,6 @@ def export_geotiff(cube, fname):
         If you make use of this functionality, please contact the Iris
         Developers to discuss how to retain it (which could include reversing
         the deprecation).
-
-    Args:
-        * cube (Cube): The 2D regularly gridded cube slice to be exported.
-                       The cube must have regular, contiguous bounds.
-        * fname (string): Output file name.
-
-    .. note::
-
-        For more details on GeoTiff specification and PixelIsArea, see:
-        http://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
 
     """
     wmsg = (
@@ -138,9 +143,7 @@ def export_geotiff(cube, fname):
     coord_y = cube.coord(axis="Y", dim_coords=True)
 
     if coord_x.bounds is None or coord_y.bounds is None:
-        raise ValueError(
-            "Coordinates must have bounds, consider using " "guess_bounds()"
-        )
+        raise ValueError("Coordinates must have bounds, consider using guess_bounds()")
 
     if (
         coord_x is None
@@ -153,9 +156,7 @@ def export_geotiff(cube, fname):
     for coord in [coord_x, coord_y]:
         name = coord.name()
         if coord.nbounds != 2:
-            msg = "Coordinate {!r} must have two bounds " "per point.".format(
-                name
-            )
+            msg = "Coordinate {!r} must have two bounds per point.".format(name)
             raise ValueError(msg)
         if not (
             coord.units == cf_units.Unit("degrees")
@@ -166,20 +167,15 @@ def export_geotiff(cube, fname):
                 "convertible to meters.".format(name)
             )
         if not coord.is_contiguous():
-            raise ValueError(
-                "Coordinate {!r} bounds must be " "contiguous.".format(name)
-            )
+            raise ValueError("Coordinate {!r} bounds must be contiguous.".format(name))
         xy_step.append(np.diff(coord.bounds[0]))
         if not np.allclose(np.diff(coord.bounds), xy_step[-1]):
-            msg = "Coordinate {!r} bounds must be regularly " "spaced.".format(
-                name
-            )
+            msg = "Coordinate {!r} bounds must be regularly spaced.".format(name)
             raise ValueError(msg)
 
     if coord_x.points[0] > coord_x.points[-1]:
         raise ValueError(
-            "Coordinate {!r} x-points must be monotonically"
-            "increasing.".format(name)
+            "Coordinate {!r} x-points must be monotonically increasing.".format(name)
         )
 
     data = cube.data
@@ -206,6 +202,4 @@ def export_geotiff(cube, fname):
 
     x_min = np.min(x_bounds)
     y_max = np.max(coord_y.bounds)
-    _gdal_write_array(
-        x_min, x_step, y_max, y_step, coord_system, data, fname, "GTiff"
-    )
+    _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, "GTiff")

@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Regridding benchmark test
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Regridding benchmark test."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -23,9 +19,7 @@ class HorizontalChunkedRegridding:
     def setup(self) -> None:
         # Prepare a cube and a template
 
-        cube_file_path = tests.get_data_path(
-            ["NetCDF", "regrid", "regrid_xyt.nc"]
-        )
+        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
         self.cube = iris.load_cube(cube_file_path)
 
         # Prepare a tougher cube and chunk it
@@ -62,9 +56,7 @@ class CurvilinearRegridding:
     def setup(self) -> None:
         # Prepare a cube and a template
 
-        cube_file_path = tests.get_data_path(
-            ["NetCDF", "regrid", "regrid_xyt.nc"]
-        )
+        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
         self.cube = iris.load_cube(cube_file_path)
 
         # Make the source cube curvilinear

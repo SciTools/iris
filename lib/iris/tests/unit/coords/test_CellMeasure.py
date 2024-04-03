@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.CellMeasure` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -111,10 +110,7 @@ class Tests(tests.IrisTest):
         self.assertEqual(self.measure.__str__(), expected)
 
     def test___repr__(self):
-        expected = (
-            "<CellMeasure: cell_area / (m^2)  "
-            "[10., 12., 16., 9.]  shape(4,)>"
-        )
+        expected = "<CellMeasure: cell_area / (m^2)  [10., 12., 16., 9.]  shape(4,)>"
         self.assertEqual(expected, self.measure.__repr__())
 
     def test__eq__(self):

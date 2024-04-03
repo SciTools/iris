@@ -6,7 +6,8 @@ This example demonstrates how to load multiple files containing data output by
 the NEMO model and combine them into a time series in a single cube. The
 different time dimensions in these files can prevent Iris from concatenating
 them without the intervention shown here.
-"""
+
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 
@@ -44,18 +45,14 @@ def main():
 
     # Include the point's position in the plot's title
     lat_point = cube.coord("latitude").points[y_point_index, x_point_index]
-    lat_string = "{:.3f}\u00B0 {}".format(
+    lat_string = "{:.3f}\u00b0 {}".format(
         abs(lat_point), "N" if lat_point > 0.0 else "S"
     )
     lon_point = cube.coord("longitude").points[y_point_index, x_point_index]
-    lon_string = "{:.3f}\u00B0 {}".format(
+    lon_string = "{:.3f}\u00b0 {}".format(
         abs(lon_point), "E" if lon_point > 0.0 else "W"
     )
-    plt.title(
-        "{} at {} {}".format(
-            cube.long_name.capitalize(), lat_string, lon_string
-        )
-    )
+    plt.title("{} at {} {}".format(cube.long_name.capitalize(), lat_string, lon_string))
 
     iplt.show()
 

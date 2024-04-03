@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the cube concatenate mechanism.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the cube concatenate mechanism."""
 
 # import iris tests first so that some things can be initialised
 # before importing anything else.
@@ -20,8 +16,8 @@ import pytest
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
-from iris.exceptions import IrisUserWarning
 import iris.tests.stock as stock
+from iris.warnings import IrisUserWarning
 
 
 def _make_cube(
@@ -35,51 +31,39 @@ def _make_cube(
     offset=0,
     scalar=None,
 ):
-    """
-    A convenience test function that creates a custom 2D cube.
+    """A convenience test function that creates a custom 2D cube.
 
-    Args:
-
-    * x:
-        A (start, stop, step) tuple for specifying the
-        x-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * y:
-        A (start, stop, step) tuple for specifying the
-        y-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * data:
+    Parameters
+    ----------
+    x :
+        A (start, stop, step) tuple for specifying the x-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    y :
+        A (start, stop, step) tuple for specifying the y-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    data :
         The data payload for the cube.
-
-    Kwargs:
-
-    * aux:
+    aux : optional, default=None
         A CSV string specifying which points only auxiliary
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * cell_measure:
+    cell_measure : optional, default=None
         A CSV string specifying which points only cell measures
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * ancil:
+    ancil : optional, default=None
         A CSV string specifying which points only ancillary variables
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * derived:
+    derived : optional, default=None
         A CSV string specifying which points only derived coordinates
         coordinates to create. Accepts either of 'x', 'y', 'xy'.
-
-    * offset:
+    offset : int, optional, default=0
         Offset value to be added to the 'xy' auxiliary coordinate
         points.
-
-    * scalar:
+    scalar : optional, default=None
         Create a 'height' scalar coordinate with the given value.
 
-    Returns:
-        The newly created 2D :class:`iris.cube.Cube`.
+    Returns
+    -------
+    The newly created 2D :class:`iris.cube.Cube`.
 
     """
     x_range = np.arange(*x, dtype=np.float32)
@@ -109,9 +93,7 @@ def _make_cube(
             payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
                 y_size, x_size
             )
-            coord = AuxCoord(
-                payload * 100 + offset, long_name="xy-aux", units="1"
-            )
+            coord = AuxCoord(payload * 100 + offset, long_name="xy-aux", units="1")
             cube.add_aux_coord(coord, (0, 1))
 
     if cell_measure is not None:
@@ -124,9 +106,7 @@ def _make_cube(
             cube.add_cell_measure(cm, (1,))
         if "xy" in cell_measure:
             payload = x_range + y_range[:, np.newaxis]
-            cm = CellMeasure(
-                payload * 100 + offset, long_name="xy-aux", units="1"
-            )
+            cm = CellMeasure(payload * 100 + offset, long_name="xy-aux", units="1")
             cube.add_cell_measure(cm, (0, 1))
 
     if ancil is not None:
@@ -160,9 +140,7 @@ def _make_cube(
             payload = np.arange(y_size * x_size, dtype=np.float32).reshape(
                 y_size, x_size
             )
-            orog = AuxCoord(
-                payload * 100 + offset, long_name="orog", units="m"
-            )
+            orog = AuxCoord(payload * 100 + offset, long_name="orog", units="m")
             cube.add_aux_coord(orog, (0, 1))
         else:
             raise NotImplementedError()
@@ -177,42 +155,32 @@ def _make_cube(
 
 
 def _make_cube_3d(x, y, z, data, aux=None, offset=0):
-    """
-    A convenience test function that creates a custom 3D cube.
+    """A convenience test function that creates a custom 3D cube.
 
-    Args:
-
-    * x:
-        A (start, stop, step) tuple for specifying the
-        x-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * y:
-        A (start, stop, step) tuple for specifying the
-        y-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * z:
-        A (start, stop, step) tuple for specifying the
-        z-axis dimensional coordinate points. Bounds are
-        automatically guessed.
-
-    * data:
+    Parameters
+    ----------
+    x :
+        A (start, stop, step) tuple for specifying the x-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    y :
+        A (start, stop, step) tuple for specifying the y-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    z :
+        A (start, stop, step) tuple for specifying the z-axis dimensional
+        coordinate points. Bounds are automatically guessed.
+    data :
         The data payload for the cube.
-
-    Kwargs:
-
-    * aux:
+    aux : optional, default=None
         A CSV string specifying which points only auxiliary
         coordinates to create. Accepts either of 'x', 'y', 'z',
         'xy', 'xz', 'yz', 'xyz'.
-
-    * offset:
+    offset : int, optional, default=0
         Offset value to be added to non-1D auxiliary coordinate
         points.
 
-    Returns:
-        The newly created 3D :class:`iris.cube.Cube`.
+    Returns
+    -------
+    The newly created 3D :class:`iris.cube.Cube`.
 
     """
     x_range = np.arange(*x, dtype=np.float32)
@@ -254,33 +222,26 @@ def _make_cube_3d(x, y, z, data, aux=None, offset=0):
             payload = np.arange(x_size * z_size, dtype=np.float32).reshape(
                 z_size, x_size
             )
-            coord = AuxCoord(
-                payload * 10 + offset, long_name="xz-aux", units="1"
-            )
+            coord = AuxCoord(payload * 10 + offset, long_name="xz-aux", units="1")
             cube.add_aux_coord(coord, (0, 2))
         if "yz" in aux:
             payload = np.arange(y_size * z_size, dtype=np.float32).reshape(
                 z_size, y_size
             )
-            coord = AuxCoord(
-                payload * 100 + offset, long_name="yz-aux", units="1"
-            )
+            coord = AuxCoord(payload * 100 + offset, long_name="yz-aux", units="1")
             cube.add_aux_coord(coord, (0, 1))
         if "xyz" in aux:
-            payload = np.arange(
-                x_size * y_size * z_size, dtype=np.float32
-            ).reshape(z_size, y_size, x_size)
-            coord = AuxCoord(
-                payload * 1000 + offset, long_name="xyz-aux", units="1"
+            payload = np.arange(x_size * y_size * z_size, dtype=np.float32).reshape(
+                z_size, y_size, x_size
             )
+            coord = AuxCoord(payload * 1000 + offset, long_name="xyz-aux", units="1")
             cube.add_aux_coord(coord, (0, 1, 2))
 
     return cube
 
 
 def concatenate(cubes, order=None):
-    """
-    Explicitly force the contiguous major order of cube data
+    """Explicitly force the contiguous major order of cube data
     alignment to ensure consistent CML crc32 checksums.
 
     Defaults to contiguous 'C' row-major order.
@@ -364,9 +325,7 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
         cube = _make_cube((2, 4), y, 1)
-        cube.coord("x").bounds = np.array(
-            [[0.5, 2.5], [2.5, 3.5]], dtype=np.float32
-        )
+        cube.coord("x").bounds = np.array([[0.5, 2.5], [2.5, 3.5]], dtype=np.float32)
         cubes.append(cube)
         with pytest.warns(
             IrisUserWarning,
@@ -380,9 +339,7 @@ class TestNoConcat(tests.IrisTest):
         y = (0, 2)
         cubes.append(_make_cube((3, 1, -1), y, 1))
         cube = _make_cube((1, -1, -1), y, 2)
-        cube.coord("x").bounds = np.array(
-            [[2.5, 0.5], [0.5, -0.5]], dtype=np.float32
-        )
+        cube.coord("x").bounds = np.array([[2.5, 0.5], [0.5, -0.5]], dtype=np.float32)
         cubes.append(cube)
         with pytest.warns(
             IrisUserWarning,
@@ -784,9 +741,7 @@ class Test2D(tests.IrisTest):
         ).reshape(2, 2, 4)
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(
-            result, ("concatenate", "concat_2x2d_aux_xy_bounds.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_2x2d_aux_xy_bounds.cml"))
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (2, 4))
 
@@ -832,9 +787,9 @@ class Test2D(tests.IrisTest):
         for cube in cubes:
             cube.data = cube.lazy_data()
             cube.coord("xy-aux").points = cube.coord("xy-aux").lazy_points()
-            bounds = da.arange(
-                4 * cube.coord("xy-aux").core_points().size
-            ).reshape(cube.shape + (4,))
+            bounds = da.arange(4 * cube.coord("xy-aux").core_points().size).reshape(
+                cube.shape + (4,)
+            )
             cube.coord("xy-aux").bounds = bounds
         result = concatenate(cubes)
 
@@ -959,17 +914,13 @@ class TestMulti2DScalar(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 7, aux="xy", offset=3, scalar=20))
         cubes.append(_make_cube((2, 4), y, 8, aux="xy", offset=4, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(
-            result, ("concatenate", "concat_scalar_4x2d_aux_xy.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_scalar_4x2d_aux_xy.cml"))
         self.assertEqual(len(result), 2)
         for cube in result:
             self.assertEqual(cube.shape, (4, 4))
 
         merged = result.merge()
-        self.assertCML(
-            merged, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml")
-        )
+        self.assertCML(merged, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml"))
         self.assertEqual(len(merged), 1)
         self.assertEqual(merged[0].shape, (2, 4, 4))
 
@@ -981,9 +932,7 @@ class TestMulti2DScalar(tests.IrisTest):
         self.assertEqual(len(merged), 4)
 
         result = concatenate(merged)
-        self.assertCML(
-            result, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml"))
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (2, 4, 4))
 
@@ -1004,17 +953,13 @@ class TestMulti2DScalar(tests.IrisTest):
         cubes.append(_make_cube(x, (0, 2), 7, aux="xy", offset=3, scalar=20))
         cubes.append(_make_cube(x, (2, 4), 8, aux="xy", offset=4, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(
-            result, ("concatenate", "concat_scalar_4y2d_aux_xy.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_scalar_4y2d_aux_xy.cml"))
         self.assertEqual(len(result), 2)
         for cube in result:
             self.assertEqual(cube.shape, (4, 4))
 
         merged = result.merge()
-        self.assertCML(
-            merged, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml")
-        )
+        self.assertCML(merged, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml"))
         self.assertEqual(len(merged), 1)
         self.assertEqual(merged[0].shape, (2, 4, 4))
 
@@ -1027,41 +972,21 @@ class TestMulti2DScalar(tests.IrisTest):
 
         result = concatenate(merged)
         self.assertEqual(len(result), 1)
-        self.assertCML(
-            result, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml"))
         self.assertEqual(result[0].shape, (2, 4, 4))
 
     def test_concat_scalar_4mix2d_aux_xy(self):
         cubes = iris.cube.CubeList()
-        cubes.append(
-            _make_cube((0, 2), (0, 2), 1, aux="xy", offset=1, scalar=10)
-        )
-        cubes.append(
-            _make_cube((2, 4), (2, 4), 8, aux="xy", offset=4, scalar=20)
-        )
-        cubes.append(
-            _make_cube((0, 2), (0, 2), 5, aux="xy", offset=1, scalar=20)
-        )
-        cubes.append(
-            _make_cube((2, 4), (0, 2), 2, aux="xy", offset=2, scalar=10)
-        )
-        cubes.append(
-            _make_cube((0, 2), (2, 4), 7, aux="xy", offset=3, scalar=20)
-        )
-        cubes.append(
-            _make_cube((0, 2), (2, 4), 3, aux="xy", offset=3, scalar=10)
-        )
-        cubes.append(
-            _make_cube((2, 4), (2, 4), 4, aux="xy", offset=4, scalar=10)
-        )
-        cubes.append(
-            _make_cube((2, 4), (0, 2), 6, aux="xy", offset=2, scalar=20)
-        )
+        cubes.append(_make_cube((0, 2), (0, 2), 1, aux="xy", offset=1, scalar=10))
+        cubes.append(_make_cube((2, 4), (2, 4), 8, aux="xy", offset=4, scalar=20))
+        cubes.append(_make_cube((0, 2), (0, 2), 5, aux="xy", offset=1, scalar=20))
+        cubes.append(_make_cube((2, 4), (0, 2), 2, aux="xy", offset=2, scalar=10))
+        cubes.append(_make_cube((0, 2), (2, 4), 7, aux="xy", offset=3, scalar=20))
+        cubes.append(_make_cube((0, 2), (2, 4), 3, aux="xy", offset=3, scalar=10))
+        cubes.append(_make_cube((2, 4), (2, 4), 4, aux="xy", offset=4, scalar=10))
+        cubes.append(_make_cube((2, 4), (0, 2), 6, aux="xy", offset=2, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(
-            result, ("concatenate", "concat_scalar_4mix2d_aux_xy.cml")
-        )
+        self.assertCML(result, ("concatenate", "concat_scalar_4mix2d_aux_xy.cml"))
         self.assertEqual(len(result), 2)
         for cube in result:
             self.assertEqual(cube.shape, (4, 4))

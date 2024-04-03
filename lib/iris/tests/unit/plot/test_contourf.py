@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot.contourf` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -94,7 +93,7 @@ class TestAntialias(tests.IrisTest):
     def test_apply_contour_nans(self):
         # Presence of nans should not prevent contours being added.
         cube = simple_2d()
-        cube.data = cube.data.astype(np.float_)
+        cube.data = cube.data.astype(np.float64)
         cube.data[0, 0] = np.nan
 
         levels = [2, 4, 6, 8]

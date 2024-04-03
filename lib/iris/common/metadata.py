@@ -1,13 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides the infrastructure to support the common metadata API.
-
-"""
-
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides the infrastructure to support the common metadata API."""
 
 from abc import ABCMeta
 from collections import namedtuple
@@ -21,6 +16,7 @@ import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
 from ..config import get_logger
+from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
 from .lenient import _lenient_service as lenient_service
 from .lenient import _qualname as qualname
@@ -51,8 +47,7 @@ logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
 
 
 def hexdigest(item):
-    """
-    Calculate a hexadecimal string hash representation of the provided item.
+    """Calculate a hexadecimal string hash representation of the provided item.
 
     Calculates a 64-bit non-cryptographic hash of the provided item, using
     the extremely fast ``xxhash`` hashing algorithm, and returns the hexdigest
@@ -61,12 +56,14 @@ def hexdigest(item):
     This provides a means to compare large and/or complex objects through
     simple string hexdigest comparison.
 
-    Args:
-
-    * item (object):
+    Parameters
+    ----------
+    item : object
         The item that requires to have its hexdigest calculated.
 
-    Returns:
+    Returns
+    -------
+    str
         The string hexadecimal representation of the item's 64-bit hash.
 
     """
@@ -96,7 +93,8 @@ def hexdigest(item):
 
 
 class _NamedTupleMeta(ABCMeta):
-    """
+    """Meta-class convenience for creating a namedtuple.
+
     Meta-class to support the convenience of creating a namedtuple from
     names/members of the metadata class hierarchy.
 
@@ -108,9 +106,7 @@ class _NamedTupleMeta(ABCMeta):
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
-                is_abstract = getattr(
-                    base_names, "__isabstractmethod__", False
-                )
+                is_abstract = getattr(base_names, "__isabstractmethod__", False)
                 if not is_abstract:
                     if (not isinstance(base_names, Iterable)) or isinstance(
                         base_names, str
@@ -141,10 +137,7 @@ class _NamedTupleMeta(ABCMeta):
 
 
 class BaseMetadata(metaclass=_NamedTupleMeta):
-    """
-    Container for common metadata.
-
-    """
+    """Container for common metadata."""
 
     DEFAULT_NAME = "unknown"  # the fall-back name for metadata identity
 
@@ -160,16 +153,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def __eq__(self, other):
-        """
-        Determine whether the associated metadata members are equivalent.
+        """Determine whether the associated metadata members are equivalent.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of the same type.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         result = NotImplemented
@@ -177,9 +170,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         if hasattr(other, "__class__") and other.__class__ is self.__class__:
             if _LENIENT(self.__eq__) or _LENIENT(self.equal):
                 # Perform "lenient" equality.
-                logger.debug(
-                    "lenient", extra=dict(cls=self.__class__.__name__)
-                )
+                logger.debug("lenient", extra=dict(cls=self.__class__.__name__))
                 result = self._compare_lenient(other)
             else:
                 # Perform "strict" equality.
@@ -242,51 +233,38 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         field_strings = []
         for field in self._fields:
             value = getattr(self, field)
-            if value is None or isinstance(value, (str, dict)) and not value:
+            if value is None or isinstance(value, (str, Mapping)) and not value:
                 continue
             field_strings.append(f"{field}={value}")
 
         return f"{type(self).__name__}({', '.join(field_strings)})"
 
-    def _api_common(
-        self, other, func_service, func_operation, action, lenient=None
-    ):
-        """
-        Common entry-point for lenient metadata API methods.
+    def _api_common(self, other, func_service, func_operation, action, lenient=None):
+        """Perform common entry-point for lenient metadata API methods.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of the same type.
-
-        * func_service (callable):
+        func_service : callable
             The parent service method offering the API entry-point to the service.
-
-        * func_operation (callable):
+        func_operation : callable
             The parent service method that provides the actual service.
-
-        * action (str):
+        action : str
             The verb describing the service operation.
-
-        Kwargs:
-
-        * lenient (boolean):
+        lenient : bool, optional
             Enable/disable the lenient service operation. The default is to automatically
             detect whether this lenient service operation is enabled.
 
-        Returns:
-            The result of the service operation to the parent service caller.
+        Returns
+        -------
+        The result of the service operation to the parent service caller.
 
         """
         # Ensure that we have similar class instances.
-        if (
-            not hasattr(other, "__class__")
-            or other.__class__ is not self.__class__
-        ):
+        if not hasattr(other, "__class__") or other.__class__ is not self.__class__:
             emsg = "Cannot {} {!r} with {!r}."
-            raise TypeError(
-                emsg.format(action, self.__class__.__name__, type(other))
-            )
+            raise TypeError(emsg.format(action, self.__class__.__name__, type(other)))
 
         if lenient is None:
             result = func_operation(other)
@@ -329,16 +307,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return values
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members.
+        """Perform lenient combination of metadata members.
 
-        Args:
-
-        * other (BaseMetadata):
+        Parameters
+        ----------
+        other : BaseMetadata
             The other metadata participating in the lenient combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
 
@@ -411,16 +389,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members.
+        """Perform lenient equality of metadata members.
 
-        Args:
-
-        * other (BaseMetadata):
+        Parameters
+        ----------
+        other : BaseMetadata
             The other metadata participating in the lenient comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         result = False
@@ -445,11 +423,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
             # Note that, we use "_members" not "_fields".
             # Lenient equality explicitly ignores the "var_name" member.
             result = all(
-                [
-                    func(field)
-                    for field in BaseMetadata._members
-                    if field != "var_name"
-                ]
+                [func(field) for field in BaseMetadata._members if field != "var_name"]
             )
 
         return result
@@ -507,16 +481,16 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return values
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members.
+        """Perform lenient difference of metadata members.
 
-        Args:
-
-        * other (BaseMetadata):
+        Parameters
+        ----------
+        other : BaseMetadata
             The other metadata participating in the lenient difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
 
@@ -602,23 +576,19 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def combine(self, other, lenient=None):
-        """
-        Return a new metadata instance created by combining each of the
-        associated metadata members.
+        """Return a new metadata instance created by combining each of the associated metadata members.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of the same type.
-
-        Kwargs:
-
-        * lenient (boolean):
+        lenient : bool, optional
             Enable/disable lenient combination. The default is to automatically
             detect whether this lenient operation is enabled.
 
-        Returns:
-            Metadata instance.
+        Returns
+        -------
+        Metadata instance.
 
         """
         result = self._api_common(
@@ -628,7 +598,8 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @lenient_service
     def difference(self, other, lenient=None):
-        """
+        """Perform lenient metadata difference operation.
+
         Return a new metadata instance created by performing a difference
         comparison between each of the associated metadata members.
 
@@ -636,49 +607,42 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         is no difference between the members being compared. Otherwise, a tuple
         of the different values is returned.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of the same type.
-
-        Kwargs:
-
-        * lenient (boolean):
+        lenient : bool, optional
             Enable/disable lenient difference. The default is to automatically
             detect whether this lenient operation is enabled.
 
-        Returns:
-            Metadata instance of member differences or None.
+        Returns
+        -------
+        Metadata instance of member differences or None.
 
         """
         result = self._api_common(
             other, self.difference, self._difference, "differ", lenient=lenient
         )
         result = (
-            None
-            if all([item is None for item in result])
-            else self.__class__(*result)
+            None if all([item is None for item in result]) else self.__class__(*result)
         )
         return result
 
     @lenient_service
     def equal(self, other, lenient=None):
-        """
-        Determine whether the associated metadata members are equivalent.
+        """Determine whether the associated metadata members are equivalent.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of the same type.
-
-        Kwargs:
-
-        * lenient (boolean):
+        lenient : bool, optional
             Enable/disable lenient equivalence. The default is to automatically
             detect whether this lenient operation is enabled.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         result = self._api_common(
@@ -688,19 +652,21 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def from_metadata(cls, other):
-        """
+        """Convert metadata instance to this metadata type.
+
         Convert the provided metadata instance from a different type
         to this metadata type, using only the relevant metadata members.
 
         Non-common metadata members are set to ``None``.
 
-        Args:
-
-        * other (metadata):
+        Parameters
+        ----------
+        other : metadata
             A metadata instance of any type.
 
-        Returns:
-            New metadata instance.
+        Returns
+        -------
+        New metadata instance.
 
         """
         result = None
@@ -716,26 +682,26 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         return result
 
     def name(self, default=None, token=False):
-        """
-        Returns a string name representing the identity of the metadata.
+        """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
         the NetCDF variable name, before falling-back to a default value,
         which itself defaults to the string 'unknown'.
 
-        Kwargs:
-
-        * default:
+        Parameters
+        ----------
+        default : optional
             The fall-back string representing the default name. Defaults to
             the string 'unknown'.
-        * token:
+        token : bool, default=False
             If True, ensures that the name returned satisfies the criteria for
             the characters required by a valid NetCDF name. If it is not
             possible to return a valid name, then a ValueError exception is
             raised. Defaults to False.
 
-        Returns:
-            String.
+        Returns
+        -------
+        str
 
         """
 
@@ -759,17 +725,19 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     @classmethod
     def token(cls, name):
-        """
+        """Verify validity of provided NetCDF name.
+
         Determine whether the provided name is a valid NetCDF name and thus
         safe to represent a single parsable token.
 
-        Args:
+        Parameters
+        ----------
+        name : str
+            The string name to verify.
 
-        * name:
-            The string name to verify
-
-        Returns:
-            The provided name if valid, otherwise None.
+        Returns
+        -------
+        The provided name if valid, otherwise None.
 
         """
         if name is not None:
@@ -780,10 +748,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
 
 class AncillaryVariableMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.coords.AncillaryVariableMetadata`.
-
-    """
+    """Metadata container for a :class:`~iris.coords.AncillaryVariableMetadata`."""
 
     __slots__ = ()
 
@@ -809,10 +774,7 @@ class AncillaryVariableMetadata(BaseMetadata):
 
 
 class CellMeasureMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.coords.CellMeasure`.
-
-    """
+    """Metadata container for a :class:`~iris.coords.CellMeasure`."""
 
     _members = "measure"
 
@@ -824,17 +786,17 @@ class CellMeasureMetadata(BaseMetadata):
         return super().__eq__(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for cell measures.
+        """Perform lenient combination of metadata members for cell measures.
 
-        Args:
-
-        * other (CellMeasureMetadata):
+        Parameters
+        ----------
+        other : CellMeasureMetadata
             The other cell measure metadata participating in the lenient
             combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
         # Perform "strict" combination for "measure".
@@ -846,17 +808,17 @@ class CellMeasureMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for cell measures.
+        """Perform lenient equality of metadata members for cell measures.
 
-        Args:
-
-        * other (CellMeasureMetadata):
+        Parameters
+        ----------
+        other : CellMeasureMetadata
             The other cell measure metadata participating in the lenient
             comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for "measure".
@@ -868,25 +830,21 @@ class CellMeasureMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for cell measures.
+        """Perform lenient difference of metadata members for cell measures.
 
-        Args:
-
-        * other (CellMeasureMetadata):
+        Parameters
+        ----------
+        other : CellMeasureMetadata
             The other cell measure metadata participating in the lenient
             difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
         # Perform "strict" difference for "measure".
-        value = (
-            None
-            if self.measure == other.measure
-            else (self.measure, other.measure)
-        )
+        value = None if self.measure == other.measure else (self.measure, other.measure)
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.append(value)
@@ -910,10 +868,7 @@ class CellMeasureMetadata(BaseMetadata):
 
 
 class CoordMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.coords.Coord`.
-
-    """
+    """Metadata container for a :class:`~iris.coords.Coord`."""
 
     _members = ("coord_system", "climatological")
 
@@ -956,17 +911,17 @@ class CoordMetadata(BaseMetadata):
         return _sort_key(self) < _sort_key(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for coordinates.
+        """Perform lenient combination of metadata members for coordinates.
 
-        Args:
-
-        * other (CoordMetadata):
+        Parameters
+        ----------
+        other : CoordMetadata
             The other coordinate metadata participating in the lenient
             combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
 
@@ -985,17 +940,17 @@ class CoordMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for coordinates.
+        """Perform lenient equality of metadata members for coordinates.
 
-        Args:
-
-        * other (CoordMetadata):
+        Parameters
+        ----------
+        other : CoordMetadata
             The other coordinate metadata participating in the lenient
             comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for "coord_system" and "climatological".
@@ -1012,17 +967,17 @@ class CoordMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for coordinates.
+        """Perform lenient difference of metadata members for coordinates.
 
-        Args:
-
-        * other (CoordMetadata):
+        Parameters
+        ----------
+        other : CoordMetadata
             The other coordinate metadata participating in the lenient
             difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
 
@@ -1078,10 +1033,7 @@ class CoordMetadata(BaseMetadata):
 
 
 class CubeMetadata(BaseMetadata):
-    """
-    Metadata container for a :class:`~iris.cube.Cube`.
-
-    """
+    """Metadata container for a :class:`~iris.cube.Cube`."""
 
     _members = "cell_methods"
 
@@ -1111,24 +1063,20 @@ class CubeMetadata(BaseMetadata):
         return _sort_key(self) < _sort_key(other)
 
     def _combine_lenient(self, other):
-        """
-        Perform lenient combination of metadata members for cubes.
+        """Perform lenient combination of metadata members for cubes.
 
-        Args:
-
-        * other (CubeMetadata):
+        Parameters
+        ----------
+        other : CubeMetadata
             The other cube metadata participating in the lenient combination.
 
-        Returns:
-            A list of combined metadata member values.
+        Returns
+        -------
+        A list of combined metadata member values.
 
         """
         # Perform "strict" combination for "cell_methods".
-        value = (
-            self.cell_methods
-            if self.cell_methods == other.cell_methods
-            else None
-        )
+        value = self.cell_methods if self.cell_methods == other.cell_methods else None
         # Perform lenient combination of the other parent members.
         result = super()._combine_lenient(other)
         result.append(value)
@@ -1136,16 +1084,16 @@ class CubeMetadata(BaseMetadata):
         return result
 
     def _compare_lenient(self, other):
-        """
-        Perform lenient equality of metadata members for cubes.
+        """Perform lenient equality of metadata members for cubes.
 
-        Args:
-
-        * other (CubeMetadata):
+        Parameters
+        ----------
+        other : CubeMetadata
             The other cube metadata participating in the lenient comparison.
 
-        Returns:
-            Boolean.
+        Returns
+        -------
+        bool
 
         """
         # Perform "strict" comparison for "cell_methods".
@@ -1156,16 +1104,16 @@ class CubeMetadata(BaseMetadata):
         return result
 
     def _difference_lenient(self, other):
-        """
-        Perform lenient difference of metadata members for cubes.
+        """Perform lenient difference of metadata members for cubes.
 
-        Args:
-
-        * other (CubeMetadata):
+        Parameters
+        ----------
+        other : CubeMetadata
             The other cube metadata participating in the lenient difference.
 
-        Returns:
-            A list of difference metadata member values.
+        Returns
+        -------
+        A list of difference metadata member values.
 
         """
         # Perform "strict" difference for "cell_methods".
@@ -1182,7 +1130,8 @@ class CubeMetadata(BaseMetadata):
 
     @property
     def _names(self):
-        """
+        """A tuple containing the value of each name participating in the identity of a cube.
+
         A tuple containing the value of each name participating in the identity
         of a :class:`iris.cube.Cube`. This includes the standard name,
         long name, NetCDF variable name, and the STASH from the attributes
@@ -1251,12 +1200,49 @@ class CubeMetadata(BaseMetadata):
 
         return result
 
+    #
+    # Override each of the attribute-dict operations in BaseMetadata, to enable
+    # them to deal with split-attribute dictionaries correctly.
+    # There are 6 of these, for (equals/combine/difference) * (lenient/strict).
+    # Each is overridden with a *wrapped* version of the parent method, using the
+    # "@adjust_for_split_attribute_dictionaries" decorator, which converts any
+    # split-attribute dictionaries in the inputs to ordinary dicts, and likewise
+    # re-converts any dictionaries in the return value.
+    #
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _combine_lenient_attributes(left, right):
+        return BaseMetadata._combine_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _combine_strict_attributes(left, right):
+        return BaseMetadata._combine_strict_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _compare_lenient_attributes(left, right):
+        return BaseMetadata._compare_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _compare_strict_attributes(left, right):
+        return BaseMetadata._compare_strict_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _difference_lenient_attributes(left, right):
+        return BaseMetadata._difference_lenient_attributes(left, right)
+
+    @staticmethod
+    @adjust_for_split_attribute_dictionaries
+    def _difference_strict_attributes(left, right):
+        return BaseMetadata._difference_strict_attributes(left, right)
+
 
 class DimCoordMetadata(CoordMetadata):
-    """
-    Metadata container for a :class:`~iris.coords.DimCoord`
-
-    """
+    """Metadata container for a :class:`~iris.coords.DimCoord`."""
 
     # The "circular" member is stateful only, and does not participate
     # in lenient/strict equivalence.
@@ -1311,15 +1297,11 @@ class DimCoordMetadata(CoordMetadata):
         # The "circular" member is not part of lenient equivalence.
         return super()._compare_lenient(other)
 
-    @wraps(
-        CoordMetadata._difference_lenient, assigned=("__doc__",), updated=()
-    )
+    @wraps(CoordMetadata._difference_lenient, assigned=("__doc__",), updated=())
     def _difference_lenient(self, other):
         # Perform "strict" difference for "circular".
         value = (
-            None
-            if self.circular == other.circular
-            else (self.circular, other.circular)
+            None if self.circular == other.circular else (self.circular, other.circular)
         )
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
@@ -1361,54 +1343,45 @@ def metadata_filter(
     attributes=None,
     axis=None,
 ):
-    """
-    Filter a collection of objects by their metadata to fit the given metadata
-    criteria.
+    """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
     Criteria can be either specific properties or other objects with metadata
     to be matched.
 
-    Args:
-
-    * instances:
+    Parameters
+    ----------
+    instances :
         One or more objects to be filtered.
-
-    Kwargs:
-
-    * item:
+    item : optional
         Either,
 
         * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
           :attr:`~iris.common.mixin.CFVariableMixin.long_name`, or
           :attr:`~iris.common.mixin.CFVariableMixin.var_name` which is compared
           against the :meth:`~iris.common.mixin.CFVariableMixin.name`.
-
         * a coordinate or metadata instance equal to that of
           the desired objects e.g., :class:`~iris.coords.DimCoord`
           or :class:`CoordMetadata`.
-
-    * standard_name:
+    standard_name : optional
         The CF standard name of the desired object. If ``None``, does not
         check for ``standard_name``.
-
-    * long_name:
+    long_name : optional
         An unconstrained description of the object. If ``None``, does not
         check for ``long_name``.
-
-    * var_name:
+    var_name : optional
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
-
-    * attributes:
+    attributes : dict, optional
         A dictionary of attributes desired on the object. If ``None``,
         does not check for ``attributes``.
-
-    * axis:
+    axis : optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
         ``Y``, ``Z`` and ``T`` (case-insensitive).
 
-    Returns:
+    Returns
+    -------
+    list of the objects
         A list of the objects supplied in the ``instances`` argument, limited
         to only those that matched the given criteria.
 
@@ -1434,20 +1407,14 @@ def metadata_filter(
 
     if standard_name is not None:
         result = [
-            instance
-            for instance in result
-            if instance.standard_name == standard_name
+            instance for instance in result if instance.standard_name == standard_name
         ]
 
     if long_name is not None:
-        result = [
-            instance for instance in result if instance.long_name == long_name
-        ]
+        result = [instance for instance in result if instance.long_name == long_name]
 
     if var_name is not None:
-        result = [
-            instance for instance in result if instance.var_name == var_name
-        ]
+        result = [instance for instance in result if instance.var_name == var_name]
 
     if attributes is not None:
         if not isinstance(attributes, Mapping):
@@ -1476,22 +1443,16 @@ def metadata_filter(
                 axis = guess_coord_axis(instance)
             return axis
 
-        result = [
-            instance for instance in result if get_axis(instance) == axis
-        ]
+        result = [instance for instance in result if get_axis(instance) == axis]
 
     if obj is not None:
-        if hasattr(obj, "__class__") and issubclass(
-            obj.__class__, BaseMetadata
-        ):
+        if hasattr(obj, "__class__") and issubclass(obj.__class__, BaseMetadata):
             target_metadata = obj
         else:
             target_metadata = obj.metadata
 
         result = [
-            instance
-            for instance in result
-            if instance.metadata == target_metadata
+            instance for instance in result if instance.metadata == target_metadata
         ]
 
     return result
@@ -1538,7 +1499,8 @@ def _factory_cache(cls):
         return match
 
     def __reduce__(self):
-        """
+        """Use the __reduce__ interface to allow 'pickle' to recreate this class instance.
+
         Dynamically created classes at runtime cannot be pickled, due to not
         being defined at the top level of a module. As a result, we require to
         use the __reduce__ interface to allow 'pickle' to recreate this class
@@ -1549,10 +1511,7 @@ def _factory_cache(cls):
 
     def __repr__(self):
         args = ", ".join(
-            [
-                "{}={!r}".format(field, getattr(self, field))
-                for field in self._fields
-            ]
+            ["{}={!r}".format(field, getattr(self, field)) for field in self._fields]
         )
         return "{}({})".format(self.__class__.__name__, args)
 
@@ -1601,27 +1560,26 @@ def _factory_cache(cls):
 
 
 def metadata_manager_factory(cls, **kwargs):
-    """
+    """Manufacturing metadata instances.
+
     A class instance factory function responsible for manufacturing
     metadata instances dynamically at runtime.
 
     The factory instances returned by the factory are capable of managing
     their metadata state, which can be proxied by the owning container.
 
-    Args:
-
-    * cls:
+    Parameters
+    ----------
+    cls :
         A subclass of :class:`~iris.common.metadata.BaseMetadata`, defining
         the metadata to be managed.
-
-    Kwargs:
-
-    * kwargs:
+    **kwargs : dict, optional
         Initial values for the manufactured metadata instance. Unspecified
         fields will default to a value of 'None'.
 
-    Returns:
-        A manager instance for the provided metadata ``cls``.
+    Returns
+    -------
+    A manager instance for the provided metadata ``cls``.
 
     """
     # Check whether kwargs have valid fields for the specified metadata.

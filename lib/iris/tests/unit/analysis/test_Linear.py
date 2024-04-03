@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis.Linear`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -64,9 +63,7 @@ class Test_interpolator(tests.IrisTest):
             "iris.analysis.RectilinearInterpolator",
             return_value=mock.sentinel.interpolator,
         ) as ri:
-            interpolator = linear.interpolator(
-                mock.sentinel.cube, mock.sentinel.coords
-            )
+            interpolator = linear.interpolator(mock.sentinel.cube, mock.sentinel.coords)
         if mode is None or mode == "linear":
             expected_mode = "extrapolate"
         else:
@@ -109,9 +106,7 @@ class Test_regridder(tests.IrisTest):
             "iris.analysis.RectilinearRegridder",
             return_value=mock.sentinel.regridder,
         ) as lr:
-            regridder = linear.regridder(
-                mock.sentinel.src, mock.sentinel.target
-            )
+            regridder = linear.regridder(mock.sentinel.src, mock.sentinel.target)
         if mode is None or mode == "linear":
             expected_mode = "extrapolate"
         else:

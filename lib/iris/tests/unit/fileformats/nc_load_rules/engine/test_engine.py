@@ -1,12 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :mod:`iris.fileformats._nc_load_rules.engine` module.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :mod:`iris.fileformats._nc_load_rules.engine` module."""
 
-"""
 from unittest import mock
 
 from iris.fileformats._nc_load_rules.engine import Engine, FactEntity
@@ -56,9 +53,7 @@ class Test_Engine(tests.IrisTest):
         name = "this"
         self.assertEqual(engine.fact_list(name), [("that", "other")])
         engine.add_case_specific_fact(name, ("yetanother",))
-        self.assertEqual(
-            engine.fact_list(name), [("that", "other"), ("yetanother",)]
-        )
+        self.assertEqual(engine.fact_list(name), [("that", "other"), ("yetanother",)])
 
     def test_add_case_specific_fact__emptyargs(self):
         # Check that empty args work ok, and will create a new fact.
@@ -71,10 +66,7 @@ class Test_Engine(tests.IrisTest):
         # Check that 'add_fact' is equivalent to (short for) a call to
         # 'add_case_specific_fact'.
         engine = self.empty_engine
-        target = (
-            "iris.fileformats._nc_load_rules.engine.Engine"
-            ".add_case_specific_fact"
-        )
+        target = "iris.fileformats._nc_load_rules.engine.Engine.add_case_specific_fact"
         acsf_call = self.patch(target)
         engine.add_fact("extra", ())
         self.assertEqual(acsf_call.call_count, 1)
@@ -91,9 +83,7 @@ class Test_Engine(tests.IrisTest):
         self.assertIs(kb, engine.facts)
 
     def test_fact_list__existing(self):
-        self.assertEqual(
-            self.nonempty_engine.fact_list("this"), [("that", "other")]
-        )
+        self.assertEqual(self.nonempty_engine.fact_list("this"), [("that", "other")])
 
     def test_fact_list__nonexisting(self):
         self.assertEqual(self.empty_engine.fact_list("odd-unknown"), [])

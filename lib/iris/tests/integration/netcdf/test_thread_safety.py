@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Integration tests covering thread safety during loading/saving netcdf files.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Integration tests covering thread safety during loading/saving netcdf files.
 
 These tests are intended to catch non-thread-safe behaviour by producing CI
 'irregularities' that are noticed and investigated. They cannot reliably
@@ -19,6 +17,7 @@ Token assertions are included after the line that is expected to reveal
 a thread safety problem, as this seems to be good testing practice.
 
 """
+
 from pathlib import Path
 
 import dask
@@ -101,8 +100,7 @@ def test_stream_multisource(get_cubes_from_netcdf, save_common):
 def test_stream_multisource__manychunks(
     tiny_chunks, get_cubes_from_netcdf, save_common
 ):
-    """
-    As above, but with many more small chunks.
+    """As above, but with many more small chunks.
 
     As this previously showed additional, sporadic problems which only emerge
     (statistically) with larger numbers of chunks.
@@ -114,8 +112,7 @@ def test_stream_multisource__manychunks(
 
 
 def test_comparison(get_cubes_from_netcdf):
-    """
-    Comparing multiple loaded files forces co-realisation.
+    """Comparing multiple loaded files forces co-realisation.
 
     See :func:`iris._lazy_data._co_realise_lazy_arrays` .
     """

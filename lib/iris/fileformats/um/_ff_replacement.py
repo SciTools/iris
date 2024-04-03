@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Support for UM "fieldsfile-like" files.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Support for UM "fieldsfile-like" files.
 
 At present, the only UM file types supported are true FieldsFiles and LBCs.
 Other types of UM file may fail to load correctly (or at all).
@@ -16,27 +14,27 @@ from iris.fileformats.pp import _load_cubes_variable_loader
 
 
 def um_to_pp(filename, read_data=False, word_depth=None):
-    """
-    Extract individual PPFields from within a UM Fieldsfile-like file.
+    """Extract individual PPFields from within a UM Fieldsfile-like file.
 
     Returns an iterator over the fields contained within the FieldsFile,
     returned as :class:`iris.fileformats.pp.PPField` instances.
 
-    Args:
-
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Specify the name of the FieldsFile.
-
-    Kwargs:
-
-    * read_data (boolean):
+    read_data : bool, default=False
         Specify whether to read the associated PPField data within
         the FieldsFile.  Default value is False.
+    word_depth : optional
 
-    Returns:
-        Iteration of :class:`iris.fileformats.pp.PPField`.
+    Returns
+    -------
+    Iteration of :class:`iris.fileformats.pp.PPField`.
 
-    For example::
+    Examples
+    --------
+    ::
 
         >>> for field in um.um_to_pp(filename):
         ...     print(field)
@@ -53,18 +51,19 @@ def um_to_pp(filename, read_data=False, word_depth=None):
 
 
 def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
-    """
-    Loads cubes from filenames of UM fieldsfile-like files.
+    """Load cubes from filenames of UM fieldsfile-like files.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of filenames to load.
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`.
+    constraints : optional
+    _loader_kwargs : optional
 
-    * filenames - list of filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-        :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the order that they are in the
@@ -82,13 +81,12 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """
-    Loads cubes from filenames of 32bit ieee converted UM fieldsfile-like
-    files.
+    """Load cubes from filenames of 32bit ieee converted UM fieldsfile-like files.
 
-    .. seealso::
-
-        :func:`load_cubes` for keyword details
+    See Also
+    --------
+    :func:`load_cubes`
+        For keyword details.
 
     """
     return load_cubes(

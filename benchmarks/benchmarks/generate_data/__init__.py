@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Scripts for generating supporting data for benchmarking.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Scripts for generating supporting data for benchmarking.
 
 Data generated using Iris should use :func:`run_function_elsewhere`, which
 means that data is generated using a fixed version of Iris and a fixed
@@ -16,6 +14,7 @@ NetCDF file. Could also use pickling but there is a potential risk if the
 benchmark sequence runs over two different Python versions.
 
 """
+
 from contextlib import contextmanager
 from inspect import getsource
 from os import environ
@@ -37,9 +36,7 @@ except KeyError:
     error = "Env variable DATA_GEN_PYTHON not defined."
     raise KeyError(error)
 except (CalledProcessError, FileNotFoundError, PermissionError):
-    error = (
-        "Env variable DATA_GEN_PYTHON not a runnable python executable path."
-    )
+    error = "Env variable DATA_GEN_PYTHON not a runnable python executable path."
     raise ValueError(error)
 
 # The default location of data files used in benchmarks. Used by CI.
@@ -63,8 +60,7 @@ REUSE_DATA = True
 
 
 def run_function_elsewhere(func_to_run, *args, **kwargs):
-    """
-    Run a given function using the :const:`DATA_GEN_PYTHON` executable.
+    """Run a given function using the :const:`DATA_GEN_PYTHON` executable.
 
     This structure allows the function to be written natively.
 
@@ -91,9 +87,7 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
     func_string = dedent(getsource(func_to_run))
     func_string = func_string.replace("@staticmethod\n", "")
     func_call_term_strings = [repr(arg) for arg in args]
-    func_call_term_strings += [
-        f"{name}={repr(val)}" for name, val in kwargs.items()
-    ]
+    func_call_term_strings += [f"{name}={repr(val)}" for name, val in kwargs.items()]
     func_call_string = (
         f"{func_to_run.__name__}(" + ",".join(func_call_term_strings) + ")"
     )
@@ -106,8 +100,7 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
 
 @contextmanager
 def load_realised():
-    """
-    Force NetCDF loading with realised arrays.
+    """Force NetCDF loading with realised arrays.
 
     Since passing between data generation and benchmarking environments is via
     file loading, but some benchmarks are only meaningful if starting with real

@@ -1,12 +1,11 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 import iris.tests as tests  # isort:skip
-import PIL.Image
 import numpy as np
+import PIL.Image
 
 import iris
 
@@ -15,8 +14,7 @@ import iris
 @tests.skip_data
 class TestGeoTiffExport(tests.IrisTest):
     def check_tiff_header(self, tiff_filename, expect_keys, expect_entries):
-        """
-        Checks the given tiff file's metadata contains the expected keys,
+        """Checks the given tiff file's metadata contains the expected keys,
         and some matching values (not all).
 
         """
@@ -35,9 +33,7 @@ class TestGeoTiffExport(tests.IrisTest):
             msg_badval = "Tiff header entry {} has value {} != {}."
             for key, value in expect_entries.items():
                 content = im.tag[key]
-                self.assertEqual(
-                    content, value, msg_badval.format(key, content, value)
-                )
+                self.assertEqual(content, value, msg_badval.format(key, content, value))
 
     def check_tiff(self, cube, header_keys, header_items):
         # Check that the cube saves correctly to TIFF :

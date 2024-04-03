@@ -1,8 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+
+"""PP Save Rules."""
 
 import warnings
 
@@ -10,7 +11,6 @@ import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisPpClimModifiedWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
 from iris.fileformats.rules import (
@@ -22,24 +22,25 @@ from iris.fileformats.rules import (
 )
 from iris.fileformats.um_cf_map import CF_TO_LBFC
 from iris.util import is_regular, regular_step
+from iris.warnings import IrisPpClimModifiedWarning
 
 
 def _basic_coord_system_rules(cube, pp):
-    """
-    Rules for setting the coord system of the PP field.
+    """Rule for setting the coord system of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
         pp: the current PP field having save rules applied.
+    pp :
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
-    if (
-        cube.coord_system("GeogCS") is not None
-        or cube.coord_system(None) is None
-    ):
+    if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
         pp.bplat = 90
         pp.bplon = 0
     elif cube.coord_system("RotatedGeogCS") is not None:
@@ -79,15 +80,18 @@ def _um_version_rules(cube, pp):
 
 
 def _stash_rules(cube, pp):
-    """
-    Attributes rules for setting the STASH attribute of the PP field.
+    """Attribute rules for setting the STASH attribute of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     if "STASH" in cube.attributes:
@@ -99,15 +103,18 @@ def _stash_rules(cube, pp):
 
 
 def _general_time_rules(cube, pp):
-    """
-    Rules for setting time metadata of the PP field.
+    """Rule for setting time metadata of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     time_coord = scalar_coord(cube, "time")
@@ -127,17 +134,11 @@ def _general_time_rules(cube, pp):
         pp.t2 = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
     # Forecast.
-    if (
-        time_coord is not None
-        and not time_coord.has_bounds()
-        and fp_coord is not None
-    ):
+    if time_coord is not None and not time_coord.has_bounds() and fp_coord is not None:
         pp.lbtim.ia = 0
         pp.lbtim.ib = 1
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
-        pp.t2 = time_coord.units.num2date(
-            time_coord.points[0] - fp_coord.points[0]
-        )
+        pp.t2 = time_coord.units.num2date(time_coord.points[0] - fp_coord.points[0])
         pp.lbft = fp_coord.points[0]
 
     # Time mean (non-climatological).
@@ -167,12 +168,8 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ib = 2
         pp.t1 = time_coord.units.num2date(time_coord.bounds[0, 0])
         pp.t2 = time_coord.units.num2date(time_coord.bounds[0, 1])
-        stop = time_coord.units.convert(
-            time_coord.bounds[0, 1], "hours since epoch"
-        )
-        start = frt_coord.units.convert(
-            frt_coord.points[0], "hours since epoch"
-        )
+        stop = time_coord.units.convert(time_coord.bounds[0, 1], "hours since epoch")
+        start = frt_coord.units.convert(frt_coord.points[0], "hours since epoch")
         pp.lbft = stop - start
 
     if (
@@ -239,12 +236,8 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ia = int(cm_time_max.intervals[0][:-5])
 
     if time_coord is not None and time_coord.has_bounds():
-        lower_bound_yr = time_coord.units.num2date(
-            time_coord.bounds[0, 0]
-        ).year
-        upper_bound_yr = time_coord.units.num2date(
-            time_coord.bounds[0, 1]
-        ).year
+        lower_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 0]).year
+        upper_bound_yr = time_coord.units.num2date(time_coord.bounds[0, 1]).year
     else:
         lower_bound_yr = None
         upper_bound_yr = None
@@ -384,15 +377,18 @@ def _general_time_rules(cube, pp):
 
 
 def _calendar_rules(cube, pp):
-    """
-    Rules for setting the calendar of the PP field.
+    """Rule for setting the calendar of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     time_coord = scalar_coord(cube, "time")
@@ -407,15 +403,18 @@ def _calendar_rules(cube, pp):
 
 
 def _grid_and_pole_rules(cube, pp):
-    """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    """Rule for setting the horizontal grid and pole location of the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     lon_coord = vector_coord(cube, "longitude")
@@ -486,15 +485,18 @@ def _grid_and_pole_rules(cube, pp):
 
 
 def _non_std_cross_section_rules(cube, pp):
-    """
-    Rules for applying non-standard cross-sections to the PP field.
+    """Rule for applying non-standard cross-sections to the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Define commonly-used coords.
@@ -614,17 +616,20 @@ def _non_std_cross_section_rules(cube, pp):
 
 
 def _lbproc_rules(cube, pp):
-    """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    """Rule for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Basic setting (this may be overridden by subsequent rules).
@@ -632,10 +637,7 @@ def _lbproc_rules(cube, pp):
 
     if cube.attributes.get("ukmo__process_flags", None):
         pp.lbproc += sum(
-            [
-                LBPROC_MAP[name]
-                for name in cube.attributes["ukmo__process_flags"]
-            ]
+            [LBPROC_MAP[name] for name in cube.attributes["ukmo__process_flags"]]
         )
 
     # Zonal-mean: look for a CellMethod which is a "mean" over "longitude" or
@@ -662,15 +664,18 @@ def _lbproc_rules(cube, pp):
 
 
 def _vertical_rules(cube, pp):
-    """
-    Rules for setting vertical levels for the PP field.
+    """Rule for setting vertical levels for the PP field.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
 
-    Returns:
-        The PP field with updated metadata.
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # Define commonly-used coords.
@@ -844,15 +849,21 @@ def _vertical_rules(cube, pp):
 
 
 def _all_other_rules(cube, pp):
-    """
-    Rules for setting the horizontal grid and pole location of the PP field.
+    """Field currently managed by these rules.
 
-    Args:
-        cube: the cube being saved as a series of PP fields.
-        pp: the current PP field having save rules applied.
+    * lbfc (field code)
+    * lbrsvd[3] (ensemble member number)
 
-    Returns:
-        The PP field with updated metadata.
+    Parameters
+    ----------
+    cube :
+        The cube being saved as a series of PP fields.
+    pp :
+        The current PP field having save rules applied.
+
+    Returns
+    -------
+    The PP field with updated metadata.
 
     """
     # "CFNAME mega-rule."
@@ -860,12 +871,14 @@ def _all_other_rules(cube, pp):
     if check_items in CF_TO_LBFC:
         pp.lbfc = CF_TO_LBFC[check_items]
 
-    # Set STASH code.
-    if (
-        "STASH" in cube.attributes
-        and str(cube.attributes["STASH"]) in STASH_TRANS
-    ):
+    # Set field code.
+    if "STASH" in cube.attributes and str(cube.attributes["STASH"]) in STASH_TRANS:
         pp.lbfc = STASH_TRANS[str(cube.attributes["STASH"])].field_code
+
+    # Set ensemble member number.
+    real_coord = scalar_coord(cube, "realization")
+    if real_coord is not None:
+        pp.lbrsvd[3] = real_coord.points[0]
 
     return pp
 

@@ -1,14 +1,13 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project.
 
 SPerf = assessing performance against a series of increasingly large LFRic
 datasets.
 """
+
 from iris import load_cube
 
 # TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.

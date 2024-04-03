@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.AncillaryVariable` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -57,9 +56,7 @@ class AncillaryVariableTestMixin(CoordTestMixin):
             mvalues = ma.array(mvalues, copy=True)
             mvalues[0] = ma.masked
             self.masked_data_real = mvalues
-            self.masked_data_lazy = da.from_array(
-                mvalues, mvalues.shape, asarray=False
-            )
+            self.masked_data_lazy = da.from_array(mvalues, mvalues.shape, asarray=False)
 
 
 class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
@@ -79,14 +76,12 @@ class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
                     self.assertArraysShareData(
                         data,
                         self.data_real,
-                        "Data values are not the same "
-                        "data as the provided array.",
+                        "Data values are not the same data as the provided array.",
                     )
                     self.assertIsNot(
                         data,
                         self.data_real,
-                        "Data array is the same instance as the provided "
-                        "array.",
+                        "Data array is the same instance as the provided array.",
                     )
                 else:
                     # the original data values were cast to a test dtype.
@@ -225,9 +220,7 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
         # floating dtype.
         # Check that dtypes remain the same in all cases, taking the dtypes
         # directly from the core data as we have no masking).
-        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
-            self
-        ):
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             ancill_var_dtype = main_ancill_var.dtype
@@ -240,18 +233,14 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
             self.assertEqual(
                 sub_data.dtype,
                 ancill_var_dtype,
-                msg.format(
-                    ancill_var_dtype, data_lazyness, "data", sub_data.dtype
-                ),
+                msg.format(ancill_var_dtype, data_lazyness, "data", sub_data.dtype),
             )
 
     def test_lazyness(self):
         # Index ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
-            self
-        ):
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -275,9 +264,7 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
     def test_real_data_copies(self):
         # Index ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copied by the indexing.
-        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
-            self
-        ):
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -305,9 +292,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
         # Copy ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
-            self
-        ):
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             ancill_var_dtype = main_ancill_var.dtype
             copied_ancill_var = main_ancill_var.copy()
 
@@ -316,9 +301,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
                 "changed lazyness of {} from {!r} to {!r}."
             )
 
-            copied_data_lazyness = lazyness_string(
-                copied_ancill_var.core_data()
-            )
+            copied_data_lazyness = lazyness_string(copied_ancill_var.core_data())
             self.assertEqual(
                 copied_data_lazyness,
                 data_lazyness,
@@ -334,9 +317,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
     def test_realdata_copies(self):
         # Copy ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copies, not views.
-        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
-            self
-        ):
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             copied_ancill_var = main_ancill_var.copy()
 
             msg = (
@@ -620,55 +601,41 @@ class Test_is_compatible(tests.IrisTest):
     def test_not_compatible_diff_name(self):
         # Different name() - not compatible
         self.modified_ancill_var.rename("air_temperature")
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_not_compatible_diff_units(self):
         # Different units- not compatible
         self.modified_ancill_var.units = "m"
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_not_compatible_diff_common_attrs(self):
         # Different common attributes - not compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["source"] = "B"
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_data(self):
         # Different data values - compatible.
         self.modified_ancill_var.data = [10.0, 20.0, 100.0]
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_var_name(self):
         # Different var_name (but same name()) - compatible.
         self.modified_ancill_var.var_name = "obs_num"
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_non_common_attributes(self):
         # Different non-common attributes - compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["origin"] = "B"
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_ignore_common_attribute(self):
         # ignore different common attributes - compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["source"] = "B"
         self.assertTrue(
-            self.ancill_var.is_compatible(
-                self.modified_ancill_var, ignore="source"
-            )
+            self.ancill_var.is_compatible(self.modified_ancill_var, ignore="source")
         )
 
 

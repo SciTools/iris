@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for aux-factory-related loading and saving netcdf files."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -76,15 +75,14 @@ class TestHybridPressure(tests.IrisTest):
         # Tests an issue where the variable names in the formula
         # terms changed to the standard_names instead of the variable names
         # when loading a previously saved cube.
-        with self.temp_filename(suffix=".nc") as filename, self.temp_filename(
-            suffix=".nc"
-        ) as other_filename:
+        with (
+            self.temp_filename(suffix=".nc") as filename,
+            self.temp_filename(suffix=".nc") as other_filename,
+        ):
             iris.save(self.cube, filename)
             cube = iris.load_cube(filename, "air_potential_temperature")
             iris.save(cube, other_filename)
-            other_cube = iris.load_cube(
-                other_filename, "air_potential_temperature"
-            )
+            other_cube = iris.load_cube(other_filename, "air_potential_temperature")
             self.assertEqual(cube, other_cube)
 
 
@@ -93,17 +91,13 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
     def test_hybrid_height_and_pressure(self):
         cube = stock.realistic_4d()
         cube.add_aux_coord(
-            iris.coords.DimCoord(
-                1200.0, long_name="level_pressure", units="hPa"
-            )
+            iris.coords.DimCoord(1200.0, long_name="level_pressure", units="hPa")
         )
         cube.add_aux_coord(
             iris.coords.DimCoord(0.5, long_name="other sigma", units="1")
         )
         cube.add_aux_coord(
-            iris.coords.DimCoord(
-                1000.0, long_name="surface_air_pressure", units="hPa"
-            )
+            iris.coords.DimCoord(1000.0, long_name="surface_air_pressure", units="hPa")
         )
         factory = iris.aux_factory.HybridPressureFactory(
             cube.coord("level_pressure"),
@@ -124,10 +118,9 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         )
         factory.rename("another altitude")
         cube.add_aux_factory(factory)
-        with self.temp_filename(
-            suffix=".nc"
-        ) as filename, self.assertRaisesRegex(
-            ValueError, "multiple aux factories"
+        with (
+            self.temp_filename(suffix=".nc") as filename,
+            self.assertRaisesRegex(ValueError, "multiple aux factories"),
         ):
             iris.save(cube, filename)
 
@@ -150,8 +143,9 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         sa = hh2.coord("surface_altitude")
         sa.points = sa.points * 10
         emsg = "Unable to create dimensonless vertical coordinate."
-        with self.temp_filename(".nc") as fname, self.assertRaisesRegex(
-            ValueError, emsg
+        with (
+            self.temp_filename(".nc") as fname,
+            self.assertRaisesRegex(ValueError, emsg),
         ):
             iris.save([hh1, hh2], fname)
 

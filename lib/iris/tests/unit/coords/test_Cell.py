@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.Cell` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -54,9 +53,7 @@ class Test___common_cmp__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assert_raises_on_comparison(
-            cell, dt, TypeError, "different calendars"
-        )
+        self.assert_raises_on_comparison(cell, dt, TypeError, "different calendars")
 
     def test_PartialDateTime_unbounded_cell(self):
         # Check that cell comparison works with PartialDateTimes.
@@ -143,9 +140,10 @@ class Test___eq__(tests.IrisTest):
 
 
 class Test_contains_point(tests.IrisTest):
+    """Test that contains_point works for combinations.
+
+    Combinations of datetime, cf.datatime, and PartialDateTime objects.
     """
-    Test that contains_point works for combinations of datetime,
-    cf.datatime, and PartialDateTime objects"""
 
     def test_datetime_PartialDateTime_point(self):
         point = PartialDateTime(month=6)
@@ -239,9 +237,9 @@ class Test_contains_point(tests.IrisTest):
 
 
 class Test_numpy_comparison(tests.IrisTest):
+    """Unit tests to check that the results of comparisons with numpy types can be
+    used as truth values.
     """
-    Unit tests to check that the results of comparisons with numpy types can be
-    used as truth values."""
 
     def test_cell_lhs(self):
         cell = Cell(point=1.5)
@@ -255,9 +253,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(cell == n)
             bool(cell != n)
         except:  # noqa
-            self.fail(
-                "Result of comparison could not be used as a truth value"
-            )
+            self.fail("Result of comparison could not be used as a truth value")
 
     def test_cell_rhs(self):
         cell = Cell(point=1.5)
@@ -271,9 +267,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n == cell)
             bool(n != cell)
         except:  # noqa
-            self.fail(
-                "Result of comparison could not be used as a truth value"
-            )
+            self.fail("Result of comparison could not be used as a truth value")
 
 
 if __name__ == "__main__":

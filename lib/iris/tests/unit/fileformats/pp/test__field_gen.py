@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp._field_gen` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -35,11 +34,14 @@ class Test(tests.IrisTest):
             return result
 
         open_func = "builtins.open"
-        with mock.patch("numpy.fromfile", return_value=[0]), mock.patch(
-            open_func
-        ), mock.patch("struct.unpack_from", return_value=[4]), mock.patch(
-            "iris.fileformats.pp.make_pp_field",
-            side_effect=make_pp_field_override,
+        with (
+            mock.patch("numpy.fromfile", return_value=[0]),
+            mock.patch(open_func),
+            mock.patch("struct.unpack_from", return_value=[4]),
+            mock.patch(
+                "iris.fileformats.pp.make_pp_field",
+                side_effect=make_pp_field_override,
+            ),
         ):
             yield
 

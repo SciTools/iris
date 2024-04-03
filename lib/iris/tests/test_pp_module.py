@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -57,8 +56,7 @@ class TestPPCopy(tests.IrisTest):
 
 class IrisPPTest(tests.IrisTest):
     def check_pp(self, pp_fields, reference_filename):
-        """
-        Checks the given iterable of PPField objects matches the reference file, or creates the
+        """Checks the given iterable of PPField objects matches the reference file, or creates the
         reference file if it doesn't exist.
 
         """
@@ -141,9 +139,7 @@ class TestPPHeaderDerived(tests.IrisTest):
 @tests.skip_data
 class TestPPField_GlobalTemperature(IrisPPTest):
     def setUp(self):
-        self.original_pp_filepath = tests.get_data_path(
-            ("PP", "aPPglob1", "global.pp")
-        )
+        self.original_pp_filepath = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
         self.r = list(pp.load(self.original_pp_filepath))
 
     def test_full_file(self):
@@ -261,18 +257,14 @@ class TestPPFile(IrisPPTest):
 @tests.skip_data
 class TestPPFileExtraXData(IrisPPTest):
     def setUp(self):
-        self.original_pp_filepath = tests.get_data_path(
-            ("PP", "ukV1", "ukVpmslont.pp")
-        )
+        self.original_pp_filepath = tests.get_data_path(("PP", "ukV1", "ukVpmslont.pp"))
         self.r = list(pp.load(self.original_pp_filepath))[0:5]
 
     def test_full_file(self):
         self.check_pp(self.r, ("PP", "extra_x_data.pp.txt"))
 
     def test_save_single(self):
-        filepath = tests.get_data_path(
-            ("PP", "ukV1", "ukVpmslont_first_field.pp")
-        )
+        filepath = tests.get_data_path(("PP", "ukV1", "ukVpmslont_first_field.pp"))
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")
@@ -323,9 +315,7 @@ class TestPPFileWithExtraCharacterData(IrisPPTest):
         )
 
     def test_save_single(self):
-        filepath = tests.get_data_path(
-            ("PP", "model_comp", "dec_first_field.pp")
-        )
+        filepath = tests.get_data_path(("PP", "model_comp", "dec_first_field.pp"))
         f = next(pp.load(filepath))
 
         temp_filename = iris.util.create_temp_filename(".pp")

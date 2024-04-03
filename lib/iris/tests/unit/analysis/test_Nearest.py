@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis.Nearest`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -63,9 +62,7 @@ class Test_interpolator(tests.IrisTest):
             "iris.analysis.RectilinearInterpolator",
             return_value=mock.sentinel.interpolator,
         ) as ri:
-            interpolator = scheme.interpolator(
-                mock.sentinel.cube, mock.sentinel.coords
-            )
+            interpolator = scheme.interpolator(mock.sentinel.cube, mock.sentinel.coords)
         if mode is None:
             expected_mode = "extrapolate"
         else:
@@ -105,9 +102,7 @@ class Test_regridder(tests.IrisTest):
             "iris.analysis.RectilinearRegridder",
             return_value=mock.sentinel.regridder,
         ) as rr:
-            regridder = scheme.regridder(
-                mock.sentinel.src_grid, mock.sentinel.tgt_grid
-            )
+            regridder = scheme.regridder(mock.sentinel.src_grid, mock.sentinel.tgt_grid)
 
         expected_mode = "extrapolate" if mode is None else mode
         rr.assert_called_once_with(

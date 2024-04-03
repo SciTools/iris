@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.common.metadata._NamedTupleMeta`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.common.metadata._NamedTupleMeta`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -49,10 +45,7 @@ class Test(tests.IrisTest):
         self.assertEqual(self.names(Metadata.__bases__), expected)
         expected = ["Metadata", "object"]
         self.assertEqual(self.names(Metadata.__mro__), expected)
-        emsg = (
-            "Can't instantiate abstract class .* with abstract "
-            "method.* _members"
-        )
+        emsg = "Can't instantiate abstract class"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Metadata()
 
