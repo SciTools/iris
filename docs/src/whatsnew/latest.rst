@@ -44,7 +44,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@pp-mo`_ prevented the CHUNK_CONTROL feature from hitting an error when loading
+   from a NetCDF v3 file.  (:pull:`5897`)
 
 
 💣 Incompatible Changes
