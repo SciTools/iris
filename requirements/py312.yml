@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.9
+  - python =3.12
 
 # Setup dependencies.
   - setuptools >=64
@@ -43,6 +43,7 @@ dependencies:
   - pre-commit
   - psutil
   - pytest
+  - pytest-cov
   - pytest-xdist
   - requests
 

@@ -1124,7 +1124,7 @@ class TestIgnoreAxis:
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
-        emsg = "Can't instantiate abstract class Coord with abstract method.* __init__"
+        emsg = "Can't instantiate abstract class Coord"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Coord(points=[0, 1])
 
