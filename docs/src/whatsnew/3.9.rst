@@ -18,7 +18,7 @@ This document explains the changes made to Iris for this release
 
    * The :mod:`iris.experimental.geovista` module.
    * Removal of fill value collision warnings in NetCDF saving, which
-     significantly improves Iris' stability when parallel processing.
+     significantly improves Iris' performance when parallel processing.
 
    See below for more detail on these changes.
 
