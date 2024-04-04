@@ -8,10 +8,11 @@
 Eventual destination: :mod:`iris.fileformats.cf`.
 
 """
+
 import warnings
 
-from ...exceptions import IrisCfLabelVarWarning, IrisCfMissingVarWarning
 from ...fileformats import cf
+from ...warnings import IrisCfLabelVarWarning, IrisCfMissingVarWarning
 from .mesh import Connectivity
 
 

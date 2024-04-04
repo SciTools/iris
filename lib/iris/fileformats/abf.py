@@ -200,9 +200,9 @@ def load_cubes(filespecs, callback=None):
     Parameters
     ----------
     filenames :
-        List of ABF filenames to load
+        List of ABF filenames to load.
     callback : optional
-        A function that can be passed to :func:`iris.io.run_callback`
+        A function that can be passed to :func:`iris.io.run_callback`.
 
     Notes
     -----

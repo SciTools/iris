@@ -32,6 +32,7 @@ from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.fileformats.rules
+import iris.warnings
 
 try:
     import mo_pack
@@ -216,8 +217,8 @@ LBUSER_DTYPE_LOOKUP = {
 
 
 class _WarnComboLoadingMask(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisMaskValueMatchWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisMaskValueMatchWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -225,8 +226,8 @@ class _WarnComboLoadingMask(
 
 
 class _WarnComboLoadingDefaulting(
-    iris.exceptions.IrisDefaultingWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisDefaultingWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -234,8 +235,8 @@ class _WarnComboLoadingDefaulting(
 
 
 class _WarnComboIgnoringLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -381,8 +382,10 @@ class SplittableInt:
         ----------
         name_mapping_dict : dict
             A special mapping to provide name based access to specific
-            integer positions:
+            integer positions.
 
+        Examples
+        --------
             >>> a = SplittableInt(1234, {'hundreds': 2})
             >>> print(a.hundreds)
             2
@@ -1456,7 +1459,7 @@ class PPField2(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         and lbmin attributes.
@@ -1489,7 +1492,7 @@ class PPField2(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, and lbmind attributes.
@@ -1531,7 +1534,7 @@ class PPField3(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         lbmin, and lbsec attributes.
@@ -1565,7 +1568,7 @@ class PPField3(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, lbmind, and lbsecd attributes.
@@ -1619,7 +1622,7 @@ def load(filename, read_data=False, little_ended=False):
     Parameters
     ----------
     filename : str
-        string of the filename to load.
+        String of the filename to load.
     read_data : bool, default=False
         Flag whether or not the data should be read, if False an empty
         data manager will be provided which can subsequently load the data
@@ -1698,7 +1701,7 @@ def _interpret_fields(fields):
                 "Landmask compressed fields existed without a "
                 "landmask to decompress with. The data will have "
                 "a shape of (0, 0) and will not read.",
-                category=iris.exceptions.IrisLoadWarning,
+                category=iris.warnings.IrisLoadWarning,
             )
             mask_shape = (0, 0)
         else:
@@ -2004,11 +2007,11 @@ def load_cubes(filenames, callback=None, constraints=None):
     Parameters
     ----------
     filenames :
-        list of pp filenames to load
-    constraints : optional
-        A list of Iris constraints
+        List of pp filenames to load.
     callback : optional
-        A function which can be passed on to :func:`iris.io.run_callback`
+        A function which can be passed on to :func:`iris.io.run_callback`.
+    constraints : optional
+        A list of Iris constraints.
 
     Notes
     -----
@@ -2028,11 +2031,11 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
     Parameters
     ----------
     filenames :
-        list of pp filenames to load
-    constraints : optional
-        a list of Iris constraints
+        List of pp filenames to load.
     callback : optional
-        a function which can be passed on to :func:`iris.io.run_callback`
+        A function which can be passed on to :func:`iris.io.run_callback`.
+    constraints : optional
+        A list of Iris constraints.
 
     Notes
     -----
@@ -2160,7 +2163,7 @@ def save(cube, target, append=False, field_coords=None):
         handle.
         Default is False.
     field_coords : optional
-        list of 2 coords or coord names which are to be used
+        List of 2 coords or coord names which are to be used
         for reducing the given cube into 2d slices,
         which will ultimately determine the x and y
         coordinates of the resulting fields.
@@ -2187,7 +2190,7 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
     Parameters
     ----------
     cube :
-        A :class:`iris.cube.Cube`
+        A :class:`iris.cube.Cube`.
     field_coords : optional
         List of 2 coords or coord names which are to be used for
         reducing the given cube into 2d slices, which will ultimately
@@ -2338,7 +2341,8 @@ def save_fields(fields, target, append: bool = False):
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # Open issues

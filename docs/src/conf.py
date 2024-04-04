@@ -17,7 +17,7 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
-"""sphinx config."""
+"""Config for sphinx."""
 
 import datetime
 from importlib.metadata import version as get_version
@@ -193,7 +193,8 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
 # sphinx.ext.autodoc configuration --------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
@@ -244,12 +245,15 @@ templates_path = ["_templates"]
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -300,6 +304,7 @@ html_theme_options = {
     "footer_start": ["copyright", "sphinx-version"],
     "footer_end": ["custom_footer"],
     "navigation_depth": 3,
+    "navigation_with_keys": False,
     "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
@@ -404,6 +409,7 @@ linkcheck_ignore = [
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
 ]
 
 # list of sources to exclude from the build.

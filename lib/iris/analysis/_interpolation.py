@@ -180,7 +180,7 @@ class RectilinearInterpolator:
             The :class:`iris.cube.Cube` which is to be interpolated.
         coords :
             The names or coordinate instances which are to be
-            interpolated over
+            interpolated over.
         method :
             Either 'linear' or 'nearest'.
         extrapolation_mode : str
@@ -477,7 +477,7 @@ class RectilinearInterpolator:
         sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
-            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
         data :
             The data to interpolate - not necessarily the data from the cube
             that was used to construct this interpolator. If the data has
@@ -573,7 +573,7 @@ class RectilinearInterpolator:
         sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
-            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
         collapse_scalar : bool, default=True
             Whether to collapse the dimension of the scalar sample points
             in the resulting cube. Default is True.

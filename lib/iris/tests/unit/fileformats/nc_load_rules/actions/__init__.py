@@ -3,17 +3,18 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`."""
+
 from pathlib import Path
 import shutil
 import tempfile
 import warnings
 
-from iris.exceptions import IrisLoadWarning
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _load_cube
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.warnings import IrisLoadWarning
 
 """
 Notes on testing method.

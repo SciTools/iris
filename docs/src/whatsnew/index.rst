@@ -1,3 +1,4 @@
+
 .. include:: ../common_links.inc
 
 .. _iris_whatsnew:
@@ -12,6 +13,8 @@ What's New in Iris
    :hidden:
 
    latest.rst
+   3.9.rst
+   3.8.rst
    3.7.rst
    3.6.rst
    3.5.rst

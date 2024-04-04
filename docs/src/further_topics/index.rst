@@ -18,3 +18,4 @@ Extra information on specific technical issues.
    netcdf_io
    dask_best_practices/index
    ugrid/index
+   which_regridder_to_use

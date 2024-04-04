@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """File saving benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
+
 import os.path
 
 from iris import save

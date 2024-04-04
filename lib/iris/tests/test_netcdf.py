@@ -22,7 +22,6 @@ import iris
 from iris._lazy_data import is_lazy_data
 import iris.analysis.trajectory
 import iris.coord_systems as icoord_systems
-from iris.exceptions import IrisCfSaveWarning
 from iris.fileformats._nc_load_rules import helpers as ncload_helpers
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -31,6 +30,7 @@ import iris.std_names
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
 import iris.util
+from iris.warnings import IrisCfSaveWarning
 
 
 @tests.skip_data

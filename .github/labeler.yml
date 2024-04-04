@@ -1,0 +1,9 @@
+# benchmark_this automatically triggers the benchmark workflow when added by
+#  a user. No triggering happens when GitHub Actions adds the label (this
+#  avoids security vulnerabilities), so alternative triggers for the below
+#  files are therefore included in workflows/benchmarks_run.yml. Automatic
+#  labelling is still included here to make it easier to search pull requests,
+#  and to reinforce the culture of using this label.
+benchmark_this:
+- changed-files:
+  - any-glob-to-any-file: ['requirements/locks/*.lock', "setup.py"]

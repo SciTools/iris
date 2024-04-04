@@ -15,6 +15,7 @@ any of the common-metadata operations.
 So, we simply treat "global" and "local" attributes of the same name as entirely
 independent. Which happily is also the easiest to code, and to explain.
 """
+
 from collections.abc import Mapping, Sequence
 from functools import wraps
 

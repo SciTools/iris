@@ -11,8 +11,8 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import iris.coords
-from iris.exceptions import IrisLoadWarning
 from iris.fileformats.name_loaders import _build_cell_methods
+from iris.warnings import IrisLoadWarning
 
 
 class Tests(tests.IrisTest):
