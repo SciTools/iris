@@ -63,7 +63,9 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should 
+   now be used, currently being v7.2.6.
+   (:pull:`5901`)
 
 
 📚 Documentation
