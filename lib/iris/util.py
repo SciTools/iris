@@ -50,9 +50,10 @@ def broadcast_to_shape(array, shape, dim_map, chunks=None):
         If the source array is a :class:`dask.array.Array` and a value is
         provided, then the result will use these chunks instead of the same
         chunks as the source array. Setting chunks explicitly as part of
-        broadcast_to_shape is more efficient than rechunking afterwards. The
-        values provided here will only be used along dimensions that are new on
-        the result or have size 1 on the source array.
+        broadcast_to_shape is more efficient than rechunking afterwards. See
+        also :func:`dask.array.broadcast_to`. Note that the values provided
+        here will only be used along dimensions that are new on the result or
+        have size 1 on the source array.
 
     Examples
     --------
