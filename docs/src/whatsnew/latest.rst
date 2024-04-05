@@ -57,7 +57,7 @@ This document explains the changes made to Iris for this release
    array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
 
 #. `@schlunma`_ allowed :func:`iris.analysis.cartography.area_weights` to
-   return dask arrays with arbitrary chunks. (:pull:`TBA`)
+   return dask arrays with arbitrary chunks. (:pull:`5658`)
 
 
 🔥 Deprecations
