@@ -1187,7 +1187,7 @@ class TestLazyAreaWeights:
             else:
                 assert area_weights.chunksize == (4, 3, 4)
 
-        # Check that actual weights are as expected
+        # Check that actual weights are as expected (known good output)
         if normalize:
             expected_2d = [
                 [0.03661165, 0.03661165, 0.03661165, 0.03661165],
