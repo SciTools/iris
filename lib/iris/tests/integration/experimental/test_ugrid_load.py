@@ -8,6 +8,7 @@ todo: fold these tests into netcdf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -17,13 +18,13 @@ from collections.abc import Iterable
 import pytest
 
 from iris import Constraint, load
-from iris.exceptions import IrisCfWarning
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from iris.experimental.ugrid.mesh import Mesh
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
 from iris.tests.unit.tests.stock.test_netcdf import XIOSFileMixin
+from iris.warnings import IrisCfWarning
 
 
 def ugrid_load(uris, constraints=None, callback=None):

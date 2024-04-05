@@ -21,10 +21,6 @@ defined by :mod:`configparser`.
 
     The full path to the Iris palette configuration directory
 
-.. py:data:: iris.config.IMPORT_LOGGER
-
-    The [optional] name of the logger to notify when first imported.
-
 ----------
 
 """
@@ -35,7 +31,7 @@ import logging
 import os.path
 import warnings
 
-import iris.exceptions
+import iris.warnings
 
 
 def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler=True):
@@ -46,24 +42,24 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler
 
     Parameters
     ----------
-    name
+    name :
         The name of the logger. Typically this is the module filename that
         owns the logger.
-    datefmt: optional
+    datefmt : optional
         The date format string of the :class:`logging.Formatter`.
         Defaults to ``%d-%m-%Y %H:%M:%S``.
-    fmt: optional
+    fmt : optional
         The additional format string of the :class:`logging.Formatter`.
         This is appended to the default format string
         ``%(asctime)s %(name)s %(levelname)s - %(message)s``.
-    level: optional
+    level : optional
         The threshold level of the logger. Defaults to ``INFO``.
-    propagate: optional
+    propagate : optional
         Sets the ``propagate`` attribute of the :class:`logging.Logger`,
         which determines whether events logged to this logger will be
         passed to the handlers of higher level loggers. Defaults to
         ``False``.
-    handler: optional
+    handler : bool, default=True
         Create and attach a :class:`logging.StreamHandler` to the
         logger. Defaults to ``True``.
 
@@ -143,7 +139,7 @@ def get_dir_option(section, option, default=None):
             )
             warnings.warn(
                 msg.format(section, option, c_path),
-                category=iris.exceptions.IrisIgnoringWarning,
+                category=iris.warnings.IrisIgnoringWarning,
             )
     return path
 
@@ -250,7 +246,7 @@ class NetCDF:
                 )
                 warnings.warn(
                     wmsg.format(value, name, good_value),
-                    category=iris.exceptions.IrisDefaultingWarning,
+                    category=iris.warnings.IrisDefaultingWarning,
                 )
                 value = good_value
         self.__dict__[name] = value

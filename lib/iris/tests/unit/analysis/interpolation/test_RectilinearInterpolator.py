@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`.
-
-"""
+"""Unit tests for :class:`iris.analysis._interpolation.RectilinearInterpolator`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -329,7 +327,9 @@ class Test___call___1D_circular(ThreeDimCube):
 
 class Test___call___1D_singlelendim(ThreeDimCube):
     def setUp(self):
-        """thingness / (1)                     (wibble: 2; latitude: 1)
+        """Setup.
+
+        thingness / (1)                     (wibble: 2; latitude: 1)
         Dimension coordinates:
              wibble                           x            -
              latitude                         -            x

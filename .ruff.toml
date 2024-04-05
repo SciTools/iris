@@ -11,7 +11,6 @@ lint.ignore = [
     # pycodestyle (E, W)
     # https://docs.astral.sh/ruff/rules/#pycodestyle-e-w
     "E",
-    "W",
 
     # mccabe (C90)
     # https://docs.astral.sh/ruff/rules/#mccabe-c90
@@ -26,29 +25,10 @@ lint.ignore = [
     # (D-1) Permanent
     "D105",  # Missing docstring in magic method
     # (D-2) Temporary, to be removed when we are more compliant. Rare cases mmove  to (1).
-    "D417",  # Missing argument descriptions in the docstring
     "D101",  # Missing docstring in public class
     "D102",  # Missing docstring in public method
-    "D104",  # Missing docstring in public package
-    "D106",  # Missing docstring in public nested class
-    # (D-3) Temporary, before an initial review, either fix ocurrenvces or move to (2).
-    "D100",  # Missing docstring in public module
+    # (D-3) Temporary, before an initial review, either fix ocurrences or move to (2).
     "D103",  # Missing docstring in public function
-    "D200",  # One-line docstring should fit on one line
-    "D202",  # No blank lines allowed after function docstring
-    "D205",  # 1 blank line required between summary line and description
-    "D209",  # Multi-line docstring closing quotes should be on a separate line
-    "D211",  # No blank lines allowed before class docstring
-    "D300",  # triple double quotes `""" / Use triple single quotes `'''`
-    "D401",  # First line of docstring should be in imperative mood: ...
-    "D403",  # First word of the first line should be capitalized
-    "D404",  # First word of the docstring should not be "This"
-    "D405",  # Section name should be properly capitalized
-    "D406",  # Section name should end with a newline
-    "D407",  # Missing dashed underline after section
-    "D409",  # Section underline should match the length of its name
-    "D410",  # Missing blank line after section
-    "D412",  # No blank lines allowed between a section header and its content 
 
     # pyupgrade (UP)
     # https://docs.astral.sh/ruff/rules/#pyupgrade-up
@@ -78,10 +58,6 @@ lint.ignore = [
     # https://docs.astral.sh/ruff/rules/#flake8-builtins-a
     "A",
 
-    # flake8-copyright (CPY)
-    # https://docs.astral.sh/ruff/rules/#flake8-copyright-cpy
-    "CPY",
-
     # flake8-comprehensions (C4)
     # https://docs.astral.sh/ruff/rules/#flake8-comprehensions-c4
     "C4",
@@ -97,10 +73,6 @@ lint.ignore = [
     # flake8-future-annotations (FA)
     # https://docs.astral.sh/ruff/rules/#flake8-future-annotations-fa
     "FA",
-
-    # flake8-implicit-str-concat (ISC)
-    # https://docs.astral.sh/ruff/rules/#flake8-implicit-str-concat-isc
-    "ISC",
 
     # flake8-logging-format (G)
     # https://docs.astral.sh/ruff/rules/#flake8-logging-format-g
@@ -193,10 +165,6 @@ lint.ignore = [
     # flynt (FLY)
     # https://docs.astral.sh/ruff/rules/#flynt-fly
     "FLY",
-
-    # Airflow (AIR)
-    # https://docs.astral.sh/ruff/rules/#airflow-air
-    "AIR",
 
     # Perflint (PERF)
     # https://docs.astral.sh/ruff/rules/#perflint-perf

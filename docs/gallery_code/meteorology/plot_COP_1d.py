@@ -1,4 +1,5 @@
-"""Global Average Annual Temperature Plot
+"""
+Global Average Annual Temperature Plot
 ======================================
 
 Produces a time-series plot of North American temperature forecasts for 2
@@ -11,7 +12,6 @@ Model (Johns et al. 2011; Lowe et al. 2009).
 
 References
 ----------
-
    Johns T.C., et al. (2011) Climate change under aggressive mitigation: the
    ENSEMBLES multi-model experiment. Climate Dynamics, Vol 37, No. 9-10,
    doi:10.1007/s00382-011-1005-5.
@@ -26,7 +26,7 @@ References
     Further details on the aggregation functionality being used in this example
     can be found in :ref:`cube-statistics`.
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np

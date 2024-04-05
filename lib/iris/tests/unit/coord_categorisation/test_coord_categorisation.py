@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the coordinate categorisation functions.
-"""
+"""Test the coordinate categorisation functions."""
 
 import warnings
 
@@ -162,7 +161,6 @@ def test_add_season_nonstandard(cube, time_coord):
 )
 def test_add_season_year(cube, time_coord, backwards, nonstandard):
     """Specific test to account for the extra use_year_at_season_start argument."""
-
     kwargs = dict(
         cube=cube,
         coord=time_coord,

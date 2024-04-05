@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot`
-interface.
+"""Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot` interface.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
@@ -31,11 +30,12 @@ import iris.analysis.cartography as cartography
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisError, IrisUnsupportedPlottingWarning
+from iris.exceptions import IrisError
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 from iris.util import _meshgrid
+from iris.warnings import IrisUnsupportedPlottingWarning
 
 # Cynthia Brewer citation text.
 BREWER_CITE = "Colours based on ColorBrewer.org"
@@ -133,7 +133,9 @@ def _valid_bound_dim_coord(coord):
 
 
 def _get_plot_defn(cube, mode, ndims=2):
-    """Return data and plot-axis coords given a cube & a mode of either
+    """Return data and plot-axis coords.
+
+    Return data and plot-axis coords given a cube & a mode of either
     POINT_MODE or BOUND_MODE.
 
     """
@@ -234,7 +236,6 @@ def _broadcast_2d(u, v):
 
 def _string_coord_axis_tick_labels(string_axes, axes=None):
     """Apply tick labels for string coordinates."""
-
     ax = axes if axes else plt.gca()
     for axis, ticks in string_axes.items():
         # Define a tick formatter. This will assign a label to all ticks
@@ -255,16 +256,18 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
 
 def _invert_yaxis(v_coord, axes=None):
-    """Inverts the y-axis of the current plot based on conditions.
+    """Invert the y-axis of the current plot based on conditions.
 
-        * If the y-axis is already inverted we don't want to re-invert it.
-        * If v_coord is None then it will not have any attributes.
-        * If neither of the above are true then invert y if v_coord has
-          attribute 'positive' set to 'down'.
+    * If the y-axis is already inverted we don't want to re-invert it.
+    * If v_coord is None then it will not have any attributes.
+    * If neither of the above are true then invert y if v_coord has
+        attribute 'positive' set to 'down'.
 
-    Args:
-
-        * v_coord - the coord to be plotted on the y-axis
+    Parameters
+    ----------
+    v_coord :
+        The coord to be plotted on the y-axis.
+    axes : optional
 
     """
     axes = axes if axes else plt.gca()
@@ -276,7 +279,9 @@ def _invert_yaxis(v_coord, axes=None):
 
 
 def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
-    """Checks that any discontiguities in the bounds of the given coordinate only
+    """Check discontiguities in the bounds of the given coordinate.
+
+    Checks that any discontiguities in the bounds of the given coordinate only
     occur where the data is masked.
 
     Where a discontinuity occurs the grid created for plotting will not be
@@ -286,18 +291,20 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
     If a discontiguity occurs where the data is *not* masked, an error is
     raised.
 
-    Args:
-        coord: (iris.coord.Coord)
-            Coordinate the bounds of which will be checked for contiguity
-        data: (array)
-            Data of the the cube we are plotting
-        atol:
-            Absolute tolerance when checking the contiguity. Defaults to None.
-            If an absolute tolerance is not set, 1D coords are not checked (so
-            as to not introduce a breaking change without a major release) but
-            2D coords are always checked, by calling
-            :meth:`iris.coords.Coord._discontiguity_in_bounds` with its default
-            tolerance.
+    Parameters
+    ----------
+    coord : iris.coord.Coord
+        Coordinate the bounds of which will be checked for contiguity.
+    data : array
+        Data of the the cube we are plotting.
+    atol : optional
+        Absolute tolerance when checking the contiguity. Defaults to None.
+        If an absolute tolerance is not set, 1D coords are not checked (so
+        as to not introduce a breaking change without a major release) but
+        2D coords are always checked, by calling
+        :meth:`iris.coords.Coord._discontiguity_in_bounds` with its default
+        tolerance.
+    rtol : optional
 
     """
     kwargs = {}
@@ -699,7 +706,9 @@ def _get_geodesic_params(globe):
 
 
 def _shift_plot_sections(u_object, u, v):
-    """Shifts subsections of u by multiples of 360 degrees within ranges
+    """Shift subsections of u by multiples of 360 degrees.
+
+    Shifts subsections of u by multiples of 360 degrees within ranges
     defined by the points where the line should cross over the 0/360 degree
     longitude boundary.
 
@@ -810,7 +819,9 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
-    """This function is equivalend to _draw_two_1d_from_points but expects two
+    """Draw two 1d frompoints (expects two y-axis variables rather than one).
+
+    This function is equivalend to _draw_two_1d_from_points but expects two
     y-axis variables rather than one (such as is required for .fill_between). It
     can't be used where the y-axis variables are string coordinates. The y-axis
     variable provided first has precedence where the two differ on whether the
@@ -853,12 +864,13 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
 
 
 def _replace_axes_with_cartopy_axes(cartopy_proj):
-    """Replace non-cartopy subplot/axes with a cartopy alternative
+    """Replace non-cartopy subplot/axes with a cartopy alternative.
+
+    Replace non-cartopy subplot/axes with a cartopy alternative
     based on the provided projection. If the current axes are already an
     instance of :class:`cartopy.mpl.geoaxes.GeoAxes` then no action is taken.
 
     """
-
     ax = plt.gca()
     if not isinstance(ax, cartopy.mpl.geoaxes.GeoAxes):
         fig = ax.get_figure()
@@ -885,7 +897,9 @@ def _replace_axes_with_cartopy_axes(cartopy_proj):
 
 
 def _ensure_cartopy_axes_and_determine_kwargs(x_coord, y_coord, kwargs):
-    """Replace the current non-cartopy axes with
+    """Replace the current non-cartopy axes with :class:`cartopy.mpl.geoaxes.GeoAxes`.
+
+    Replace the current non-cartopy axes with
     :class:`cartopy.mpl.geoaxes.GeoAxes` and return the appropriate kwargs dict
     based on the provided coordinates and kwargs.
 
@@ -1038,26 +1052,25 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwar
 
 
 def contour(cube, *args, **kwargs):
-    """Draws contour lines based on the given Cube.
+    """Draw contour lines based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
         of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    See :func:`matplotlib.pyplot.contour` for details of other valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.contour` for details of other valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1067,25 +1080,24 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """Draws filled contours based on the given Cube.
+    """Draw filled contours based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    See :func:`matplotlib.pyplot.contourf` for details of other valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.contourf` for details of other valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1159,7 +1171,7 @@ def default_projection(cube):
         ax = plt.ax(projection=default_projection(cube))
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1173,15 +1185,16 @@ def default_projection(cube):
 def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
     """Return the cube's extents ``(x0, x1, y0, y1)`` in its default projection.
 
-    Keyword arguments:
-
-    * mode: Either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``
-            Triggers whether the extent should be representative of the cell
-            points, or the limits of the cell's bounds.
-            The default is iris.coords.POINT_MODE.
+    Parameters
+    ----------
+    mode :
+        Either ``iris.coords.POINT_MODE`` or ``iris.coords.BOUND_MODE``
+        Triggers whether the extent should be representative of the cell
+        points, or the limits of the cell's bounds.
+        The default is iris.coords.POINT_MODE.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1220,14 +1233,13 @@ def _fill_orography(cube, coords, mode, vert_plot, horiz_plot, style_args):
 
 
 def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at cell boundaries from the given Cube.
+    """Plot orography defined at cell boundaries from the given Cube.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
         "This operation is temporarily not provided "
@@ -1259,14 +1271,13 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
-    """Plots orography defined at sample points from the given Cube.
+    """Plot orography defined at sample points from the given Cube.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-
     style_args = {"facecolor": facecolor}
 
     def vert_plot(u_coord, orography, style_args):
@@ -1287,31 +1298,28 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """Draws cell outlines based on the given Cube.
+    """Draw cell outlines based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names
         Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
         of the plot.
-
-    * color: None or mpl color
+    color : mpl color, default="k"
         The color of the cell outlines. If None, the matplotlibrc setting
         patch.edgecolor is used by default.
-
-    * linewidth: None or number
+    linewidth : number, optional
         The width of the lines showing the cell outlines. If None, the default
         width in patch.linewidth in matplotlibrc is used.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`,voptional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1331,33 +1339,31 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot the cube against.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
         of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    * contiguity_tolerance: float
+    contiguity_tolerance : float, optional
         The absolute tolerance used when checking for contiguity between the
         bounds of the cells. Defaults to None.
-
-    See :func:`matplotlib.pyplot.pcolor` for details of other valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.pcolor` for details of other valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1369,33 +1375,31 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot against each
     other.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    * contiguity_tolerance: float
+    contiguity_tolerance : float, optional
         The absolute tolerance used when checking for
         contiguity between the bounds of the cells. Defaults to None.
-
-    See :func:`matplotlib.pyplot.pcolormesh` for details of other
-    valid keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.pcolormesh` for details of other
+        valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1405,26 +1409,25 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """Draws sample point positions based on the given Cube.
+    """Draw sample point positions based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the
         plot. The order of the given coordinates indicates which axis
         to use for each, where the first element is the horizontal
         axis of the plot and the second element is the vertical axis
         of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    See :func:`matplotlib.pyplot.scatter` for details of other valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.scatter` for details of other valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1437,7 +1440,7 @@ def points(cube, *args, **kwargs):
 
 
 def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
-    """Callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
+    """Vector component callback from _draw_2d_from_points for 'quiver' and 'streamlines'.
 
     Returns arguments (x, y, u, v), to be passed to the underlying matplotlib
     call.
@@ -1476,20 +1479,35 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     return ((x_points, y_points, u_data, v_data), kwargs)
 
 
-def barbs(u_cube, v_cube, *args, **kwargs):
-    """Draws a barb plot from two vector component cubes. Triangles, full-lines
+def barbs(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
+    """Draw a barb plot from two vector component cubes.
+
+    Draws a barb plot from two vector component cubes. Triangles, full-lines
     and half-lines represent increments of 50, 10 and 5 respectively.
 
-    Args:
-
-    * u_cube, v_cube : (:class:`~iris.cube.Cube`)
+    Parameters
+    ----------
+    u_cube, v_cube : :class:`~iris.cube.Cube`
         u and v vector components.  Must have same shape and units.
         If the cubes have geographic coordinates, the values are treated as
         true distance differentials, e.g. windspeeds, and *not* map coordinate
         vectors.  The components are aligned with the North and East of the
         cube coordinate system.
+    coords : list of :class:`~iris.coords.Coord` or str, optional
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+    axes : :class:`matplotlib.axes.Axes`, optional
+        Defaults to the current axes if none provided.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.barbs` for details of other valid
+        keyword arguments.
 
-    .. Note::
+    Notes
+    -----
+    .. note::
 
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
@@ -1500,23 +1518,6 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         the :meth:`~cartopy.crs.CRS.transform_points` method of
         :class:`cartopy.crs.CRS`.
 
-    Kwargs:
-
-    * coords: (list of :class:`~iris.coords.Coord` or string)
-        Coordinates or coordinate names. Use the given coordinates as the axes
-        for the plot. The order of the given coordinates indicates which axis
-        to use for each, where the first element is the horizontal
-        axis of the plot and the second element is the vertical axis
-        of the plot.
-
-    * axes: the :class:`matplotlib.axes.Axes` to use for drawing.
-        Defaults to the current axes if none provided.
-
-    See :func:`matplotlib.pyplot.barbs` for details of other valid
-    keyword arguments.
-
-    Notes
-    ------
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1530,19 +1531,33 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     )
 
 
-def quiver(u_cube, v_cube, *args, **kwargs):
-    """Draws an arrow plot from two vector component cubes.
+def quiver(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
+    """Draw an arrow plot from two vector component cubes.
 
-    Args:
-
-    * u_cube, v_cube : :class:`~iris.cube.Cube`
+    Parameters
+    ----------
+    u_cube, v_cube : :class:`~iris.cube.Cube`
         u and v vector components.  Must have same shape and units.
         If the cubes have geographic coordinates, the values are treated as
         true distance differentials, e.g. windspeeds, and *not* map coordinate
         vectors.  The components are aligned with the North and East of the
         cube coordinate system.
+    coords : list of :class:`~iris.coords.Coord` or str, optional
+        Coordinates or coordinate names. Use the given coordinates as the axes
+        for the plot. The order of the given coordinates indicates which axis
+        to use for each, where the first element is the horizontal
+        axis of the plot and the second element is the vertical axis
+        of the plot.
+    axes : :class:`matplotlib.axes.Axes`, optional
+        The axes to use for drawing.  Defaults to the current axes if none
+        provided.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.quiver` for details of other valid
+        keyword arguments.
 
-    .. Note::
+    Notes
+    -----
+    .. note::
 
         At present, if u_cube and v_cube have geographic coordinates, then they
         must be in a lat-lon coordinate system, though it may be a rotated one.
@@ -1553,24 +1568,6 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         the :meth:`~cartopy.crs.CRS.transform_points` method of
         :class:`cartopy.crs.CRS`.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` or string
-        Coordinates or coordinate names. Use the given coordinates as the axes
-        for the plot. The order of the given coordinates indicates which axis
-        to use for each, where the first element is the horizontal
-        axis of the plot and the second element is the vertical axis
-        of the plot.
-
-    * axes: :class:`matplotlib.axes.Axes`
-        The axes to use for drawing.  Defaults to the current axes if none
-        provided.
-
-    See :func:`matplotlib.pyplot.quiver` for details of other valid
-    keyword arguments.
-
-    Notes
-    ------
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1585,8 +1582,24 @@ def quiver(u_cube, v_cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a line plot based on the given cube(s) or coordinate(s).
+    """Draw a line plot based on the given cube(s) or coordinate(s).
 
+    Parameters
+    ----------
+    axes : :class:`matplotlib.axes.Axes`, optional
+        The axes to use for drawing.  Defaults to the current axes if none
+        provided.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.plot` for details of additional valid
+        keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    Examples
+    --------
     The first one or two arguments may be cubes or coordinates to plot.
     Each of the following is valid::
 
@@ -1610,20 +1623,6 @@ def plot(*args, **kwargs):
         # plot two 1d cubes against one-another
         plot(cube1, cube2)
 
-    Kwargs:
-
-    * axes: :class:`matplotlib.axes.Axes`
-        The axes to use for drawing.  Defaults to the current axes if none
-        provided.
-
-    See :func:`matplotlib.pyplot.plot` for details of additional valid
-    keyword arguments.
-
-    Notes
-    ------
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
     if "coords" in kwargs:
         raise TypeError(
@@ -1636,27 +1635,23 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a scatter plot based on the given cube(s) or coordinate(s).
+    """Draw a scatter plot based on the given cube(s) or coordinate(s).
 
-    Args:
-
-    * x: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+    Parameters
+    ----------
+    x : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
         A cube or a coordinate to plot on the x-axis.
-
-    * y: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+    y : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
         A cube or a coordinate to plot on the y-axis.
-
-    Kwargs:
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    See :func:`matplotlib.pyplot.scatter` for details of additional
-    valid keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.scatter` for details of additional
+        valid keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1672,30 +1667,25 @@ def scatter(x, y, *args, **kwargs):
 
 
 def fill_between(x, y1, y2, *args, **kwargs):
-    """Plots y1 and y2 against x, and fills the space between them.
+    """Plot y1 and y2 against x, and fills the space between them.
 
-    Args:
-
-    * x: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+    Parameters
+    ----------
+    x : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
         A cube or a coordinate to plot on the x-axis.
-
-    * y1: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+    y1 : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
         First cube or a coordinate to plot on the y-axis.
-
-    * y2: :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+    y2 : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
         Second cube or a coordinate to plot on the y-axis.
-
-    Kwargs:
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    See :func:`matplotlib.pyplot.fill_between` for details of additional valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.fill_between` for details of additional valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1715,21 +1705,21 @@ def fill_between(x, y1, y2, *args, **kwargs):
 def hist(x, *args, **kwargs):
     """Compute and plot a histogram.
 
-    Args:
-
-    * x:
+    Parameters
+    ----------
+    x :
         A :class:`~iris.cube.Cube`, :class:`~iris.coords.Coord`,
         :class:`~iris.coords.CellMeasure`, or :class:`~iris.coords.AncillaryVariable`
         that will be used as the values that will be used to create the
         histogram.
         Note that if a coordinate is given, the points are used, ignoring the
         bounds.
-
-    See :func:`matplotlib.pyplot.hist` for details of additional valid
-    keyword arguments.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.hist` for details of additional valid
+        keyword arguments.
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1750,35 +1740,28 @@ show = plt.show
 
 
 def symbols(x, y, symbols, size, axes=None, units="inches"):
-    """Draws fixed-size symbols.
+    """Draw fixed-size symbols.
 
     See :mod:`iris.symbols` for available symbols.
 
-    Args:
-
-    * x: iterable
+    Parameters
+    ----------
+    x : iterable
         The x coordinates where the symbols will be plotted.
-
-    * y: iterable
+    y : iterable
         The y coordinates where the symbols will be plotted.
-
-    * symbols: iterable
+    symbols : iterable
         The symbols (from :mod:`iris.symbols`) to plot.
-
-    * size: float
+    size : float
         The symbol size in `units`.
-
-    Kwargs:
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
-
-    * units: ['inches', 'points']
+    units : ['inches', 'points'], default="inches"
         The unit for the symbol size.
 
     Notes
-    ------
+    -----
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 
@@ -1826,22 +1809,17 @@ def citation(text, figure=None, axes=None):
     Places an anchored text citation in the bottom right
     hand corner of the plot.
 
-    Args:
-
-    * text: str
+    Parameters
+    ----------
+    text : str
         Citation text to be plotted.
-
-    Kwargs:
-
-    * figure::class:`matplotlib.figure.Figure`
+    figure : :class:`matplotlib.figure.Figure`, optional
         Target figure instance. Defaults to the current figure if none provided.
-
-    * axes: :class:`matplotlib.axes.Axes`
+    axes : :class:`matplotlib.axes.Axes`, optional
         The axes to use for drawing.  Defaults to the current axes if none
         provided.
 
     """
-
     if text is not None and len(text):
         if figure is None and not axes:
             figure = plt.gcf()
@@ -1852,7 +1830,7 @@ def citation(text, figure=None, axes=None):
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """Animates the given cube iterator.
+    """Animate the given cube iterator.
 
     Parameters
     ----------
@@ -1868,29 +1846,25 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     fig : :class:`matplotlib.figure.Figure` instance, optional
         By default, the current figure will be used or a new figure instance
         created if no figure is available. See :func:`matplotlib.pyplot.gcf`.
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
+        Use the given coordinates as the axes for the plot. The order of the
+        given coordinates indicates which axis to use for each, where the first
+        element is the horizontal axis of the plot and the second element is
+        the vertical axis of the plot.
+    interval : int, float or long, optional
+        Defines the time interval in milliseconds between successive frames.
+        A default interval of 100ms is set.
+    vmin, vmax : int, float or long, optional
+        Color scaling values, see :class:`matplotlib.colors.Normalize` for
+        further details. Default values are determined by the min-max across
+        the data set over the entire sequence.
     **kwargs : dict, optional
-        Valid keyword arguments:
-
-        coords: list of :class:`~iris.coords.Coord` objects or coordinate names
-            Use the given coordinates as the axes for the plot. The order of the
-            given coordinates indicates which axis to use for each, where the first
-            element is the horizontal axis of the plot and the second element is
-            the vertical axis of the plot.
-        interval: int, float or long
-            Defines the time interval in milliseconds between successive frames.
-            A default interval of 100ms is set.
-        vmin, vmax: int, float or long
-            Color scaling values, see :class:`matplotlib.colors.Normalize` for
-            further details. Default values are determined by the min-max across
-            the data set over the entire sequence.
-
         See :class:`matplotlib.animation.FuncAnimation` for details of other
         valid keyword arguments.
 
     Returns
     -------
-    :class:`~matplotlib.animation.FuncAnimation` object suitable for
-    saving and or plotting.
+    :class:`~matplotlib.animation.FuncAnimation` object suitable for saving and or plotting.
 
     Examples
     --------
@@ -1906,7 +1880,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> iplt.show()
 
     Notes
-    ------
+    -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/userguide/real_and_lazy_data`.
 

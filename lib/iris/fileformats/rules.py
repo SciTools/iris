@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generalised mechanisms for metadata translation and cube construction.
-
-"""
+"""Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
 import warnings
@@ -15,6 +13,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+import iris.warnings
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
 ReferenceTarget = collections.namedtuple("ReferenceTarget", ("name", "transform"))
@@ -44,7 +43,7 @@ class ConcreteReferenceTarget:
                 if len(src_cubes) > 1:
                     warnings.warn(
                         "Multiple reference cubes for {}".format(self.name),
-                        category=iris.exceptions.IrisUserWarning,
+                        category=iris.warnings.IrisUserWarning,
                     )
             src_cube = src_cubes[-1]
 
@@ -102,7 +101,9 @@ def scalar_cell_method(cube, method, coord_name):
 
 
 def has_aux_factory(cube, aux_factory_class):
-    """Try to find an class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    """Determine :class:`~iris.aux_factory.AuxCoordFactory` availability within cube.
+
+    Try to find an :class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type on the cube.
 
     """
@@ -113,7 +114,9 @@ def has_aux_factory(cube, aux_factory_class):
 
 
 def aux_factory(cube, aux_factory_class):
-    """Return the class:`~iris.aux_factory.AuxCoordFactory` instance of the
+    """Retrieve :class:`~iris.aux_factory.AuxCoordFactory` instance from cube.
+
+    Return the :class:`~iris.aux_factory.AuxCoordFactory` instance of the
     specified type from a cube.
 
     """
@@ -140,7 +143,7 @@ class _ReferenceError(Exception):
 
 
 def _dereference_args(factory, reference_targets, regrid_cache, cube):
-    """Converts all the arguments for a factory into concrete coordinates."""
+    """Convert all the arguments for a factory into concrete coordinates."""
     args = []
     for arg in factory.args:
         if isinstance(arg, Reference):
@@ -197,7 +200,9 @@ def _regrid_to_target(src_cube, target_coords, target_cube):
 
 
 def _ensure_aligned(regrid_cache, src_cube, target_cube):
-    """Returns a version of `src_cube` suitable for use as an AuxCoord
+    """Ensure dimension compatible cubes are spatially aligned.
+
+    Returns a version of `src_cube` suitable for use as an AuxCoord
     on `target_cube`, or None if no version can be made.
 
     """
@@ -253,16 +258,14 @@ class Loader(collections.namedtuple("Loader", _loader_attrs)):
     def __new__(cls, field_generator, field_generator_kwargs, converter):
         """Create a definition of a field-based Cube loader.
 
-        Args:
-
-        * field_generator
+        Parameters
+        ----------
+        field_generator :
             A callable that accepts a filename as its first argument and
             returns an iterable of field objects.
-
-        * field_generator_kwargs
+        field_generator_kwargs :
             Additional arguments to be passed to the field_generator.
-
-        * converter
+        converter :
             A callable that converts a field object into a Cube.
 
         """
@@ -311,7 +314,7 @@ def _make_cube(field, converter):
             cube.units = metadata.units
         except ValueError:
             msg = "Ignoring PP invalid units {!r}".format(metadata.units)
-            warnings.warn(msg, category=iris.exceptions.IrisIgnoringWarning)
+            warnings.warn(msg, category=iris.warnings.IrisIgnoringWarning)
             cube.attributes["invalid_units"] = metadata.units
             cube.units = cf_units._UNKNOWN_UNIT_STRING
 
@@ -334,7 +337,7 @@ def _resolve_factory_references(
             factory_name = factory.factory_class.__name__
             warnings.warn(
                 msg.format(factory=factory_name),
-                category=iris.exceptions.IrisUserWarning,
+                category=iris.warnings.IrisUserWarning,
             )
         else:
             aux_factory = factory.factory_class(*args)
@@ -385,20 +388,19 @@ def _load_pairs_from_fields_and_filenames(
 
 
 def load_pairs_from_fields(fields, converter):
-    """Convert an iterable of fields into an iterable of Cubes using the
-    provided converter.
+    """Convert iterable of fields into iterable of Cubes using the provided converter.
 
-    Args:
-
-    * fields:
+    Parameters
+    ----------
+    fields :
         An iterable of fields.
-
-    * converter:
+    converter :
         An Iris converter function, suitable for use with the supplied fields.
         See the description in :class:`iris.fileformats.rules.Loader`.
 
-    Returns:
-        An iterable of (:class:`iris.cube.Cube`, field) pairs.
+    Returns
+    -------
+    An iterable of (:class:`iris.cube.Cube`, field) pairs.
 
     """
     return _load_pairs_from_fields_and_filenames(

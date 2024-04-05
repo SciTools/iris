@@ -22,9 +22,9 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -50,7 +50,7 @@ keywords = [
 ]
 license = {text = "BSD-3-Clause"}
 name = "scitools-iris"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"
@@ -73,7 +73,6 @@ src = [
     "lib",
     "docs/src",
 ]
-target-version = "py39"
 
 [tool.ruff.format]
 preview = false
@@ -102,6 +101,16 @@ ignore = [
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["iris"]
+
+[tool.ruff.lint.per-file-ignores]
+# All test scripts
+
+"lib/iris/tests/*.py" = [
+    # https://docs.astral.sh/ruff/rules/undocumented-public-module/
+    "D100",  # Missing docstring in public module
+    "D205",  # 1 blank line required between summary line and description
+    "D401",  # 1 First line of docstring should be in imperative mood
+]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -151,4 +160,51 @@ skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
 ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
+]
+
+[tool.numpydoc_validation]
+checks = [
+    "all",  # Enable all numpydoc validation rules, apart from the following:
+
+    # -> Docstring text (summary) should start in the line immediately
+    #    after the opening quotes (not in the same line, or leaving a
+    #    blank line in between)
+    "GL01",  # Permit summary line on same line as docstring opening quotes.
+
+    # -> Closing quotes should be placed in the line after the last text
+    #    in the docstring (do not close the quotes in the same line as
+    #    the text, or leave a blank line between the last text and the
+    #    quotes)
+    "GL02",  # Permit a blank line before docstring closing quotes.
+
+    # -> Double line break found; please use only one blank line to
+    #    separate sections or paragraphs, and do not leave blank lines
+    #    at the end of docstrings
+    "GL03",  # Ignoring.
+
+    # -> See Also section not found
+    "SA01",  # Not all docstrings require a "See Also" section.
+
+    # -> No extended summary found
+    "ES01",  # Not all docstrings require an "Extended Summary" section.
+
+    # -> No examples section found
+    "EX01",  # Not all docstrings require an "Examples" section.
+
+    # -> No Yields section found
+    "YD01",  # Not all docstrings require a "Yields" section.
+
+    # Temporary checks to ignore, will be reviewed at a later date.
+    "GL08",  # The object does not have a docstrings not have a docstring
+    "PR01",  # Parameters ... not documented
+    "PR02",  # Unknown parameters {....}
+    "PR04",  # Parameter "...." has no type
+    "PR07",  # Parameter "...." has no description   
+    "RT01",  # No Returns section found
+    "RT03",  # Return value has no description
+]
+exclude = [
+    '\.__eq__$',
+    '\.__ne__$',
+    '\.__repr__$',
 ]

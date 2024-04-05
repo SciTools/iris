@@ -17,8 +17,8 @@ from iris.coord_systems import (
 )
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisUserWarning
 import iris.tests.stock
+from iris.warnings import IrisUserWarning
 
 
 def osgb():
@@ -250,7 +250,7 @@ class Test_GeogCS_equality(tests.IrisTest):
 
 
 class Test_GeogCS_mutation(tests.IrisTest):
-    "Test that altering attributes of a GeogCS instance behaves as expected."
+    """Test that altering attributes of a GeogCS instance behaves as expected."""
 
     def test_semi_major_axis_change(self):
         # Clear datum

@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.fileformats.cf.CFReader` class.
-
-"""
+"""Unit tests for the `iris.fileformats.cf.CFReader` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -303,10 +301,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
 
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ["lat", "wibble"]
-        with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
-            return_value=self.dataset,
-        ), mock.patch("warnings.warn") as warn:
+        with (
+            mock.patch(
+                "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+                return_value=self.dataset,
+            ),
+            mock.patch("warnings.warn") as warn,
+        ):
             cf_group = CFReader("dummy").cf_group
             group = cf_group.promoted
             self.assertEqual(list(group.keys()), ["orography"])
@@ -315,10 +316,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
-        with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
-            return_value=self.dataset,
-        ), mock.patch("warnings.warn") as warn:
+        with (
+            mock.patch(
+                "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+                return_value=self.dataset,
+            ),
+            mock.patch("warnings.warn") as warn,
+        ):
             cf_group = CFReader("dummy").cf_group
             promoted = ["x", "orography"]
             group = cf_group.promoted
@@ -331,10 +335,13 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
         self.wibble = netcdf_variable("wibble", "lat wibble", np.float64)
         self.variables["wibble"] = self.wibble
         self.orography.coordinates = "wibble"
-        with mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
-            return_value=self.dataset,
-        ), mock.patch("warnings.warn") as warn:
+        with (
+            mock.patch(
+                "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+                return_value=self.dataset,
+            ),
+            mock.patch("warnings.warn") as warn,
+        ):
             cf_group = CFReader("dummy").cf_group.promoted
             promoted = ["wibble", "orography"]
             self.assertEqual(set(cf_group.keys()), set(promoted))

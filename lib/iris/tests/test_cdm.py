@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test cube indexing, slicing, and extracting, and also the dot graphs.
-
-"""
+"""Test cube indexing, slicing, and extracting, and also the dot graphs."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -23,7 +21,6 @@ import iris.coords
 import iris.cube
 import iris.fileformats
 import iris.fileformats.dot
-import iris.tests.pp as pp
 import iris.tests.stock
 
 
@@ -1287,7 +1284,7 @@ class TestTrimAttributes(tests.IrisTest):
 
 
 @tests.skip_data
-class TestMaskedData(tests.IrisTest, pp.PPTest):
+class TestMaskedData(tests.IrisTest, tests.PPTest):
     def _load_3d_cube(self):
         # This 3D data set has a missing a slice with SOME missing values.
         # The missing data is in the pressure = 1000 hPa, forcast_period = 0,

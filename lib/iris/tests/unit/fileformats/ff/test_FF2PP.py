@@ -14,10 +14,11 @@ from unittest import mock
 
 import numpy as np
 
-from iris.exceptions import IrisLoadWarning, NotYetImplementedError
+from iris.exceptions import NotYetImplementedError
 import iris.fileformats._ff as ff
 from iris.fileformats._ff import FF2PP
 import iris.fileformats.pp as pp
+from iris.warnings import IrisLoadWarning
 
 # PP-field: LBPACK N1 values.
 _UNPACKED = 0
@@ -84,13 +85,13 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
         open_func = "builtins.open"
-        with mock.patch(
-            "iris.fileformats._ff._parse_binary_stream", return_value=[0]
-        ), mock.patch(open_func), mock.patch(
-            "struct.unpack_from", return_value=[4]
-        ), mock.patch(
-            "iris.fileformats.pp.make_pp_field", side_effect=fields
-        ), mock.patch("iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)):
+        with (
+            mock.patch("iris.fileformats._ff._parse_binary_stream", return_value=[0]),
+            mock.patch(open_func),
+            mock.patch("struct.unpack_from", return_value=[4]),
+            mock.patch("iris.fileformats.pp.make_pp_field", side_effect=fields),
+            mock.patch("iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)),
+        ):
             yield ff2pp
 
     def _mock_lbc(self, **kwargs):

@@ -2,8 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda`
-subclass that manages the Conda environment via custom user scripts.
+"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda` subclass.
+
+Manages the Conda environment via custom user scripts.
 
 """
 
@@ -42,19 +43,19 @@ class CondaDelegated(Conda):
         requirements: dict,
         tagged_env_vars: dict,
     ) -> None:
-        """Parameters
-        ----------
-        conf : Config instance
+        """__init__.
 
+        Parameters
+        ----------
+        conf : Config
+            Config instance.
         python : str
             Version of Python.  Must be of the form "MAJOR.MINOR".
-
         requirements : dict
             Dictionary mapping a PyPI package name to a version
             identifier string.
-
         tagged_env_vars : dict
-            Environment variables, tagged for build vs. non-build
+            Environment variables, tagged for build vs. non-build.
 
         """
         ignored = ["`python`"]

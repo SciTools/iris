@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Benchmark tests for the experimental.ugrid module.
-
-"""
+"""Benchmark tests for the experimental.ugrid module."""
 
 from copy import deepcopy
 
@@ -17,7 +15,9 @@ from ...generate_data.stock import sample_mesh
 
 
 class UGridCommon:
-    """A base class running a generalised suite of benchmarks for any ugrid object.
+    """Run a generalised suite of benchmarks for any ugrid object.
+
+    A base class running a generalised suite of benchmarks for any ugrid object.
     Object to be specified in a subclass.
 
     ASV will run the benchmarks within this class for any subclasses.
@@ -40,8 +40,10 @@ class UGridCommon:
         raise NotImplementedError
 
     def time_create(self, *params):
-        """Create an instance of the benchmarked object. create() method is
-        specified in the subclass."""
+        """Create an instance of the benchmarked object.
+
+        create() method is specified in the subclass.
+        """
         self.create()
 
 

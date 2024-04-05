@@ -1,4 +1,5 @@
-"""Applying a Filter to a Time-Series
+"""
+Applying a Filter to a Time-Series
 ==================================
 
 This example demonstrates low pass filtering a time-series by applying a
@@ -11,14 +12,13 @@ less than 7 years.
 
 References
 ----------
-
     Duchon C. E. (1979) Lanczos Filtering in One and Two Dimensions.
     Journal of Applied Meteorology, Vol 18, pp 1016-1022.
 
     Trenberth K. E. (1984) Signal Versus Noise in the Southern Oscillation.
     Monthly Weather Review, Vol 112, pp 326-332
 
-"""  # noqa: D400
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -30,12 +30,11 @@ import iris.plot as iplt
 def low_pass_weights(window, cutoff):
     """Calculate weights for a low pass Lanczos filter.
 
-    Args:
-
-    window: int
+    Parameters
+    ----------
+    window : int
         The length of the filter window.
-
-    cutoff: float
+    cutoff : float
         The cutoff frequency in inverse time steps.
 
     """

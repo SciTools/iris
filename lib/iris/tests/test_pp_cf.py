@@ -13,7 +13,6 @@ import iris
 import iris.coords
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.pp import STASH
-import iris.tests.pp as pp
 import iris.util
 
 
@@ -64,11 +63,11 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
 
 
 @tests.skip_data
-class TestAll(tests.IrisTest, pp.PPTest):
+class TestAll(tests.IrisTest, tests.PPTest):
     _ref_dir = ("usecases", "pp_to_cf_conversion")
 
     def _test_file(self, name):
-        """This is the main test routine that is called for each of the files listed below."""
+        """Main test routine that is called for each of the files listed below."""
         pp_path = self._src_pp_path(name)
 
         # 1) Load the PP and check the Cube

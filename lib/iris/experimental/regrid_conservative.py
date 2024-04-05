@@ -4,9 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support for conservative regridding via ESMPy.
 
-.. note::
-
-    .. deprecated:: 3.2.0
+.. deprecated:: 3.2.0
 
     This package will be removed in a future release.
     Please use
@@ -60,17 +58,15 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
     Add a grid mask if provided.
     Create and return a Field mapped on this Grid, setting data if provided.
 
-    Args:
-
-    * x_coord, y_coord (:class:`iris.coords.Coord`):
+    Parameters
+    ----------
+    x_coord, y_coord : :class:`iris.coords.Coord`
         One-dimensional coordinates of shape (nx,) and (ny,).
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
-
-    Kwargs:
-
-    * data (:class:`numpy.ndarray`, shape (nx,ny)):
+    ref_name : stre, default="field"
+    data : :class:`numpy.ndarray`, shape (nx,ny), optional
         Set the Field data content.
-    * mask (:class:`numpy.ndarray`, boolean, shape (nx,ny)):
+    mask : :class:`numpy.ndarray`, bool, shape (nx,ny), optional
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """
@@ -145,9 +141,45 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
 def regrid_conservative_via_esmpy(source_cube, grid_cube):
     """Perform a conservative regridding with ESMPy.
 
-    .. note ::
+    Regrids the data of a source cube onto a new grid defined by a destination
+    cube.
 
-        .. deprecated:: 3.2.0
+    Parameters
+    ----------
+    source_cube : :class:`iris.cube.Cube`
+        Source data.  Must have two identifiable horizontal dimension
+        coordinates.
+    grid_cube : :class:`iris.cube.Cube`
+        Define the target horizontal grid:  Only the horizontal dimension
+        coordinates are actually used.
+
+    Returns
+    -------
+    :class:`iris.cube.Cube`
+        A new cube derived from source_cube, regridded onto the specified
+        horizontal grid.
+
+    Notes
+    -----
+    Any additional coordinates which map onto the horizontal dimensions are
+    removed, while all other metadata is retained.
+    If there are coordinate factories with 2d horizontal reference surfaces,
+    the reference surfaces are also regridded, using ordinary bilinear
+    interpolation.
+
+    Both source and destination cubes must have two dimension coordinates
+    identified with axes 'X' and 'Y' which share a coord_system with a
+    Cartopy CRS.  The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds`
+    of these.
+
+    .. note::
+
+        Initialises the ESMF Manager, if it was not already called.
+        This implements default Manager operations (e.g. logging).
+
+        To alter this, make a prior call to ESMF.Manager().
+
+    .. deprecated:: 3.2.0
 
         This function is scheduled to be removed in a future release.
         Please use
@@ -160,43 +192,6 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
             from emsf_regrid.schemes import ESMFAreaWeighted
             result = src_cube.regrid(grid_cube, ESMFAreaWeighted())
-
-    Regrids the data of a source cube onto a new grid defined by a destination
-    cube.
-
-    Args:
-
-    * source_cube (:class:`iris.cube.Cube`):
-        Source data.  Must have two identifiable horizontal dimension
-        coordinates.
-    * grid_cube (:class:`iris.cube.Cube`):
-        Define the target horizontal grid:  Only the horizontal dimension
-        coordinates are actually used.
-
-    Returns:
-        A new cube derived from source_cube, regridded onto the specified
-        horizontal grid.
-
-    Any additional coordinates which map onto the horizontal dimensions are
-    removed, while all other metadata is retained.
-    If there are coordinate factories with 2d horizontal reference surfaces,
-    the reference surfaces are also regridded, using ordinary bilinear
-    interpolation.
-
-    .. note::
-
-        Both source and destination cubes must have two dimension coordinates
-        identified with axes 'X' and 'Y' which share a coord_system with a
-        Cartopy CRS.
-        The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds` of
-        these.
-
-    .. note::
-
-        Initialises the ESMF Manager, if it was not already called.
-        This implements default Manager operations (e.g. logging).
-
-        To alter this, make a prior call to ESMF.Manager().
 
     """
     wmsg = (

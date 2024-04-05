@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :func:`iris.common.lenient._lenient_client`.
-
-"""
+"""Unit tests for the :func:`iris.common.lenient._lenient_client`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -76,9 +74,9 @@ class Test(tests.IrisTest):
     def test_call_naked_doc(self):
         @_lenient_client
         def myclient():
-            """myclient doc-string."""
+            """Myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string.")
+        self.assertEqual(myclient.__doc__, "Myclient doc-string.")
 
     def test_call_no_kwargs(self):
         @_lenient_client()
@@ -169,9 +167,9 @@ class Test(tests.IrisTest):
     def test_call_doc(self):
         @_lenient_client()
         def myclient():
-            """myclient doc-string."""
+            """Myclient doc-string."""
 
-        self.assertEqual(myclient.__doc__, "myclient doc-string.")
+        self.assertEqual(myclient.__doc__, "Myclient doc-string.")
 
 
 if __name__ == "__main__":

@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides UK Met Office Fields File (FF) format specific capabilities.
-
-"""
+"""Provides UK Met Office Fields File (FF) format specific capabilities."""
 
 import os
 import warnings
@@ -12,12 +10,11 @@ import warnings
 import numpy as np
 
 from iris.exceptions import (
-    IrisDefaultingWarning,
-    IrisLoadWarning,
     NotYetImplementedError,
 )
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
+from ..warnings import IrisDefaultingWarning, IrisLoadWarning
 from . import pp
 
 IMDI = -32768
@@ -127,10 +124,7 @@ class _WarnComboLoadingDefaulting(IrisDefaultingWarning, IrisLoadWarning):
 
 
 class Grid:
-    """An abstract class representing the default/file-level grid
-    definition for a FieldsFile.
-
-    """
+    """An abstract class representing the default/file-level grid definition for a FieldsFile."""
 
     def __init__(
         self,
@@ -141,18 +135,15 @@ class Grid:
     ):
         """Create a Grid from the relevant sections of the FFHeader.
 
-        Args:
-
-        * column_dependent_constants (numpy.ndarray):
+        Parameters
+        ----------
+        column_dependent_constants : numpy.ndarray
             The `column_dependent_constants` from a FFHeader.
-
-        * row_dependent_constants (numpy.ndarray):
+        row_dependent_constants : numpy.ndarray
             The `row_dependent_constants` from a FFHeader.
-
-        * real_constants (numpy.ndarray):
+        real_constants : numpy.ndarray
             The `real_constants` from a FFHeader.
-
-        * horiz_grid_type (integer):
+        horiz_grid_type : int
             `horiz_grid_type` from a FFHeader.
 
         """
@@ -183,16 +174,16 @@ class Grid:
         raise NotImplementedError()
 
     def vectors(self, subgrid):
-        """Return the X and Y coordinate vectors for the given sub-grid of
-        this grid.
+        """Return the X and Y coordinate vectors for the given sub-grid of this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
-            A 2-tuple of X-vector, Y-vector.
+        Returns
+        -------
+        A 2-tuple of X-vector, Y-vector.
 
         """
         x_p, x_u = self._x_vectors()
@@ -222,16 +213,16 @@ class ArakawaC(Grid):
         return x_p, x_u
 
     def regular_x(self, subgrid):
-        """Return the "zeroth" value and step for the X coordinate on the
-        given sub-grid of this grid.
+        """Return the "zeroth" value & step for the X coord on the given sub-grid of this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
-            A 2-tuple of BZX, BDX.
+        Returns
+        -------
+        A 2-tuple of BZX, BDX.
 
         """
         bdx = self.ew_spacing
@@ -241,16 +232,19 @@ class ArakawaC(Grid):
         return bzx, bdx
 
     def regular_y(self, subgrid):
-        """Return the "zeroth" value and step for the Y coordinate on the
+        """Return the "zeroth" value & step for the Y coord on the given sub-grid of this grid.
+
+        Return the "zeroth" value and step for the Y coordinate on the
         given sub-grid of this grid.
 
-        Args:
-
-        * subgrid (integer):
+        Parameters
+        ----------
+        subgrid : int
             A "grid type code" as described in UM documentation paper C4.
 
-        Returns:
-            A 2-tuple of BZY, BDY.
+        Returns
+        -------
+        A 2-tuple of BZY, BDY.
 
         """
         bdy = self.ns_spacing
@@ -302,20 +296,23 @@ class FFHeader:
     GRID_STAGGERING_CLASS = {3: NewDynamics, 6: ENDGame}
 
     def __init__(self, filename, word_depth=DEFAULT_FF_WORD_DEPTH):
-        """Create a FieldsFile header instance by reading the
+        """Create a FieldsFile header instance.
+
+        Create a FieldsFile header instance by reading the
         FIXED_LENGTH_HEADER section of the FieldsFile, making the names
         defined in FF_HEADER available as attributes of a FFHeader instance.
 
-        Args:
-
-        * filename (string):
+        Parameters
+        ----------
+        filename : str
             Specify the name of the FieldsFile.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
-        Returns:
-            FFHeader object.
+        Returns
+        -------
+        FFHeader object.
 
         """
-
         #: File name of the FieldsFile.
         self.ff_filename = filename
         self._word_depth = word_depth
@@ -397,19 +394,18 @@ class FFHeader:
         return is_referenceable
 
     def shape(self, name):
-        """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER
-        pointer attribute.
+        """Return the dimension shape of the FieldsFile FIXED_LENGTH_HEADER pointer attribute.
 
-        Args:
-
-        * name (string):
+        Parameters
+        ----------
+        name : str
             Specify the name of the FIXED_LENGTH_HEADER attribute.
 
-        Returns:
-            Dimension tuple.
+        Returns
+        -------
+        Dimension tuple.
 
         """
-
         if name in _FF_HEADER_POINTERS:
             value = getattr(self, name)[1:]
         else:
@@ -440,30 +436,32 @@ class FF2PP:
     """A class to extract the individual PPFields from within a FieldsFile."""
 
     def __init__(self, filename, read_data=False, word_depth=DEFAULT_FF_WORD_DEPTH):
-        """Create a FieldsFile to Post Process instance that returns a generator
+        """Create a generator of PPFields contained within the FieldsFile.
+
+        Create a FieldsFile to Post Process instance that returns a generator
         of PPFields contained within the FieldsFile.
 
-        Args:
-
-        * filename (string):
+        Parameters
+        ----------
+        filename : str
             Specify the name of the FieldsFile.
-
-        Kwargs:
-
-        * read_data (boolean):
+        read_data : bool, default=False
             Specify whether to read the associated PPField data within
             the FieldsFile.  Default value is False.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
-        Returns:
-            PPField generator.
+        Returns
+        -------
+        PPField generator.
 
-        For example::
+        Examples
+        --------
+        ::
 
             >>> for field in ff.FF2PP(filename):
             ...     print(field)
 
         """
-
         self._ff_header = FFHeader(filename, word_depth=word_depth)
         self._word_depth = word_depth
         self._filename = filename
@@ -807,22 +805,20 @@ class FF2PP:
 
 
 def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
-    """Replacement :func:`numpy.fromfile` due to python3 performance issues.
+    """Parse binary stream, replacement :func:`numpy.fromfile` due to python3 performance issues.
 
-    Args:
-
-    * file_like - Standard python file_like object.
-
-    Kwargs:
-
-    * dtype  - Data type to be parsed out, used to work out bytes read in.
-
-    * count - The number of values required to be generated from the parsing.
+    Parameters
+    ----------
+    file_like :
+        Standard python file_like object.
+    dtype : no.float64, optional
+        Data type to be parsed out, used to work out bytes read in.
+    count : optional, default=-1
+        The number of values required to be generated from the parsing.
         The default is -1, which will read the entire contexts of the file_like
         object and generate as many values as possible.
 
     """
-
     # There are a wide range of types supported, we just need to know the byte
     # size of the object, so we just make sure we've go an instance of a
     # np.dtype
@@ -840,17 +836,17 @@ def _parse_binary_stream(file_like, dtype=np.float64, count=-1):
 
 
 def load_cubes(filenames, callback, constraints=None):
-    """Loads cubes from a list of fields files filenames.
+    """Load cubes from a list of fields files filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of fields files filenames to load.
+    callback :
+        A function which can be passed on to :func:`iris.io.run_callback`.
 
-    * filenames - list of fields files filenames to load
-
-    Kwargs:
-
-    * callback - a function which can be passed on to
-        :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the order that they are in the
@@ -864,11 +860,12 @@ def load_cubes(filenames, callback, constraints=None):
 
 
 def load_cubes_32bit_ieee(filenames, callback, constraints=None):
-    """Loads cubes from a list of 32bit ieee converted fieldsfiles filenames.
+    """Load cubes from a list of 32bit ieee converted fieldsfiles filenames.
 
-    .. seealso::
-
-        :func:`load_cubes` for keyword details
+    See Also
+    --------
+    :func:`load_cubes` :
+        For keyword details.
 
     """
     return pp._load_cubes_variable_loader(

@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Argparse conveniences for executing common types of benchmark runs.
-"""
+"""Argparse conveniences for executing common types of benchmark runs."""
 
 from abc import ABC, abstractmethod
 import argparse
@@ -67,9 +66,8 @@ def _check_requirements(package: str) -> None:
 
 
 def _prep_data_gen_env() -> None:
-    """Create/access a separate, unchanging environment for generating test data."""
-
-    python_version = "3.11"
+    """Create or access a separate, unchanging environment for generating test data."""
+    python_version = "3.12"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")
@@ -173,7 +171,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
     performance_report = dedent(
         (
             """
-            ### Performance Benchmark Report: {commit_sha}
+            # :stopwatch: Performance Benchmark Report: {commit_sha}
 
             <details>
             <summary>Performance shifts</summary>
@@ -257,8 +255,8 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
                 * commit {commit_sha} ({pr_tag}).
 
                 <p>
-                Please review the report below and 
-                take corrective/congratulatory action as appropriate 
+                Please review the report below and
+                take corrective/congratulatory action as appropriate
                 :slightly_smiling_face:
                 </p>
                 """
@@ -334,7 +332,7 @@ class _SubParserGenerator(ABC):
     @staticmethod
     @abstractmethod
     def func(args: argparse.Namespace):
-        """The function to return when the subparser is parsed.
+        """Return when the subparser is parsed.
 
         `func` is then called, performing the user's selected sub-command.
 

@@ -6,7 +6,9 @@
 
 
 def _get_NAME_loader(filename):
-    """Return the appropriate load function for a NAME file based
+    """Return a NAME load function.
+
+    Return the appropriate load function for a NAME file based
     on the contents of its header.
 
     """
@@ -43,21 +45,18 @@ def _get_NAME_loader(filename):
 
 
 def load_cubes(filenames, callback):
-    """Return a generator of cubes given one or more filenames and an
-    optional callback.
+    """Return a generator of cubes given one or more filenames and an optional callback.
 
-    Args:
-
-    * filenames (string/list):
+    Parameters
+    ----------
+    filenames : str or list
         One or more NAME filenames to load.
-
-    Kwargs:
-
-    * callback (callable function):
+    callback : callable function, optional
         A function which can be passed on to :func:`iris.io.run_callback`.
 
-    Returns:
-         A generator of :class:`iris.cubes.Cube` instances.
+    Returns
+    -------
+    A generator of :class:`iris.cubes.Cube` instances.
 
     """
     from iris.io import run_callback

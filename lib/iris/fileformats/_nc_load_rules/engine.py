@@ -2,7 +2,9 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""A simple mimic of the Pyke 'knowledge_engine', for interfacing to the routines
+"""A simple mimic of the Pyke 'knowledge_engine'.
+
+A simple mimic of the Pyke 'knowledge_engine', for interfacing to the routines
 in 'iris.fileformats.netcdf' with minimal changes to that code.
 
 This allows us to replace the Pyke rules operation with the simpler pure-Python
@@ -16,6 +18,7 @@ API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
 used in :meth:`iris.fileformats.netcdf._actions_activation_stats`.
 
 """
+
 from .actions import run_actions
 
 
@@ -102,10 +105,7 @@ class Engine:
         return self.facts
 
     def print_stats(self):
-        """No-op, called by
-        :meth:`iris.fileformats.netcdf._action_activation_stats`.
-
-        """
+        """No-op, called by :meth:`iris.fileformats.netcdf._action_activation_stats`."""
         pass
 
     def add_case_specific_fact(self, fact_name, fact_arglist):

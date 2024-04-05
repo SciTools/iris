@@ -15,7 +15,7 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.9", "3.10", "3.11"]
+_PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -39,7 +39,7 @@ def session_lockfile(session: nox.sessions.Session) -> Path:
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
-    """Returns the path of the session lockfile cache."""
+    """Return the path of the session lockfile cache."""
     lockfile = session_lockfile(session)
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / lockfile.name
@@ -47,14 +47,18 @@ def session_cachefile(session: nox.sessions.Session) -> Path:
 
 
 def venv_populated(session: nox.sessions.Session) -> bool:
-    """Returns True if the conda venv has been created
-    and the list of packages in the lockfile installed."""
+    """List of packages in the lockfile installed.
+
+    Returns True if the conda venv has been created.
+    """
     return session_cachefile(session).is_file()
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different to that specified
-    in the lockfile."""
+    """Return True if the installed session is different.
+
+    Compares to that specified in the lockfile.
+    """
     changed = False
     cache = session_cachefile(session)
     lockfile = session_lockfile(session)
@@ -75,7 +79,7 @@ def cache_venv(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -92,7 +96,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -105,14 +109,15 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """Create and cache the nox session conda environment, and additionally
-    provide conda environment package details and info.
+    """Create and cache the nox session conda environment.
+
+    Additionally provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     Notes
@@ -169,7 +174,7 @@ def tests(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -193,7 +198,7 @@ def doctest(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -220,7 +225,7 @@ def gallery(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -241,7 +246,7 @@ def linkcheck(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -267,7 +272,7 @@ def wheel(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """

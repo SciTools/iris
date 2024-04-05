@@ -3,12 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-r"""Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
+r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`.
+
+Extensions to Iris' NetCDF loading to allow the construction of
+:class:`~iris.experimental.ugrid.mesh.Mesh` from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
+
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
@@ -17,11 +20,11 @@ import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
-from ...exceptions import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
+from ...warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 from .cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
@@ -48,7 +51,9 @@ class _WarnComboCfDefaultingIgnoring(_WarnComboCfDefaulting, IrisIgnoringWarning
 
 class ParseUGridOnLoad(threading.local):
     def __init__(self):
-        """A flag for dictating whether to use the experimental UGRID-aware
+        """Thead-safe state to enable UGRID-aware NetCDF loading.
+
+        A flag for dictating whether to use the experimental UGRID-aware
         version of Iris NetCDF loading. Object is thread-safe.
 
         Use via the run-time switch
@@ -97,7 +102,7 @@ PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
 def _meshes_from_cf(cf_reader):
-    """Common behaviour for extracting meshes from a CFReader.
+    """Mesh from cf, common behaviour for extracting meshes from a CFReader.
 
     Simple now, but expected to increase in complexity as Mesh sharing develops.
 
@@ -123,10 +128,10 @@ def load_mesh(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-         must support OpenDAP.
+        must support OpenDAP.
     var_name : str, optional
         Only return a :class:`~iris.experimental.ugrid.mesh.Mesh` if its
-         var_name matches this value.
+        var_name matches this value.
 
     Returns
     -------
@@ -149,17 +154,17 @@ def load_meshes(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-         must support OpenDAP.
+        must support OpenDAP.
     var_name : str, optional
-        Only return :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es that have
-         var_names matching this value.
+        Only return :class:`~iris.experimental.ugrid.mesh.Mesh` that have
+        var_names matching this value.
 
     Returns
     -------
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
-         ``uris`` to a list of the
-         :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es returned from each.
+        ``uris`` to a list of the
+        :class:`~iris.experimental.ugrid.mesh.Mesh` returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
@@ -230,7 +235,9 @@ def load_meshes(uris, var_name=None):
 
 
 def _build_aux_coord(coord_var, file_path):
-    """Construct a :class:`~iris.coords.AuxCoord` from a given
+    """Construct a :class:`~iris.coords.AuxCoord`.
+
+    Construct a :class:`~iris.coords.AuxCoord` from a given
     :class:`~iris.experimental.ugrid.cf.CFUGridAuxiliaryCoordinateVariable`,
     and guess its mesh axis.
 
@@ -283,7 +290,9 @@ def _build_aux_coord(coord_var, file_path):
 
 
 def _build_connectivity(connectivity_var, file_path, element_dims):
-    """Construct a :class:`~iris.experimental.ugrid.mesh.Connectivity` from a
+    """Construct a :class:`~iris.experimental.ugrid.mesh.Connectivity`.
+
+    Construct a :class:`~iris.experimental.ugrid.mesh.Connectivity` from a
     given :class:`~iris.experimental.ugrid.cf.CFUGridConnectivityVariable`,
     and identify the name of its first dimension.
 
@@ -325,10 +334,12 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
 
 
 def _build_mesh(cf, mesh_var, file_path):
-    """Construct a :class:`~iris.experimental.ugrid.mesh.Mesh` from a given
+    """Construct a :class:`~iris.experimental.ugrid.mesh.Mesh`.
+
+    Construct a :class:`~iris.experimental.ugrid.mesh.Mesh` from a given
     :class:`~iris.experimental.ugrid.cf.CFUGridMeshVariable`.
 
-    todo: integrate with standard loading API post-pyke.
+    TODO: integrate with standard loading API post-pyke.
 
     """
     # TODO: integrate with standard saving API when no longer 'experimental'.
@@ -458,11 +469,13 @@ def _build_mesh(cf, mesh_var, file_path):
 
 
 def _build_mesh_coords(mesh, cf_var):
-    """Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord` using
+    """Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
+
+    Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord` using
     from a given :class:`~iris.experimental.ugrid.mesh.Mesh`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
-    todo: integrate with standard loading API post-pyke.
+    TODO: integrate with standard loading API post-pyke.
 
     """
     # TODO: integrate with standard saving API when no longer 'experimental'.

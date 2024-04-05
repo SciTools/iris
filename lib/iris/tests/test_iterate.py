@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the iteration of cubes in step.
-
-"""
+"""Test the iteration of cubes in step."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -20,9 +18,9 @@ import numpy as np
 
 import iris
 import iris.analysis
-from iris.exceptions import IrisUserWarning
 import iris.iterate
 import iris.tests.stock
+from iris.warnings import IrisUserWarning
 
 
 @tests.skip_data
