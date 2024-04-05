@@ -53,6 +53,8 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `@bouweandela`_ added the option to specify the Dask chunks of the target
+   array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
 
 🔥 Deprecations
 ===============

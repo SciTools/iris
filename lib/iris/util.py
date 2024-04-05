@@ -28,7 +28,7 @@ from iris.common.lenient import _lenient_client
 import iris.exceptions
 
 
-def broadcast_to_shape(array, shape, dim_map):
+def broadcast_to_shape(array, shape, dim_map, chunks=None):
     """Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
@@ -49,6 +49,14 @@ def broadcast_to_shape(array, shape, dim_map):
         the index in *shape* which the dimension of *array* corresponds
         to, so the first element of *dim_map* gives the index of *shape*
         that corresponds to the first dimension of *array* etc.
+    chunks : :class:`tuple`, optional
+        If the source array is a :class:`dask.array.Array` and a value is
+        provided, then the result will use these chunks instead of the same
+        chunks as the source array. Setting chunks explicitly as part of
+        broadcast_to_shape is more efficient than rechunking afterwards. See
+        also :func:`dask.array.broadcast_to`. Note that the values provided
+        here will only be used along dimensions that are new on the result or
+        have size 1 on the source array.
 
     Examples
     --------
@@ -71,13 +79,25 @@ def broadcast_to_shape(array, shape, dim_map):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
+    if isinstance(array, da.Array):
+        if chunks is not None:
+            chunks = list(chunks)
+            for src_idx, tgt_idx in enumerate(dim_map):
+                # Only use the specified chunks along new dimensions or on
+                # dimensions that have size 1 in the source array.
+                if array.shape[src_idx] != 1:
+                    chunks[tgt_idx] = array.chunks[src_idx]
+        broadcast = functools.partial(da.broadcast_to, shape=shape, chunks=chunks)
+    else:
+        broadcast = functools.partial(np.broadcast_to, shape=shape)
+
     n_orig_dims = len(array.shape)
     n_new_dims = len(shape) - n_orig_dims
     array = array.reshape(array.shape + (1,) * n_new_dims)
 
     # Get dims in required order.
     array = np.moveaxis(array, range(n_orig_dims), dim_map)
-    new_array = np.broadcast_to(array, shape)
+    new_array = broadcast(array)
 
     if ma.isMA(array):
         # broadcast_to strips masks so we need to handle them explicitly.
@@ -85,13 +105,13 @@ def broadcast_to_shape(array, shape, dim_map):
         if mask is ma.nomask:
             new_mask = ma.nomask
         else:
-            new_mask = np.broadcast_to(mask, shape)
+            new_mask = broadcast(mask)
         new_array = ma.array(new_array, mask=new_mask)
 
     elif is_lazy_masked_data(array):
         # broadcast_to strips masks so we need to handle them explicitly.
         mask = da.ma.getmaskarray(array)
-        new_mask = da.broadcast_to(mask, shape)
+        new_mask = broadcast(mask)
         new_array = da.ma.masked_array(new_array, new_mask)
 
     return new_array
