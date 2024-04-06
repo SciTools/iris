@@ -1160,7 +1160,7 @@ class TestAreaWeights(tests.IrisTest):
 @tests.skip_data
 class TestLazyAreaWeights:
     @pytest.mark.parametrize("normalize", [True, False])
-    @pytest.mark.parametrize("chunks", [None, (2, 3, 4)])
+    @pytest.mark.parametrize("chunks", [None, (2, 3, 4), (2, 2, 2)])
     @pytest.mark.parametrize(
         "cube_data",
         [np.ones((4, 3, 4)), da.ones((4, 3, 4), chunks=(1, 3, 4))],
