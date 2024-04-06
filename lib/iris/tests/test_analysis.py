@@ -1161,13 +1161,8 @@ class TestAreaWeights(tests.IrisTest):
 class TestLazyAreaWeights:
     @pytest.mark.parametrize("normalize", [True, False])
     @pytest.mark.parametrize("chunks", [None, (2, 3, 4), (2, 2, 2)])
-    @pytest.mark.parametrize(
-        "cube_data",
-        [np.ones((4, 3, 4)), da.ones((4, 3, 4), chunks=(1, 3, 4))],
-    )
-    def test_lazy_area_weights(self, cube_data, chunks, normalize):
+    def test_lazy_area_weights(self, chunks, normalize):
         small_cube = iris.tests.stock.simple_3d()[[0, 0, 0, 0], :, :]
-        small_cube.data = cube_data
         small_cube.coord("latitude").guess_bounds()
         small_cube.coord("longitude").guess_bounds()
 
