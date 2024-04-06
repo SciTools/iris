@@ -504,13 +504,8 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broadcast_kwargs = {}
-    if not compute:
-        if chunks is None:
-            chunks = cube.lazy_data().chunks
-        broadcast_kwargs["chunks"] = chunks
     broad_weights = iris.util.broadcast_to_shape(
-        ll_weights, cube.shape, broadcast_dims, **broadcast_kwargs
+        ll_weights, cube.shape, broadcast_dims, chunks=chunks
     )
 
     return broad_weights

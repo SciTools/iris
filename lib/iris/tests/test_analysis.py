@@ -1116,6 +1116,8 @@ class TestRotatedPole(tests.IrisTest):
 
 @tests.skip_data
 class TestAreaWeights(tests.IrisTest):
+    # Note: chunks is simply ignored for non-lazy data
+    @pytest.mark.parametrize("chunks", [None, (2, 3)])
     def test_area_weights(self):
         small_cube = iris.tests.stock.simple_pp()
         # Get offset, subsampled region: small enough to test against literals
@@ -1179,13 +1181,10 @@ class TestLazyAreaWeights:
         assert isinstance(area_weights, da.Array)
 
         # Check that chunksizes are as expected
-        if chunks is not None:
-            assert area_weights.chunksize == chunks
+        if chunks is None:
+            assert area_weights.chunksize == (4, 3, 4)
         else:
-            if isinstance(cube_data, da.Array):
-                assert area_weights.chunksize == cube_data.chunksize
-            else:
-                assert area_weights.chunksize == (4, 3, 4)
+            assert area_weights.chunksize == (2, 3, 4)
 
         # Check that actual weights are as expected (known good output)
         if normalize:
