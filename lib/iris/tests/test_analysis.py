@@ -1116,6 +1116,8 @@ class TestRotatedPole(tests.IrisTest):
 
 @tests.skip_data
 class TestAreaWeights(tests.IrisTest):
+    # Note: chunks is simply ignored for non-lazy data
+    @pytest.mark.parametrize("chunks", [None, (2, 3)])
     def test_area_weights(self):
         small_cube = iris.tests.stock.simple_pp()
         # Get offset, subsampled region: small enough to test against literals
@@ -1153,6 +1155,47 @@ class TestAreaWeights(tests.IrisTest):
             ("analysis", "areaweights_original.cml"),
             checksum=False,
         )
+
+
+@tests.skip_data
+class TestLazyAreaWeights:
+    @pytest.mark.parametrize("normalize", [True, False])
+    @pytest.mark.parametrize("chunks", [None, (2, 3, 4), (2, 2, 2)])
+    def test_lazy_area_weights(self, chunks, normalize):
+        small_cube = iris.tests.stock.simple_3d()[[0, 0, 0, 0], :, :]
+        small_cube.coord("latitude").guess_bounds()
+        small_cube.coord("longitude").guess_bounds()
+
+        area_weights = iris.analysis.cartography.area_weights(
+            small_cube,
+            normalize=normalize,
+            compute=False,
+            chunks=chunks,
+        )
+
+        assert isinstance(area_weights, da.Array)
+
+        # Check that chunksizes are as expected
+        if chunks is None:
+            assert area_weights.chunksize == (4, 3, 4)
+        else:
+            assert area_weights.chunksize == (2, 3, 4)
+
+        # Check that actual weights are as expected (known good output)
+        if normalize:
+            expected_2d = [
+                [0.03661165, 0.03661165, 0.03661165, 0.03661165],
+                [0.1767767, 0.1767767, 0.1767767, 0.1767767],
+                [0.03661165, 0.03661165, 0.03661165, 0.03661165],
+            ]
+        else:
+            expected_2d = [
+                [1.86536150e13, 1.86536150e13, 1.86536150e13, 1.86536150e13],
+                [9.00676206e13, 9.00676206e13, 9.00676206e13, 9.00676206e13],
+                [1.86536150e13, 1.86536150e13, 1.86536150e13, 1.86536150e13],
+            ]
+        expected = np.broadcast_to(expected_2d, (4, 3, 4))
+        np.testing.assert_allclose(area_weights.compute(), expected)
 
 
 @tests.skip_data

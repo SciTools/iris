@@ -400,6 +400,7 @@ linkcheck_ignore = [
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
     "https://stackoverflow.com/questions/tagged/python-iris",
+    "https://www.flaticon.com/",
 ]
 
 # list of sources to exclude from the build.
