@@ -72,7 +72,7 @@ class Test___init__:
         self._assert_members_none(resolve)
         assert self.m_call.call_count == 1
         call_args = mocker.call(m_lhs, m_rhs)
-        assert call_args == self.m_call.call_args
+        assert self.m_call.call_args == call_args
 
 
 class Test___call__:
@@ -103,13 +103,13 @@ class Test___call__:
     def _assert_called_metadata_methods(self):
         call_args = mock.call()
         assert self.m_metadata_resolve.call_count == 1
-        assert call_args == self.m_metadata_resolve.call_args
+        assert self.m_metadata_resolve.call_args == call_args
         assert self.m_metadata_coverage.call_count == 1
-        assert call_args == self.m_metadata_coverage.call_args
+        assert self.m_metadata_coverage.call_args == call_args
         assert self.m_metadata_mapping.call_count == 1
-        assert call_args == self.m_metadata_mapping.call_args
+        assert self.m_metadata_mapping.call_args == call_args
         assert self.m_metadata_prepare.call_count == 1
-        assert call_args == self.m_metadata_prepare.call_args
+        assert self.m_metadata_prepare.call_args == call_args
 
     def test_map_rhs_to_lhs__less_than(self):
         self.m_lhs.ndim = 2
@@ -545,13 +545,13 @@ class Test__aux_coverage:
             self.cube, items_aux, items_scalar, common_aux, common_scalar
         )
         assert isinstance(result, _AuxCoverage)
-        assert self.cube == result.cube
-        assert [] == result.common_items_aux
-        assert [] == result.common_items_scalar
-        assert [] == result.local_items_aux
-        assert [] == result.local_items_scalar
-        assert [] == result.dims_common
-        assert [] == result.dims_local
+        assert result.cube == self.cube
+        assert result.common_items_aux == []
+        assert result.common_items_scalar == []
+        assert result.local_items_aux == []
+        assert result.local_items_scalar == []
+        assert result.dims_common == []
+        assert result.dims_local == []
         expected = list(range(self.ndim))
         assert result.dims_free == expected
 
@@ -566,9 +566,8 @@ class Test__aux_coverage:
         )
         assert isinstance(result, _AuxCoverage)
         assert result.cube == self.cube
-        expected = []
-        assert result.common_items_aux == expected
-        assert result.common_items_scalar == expected
+        assert result.common_items_aux == []
+        assert result.common_items_scalar == []
         assert result.local_items_aux == self.items_aux
         assert result.local_items_scalar == self.items_scalar
         assert result.dims_common == []
@@ -2404,9 +2403,9 @@ class Test__prepare_common_aux_payload:
             for src_metadata, tgt_metadata in zip(
                 self.src_metadata, self.tgt_metadata[1:]
             ):
-                assert 1 == src_metadata.combine.call_count
+                assert src_metadata.combine.call_count == 1
                 expected = [mock.call(tgt_metadata)]
-                assert expected == src_metadata.combine.call_args_list
+                assert src_metadata.combine.call_args_list == expected
 
     def test__default_ignore_mismatch(self):
         self._check()
@@ -4615,7 +4614,7 @@ class Test_cube:
         assert self.m_add_aux_factory.call_count == 1
         expected = [mock.call(self.aux_factory)]
         assert self.m_add_aux_factory.call_args_list == expected
-        assert 1 == self.prepared_factory_container.call_count == 1
+        assert self.prepared_factory_container.call_count == 1
         expected = [
             mock.call(
                 **{
