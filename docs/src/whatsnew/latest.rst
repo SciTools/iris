@@ -42,13 +42,22 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@rcomer`_ removed the *target* parameter from
+   :func:`~iris.fileformats.pp.as_fields` and
+   :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
+   (:pull:`5783`)
 
 
 🚀 Performance Enhancements
 ===========================
 
 #. N/A
+
+#. `@bouweandela`_ added the option to specify the Dask chunks of the target
+   array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
+
+#. `@schlunma`_ allowed :func:`iris.analysis.cartography.area_weights` to
+   return dask arrays with arbitrary chunks. (:pull:`5658`)
 
 
 🔥 Deprecations
@@ -60,7 +69,9 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should 
+   now be used, currently being v7.2.6.
+   (:pull:`5901`)
 
 
 📚 Documentation
