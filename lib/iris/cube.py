@@ -3530,7 +3530,7 @@ class Cube(CFVariableMixin):
             Note that the dimension order returned in the sub_cubes matches the order specified
             in the `cube.slices` call, *not* the order of the dimensions in the original cube.
 
-        To get all realizations as 2x3D separate subcubes, using the `time`, `latitude` 
+        To get all realizations as 2x3D separate subcubes, using the `time`, `latitude`
         and `longitude` dimensions' indices:
 
         >>> for sub_cube in cube.slices([1, 2, 3]):
