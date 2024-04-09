@@ -77,8 +77,7 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@hsteptoe`_ added more detailed examples to :func:`~iris.cube.Cube.slices` and 
-    :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
+#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
 💼 Internal

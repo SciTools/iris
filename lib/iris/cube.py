@@ -3406,35 +3406,34 @@ class Cube(CFVariableMixin):
         For example, for a cube with dimensions `realization`, `time`, `latitude` and
         `longitude`:
 
-            >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
-            >>> cube = iris.load_cube(fname, 'surface_temperature')
-            >>> print(cube)  # doctest: SKIP
-            surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
-            Dimension coordinates:
-                realization                             x        -            -               -
-                time                                    -        x            -               -
-                latitude                                -        -            x               -
-                longitude                               -        -            -               x
-            Auxiliary coordinates:
-                forecast_period                         -        x            -               -
-            Scalar coordinates:
-                forecast_reference_time     2011-07-23 00:00:00
-            Cell methods:
-                0                           time: mean (interval: 1 hour)
-            Attributes:
-                STASH                       m01s00i024
-                source                      'Data from Met Office Unified Model'
-                um_version                  '7.6'
+        >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
+        >>> cube = iris.load_cube(fname, 'surface_temperature')
+        >>> print(cube.summary(shorten=True))
+        surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
 
         To get all 12x2D longitude/latitude subcubes:
 
-            >>> for sub_cube in cube.slices_over(['realization', 'time']):
-            ...     print(sub_cube)  # doctest: SKIP
+        >>> for sub_cube in cube.slices_over(['realization', 'time']):
+        ...     print(sub_cube.summary(shorten=True))
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
+        surface_temperature / (K)           (latitude: 145; longitude: 192)
 
-        To get realizations as 2x3D separate subcubes, using dimension indices:
+        To get realizations as 2x3D separate subcubes, using the `realization` dimension index:
 
-            >>> for sub_cube in cube.slices_over(0):
-            ...     print(sub_cube)  # doctest: SKIP
+        >>> for sub_cube in cube.slices_over(0):
+        ...     print(sub_cube.summary(shorten=True))
+        surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
+        surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
 
         Notes
         -----
@@ -3504,35 +3503,40 @@ class Cube(CFVariableMixin):
         For example, for a cube with dimensions `realization`, `time`, `latitude` and
         `longitude`:
 
-            >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
-            >>> cube = iris.load_cube(fname, 'surface_temperature')
-            >>> print(cube)  # doctest: SKIP
-            surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
-            Dimension coordinates:
-                realization                             x        -            -               -
-                time                                    -        x            -               -
-                latitude                                -        -            x               -
-                longitude                               -        -            -               x
-            Auxiliary coordinates:
-                forecast_period                         -        x            -               -
-            Scalar coordinates:
-                forecast_reference_time     2011-07-23 00:00:00
-            Cell methods:
-                0                           time: mean (interval: 1 hour)
-            Attributes:
-                STASH                       m01s00i024
-                source                      'Data from Met Office Unified Model'
-                um_version                  '7.6'
+        >>> fname = iris.sample_data_path('GloSea4', 'ensemble_01[01].pp')
+        >>> cube = iris.load_cube(fname, 'surface_temperature')
+        >>> print(cube.summary(shorten=True))
+        surface_temperature / (K)           (realization: 2; time: 6; latitude: 145; longitude: 192)
 
         To get all 12x2D longitude/latitude subcubes:
 
-            >>> for sub_cube in cube.slices(['longitude', 'latitude']):
-            ...     print(sub_cube)  # doctest: SKIP
+        >>> for sub_cube in cube.slices(['longitude', 'latitude']):
+        ...     print(sub_cube.summary(shorten=True))
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
+        surface_temperature / (K)           (longitude: 192; latitude: 145)
 
-        To get all realizations as 2x3D separate subcubes, using dimension indices:
 
-            >>> for sub_cube in cube.slices([1, 2, 3]):
-            ...     print(sub_cube)  # doctest: SKIP
+        .. warning::
+            Note that the dimension order returned in the sub_cubes matches the order specified
+            in the `cube.slices` call, *not* the order of the dimensions in the original cube.
+
+        To get all realizations as 2x3D separate subcubes, using the `time`, `latitude` 
+        and `longitude` dimensions' indices:
+
+        >>> for sub_cube in cube.slices([1, 2, 3]):
+        ...     print(sub_cube.summary(shorten=True))
+        surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
+        surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
 
         See Also
         --------
