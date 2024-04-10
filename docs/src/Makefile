@@ -20,23 +20,29 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
-	@echo "  help         to view this help"
-	@echo "  html         to make standalone HTML files"
-	@echo "  html-noplot  to make standalone HTML files, skip gallery"
-	@echo "  html-noapi   to make standalone HTML files, skip the API"
-	@echo "  html-quick   to make standalone HTML files, skip the gallery and API"
-	@echo "  clean        to remove all built files"
-	@echo "  doctest      to run all doctests embedded in the documentation (if enabled)"
-	@echo "  linkcheck    to check all external links for integrity"
-	@echo "  show         to open the built documentation in the default browser"
-	@echo "  livehtml     to auto build the docs when any file changes are detected."
-	@echo "               You need to install sphinx-autobuild first:"
-	@echo "                   conda install -c conda-forge sphinx-autobuild"
+	@echo "  help          to view this help"
+	@echo "  html          to make standalone HTML files"
+	@echo "  html-noplot   to make standalone HTML files, skip gallery"
+	@echo "  html-nitpicky to make standalone HTML files and  use sphinx nitpicky"	
+	@echo "  html-noapi    to make standalone HTML files, skip the API"
+	@echo "  html-quick    to make standalone HTML files, skip the gallery and API"
+	@echo "  clean         to remove all built files"
+	@echo "  doctest       to run all doctests embedded in the documentation (if enabled)"
+	@echo "  linkcheck     to check all external links for integrity"
+	@echo "  show          to open the built documentation in the default browser"
+	@echo "  livehtml      to auto build the docs when any file changes are detected."
+	@echo "                You need to install sphinx-autobuild first:"
+	@echo "                    conda install -c conda-forge sphinx-autobuild"
 
 html:
 	$(SPHINXBUILD) $(WARNING_TO_ERROR) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html"
+
+html-nitpicky:
+	$(SPHINXBUILD) -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML (no api docs) pages are in $(BUILDDIR)/html"
 
 html-noplot:
 	$(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html

@@ -146,6 +146,7 @@ rst_epilog = f"""
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
+    "numpydoc",
     "sphinx.ext.todo",
     "sphinx.ext.duration",
     "sphinx.ext.coverage",
@@ -156,7 +157,6 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
-    "sphinx.ext.napoleon",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
@@ -169,23 +169,31 @@ else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
 
-# -- Napoleon extension -------------------------------------------------------
-# See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
-napoleon_google_docstring = True
-napoleon_numpy_docstring = True
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = True  # includes dunders in api doc
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = False
-napoleon_use_param = True
-napoleon_use_rtype = True
-napoleon_use_keyword = True
-napoleon_custom_sections = None
+# -- numpydoc options --------------------------------------------------------
+# See https://numpydoc.readthedocs.io/en/latest/index.html
+numpydoc_attributes_as_param_list = True  # GV is True
+numpydoc_class_members_toctree = True  # GB is False
+numpydoc_show_class_members = False  # GV is False
+numpydoc_use_plots = True  # GV is True
+# note, the dict index is case sensitive
+numpydoc_xref_aliases = {
+    "ArrayLike": "numpy.typing.ArrayLike",
+    "Cube": "iris.cube.Cube",
+}
+numpydoc_xref_ignore = {"optional", "default", "of"}
+numpydoc_xref_param_type = True
 
-# -- copybutton extension -----------------------------------------------------
+# -- nitpicky ----------------------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-nitpicky
+#
+# Use "make html-nitpicky" to enable.
+nitpick_ignore_regex = [
+    (r"py:class", r"iris.tests.*"),  # iris.tests not included in the API docs
+    (r"py:meth", r"iris.tests.*"),  # iris.tests not included in the API docs
+    (r"py:.*", r"iris.tests.*"),  # iris.tests not included in the API docs
+]
+
+# -- copybutton extension ----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
 copybutton_prompt_text = r">>> |\.\.\. "
 copybutton_prompt_is_regexp = True
@@ -244,16 +252,17 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cf-units": ("https://cf-units.readthedocs.io/en/stable/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
     "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "dask": ("https://docs.dask.org/en/stable/", None),
-    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.

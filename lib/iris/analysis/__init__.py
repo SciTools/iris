@@ -2131,7 +2131,7 @@ computed by :func:`numpy.ma.std`.
 
 Parameters
 ----------
-ddof : int, optioonal
+ddof : int, optional
     Delta degrees of freedom. The divisor used in calculations is N - ddof,
     where N represents the number of elements. Defaults to 1.
 

@@ -10,6 +10,11 @@ html:
 		echo "make html in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html); done
 
+html-nitpicky:
+	@for i in $(SUBDIRS); do \
+		echo "make html-nitpicky in $$i..."; \
+		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) html-nitpicky); done
+
 html-noplot:
 	@for i in $(SUBDIRS); do \
 		echo "make html-noplot in $$i..."; \

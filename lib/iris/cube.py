@@ -1221,8 +1221,8 @@ class Cube(CFVariableMixin):
         aux_coords_and_dims : optional
             A list of coordinates with dimension mappings,
             e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
-            See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
-            and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
+            See also :meth:`iris.cube.Cube.add_dim_coord`
+            and :meth:`iris.cube.Cube.add_aux_coord`.
         aux_factories : optional
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.

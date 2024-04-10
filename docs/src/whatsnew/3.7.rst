@@ -150,7 +150,7 @@ v3.7.1 (04 Mar 2024)
 💼 Internal
 ===========
 
-#. `@pp-mo`_ supported loading and saving netcdf :class:`netCDF4.Dataset` compatible
+#. `@pp-mo`_ supported loading and saving netcdf netCDF4.Dataset compatible
    objects in place of file-paths, as hooks for a forthcoming
    `"Xarray bridge" <https://github.com/SciTools/iris/issues/4994>`_ facility.
    (:pull:`5214`, :pull:`5212`)
