@@ -338,20 +338,20 @@ Cube Masking
 Masking from a shapefile
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often we want to perform some kind of analysis over a complex geographical feature 
+Often we want to perform some kind of analysis over a complex geographical feature e.g.,
 
 - over only land/sea points
 - over a continent, country, or list of countries
-- over a river watershed or lake basin,
+- over a river watershed or lake basin
 - over states or administrative regions of a country
 
-These geographical features can often be described by shapefiles, Shapefiles are a file format first developed for GIS software in the 1990s, and now `Natural Earth`_ maintain a large freely usable database of shapefiles of many geographical and political divisions,
-accessible via cartopy. Users may also provide their own custom shapefiles for cartopy to load, or their own underlying geometry in the same format as a shapefile geometry.
+These geographical features can often be described by `ESRI Shapefiles`_. Shapefiles are a file format first developed for GIS software in the 1990s, and `Natural Earth`_ maintain a large freely usable database of shapefiles of many geographical and political divisions,
+accessible via `cartopy`_. Users may also provide their own custom shapefiles for `cartopy`_ to load, or their own underlying geometry in the same format as a shapefile geometry.
 
 These shapefiles can be used to mask an iris cube, so that any data outside the bounds of the shapefile is hidden from further analysis or plotting.
 
 First, we load the correct shapefile from NaturalEarth via the `Cartopy`_ instructions. Here we get one for Brazil.
-The `.geometry` attribute of the records in the reader contain the shapely polygon we're interested in. They contain the coordinates that define the polygon (or set of lines) being masked
+The `.geometry` attribute of the records in the reader contain the `Shapely`_ polygon we're interested in. They contain the coordinates that define the polygon (or set of lines) being masked
 and once we have those we just need to provide them to the :class:`iris.util.mask_cube_from_shapefile` function. 
 This returns a copy of the cube with a :class:`numpy.masked_array` as the data payload, where the data outside the shape is hidden by the masked array. We can see this in the following example.
 
