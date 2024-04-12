@@ -1,6 +1,7 @@
 .. include:: ../common_links.inc
 
 .. _subsetting_a_cube:
+
 =================
 Subsetting a Cube
 =================
