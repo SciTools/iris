@@ -1,5 +1,6 @@
-.. _subsetting_a_cube:
+.. include:: ../common_links.inc
 
+.. _subsetting_a_cube:
 =================
 Subsetting a Cube
 =================
@@ -350,7 +351,7 @@ accessible via `cartopy`_. Users may also provide their own custom shapefiles fo
 
 These shapefiles can be used to mask an iris cube, so that any data outside the bounds of the shapefile is hidden from further analysis or plotting.
 
-First, we load the correct shapefile from NaturalEarth via the `Cartopy`_ instructions. Here we get one for Brazil.
+First, we load the correct shapefile from NaturalEarth via the `Cartopy_shapereader`_ instructions. Here we get one for Brazil.
 The `.geometry` attribute of the records in the reader contain the `Shapely`_ polygon we're interested in. They contain the coordinates that define the polygon (or set of lines) being masked
 and once we have those we just need to provide them to the :class:`iris.util.mask_cube_from_shapefile` function. 
 This returns a copy of the cube with a :class:`numpy.masked_array` as the data payload, where the data outside the shape is hidden by the masked array. We can see this in the following example.
@@ -363,7 +364,7 @@ We can see that the dimensions of the cube haven't changed - the plot is still g
 
 .. note::
     While Iris will try to dynamically adjust the shapefile to mask cubes of different projections, it can struggle with rotated pole projections and cubes with Meridians not at 0°
-    Converting your Cube's coordinate system may help if you get a fully masked cube as the output from this function.
+    Converting your Cube's coordinate system may help if you get a fully masked cube as the output from this function unexpectedly.
 
 
 Cube Iteration
@@ -479,5 +480,8 @@ Similarly, Iris cubes have indexing capability::
 	print(cube[1, ::-2])
 
 
-.. _Cartopy: https://scitools.org.uk/cartopy/docs/latest/tutorials/using_the_shapereader.html#id1
+.. _Cartopy_shapereader: https://scitools.org.uk/cartopy/docs/latest/tutorials/using_the_shapereader.html#id1
 .. _Natural Earth: https://www.naturalearthdata.com/
+.. _ESRI Shapefiles: https://support.esri.com/en-us/technical-paper/esri-shapefile-technical-description-279
+
+

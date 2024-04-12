@@ -35,6 +35,7 @@
 .. _ruff: https://github.com/astral-sh/ruff
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
+.. _Shapely: https://shapely.readthedocs.io/en/stable/index.html
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _sphinx-apidoc: https://github.com/sphinx-contrib/apidoc
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
