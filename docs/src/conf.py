@@ -17,7 +17,7 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
-"""sphinx config."""
+"""Config for sphinx."""
 
 import datetime
 from importlib.metadata import version as get_version
@@ -252,6 +252,8 @@ intersphinx_mapping = {
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -377,16 +379,6 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
-# this allows for using datatables: https://datatables.net/.
-# the version can be manually upgraded by changing the urls below.
-html_css_files = [
-    "https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css",
-]
-
-html_js_files = [
-    "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",
-]
-
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
@@ -408,6 +400,7 @@ linkcheck_ignore = [
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
     "https://stackoverflow.com/questions/tagged/python-iris",
+    "https://www.flaticon.com/",
 ]
 
 # list of sources to exclude from the build.

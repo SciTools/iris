@@ -66,8 +66,8 @@ def _check_requirements(package: str) -> None:
 
 
 def _prep_data_gen_env() -> None:
-    """Create/access a separate, unchanging environment for generating test data."""
-    python_version = "3.11"
+    """Create or access a separate, unchanging environment for generating test data."""
+    python_version = "3.12"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")
@@ -171,7 +171,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
     performance_report = dedent(
         (
             """
-            ### Performance Benchmark Report: {commit_sha}
+            # :stopwatch: Performance Benchmark Report: {commit_sha}
 
             <details>
             <summary>Performance shifts</summary>

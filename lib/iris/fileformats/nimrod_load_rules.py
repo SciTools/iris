@@ -17,9 +17,9 @@ import iris.coord_systems
 from iris.coords import DimCoord
 from iris.exceptions import (
     CoordinateNotFoundError,
-    IrisNimrodTranslationWarning,
     TranslationError,
 )
+from iris.warnings import IrisNimrodTranslationWarning
 
 __all__ = ["run"]
 
@@ -32,7 +32,7 @@ TIME_UNIT = cf_units.Unit(
 
 
 class TranslationWarning(IrisNimrodTranslationWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`."""
+    """Backwards compatible form of :class:`iris.warnings.IrisNimrodTranslationWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -654,7 +654,7 @@ def attributes(cube, field):
 
 
 def known_threshold_coord(field):
-    """Supplies known threshold coord meta-data for known use cases.
+    """Supply known threshold coord meta-data for known use cases.
 
     threshold_value_alt exists because some meta-data are mis-assigned in the
     Nimrod data.
@@ -895,7 +895,7 @@ def run(field, handle_metadata_errors=True):
     field : :class:`~iris.fileformats.nimrod.NimrodField`
     handle_metadata_errors : bool, default=True
         Set to False to omit handling of known meta-data deficiencies
-        in Nimrod-format data
+        in Nimrod-format data.
 
     Returns
     -------

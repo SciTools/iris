@@ -1,0 +1,130 @@
+.. include:: ../common_links.inc
+
+v3.9 (03 Apr 2024) [release candidate]
+**************************************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+
+.. dropdown:: v3.9 Release Highlights
+   :color: primary
+   :icon: info
+   :animate: fade-in
+   :open:
+
+   This is a small release to make two important changes available as soon as
+   possible:
+
+   * The :mod:`iris.experimental.geovista` module.
+   * Removal of fill value collision warnings in NetCDF saving, which
+     significantly improves Iris' performance when parallel processing.
+
+   See below for more detail on these changes.
+
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
+
+
+📢 Announcements
+================
+
+#. ⏱️ Performance benchmarking has shown that loading
+   :term:`Fields File (FF) Format` with a large number of fields via
+   :func:`iris.fileformats.um.structured_um_loading` has become ~30% slower
+   since `Dask version 2024.2.1`_.
+
+
+✨ Features
+===========
+
+#. `@HGWright`_ and `@trexfeathers`_ added the
+   :mod:`iris.experimental.geovista` module, providing conveniences for using
+   :ref:`ugrid geovista` with Iris. To see some of this in action, check out
+   :ref:`ugrid operations`. Note that GeoVista is an **optional** dependency
+   so you will need to explicitly install it into your environment.
+   (:pull:`5740`)
+
+
+🐛 Bugs Fixed
+=============
+
+#. `@pp-mo`_ prevented the CHUNK_CONTROL feature from hitting an error when loading
+   from a NetCDF v3 file.  (:pull:`5897`)
+
+
+💣 Incompatible Changes
+=======================
+
+#. Warnings are no longer produced for fill value 'collisions' in NetCDF
+   saving. :ref:`Read more <missing_data_saving>`. (:pull:`5833`)
+
+
+🚀 Performance Enhancements
+===========================
+
+#. `@bouweandela`_ made :func:`iris.util.rolling_window` work with lazy arrays.
+   (:pull:`5775`)
+
+#. `@stephenworsley`_ fixed a potential memory leak for Iris uses of
+   :func:`dask.array.map_blocks`; known specifically to be a problem in the
+   :class:`iris.analysis.AreaWeighted` regridder. (:pull:`5767`)
+
+#. `@fnattino`_ and `@pp-mo`_ prevented cube printout from showing the values of lazy
+   scalar coordinates, since this can involve a lengthy computation that must be
+   re-computed each time.  (:pull:`5896`)
+
+
+🔥 Deprecations
+===============
+
+#. N/A
+
+
+🔗 Dependencies
+===============
+
+#. `@bjlittle`_ dropped support for ``py39`` and adopted support for ``py312`` as per
+   the `NEP-29`_ schedule. (:pull:`5894`)
+
+
+📚 Documentation
+================
+
+#. N/A
+
+
+💼 Internal
+===========
+
+#. `@trexfeathers`_ setup automatic benchmarking on pull requests that modify
+   files likely to affect performance or performance testing. Such pull
+   requests are also labelled using the `Pull Request Labeler Github action`_
+   to increase visibility. (:pull:`5763`, :pull:`5776`)
+
+#. `@tkknight`_ updated codebase to comply with a new enforced rule `NPY002`_ for
+   `ruff`_.  (:pull:`5786`)
+
+#. `@tkknight`_ enabled `numpydoc validation`_ via the pre-commit hook.  The docstrings
+   have been updated to comply and some rules have been ignored for now.
+   (:pull:`5762`)
+
+#. `@jfrost-mo`_ enabled colour output for pytest on GitHub Actions. (:pull:`5895`)
+
+
+.. comment
+    Whatsnew author names (@github name) in alphabetical order. Note that,
+    core dev names are automatically included by the common_links.inc:
+
+.. _@jfrost-mo: https://github.com/jfrost-mo
+.. _@fnattino: https://github.com/fnattino
+
+
+.. comment
+    Whatsnew resources in alphabetical order:
+
+.. _Pull Request Labeler GitHub action: https://github.com/actions/labeler
+.. _NPY002: https://docs.astral.sh/ruff/rules/numpy-legacy-random/
+.. _numpydoc validation: https://numpydoc.readthedocs.io/en/latest/validation.html#
+.. _Dask version 2024.2.1: https://docs.dask.org/en/stable/changelog.html#v2024-2-1
+.. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html#drop-schedule

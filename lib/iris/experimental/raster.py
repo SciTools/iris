@@ -58,7 +58,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
     coord_system : iris.coord_systems.CoordSystem
         Coordinate system for X and Y.
     data : numpy.ndarray
-        2d array of values to export
+        2d array of values to export.
     fname : str
         Output file name.
     ftype : str
@@ -66,9 +66,7 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
 
     Notes
     -----
-    .. note::
-
-        Projection information is currently not written to the output.
+    Projection information is currently not written to the output.
 
     """
     byte_order = data.dtype.str[0]
@@ -109,14 +107,6 @@ def _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, f
 def export_geotiff(cube, fname):
     """Write cube data to raster file format as a PixelIsArea GeoTiff image.
 
-    .. deprecated:: 3.2.0
-
-        This method is scheduled to be removed in a future release, and no
-        replacement is currently planned.
-        If you make use of this functionality, please contact the Iris
-        Developers to discuss how to retain it (which could include reversing
-        the deprecation).
-
     Parameters
     ----------
     cube : Cube
@@ -127,10 +117,16 @@ def export_geotiff(cube, fname):
 
     Notes
     -----
-    .. note::
+    For more details on GeoTiff specification and PixelIsArea, see:
+    https://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
 
-        For more details on GeoTiff specification and PixelIsArea, see:
-        https://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
+    .. deprecated:: 3.2.0
+
+        This method is scheduled to be removed in a future release, and no
+        replacement is currently planned.
+        If you make use of this functionality, please contact the Iris
+        Developers to discuss how to retain it (which could include reversing
+        the deprecation).
 
     """
     wmsg = (

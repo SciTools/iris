@@ -19,6 +19,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 from iris.util import _meshgrid
+import iris.warnings
 
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
@@ -346,11 +347,11 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     Parameters
     ----------
     radian_lat_bounds :
-        [n,2] array of latitude bounds (radians)
+        [n,2] array of latitude bounds (radians).
     radian_lon_bounds :
-        [n,2] array of longitude bounds (radians)
+        [n,2] array of longitude bounds (radians).
     radius_of_earth :
-        radius of the earth (currently assumed spherical)
+        Radius of the earth (currently assumed spherical).
 
     """
     # ensure pairs of bounds
@@ -375,7 +376,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     return np.abs(areas)
 
 
-def area_weights(cube, normalize=False):
+def area_weights(cube, normalize=False, compute=True, chunks=None):
     r"""Return an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
@@ -400,6 +401,13 @@ def area_weights(cube, normalize=False):
     normalize : bool, default=False
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
+    compute : bool, default=True
+        If False, return a lazy dask array. If True, return a numpy array.
+    chunks : tuple, optional
+        If compute is False and a value is provided, then the result will use
+        these chunks instead of the same chunks as the cube data. The values
+        provided here will only be used along dimensions that are not latitude
+        or longitude.
 
     Returns
     -------
@@ -412,7 +420,7 @@ def area_weights(cube, normalize=False):
         if cs.inverse_flattening != 0.0:
             warnings.warn(
                 "Assuming spherical earth from ellipsoid.",
-                category=iris.exceptions.IrisDefaultingWarning,
+                category=iris.warnings.IrisDefaultingWarning,
             )
         radius_of_earth = cs.semi_major_axis
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and (
@@ -421,13 +429,13 @@ def area_weights(cube, normalize=False):
         if cs.ellipsoid.inverse_flattening != 0.0:
             warnings.warn(
                 "Assuming spherical earth from ellipsoid.",
-                category=iris.exceptions.IrisDefaultingWarning,
+                category=iris.warnings.IrisDefaultingWarning,
             )
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
         warnings.warn(
             "Using DEFAULT_SPHERICAL_EARTH_RADIUS.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
@@ -475,7 +483,13 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
+    if compute:
+        lat_bounds = lat.bounds
+        lon_bounds = lon.bounds
+    else:
+        lat_bounds = lat.lazy_bounds()
+        lon_bounds = lon.lazy_bounds()
+    ll_weights = _quadrant_area(lat_bounds, lon_bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -490,7 +504,9 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(ll_weights, cube.shape, broadcast_dims)
+    broad_weights = iris.util.broadcast_to_shape(
+        ll_weights, cube.shape, broadcast_dims, chunks=chunks
+    )
 
     return broad_weights
 
@@ -569,7 +585,7 @@ def cosine_latitude_weights(cube):
     ):
         warnings.warn(
             "Out of range latitude values will be clipped to the valid range.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
     points = lat.points
     l_weights = np.cos(points).clip(0.0, 1.0)
@@ -686,7 +702,7 @@ def project(cube, target_proj, nx=None, ny=None):
         warnings.warn(
             "Coordinate system of latitude and longitude "
             "coordinates is not specified. Assuming WGS84 Geodetic.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
         orig_cs = iris.coord_systems.GeogCS(
             semi_major_axis=6378137.0, inverse_flattening=298.257223563
@@ -877,7 +893,7 @@ def project(cube, target_proj, nx=None, ny=None):
                 lon_coord.name(),
                 [coord.name() for coord in discarded_coords],
             ),
-            category=iris.exceptions.IrisIgnoringWarning,
+            category=iris.warnings.IrisIgnoringWarning,
         )
 
     # TODO handle derived coords/aux_factories
@@ -893,10 +909,12 @@ def _transform_xy(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : array
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
@@ -915,10 +933,13 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Parameters
     ----------
-    crs1, crs2 : :class:`cartopy.crs.Projection`
-        The coordinate systems, "from" and "to".
+    crs1 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "from".
     x, y : array
         Point locations defined in 'crs1'.
+    crs2 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "to".
+
 
     Returns
     -------
@@ -1046,7 +1067,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     tgt_crs : `cartopy.crs.Projection`
         The target coordinate reference systems.
     ds : `DistanceDifferential`
-        Distance differentials for src_crs and tgt_crs at specified locations
+        Distance differentials for src_crs and tgt_crs at specified locations.
     dx2, dy2 : `PartialDifferential`
         Partial differentials from src_crs to tgt_crs.
 

@@ -171,7 +171,7 @@ class DataManager:
 
     @property
     def data(self):
-        """Returns the real data. Any lazy data being managed will be realised.
+        """Return the real data. Any lazy data being managed will be realised.
 
         Returns
         -------

@@ -19,8 +19,9 @@ import pytest
 import iris
 from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisVagueMetadataWarning, UnitConversionError
+from iris.exceptions import UnitConversionError
 from iris.tests.unit.coords import CoordTestMixin
+from iris.warnings import IrisVagueMetadataWarning
 
 Pair = collections.namedtuple("Pair", "points bounds")
 
@@ -1123,7 +1124,7 @@ class TestIgnoreAxis:
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
-        emsg = "Can't instantiate abstract class Coord with abstract method.* __init__"
+        emsg = "Can't instantiate abstract class Coord"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Coord(points=[0, 1])
 

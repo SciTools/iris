@@ -17,12 +17,13 @@ import numpy as np
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
 from iris.cube import Cube
-from iris.exceptions import IgnoreCubeException, IrisUserWarning
+from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.util
+from iris.warnings import IrisUserWarning
 
 
 class TestVertical(tests.IrisTest):
@@ -279,9 +280,10 @@ class TestVertical(tests.IrisTest):
             return_value=iter([data_field, pressure_field, pressure_field])
         )
         msg = "Multiple reference cubes for surface_air_pressure"
-        with mock.patch("iris.fileformats.pp.load", new=load) as load, mock.patch(
-            "warnings.warn"
-        ) as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             _, _, _ = iris.fileformats.pp.load_cubes("DUMMY")
             warn.assert_called_with(msg, category=IrisUserWarning)
 
@@ -395,9 +397,10 @@ class TestVertical(tests.IrisTest):
 
         # Convert field to a cube.
         load = mock.Mock(return_value=iter([data_field]))
-        with mock.patch("iris.fileformats.pp.load", new=load) as load, mock.patch(
-            "warnings.warn"
-        ) as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             (data_cube,) = iris.fileformats.pp.load_cubes("DUMMY")
 
         msg = (

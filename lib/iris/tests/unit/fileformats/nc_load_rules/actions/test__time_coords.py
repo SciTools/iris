@@ -8,6 +8,7 @@
 Tests for rules activation relating to 'time' and 'time_period' coords.
 
 """
+
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord

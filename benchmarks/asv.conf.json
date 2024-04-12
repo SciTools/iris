@@ -6,6 +6,10 @@
     "environment_type": "conda-delegated",
     "show_commit_url": "https://github.com/scitools/iris/commit/",
     "branches": ["upstream/main"],
+    "build_command": [
+        "python setup.py build",
+        "python -mpip wheel --no-deps -w {build_cache_dir} {build_dir}"
+    ],
 
     "benchmark_dir": "./benchmarks",
     "env_dir": ".asv/env",
@@ -19,7 +23,7 @@
     //  * No build-time environment variables.
     //  * Is run in the same environment as the ASV install itself.
     "delegated_env_commands": [
-        "PY_VER=3.11 nox --envdir={conf_dir}/.asv/env/nox01 --session=tests --install-only --no-error-on-external-run --verbose"
+        "PY_VER=3.12 nox --envdir={conf_dir}/.asv/env/nox01 --session=tests --install-only --no-error-on-external-run --verbose"
     ],
     // The parent directory of the above environment.
     //  The most recently modified environment in the directory will be used.
