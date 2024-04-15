@@ -3528,7 +3528,7 @@ class Cube(CFVariableMixin):
 
         .. warning::
             Note that the dimension order returned in the sub_cubes matches the order specified
-            in the `cube.slices` call, *not* the order of the dimensions in the original cube.
+            in the ``cube.slices`` call, *not* the order of the dimensions in the original cube.
 
         To get all realizations as 2x3D separate subcubes, using the `time`, `latitude`
         and `longitude` dimensions' indices:
@@ -3540,8 +3540,9 @@ class Cube(CFVariableMixin):
 
         See Also
         --------
-        iris.cube.Cube.slices :
-            Return an iterator of all subcubes given the coordinates or dimension indices.
+        iris.cube.Cube.slices_over :
+            Return an iterator of all subcubes along a given coordinate or
+            dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
         if not isinstance(ordered, bool):
