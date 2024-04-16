@@ -1756,7 +1756,8 @@ def _create_field_data(field, data_shape, land_mask_field=None):
         if land_mask_field is None:
             # For a "normal" (non-landsea-masked) field, the proxy can be
             # wrapped directly as a deferred array.
-            field.data = as_lazy_data(proxy, chunks=block_shape)
+            meta = np.empty((0,) * proxy.ndim, dtype=proxy.dtype)
+            field.data = as_lazy_data(proxy, meta=meta, chunks=block_shape)
         else:
             # This is a landsea-masked field, and its data must be handled in
             # a different way :  Because data shape/size is not known in
@@ -1807,8 +1808,12 @@ def _create_field_data(field, data_shape, land_mask_field=None):
                 return result
 
             delayed_result = calc_array(mask_field_array, delayed_valid_values)
+            meta = np.ma.array(np.empty((0,) * proxy.ndim, dtype=dtype), mask=True)
             lazy_result_array = da.from_delayed(
-                delayed_result, shape=block_shape, dtype=dtype
+                delayed_result,
+                shape=block_shape,
+                dtype=dtype,
+                meta=meta,
             )
             field.data = lazy_result_array
 

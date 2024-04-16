@@ -9,6 +9,7 @@ To avoid replicating implementation-dependent test and conversion code.
 """
 
 from functools import lru_cache, wraps
+from typing import Sequence
 
 import dask
 import dask.array as da
@@ -221,7 +222,7 @@ def _optimum_chunksize(
 
 
 def as_lazy_data(
-    data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False
+    data, chunks=None, asarray=False, meta=None, dims_fixed=None, dask_chunking=False
 ):
     """Convert the input array `data` to a :class:`dask.array.Array`.
 
@@ -235,6 +236,9 @@ def as_lazy_data(
     asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
+    meta : numpy.ndarray, optional
+        Empty ndarray created with same NumPy backend, ndim and dtype as the
+        Dask Array being created.
     dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
@@ -258,12 +262,14 @@ def as_lazy_data(
     but reduced by a factor if that exceeds the dask default chunksize.
 
     """
+    if isinstance(data, ma.core.MaskedConstant):
+        data = ma.masked_array(data.data, mask=data.mask)
+
     if dask_chunking:
         if chunks is not None:
             raise ValueError(
                 f"Dask chunking chosen, but chunks already assigned value {chunks}"
             )
-        lazy_params = {"asarray": asarray}
     else:
         if chunks is None:
             # No existing chunks : Make a chunk the shape of the entire input array
@@ -281,14 +287,9 @@ def as_lazy_data(
                 dtype=data.dtype,
                 dims_fixed=dims_fixed,
             )
-        lazy_params = {
-            "chunks": chunks,
-            "asarray": asarray,
-        }
-    if isinstance(data, ma.core.MaskedConstant):
-        data = ma.masked_array(data.data, mask=data.mask)
+
     if not is_lazy_data(data):
-        data = da.from_array(data, **lazy_params)
+        data = da.from_array(data, chunks=chunks, asarray=asarray, meta=meta)
     return data
 
 
@@ -350,7 +351,22 @@ def as_concrete_data(data):
     return data
 
 
-def multidim_lazy_stack(stack):
+def stack(seq: Sequence[da.Array | np.ndarray]) -> da.Array:
+    """Stack arrays along a new axis.
+
+    This version of :func:`da.stack` ensures all slices of the resulting array
+    are masked arrays if any of the input arrays is masked.
+    """
+
+    def is_masked(a):
+        return isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray)
+
+    if any(is_masked(a) for a in seq):
+        seq = [a if is_masked(a) else da.ma.masked_array(a) for a in seq]
+    return da.stack(seq)
+
+
+def multidim_lazy_stack(arr):
     """Recursively build a multidimensional stacked dask array.
 
     This is needed because :meth:`dask.array.Array.stack` only accepts a
@@ -358,7 +374,7 @@ def multidim_lazy_stack(stack):
 
     Parameters
     ----------
-    stack :
+    arr :
         An ndarray of :class:`dask.array.Array`.
 
     Returns
@@ -366,15 +382,15 @@ def multidim_lazy_stack(stack):
     The input array converted to a lazy :class:`dask.array.Array`.
 
     """
-    if stack.ndim == 0:
+    if arr.ndim == 0:
         # A 0-d array cannot be stacked.
-        result = stack.item()
-    elif stack.ndim == 1:
+        result = arr.item()
+    elif arr.ndim == 1:
         # Another base case : simple 1-d goes direct in dask.
-        result = da.stack(list(stack))
+        result = stack(list(arr))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack([multidim_lazy_stack(subarray) for subarray in stack])
+        result = stack([multidim_lazy_stack(subarray) for subarray in arr])
     return result
 
 
