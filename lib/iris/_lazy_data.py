@@ -221,9 +221,7 @@ def _optimum_chunksize(
     )
 
 
-def as_lazy_data(
-    data, chunks=None, asarray=False, meta=None, dims_fixed=None, dask_chunking=False
-):
+def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
     """Convert the input array `data` to a :class:`dask.array.Array`.
 
     Parameters
@@ -233,6 +231,8 @@ def as_lazy_data(
         This will be converted to a :class:`dask.array.Array`.
     chunks : list of int, optional
         If present, a source chunk shape, e.g. for a chunked netcdf variable.
+        If set to "auto", Iris chunking optimisation will be bypassed, and dask's
+        default chunking will be used instead.
     asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
@@ -243,10 +243,6 @@ def as_lazy_data(
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
-    dask_chunking : bool, default=False
-        If True, Iris chunking optimisation will be bypassed, and dask's default
-        chunking will be used instead. Including a value for chunks while dask_chunking
-        is set to True will result in a failure.
 
     Returns
     -------
@@ -265,12 +261,13 @@ def as_lazy_data(
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
 
-    if dask_chunking:
-        if chunks is not None:
-            raise ValueError(
-                f"Dask chunking chosen, but chunks already assigned value {chunks}"
-            )
-    else:
+    if meta is None and not isinstance(data, (np.ndarray, da.Array)):
+        raise ValueError(
+            "For performance reasons, `meta` cannot be `None` if `data` is "
+            "anything other than a Numpy or Dask array."
+        )
+
+    if chunks != "auto":
         if chunks is None:
             # No existing chunks : Make a chunk the shape of the entire input array
             # (but we will subdivide it if too big).

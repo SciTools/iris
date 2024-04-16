@@ -606,6 +606,10 @@ class PPDataProxy:
     def ndim(self):
         return len(self.shape)
 
+    @property
+    def meta(self):
+        return np.empty((0,) * self.ndim, dtype=self.dtype)
+
     def __getitem__(self, keys):
         with open(self.path, "rb") as pp_file:
             pp_file.seek(self.offset, os.SEEK_SET)
@@ -1756,8 +1760,7 @@ def _create_field_data(field, data_shape, land_mask_field=None):
         if land_mask_field is None:
             # For a "normal" (non-landsea-masked) field, the proxy can be
             # wrapped directly as a deferred array.
-            meta = np.empty((0,) * proxy.ndim, dtype=proxy.dtype)
-            field.data = as_lazy_data(proxy, meta=meta, chunks=block_shape)
+            field.data = as_lazy_data(proxy, meta=proxy.meta, chunks=block_shape)
         else:
             # This is a landsea-masked field, and its data must be handled in
             # a different way :  Because data shape/size is not known in

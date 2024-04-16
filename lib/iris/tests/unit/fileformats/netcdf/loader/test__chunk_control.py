@@ -203,7 +203,7 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
             except RuntimeError as e:
                 if str(e) != message:
                     raise e
-        as_lazy_data.assert_called_with(ANY, chunks=None, dask_chunking=True)
+        as_lazy_data.assert_called_with(ANY, meta=ANY, chunks="auto")
 
 
 def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
