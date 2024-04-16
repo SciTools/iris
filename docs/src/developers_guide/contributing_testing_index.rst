@@ -12,3 +12,5 @@ Testing
    contributing_running_tests
    contributing_ci_tests
    contributing_benchmarks
+   testing_style_guide
+   contributing_tests
