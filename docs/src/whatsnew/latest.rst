@@ -36,7 +36,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
+   to the array content. (:pull:`5801`)
 
 
 💣 Incompatible Changes
