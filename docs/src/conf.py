@@ -142,6 +142,10 @@ rst_epilog = f"""
 .. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
 """
 
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#confval-suppress_warnings
+# suppress warning "WARNING: cannot cache unpickable configuration value: 'sphinx_gallery_conf'"
+suppress_warnings = ["config.cache"]
+
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
