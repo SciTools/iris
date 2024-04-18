@@ -77,7 +77,7 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
 💼 Internal
@@ -90,7 +90,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@hsteptoe: https://github.com/hsteptoe
 
 
 .. comment
