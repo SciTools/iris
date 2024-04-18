@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Automatic concatenation of multiple cubes over one or more existing dimensions."""
 
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 import warnings
 
 import dask.array as da
@@ -326,15 +326,13 @@ def concatenate(
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
 
     """
-    proto_cubes_by_name = defaultdict(list)
+    proto_cubes = []
     # Initialise the nominated axis (dimension) of concatenation
     # which requires to be negotiated.
     axis = None
 
     # Register each cube with its appropriate proto-cube.
     for cube in cubes:
-        name = cube.standard_name or cube.long_name
-        proto_cubes = proto_cubes_by_name[name]
         registered = False
 
         # Register cube with an existing proto-cube.
@@ -360,13 +358,11 @@ def concatenate(
     concatenated_cubes = iris.cube.CubeList()
 
     # Emulate Python 2 behaviour.
-    def _none_sort(item):
-        return (item is not None, item)
+    def _none_sort(proto_cube):
+        return (proto_cube.name is not None, proto_cube.name)
 
-    for name in sorted(proto_cubes_by_name, key=_none_sort):
-        for proto_cube in proto_cubes_by_name[name]:
-            # Construct the concatenated cube.
-            concatenated_cubes.append(proto_cube.concatenate())
+    for proto_cube in sorted(proto_cubes, key=_none_sort):
+        concatenated_cubes.append(proto_cube.concatenate())
 
     # Perform concatenation until we've reached an equilibrium.
     count = len(concatenated_cubes)
@@ -760,6 +756,12 @@ class _ProtoCube:
     def axis(self):
         """Return the nominated dimension of concatenation."""
         return self._axis
+
+    @property
+    def name(self) -> str | None:
+        """Return the standard_name or long name."""
+        metadata = self._cube_signature.defn
+        return metadata.standard_name or metadata.long_name
 
     def concatenate(self):
         """Concatenate all the source-cubes registered with the :class:`_ProtoCube`.
