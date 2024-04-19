@@ -72,12 +72,12 @@ def _optimum_chunksize_internals(
         Pre-existing chunk shape of the target data.
     shape : tuple of int
         The full array shape of the target data.
-    limit : int
+    limit : int, optional
         The 'ideal' target chunk size, in bytes.  Default from
         :mod:`dask.config`.
     dtype : np.dtype
         Numpy dtype of target data.
-    dims_fixed : list of bool
+    dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or 'shape'.
         'True' values indicate a dimension that can not be changed, i.e. that
         element of the result must equal the corresponding value in 'chunks' or
@@ -232,14 +232,14 @@ def as_lazy_data(
         This will be converted to a :class:`dask.array.Array`.
     chunks : list of int, optional
         If present, a source chunk shape, e.g. for a chunked netcdf variable.
-    asarray : bool, optional
+    asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
     dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
-    dask_chunking : bool, optional
+    dask_chunking : bool, default=False
         If True, Iris chunking optimisation will be bypassed, and dask's default
         chunking will be used instead. Including a value for chunks while dask_chunking
         is set to True will result in a failure.
@@ -252,7 +252,7 @@ def as_lazy_data(
     Notes
     -----
     The result chunk size is a multiple of 'chunks', if given, up to the
-    dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
+    dask default chunksize, i.e. `dask.config.get('array.chunk-size')`,
     or the full data shape if that is smaller.
     If 'chunks' is not given, the result has chunks of the full data shape,
     but reduced by a factor if that exceeds the dask default chunksize.
@@ -338,7 +338,7 @@ def as_concrete_data(data):
     Parameters
     ----------
     data :
-        A dask array, NumPy `ndarray` or masked array
+        A dask array, NumPy `ndarray` or masked array.
 
     Returns
     -------
@@ -450,10 +450,11 @@ def lazy_elementwise(lazy_array, elementwise_op):
     return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
 
 
-def map_complete_blocks(src, func, dims, out_sizes):
+def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
+    Uses :func:`dask.array.map_blocks` to implement the mapping.
 
     Parameters
     ----------
@@ -465,27 +466,47 @@ def map_complete_blocks(src, func, dims, out_sizes):
         Dimensions that cannot be chunked.
     out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
+    *args : tuple
+        Additional arguments to pass to `func`.
+    **kwargs : dict
+        Additional keyword arguments to pass to `func`.
+
+    Returns
+    -------
+    Array-like
+
+    See Also
+    --------
+    :func:`dask.array.map_blocks` : The function used for the mapping.
 
     """
+    data = None
+    result = None
+
     if is_lazy_data(src):
         data = src
     elif not hasattr(src, "has_lazy_data"):
         # Not a lazy array and not a cube.  So treat as ordinary numpy array.
-        return func(src)
+        result = func(src, *args, **kwargs)
     elif not src.has_lazy_data():
-        return func(src.data)
+        result = func(src.data, *args, **kwargs)
     else:
         data = src.lazy_data()
 
-    # Ensure dims are not chunked
-    in_chunks = list(data.chunks)
-    for dim in dims:
-        in_chunks[dim] = src.shape[dim]
-    data = data.rechunk(in_chunks)
+    if result is None and data is not None:
+        # Ensure dims are not chunked
+        in_chunks = list(data.chunks)
+        for dim in dims:
+            in_chunks[dim] = src.shape[dim]
+        data = data.rechunk(in_chunks)
 
-    # Determine output chunks
-    out_chunks = list(data.chunks)
-    for dim, size in zip(dims, out_sizes):
-        out_chunks[dim] = size
+        # Determine output chunks
+        out_chunks = list(data.chunks)
+        for dim, size in zip(dims, out_sizes):
+            out_chunks[dim] = size
 
-    return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
+        result = data.map_blocks(
+            func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs
+        )
+
+    return result

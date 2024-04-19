@@ -245,9 +245,9 @@ class Resolve:
 
         Parameters
         ----------
-        lhs : :class:`~iris.cube.Cube`
+        lhs : :class:`~iris.cube.Cube`, optional
             The left-hand-side :class:`~iris.cube.Cube` operand.
-        rhs : :class:`~iris.cube.Cube`
+        rhs : :class:`~iris.cube.Cube`, optional
             The right-hand-side :class:`~iris.cube.Cube` operand.
 
         Examples
@@ -698,15 +698,15 @@ class Resolve:
             The dimensions that the ``coord`` spans on the resulting resolved
             :class:`~iris.cube.Cube`.
             (Can also be a single dimension number).
-        src_metadata :
+        src_metadata : optional
             The coordinate metadata from the ``src`` :class:`~iris.cube.Cube`.
-        tgt_metadata :
+        tgt_metadata : optional
             The coordinate metadata from the ``tgt`` :class:`~iris.cube.Cube`.
-        points :
+        points : optional
             Override points array.  When not given, use coord.points.
-        bounds :
+        bounds : optional
             Override bounds array.  When not given, use coord.bounds.
-        container :
+        container : optional
             Override coord type (class constructor).
             When not given, use type(coord).
 
@@ -1145,34 +1145,40 @@ class Resolve:
     def _metadata_mapping(self):
         """Identify equivalent dimensions using metadata.
 
-        Ensure that each ``src`` :class:`~iris.cube.Cube` dimension is mapped to an associated
-        ``tgt`` :class:`~iris.cube.Cube` dimension using the common dim and aux coordinate metadata.
+        Ensure that each ``src`` :class:`~iris.cube.Cube` dimension is mapped to an
+        associated ``tgt`` :class:`~iris.cube.Cube` dimension using the common dim
+        and aux coordinate metadata.
 
-        If the common metadata does not result in a full mapping of ``src`` to ``tgt`` dimensions
-        then free dimensions are analysed to determine whether the mapping can be completed.
+        If the common metadata does not result in a full mapping of ``src`` to ``tgt``
+        dimensions then free dimensions are analysed to determine whether the mapping
+        can be completed.
 
-        Once the ``src`` has been mapped to the ``tgt``, the cubes are checked to ensure that they
-        will successfully broadcast, and the ``src`` :class:`~iris.cube.Cube` is transposed appropriately,
-        if necessary.
+        Once the ``src`` has been mapped to the ``tgt``, the cubes are checked to
+        ensure that they will successfully broadcast, and the ``src``
+        :class:`~iris.cube.Cube` is transposed appropriately, if necessary.
 
-        The :attr:`~iris.common.resolve.Resolve._broadcast_shape` is set, along with the
-        :attr:`~iris.common.resolve.Resolve._src_cube_resolved` and :attr:`~iris.common.resolve.Resolve._tgt_cube_resolved`,
+        The :attr:`~iris.common.resolve.Resolve._broadcast_shape` is set, along with
+        the :attr:`~iris.common.resolve.Resolve._src_cube_resolved` and
+        :attr:`~iris.common.resolve.Resolve._tgt_cube_resolved`,
         which are the broadcast/transposed ``src`` and ``tgt``.
 
         .. note::
 
-            An exception will be raised if a ``src`` dimension cannot be mapped to a ``tgt`` dimension.
+            An exception will be raised if a ``src`` dimension cannot be mapped to
+            a ``tgt`` dimension.
 
         .. note::
 
-            An exception will be raised if the full mapped ``src`` :class:`~iris.cube.Cube` cannot be
-            broadcast or transposed with the ``tgt`` :class:`~iris.cube.Cube`.
+            An exception will be raised if the full mapped ``src``
+            :class:`~iris.cube.Cube` cannot be broadcast or transposed with the
+            ``tgt`` :class:`~iris.cube.Cube`.
 
         .. note::
 
-            The ``src`` and ``tgt`` may  be swapped in the case where they both have equal dimensionality and
-            the ``tgt`` does have the same shape as the resolved broadcast shape (and the ``src`` does) or
-            the ``tgt`` has more free dimensions than the ``src``.
+            The ``src`` and ``tgt`` may  be swapped in the case where they both have
+            equal dimensionality and the ``tgt`` does have the same shape as the
+            resolved broadcast shape (and the ``src`` does) or the ``tgt`` has more
+            free dimensions than the ``src``.
 
         """
         # Initialise the state.
@@ -1629,11 +1635,11 @@ class Resolve:
             The :class:`~iris.common.resolve._CategoryItems` containing the
             local metadata of either the ``src`` or ``tgt`` :class:`~iris.cube.Cube`.
             See ``from_local``.
-        from_src : bool, optional
+        from_src : bool, default=True
             Boolean stating whether the ``metadata`` is from the ``src`` (``True``)
             or ``tgt`` :class:`~iris.cube.Cube`.
             Defaults to ``True``.
-        from_local: bool, optional
+        from_local : bool, default=False
             Boolean controlling whether the ``metadata`` is used to search the
             ``category_local`` (``True``) or the :attr:`~iris.common.resolve.Resolve.prepared_category`.
             Defaults to ``False``.
@@ -1710,7 +1716,7 @@ class Resolve:
         category_local : :class:`~iris.common.resolve._CategoryItems`
             The :class:`~iris.common.resolve._CategoryItems` of all metadata
             local to the provided ``cube``.
-        from_src : bool, optional, default=True
+        from_src : bool, default=True
             Boolean stating whether the provided ``cube`` is either a ``src`` or ``tgt``
             :class:`~iris.cube.Cube` - used to retrieve the appropriate metadata from a
             :class:`~iris.common.resolve._PreparedMetadata`.
@@ -2301,7 +2307,7 @@ class Resolve:
             The data payload for the resultant :class:`~iris.cube.Cube`, which
             **must match** the expected resolved
             :attr:`~iris.common.resolve.Resolve.shape`.
-        in_place : optional
+        in_place : bool, default=False
             If ``True``, the ``data`` is inserted into the ``tgt``
             :class:`~iris.cube.Cube`. The existing metadata of the ``tgt``
             :class:`~iris.cube.Cube` is replaced with the resolved metadata from

@@ -45,11 +45,11 @@ def main():
 
     # Include the point's position in the plot's title
     lat_point = cube.coord("latitude").points[y_point_index, x_point_index]
-    lat_string = "{:.3f}\u00B0 {}".format(
+    lat_string = "{:.3f}\u00b0 {}".format(
         abs(lat_point), "N" if lat_point > 0.0 else "S"
     )
     lon_point = cube.coord("longitude").points[y_point_index, x_point_index]
-    lon_string = "{:.3f}\u00B0 {}".format(
+    lon_string = "{:.3f}\u00b0 {}".format(
         abs(lon_point), "E" if lon_point > 0.0 else "W"
     )
     plt.title("{} at {} {}".format(cube.long_name.capitalize(), lat_string, lon_string))

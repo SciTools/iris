@@ -14,6 +14,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 from iris.util import array_equal, guess_coord_axis
+import iris.warnings
 
 #
 # TODO:
@@ -69,7 +70,7 @@ class _CoordMetaData(
         The points data :class:`np.dtype` of an associated coordinate.
     bounds_dtype : :class:`np.dtype`
         The bounds data :class:`np.dtype` of an associated coordinate.
-    **kwargs :
+    **kwargs : dict, optional
         A dictionary of key/value pairs required to define a coordinate.
 
     """
@@ -159,7 +160,7 @@ class _DerivedCoordAndDims(
     Parameters
     ----------
     coord : :class:`iris.coord.DimCoord` or :class:`iris.coord.AuxCoord`
-    dims: tuple
+    dims : tuple
         A tuple of the data dimension(s) spanned by the coordinate.
     aux_factory : :class:`iris.aux_factory.AuxCoordFactory`
 
@@ -195,7 +196,7 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
 
         Parameters
         ----------
-        ancil : :class:`iris.coord.CellMeasure` or :class:`iris.coord.AncillaryVariable`.
+        ancil : :class:`iris.coord.CellMeasure` or :class:`iris.coord.AncillaryVariable`
         dims :
             The dimension(s) associated with ancil.
 
@@ -270,7 +271,6 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     ----------
     points : :class:`_Extent`
         The :class:`_Extent` of the coordinate point values.
-
     bounds :
         A list containing the :class:`_Extent` of the coordinate lower
         bound and the upper bound. Defaults to None if no associated
@@ -296,7 +296,7 @@ def concatenate(
     cubes : iterable of :class:`iris.cube.Cube`
         An iterable containing one or more :class:`iris.cube.Cube` instances
         to be concatenated together.
-    error_on_mismatch: bool, default=False
+    error_on_mismatch : bool, default=False
         If True, raise an informative
         :class:`~iris.exceptions.ContatenateError` if registration fails.
     check_aux_coords : bool, default=True
@@ -488,9 +488,9 @@ class _CubeSignature:
         attr : str
             The _CubeSignature attribute within which differences exist
             between `self` and `other`.
-        reason : str
+        reason : str, default="metadata"
             The reason to give for mismatch (function is normally, but not
-            always, testing metadata)
+            always, testing metadata).
 
         Returns
         -------
@@ -762,9 +762,9 @@ class _ProtoCube:
         return self._axis
 
     def concatenate(self):
-        """Concatenates all the source-cubes registered with the :class:`_ProtoCube`.
+        """Concatenate all the source-cubes registered with the :class:`_ProtoCube`.
 
-        Concatenates all the source-cubes registered with the
+        Concatenate all the source-cubes registered with the
         :class:`_ProtoCube` over the nominated common dimension.
 
         Returns
@@ -854,22 +854,22 @@ class _ProtoCube:
         axis : optional
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
-        error_on_mismatch : bool, optional
+        error_on_mismatch : bool, default=False
             If True, raise an informative error if registration fails.
-        check_aux_coords : bool, optional
+        check_aux_coords : bool, default=False
             Checks if the points and bounds of auxiliary coordinates of the
             cubes match. This check is not applied to auxiliary coordinates
             that span the dimension the concatenation is occurring along.
             Defaults to False.
-        check_cell_measures : bool, optional
+        check_cell_measures : bool, default=False
             Checks if the data of cell measures of the cubes match. This check
             is not applied to cell measures that span the dimension the
             concatenation is occurring along. Defaults to False.
-        check_ancils : bool, optional
+        check_ancils : bool, default=False
             Checks if the data of ancillary variables of the cubes match. This
             check is not applied to ancillary variables that span the dimension
             the concatenation is occurring along. Defaults to False.
-        check_derived_coords : bool, optional
+        check_derived_coords : bool, default=False
             Checks if the points and bounds of derived coordinates of the cubes
             match. This check is not applied to derived coordinates that span
             the dimension the concatenation is occurring along. Note that
@@ -911,7 +911,7 @@ class _ProtoCube:
                 raise iris.exceptions.ConcatenateError([msg])
             elif not match:
                 msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
-                warnings.warn(msg, category=iris.exceptions.IrisUserWarning)
+                warnings.warn(msg, category=iris.warnings.IrisUserWarning)
 
         # Check for compatible AuxCoords.
         if match:

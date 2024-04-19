@@ -13,7 +13,7 @@ minimum_pre_commit_version: 1.21.0
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
@@ -29,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.1.13"
+    rev: "v0.3.7"
     hooks:
     -   id: ruff
         types: [file, python]
@@ -60,4 +60,11 @@ repos:
     rev: v1.2.0
     hooks:
     -   id: sort-all
+        types: [file, python]
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.7.0
+    hooks:
+      - id: numpydoc-validation
+        exclude: "^lib/iris/tests/|docs/gallery_code/"
         types: [file, python]

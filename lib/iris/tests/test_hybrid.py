@@ -14,8 +14,8 @@ import numpy as np
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisIgnoringBoundsWarning
 import iris.tests.stock
+from iris.warnings import IrisIgnoringBoundsWarning
 
 
 @tests.skip_plot

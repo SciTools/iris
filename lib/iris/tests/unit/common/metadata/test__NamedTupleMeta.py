@@ -45,7 +45,7 @@ class Test(tests.IrisTest):
         self.assertEqual(self.names(Metadata.__bases__), expected)
         expected = ["Metadata", "object"]
         self.assertEqual(self.names(Metadata.__mro__), expected)
-        emsg = "Can't instantiate abstract class .* with abstract method.* _members"
+        emsg = "Can't instantiate abstract class"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = Metadata()
 

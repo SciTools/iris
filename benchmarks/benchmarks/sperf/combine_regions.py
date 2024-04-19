@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
+
 import os.path
 
 from dask import array as da
@@ -83,7 +84,7 @@ class Mixin:
             )
 
     def setup(self, n_cubesphere, imaginary_data=True, create_result_cube=True):
-        """Combine-tests "standard" setup operation.
+        """Combine tests "standard" setup operation.
 
         Load the source cubes (full-mesh + region) from disk.
         These are specific to the cubesize parameter.

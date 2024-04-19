@@ -3,14 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es.
+r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`.
 
 Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.experimental.ugrid.mesh.Mesh`\\ es from UGRID data in the file.
+:class:`~iris.experimental.ugrid.mesh.Mesh` from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
+
 from contextlib import contextmanager
 from itertools import groupby
 from pathlib import Path
@@ -19,11 +20,11 @@ import warnings
 
 from ...config import get_logger
 from ...coords import AuxCoord
-from ...exceptions import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
 from ...fileformats.netcdf import loader as nc_loader
 from ...io import decode_uri, expand_filespecs
 from ...util import guess_coord_axis
+from ...warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 from .cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
@@ -127,10 +128,10 @@ def load_mesh(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-         must support OpenDAP.
+        must support OpenDAP.
     var_name : str, optional
         Only return a :class:`~iris.experimental.ugrid.mesh.Mesh` if its
-         var_name matches this value.
+        var_name matches this value.
 
     Returns
     -------
@@ -153,17 +154,17 @@ def load_meshes(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-         must support OpenDAP.
+        must support OpenDAP.
     var_name : str, optional
-        Only return :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es that have
-         var_names matching this value.
+        Only return :class:`~iris.experimental.ugrid.mesh.Mesh` that have
+        var_names matching this value.
 
     Returns
     -------
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
-         ``uris`` to a list of the
-         :class:`~iris.experimental.ugrid.mesh.Mesh`\\ es returned from each.
+        ``uris`` to a list of the
+        :class:`~iris.experimental.ugrid.mesh.Mesh` returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded

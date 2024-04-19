@@ -15,9 +15,9 @@ from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisDefaultingWarning
 import iris.tests
 import iris.tests.stock
+from iris.warnings import IrisDefaultingWarning
 
 ROBINSON = ccrs.Robinson()
 

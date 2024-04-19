@@ -13,8 +13,11 @@ acquired an extra initial 'engine' argument, purely for consistency with other
 build routines, and which it does not use.
 
 """
+
+from __future__ import annotations
+
 import re
-from typing import List
+from typing import TYPE_CHECKING, List, Optional
 import warnings
 
 import cf_units
@@ -34,6 +37,13 @@ import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
 import iris.std_names
 import iris.util
+import iris.warnings
+
+if TYPE_CHECKING:
+    from numpy.ma import MaskedArray
+    from numpy.typing import ArrayLike
+
+    from iris.fileformats.cf import CFBoundaryVariable
 
 # TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
@@ -154,7 +164,6 @@ CF_ATTR_GRID_FALSE_NORTHING = "false_northing"
 CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN = "scale_factor_at_projection_origin"
 CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN = "scale_factor_at_central_meridian"
 CF_ATTR_GRID_LON_OF_CENT_MERIDIAN = "longitude_of_central_meridian"
-CF_ATTR_GRID_STANDARD_PARALLEL = "standard_parallel"
 CF_ATTR_GRID_PERSPECTIVE_HEIGHT = "perspective_point_height"
 CF_ATTR_GRID_SWEEP_ANGLE_AXIS = "sweep_angle_axis"
 CF_ATTR_GRID_AZIMUTH_CENT_LINE = "azimuth_of_central_line"
@@ -224,8 +233,8 @@ _CM_KNOWN_METHODS = [
 
 
 class _WarnComboIgnoringLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -233,8 +242,8 @@ class _WarnComboIgnoringLoad(
 
 
 class _WarnComboDefaultingLoad(
-    iris.exceptions.IrisDefaultingWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisDefaultingWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -242,8 +251,8 @@ class _WarnComboDefaultingLoad(
 
 
 class _WarnComboDefaultingCfLoad(
-    iris.exceptions.IrisCfLoadWarning,
-    iris.exceptions.IrisDefaultingWarning,
+    iris.warnings.IrisCfLoadWarning,
+    iris.warnings.IrisDefaultingWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -251,8 +260,8 @@ class _WarnComboDefaultingCfLoad(
 
 
 class _WarnComboIgnoringCfLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisCfLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+    iris.warnings.IrisCfLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -268,13 +277,13 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
 
     Parameters
     ----------
-    nc_cell_methods :
+    nc_cell_methods : str
         The value of the cell methods attribute to be split.
 
     Returns
     -------
     nc_cell_methods_matches: list of re.Match objects
-        A list of re.Match objects associated with each parsed cell method
+        A list of re.Match objects associated with each parsed cell method.
 
     Notes
     -----
@@ -302,7 +311,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
                 )
                 warnings.warn(
                     msg,
-                    category=iris.exceptions.IrisCfLoadWarning,
+                    category=iris.warnings.IrisCfLoadWarning,
                     stacklevel=2,
                 )
         if bracket_depth > 0 and ind in name_start_inds:
@@ -321,15 +330,15 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
         nc_cell_method_match = _CM_PARSE.match(nc_cell_method_str.strip())
         if not nc_cell_method_match:
             msg = f"Failed to fully parse cell method string: {nc_cell_methods}"
-            warnings.warn(msg, category=iris.exceptions.IrisCfLoadWarning, stacklevel=2)
+            warnings.warn(msg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2)
             continue
         nc_cell_methods_matches.append(nc_cell_method_match)
 
     return nc_cell_methods_matches
 
 
-class UnknownCellMethodWarning(iris.exceptions.IrisUnknownCellMethodWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisUnknownCellMethodWarning`."""
+class UnknownCellMethodWarning(iris.warnings.IrisUnknownCellMethodWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisUnknownCellMethodWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -342,6 +351,7 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
     ----------
     nc_cell_methods : str
         The value of the cell methods attribute to be parsed.
+    cf_name : optional
 
     Returns
     -------
@@ -551,7 +561,7 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
     if north_pole_latitude is None or north_pole_longitude is None:
         warnings.warn(
             "Rotated pole position is not fully specified",
-            category=iris.exceptions.IrisCfLoadWarning,
+            category=iris.warnings.IrisCfLoadWarning,
         )
 
     north_pole_grid_lon = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
@@ -896,8 +906,9 @@ def get_attr_units(cf_var, attributes):
         cf_units.as_unit(attr_units)
     except ValueError:
         # Using converted unicode message. Can be reverted with Python 3.
-        msg = "Ignoring netCDF variable {!r} invalid units {!r}".format(
-            cf_var.cf_name, attr_units
+        msg = (
+            f"Ignoring invalid units {attr_units!r} on netCDF variable "
+            f"{cf_var.cf_name!r}."
         )
         warnings.warn(
             msg,
@@ -1025,6 +1036,57 @@ def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
 
 
 ################################################################################
+def _normalise_bounds_units(
+    points_units: str, cf_bounds_var: CFBoundaryVariable, bounds_data: ArrayLike
+) -> Optional[MaskedArray]:
+    """Ensure bounds have units compatible with points.
+
+    If required, the `bounds_data` will be converted to the `points_units`.
+    If the bounds units are not convertible, a warning will be issued and
+    the `bounds_data` will be ignored.
+
+    Bounds with invalid units will be gracefully left unconverted and passed through.
+
+    Parameters
+    ----------
+    points_units : str
+        The units of the coordinate points.
+    cf_bounds_var : CFBoundaryVariable
+        The serialized NetCDF bounds variable.
+    bounds_data : MaskedArray
+        The pre-processed data of the bounds variable.
+
+    Returns
+    -------
+    MaskedArray or None
+        The bounds data with the same units as the points, or ``None``
+        if the bounds units are not convertible to the points units.
+
+    """
+    bounds_units = get_attr_units(cf_bounds_var, {})
+
+    if bounds_units != UNKNOWN_UNIT_STRING:
+        points_units = cf_units.Unit(points_units)
+        bounds_units = cf_units.Unit(bounds_units)
+
+        if bounds_units != points_units:
+            if bounds_units.is_convertible(points_units):
+                bounds_data = bounds_units.convert(bounds_data, points_units)
+            else:
+                wmsg = (
+                    f"Ignoring bounds on NetCDF variable {cf_bounds_var.cf_name!r}. "
+                    f"Expected units compatible with {points_units.origin!r}, got "
+                    f"{bounds_units.origin!r}."
+                )
+                warnings.warn(
+                    wmsg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2
+                )
+                bounds_data = None
+
+    return bounds_data
+
+
+################################################################################
 def build_dimension_coordinate(
     engine, cf_coord_var, coord_name=None, coord_system=None
 ):
@@ -1061,6 +1123,8 @@ def build_dimension_coordinate(
         # dimension names.
         if cf_bounds_var.shape[:-1] != cf_coord_var.shape:
             bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
+
+        bounds_data = _normalise_bounds_units(attr_units, cf_bounds_var, bounds_data)
     else:
         bounds_data = None
 
@@ -1132,7 +1196,7 @@ def build_dimension_coordinate(
         except iris.exceptions.CannotAddError as e_msg:
             warnings.warn(
                 coord_skipped_msg.format(error=e_msg),
-                category=iris.exceptions.IrisCannotAddWarning,
+                category=iris.warnings.IrisCannotAddWarning,
             )
             coord_skipped = True
     else:
@@ -1146,7 +1210,7 @@ def build_dimension_coordinate(
         except iris.exceptions.CannotAddError as e_msg:
             warnings.warn(
                 coord_skipped_msg.format(error=e_msg),
-                category=iris.exceptions.IrisCannotAddWarning,
+                category=iris.warnings.IrisCannotAddWarning,
             )
             coord_skipped = True
 
@@ -1186,6 +1250,8 @@ def build_auxiliary_coordinate(
             # compatibility with array creators (i.e. dask)
             bounds_data = np.asarray(bounds_data)
             bounds_data = reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var)
+
+        bounds_data = _normalise_bounds_units(attr_units, cf_bounds_var, bounds_data)
     else:
         bounds_data = None
 
@@ -1220,7 +1286,7 @@ def build_auxiliary_coordinate(
         msg = "{name!r} coordinate not added to Cube: {error}"
         warnings.warn(
             msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=iris.exceptions.IrisCannotAddWarning,
+            category=iris.warnings.IrisCannotAddWarning,
         )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
@@ -1272,7 +1338,7 @@ def build_cell_measures(engine, cf_cm_var):
         msg = "{name!r} cell measure not added to Cube: {error}"
         warnings.warn(
             msg.format(name=str(cf_cm_var.cf_name), error=e_msg),
-            category=iris.exceptions.IrisCannotAddWarning,
+            category=iris.warnings.IrisCannotAddWarning,
         )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
@@ -1320,7 +1386,7 @@ def build_ancil_var(engine, cf_av_var):
         msg = "{name!r} ancillary variable not added to Cube: {error}"
         warnings.warn(
             msg.format(name=str(cf_av_var.cf_name), error=e_msg),
-            category=iris.exceptions.IrisCannotAddWarning,
+            category=iris.warnings.IrisCannotAddWarning,
         )
     else:
         # Make a list with names, stored on the engine, so we can find them all later.
@@ -1331,8 +1397,10 @@ def build_ancil_var(engine, cf_av_var):
 def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
     """Determine whether the CF coordinate variable is a latitude/longitude variable.
 
-    Ref: [CF] Section 4.1 Latitude Coordinate.
-         [CF] Section 4.2 Longitude Coordinate.
+    Ref:
+
+    * [CF] Section 4.1 Latitude Coordinate.
+    * [CF] Section 4.2 Longitude Coordinate.
 
     """
     is_valid = False
@@ -1520,7 +1588,7 @@ def has_supported_mercator_parameters(engine, cf_name):
         warnings.warn(
             "It does not make sense to provide both "
             '"scale_factor_at_projection_origin" and "standard_parallel".',
-            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
+            category=iris.warnings.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 
@@ -1550,7 +1618,7 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
     if latitude_of_projection_origin != 90 and latitude_of_projection_origin != -90:
         warnings.warn(
             '"latitude_of_projection_origin" must be +90 or -90.',
-            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
+            category=iris.warnings.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 
@@ -1558,7 +1626,7 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
         warnings.warn(
             "It does not make sense to provide both "
             '"scale_factor_at_projection_origin" and "standard_parallel".',
-            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
+            category=iris.warnings.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 
@@ -1566,7 +1634,7 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
         warnings.warn(
             'One of "scale_factor_at_projection_origin" and '
             '"standard_parallel" is required.',
-            category=iris.exceptions.IrisCfInvalidCoordParamWarning,
+            category=iris.warnings.IrisCfInvalidCoordParamWarning,
         )
         is_valid = False
 

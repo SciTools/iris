@@ -32,6 +32,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
 DEFAULT_IGNORE_AXIS = False
@@ -73,16 +74,16 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         ----------
         values :
             The values of the dimensional metadata.
-        standard_name : optional, default=None
+        standard_name : optional
             CF standard name of the dimensional metadata.
-        long_name : optional, default=None
+        long_name : optional
             Descriptive name of the dimensional metadata.
-        var_name : optional, default=None
+        var_name : optional
             The netCDF variable name for the dimensional metadata.
-        units : optional, default=None
+        units : optional
             The :class:`~cf_units.Unit` of the dimensional metadata's values.
             Can be a string, which will be converted to a Unit object.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary containing other cf and user-defined attributes.
 
         """
@@ -263,32 +264,32 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
         Parameters
         ----------
-        shorten : bool, default = False
+        shorten : bool, default=False
             If True, produce an abbreviated one-line summary.
             If False, produce a multi-line summary, with embedded newlines.
-        max_values : int or None, default = None
+        max_values : int or None
             If more than this many data values, print truncated data arrays
             instead of full contents.
             If 0, print only the shape.
             The default is 5 if :attr:`shorten`\ =True, or 15 otherwise.
             This overrides ``numpy.get_printoptions['threshold']``\ .
-        linewidth : int or None, default = None
+        linewidth : int or None
             Character-width controlling line splitting of array outputs.
             If unset, defaults to ``numpy.get_printoptions['linewidth']``\ .
         edgeitems : int, default=2
             Controls truncated array output.
             Overrides ``numpy.getprintoptions['edgeitems']``\ .
-        precision : int or None, default = None
+        precision : int or None
             Controls number decimal formatting.
             When :attr:`shorten`\ =True this is defaults to 3, in which case it
             overrides ``numpy.get_printoptions()['precision']``\ .
-        convert_dates : bool, default = True
+        convert_dates : bool, default=True
             If the units has a calendar, then print array values as date
             strings instead of the actual numbers.
 
         Returns
         -------
-        result : str
+        str
             Output text, with embedded newlines when :attr:`shorten`\ =False.
 
         Notes
@@ -914,16 +915,16 @@ class AncillaryVariable(_DimensionalMetadata):
         ----------
         data :
             The values of the ancillary variable.
-        standard_name : optional, default=None
+        standard_name : optional
             CF standard name of the ancillary variable.
-        long_name : optional, default=None
+        long_name : optional
             Descriptive name of the ancillary variable.
-        var_name : optional, default=None
+        var_name : optional
             The netCDF variable name for the ancillary variable.
-        units : optional, default=None
+        units : optional
             The :class:`~cf_units.Unit` of the ancillary variable's values.
             Can be a string, which will be converted to a Unit object.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary containing other cf and user-defined attributes.
 
         """
@@ -1014,16 +1015,16 @@ class CellMeasure(AncillaryVariable):
             The values of the measure for each cell.
             Either a 'real' array (:class:`numpy.ndarray`) or a 'lazy' array
             (:class:`dask.array.Array`).
-        standard_name : optional, default=None
+        standard_name : optional
             CF standard name of the coordinate.
-        long_name : optional, default=None
+        long_name : optional
             Descriptive name of the coordinate.
-        var_name : optional, default=None
+        var_name : optional
             The netCDF variable name for the coordinate.
-        units : optional, default=None
+        units : optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary containing other CF and user-defined attributes.
         measure : optional
             A string describing the type of measure. Supported values are
@@ -1125,10 +1126,10 @@ class CoordExtent(
             The minimum value of the range to select.
         maximum :
             The maximum value of the range to select.
-        min_inclusive : optional
+        min_inclusive : bool, default=True
             If True, coordinate values equal to `minimum` will be included
             in the selection. Default is True.
-        max_inclusive : optional
+        max_inclusive : bool, default=True
             If True, coordinate values equal to `maximum` will be included
             in the selection. Default is True.
 
@@ -1167,12 +1168,12 @@ def _get_2d_coord_bound_grid(bounds):
     Parameters
     ----------
     bounds : array
-        Coordinate bounds array of shape (Y, X, 4)
+        Coordinate bounds array of shape (Y, X, 4).
 
     Returns
     -------
     array
-        Grid of shape (Y+1, X+1)
+        Grid of shape (Y+1, X+1).
 
     """
     # Check bds has the shape (ny, nx, 4)
@@ -1452,16 +1453,16 @@ class Coord(_DimensionalMetadata):
         points :
             The values (or value in the case of a scalar coordinate) for each
             cell of the coordinate.
-        standard_name : optional, default=None
+        standard_name : optional
             CF standard name of the coordinate.
-        long_name : optional, default=None
+        long_name : optional
             Descriptive name of the coordinate.
-        var_name : optional, default=None
+        var_name : optional
             The netCDF variable name for the coordinate.
-        units : optional, default=None
+        units : optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        bounds : optional, default=None
+        bounds : optional
             An array of values describing the bounds of each cell. Given n
             bounds for each cell, the shape of the bounds array should be
             points.shape + (n,). For example, a 1D coordinate with 100 points
@@ -1469,13 +1470,13 @@ class Coord(_DimensionalMetadata):
             (100, 2)
             Note if the data is a climatology, `climatological`
             should be set.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary containing other CF and user-defined attributes.
-        coord_system : optional, default=None
+        coord_system : optional
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
-        climatological : bool, optional, default=False
+        climatological : bool, default=False
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
             'climatology' attribute and will create a boundary variable called
@@ -1512,11 +1513,13 @@ class Coord(_DimensionalMetadata):
     def copy(self, points=None, bounds=None):
         """Return a copy of this coordinate.
 
-        points :
+        Parameters
+        ----------
+        points : optional
             A points array for the new coordinate.
             This may be a different shape to the points of the coordinate
             being copied.
-        bounds :
+        bounds : optional
             A bounds array for the new coordinate.
             Given n bounds for each cell, the shape of the bounds array
             should be points.shape + (n,). For example, a 1d coordinate
@@ -1660,10 +1663,10 @@ class Coord(_DimensionalMetadata):
 
     @property
     def ignore_axis(self):
-        """A boolean that controls whether guess_coord_axis acts on this coordinate.
+        """A boolean controlling if iris.util.guess_coord_axis acts on this coordinate.
 
-        Defaults to False, and when set to True it will be skipped by
-        guess_coord_axis.
+        Defaults to ``False``, and when set to ``True`` it will be skipped by
+        :func:`iris.util.guess_coord_axis`.
         """
         return self._ignore_axis
 
@@ -1830,10 +1833,10 @@ class Coord(_DimensionalMetadata):
     def _discontiguity_in_bounds(self, rtol=1e-5, atol=1e-8):
         """Check that the bounds of the coordinate are contiguous.
 
-        rtol : float, optional
+        rtol : float, default=1e-5
             Relative tolerance that is used when checking contiguity. Defaults
             to 1e-5.
-        atol : float, optional
+        atol : float, default=1e-8
             Absolute tolerance that is used when checking contiguity. Defaults
             to 1e-8.
 
@@ -1933,9 +1936,9 @@ class Coord(_DimensionalMetadata):
 
         Parameters
         ----------
-        rtol : optional
+        rtol : float, default=1e-05
             The relative tolerance parameter (default is 1e-05).
-        atol : optional
+        atol : float, default=1e-08
             The absolute tolerance parameter (default is 1e-08).
 
         Returns
@@ -1949,7 +1952,7 @@ class Coord(_DimensionalMetadata):
             contiguous = False
         return contiguous
 
-    def contiguous_bounds(self):
+    def contiguous_bounds(self):  # numpydoc ignore=SS05
         """Contiguous bounds of 1D coordinate.
 
         Return the N+1 bound values for a contiguous bounded 1D coordinate
@@ -1975,7 +1978,7 @@ class Coord(_DimensionalMetadata):
                 warnings.warn(
                     "Coordinate {!r} is not bounded, guessing "
                     "contiguous bounds.".format(self.name()),
-                    category=iris.exceptions.IrisGuessBoundsWarning,
+                    category=iris.warnings.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
@@ -2136,7 +2139,7 @@ class Coord(_DimensionalMetadata):
                 )
                 warnings.warn(
                     msg.format(self.name()),
-                    category=iris.exceptions.IrisVagueMetadataWarning,
+                    category=iris.warnings.IrisVagueMetadataWarning,
                 )
             else:
                 try:
@@ -2149,7 +2152,7 @@ class Coord(_DimensionalMetadata):
                     )
                     warnings.warn(
                         msg.format(str(exc), self.name()),
-                        category=iris.exceptions.IrisVagueMetadataWarning,
+                        category=iris.warnings.IrisVagueMetadataWarning,
                     )
                     self.bounds = None
                 else:
@@ -2160,7 +2163,7 @@ class Coord(_DimensionalMetadata):
                         )
                         warnings.warn(
                             msg.format(self.name()),
-                            category=iris.exceptions.IrisVagueMetadataWarning,
+                            category=iris.warnings.IrisVagueMetadataWarning,
                         )
 
             if self.has_bounds():
@@ -2196,7 +2199,7 @@ class Coord(_DimensionalMetadata):
 
         Parameters
         ----------
-        bound_position : optional, default=0.5
+        bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
 
@@ -2268,7 +2271,7 @@ class Coord(_DimensionalMetadata):
 
         Parameters
         ----------
-        bound_position : optional, default=0.5
+        bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
 
@@ -2296,7 +2299,7 @@ class Coord(_DimensionalMetadata):
 
         Parameters
         ----------
-        return_indices : optional, default=False
+        return_indices : bool, default=False
             If True, changes the return behaviour to return the intersection
             indices for the "self" coordinate.
 
@@ -2500,7 +2503,7 @@ class DimCoord(Coord):
             The numeric difference between successive point values.
         count :
             The number of point values.
-        with_bounds : optional
+        with_bounds : bool, default=False
             If True, the resulting DimCoord will possess bound values
             which are equally spaced around the points. Otherwise no
             bounds values will be defined. Defaults to False.
@@ -2554,16 +2557,16 @@ class DimCoord(Coord):
             1D numpy array-like of values (or single value in the case of a
             scalar coordinate) for each cell of the coordinate.  The values
             must be strictly monotonic and masked values are not allowed.
-        standard_name : optional, default=None
+        standard_name : optional
             CF standard name of the coordinate.
-        long_name : optional, default=None
+        long_name : optional
             Descriptive name of the coordinate.
-        var_name : optional, default=None
+        var_name : optional
             The netCDF variable name for the coordinate.
-        units : :class:`~cf_units.Unit`, optional, default=None
+        units : :class:`~cf_units.Unit`, optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
-        bounds : optional, default=None
+        bounds : optional
             An array of values describing the bounds of each cell. Given n
             bounds and m cells, the shape of the bounds array should be
             (m, n). For each bound, the values must be strictly monotonic along
@@ -2574,16 +2577,16 @@ class DimCoord(Coord):
             in the same direction.  Masked values are not allowed.
             Note if the data is a climatology, `climatological`
             should be set.
-        attributes : optional, default=None
+        attributes : optional
             A dictionary containing other CF and user-defined attributes.
-        coord_system : :class:`~iris.coord_systems.CoordSystem`, optional, default=None
+        coord_system : :class:`~iris.coord_systems.CoordSystem`, optional
             A :class:`~iris.coord_systems.CoordSystem` representing the
             coordinate system of the coordinate,
             e.g., a :class:`~iris.coord_systems.GeogCS` for a longitude coordinate.
-        circular : bool, optional, default=False
+        circular : bool, default=False
             Whether the coordinate wraps by the :attr:`~iris.coords.DimCoord.units.modulus`
             i.e., the longitude coordinate wraps around the full great circle.
-        climatological : bool, optional, default=False
+        climatological : bool, default=False
             When True: the coordinate is a NetCDF climatological time axis.
             When True: saving in NetCDF will give the coordinate variable a
             'climatology' attribute and will create a boundary variable called
@@ -2611,7 +2614,7 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):
+    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
         """coord.__deepcopy__() -> Deep copy of coordinate.
 
         Used if copy.deepcopy is called on a coordinate.

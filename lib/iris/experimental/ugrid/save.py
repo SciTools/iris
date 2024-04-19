@@ -8,6 +8,7 @@
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
 """
+
 from collections.abc import Iterable
 
 from ...fileformats import netcdf
@@ -16,17 +17,13 @@ from ...fileformats import netcdf
 def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
     """Save mesh(es) to a netCDF file.
 
-    Args:
-
-    * mesh (:class:`iris.experimental.ugrid.Mesh` or iterable):
-        mesh(es) to save.
-
-    * filename (string):
+    Parameters
+    ----------
+    mesh : :class:`iris.experimental.ugrid.Mesh` or iterable
+        Mesh(es) to save.
+    filename : str
         Name of the netCDF file to create.
-
-    Kwargs:
-
-    * netcdf_format (string):
+    netcdf_format : str, default="NETCDF4"
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 

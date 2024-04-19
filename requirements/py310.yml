@@ -26,6 +26,7 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
+  - geovista
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack
@@ -47,7 +48,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - sphinx <=5.3
+  - sphinx
   - sphinxcontrib-apidoc
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0

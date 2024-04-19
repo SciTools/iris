@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Scripts for generating supporting data for UGRID-related benchmarking."""
+
 from iris import load_cube as iris_loadcube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
@@ -24,9 +25,11 @@ def generate_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool, output_path: 
     Instead, it is to be called via benchmarks.remote_data_generation,
     so that it can use up-to-date facilities, independent of the ASV controlled
     environment which contains the "Iris commit under test".
+
     This means:
-      * it must be completely self-contained : i.e. it includes all its
-        own imports, and saves results to an output file.
+
+    * it must be completely self-contained : i.e. it includes all its
+      own imports, and saves results to an output file.
 
     """
     from iris import save
@@ -109,8 +112,9 @@ def make_cube_like_umfield(xy_dims):
     Note: probably a bit over-simplified, as there is no time coord, but that
     is probably equally true of our LFRic-style synthetic data.
 
-    Args:
-    * xy_dims (2-tuple):
+    Parameters
+    ----------
+    xy_dims : 2-tuple
         Set the horizontal dimensions = n-lats, n-lons.
 
     """
@@ -165,8 +169,7 @@ def make_cubesphere_testfile(c_size, n_levels=0, n_times=1):
     If n_levels > 0 specified: 3d file with the specified number of levels.
     Return the file path.
 
-    todo: is create_file__xios... still appropriate now we can properly save
-     Mesh Cubes?
+    TODO: is create_file__xios... still appropriate now we can properly save Mesh Cubes?
 
     """
     n_faces = 6 * c_size * c_size

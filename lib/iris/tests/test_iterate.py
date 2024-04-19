@@ -18,9 +18,9 @@ import numpy as np
 
 import iris
 import iris.analysis
-from iris.exceptions import IrisUserWarning
 import iris.iterate
 import iris.tests.stock
+from iris.warnings import IrisUserWarning
 
 
 @tests.skip_data

@@ -16,8 +16,8 @@ import shapely.geometry
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.exceptions import IrisGeometryExceedWarning
 import iris.tests.stock as stock
+from iris.warnings import IrisGeometryExceedWarning
 
 
 class Test(tests.IrisTest):

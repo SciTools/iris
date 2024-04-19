@@ -280,14 +280,6 @@ def group_structured_fields(
     **collation_kwargs : dict
         Additional constructor keywords for collation creation.
 
-    Implicitly, within each result group, *all* other metadata components
-    should be either:
-
-    * the same for all fields,
-    * completely irrelevant, or
-    * used by a vectorised rule function (such as
-      :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
-
     Returns
     -------
     Generator of 'collation_class' objects
@@ -296,6 +288,14 @@ def group_structured_fields(
 
     Notes
     -----
+    Implicitly, within each result group, *all* other metadata components
+    should be either:
+
+    * the same for all fields,
+    * completely irrelevant, or
+    * used by a vectorised rule function (such as
+      :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
+
     The function sorts and collates on phenomenon-relevant metadata only,
     defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
     'lbuser[6]' (model).

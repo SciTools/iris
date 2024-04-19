@@ -10,7 +10,7 @@ import warnings
 
 import numpy as np
 
-from iris.exceptions import IrisUserWarning
+from iris.warnings import IrisUserWarning
 
 __all__ = ["izip"]
 

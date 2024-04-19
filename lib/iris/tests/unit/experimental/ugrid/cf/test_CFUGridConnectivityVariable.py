@@ -8,6 +8,7 @@ todo: fold these tests into cf tests when experimental.ugrid is folded into
  standard behaviour.
 
 """
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -18,12 +19,12 @@ import warnings
 import numpy as np
 import pytest
 
-import iris.exceptions
 from iris.experimental.ugrid.cf import CFUGridConnectivityVariable
 from iris.experimental.ugrid.mesh import Connectivity
 from iris.tests.unit.experimental.ugrid.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
+import iris.warnings
 
 
 def named_variable(name):
@@ -186,14 +187,14 @@ class TestIdentify(tests.IrisTest):
         def operation(warn: bool):
             warnings.warn(
                 "emit at least 1 warning",
-                category=iris.exceptions.IrisUserWarning,
+                category=iris.warnings.IrisUserWarning,
             )
             result = CFUGridConnectivityVariable.identify(vars_all, warn=warn)
             self.assertDictEqual({}, result)
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID connectivity variable {subject_name}.*"
-        with pytest.warns(iris.exceptions.IrisCfMissingVarWarning, match=warn_regex):
+        with pytest.warns(iris.warnings.IrisCfMissingVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)
@@ -203,7 +204,7 @@ class TestIdentify(tests.IrisTest):
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
         vars_all[subject_name] = netcdf_ugrid_variable(subject_name, "", np.bytes_)
-        with pytest.warns(iris.exceptions.IrisCfLabelVarWarning, match=warn_regex):
+        with pytest.warns(iris.warnings.IrisCfLabelVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:
             operation(warn=False)

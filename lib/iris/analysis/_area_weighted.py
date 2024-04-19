@@ -29,7 +29,7 @@ class AreaWeightedRegridder:
             The :class:`~iris.cube.Cube` providing the source grid.
         target_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-        mdtol : float, optional
+        mdtol : float, default=1
             Tolerance of missing data. The value returned in each element of
             the returned array will be masked if the fraction of masked data
             exceeds mdtol. mdtol=0 means no missing data is tolerated while
@@ -39,7 +39,7 @@ class AreaWeightedRegridder:
 
         Notes
         -----
-        .. Note::
+        .. note::
 
             Both source and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
@@ -221,6 +221,7 @@ def _get_bounds_in_units(coord, units, dtype):
     """Return a copy of coord's bounds in the specified units and dtype.
 
     Return as contiguous bounds.
+
     """
     # The bounds are cast to dtype before conversion to prevent issues when
     # mixing float32 and float64 types.
@@ -391,18 +392,16 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
     tgt_shape = (len(grid_y.points), len(grid_x.points))
 
-    # Calculate new data array for regridded cube.
-    regrid = functools.partial(
+    new_data = map_complete_blocks(
+        src_cube,
         _regrid_along_dims,
+        (src_y_dim, src_x_dim),
+        meshgrid_x.shape,
         x_dim=src_x_dim,
         y_dim=src_y_dim,
         weights=weights,
         tgt_shape=tgt_shape,
         mdtol=mdtol,
-    )
-
-    new_data = map_complete_blocks(
-        src_cube, regrid, (src_y_dim, src_x_dim), meshgrid_x.shape
     )
 
     # Wrap up the data as a Cube.

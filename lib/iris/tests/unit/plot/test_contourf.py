@@ -93,7 +93,7 @@ class TestAntialias(tests.IrisTest):
     def test_apply_contour_nans(self):
         # Presence of nans should not prevent contours being added.
         cube = simple_2d()
-        cube.data = cube.data.astype(np.float_)
+        cube.data = cube.data.astype(np.float64)
         cube.data[0, 0] = np.nan
 
         levels = [2, 4, 6, 8]

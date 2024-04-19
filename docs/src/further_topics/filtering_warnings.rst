@@ -16,7 +16,7 @@ you to ``ignore`` Warnings which you do not find helpful.
 
     import iris
     import iris.coord_systems
-    import iris.exceptions
+    import iris.warnings
 
     # Hack to ensure doctests actually see Warnings that are raised, and that
     #  they have a relative path (so a test pass is not machine-dependent).
@@ -47,9 +47,9 @@ Warnings:
 
     >>> my_operation()
     ...
-    iris/coord_systems.py:442: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
-      warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
-    iris/coord_systems.py:782: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
+    iris/coord_systems.py:444: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+      warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
+    iris/coord_systems.py:770: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
       warnings.warn(
 
 Warnings can be suppressed using the Python warnings filter with the ``ignore``
@@ -110,8 +110,8 @@ You can target specific Warning messages, e.g.
     ...     warnings.filterwarnings("ignore", message="Discarding false_easting")
     ...     my_operation()
     ...
-    iris/coord_systems.py:442: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
-      warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
+    iris/coord_systems.py:444: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+      warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
 
 ::
 
@@ -125,18 +125,16 @@ Or you can target Warnings raised by specific lines of specific modules, e.g.
 .. doctest:: filtering_warnings
 
     >>> with warnings.catch_warnings():
-    ...     warnings.filterwarnings("ignore", module="iris.coord_systems", lineno=449)
+    ...     warnings.filterwarnings("ignore", module="iris.coord_systems", lineno=444)
     ...     my_operation()
     ...
-    iris/coord_systems.py:442: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
-      warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
-    iris/coord_systems.py:782: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
+    iris/coord_systems.py:770: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
       warnings.warn(
 
 ::
 
-    python -W ignore:::iris.coord_systems:453
-    export PYTHONWARNINGS=ignore:::iris.coord_systems:453
+    python -W ignore:::iris.coord_systems:444
+    export PYTHONWARNINGS=ignore:::iris.coord_systems:444
 
 Warnings from a Common Source
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,7 +176,7 @@ Warnings of a Common Type
 code you are calling.**
 
 The below example will ``ignore`` any
-:class:`~iris.exceptions.IrisDefaultingWarning` that gets raised by *any*
+:class:`~iris.warnings.IrisDefaultingWarning` that gets raised by *any*
 module during execution:
 
 .. doctest:: filtering_warnings
@@ -186,25 +184,25 @@ module during execution:
     >>> with warnings.catch_warnings():
     ...     warnings.filterwarnings(
     ...         "ignore",
-    ...         category=iris.exceptions.IrisDefaultingWarning
+    ...         category=iris.warnings.IrisDefaultingWarning
     ...     )
     ...     my_operation()
     ...
-    iris/coord_systems.py:442: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
-      warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
+    iris/coord_systems.py:444: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
+      warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
 
 ----
 
-Using :class:`~iris.exceptions.IrisUserWarning` in the filter will ``ignore``
-both Warnings, since :class:`~iris.exceptions.IrisDefaultingWarning` subclasses
-:class:`~iris.exceptions.IrisUserWarning` :
+Using :class:`~iris.warnings.IrisUserWarning` in the filter will ``ignore``
+both Warnings, since :class:`~iris.warnings.IrisDefaultingWarning` subclasses
+:class:`~iris.warnings.IrisUserWarning` :
 
 .. doctest:: filtering_warnings
 
     >>> with warnings.catch_warnings():
     ...     warnings.filterwarnings(
     ...         "ignore",
-    ...         category=iris.exceptions.IrisUserWarning
+    ...         category=iris.warnings.IrisUserWarning
     ...     )
     ...     my_operation()
 
@@ -222,10 +220,10 @@ There are several built-in Python warning categories that can be used here
 (:class:`DeprecationWarning` being a popular example, see
 :external+python:mod:`warnings` for more). Since Iris has
 so many different warnings that might be raised, Iris subclasses
-:class:`UserWarning` to :class:`~iris.exceptions.IrisUserWarning`, which itself
+:class:`UserWarning` to :class:`~iris.warnings.IrisUserWarning`, which itself
 has **many** specialised subclasses. These subclasses exist to give you more
 granularity in your warning filtering; you can see the full list by
-searching the :mod:`iris.exceptions` page for ``warning`` .
+viewing the :mod:`iris.warnings` module.
 
 .. attention::
 

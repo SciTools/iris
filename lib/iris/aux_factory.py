@@ -13,7 +13,7 @@ import numpy as np
 
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
-from iris.exceptions import IrisIgnoringBoundsWarning
+from iris.warnings import IrisIgnoringBoundsWarning
 
 
 class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
@@ -57,7 +57,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def climatological(self):
-        """Always returns False, as a factory itself can never have points/bounds.
+        """Return False, as a factory itself can never have points/bounds.
 
         Always returns False, as a factory itself can never have points/bounds
         and therefore can never be climatological by definition.
@@ -81,7 +81,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate.
 
@@ -97,9 +97,9 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         Parameters
         ----------
-        old_coord:
+        old_coord :
             The coordinate to be removed/replaced.
-        new_coord: optional
+        new_coord : optional
             If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
@@ -131,7 +131,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant to a given
             coordinate.
             See :meth:`iris.cube.Cube.coord_dims()`.
@@ -161,7 +161,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         Parameters
         ----------
-        new_coord_mapping:
+        new_coord_mapping :
             A dictionary mapping from the object IDs potentially used
             by this factory, to the coordinate objects that should be
             used instead.
@@ -207,7 +207,8 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
             dims == [3]
             ndim == 5
 
-        results in:
+        results in::
+
             nd_bounds.shape == (1, 1, 1, 70, 1, 2)
 
         """
@@ -471,7 +472,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate.
 
@@ -546,11 +547,11 @@ class HybridHeightFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        delta: Coord, optional
+        delta : Coord, optional
             The coordinate providing the `a` term.
-        sigma: Coord, optional
+        sigma : Coord, optional
             The coordinate providing the `b` term.
-        orography: Coord, optional
+        orography : Coord, optional
             The coordinate providing the `orog` term.
 
         """
@@ -615,7 +616,7 @@ class HybridHeightFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate.
 
@@ -678,9 +679,9 @@ class HybridHeightFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        old_coord:
+        old_coord :
             The coordinate to be removed/replaced.
-        new_coord: optional
+        new_coord : optional
             If None, any dependency using old_coord is removed, otherwise
             any dependency using old_coord is updated to use new_coord.
 
@@ -720,11 +721,11 @@ class HybridPressureFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        delta: Coord, optional
+        delta : Coord, optional
             The coordinate providing the `ap` term.
-        sigma: Coord, optional
+        sigma : Coord, optional
             The coordinate providing the `b` term.
-        surface_air_pressure: Coord, optional
+        surface_air_pressure : Coord, optional
             The coordinate providing the `ps` term.
 
         """
@@ -821,7 +822,7 @@ class HybridPressureFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate.
 
@@ -1083,7 +1084,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1245,7 +1246,7 @@ class OceanSigmaFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1428,7 +1429,7 @@ class OceanSg1Factory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1619,7 +1620,7 @@ class OceanSFactory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
@@ -1786,9 +1787,9 @@ class OceanSg2Factory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """Returns a dicti mapping from constructor arg names to coordinates.
+        """Return a dicti mapping from constructor arg names to coordinates.
 
-        Returns a dictionary mapping from constructor argument names to
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """
@@ -1809,7 +1810,7 @@ class OceanSg2Factory(AuxCoordFactory):
 
         Parameters
         ----------
-        coord_dims_func:
+        coord_dims_func :
             A callable which can return the list of dimensions relevant
             to a given coordinate. See :meth:`iris.cube.Cube.coord_dims()`.
 
