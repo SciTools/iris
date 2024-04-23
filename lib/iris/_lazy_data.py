@@ -34,11 +34,14 @@ def is_lazy_data(data):
     """Return whether the argument is an Iris 'lazy' data array.
 
     At present, this means simply a :class:`dask.array.Array`.
-    We determine this by checking for a "compute" property.
 
     """
-    result = hasattr(data, "compute")
-    return result
+    return isinstance(data, da.Array)
+
+
+def is_masked_data(a):
+    """Determine whether the argument is a masked array."""
+    return isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray)
 
 
 def is_lazy_masked_data(data):
@@ -48,7 +51,7 @@ def is_lazy_masked_data(data):
     underlying array is of masked type.  Otherwise return False.
 
     """
-    return is_lazy_data(data) and ma.isMA(da.utils.meta_from_array(data))
+    return is_lazy_data(data) and is_masked_data(data)
 
 
 @lru_cache
