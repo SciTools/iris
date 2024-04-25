@@ -83,7 +83,7 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. `@bouweandela` removed a workaround in :func:`~iris.cube.Cube.merge` for an
+#. `@bouweandela`_ removed a workaround in :meth:`~iris.cube.CubeList.merge` for an
    issue with :func:`dask.array.stack` which has been solved since 2017. (:pull:`5923`)
 
 
