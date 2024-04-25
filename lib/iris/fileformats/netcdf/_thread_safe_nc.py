@@ -324,7 +324,7 @@ class NetCDFDataProxy:
         return len(self.shape)
 
     @property
-    def meta(self):
+    def dask_meta(self):
         return np.ma.array(np.empty((0,) * self.ndim, dtype=self.dtype), mask=True)
 
     def __getitem__(self, keys):
