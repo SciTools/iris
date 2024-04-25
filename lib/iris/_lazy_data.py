@@ -360,6 +360,9 @@ def _combine(
 ) -> da.Array | np.ndarray:
     """Combine multiple arrays into a single array.
 
+    Provides enhanced versions of :func:`~dask.array.concatenate` or :func:`~dask.array.stack`,
+    which ensure that all computed results are masked-array, if the combined .meta is masked.
+
     Parameters
     ----------
     arrays :
@@ -394,6 +397,9 @@ def concatenate(
 ) -> da.Array | np.ndarray:
     """Concatenate a sequence of arrays along a new axis.
 
+    Improves on the regular :func:`dask.array.concatenate` by always respecting a masked
+    ``.meta``, as described for :func:`_combine`.
+
     Parameters
     ----------
     arrays :
@@ -416,6 +422,9 @@ def stack(
     axis: int = 0,
 ) -> da.Array | np.ndarray:
     """Stack a sequence of arrays along a new axis.
+
+Improves on the regular :func:`dask.array.stack` by always respecting a masked
+    ``.meta``, as described for :func:`_combine`.
 
     Parameters
     ----------
