@@ -42,6 +42,11 @@ def is_lazy_data(data):
     return result
 
 
+def is_masked_data(data: np.ndarray | da.Array) -> bool:
+    """Return whether the argument is a masked array."""
+    return isinstance(da.utils.meta_from_array(data), np.ma.MaskedArray)
+
+
 def is_lazy_masked_data(data):
     """Determine whether managed data is lazy and masked.
 
@@ -49,7 +54,7 @@ def is_lazy_masked_data(data):
     underlying array is of masked type.  Otherwise return False.
 
     """
-    return is_lazy_data(data) and ma.isMA(da.utils.meta_from_array(data))
+    return is_lazy_data(data) and is_masked_data(data)
 
 
 @lru_cache
@@ -348,19 +353,83 @@ def as_concrete_data(data):
     return data
 
 
-def stack(seq: Sequence[da.Array | np.ndarray]) -> da.Array:
-    """Stack arrays along a new axis.
+def _combine(
+    arrays: Sequence[da.Array | np.ndarray],
+    operation: str,
+    **kwargs,
+) -> da.Array | np.ndarray:
+    """Combine multiple arrays into a single array.
 
-    This version of :func:`da.stack` ensures all slices of the resulting array
-    are masked arrays if any of the input arrays is masked.
+    Parameters
+    ----------
+    arrays :
+        The arrays to combine.
+    operation :
+        The combination operation to apply.
+    **kwargs :
+        Any keyword arguments to pass to the combination operation.
+
     """
+    lazy = any(is_lazy_data(a) for a in arrays)
+    masked = any(is_masked_data(a) for a in arrays)
 
-    def is_masked(a):
-        return isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray)
+    array_module = np
+    if masked:
+        if lazy:
+            # Avoid inconsistent array type when slicing resulting array
+            arrays = tuple(
+                a if is_lazy_masked_data(a) else da.ma.masked_array(a) for a in arrays
+            )
+        else:
+            # Avoid dropping the masks
+            array_module = np.ma
 
-    if any(is_masked(a) for a in seq):
-        seq = [a if is_masked(a) else da.ma.masked_array(a) for a in seq]
-    return da.stack(seq)
+    func = getattr(array_module, operation)
+    return func(arrays, **kwargs)
+
+
+def concatenate(
+    arrays: Sequence[da.Array | np.ndarray],
+    axis: int = 0,
+) -> da.Array | np.ndarray:
+    """Concatenate a sequence of arrays along a new axis.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays must have the same shape, except in the dimension
+        corresponding to `axis` (the first, by default).
+    axis :
+        Dimension along which to align all of the arrays. If axis is None,
+        arrays are flattened before use.
+
+    Returns
+    -------
+    The concatenated array.
+
+    """
+    return _combine(arrays, operation="concatenate", axis=axis)
+
+
+def stack(
+    arrays: Sequence[da.Array | np.ndarray],
+    axis: int = 0,
+) -> da.Array | np.ndarray:
+    """Stack a sequence of arrays along a new axis.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays must have the same shape.
+    axis :
+        Dimension along which to align all of the arrays.
+
+    Returns
+    -------
+    The stacked array.
+
+    """
+    return _combine(arrays, operation="stack", axis=axis)
 
 
 def multidim_lazy_stack(arr):
