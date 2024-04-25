@@ -1230,14 +1230,6 @@ class ProtoCube:
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
-            # Track the largest dtype of the data to be merged.
-            # Unfortunately, da.stack() is not symmetric with regards
-            # to dtypes. So stacking float + int yields a float, but
-            # stacking an int + float yields an int! We need to ensure
-            # that the largest dtype prevails i.e. float, in order to
-            # support the masked case for dask.
-            # Reference https://github.com/dask/dask/issues/2273.
-            dtype = None
             # Stack up all the data from all of the relevant source
             # cubes in a single dask "stacked" array.
             # If it turns out that all the source cubes already had
@@ -1258,21 +1250,11 @@ class ProtoCube:
                 else:
                     data = as_lazy_data(data)
                 stack[nd_index] = data
-                # Determine the largest dtype.
-                if dtype is None:
-                    dtype = data.dtype
-                else:
-                    dtype = np.promote_types(data.dtype, dtype)
-
-            # Coerce to the largest dtype.
-            for nd_index in nd_indexes:
-                stack[nd_index] = stack[nd_index].astype(dtype)
 
             merged_data = multidim_lazy_stack(stack)
             if all_have_data:
                 # All inputs were concrete, so turn the result back into a
                 # normal array.
-                dtype = self._cube_signature.data_type
                 merged_data = as_concrete_data(merged_data)
             merged_cube = self._get_cube(merged_data)
             merged_cubes.append(merged_cube)
