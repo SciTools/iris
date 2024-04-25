@@ -423,7 +423,7 @@ def stack(
 ) -> da.Array | np.ndarray:
     """Stack a sequence of arrays along a new axis.
 
-Improves on the regular :func:`dask.array.stack` by always respecting a masked
+    Improves on the regular :func:`dask.array.stack` by always respecting a masked
     ``.meta``, as described for :func:`_combine`.
 
     Parameters
