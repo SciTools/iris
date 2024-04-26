@@ -323,6 +323,10 @@ class NetCDFDataProxy:
         # noqa: D102
         return len(self.shape)
 
+    @property
+    def dask_meta(self):
+        return np.ma.array(np.empty((0,) * self.ndim, dtype=self.dtype), mask=True)
+
     def __getitem__(self, keys):
         # Using a DatasetWrapper causes problems with invalid ID's and the
         # netCDF4 library, presumably because __getitem__ gets called so many

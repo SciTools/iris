@@ -7,9 +7,9 @@
 from collections import defaultdict, namedtuple
 import warnings
 
-import dask.array as da
 import numpy as np
 
+from iris._lazy_data import concatenate as concatenate_arrays
 import iris.coords
 import iris.cube
 import iris.exceptions
@@ -1112,7 +1112,7 @@ class _ProtoCube:
                     skton.signature.cell_measures_and_dims[i].coord.data
                     for skton in skeletons
                 ]
-                data = np.concatenate(tuple(data), axis=dim)
+                data = concatenate_arrays(tuple(data), axis=dim)
 
                 # Generate the associated metadata.
                 kwargs = cube_signature.cm_metadata[i].defn._asdict()
@@ -1152,7 +1152,7 @@ class _ProtoCube:
                     skton.signature.ancillary_variables_and_dims[i].coord.data
                     for skton in skeletons
                 ]
-                data = np.concatenate(tuple(data), axis=dim)
+                data = concatenate_arrays(tuple(data), axis=dim)
 
                 # Generate the associated metadata.
                 kwargs = cube_signature.av_metadata[i].defn._asdict()
@@ -1245,7 +1245,7 @@ class _ProtoCube:
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = da.concatenate(data, self.axis)
+        data = concatenate_arrays(data, self.axis)
 
         return data
 
