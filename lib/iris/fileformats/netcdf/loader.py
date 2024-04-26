@@ -240,7 +240,7 @@ def _get_cf_var_data(cf_var, filename):
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
-                result = as_lazy_data(proxy, chunks=None, dask_chunking=True)
+                result = as_lazy_data(proxy, meta=proxy.dask_meta, chunks="auto")
             else:
                 chunks = cf_var.cf_data.chunking()
                 if chunks is None:
@@ -285,7 +285,10 @@ def _get_cf_var_data(cf_var, filename):
                 if dims_fixed is None:
                     dims_fixed = [dims_fixed]
                 result = as_lazy_data(
-                    proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+                    proxy,
+                    meta=proxy.dask_meta,
+                    chunks=chunks,
+                    dims_fixed=tuple(dims_fixed),
                 )
     return result
 

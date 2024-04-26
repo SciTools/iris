@@ -25,7 +25,6 @@ from xml.dom.minidom import Document
 import zlib
 
 from cf_units import Unit
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -3134,12 +3133,7 @@ class Cube(CFVariableMixin):
             result = chunks[0]
         else:
             chunk_data = [chunk.core_data() for chunk in chunks]
-            if self.has_lazy_data():
-                func = da.concatenate
-            else:
-                module = ma if ma.isMaskedArray(self.data) else np
-                func = module.concatenate
-            data = func(chunk_data, dim)
+            data = _lazy.concatenate(chunk_data, axis=dim)
             result = iris.cube.Cube(data)
             result.metadata = deepcopy(self.metadata)
 
@@ -4432,13 +4426,10 @@ x            -              -
 
         # Choose appropriate data and functions for data aggregation.
         if aggregator.lazy_func is not None and self.has_lazy_data():
-            stack = da.stack
             input_data = self.lazy_data()
             agg_method = aggregator.lazy_aggregate
         else:
             input_data = self.data
-            # Note numpy.stack does not preserve masks.
-            stack = ma.stack if ma.isMaskedArray(input_data) else np.stack
             agg_method = aggregator.aggregate
 
         # Create data and weights slices.
@@ -4475,11 +4466,11 @@ x            -              -
         # before combining the different slices.
         if return_weights:
             result, weights_result = list(zip(*result))
-            aggregateby_weights = stack(weights_result, axis=dimension_to_groupby)
+            aggregateby_weights = _lazy.stack(weights_result, axis=dimension_to_groupby)
         else:
             aggregateby_weights = None
 
-        aggregateby_data = stack(result, axis=dimension_to_groupby)
+        aggregateby_data = _lazy.stack(result, axis=dimension_to_groupby)
         # Ensure plain ndarray is output if plain ndarray was input.
         if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
             aggregateby_data = ma.getdata(aggregateby_data)

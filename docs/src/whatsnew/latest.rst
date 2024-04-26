@@ -36,7 +36,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
+   to the array content. (:pull:`5801`)
 
 
 💣 Incompatible Changes
@@ -83,7 +84,8 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@bouweandela`_ removed a workaround in :meth:`~iris.cube.CubeList.merge` for an
+   issue with :func:`dask.array.stack` which has been solved since 2017. (:pull:`5923`)
 
 
 .. comment

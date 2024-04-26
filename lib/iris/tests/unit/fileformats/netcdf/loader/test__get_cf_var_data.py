@@ -10,7 +10,7 @@ import iris.tests as tests  # isort:skip
 
 from unittest import mock
 
-from dask.array import Array as dask_array
+import dask.array as da
 import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
@@ -50,7 +50,8 @@ class Test__get_cf_var_data(tests.IrisTest):
         chunks = [1, 12, 100]
         cf_var = self._make(chunks)
         lazy_data = _get_cf_var_data(cf_var, self.filename)
-        self.assertIsInstance(lazy_data, dask_array)
+        self.assertIsInstance(lazy_data, da.Array)
+        self.assertIsInstance(da.utils.meta_from_array(lazy_data), np.ma.MaskedArray)
 
     def test_cf_data_chunks(self):
         chunks = [2500, 240, 200]
@@ -90,7 +91,7 @@ class Test__get_cf_var_data(tests.IrisTest):
     def test_type__1kf8_is_lazy(self):
         cf_var = self._make(shape=(1000,), dtype="f8")
         var_data = _get_cf_var_data(cf_var, self.filename)
-        self.assertIsInstance(var_data, dask_array)
+        self.assertIsInstance(var_data, da.Array)
 
     def test_arraytype__1ki2_is_real(self):
         cf_var = self._make(shape=(1000,), dtype="i2")
