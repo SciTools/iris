@@ -192,6 +192,11 @@ class CondaDelegated(Conda):
             # Record new environment information in properties.
             self._update_info()
 
+    def _run_conda(self, args, env=None):
+        # TODO: remove after airspeed-velocity/asv#1397 is merged and released.
+        args = ["--yes" if arg == "--force" else arg for arg in args]
+        super()._run_conda(args, env)
+
     def checkout_project(self, repo: Repo, commit_hash: str) -> None:
         """Check out the working tree of the project at given commit hash."""
         super().checkout_project(repo, commit_hash)
