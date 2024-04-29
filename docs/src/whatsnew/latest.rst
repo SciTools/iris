@@ -90,6 +90,10 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ removed a workaround in :meth:`~iris.cube.CubeList.merge` for an
    issue with :func:`dask.array.stack` which has been solved since 2017. (:pull:`5923`)
 
+#. `@trexfeathers`_ introduced a temporary fix for Airspeed Velocity's
+   deprecated use of the ``conda --force`` argument. To be removed once
+   `airspeed-velocity/asv#1397`_ is merged and released. (:pull:`5931`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -100,3 +104,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _airspeed-velocity/asv#1397: https://github.com/airspeed-velocity/asv/pull/1397
