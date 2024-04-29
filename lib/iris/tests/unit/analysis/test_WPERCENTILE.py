@@ -8,6 +8,8 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import re
+
 import numpy as np
 import numpy.ma as ma
 
@@ -26,7 +28,9 @@ class Test_aggregate(tests.IrisTest):
     def test_wrong_weights_shape(self):
         data = np.arange(11)
         weights = np.ones(10)
-        emsg = "_weighted_percentile: weights wrong shape."
+        emsg = re.escape(
+            "For data array of shape (11,), weights should be (11,) or (11,)"
+        )
         with self.assertRaisesRegex(ValueError, emsg):
             WPERCENTILE.aggregate(data, axis=0, percent=50, weights=weights)
 
@@ -157,6 +161,22 @@ class Test_aggregate(tests.IrisTest):
         self.assertArrayAlmostEqual(actual, expected)
         self.assertTupleEqual(weight_total.shape, (shape[-1],))
         self.assertArrayEqual(weight_total, np.repeat(4, shape[-1]))
+
+    def test_2d_multi_weight1d_unequal(self):
+        shape = (3, 10)
+        data = np.arange(np.prod(shape)).reshape(shape)
+        weights1d = np.ones(shape[-1])
+        weights1d[::3] = 3
+        weights2d = np.broadcast_to(weights1d, shape)
+        percent = np.array([30, 50, 75, 80])
+        result_1d, wt_total_1d = WPERCENTILE.aggregate(
+            data, axis=1, percent=percent, weights=weights1d, returned=True
+        )
+        result_2d, wt_total_2d = WPERCENTILE.aggregate(
+            data, axis=1, percent=percent, weights=weights2d, returned=True
+        )
+        # Results should be the same whether we use 1d or 2d weights.
+        self.assertArrayAllClose(result_1d, result_2d)
 
 
 class Test_name(tests.IrisTest):

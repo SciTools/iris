@@ -39,6 +39,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
    to the array content. (:pull:`5801`)
 
+#. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
+   :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
+
 
 💣 Incompatible Changes
 =======================
@@ -70,7 +73,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should 
+#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should
    now be used, currently being v7.2.6.
    (:pull:`5901`)
 
