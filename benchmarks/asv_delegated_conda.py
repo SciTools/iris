@@ -195,7 +195,7 @@ class CondaDelegated(Conda):
     def _run_conda(self, args, env=None):
         # TODO: remove after airspeed-velocity/asv#1397 is merged and released.
         args = ["--yes" if arg == "--force" else arg for arg in args]
-        super()._run_conda(args, env)
+        return super()._run_conda(args, env)
 
     def checkout_project(self, repo: Repo, commit_hash: str) -> None:
         """Check out the working tree of the project at given commit hash."""
