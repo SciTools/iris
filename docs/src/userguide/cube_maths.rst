@@ -45,8 +45,8 @@ We can now get the first and last time slices using indexing
 
 .. testsetup::
 
-    filename = iris.sample_data_path('E1_north_america.nc')
-    air_temp = iris.load_cube(filename, 'air_temperature')
+    filename = iris.sample_data_path("E1_north_america.nc")
+    air_temp = iris.load_cube(filename, "air_temperature")
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]
 

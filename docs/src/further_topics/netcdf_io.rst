@@ -14,12 +14,12 @@
     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
     iris.save(cube, tmp_filepath, chunksizes=(120, 37, 49))
     old_dask = dask.config.get("array.chunk-size")
-    dask.config.set({'array.chunk-size': '500KiB'})
+    dask.config.set({"array.chunk-size": "500KiB"})
 
 
 .. testcleanup:: chunk_control
 
-    dask.config.set({'array.chunk-size': old_dask})
+    dask.config.set({"array.chunk-size": old_dask})
     shutil.rmtree(tmp_dir)
 
 .. _netcdf_io:
@@ -77,6 +77,7 @@ as the shape, i.e. no optimisation occurs on that dimension.
 
     >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1, longitude=25):
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (180, 37, 25)
@@ -88,6 +89,7 @@ specify only one dimension, the rest will be optimised using Iris' default behav
 
     >>> with CHUNK_CONTROL.set(longitude=25):
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (120, 37, 25)
@@ -103,6 +105,7 @@ will default to Iris optimisation.
 
     >>> with CHUNK_CONTROL.from_file():
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (120, 37, 49)
@@ -116,7 +119,8 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 .. doctest:: chunk_control
 
     >>> with CHUNK_CONTROL.as_dask():
-    ...    cube = iris.load_cube(tmp_filepath)
+    ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (70, 37, 49)
@@ -171,9 +175,9 @@ Worked example:
     >>> from iris.coords import DimCoord
     >>> from iris.util import guess_coord_axis
     >>> my_coord = DimCoord(
-    ...    points=[1000, 1010, 1020],
-    ...    long_name="pressure_threshold",
-    ...    units="hPa",
+    ...     points=[1000, 1010, 1020],
+    ...     long_name="pressure_threshold",
+    ...     units="hPa",
     ... )
     >>> print(guess_coord_axis(my_coord))
     Z

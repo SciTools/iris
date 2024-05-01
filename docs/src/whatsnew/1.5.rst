@@ -37,7 +37,7 @@ Features
   
       # Get cube slices corresponding to the dimension associated with longitude
       # and the first dimension from a multi-dimensional cube.
-      for sub_cube in cube.slices(['longitude', 0]):
+      for sub_cube in cube.slices(["longitude", 0]):
           print(sub_cube)
 
 * :mod:`iris.experimental.animate` now provides experimental animation support.
@@ -45,7 +45,7 @@ Features
   .. code-block:: python
   
       # Create an iterable of cubes (generator, lists etc.)
-      cube_iter = cubes.slices(('grid_longitude', 'grid_latitude'))
+      cube_iter = cubes.slices(("grid_longitude", "grid_latitude"))
       ani = animate(cube_iter, qplt.contourf)
       plt.show()
 
@@ -97,9 +97,9 @@ Features
 
   .. code-block:: python
   
-      fname = iris.sample_data_path('air_temp.pp')
+      fname = iris.sample_data_path("air_temp.pp")
       temperature = iris.load_cube(fname)
-      temperature[temperature.coord('latitude').points > 0]
+      temperature[temperature.coord("latitude").points > 0]
   
       # The constraints mechanism is still the preferred means to do such a query.
       temperature.extract(iris.Constraint(latitude=lambda v: v>0)))

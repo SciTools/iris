@@ -51,7 +51,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
     >>> # Save a cube list to a PP file, appending to the contents of the file
     >>> # if it already exists
     >>> iris.save(cubes, "myfile.pp", append=True)
-    
+
     >>> # Save a cube to netCDF, defaults to NETCDF4 file format
     >>> iris.save(cubes[0], "myfile.nc")
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
@@ -60,6 +60,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
 .. testcleanup::
 
     import pathlib
+
     p = pathlib.Path("myfile.pp")
     if p.exists():
         p.unlink()

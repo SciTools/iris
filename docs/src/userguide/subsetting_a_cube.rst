@@ -235,15 +235,18 @@ day of every week for many years:
     import datetime
     import numpy as np
     from iris.time import PartialDateTime
-    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+
+    long_ts = iris.cube.Cube(np.arange(150), long_name="data", units="1")
+    _mondays = iris.coords.DimCoord(
+        7 * np.arange(150), standard_name="time", units="days since 2007-04-09"
+    )
     long_ts.add_dim_coord(_mondays, 0)
 
 
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
-    >>> print(long_ts.coord('time'))
+    >>> print(long_ts.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
@@ -259,12 +262,11 @@ we constrain that coord using :class:`iris.cube.Cube.extract`
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
-    >>> d1 = datetime.datetime.strptime('20070715T0000Z', '%Y%m%dT%H%MZ')
-    >>> d2 = datetime.datetime.strptime('20070825T0000Z', '%Y%m%dT%H%MZ')
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: d1 <= cell.point < d2)
+    >>> d1 = datetime.datetime.strptime("20070715T0000Z", "%Y%m%dT%H%MZ")
+    >>> d2 = datetime.datetime.strptime("20070825T0000Z", "%Y%m%dT%H%MZ")
+    >>> st_swithuns_daterange_07 = iris.Constraint(time=lambda cell: d1 <= cell.point < d2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
+    >>> print(within_st_swithuns_07.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
@@ -281,10 +283,9 @@ objects.
 
     >>> pdt1 = PartialDateTime(year=2007, month=7, day=15)
     >>> pdt2 = PartialDateTime(year=2007, month=8, day=25)
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: pdt1 <= cell.point < pdt2)
+    >>> st_swithuns_daterange_07 = iris.Constraint(time=lambda cell: pdt1 <= cell.point < pdt2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
+    >>> print(within_st_swithuns_07.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
@@ -301,11 +302,13 @@ PartialDateTime this becomes simple:
 .. doctest:: timeseries_range
 
     >>> st_swithuns_daterange = iris.Constraint(
-    ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell.point < PartialDateTime(month=8, day=25))
+    ...     time=lambda cell: PartialDateTime(month=7, day=15)
+    ...     <= cell.point
+    ...     < PartialDateTime(month=8, day=25)
+    ... )
     >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
-    ...
     >>> # Note: using summary(max_values) to show more of the points
-    >>> print(within_st_swithuns.coord('time').summary(max_values=100))
+    >>> print(within_st_swithuns.coord("time").summary(max_values=100))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,

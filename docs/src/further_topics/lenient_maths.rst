@@ -53,10 +53,19 @@ Lenient Example
 
    import iris
    from iris.common import LENIENT
-   experiment = iris.load_cube(iris.sample_data_path("hybrid_height.nc"), "air_potential_temperature")
+
+   experiment = iris.load_cube(
+       iris.sample_data_path("hybrid_height.nc"), "air_potential_temperature"
+   )
    control = experiment[0]
    control.remove_aux_factory(control.aux_factory())
-   for coord in ["sigma", "forecast_reference_time", "forecast_period", "atmosphere_hybrid_height_coordinate", "surface_altitude"]:
+   for coord in [
+       "sigma",
+       "forecast_reference_time",
+       "forecast_period",
+       "atmosphere_hybrid_height_coordinate",
+       "surface_altitude",
+   ]:
        control.remove_coord(coord)
    control.attributes["Conventions"] = "CF-1.7"
    experiment.attributes["experiment-id"] = "RT3 50"

@@ -22,10 +22,14 @@ you to ``ignore`` Warnings which you do not find helpful.
     #  they have a relative path (so a test pass is not machine-dependent).
     warnings.filterwarnings("default")
     IRIS_FILE = Path(iris.__file__)
+
+
     def custom_warn(message, category, filename, lineno, file=None, line=None):
         filepath = Path(filename)
         filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
         sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+
+
     warnings.showwarning = custom_warn
 
     geog_cs_globe = iris.coord_systems.GeogCS(6400000)
@@ -46,7 +50,6 @@ Warnings:
 .. doctest:: filtering_warnings
 
     >>> my_operation()
-    ...
     iris/coord_systems.py:444: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
       warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
     iris/coord_systems.py:770: IrisDefaultingWarning: Discarding false_easting and false_northing that are not used by Cartopy.
@@ -149,6 +152,7 @@ E.g. filtering the ``coord_systems`` module:
     >>> with warnings.catch_warnings():
     ...     warnings.filterwarnings("ignore", module="iris.coord_systems")
     ...     my_operation()
+    ...
 
 ::
 
@@ -166,6 +170,7 @@ whole.
     >>> with warnings.catch_warnings():
     ...     warnings.filterwarnings("ignore", module="iris")
     ...     my_operation()
+    ...
 
 The above 'partial' filter is not available with the command line approaches.
 
@@ -182,10 +187,7 @@ module during execution:
 .. doctest:: filtering_warnings
 
     >>> with warnings.catch_warnings():
-    ...     warnings.filterwarnings(
-    ...         "ignore",
-    ...         category=iris.warnings.IrisDefaultingWarning
-    ...     )
+    ...     warnings.filterwarnings("ignore", category=iris.warnings.IrisDefaultingWarning)
     ...     my_operation()
     ...
     iris/coord_systems.py:444: IrisUserWarning: Setting inverse_flattening does not affect other properties of the GeogCS object. To change other properties set them explicitly or create a new GeogCS instance.
@@ -200,11 +202,9 @@ both Warnings, since :class:`~iris.warnings.IrisDefaultingWarning` subclasses
 .. doctest:: filtering_warnings
 
     >>> with warnings.catch_warnings():
-    ...     warnings.filterwarnings(
-    ...         "ignore",
-    ...         category=iris.warnings.IrisUserWarning
-    ...     )
+    ...     warnings.filterwarnings("ignore", category=iris.warnings.IrisUserWarning)
     ...     my_operation()
+    ...
 
 ----
 

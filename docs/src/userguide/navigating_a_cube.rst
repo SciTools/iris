@@ -5,11 +5,12 @@ Navigating a Cube
 .. testsetup::
 
         import iris
-        filename = iris.sample_data_path('rotated_pole.nc')
+
+        filename = iris.sample_data_path("rotated_pole.nc")
         # pot_temp = iris.load_cube(filename, 'air_potential_temperature')
         cube = iris.load_cube(filename)
         coord_names = [coord.name() for coord in cube.coords()]
-        coord = cube.coord('grid_latitude')
+        coord = cube.coord("grid_latitude")
 
 
 After loading any cube, you will want to investigate precisely what it contains. This section is all about accessing 
@@ -234,16 +235,20 @@ by field basis *before* they are automatically merged together:
     import iris
     import iris.coords as icoords
 
+
     def lagged_ensemble_callback(cube, field, filename):
         # Add our own realization coordinate if it doesn't already exist.
-        if not cube.coords('realization'):
+        if not cube.coords("realization"):
             realization = np.int32(filename[-6:-3])
-            ensemble_coord = icoords.AuxCoord(realization, standard_name='realization', units="1")
+            ensemble_coord = icoords.AuxCoord(
+                realization, standard_name="realization", units="1"
+            )
             cube.add_aux_coord(ensemble_coord)
 
-    filename = iris.sample_data_path('GloSea4', '*.pp')
 
-    print(iris.load(filename, 'surface_temperature', callback=lagged_ensemble_callback))
+    filename = iris.sample_data_path("GloSea4", "*.pp")
+
+    print(iris.load(filename, "surface_temperature", callback=lagged_ensemble_callback))
 
 
 The result is a single cube which represents the data in a form that was expected:

@@ -66,24 +66,20 @@ Within that file the tests might look something like:
 
     # Tests for the Cube.xml() method.
     class Test_xml(tests.IrisTest):
-        def test_some_general_stuff(self):
-            ...
+        def test_some_general_stuff(self): ...
 
 
     # Tests for the Cube.xml() method, focussing on the behaviour of
     # the checksums.
     class Test_xml__checksum(tests.IrisTest):
-        def test_checksum_ignores_masked_values(self):
-            ...
+        def test_checksum_ignores_masked_values(self): ...
 
 
     # Tests for the Cube.add_dim_coord() method.
     class Test_add_dim_coord(tests.IrisTest):
-        def test_normal_usage(self):
-            ...
+        def test_normal_usage(self): ...
 
-        def test_coord_already_present(self):
-            ...
+        def test_coord_already_present(self): ...
 
 
 .. _testing.functions:
@@ -116,17 +112,14 @@ Within that file the tests might look something like:
 
     # Tests focussing on the handling of different data types.
     class TestDtypeAndValues(tests.IrisTest):
-        def test_int16(self):
-            ...
+        def test_int16(self): ...
 
-        def test_int16_big_endian(self):
-            ...
+        def test_int16_big_endian(self): ...
 
 
     # Tests focussing on the handling of different projections.
     class TestProjection(tests.IrisTest):
-        def test_no_ellipsoid(self):
-            ...
+        def test_no_ellipsoid(self): ...
 
 
 .. _testing.integration:
