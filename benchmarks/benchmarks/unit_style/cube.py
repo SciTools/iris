@@ -8,8 +8,8 @@ import numpy as np
 
 from iris import analysis, aux_factory, coords, cube
 
-from . import disable_repeat_between_setup
-from .generate_data.stock import sample_meshcoord
+from .. import disable_repeat_between_setup
+from ..generate_data.stock import sample_meshcoord
 
 
 def setup(*params):
