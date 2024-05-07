@@ -12,7 +12,6 @@ from iris.experimental import ugrid
 
 from .. import disable_repeat_between_setup
 from ..generate_data.stock import sample_mesh
-from ._shared import ARTIFICIAL_DIM_SIZE
 
 
 class UGridCommon:
@@ -159,7 +158,7 @@ class MeshLazy(Mesh):
 
 class MeshCoord(UGridCommon):
     # Add extra parameter value to match AuxCoord benchmarking.
-    params = UGridCommon.params + [ARTIFICIAL_DIM_SIZE]
+    params = UGridCommon.params + [1000]
 
     def setup(self, n_faces, lazy=False):
         self.mesh = sample_mesh(

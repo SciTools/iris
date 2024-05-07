@@ -8,8 +8,6 @@ import numpy as np
 
 from iris import coords, cube, iterate
 
-from ._shared import ARTIFICIAL_DIM_SIZE
-
 
 def setup():
     """General variables needed by multiple benchmark classes."""
@@ -17,7 +15,7 @@ def setup():
     global data_2d
     global general_cube
 
-    data_2d = np.zeros((ARTIFICIAL_DIM_SIZE,) * 2)
+    data_2d = np.zeros((1000,) * 2)
     data_1d = data_2d[0]
     general_cube = cube.Cube(data_2d)
 

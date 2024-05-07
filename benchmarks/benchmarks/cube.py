@@ -8,7 +8,7 @@ import numpy as np
 
 from iris import analysis, aux_factory, coords, cube
 
-from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
+from . import disable_repeat_between_setup
 from .generate_data.stock import sample_meshcoord
 
 
@@ -18,7 +18,7 @@ def setup(*params):
     global data_2d
     global general_cube
 
-    data_2d = np.zeros((ARTIFICIAL_DIM_SIZE,) * 2)
+    data_2d = np.zeros((1000,) * 2)
     data_1d = data_2d[0]
     general_cube = cube.Cube(data_2d)
 
@@ -166,7 +166,7 @@ class MeshCoord:
     params = [
         6,  # minimal cube-sphere
         int(1e6),  # realistic cube-sphere size
-        ARTIFICIAL_DIM_SIZE,  # To match size in :class:`AuxCoord`
+        1000,  # To match size in :class:`AuxCoord`
     ]
     param_names = ["number of faces"]
 
@@ -208,7 +208,7 @@ class Merge:
 
 class Concatenate:
     def setup(self):
-        dim_size = ARTIFICIAL_DIM_SIZE
+        dim_size = 1000
         self.cube_list = cube.CubeList()
         for i in np.arange(dim_size * 2, step=dim_size):
             i_cube = general_cube.copy()
@@ -236,7 +236,7 @@ class Equality:
 class Aggregation:
     def setup(self):
         repeat_number = 10
-        repeat_range = range(int(ARTIFICIAL_DIM_SIZE / repeat_number))
+        repeat_range = range(int(1000 / repeat_number))
         array_repeat = np.repeat(repeat_range, repeat_number)
         array_unique = np.arange(len(array_repeat))
 

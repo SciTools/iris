@@ -8,8 +8,6 @@ import numpy as np
 
 from iris import aux_factory, coords
 
-from ._shared import ARTIFICIAL_DIM_SIZE
-
 
 class FactoryCommon:
     # TODO: once https://github.com/airspeed-velocity/asv/pull/828 is released:
@@ -45,7 +43,7 @@ class FactoryCommon:
 
 class HybridHeightFactory(FactoryCommon):
     def setup(self):
-        data_1d = np.zeros(ARTIFICIAL_DIM_SIZE)
+        data_1d = np.zeros(1000)
         self.coord = coords.AuxCoord(points=data_1d, units="m")
 
         self.setup_common()
