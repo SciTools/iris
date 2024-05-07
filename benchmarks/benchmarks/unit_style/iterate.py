@@ -4,10 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Small-scope iterate benchmark tests."""
 
-from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import coords, cube, iterate
+
+from ._shared import ARTIFICIAL_DIM_SIZE
 
 
 def setup():

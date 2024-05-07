@@ -4,11 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Small-scope CFVariableMixin benchmark tests."""
 
-from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import coords
 from iris.common.metadata import AncillaryVariableMetadata
+
+from ._shared import ARTIFICIAL_DIM_SIZE
 
 LONG_NAME = "air temperature"
 STANDARD_NAME = "air_temperature"

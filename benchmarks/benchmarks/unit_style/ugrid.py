@@ -6,13 +6,13 @@
 
 from copy import deepcopy
 
-from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris.experimental import ugrid
 
 from .. import disable_repeat_between_setup
 from ..generate_data.stock import sample_mesh
+from ._shared import ARTIFICIAL_DIM_SIZE
 
 
 class UGridCommon:

@@ -4,10 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Small-scope AuxFactory benchmark tests."""
 
-from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import aux_factory, coords
+
+from ._shared import ARTIFICIAL_DIM_SIZE
 
 
 class FactoryCommon:

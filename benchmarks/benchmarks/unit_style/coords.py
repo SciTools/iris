@@ -4,12 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Small-scope Coord benchmark tests."""
 
-from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import coords
 
 from .. import disable_repeat_between_setup
+from ._shared import ARTIFICIAL_DIM_SIZE
 
 
 def setup():
