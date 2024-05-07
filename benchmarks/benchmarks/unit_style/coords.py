@@ -2,13 +2,14 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Coord benchmark tests."""
+"""Small-scope Coord benchmark tests."""
 
+from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import coords
 
-from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
+from .. import disable_repeat_between_setup
 
 
 def setup():

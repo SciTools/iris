@@ -2,13 +2,12 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iterate benchmark tests."""
+"""Small-scope iterate benchmark tests."""
 
+from _shared import ARTIFICIAL_DIM_SIZE
 import numpy as np
 
 from iris import coords, cube, iterate
-
-from . import ARTIFICIAL_DIM_SIZE
 
 
 def setup():
