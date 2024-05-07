@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Small-scope benchmarks that can help with performance investigations.
 
-By renaming ``__init__`` these are all disabled by default:
+By renaming ``__init__.py`` these are all disabled by default:
 
 - They bloat benchmark run-time.
 - They are too vulnerable to 'noise' due to their small scope - small objects,
