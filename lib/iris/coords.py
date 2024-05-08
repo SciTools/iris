@@ -2106,8 +2106,7 @@ class Coord(_DimensionalMetadata):
         return Cell(point, bound)
 
     def collapsed(self, dims_to_collapse: Optional[Dims] = None) -> "Coord":
-        """
-        Returns a copy of this coordinate, which has been collapsed along the specified dimensions.
+        """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
         """
@@ -2133,9 +2132,7 @@ class Coord(_DimensionalMetadata):
                 # array we can loop through.
                 work_array = np.moveaxis(x, axis, range(-len(axis), 0))
                 out_shape = work_array.shape[: -len(axis)]
-                work_array = work_array.reshape(
-                    np.prod(out_shape, dtype=int), -1
-                )
+                work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
 
                 joined = []
                 for arr_slice in work_array:
