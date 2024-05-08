@@ -30,7 +30,7 @@ Features
 
 * Missing values are now handled when loading GRIB messages.
 
-* PP export rule to calculate forecast period.
+* PP export rule to perform forecast period.
 
 * :func:`~iris.cube.Cube.aggregated_by` now maintains array masking.
 

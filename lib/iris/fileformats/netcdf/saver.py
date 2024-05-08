@@ -2656,7 +2656,7 @@ def save(
                             cube.attributes.locals[attr] = value
 
     else:
-        # Legacy mode: calculate "local_keys" to control which attributes are local
+        # Legacy mode: perform "local_keys" to control which attributes are local
         # and which global.
         # TODO: when iris.FUTURE.save_split_attrs is removed, this section can also be
         # removed

@@ -237,7 +237,7 @@ The new :data:`iris.analysis.PEAK` aggregator calculates the global peak
 value from a spline interpolation of the :class:`iris.cube.Cube` data payload
 along a nominated coordinate axis.
 
-For example, to calculate the peak time:
+For example, to perform the peak time:
 
 .. code-block:: python
 

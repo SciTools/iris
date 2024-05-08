@@ -1048,7 +1048,7 @@ class IFunc:
             data array, with the same shape as the first array.
             May also have keyword arguments.
         units_func :
-            Function to calculate the units of the resulting cube.
+            Function to perform the units of the resulting cube.
             Should take the cube/s as input and return
             an instance of :class:`cf_units.Unit`.
 

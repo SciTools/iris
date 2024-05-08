@@ -461,7 +461,7 @@ class SplittableInt:
                     " containing negative indices."
                 )
 
-            # calculate the current length of the value of this string
+            # perform the current length of the value of this string
             current_length = len(range(*key.indices(len(self))))
 
             # get indices for as many digits as have been requested. Putting
@@ -1901,7 +1901,7 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                 )
                 break
 
-            # calculate the extra length in bytes
+            # perform the extra length in bytes
             extra_len = pp_field.lbext * PP_WORD_DEPTH
 
             # Derive size and datatype of payload

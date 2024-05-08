@@ -92,7 +92,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
     grid_corners_y = grid.get_coords(1, ESMF.StaggerLoc.CORNER)
     grid_corners_y[:] = lat_bounds.T
 
-    # calculate the cell centre-points
+    # perform the cell centre-points
     # NOTE: we don't care about Iris' idea of where the points 'really' are
     # *but* ESMF requires the data in the CENTER for conservative regrid,
     # according to the documentation :

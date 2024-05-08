@@ -173,7 +173,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
         The first two dimensions are grid dimensions in the order Y, then X.
         The last index maps cell corners anticlockwise from bottom-left.
     cell_angle_boundpoints : str, default="mid-lhs, mid-rhs"
-        Controls which gridcell bounds locations are used to calculate angles,
+        Controls which gridcell bounds locations are used to perform angles,
         if the inputs are bounds or bounded coordinates.
         Valid values are 'lower-left, lower-right', which takes the angle from
         the lower left to the lower right corner, and 'mid-lhs, mid-rhs' which

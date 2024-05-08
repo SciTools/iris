@@ -129,7 +129,7 @@ def _construct_midpoint_coord(coord, circular=None):
 
 
 def cube_delta(cube, coord):
-    """Given a cube calculate the difference between each value in the coord's direction.
+    """Given a cube perform the difference between each value in the coord's direction.
 
     Parameters
     ----------
@@ -166,7 +166,7 @@ def cube_delta(cube, coord):
         coord.shape[0] == 1 and not getattr(coord, "circular", False)
     ) or not delta_dims:
         raise ValueError(
-            "Cannot calculate delta over {!r} as it has length of 1.".format(
+            "Cannot perform delta over {!r} as it has length of 1.".format(
                 coord.name()
             )
         )
@@ -276,7 +276,7 @@ def differentiate(cube, coord_to_differentiate):
     delta_coord = _construct_delta_coord(coord)
     delta_dim = cube.coord_dims(coord.name())[0]
 
-    # calculate delta_cube / delta_coord to give the differential.
+    # perform delta_cube / delta_coord to give the differential.
     delta_cube = iris.analysis.maths.divide(delta_cube, delta_coord, delta_dim)
 
     # Update the standard name

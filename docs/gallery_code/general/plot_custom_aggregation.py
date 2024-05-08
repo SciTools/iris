@@ -9,7 +9,7 @@ use with cube aggregation functions such as :meth:`~iris.cube.Cube.collapsed`,
 :meth:`~iris.cube.Cube.rolling_window`.
 
 In this case, we have a 240-year sequence of yearly average surface temperature
-over North America, and we want to calculate in how many years these exceed a
+over North America, and we want to perform in how many years these exceed a
 certain temperature over a spell of 5 years or more.
 
 """  # noqa: D205, D212, D400
@@ -30,7 +30,7 @@ from iris.util import rolling_window
 def count_spells(data, threshold, axis, spell_length):
     """Calculate the number of points in a sequence.
 
-    Function to calculate the number of points in a sequence where the value
+    Function to perform the number of points in a sequence where the value
     has exceeded a threshold value for at least a certain number of timepoints.
 
     Generalised to operate on multiple time sequences arranged on a specific

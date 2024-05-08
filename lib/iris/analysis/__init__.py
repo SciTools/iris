@@ -5,7 +5,7 @@
 """A package providing :class:`iris.cube.Cube` analysis support.
 
 This module defines a suite of :class:`~iris.analysis.Aggregator` instances,
-which are used to specify the statistical measure to calculate over a
+which are used to specify the statistical measure to perform over a
 :class:`~iris.cube.Cube`, using methods such as
 :meth:`~iris.cube.Cube.aggregated_by` and :meth:`~iris.cube.Cube.collapsed`.
 
@@ -1465,7 +1465,7 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
     ----------
     data : ndarray or masked array
     axis : int
-        Axis to calculate percentiles over.
+        Axis to perform percentiles over.
     weights : ndarray
         Array with the weights.  Must have same shape as data or the shape of
         data along axis.
@@ -1549,7 +1549,7 @@ def _proportion(array, function, axis, **kwargs):
     # if the incoming array is masked use that to count the total number of
     # values
     if ma.isMaskedArray(array):
-        # calculate the total number of non-masked values across the given axis
+        # perform the total number of non-masked values across the given axis
         if array.mask is np.bool_(False):
             # numpy will return a single boolean as a mask if the mask
             # was not explicitly specified on array construction, so in this
@@ -2269,7 +2269,7 @@ See more at :doc:`/userguide/real_and_lazy_data`.
 class _Groupby:
     """Determine group slices over one or more group-by coordinates.
 
-    Generate the coordinate slices for the groups and calculate the
+    Generate the coordinate slices for the groups and perform the
     new group-by coordinates and the new shared coordinates given the
     group slices. Note that, new shared coordinates will be bounded
     coordinates.

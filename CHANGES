@@ -71,7 +71,7 @@ Release 1.4 (14 June 2013)
 * Handle missing values from grib messages
   https://github.com/SciTools/iris/pull/520
 
-* PP export rule to calculate forecast period
+* PP export rule to perform forecast period
   https://github.com/SciTools/iris/pull/514
 
 * Preserve masked arrays during aggregation
@@ -152,7 +152,7 @@ Features added
   other than [-180, 180].
 * Support for customised CF profiles on export to netCDF.
 * The documentation now includes guidance on how to cite Iris.
-* The ability to calculate the exponential of a Cube, via
+* The ability to perform the exponential of a Cube, via
   `iris.analysis.maths.exp()`.
 * Experimental support for concatenating Cubes along existing dimensions
   via `iris.experimental.concatenate.concatenate()`.

@@ -460,7 +460,7 @@ class _ColumnIndexManager:
                 else:
                     # Finally, we can either provide a slice if possible,
                     # or a tuple of indices which match. In order to determine
-                    # if we can provide a slice, calculate the deltas between
+                    # if we can provide a slice, perform the deltas between
                     # the indices and check if they are the same.
                     delta = np.diff(where_true, axis=0)
                     # if the diff is consistent we can create a slice object

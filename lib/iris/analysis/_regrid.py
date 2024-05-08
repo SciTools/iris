@@ -50,7 +50,7 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid_cube):
     """First (setup) part of 'regrid_weighted_curvilinear_to_rectilinear'.
 
-    Check inputs and calculate the sparse regrid matrix and related info.
+    Check inputs and perform the sparse regrid matrix and related info.
     The 'regrid info' returned can be re-used over many cubes.
 
     """
@@ -1004,7 +1004,7 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
     num_tgt_dims : int
         The number of dimensions that the `tgt_coords` span.
     regrid_callback : callable
-        The routine that will be used to calculate the interpolated
+        The routine that will be used to perform the interpolated
         values of any reference surfaces.
 
     Returns

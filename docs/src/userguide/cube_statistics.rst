@@ -111,12 +111,12 @@ Area Averaging
 Some operators support additional keywords to the ``cube.collapsed`` method.
 For example, :func:`iris.analysis.MEAN <iris.analysis.MEAN>` supports
 a weights keyword which can be combined with
-:func:`iris.analysis.cartography.area_weights` to calculate an area average.
+:func:`iris.analysis.cartography.area_weights` to perform an area average.
 
 Let's use the same data as was loaded in the previous example.
 Since ``grid_latitude`` and ``grid_longitude`` were both point coordinates
 we must guess bound positions for them
-in order to calculate the area of the grid boxes::
+in order to perform the area of the grid boxes::
 
     import iris.analysis.cartography
     cube.coord('grid_latitude').guess_bounds()

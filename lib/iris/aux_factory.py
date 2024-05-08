@@ -1027,7 +1027,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         # Calculate the index of the 'z' dimension in the input arrays.
         # First find the cube 'z' dimension ...
         [cube_z_dim] = coord_dims_func(self.dependencies["zlev"])
-        # ... then calculate the corresponding dependency dimension.
+        # ... then perform the corresponding dependency dimension.
         derived_cubedims = self.derived_dims(coord_dims_func)
         z_dim = derived_cubedims.index(cube_z_dim)
 

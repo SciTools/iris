@@ -20,7 +20,7 @@ Features
 * The documentation now includes guidance on
   :ref:`how to cite Iris<Citing_Iris>`.
 
-* The ability to calculate the exponential of a Cube, via
+* The ability to perform the exponential of a Cube, via
   :func:`iris.analysis.maths.exp()`.
 
 * Experimental support for :ref:`concatenating Cubes<whats-new-concat>`

@@ -157,7 +157,7 @@ class TestGridcellAngles(tests.IrisTest):
         self.assertArrayAllClose(result.data, self.standard_small_cube_results)
 
     def test_bounds_array_args(self):
-        # Check we can calculate from bounds values alone.
+        # Check we can perform from bounds values alone.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         # Results drawn from coord bounds should be nearly the same,
         # but not exactly, because of the different 'midpoint' values.
@@ -180,7 +180,7 @@ class TestGridcellAngles(tests.IrisTest):
         )
 
     def test_points_array_args(self):
-        # Check we can calculate from points arrays alone (no coords).
+        # Check we can perform from points arrays alone (no coords).
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         # As previous, the leftmost and rightmost columns are not good.
         result = gridcell_angles(co_x.points, co_y.points)
@@ -193,7 +193,7 @@ class TestGridcellAngles(tests.IrisTest):
         # bounds removed, should be a reasonable match for the 'ideal' one
         # based on the bounds.
 
-        # Make a global cube + calculate ideal bounds-based results.
+        # Make a global cube + perform ideal bounds-based results.
         global_cube = sample_2d_latlons(transformed=True)
         result_cube = gridcell_angles(global_cube)
         result_cube.convert_units("degrees")

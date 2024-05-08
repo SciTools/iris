@@ -233,7 +233,7 @@ def _get_bounds_in_units(coord, units, dtype):
 def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube):
     """First (setup) part of 'regrid_area_weighted_rectilinear_src_and_grid'.
 
-    Check inputs and calculate related info. The 'regrid info' returned
+    Check inputs and perform related info. The 'regrid info' returned
     can be re-used over many 2d slices.
 
     """
@@ -286,7 +286,7 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube)
             "dimensions to be created."
         )
 
-    # Determine whether to calculate flat or spherical areas.
+    # Determine whether to perform flat or spherical areas.
     # Don't only rely on coord system as it may be None.
     spherical = (
         isinstance(
@@ -567,7 +567,7 @@ def _combine_xy_weights(x_info, y_info, src_shape, tgt_shape):
     xy_weight = y_weight[:, np.newaxis] * x_weight[np.newaxis, :]
     xy_weight = xy_weight.flatten()
 
-    # Given the x index and y index associated with a weight, calculate
+    # Given the x index and y index associated with a weight, perform
     # the equivalent index in the flattened (y, x) array.
     xy_rows = (y_rows[:, np.newaxis] * x_tgt) + x_rows[np.newaxis, :]
     xy_rows = xy_rows.flatten()

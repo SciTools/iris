@@ -2961,7 +2961,7 @@ class MeshCoord(AuxCoord):
         -------
         array or None
             Tuple of (points, bounds).
-            Lazy arrays which calculate the correct points and bounds from the
+            Lazy arrays which perform the correct points and bounds from the
             Mesh data, based on the location and axis.
             The Mesh coordinates accessed are not identified on construction,
             but discovered from the Mesh at the time of calculation, so that

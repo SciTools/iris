@@ -198,7 +198,7 @@ def geometry_area_weights(cube, geometry, normalize=False):
     suby_bounds = suby_coord.bounds
     subweights = np.empty(subshape, np.float32)
 
-    # calculate the area weights
+    # perform the area weights
     for nd_index in np.ndindex(subweights.shape):
         xi = nd_index[x_dim]
         yi = nd_index[y_dim]

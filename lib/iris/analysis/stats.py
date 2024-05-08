@@ -32,7 +32,7 @@ def pearsonr(
         or one cube should be broadcastable to the other.  Broadcasting rules
         are the same as those for cube arithmetic (see :ref:`cube maths`).
     corr_coords : str or list of str, optional
-        The cube coordinate name(s) over which to calculate correlations. If no
+        The cube coordinate name(s) over which to perform correlations. If no
         names are provided then correlation will be calculated over all common
         cube dimensions.
     weights : :class:`numpy.ndarray`, optional

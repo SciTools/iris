@@ -82,10 +82,10 @@ Calculating a Cube Anomaly
 
 In section :doc:`cube_statistics` we discussed how the dimensionality of a cube
 can be reduced using the :meth:`Cube.collapsed <iris.cube.Cube.collapsed>` method
-to calculate a statistic over a dimension.
+to perform a statistic over a dimension.
 
-Let's use that method to calculate a mean of our air temperature time-series,
-which we'll then use to calculate a time mean anomaly and highlight the powerful
+Let's use that method to perform a mean of our air temperature time-series,
+which we'll then use to perform a time mean anomaly and highlight the powerful
 benefits of cube broadcasting.
 
 First, let's remind ourselves of the shape of our air temperature time-series
@@ -94,7 +94,7 @@ cube::
     >>> print(air_temp.summary(True))
     air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
 
-Now, we'll calculate the time-series mean using the
+Now, we'll perform the time-series mean using the
 :meth:`Cube.collapsed <iris.cube.Cube.collapsed>` method::
 
     >>> air_temp_mean = air_temp.collapsed('time', iris.analysis.MEAN)
@@ -103,7 +103,7 @@ Now, we'll calculate the time-series mean using the
 
 As expected the *time* dimension has been collapsed, reducing the
 dimensionality of the resultant *air_temp_mean* cube. This time-series mean can
-now be used to calculate the time mean anomaly against the original
+now be used to perform the time mean anomaly against the original
 time-series::
 
     >>> anomaly = air_temp - air_temp_mean
@@ -174,7 +174,7 @@ broadcasting behaviour::
 Combining Multiple Phenomena to Form a New One
 ----------------------------------------------
 
-Combining cubes of potential-temperature and pressure we can calculate
+Combining cubes of potential-temperature and pressure we can perform
 the associated temperature using the equation:
 
 .. math::
@@ -191,7 +191,7 @@ First, let's load pressure and potential temperature cubes::
     phenomenon_names = ['air_potential_temperature', 'air_pressure']
     pot_temperature, pressure = iris.load_cubes(filename, phenomenon_names)
 
-In order to calculate :math:`\frac{p}{p_0}` we can define a coordinate which
+In order to perform :math:`\frac{p}{p_0}` we can define a coordinate which
 represents the standard reference pressure of 1000 hPa::
 
     import iris.coords
@@ -205,7 +205,7 @@ the :meth:`iris.coords.Coord.convert_units` method::
 
     p0.convert_units(pressure.units)
 
-Now we can combine all of this information to calculate the air temperature
+Now we can combine all of this information to perform the air temperature
 using the equation above::
 
     temperature = pot_temperature * ( (pressure / p0) ** (287.05 / 1005) )

@@ -59,7 +59,7 @@ def make_plot(projection_name, projection_crs):
     iplt.contour(overlay_data, 20, linewidths=2.0, colors="darkgreen", linestyles="-")
 
     # Draw a high resolution margin line, inset from the pcolormesh border.
-    # First calculate rectangle corners, 7% in from each corner of the data.
+    # First perform rectangle corners, 7% in from each corner of the data.
     x_coord, y_coord = main_data.coord(axis="x"), main_data.coord(axis="y")
     x_start, x_end = np.min(x_coord.points), np.max(x_coord.points)
     y_start, y_end = np.min(y_coord.points), np.max(y_coord.points)

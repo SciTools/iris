@@ -44,7 +44,7 @@ We set up the NumPy arrays we will be filling with the output data::
     output_arrays = [np.zeros(pressure.shape[0]) for _ in range(6)]
     cape, cin, lcl, lfc, el, tpw = output_data
 
-Now we loop over the columns in the data to calculate the soundings::
+Now we loop over the columns in the data to perform the soundings::
 
     for y in range(nlim):
         for x in range(nlim):

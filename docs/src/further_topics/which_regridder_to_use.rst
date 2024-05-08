@@ -27,7 +27,7 @@ the following form:
 +-----------------+-----------------------------------------------------------+
 | **API**         | Link to API documentation.                                |
 +-----------------+-----------------------------------------------------------+
-| **Method**      | The type of algorithm used to calculate the result.       |
+| **Method**      | The type of algorithm used to perform the result.       |
 |                 | See section on `comparing methods`_.                      |
 +-----------------+-----------------------------------------------------------+
 | **Source Grid** | The type of **coordinates** required on the ``src`` cube. |
@@ -324,7 +324,7 @@ the area weighted sum). More precisely, this means that::
    to the area weighted average of the result.
 
 This property will be particularly important to consider if you are intending to
-calculate global properties such as average temperature or total rainfall over a
+perform global properties such as average temperature or total rainfall over a
 given area. It may be less important if you are only interested in local behaviour,
 e.g., temperature at particular locations.
 
@@ -335,7 +335,7 @@ target. With the keyword argument ``mdtol=0`` this means that there will be an a
 around the source mask which will be masked in the result and therefore unaccounted
 for in the area weighted average calculation. Conversely, with the keyword argument
 ``mdtol=1`` there will be an unmasked area in the result that is masked in the source.
-This may be particularly important if you are intending to calculate properties
+This may be particularly important if you are intending to perform properties
 which depend area e.g., calculating the total global rainfall based on data in units
 of ``kg m-2`` as an area weighted sum. With ``mdtol=0`` this will consistently
 underestimate this total and with ``mdtol=1`` will consistently overestimate. This can

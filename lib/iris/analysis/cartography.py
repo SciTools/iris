@@ -205,7 +205,7 @@ def _xy_range(cube, mode=None):
     Parameters
     ----------
     cube :
-        The cube for which to calculate xy extents.
+        The cube for which to perform xy extents.
     mode : optional
         If the coordinate has bounds, set this to specify the
         min/max calculation.
@@ -397,7 +397,7 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
     Parameters
     ----------
     cube : :class:`iris.cube.Cube`
-        The cube to calculate area weights for.
+        The cube to perform area weights for.
     normalize : bool, default=False
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
@@ -992,7 +992,7 @@ def _crs_distance_differentials(crs, x, y):
     crs : :class:`cartopy.crs.Projection`
         The coordinate reference system.
     x, y : array
-        Locations at which to calculate the differentials,
+        Locations at which to perform the differentials,
         defined in 'crs' coordinate reference system.
 
     Returns

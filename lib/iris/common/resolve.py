@@ -412,7 +412,7 @@ class Resolve:
 
         assert src_cube.ndim == len(self.mapping)
 
-        # Use the mapping to calculate the new src cube shape.
+        # Use the mapping to perform the new src cube shape.
         new_src_shape = [1] * tgt_cube.ndim
         for src_dim, tgt_dim in self.mapping.items():
             new_src_shape[tgt_dim] = src_cube.shape[src_dim]

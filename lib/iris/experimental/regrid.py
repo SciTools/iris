@@ -425,7 +425,7 @@ class _ProjectedUnstructuredRegridder:
             The :class:`iris.coords.DimCoord` for the new grid's Y
             coordinate.
         regrid_callback :
-            The routine that will be used to calculate the interpolated
+            The routine that will be used to perform the interpolated
             values of any reference surfaces.
 
         Returns

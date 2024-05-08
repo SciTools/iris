@@ -19,7 +19,7 @@ import iris.tests.stock as stock
 
 class Test(tests.IrisTest):
     def setUp(self):
-        # Load a source cube, then generate an interpolator instance, calculate
+        # Load a source cube, then generate an interpolator instance, perform
         # the interpolation weights and set up a target grid.
         self.cube = stock.simple_2d()
         x_points = self.cube.coord("bar").points

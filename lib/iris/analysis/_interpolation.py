@@ -386,7 +386,7 @@ class RectilinearInterpolator:
         cube and the specified coordinates to be interpolated over.
 
         """
-        # Pre-calculate control data for each interpolation coordinate.
+        # Pre-perform control data for each interpolation coordinate.
         self._src_points = []
         self._coord_decreasing = []
         self._circulars = []
@@ -529,7 +529,7 @@ class RectilinearInterpolator:
         interp_order, _ = zip(*sorted(dmap.items(), key=operator.itemgetter(1)))
         _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
 
-        # Prepare the sample points for interpolation and calculate the
+        # Prepare the sample points for interpolation and perform the
         # shape of the interpolated result.
         interp_points = []
         interp_shape = []

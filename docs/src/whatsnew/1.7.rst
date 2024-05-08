@@ -104,7 +104,7 @@ Features
     This means that when performing cube arithmetic, the dimensionality and
     shape of cubes no longer need to match. For example, if the dimensionality
     of a cube is reduced by collapsing, then the result can be used to subtract
-    from the original cube to calculate an anomaly::
+    from the original cube to perform an anomaly::
 
         >>> time_mean = original_cube.collapsed('time', iris.analysis.MEAN)
         >>> mean_anomaly = original_cube - time_mean

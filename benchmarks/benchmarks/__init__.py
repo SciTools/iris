@@ -6,6 +6,7 @@
 
 from os import environ
 import resource
+import tracemalloc
 
 ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
@@ -81,13 +82,16 @@ class TrackAddedMemoryAllocation:
     def __enter__(self):
         if self._use_tracemalloc:
             self.mb_before = 0
+            tracemalloc.start()
         else:
             self.mb_before = self.process_resident_memory_mb()
         return self
 
     def __exit__(self, *_):
         if self._use_tracemalloc:
-            self.mb_after = 123.456
+            _, peak_mem = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+            self.mb_after = peak_mem * 1.0 / 1024 ** 2
         else:
             self.mb_after = self.process_resident_memory_mb()
 

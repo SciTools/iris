@@ -107,7 +107,7 @@ spatial extent, and acts as a ``control``,
             STASH                       m01s00i004
             source                      'Data from Met Office Unified Model 7.04'
 
-Now let's subtract these cubes in order to calculate a simple ``difference``,
+Now let's subtract these cubes in order to perform a simple ``difference``,
 
 .. doctest:: lenient-example
 
@@ -134,7 +134,7 @@ Now let's subtract these cubes in order to calculate a simple ``difference``,
 
 Note that, cube maths automatically takes care of broadcasting the
 dimensionality of the ``control`` up to that of the ``experiment``, in order to
-calculate the ``difference``. This is performed only after ensuring that both
+perform the ``difference``. This is performed only after ensuring that both
 the **dimension coordinates** ``grid_latitude`` and ``grid_longitude`` are first
 :ref:`leniently equivalent <lenient equality>`.
 

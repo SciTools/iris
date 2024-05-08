@@ -25,7 +25,7 @@ class _Segment:
 
         self.pts = [p0, p1]
 
-        # calculate our length
+        # perform our length
         squares = 0
         for key in self.pts[0].keys():
             delta = self.pts[1][key] - self.pts[0][key]
@@ -67,7 +67,7 @@ class Trajectory:
             for i in range(len(self.waypoints) - 1)
         ]
 
-        # calculate our total length
+        # perform our total length
         self.length = sum([seg.length for seg in segments])
 
         # generate our sampled points
@@ -80,7 +80,7 @@ class Trajectory:
         cur_seg = segments[cur_seg_i]
         len_accum = cur_seg.length
         for p in range(self.sample_count):
-            # calculate the sample position along our total length
+            # perform the sample position along our total length
             sample_at_len = p * sample_step
 
             # skip forward to the containing segment

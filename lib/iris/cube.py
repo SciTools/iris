@@ -4137,7 +4137,7 @@ class Cube(CFVariableMixin):
                 dims_to_collapse.update(self.coord_dims(coord))
 
         if aggregator.name() == "max_run" and len(dims_to_collapse) > 1:
-            msg = "Not possible to calculate runs over more than one dimension"
+            msg = "Not possible to perform runs over more than one dimension"
             raise ValueError(msg)
 
         if not dims_to_collapse:
@@ -4675,7 +4675,7 @@ x            -               -
 
             if coord_.ndim != 1:
                 raise ValueError(
-                    "Cannot calculate the rolling "
+                    "Cannot perform the rolling "
                     "window of %s as it is a multidimensional "
                     "coordinate." % coord_.name()
                 )

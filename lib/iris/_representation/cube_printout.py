@@ -95,7 +95,7 @@ class Table:
     def formatted_as_strings(self):
         """Return lines formatted to the set column widths."""
         if self.col_widths is None:
-            # If not set, calculate minimum widths.
+            # If not set, perform minimum widths.
             self.set_min_column_widths()
         result_lines = []
         for row in self.rows:

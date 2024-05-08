@@ -29,7 +29,7 @@ def subtask_operation(arg):
     return sub_result
 
 
-class SampleParallelOperation:
+class SampleParallelTask:
     def __init__(
             self,
             n_blocks=5,
@@ -51,7 +51,7 @@ class SampleParallelOperation:
     def _setup_calc(self):
         self._pool = self.pool_type(self.n_workers)
 
-    def calculate(self):
+    def perform(self):
         partial_results = self._pool.map(
             subtask_operation,
             [
@@ -74,12 +74,12 @@ if __name__ == '__main__':
     typ = "process" if use_processes else "thread"
     msg = f"Starting: blocks={nb} workers={nw} size={dims} type={typ}"
     print(msg)
-    calc = SampleParallelOperation(
+    calc = SampleParallelTask(
         n_blocks=nb, outerdim=ny, innerdim=nx,
         n_workers=nw, use_process_workers=use_processes
     )
     debug("Created.")
     debug("Run..")
-    result = calc.calculate()
+    result = calc.perform()
     debug("\n.. Run DONE.")
     debug(f"result = {result}")
