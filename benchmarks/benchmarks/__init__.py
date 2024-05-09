@@ -8,6 +8,8 @@ from os import environ
 import resource
 import tracemalloc
 
+import numpy as np
+
 ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
 
@@ -68,12 +70,16 @@ class TrackAddedMemoryAllocation:
     """
 
     _DEFAULT_RESULT_MINIMUM_MB = 5.0
+    _DEFAULT_RESULT_ROUND_DP = 1
 
-    def __init__(self, use_tracemalloc=False, result_min_mb=None):
+    def __init__(self, use_tracemalloc=False, result_min_mb=None, result_round_dp=None):
         self._use_tracemalloc = use_tracemalloc
         if result_min_mb is None:
-           result_min_mb = self._DEFAULT_RESULT_MINIMUM_MB
+            result_min_mb = self._DEFAULT_RESULT_MINIMUM_MB
         self.RESULT_MINIMUM_MB = result_min_mb
+        if result_round_dp is None:
+            result_round_dp = self._DEFAULT_RESULT_ROUND_DP
+        self.RESULT_ROUND_DP = result_round_dp
 
     @staticmethod
     def process_resident_memory_mb():
@@ -91,7 +97,7 @@ class TrackAddedMemoryAllocation:
         if self._use_tracemalloc:
             _, peak_mem = tracemalloc.get_traced_memory()
             tracemalloc.stop()
-            self.mb_after = peak_mem * 1.0 / 1024 ** 2
+            self.mb_after = peak_mem * 1.0 / 1024**2
         else:
             self.mb_after = self.process_resident_memory_mb()
 
@@ -100,6 +106,7 @@ class TrackAddedMemoryAllocation:
         result = self.mb_after - self.mb_before
         # Small results are too vulnerable to noise being interpreted as signal.
         result = max(self.RESULT_MINIMUM_MB, result)
+        result = np.round(result, self.RESULT_ROUND_DP)
         return result
 
     @staticmethod
@@ -153,8 +160,7 @@ def memtrace_benchmark(use_tracemalloc=False, result_min_mb=None):
         @wraps(decorated_func)
         def wrapper(*args, **kwargs):
             with TrackAddedMemoryAllocation(
-                _use_tracemalloc=use_tracemalloc,
-                result_min_mb=result_min_mb
+                _use_tracemalloc=use_tracemalloc, result_min_mb=result_min_mb
             ):
                 result = decorated_func(*args, **kwargs)
 
