@@ -16,7 +16,7 @@ class MemcheckCommon:
         "ysize": 10000,
         "nx": 2000,
         "nblocks": 6,
-        "nworkers": 4,
+        "nworkers": 3,
     }
 
     def _setup(self, **kwargs):
@@ -95,7 +95,7 @@ class MemcheckBlocksAndWorkers(MemcheckCommon):
         # nblocks
         [1, 4, 9],
         # nworkers
-        [1, 4, 9],
+        [1, 2, 3, 4],
     ]
 
     def setup(self, nblocks, nworkers):
@@ -111,3 +111,12 @@ class MemcheckBlocksAndWorkers(MemcheckCommon):
     @memory_units_mib
     def track_addmem_calc(self, nblocks, nworkers):
         return self.run_addedmem_calc()
+
+
+class MemcheckBlocksAndWorkers_Rss(MemcheckBlocksAndWorkers):
+    def setup(self, nblocks, nworkers):
+        self.default_params["measure"] = "rss"
+        super().setup(
+            nblocks=nblocks,
+            nworkers=nworkers,
+        )
