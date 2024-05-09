@@ -6,6 +6,9 @@
 
 from os import environ
 import resource
+import tracemalloc
+
+import numpy as np
 
 ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
 
@@ -66,24 +69,44 @@ class TrackAddedMemoryAllocation:
 
     """
 
-    RESULT_MINIMUM_MB = 5.0
+    _DEFAULT_RESULT_MINIMUM_MB = 5.0
+    _DEFAULT_RESULT_ROUND_DP = 1
+
+    def __init__(self, use_tracemalloc=False, result_min_mb=None, result_round_dp=None):
+        self._use_tracemalloc = use_tracemalloc
+        if result_min_mb is None:
+            result_min_mb = self._DEFAULT_RESULT_MINIMUM_MB
+        self.RESULT_MINIMUM_MB = result_min_mb
+        if result_round_dp is None:
+            result_round_dp = self._DEFAULT_RESULT_ROUND_DP
+        self.RESULT_ROUND_DP = result_round_dp
 
     @staticmethod
     def process_resident_memory_mb():
         return resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024.0
 
     def __enter__(self):
-        self.mb_before = self.process_resident_memory_mb()
+        if self._use_tracemalloc:
+            self.mb_before = 0
+            tracemalloc.start()
+        else:
+            self.mb_before = self.process_resident_memory_mb()
         return self
 
     def __exit__(self, *_):
-        self.mb_after = self.process_resident_memory_mb()
+        if self._use_tracemalloc:
+            _, peak_mem = tracemalloc.get_traced_memory()
+            tracemalloc.stop()
+            self.mb_after = peak_mem * 1.0 / 1024**2
+        else:
+            self.mb_after = self.process_resident_memory_mb()
 
     def addedmem_mb(self):
         """Return measured memory growth, in Mb."""
         result = self.mb_after - self.mb_before
         # Small results are too vulnerable to noise being interpreted as signal.
         result = max(self.RESULT_MINIMUM_MB, result)
+        result = np.round(result, self.RESULT_ROUND_DP)
         return result
 
     @staticmethod
@@ -124,3 +147,23 @@ def on_demand_benchmark(benchmark_object):
     """
     if "ON_DEMAND_BENCHMARKS" in environ:
         return benchmark_object
+
+
+def memtrace_benchmark(use_tracemalloc=False, result_min_mb=None):
+    # Call which returns a decorator == 'decorator with args'.
+    # N.B. embeds the the call argument in the env of the decorator returned
+    from functools import wraps
+
+    def decorator(decorated_func):
+        assert decorated_func.__name__[:6] == "track_"
+
+        @wraps(decorated_func)
+        def wrapper(*args, **kwargs):
+            with TrackAddedMemoryAllocation(
+                _use_tracemalloc=use_tracemalloc, result_min_mb=result_min_mb
+            ):
+                result = decorated_func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
