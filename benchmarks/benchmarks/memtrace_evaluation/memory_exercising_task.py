@@ -1,5 +1,5 @@
 # Provide standard parallel calculations for testing the memory tracing
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import numpy as np
 
@@ -14,6 +14,7 @@ The final (single-value) result is the *minimum* of that.
 
 # _SHOW_DEBUG = True
 _SHOW_DEBUG = False
+
 
 def debug(msg):
     if _SHOW_DEBUG:
@@ -31,12 +32,12 @@ def subtask_operation(arg):
 
 class SampleParallelTask:
     def __init__(
-            self,
-            n_blocks=5,
-            outerdim=1000,
-            innerdim=250,
-            n_workers=4,
-            use_process_workers=False
+        self,
+        n_blocks=5,
+        outerdim=1000,
+        innerdim=250,
+        n_workers=4,
+        use_process_workers=False,
     ):
         self.n_blocks = n_blocks
         self.outerdim = outerdim
@@ -57,7 +58,7 @@ class SampleParallelTask:
             [
                 (i_task + 1, self.outerdim, self.innerdim)
                 for i_task in range(self.n_blocks)
-            ]
+            ],
         )
         combined = np.stack(list(partial_results))
         result = np.mean(combined, axis=0)
@@ -65,7 +66,7 @@ class SampleParallelTask:
         return result
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     nb = 12
     nw = 3
     ny, nx = 1000, 200
@@ -75,8 +76,11 @@ if __name__ == '__main__':
     msg = f"Starting: blocks={nb} workers={nw} size={dims} type={typ}"
     print(msg)
     calc = SampleParallelTask(
-        n_blocks=nb, outerdim=ny, innerdim=nx,
-        n_workers=nw, use_process_workers=use_processes
+        n_blocks=nb,
+        outerdim=ny,
+        innerdim=nx,
+        n_workers=nw,
+        use_process_workers=use_processes,
     )
     debug("Created.")
     debug("Run..")

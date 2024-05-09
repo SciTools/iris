@@ -166,9 +166,7 @@ def cube_delta(cube, coord):
         coord.shape[0] == 1 and not getattr(coord, "circular", False)
     ) or not delta_dims:
         raise ValueError(
-            "Cannot perform delta over {!r} as it has length of 1.".format(
-                coord.name()
-            )
+            "Cannot perform delta over {!r} as it has length of 1.".format(coord.name())
         )
     delta_dim = delta_dims[0]
 
