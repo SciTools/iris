@@ -62,6 +62,23 @@ interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
 
 [See the ASV docs](https://asv.readthedocs.io/) for full detail.
 
+### What benchmarks to write
+
+It is not possible to maintain a full suite of 'unit style' benchmarks:
+
+* Benchmarks take longer to run than tests.
+* Small benchmarks are more vulnerable to noise - they report a lot of false
+positive regressions.
+
+We therefore recommend writing benchmarks representing scripts or single
+operations that are likely to be run at the user level.
+
+The drawback of this approach: a reported regression is less likely to reveal
+the root cause (e.g. a regression in coordinate creation time observed only
+as a regression in file loading time). Be prepared for manual investigations;
+and consider committing any useful benchmarks as 
+[on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
+
 ### Data generation
 **Important:** be sure not to use the benchmarking environment to generate any
 test objects/files, as this environment changes with each commit being
@@ -85,6 +102,10 @@ repeats _between_ `setup()` calls using the `repeat` attribute.
 estimate run-time, and these will still be subject to the original problem.
 
 ### Scaling / non-Scaling Performance Differences
+
+**(We no longer advocate the below for benchmarks run during CI, given the
+limited available runtime and risk of false-positives. It remains useful for
+manual investigations).**
 
 When comparing performance between commits/file-type/whatever it can be helpful
 to know if the differences exist in scaling or non-scaling parts of the Iris
