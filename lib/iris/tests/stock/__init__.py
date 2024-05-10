@@ -719,7 +719,7 @@ def realistic_4d_w_missing_data():
 
 
 def realistic_4d_w_everything(w_mesh=False):
-    """A cube that will exercise as much of Iris as possible.
+    """Returns a cube that will exercise as much of Iris as possible.
 
     Uses :func:`realistic_4d` as a basis, then modifies accordingly.
 
@@ -764,7 +764,7 @@ def realistic_4d_w_everything(w_mesh=False):
     cube.add_cell_measure(cell_measure, (lat_dim, lon_dim))
 
     ancillary_variable = AncillaryVariable(
-        data=np.remainder(cube.data.astype(int), 2).astype(bool),
+        data=np.remainder(cube.data.astype(int), 2),
         standard_name="quality_flag",
     )
     cube.add_ancillary_variable(ancillary_variable, np.arange(cube.ndim))
