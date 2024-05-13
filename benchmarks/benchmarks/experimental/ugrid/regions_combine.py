@@ -7,14 +7,6 @@
 Benchmarks stages of operation of the function
 :func:`iris.experimental.ugrid.utils.recombine_submeshes`.
 
-Where possible benchmarks should be parameterised for two sizes of input data:
-
-* minimal: enables detection of regressions in parts of the run-time that do
-  NOT scale with data size.
-
-* large: large enough to exclusively detect regressions in parts of the
-  run-time that scale with data size.
-
 """
 
 import os
