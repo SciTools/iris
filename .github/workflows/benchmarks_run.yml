@@ -71,9 +71,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install ASV & Nox
+      - name: Install Nox
         run: |
-          pip install asv nox
+          pip install nox
 
       - name: Cache environment directories
         id: cache-env-dir
@@ -112,7 +112,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          python benchmarks/bm_runner.py branch origin/${{ github.base_ref }}
+          nox -s benchmarks -- branch origin/${{ github.base_ref }}
 
       - name: Run overnight benchmarks
         id: overnight
@@ -128,7 +128,7 @@ jobs:
           
           if [ "$first_commit" != "" ]
           then
-            python benchmarks/bm_runner.py overnight $first_commit
+            nox -s benchmarks -- overnight $first_commit
           fi
 
       - name: Warn of failure

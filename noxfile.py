@@ -291,3 +291,27 @@ def wheel(session: nox.sessions.Session):
         "import iris; print(f'{iris.__version__=}')",
         external=True,
     )
+
+
+@nox.session
+def benchmarks(session: nox.sessions.Session):
+    """Run the Iris benchmark runner. Run session with `-- -h` for help.
+
+    Parameters
+    ----------
+    session : object
+        A `nox.sessions.Session` object.
+
+    """
+    if len(session.posargs) == 0:
+        message = (
+            "This session MUST be run with at least one argument. The "
+            "arguments are passed down to the benchmark runner script. E.g:\n"
+            "nox -s benchmarks -- --help\n"
+            "nox -s benchmarks -- something --help\n"
+            "nox -s benchmarks -- something\n"
+        )
+        session.error(message)
+    session.install("asv", "nox")
+    with session.chdir(Path(__file__).parent / "benchmarks"):
+        session.run("python", "bm_runner.py", *session.posargs)

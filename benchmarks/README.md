@@ -20,13 +20,13 @@ the PR's base branch, thus showing performance differences introduced
 by the PR. (This run is managed by 
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
 
-`asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see
-[Benchmark environments](#benchmark-environments)).
-
-The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
+To run locally: the **benchmark runner** provides conveniences for
 common benchmark setup and run tasks, including replicating the automated 
-overnight run locally. See `python bm_runner.py --help` for detail.
+overnight run locally. This is accessed via the Nox `benchmarks` session - see
+`nox -s benchmarks -- --help` for detail (_see also: 
+[bm_runner.py](./bm_runner.py)_). Alternatively you can directly run `asv ...`
+commands from this directory (you will still need Nox installed - see
+[Benchmark environments](#benchmark-environments)).
 
 A significant portion of benchmark run time is environment management. Run-time
 can be reduced by placing the benchmark environment on the same file system as
