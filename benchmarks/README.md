@@ -74,9 +74,9 @@ We therefore recommend writing benchmarks representing scripts or single
 operations that are likely to be run at the user level.
 
 The drawback of this approach: a reported regression is less likely to reveal
-the root cause (e.g. a regression in coordinate creation time observed only
-as a regression in file loading time). Be prepared for manual investigations;
-and consider committing any useful benchmarks as 
+the root cause (e.g. if a commit caused a regression in coordinate-creation 
+time, but the only benchmark covering this was for file-loading). Be prepared
+for manual investigations; and consider committing any useful benchmarks as 
 [on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
 
 ### Data generation
