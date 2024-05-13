@@ -2,14 +2,12 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Mixin benchmark tests."""
+"""Small-scope CFVariableMixin benchmark tests."""
 
 import numpy as np
 
 from iris import coords
 from iris.common.metadata import AncillaryVariableMetadata
-
-from . import ARTIFICIAL_DIM_SIZE
 
 LONG_NAME = "air temperature"
 STANDARD_NAME = "air_temperature"
@@ -29,7 +27,7 @@ TUPLE = tuple(DICT.values())
 
 class CFVariableMixin:
     def setup(self):
-        data_1d = np.zeros(ARTIFICIAL_DIM_SIZE)
+        data_1d = np.zeros(1000)
 
         # These benchmarks are from a user perspective, so using a user-level
         # subclass of CFVariableMixin to test behaviour. AncillaryVariable is

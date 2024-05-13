@@ -2,16 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""File loading benchmark tests.
-
-Where applicable benchmarks should be parameterised for two sizes of input data:
-  * minimal: enables detection of regressions in parts of the run-time that do
-             NOT scale with data size.
-  * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size. Size should be _just_ large
-           enough - don't want to bloat benchmark runtime.
-
-"""
+"""File loading benchmark tests."""
 
 from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
