@@ -419,7 +419,7 @@ def reset_modules(gallery_conf, fname):
     """
     from sys import modules
 
-    del modules["nc_time_axis"]
+    _ = modules.pop("nc_time_axis", None)
 
 
 # https://sphinx-gallery.github.io/dev/configuration.html#importing-callables
