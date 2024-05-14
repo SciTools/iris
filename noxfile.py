@@ -295,7 +295,7 @@ def wheel(session: nox.sessions.Session):
 
 @nox.session
 def benchmarks(session: nox.sessions.Session):
-    """Run the Iris benchmark runner. Run session with `-- -h` for help.
+    """Run the Iris benchmark runner. Run session with `-- --help` for help.
 
     Parameters
     ----------
