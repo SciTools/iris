@@ -2125,9 +2125,7 @@ class Coord(_DimensionalMetadata):
                 # array we can loop through.
                 work_array = np.moveaxis(x, axis, range(-len(axis), 0))
                 out_shape = work_array.shape[: -len(axis)]
-                work_array = work_array.reshape(
-                    np.prod(out_shape, dtype=int), -1
-                )
+                work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
 
                 joined = []
                 for arr_slice in work_array:

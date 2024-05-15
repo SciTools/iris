@@ -740,9 +740,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
     def test_string_nd_bounds_first(self):
         self.setupTestArrays((3, 4))
-        coord = AuxCoord(
-            self.pts_real.astype(str), bounds=self.bds_real.astype(str)
-        )
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
 
         collapsed_coord = coord.collapsed(0)
 
@@ -766,9 +764,7 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
     def test_string_nd_bounds_second(self):
         self.setupTestArrays((3, 4))
-        coord = AuxCoord(
-            self.pts_real.astype(str), bounds=self.bds_real.astype(str)
-        )
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
 
         collapsed_coord = coord.collapsed(1)
 
