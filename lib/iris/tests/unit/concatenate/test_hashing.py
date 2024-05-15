@@ -17,11 +17,24 @@ from iris import _concatenate
     [
         (np.arange(2), da.arange(2), True),
         (np.array([1], dtype=np.float32), np.array([1], dtype=bool), True),
-        (np.array([1]), np.array([[1]]), False),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 1]), True),
-        (da.arange(2, chunks=1), da.arange(2, chunks=2), True),
+        (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 0]), False),
+        (da.arange(6).reshape((2, 3)), da.arange(6, chunks=1).reshape((2, 3)), True),
+        (da.arange(20, chunks=1), da.arange(20, chunks=2), True),
+        (
+            da.ma.masked_array([1, 2], mask=[0, 1]),
+            da.ma.masked_array([1, 2], mask=[0, 1]),
+            True,
+        ),
     ],
 )
 def test_compute_hashes(a, b, eq):
     hashes = _concatenate._compute_hashes([a, b])
-    assert eq == (hashes[tokenize(a)].value == hashes[tokenize(b)].value)
+    assert eq == (hashes[tokenize(a)] == hashes[tokenize(b)])
+
+
+def test_arrayhash_incompatible_chunks_raises():
+    hash1 = _concatenate._ArrayHash(1, chunks=(1, 1))
+    hash2 = _concatenate._ArrayHash(1, chunks=(2,))
+    with pytest.raises(ValueError):
+        hash1 == hash2
