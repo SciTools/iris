@@ -39,6 +39,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
    to the array content. (:pull:`5801`)
 
+#. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
+   :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
+
 
 💣 Incompatible Changes
 =======================
@@ -70,7 +73,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should 
+#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should
    now be used, currently being v7.2.6.
    (:pull:`5901`)
 
@@ -87,6 +90,18 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ removed a workaround in :meth:`~iris.cube.CubeList.merge` for an
    issue with :func:`dask.array.stack` which has been solved since 2017. (:pull:`5923`)
 
+#. `@trexfeathers`_ introduced a temporary fix for Airspeed Velocity's
+   deprecated use of the ``conda --force`` argument. To be removed once
+   `airspeed-velocity/asv#1397`_ is merged and released. (:pull:`5931`)
+
+#. `@trexfeathers`_ created :func:`iris.tests.stock.realistic_4d_w_everything`;
+   providing a :class:`~iris.cube.Cube` aimed to exercise as much of Iris as
+   possible. (:pull:`5949`)
+
+#. `@trexfeathers`_ deactivated any small 'unit-style' benchmarks for default
+   benchmark runs, and introduced larger more 'real world' benchmarks where
+   coverage was needed. (:pull:`5949`).
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -97,3 +112,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _airspeed-velocity/asv#1397: https://github.com/airspeed-velocity/asv/pull/1397
