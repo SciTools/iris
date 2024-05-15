@@ -102,6 +102,9 @@ This document explains the changes made to Iris for this release
    benchmark runs, and introduced larger more 'real world' benchmarks where
    coverage was needed. (:pull:`5949`).
 
+#. `@trexfeathers`_ made a Nox `benchmarks` session as the recommended entry
+   point for running benchmarks. (:pull:`5951`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
