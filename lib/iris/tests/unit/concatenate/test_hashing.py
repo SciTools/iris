@@ -5,7 +5,6 @@
 """Test array hashing in :mod:`iris._concatenate`."""
 
 import dask.array as da
-from dask.base import tokenize
 import numpy as np
 import pytest
 
@@ -30,7 +29,7 @@ from iris import _concatenate
 )
 def test_compute_hashes(a, b, eq):
     hashes = _concatenate._compute_hashes([a, b])
-    assert eq == (hashes[tokenize(a)] == hashes[tokenize(b)])
+    assert eq == (hashes[_concatenate.array_id(a)] == hashes[_concatenate.array_id(b)])
 
 
 def test_arrayhash_incompatible_chunks_raises():
