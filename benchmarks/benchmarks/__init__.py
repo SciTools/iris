@@ -81,15 +81,17 @@ class TrackAddedMemoryAllocation:
         return self
 
     def __exit__(self, *_):
-        _, peak_mem = tracemalloc.get_traced_memory()
+        _, peak_mem_bytes = tracemalloc.get_traced_memory()
         tracemalloc.stop()
-        self._peak_mb = peak_mem * 1.0 / 1024**2
+        # Save peak-memory allocation, scaled from bytes to Mb.
+        self._peak_mb = peak_mem_bytes * (2.0**-20)
 
     def addedmem_mb(self):
         """Return measured memory growth, in Mb."""
         result = self._peak_mb
         # Small results are too vulnerable to noise being interpreted as signal.
         result = max(self.RESULT_MINIMUM_MB, result)
+        # Rounding makes results easier to read.
         result = np.round(result, self.RESULT_ROUND_DP)
         return result
 
