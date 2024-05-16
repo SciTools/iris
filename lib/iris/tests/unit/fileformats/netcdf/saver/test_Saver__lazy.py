@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from types import ModuleType
+
 import iris.tests as tests  # isort:skip
 
 from dask import array as da
@@ -17,7 +19,7 @@ from iris.tests.unit.fileformats.netcdf.saver import test_Saver
 
 
 class LazyMixin(tests.IrisTest):
-    array_lib = da
+    array_lib: ModuleType = da
 
     def result_path(self, basename=None, ext=""):
         # Precisely mirroring the tests in test_Saver, so use those CDL's.

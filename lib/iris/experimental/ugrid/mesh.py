@@ -1974,7 +1974,7 @@ class _Mesh1DCoordinateManager:
         "node_x",
         "node_y",
     )
-    OPTIONAL = (
+    OPTIONAL: tuple[str, ...] = (
         "edge_x",
         "edge_y",
     )

@@ -71,7 +71,7 @@ class CFVariable(metaclass=ABCMeta):
 
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.
-    cf_identity = None
+    cf_identity: str | None = None
 
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.

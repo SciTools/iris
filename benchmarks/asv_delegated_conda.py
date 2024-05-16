@@ -13,6 +13,7 @@ from os.path import getmtime
 from pathlib import Path
 from shutil import copy2, copytree, rmtree
 from tempfile import TemporaryDirectory
+from typing import Callable
 
 from asv import util as asv_util
 from asv.config import Config
@@ -99,7 +100,7 @@ class CondaDelegated(Conda):
     def _update_info(self) -> None:
         """Make sure class properties reflect the actual environment being used."""
         # Follow symlink if it has been created.
-        actual_path = Path(self._path).resolve()
+        actual_path = Path(self._path).resolve()  # type: ignore[has-type]
         self._path = str(actual_path)
 
         # Get custom environment's Python version if it exists yet.
@@ -132,7 +133,7 @@ class CondaDelegated(Conda):
                     #  happened. Also a non-issue when copying in the reverse
                     #  direction because the cache dir is temporary.
                     if src_path.is_dir():
-                        func = copytree
+                        func: Callable = copytree
                     else:
                         func = copy2
                     func(src_path, dst_path)

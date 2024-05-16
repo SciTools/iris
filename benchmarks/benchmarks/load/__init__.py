@@ -15,16 +15,16 @@ from ..generate_data.um_files import create_um_files
 class LoadAndRealise:
     # For data generation
     timeout = 600.0
-    params = [
+    params = (
         [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
-    ]
+    )
     param_names = ["xyz", "compressed", "file_format"]
 
     def setup_cache(self) -> dict:
         file_type_args = self.params[2]
-        file_path_dict = {}
+        file_path_dict: dict[tuple[int, int, int], dict[bool, dict[str, str]]] = {}
         for xyz in self.params[0]:
             file_path_dict[xyz] = {}
             x, y, z = xyz
@@ -59,7 +59,7 @@ class LoadAndRealise:
 
 class STASHConstraint:
     # xyz sizes mimic LoadAndRealise to maximise file reuse.
-    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
+    params = ([(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"])
     param_names = ["xyz", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -78,7 +78,7 @@ class STASHConstraint:
 
 
 class TimeConstraint:
-    params = [[3, 20], ["FF", "PP", "NetCDF"]]
+    params = ([3, 20], ["FF", "PP", "NetCDF"])
     param_names = ["time_dim_len", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -139,7 +139,7 @@ class StructuredFF:
     avoiding the cost of merging.
     """
 
-    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], [False, True]]
+    params = ([(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], [False, True])
     param_names = ["xyz", "structured_loading"]
 
     def setup_cache(self) -> dict:

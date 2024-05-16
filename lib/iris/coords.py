@@ -2704,7 +2704,7 @@ class DimCoord(Coord):
             emsg = "The {!r} {} points array must be strictly monotonic."
             raise ValueError(emsg.format(self.name(), self.__class__.__name__))
 
-    @Coord._values.setter
+    @Coord._values.setter  # type: ignore[attr-defined]
     def _values(self, points):
         # DimCoord always realises the points, to allow monotonicity checks.
         # Ensure it is an actual array, and also make our own copy so that we
@@ -2796,7 +2796,7 @@ class DimCoord(Coord):
 
         return bounds
 
-    @Coord.bounds.setter
+    @Coord.bounds.setter  # type: ignore[attr-defined]
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.

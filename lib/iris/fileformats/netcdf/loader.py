@@ -16,7 +16,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
 import threading
-from typing import Union
+from typing import Iterator
 import warnings
 
 import numpy as np
@@ -705,9 +705,9 @@ class ChunkControl(threading.local):
     @contextmanager
     def set(
         self,
-        var_names: Union[str, Iterable[str]] = None,
+        var_names: str | Iterable[str] | None = None,
         **dimension_chunksizes: Mapping[str, int],
-    ) -> None:
+    ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
@@ -758,14 +758,17 @@ class ChunkControl(threading.local):
                 # A specific name match should override a '*' setting, but
                 # that is implemented elsewhere.
                 if not isinstance(var_name, str):
-                    msg = (
+                    msg = (  # type: ignore[unreachable]
                         "'var_names' should be an iterable of strings, "
                         f"not {var_names!r}."
                     )
                     raise ValueError(msg)
                 dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
                 for dim_name, chunksize in dimension_chunksizes.items():
-                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):
+                    if not (
+                        isinstance(dim_name, str)  # type: ignore[redundant-expr]
+                        and isinstance(chunksize, int)
+                    ):
                         msg = (
                             "'dimension_chunksizes' kwargs should be a dict "
                             f"of `str: int` pairs, not {dimension_chunksizes!r}."
@@ -778,7 +781,7 @@ class ChunkControl(threading.local):
             self.mode = old_mode
 
     @contextmanager
-    def from_file(self) -> None:
+    def from_file(self) -> Iterator[None]:
         r"""Ensure the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
@@ -801,7 +804,7 @@ class ChunkControl(threading.local):
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
     @contextmanager
-    def as_dask(self) -> None:
+    def as_dask(self) -> Iterator[None]:
         """Rely on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes

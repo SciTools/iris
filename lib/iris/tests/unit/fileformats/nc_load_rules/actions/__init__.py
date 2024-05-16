@@ -53,7 +53,7 @@ class Mixin__nc_load_actions:
     """
 
     # "global" test setting : whether to output various debug info
-    debug = False
+    debug_info = False
 
     @classmethod
     def setUpClass(cls):
@@ -85,7 +85,7 @@ class Mixin__nc_load_actions:
 
             # If debug enabled, switch on the activation summary debug output.
             # Use 'patch' so it is restored after the test.
-            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
+            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
 
             with warnings.catch_warnings():
                 warnings.filterwarnings(
@@ -125,7 +125,7 @@ class Mixin__nc_load_actions:
         nc_path = cdl_path.replace(".cdl", ".nc")
 
         cdl_string = self._make_testcase_cdl(**testcase_kwargs)
-        if self.debug:
+        if self.debug_info:
             print("CDL file content:")
             print(cdl_string)
             print("------\n")
@@ -137,7 +137,7 @@ class Mixin__nc_load_actions:
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 
-        if self.debug:
+        if self.debug_info:
             print("\nCube:")
             print(cube)
             print("")

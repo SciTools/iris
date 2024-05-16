@@ -563,7 +563,7 @@ def exponentiate(cube, exponent, in_place=False):
 
     else:
 
-        def power(data, out=None):
+        def power(data, out=None):  # type: ignore[misc]
             return np.power(data, exponent, out)
 
     return _math_op_common(

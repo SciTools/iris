@@ -216,7 +216,7 @@ netcdf test {{
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
     # Coordinate tests to be run for both 'time' and 'period' coordinate vars.
     # Set (in inheritors) to select time/period testing.
-    which = None
+    which: str
 
     def run_testcase(self, coord_dim_name=None, **opts):
         """Specialise 'run_testcase' for single-coord 'time' or 'period' testing."""

@@ -48,7 +48,7 @@ def _float_or_None(arg):
 class CoordSystem(metaclass=ABCMeta):
     """Abstract base class for coordinate systems."""
 
-    grid_mapping_name = None
+    grid_mapping_name: str | None = None
 
     def __eq__(self, other):
         """Override equality.

@@ -62,6 +62,14 @@ repos:
     -   id: sort-all
         types: [file, python]
 
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v1.9.0'
+    hooks:
+    -   id: mypy
+        additional_dependencies:
+            - 'types-requests'
+        exclude: 'noxfile\.py|docs/src/conf\.py'
+
 -   repo: https://github.com/numpy/numpydoc
     rev: v1.7.0
     hooks:

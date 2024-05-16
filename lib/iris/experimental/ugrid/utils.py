@@ -5,7 +5,8 @@
 
 """Utility operations specific to unstructured data."""
 
-from typing import AnyStr, Iterable, Union
+from collections.abc import Sequence
+from typing import Union
 
 import dask.array as da
 import numpy as np
@@ -15,8 +16,8 @@ from iris.cube import Cube
 
 def recombine_submeshes(
     mesh_cube: Cube,
-    submesh_cubes: Union[Iterable[Cube], Cube],
-    index_coord_name: AnyStr = "i_mesh_index",
+    submesh_cubes: Union[Sequence[Cube], Cube],
+    index_coord_name: str = "i_mesh_index",
 ) -> Cube:
     """Put data from sub-meshes back onto the original full mesh.
 
@@ -51,7 +52,7 @@ def recombine_submeshes(
         its location in the original mesh -- i.e. they are indices into the
         relevant mesh-location dimension.
 
-    index_coord_name : Cube
+    index_coord_name : str
         Coord name of an index coord containing the mesh location indices, in
         every submesh cube.
 
@@ -86,7 +87,7 @@ def recombine_submeshes(
     #
     # Perform consistency checks on all the region-cubes.
     #
-    if not isinstance(submesh_cubes, Iterable):
+    if not isinstance(submesh_cubes, Sequence):
         # Treat a single submesh cube input as a list-of-1.
         submesh_cubes = [submesh_cubes]
 
@@ -94,11 +95,11 @@ def recombine_submeshes(
     result_dtype = None
     indexcoord_metadata = None
     for i_sub, cube in enumerate(submesh_cubes):
-        sub_str = f"Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, " f'"{cube.name()}"'
+        sub_str = f'Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, "{cube.name()}"'
 
         # Check dimensionality.
         if cube.ndim != mesh_cube.ndim:
-            err = (
+            err: str | None = (
                 f"{sub_str} has {cube.ndim} dimensions, but "
                 f"'mesh_cube' has {mesh_cube.ndim}."
             )
@@ -196,7 +197,8 @@ def recombine_submeshes(
                     if indexcoord_metadata is None:
                         # Store first occurrence (from first region-cube)
                         indexcoord_metadata = sub_metadata
-                    elif sub_metadata != indexcoord_metadata:
+                    elif sub_metadata != indexcoord_metadata:  # type: ignore[unreachable]
+                        # This code is unreachable, is this a bug?
                         # Compare subsequent occurrences (from other region-cubes)
                         err = (
                             f"{sub_str} has an index coord "

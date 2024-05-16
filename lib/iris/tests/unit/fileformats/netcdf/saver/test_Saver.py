@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from types import ModuleType
+
 import iris.tests as tests  # isort:skip
 
 import collections
@@ -43,7 +45,7 @@ class Test_write(tests.IrisTest):
     # -------------------------------------------------------------------------
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def _transverse_mercator_cube(self, ellipsoid=None):
         data = self.array_lib.arange(12).reshape(3, 4)
@@ -397,7 +399,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -441,7 +443,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -483,7 +485,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
 
 class Test_write_fill_value(tests.IrisTest):
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def _make_cube(self, dtype, masked_value=None, masked_index=None):
         data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
@@ -571,7 +573,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
 class _Common__check_attribute_compliance:
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def setUp(self):
         self.container = mock.Mock(name="container", attributes={})

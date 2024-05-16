@@ -43,7 +43,7 @@ def default_cs():
 
 
 class ParentClass:
-    MOCKED_OPERATION = NotImplemented
+    MOCKED_OPERATION: str
 
     @pytest.fixture()
     def expected(self):
