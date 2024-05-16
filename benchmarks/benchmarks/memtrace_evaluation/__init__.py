@@ -29,11 +29,11 @@ class MemcheckCommon:
         nblocks = params["nblocks"]
         nworkers = params["nworkers"]
 
-        nyfull = ysize // nblocks
+        ny_task = ysize // nblocks
         use_processes = {"threads": False, "processes": True}[runtype]
         self.task = SampleParallelTask(
             n_blocks=nblocks,
-            outerdim=nyfull // nblocks,
+            outerdim=ny_task,
             innerdim=nx,
             n_workers=nworkers,
             use_process_workers=use_processes,
@@ -111,6 +111,12 @@ class MemcheckBlocksAndWorkers(MemcheckCommon):
     @memory_units_mib
     def track_addmem_calc(self, nblocks, nworkers):
         return self.run_addedmem_calc()
+
+
+class MemcheckBlocksAndWorkers_processes(MemcheckBlocksAndWorkers):
+    def setup(self, nblocks, nworkers):
+        self.default_params["runtype"] = "processes"
+        super().setup(nblocks, nworkers)
 
 
 class MemcheckBlocksAndWorkers_Rss(MemcheckBlocksAndWorkers):
