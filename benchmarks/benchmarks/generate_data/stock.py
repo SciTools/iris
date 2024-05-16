@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 
 import iris
+from iris import cube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
@@ -153,7 +154,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     return source_mesh.to_MeshCoord(location=location, axis=axis)
 
 
-def realistic_4d_w_everything(w_mesh=False, lazy=False):
+def realistic_4d_w_everything(w_mesh=False, lazy=False) -> iris.cube.Cube:
     """Run :func:`iris.tests.stock.realistic_4d_w_everything` in ``DATA_GEN_PYTHON``.
 
     Parameters
