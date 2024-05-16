@@ -105,6 +105,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ made a Nox `benchmarks` session as the recommended entry
    point for running benchmarks. (:pull:`5951`)
 
+#. `@bouweandela`_ enabled mypy checks for type hints. (:pull:`5956`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
