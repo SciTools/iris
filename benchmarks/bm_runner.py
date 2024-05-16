@@ -537,6 +537,65 @@ class Custom(_SubParserGenerator):
         _subprocess_runner([args.asv_sub_command, *args.asv_args], asv=True)
 
 
+class TrialRun(_SubParserGenerator):
+    name = "trialrun"
+    description = (
+        "Fast trial-run a given benchmark, to check it works : "
+        "in a provided or latest-lockfile environment, "
+        "with no repeats for accuracy of measurement."
+    )
+    epilog = (
+        "e.g. python bm_runner.py trialrun "
+        "MyBenchmarks.time_calc /tmp/testpython/bin/python"
+        "\n  NOTE: setting $DATA_GEN_PYTHON is equivalent to the "
+        "'runpath' argument."
+    )
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "benchmark",
+            type=str,
+            help=(
+                "A benchmark name, possibly including wildcards, "
+                "as supported by the ASV '--benchmark' argument."
+            )
+        )
+        self.subparser.add_argument(
+            "runpath",
+            type=str,
+            nargs="?",
+            help=(
+                "A path to an existing python environment, "
+                "to completely bypass environment building."
+            )
+        )
+
+    @staticmethod
+    def func(args: argparse.Namespace) -> None:
+        print(args)
+        if args.runpath:
+            # Shortcut creation of a data-gen environment
+            # - which is also the trial-run env.
+            environ["DATA_GEN_PYTHON"] = args.runpath
+        _setup_common()
+        # get path of data-gen environment, setup by previous call
+        python_path = environ["DATA_GEN_PYTHON"]
+        # allow 'on-demand' benchmarks
+        environ["ON_DEMAND_BENCHMARKS"] = "1"
+        asv_command = [
+            "run",
+            "--bench",
+            args.benchmark,
+            # no repeats for timing accuracy
+            "--quick",
+            # show any errors
+            "-e",
+            # do not build a unique env : run test in data-gen environment
+            "--environment", f"existing:{python_path}"
+        ] + args.asv_args
+        _subprocess_runner(asv_command, asv=True)
+
+
 class GhPost(_SubParserGenerator):
     name = "_gh_post"
     description = (
@@ -566,7 +625,7 @@ def main():
     )
     subparsers = parser.add_subparsers(required=True)
 
-    for gen in (Overnight, Branch, CPerf, SPerf, Custom, GhPost):
+    for gen in (Overnight, Branch, CPerf, SPerf, Custom, TrialRun, GhPost):
         _ = gen(subparsers).subparser
 
     parsed = parser.parse_args()
