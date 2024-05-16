@@ -7,10 +7,12 @@
 See :mod:`benchmarks.generate_data` for an explanation of this structure.
 """
 
+from contextlib import nullcontext
 from hashlib import sha256
 import json
 from pathlib import Path
 
+import iris
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
@@ -149,3 +151,35 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
             source_mesh = load_mesh(str(save_path))
     # Regenerate MeshCoord from its Mesh, which we saved.
     return source_mesh.to_MeshCoord(location=location, axis=axis)
+
+
+def realistic_4d_w_everything(w_mesh=False, lazy=False):
+    """Run :func:`iris.tests.stock.realistic_4d_w_everything` in ``DATA_GEN_PYTHON``.
+
+    Parameters
+    ----------
+    w_mesh : bool
+        See :func:`iris.tests.stock.realistic_4d_w_everything` for details.
+    lazy : bool
+        If True, the Cube will be returned with all arrays as they would
+        normally be loaded from file (i.e. most will still be lazy Dask
+        arrays). If False, all arrays will be realised NumPy arrays.
+
+    """
+
+    def _external(w_mesh_: str, save_path_: str):
+        import iris
+        from iris.tests.stock import realistic_4d_w_everything
+
+        cube = realistic_4d_w_everything(w_mesh=bool(w_mesh_))
+        iris.save(cube, save_path_)
+
+    save_path = (BENCHMARK_DATA / f"realistic_4d_w_everything_{w_mesh}").with_suffix(
+        ".nc"
+    )
+    if not REUSE_DATA or not save_path.is_file():
+        _ = run_function_elsewhere(_external, w_mesh_=w_mesh, save_path_=str(save_path))
+    with PARSE_UGRID_ON_LOAD.context():
+        context = nullcontext() if lazy else load_realised()
+        with context:
+            return iris.load_cube(save_path, "air_potential_temperature")

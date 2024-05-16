@@ -2,20 +2,20 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Coord benchmark tests."""
+"""Small-scope Coord benchmark tests."""
 
 import numpy as np
 
 from iris import coords
 
-from . import ARTIFICIAL_DIM_SIZE, disable_repeat_between_setup
+from .. import disable_repeat_between_setup
 
 
 def setup():
     """General variables needed by multiple benchmark classes."""
     global data_1d
 
-    data_1d = np.zeros(ARTIFICIAL_DIM_SIZE)
+    data_1d = np.zeros(1000)
 
 
 class CoordCommon:
@@ -52,7 +52,7 @@ class CoordCommon:
 
 class DimCoord(CoordCommon):
     def setup(self):
-        point_values = np.arange(ARTIFICIAL_DIM_SIZE)
+        point_values = np.arange(1000)
         bounds = np.array([point_values - 1, point_values + 1]).transpose()
 
         self.create_kwargs = {

@@ -94,6 +94,17 @@ This document explains the changes made to Iris for this release
    deprecated use of the ``conda --force`` argument. To be removed once
    `airspeed-velocity/asv#1397`_ is merged and released. (:pull:`5931`)
 
+#. `@trexfeathers`_ created :func:`iris.tests.stock.realistic_4d_w_everything`;
+   providing a :class:`~iris.cube.Cube` aimed to exercise as much of Iris as
+   possible. (:pull:`5949`)
+
+#. `@trexfeathers`_ deactivated any small 'unit-style' benchmarks for default
+   benchmark runs, and introduced larger more 'real world' benchmarks where
+   coverage was needed. (:pull:`5949`).
+
+#. `@trexfeathers`_ made a Nox `benchmarks` session as the recommended entry
+   point for running benchmarks. (:pull:`5951`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

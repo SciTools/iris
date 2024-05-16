@@ -9,8 +9,6 @@ import tracemalloc
 
 import numpy as np
 
-ARTIFICIAL_DIM_SIZE = int(10e3)  # For all artificial cubes, coords etc.
-
 
 def disable_repeat_between_setup(benchmark_object):
     """Benchmark where object persistence would be inappropriate (decorator).

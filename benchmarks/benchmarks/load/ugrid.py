@@ -2,15 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Mesh data loading benchmark tests.
-
-Where possible benchmarks should be parameterised for two sizes of input data:
-  * minimal: enables detection of regressions in parts of the run-time that do
-             NOT scale with data size.
-  * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size.
-
-"""
+"""Mesh data loading benchmark tests."""
 
 from iris import load_cube as iris_load_cube
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD

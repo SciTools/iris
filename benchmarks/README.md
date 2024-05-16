@@ -20,13 +20,13 @@ the PR's base branch, thus showing performance differences introduced
 by the PR. (This run is managed by 
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
 
-`asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see
-[Benchmark environments](#benchmark-environments)).
-
-The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
+To run locally: the **benchmark runner** provides conveniences for
 common benchmark setup and run tasks, including replicating the automated 
-overnight run locally. See `python bm_runner.py --help` for detail.
+overnight run locally. This is accessed via the Nox `benchmarks` session - see
+`nox -s benchmarks -- --help` for detail (_see also: 
+[bm_runner.py](./bm_runner.py)_). Alternatively you can directly run `asv ...`
+commands from this directory (you will still need Nox installed - see
+[Benchmark environments](#benchmark-environments)).
 
 A significant portion of benchmark run time is environment management. Run-time
 can be reduced by placing the benchmark environment on the same file system as
@@ -62,6 +62,23 @@ interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
 
 [See the ASV docs](https://asv.readthedocs.io/) for full detail.
 
+### What benchmarks to write
+
+It is not possible to maintain a full suite of 'unit style' benchmarks:
+
+* Benchmarks take longer to run than tests.
+* Small benchmarks are more vulnerable to noise - they report a lot of false
+positive regressions.
+
+We therefore recommend writing benchmarks representing scripts or single
+operations that are likely to be run at the user level.
+
+The drawback of this approach: a reported regression is less likely to reveal
+the root cause (e.g. if a commit caused a regression in coordinate-creation 
+time, but the only benchmark covering this was for file-loading). Be prepared
+for manual investigations; and consider committing any useful benchmarks as 
+[on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
+
 ### Data generation
 **Important:** be sure not to use the benchmarking environment to generate any
 test objects/files, as this environment changes with each commit being
@@ -85,6 +102,10 @@ repeats _between_ `setup()` calls using the `repeat` attribute.
 estimate run-time, and these will still be subject to the original problem.
 
 ### Scaling / non-Scaling Performance Differences
+
+**(We no longer advocate the below for benchmarks run during CI, given the
+limited available runtime and risk of false-positives. It remains useful for
+manual investigations).**
 
 When comparing performance between commits/file-type/whatever it can be helpful
 to know if the differences exist in scaling or non-scaling parts of the Iris
