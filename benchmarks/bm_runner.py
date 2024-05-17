@@ -325,7 +325,7 @@ class _SubParserGenerator(ABC):
     def add_asv_arguments(self) -> None:
         self.subparser.add_argument(
             "asv_args",
-            nargs=argparse.REMAINDER,
+            nargs="*",
             help="Any number of arguments to pass down to the ASV benchmark command.",
         )
 
@@ -547,8 +547,12 @@ class TrialRun(_SubParserGenerator):
     epilog = (
         "e.g. python bm_runner.py trialrun "
         "MyBenchmarks.time_calc /tmp/testpython/bin/python"
-        "\n  NOTE: setting $DATA_GEN_PYTHON is equivalent to the "
+        "\n\n  NOTE#1: setting $DATA_GEN_PYTHON is equivalent to the "
         "'runpath' argument."
+        "\n  NOTE#2: setting $OVERRIDE_TEST_DATA_REPOSITORY avoids the runner "
+        "installing iris-test-data."
+        "\n  NOTE#3: setting $BENCHMARK_DATA may be desirable to specify "
+        "where is safe to create potentially large (Gb) test data."
     )
 
     def add_arguments(self) -> None:
@@ -557,7 +561,7 @@ class TrialRun(_SubParserGenerator):
             type=str,
             help=(
                 "A benchmark name, possibly including wildcards, "
-                "as supported by the ASV '--benchmark' argument."
+                "as supported by the ASV '--bench' argument."
             ),
         )
         self.subparser.add_argument(
@@ -565,7 +569,7 @@ class TrialRun(_SubParserGenerator):
             type=str,
             nargs="?",
             help=(
-                "A path to an existing python environment, "
+                "A path to an existing python executable, "
                 "to completely bypass environment building."
             ),
         )
@@ -575,7 +579,8 @@ class TrialRun(_SubParserGenerator):
         if args.runpath:
             # Shortcut creation of a data-gen environment
             # - which is also the trial-run env.
-            environ["DATA_GEN_PYTHON"] = args.runpath
+            python_path = Path(args.runpath).resolve()
+            environ["DATA_GEN_PYTHON"] = str(python_path)
         _setup_common()
         # get path of data-gen environment, setup by previous call
         python_path = environ["DATA_GEN_PYTHON"]
@@ -587,8 +592,7 @@ class TrialRun(_SubParserGenerator):
             args.benchmark,
             # no repeats for timing accuracy
             "--quick",
-            # show any errors
-            "-e",
+            "--show-stderr",
             # do not build a unique env : run test in data-gen environment
             "--environment",
             f"existing:{python_path}",
