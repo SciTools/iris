@@ -3,7 +3,7 @@
     "project": "scitools-iris",
     "project_url": "https://github.com/SciTools/iris",
     "repo": "..",
-    "environment_type": "conda-delegated",
+    "environment_type": "delegated",
     "show_commit_url": "https://github.com/scitools/iris/commit/",
     "branches": ["upstream/main"],
     "build_command": [
@@ -17,15 +17,27 @@
     "html_dir": ".asv/html",
     "plugins": [".asv_delegated_conda"],
 
-    // The command(s) that create/update an environment correctly for the
-    //  checked-out commit.
-    // Interpreted the same as build_command, with following exceptions:
-    //  * No build-time environment variables.
-    //  * Is run in the same environment as the ASV install itself.
-    "delegated_env_commands": [
-        "PY_VER=3.12 nox --envdir={conf_dir}/.asv/env/nox01 --session=tests --install-only --no-error-on-external-run --verbose"
+    "delegated_env_commands_comment": [
+        "The command(s) that create/update an environment correctly for the",
+        "  checked-out commit.",
+        "The commit key indicates the earliest commit where the command(s)",
+        "  will work.",
+        "The first 'command' in a sequence MUST ONLY set the ENV_PARENT",
+        "  env var - the directory within which the environment directory",
+        "  will be located. E.g. `ENV_PARENT=foo/` . Available as",
+        "  {env_parent} in subsequent commands.",
+        "The environment will be detected as the most recently updated",
+        "  environment in {env_parent}.",
+        "Commands are interpreted the same as build_command, with following",
+        "  exceptions:",
+        "  * Env vars limited to those set outside build time.",
+        "    (e.g. {conf_dir} available but {build_dir} not)",
+        "  * Are run in the same environment as the ASV install itself."
     ],
-    // The parent directory of the above environment.
-    //  The most recently modified environment in the directory will be used.
-    "delegated_env_parent": "{conf_dir}/.asv/env/nox01"
+    "delegated_env_commands": {
+        "c8a663a0": [
+            "ENV_PARENT={conf_dir}/.asv/env/nox01",
+            "PY_VER=3.12 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
+        ]
+    }
 }
