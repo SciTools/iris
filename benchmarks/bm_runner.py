@@ -111,11 +111,13 @@ def _prep_data_gen_env() -> None:
             ]
         )
 
-        echo("Installing iris-test-data into data generation environment ...")
-        test_data_dir = clone_resource(
-            "iris-test-data", "https://github.com/SciTools/iris-test-data.git"
-        )
-        environ["OVERRIDE_TEST_DATA_REPOSITORY"] = str(test_data_dir / "test_data")
+        test_data_var = "OVERRIDE_TEST_DATA_REPOSITORY"
+        if test_data_var not in environ:
+            echo("Installing iris-test-data into data generation environment ...")
+            test_data_dir = clone_resource(
+                "iris-test-data", "https://github.com/SciTools/iris-test-data.git"
+            )
+            environ[test_data_var] = str(test_data_dir / "test_data")
 
         echo("Data generation environment ready.")
 
