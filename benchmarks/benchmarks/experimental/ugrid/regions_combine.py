@@ -18,7 +18,7 @@ from iris import load, load_cube, save
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
-from ... import TrackAddedMemoryAllocation, on_demand_benchmark
+from ... import TrackAddedMemoryAllocation
 from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
@@ -183,7 +183,6 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
         _ = self.recombined_cube.data
 
     # Vulnerable to noise, so disabled by default.
-    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
@@ -204,7 +203,6 @@ class CombineRegionsSaveData(MixinCombineRegions):
         save(self.recombined_cube, "tmp.nc")
 
     # Vulnerable to noise, so disabled by default.
-    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
@@ -234,7 +232,6 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         save(self.recombined_cube, "tmp.nc")
 
     # Vulnerable to noise, so disabled by default.
-    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
