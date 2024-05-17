@@ -558,7 +558,7 @@ class TrialRun(_SubParserGenerator):
             help=(
                 "A benchmark name, possibly including wildcards, "
                 "as supported by the ASV '--benchmark' argument."
-            )
+            ),
         )
         self.subparser.add_argument(
             "runpath",
@@ -567,12 +567,11 @@ class TrialRun(_SubParserGenerator):
             help=(
                 "A path to an existing python environment, "
                 "to completely bypass environment building."
-            )
+            ),
         )
 
     @staticmethod
     def func(args: argparse.Namespace) -> None:
-        print(args)
         if args.runpath:
             # Shortcut creation of a data-gen environment
             # - which is also the trial-run env.
@@ -591,7 +590,8 @@ class TrialRun(_SubParserGenerator):
             # show any errors
             "-e",
             # do not build a unique env : run test in data-gen environment
-            "--environment", f"existing:{python_path}"
+            "--environment",
+            f"existing:{python_path}",
         ] + args.asv_args
         _subprocess_runner(asv_command, asv=True)
 
