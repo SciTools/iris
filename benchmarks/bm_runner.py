@@ -325,7 +325,7 @@ class _SubParserGenerator(ABC):
     def add_asv_arguments(self) -> None:
         self.subparser.add_argument(
             "asv_args",
-            nargs="*",
+            nargs=argparse.REMAINDER,
             help="Any number of arguments to pass down to the ASV benchmark command.",
         )
 
