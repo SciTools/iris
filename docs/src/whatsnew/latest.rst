@@ -108,6 +108,9 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ added further `benchmarks` for aggregation and collapse.
    (:pull:`5954`)
 
+#. `@trexfeathers`_ set the benchmark data generation environment to
+   automatically install iris-test-data during setup. (:pull:`5958`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
