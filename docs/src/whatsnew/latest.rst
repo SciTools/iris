@@ -111,6 +111,19 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ set the benchmark data generation environment to
    automatically install iris-test-data during setup. (:pull:`5958`)
 
+#. `@pp-mo`_ reworked benchmark peak-memory measurement to use the
+   `tracemalloc <https://docs.python.org/3.12/library/tracemalloc.html>`_
+   package.
+   (:pull: `5948`)
+
+#. `@pp-mo`_ added a benchmark 'trialrun' sub-command, to quickly test
+   benchmarks during development. (:pull: `5957`)
+
+#. `@pp-mo`_ moved several memory-measurement benchmarks from 'on-demand' to
+   the standard set, in hopes that use of 'tracemalloc' (:pull: `5948`) makes
+   the results consistent enough to monitor for performance changes.
+   (:pull: `5959`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
