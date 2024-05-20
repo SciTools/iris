@@ -91,17 +91,16 @@ def _prep_data_gen_env() -> None:
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
+        def clone_resource(name: str, clone_source: str) -> Path:
+            resource_dir = data_gen_python.parents[1] / "resources"
+            resource_dir.mkdir(exist_ok=True)
+            clone_dir = resource_dir / name
+            if not clone_dir.is_dir():
+                _subprocess_runner(["git", "clone", clone_source, str(clone_dir)])
+            return clone_dir
+
         echo("Installing Mule into data generation environment ...")
-        mule_dir = data_gen_python.parents[1] / "resources" / "mule"
-        if not mule_dir.is_dir():
-            _subprocess_runner(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/metomi/mule.git",
-                    str(mule_dir),
-                ]
-            )
+        mule_dir = clone_resource("mule", "https://github.com/metomi/mule.git")
         _subprocess_runner(
             [
                 str(data_gen_python),
@@ -111,6 +110,14 @@ def _prep_data_gen_env() -> None:
                 str(mule_dir / "mule"),
             ]
         )
+
+        test_data_var = "OVERRIDE_TEST_DATA_REPOSITORY"
+        if test_data_var not in environ:
+            echo("Installing iris-test-data into data generation environment ...")
+            test_data_dir = clone_resource(
+                "iris-test-data", "https://github.com/SciTools/iris-test-data.git"
+            )
+            environ[test_data_var] = str(test_data_dir / "test_data")
 
         echo("Data generation environment ready.")
 
