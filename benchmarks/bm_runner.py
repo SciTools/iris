@@ -546,7 +546,7 @@ class TrialRun(_SubParserGenerator):
     )
     epilog = (
         "e.g. python bm_runner.py trialrun "
-        "MyBenchmarks.time_calc /tmp/testpython/bin/python"
+        "MyBenchmarks.time_calc ${DATA_GEN_PYTHON}"
         "\n\nNOTE: 'runpath' also replaces $DATA_GEN_PYTHON during the run."
     )
 
@@ -621,12 +621,12 @@ def main():
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
         epilog=(
             "More help is available within each sub-command."
-            "\n\nNOTE(1): iris-test-data is downloaded and cached within the "
-            "benchmarks code directory.\n   Set $OVERRIDE_TEST_DATA_REPOSITORY "
-            "to avoid the cost of this."
-            "\nNOTE(2): a separate python environment is created to write "
-            "benchmark test data.\n   Set $DATA_GEN_PYTHON to avoid the cost "
+            "\n\nNOTE(1): a separate python environment is created to "
+            "construct test files.\n   Set $DATA_GEN_PYTHON to avoid the cost "
             "of this."
+            "\nNOTE(2): iris-test-data is downloaded and cached within the "
+            "data generation environment.\n   Set "
+            "$OVERRIDE_TEST_DATA_REPOSITORY to avoid the cost of this."
             "\nNOTE(3): test data is cached within the "
             "benchmarks code directory, and uses a lot of disk space "
             "of disk space (Gb).\n   Set $BENCHMARK_DATA to specify where this "
