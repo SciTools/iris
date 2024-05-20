@@ -41,6 +41,7 @@ class PearsonR:
             cube.data = cube.lazy_data()
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+        result.data
 
     @TrackAddedMemoryAllocation.decorator_repeating()
     def track_lazy(self):
@@ -48,4 +49,4 @@ class PearsonR:
             cube.data = cube.lazy_data()
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
-            result.data
+        result.data
