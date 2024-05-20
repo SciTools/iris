@@ -114,6 +114,33 @@ class TrackAddedMemoryAllocation:
         decorated_func.unit = "Mb"
         return _wrapper
 
+    @staticmethod
+    def decorator_repeating(repeats=3):
+        """Benchmark to track growth in resident memory during execution.
+
+        Tracks memory for repeated calls of decorated function.
+
+        Intended for use on ASV ``track_`` benchmarks. Applies the
+        :class:`TrackAddedMemoryAllocation` context manager to the benchmark
+        code, sets the benchmark ``unit`` attribute to ``Mb``.
+
+        """
+
+        def decorator(decorated_func):
+            def _wrapper(*args, **kwargs):
+                assert decorated_func.__name__[:6] == "track_"
+                # Run the decorated benchmark within the added memory context
+                # manager.
+                with TrackAddedMemoryAllocation() as mb:
+                    for _ in range(repeats):
+                        decorated_func(*args, **kwargs)
+                return mb.addedmem_mb()
+
+            decorated_func.unit = "Mb"
+            return _wrapper
+
+        return decorator
+
 
 def on_demand_benchmark(benchmark_object):
     """Disable these benchmark(s) unless ON_DEMAND_BENCHARKS env var is set.

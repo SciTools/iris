@@ -32,10 +32,9 @@ class PearsonR:
     def time_real(self):
         pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
-    @TrackAddedMemoryAllocation.decorator
+    @TrackAddedMemoryAllocation.decorator_repeating()
     def track_real(self):
-        for _ in range(3):
-            pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+        pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
     def time_lazy(self):
         for cube in self.cube_a, self.cube_b:
@@ -43,11 +42,10 @@ class PearsonR:
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
-    @TrackAddedMemoryAllocation.decorator
+    @TrackAddedMemoryAllocation.decorator_repeating()
     def track_lazy(self):
-        for _ in range(3):
-            for cube in self.cube_a, self.cube_b:
-                cube.data = cube.lazy_data()
+        for cube in self.cube_a, self.cube_b:
+            cube.data = cube.lazy_data()
 
-            result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+        result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
             result.data

@@ -34,7 +34,7 @@ class Merge:
     def time_merge(self):
         _ = self.cube_list.merge_cube()
 
-    @TrackAddedMemoryAllocation.decorator
+    @TrackAddedMemoryAllocation.decorator_repeating()
     def track_mem_merge(self):
         _ = self.cube_list.merge_cube()
 
@@ -56,6 +56,6 @@ class Concatenate:
     def time_concatenate(self):
         _ = self.cube_list.concatenate_cube()
 
-    @TrackAddedMemoryAllocation.decorator
+    @TrackAddedMemoryAllocation.decorator_repeating()
     def track_mem_merge(self):
         _ = self.cube_list.concatenate_cube()
