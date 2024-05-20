@@ -53,7 +53,6 @@ class HorizontalChunkedRegridding:
         # Realise data
         out.data
 
-
     @TrackAddedMemoryAllocation.decorator
     def track_mem_regrid_area_w(self) -> None:
         for _ in range(3):
@@ -62,7 +61,6 @@ class HorizontalChunkedRegridding:
             # Realise data
             out.data
 
-
     @TrackAddedMemoryAllocation.decorator
     def track_mem_regrid_area_w_new_grid(self) -> None:
         for _ in range(3):
@@ -70,6 +68,7 @@ class HorizontalChunkedRegridding:
             out = self.chunked_cube.regrid(self.template_cube, self.scheme_area_w)
             # Realise data
             out.data
+
 
 class CurvilinearRegridding:
     def setup(self) -> None:
