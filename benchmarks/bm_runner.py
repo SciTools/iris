@@ -547,12 +547,7 @@ class TrialRun(_SubParserGenerator):
     epilog = (
         "e.g. python bm_runner.py trialrun "
         "MyBenchmarks.time_calc /tmp/testpython/bin/python"
-        "\n  NOTE: 'runpath' is also used for any data-generation, i.e. it"
-        "replaces $DATA_GEN_PYTHON during this run."
-        "\n  NOTE#2: setting $OVERRIDE_TEST_DATA_REPOSITORY avoids the runner "
-        "installing iris-test-data."
-        "\n  NOTE#3: setting $BENCHMARK_DATA may be desirable to specify "
-        "where is safe to create potentially large (Gb) test data."
+        "\n\nNOTE: 'runpath' also replaces $DATA_GEN_PYTHON during the run."
     )
 
     def add_arguments(self) -> None:
@@ -624,7 +619,20 @@ class GhPost(_SubParserGenerator):
 def main():
     parser = ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
-        epilog="More help is available within each sub-command.",
+        epilog=(
+            "More help is available within each sub-command."
+            "\n\nNOTE(1): iris-test-data is downloaded and cached within the "
+            "benchmarks code directory.\n   Set $OVERRIDE_TEST_DATA_REPOSITORY "
+            "to avoid the cost of this."
+            "\nNOTE(2): a separate python environment is created to write "
+            "benchmark test data.\n   Set $DATA_GEN_PYTHON to avoid the cost "
+            "of this."
+            "\nNOTE(3): test data is cached within the "
+            "benchmarks code directory, and uses a lot of disk space "
+            "of disk space (Gb).\n   Set $BENCHMARK_DATA to specify where this "
+            "space can be safely allocated."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(required=True)
 
