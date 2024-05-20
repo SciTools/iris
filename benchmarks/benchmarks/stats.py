@@ -8,6 +8,8 @@ import iris
 from iris.analysis.stats import pearsonr
 import iris.tests
 
+from . import TrackAddedMemoryAllocation
+
 
 class PearsonR:
     def setup(self):
@@ -30,9 +32,22 @@ class PearsonR:
     def time_real(self):
         pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
+    @TrackAddedMemoryAllocation.decorator
+    def time_real(self):
+        for _ in range(3):
+            pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+
     def time_lazy(self):
         for cube in self.cube_a, self.cube_b:
             cube.data = cube.lazy_data()
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
-        result.data
+
+    @TrackAddedMemoryAllocation.decorator
+    def time_lazy(self):
+        for _ in range(3):
+            for cube in self.cube_a, self.cube_b:
+                cube.data = cube.lazy_data()
+
+            result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+            result.data
