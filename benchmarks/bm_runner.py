@@ -547,8 +547,8 @@ class TrialRun(_SubParserGenerator):
     epilog = (
         "e.g. python bm_runner.py trialrun "
         "MyBenchmarks.time_calc /tmp/testpython/bin/python"
-        "\n\n  NOTE#1: setting $DATA_GEN_PYTHON is equivalent to the "
-        "'runpath' argument."
+        "\n  NOTE: 'runpath' is also used for any data-generation, i.e. it"
+        "replaces $DATA_GEN_PYTHON during this run."
         "\n  NOTE#2: setting $OVERRIDE_TEST_DATA_REPOSITORY avoids the runner "
         "installing iris-test-data."
         "\n  NOTE#3: setting $BENCHMARK_DATA may be desirable to specify "
@@ -567,7 +567,6 @@ class TrialRun(_SubParserGenerator):
         self.subparser.add_argument(
             "runpath",
             type=str,
-            nargs="?",
             help=(
                 "A path to an existing python executable, "
                 "to completely bypass environment building."
