@@ -182,7 +182,6 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
-    # Vulnerable to noise, so disabled by default.
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
@@ -202,7 +201,6 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    # Vulnerable to noise, so disabled by default.
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
@@ -231,7 +229,6 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    # Vulnerable to noise, so disabled by default.
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
