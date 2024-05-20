@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Benchmarks to evaluate tracemalloc/rss methods of memory measurement."""
 
+import numpy as np
+
 from .. import TrackAddedMemoryAllocation
 from .memory_exercising_task import SampleParallelTask
 
@@ -126,3 +128,25 @@ class MemcheckBlocksAndWorkers_Rss(MemcheckBlocksAndWorkers):
             nblocks=nblocks,
             nworkers=nworkers,
         )
+
+
+class MemcheckTaskRepeats(MemcheckCommon):
+    param_names = ["nreps"]
+    params = [1, 2, 3, 4]
+
+    def setup(self, nreps):
+        self._extra_allocated_mem = []
+        self._setup()
+
+    def _test_task(self):
+        odd_array = np.zeros([1000, 1000], dtype=np.float32)
+        odd_array[1, 1] = 1
+        self._extra_allocated_mem.extend(odd_array)
+        self.task.perform()
+
+    @memory_units_mib
+    def track_mem(self, nreps):
+        with TrackAddedMemoryAllocation() as tracer:
+            for _ in range(nreps):
+                self._test_task()
+        return tracer.addedmem_mb()
