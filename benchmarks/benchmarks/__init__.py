@@ -71,8 +71,8 @@ class TrackAddedMemoryAllocation:
 
     """
 
-    RESULT_MINIMUM_MB = 1.0
-    RESULT_ROUND_DP = 1
+    RESULT_MINIMUM_MB = 0.2
+    RESULT_ROUND_DP = 1  # I.E. to nearest 0.1 Mb
 
     def __enter__(self):
         tracemalloc.start()

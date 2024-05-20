@@ -313,5 +313,5 @@ def benchmarks(session: nox.sessions.Session):
         )
         session.error(message)
     session.install("asv", "nox")
-    with session.chdir(Path(__file__).parent / "benchmarks"):
-        session.run("python", "bm_runner.py", *session.posargs)
+    bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
+    session.run("python", bm_runner_path, *session.posargs)

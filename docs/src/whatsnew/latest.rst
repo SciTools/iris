@@ -105,6 +105,12 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ made a Nox `benchmarks` session as the recommended entry
    point for running benchmarks. (:pull:`5951`)
 
+#. `@ESadek-MO`_ added further `benchmarks` for aggregation and collapse.
+   (:pull:`5954`)
+
+#. `@trexfeathers`_ set the benchmark data generation environment to
+   automatically install iris-test-data during setup. (:pull:`5958`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
