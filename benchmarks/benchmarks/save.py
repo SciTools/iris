@@ -38,8 +38,6 @@ class NetcdfSave:
         if is_unstructured:
             self._save_mesh(self.cube)
 
-    # Vulnerable to noise, so disabled by default.
-    @on_demand_benchmark
     @TrackAddedMemoryAllocation.decorator
     def track_addedmem_netcdf_save(self, n_cubesphere, is_unstructured):
         # Don't need to copy the cube here since track_ benchmarks don't
