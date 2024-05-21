@@ -124,6 +124,9 @@ This document explains the changes made to Iris for this release
    the results consistent enough to monitor for performance changes.
    (:pull: `5959`)
 
+#. `@trexfeathers`_ re-wrote the delegated ASV environment plugin to be less
+   brittle. (:pull:`5963`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
