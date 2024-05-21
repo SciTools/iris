@@ -2,9 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""ASV plug-in providing an alternative :class:`asv.plugins.conda.Conda` subclass.
+"""ASV plug-in providing an alternative :class:`asv.environments.Environment` subclass.
 
-Manages the Conda environment via custom user scripts.
+Preps an environment via custom user scripts, then uses that as the
+benchmarking environment.
 
 """
 
