@@ -8,6 +8,7 @@ import numpy as np
 
 from iris.cube import CubeList
 
+from . import TrackAddedMemoryAllocation
 from .generate_data.stock import realistic_4d_w_everything
 
 
@@ -33,6 +34,10 @@ class Merge:
     def time_merge(self):
         _ = self.cube_list.merge_cube()
 
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_mem_merge(self):
+        _ = self.cube_list.merge_cube()
+
 
 class Concatenate:
     # TODO: Improve coverage.
@@ -49,4 +54,8 @@ class Concatenate:
         self.cube_list = CubeList([source_cube, second_cube])
 
     def time_concatenate(self):
+        _ = self.cube_list.concatenate_cube()
+
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_mem_merge(self):
         _ = self.cube_list.concatenate_cube()
