@@ -15,7 +15,7 @@
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-    "plugins": [".asv_delegated_conda"],
+    "plugins": [".asv_delegated"],
 
     "delegated_env_commands_comment": [
         "The command(s) that create/update an environment correctly for the",
