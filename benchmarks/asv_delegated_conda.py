@@ -12,11 +12,12 @@ from contextlib import contextmanager, suppress
 from os import environ
 from os.path import getmtime
 from pathlib import Path
+import sys
 
 from asv import util as asv_util
 from asv.console import log
 from asv.environment import Environment, EnvironmentUnavailable
-from asv.repo import Repo, get_repo
+from asv.repo import Repo
 from asv.util import ProcessError
 
 
@@ -81,7 +82,7 @@ class CommitFinder(dict[str, EnvPrepCommands]):
             range_spec = repo.get_range_spec(parent_hash, commit_hash)
             parents = repo.get_hashes_from_range(range_spec)
 
-            if parent_hash == commit_hash:
+            if parent_hash[:8] == commit_hash[:8]:
                 distance = 0
             elif len(parents) == 0:
                 distance = None
@@ -178,9 +179,6 @@ class Delegated(Environment):
         """Preserves the 'true' path of the environment so that self._path can
         be safely modified and restored."""
 
-        # Store the conf object for use by other methods.
-        self._conf = conf
-
         env_commands = getattr(conf, "delegated_env_commands")
         try:
             env_prep_commands = {
@@ -208,6 +206,39 @@ class Delegated(Environment):
             resolved = self._path_delegated.resolve(strict=True)
         result = resolved is not None and resolved.is_dir()
         return result
+
+    def _symlink_to_delegated(self, delegated_env_path: Path) -> None:
+        """Create the symlink to the delegated environment."""
+        self._path_delegated.unlink(missing_ok=True)
+        self._path_delegated.parent.mkdir(parents=True, exist_ok=True)
+        self._path_delegated.symlink_to(delegated_env_path, target_is_directory=True)
+        assert self._delegated_found
+
+    def _setup(self):
+        """Temporarily try to set the user's active env as the delegated env.
+
+        Environment prep will be run anyway once ASV starts checking out
+        commits, but this step tries to provide a usable environment (with
+        python, etc.) at the moment that ASV expects it.
+
+        """
+        current_env = Path(sys.executable).parents[1]
+        message = (
+            "Temporarily using user's active environment as benchmarking "
+            f"environment: {current_env} . "
+        )
+        try:
+            self._symlink_to_delegated(current_env)
+            _ = self.find_executable("python")
+        except Exception:
+            message = (
+                f"Delegated environment {self.name} not yet set up (unable to "
+                "determine current environment)."
+            )
+            self._path_delegated.unlink(missing_ok=True)
+
+        message += "Correct environment will be set up at the first commit checkout."
+        log.warning(message)
 
     def _prep_env(self, repo: Repo, commit_hash: str) -> None:
         """Prepare the delegated environment for the given commit hash."""
@@ -267,55 +298,10 @@ class Delegated(Environment):
             reverse=True,
         )[0]
         # Record the environment's path via a symlink within this environment.
-        if self._path_delegated.exists():
-            self._path_delegated.unlink()
-        self._path_delegated.symlink_to(delegated_env_path, target_is_directory=True)
-        assert self._delegated_found
+        self._symlink_to_delegated(delegated_env_path)
 
         message = f"Environment {self.name} updated to spec at {commit_hash[:8]}"
         log.info(message)
-
-    def _setup(self):
-        """Set up the delegated environment for the first time.
-
-        Environment prep will be run anyway once ASV starts checking out
-        commits, but this step ensures a usable environment (with python, etc.)
-        at the moment that ASV expects it. Also offers an opportunity to fail
-        early if something is wrong.
-
-        Setting up requires the following. If any of these fails then setup
-        is abandoned and deferred until the first commit checkout:
-        * Generating a :class:`asv.repo.Repo` from a :class:`asv.config.Config`
-        * Installing the repo at a given commit
-        * Running the environment prep for that commit
-
-        The method uses the first commit from `delegated_env_commands` as
-        a known commit with env prep commands.
-        """
-        known_commit = next(iter(self._env_prep_lookup.keys()))
-        problem: str | None = None
-        repo: Repo | None = None
-        try:
-            repo = get_repo(self._conf)
-        except Exception as err:
-            problem = f"problem determining repo: {err}"
-        if repo is not None:
-            try:
-                self.install_project(self._conf, repo, known_commit)
-            except Exception as err:
-                problem = f"problem installing project: {err}"
-        if problem is None:
-            try:
-                self._prep_env(repo, known_commit)
-            except Exception as err:
-                problem = f"problem preparing environment: {err}"
-
-        if problem is not None:
-            message = (
-                f"Delegated environment {self.name} not yet set up - {problem}\n"
-                f"Setup has been delayed until the first commit checkout."
-            )
-            log.warning(message)
 
     def checkout_project(self, repo: Repo, commit_hash: str) -> None:
         """Check out the working tree of the project at given commit hash."""

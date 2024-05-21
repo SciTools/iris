@@ -61,8 +61,6 @@ jobs:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
       IRIS_TEST_DATA_VERSION: "2.22"
-      # Speed up benchmarks by preserving a dedicated environment per commit.
-      ASV_COMMIT_ENVS: "true"
       # Lets us manually bump the cache to rebuild
       ENV_CACHE_BUILD: "0"
       TEST_DATA_CACHE_BUILD: "2"
@@ -83,6 +81,7 @@ jobs:
         with:
           path: |
             .nox
+            benchmarks/.asv/env
             $CONDA/pkgs
           key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
 
