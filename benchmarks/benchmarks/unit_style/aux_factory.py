@@ -2,13 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""AuxFactory benchmark tests."""
+"""Small-scope AuxFactory benchmark tests."""
 
 import numpy as np
 
 from iris import aux_factory, coords
-
-from . import ARTIFICIAL_DIM_SIZE
 
 
 class FactoryCommon:
@@ -45,7 +43,7 @@ class FactoryCommon:
 
 class HybridHeightFactory(FactoryCommon):
     def setup(self):
-        data_1d = np.zeros(ARTIFICIAL_DIM_SIZE)
+        data_1d = np.zeros(1000)
         self.coord = coords.AuxCoord(points=data_1d, units="m")
 
         self.setup_common()
