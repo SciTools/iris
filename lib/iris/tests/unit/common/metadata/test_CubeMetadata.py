@@ -6,7 +6,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-from typing import Any
+from typing import Any, ClassVar
 
 import iris.tests as tests  # isort:skip
 
@@ -351,7 +351,7 @@ class MixinSplitattrsMatrixTests:
     """
 
     # Define the operation name : set in each inheritor
-    operation_name: str
+    operation_name: ClassVar[str]
 
     def test_splitattrs_cases(
         self,
