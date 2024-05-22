@@ -114,15 +114,17 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ reworked benchmark peak-memory measurement to use the
    `tracemalloc <https://docs.python.org/3.12/library/tracemalloc.html>`_
    package.
-   (:pull: `5948`)
+   (:pull:`5948`)
 
 #. `@pp-mo`_ added a benchmark 'trialrun' sub-command, to quickly test
-   benchmarks during development. (:pull: `5957`)
+   benchmarks during development. (:pull:`5957`)
 
 #. `@pp-mo`_ moved several memory-measurement benchmarks from 'on-demand' to
-   the standard set, in hopes that use of 'tracemalloc' (:pull: `5948`) makes
+   the standard set, in hopes that use of 'tracemalloc' (:pull:`5948`) makes
    the results consistent enough to monitor for performance changes.
-   (:pull: `5959`)
+   (:pull:`5959`)
+
+#. `@rcomer`_ made some ``slices_over`` tests go faster (:pull:`5973`)
 
 
 .. comment
