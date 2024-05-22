@@ -133,7 +133,7 @@ local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --durations=25"
 testpaths = "lib/iris"
 
 [tool.coverage.run]
