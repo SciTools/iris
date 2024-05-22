@@ -275,7 +275,7 @@ class Delegated(Environment):
         build_dir = Path(self._build_root) / self._repo_subdir
 
         # Run the script(s) for delegated environment creation/updating.
-        # (An adaptation of :meth:`Environment._interpolate_commands`).
+        # (An adaptation of :meth:`Environment._interpolate_and_run_commands`).
         for command, env, return_codes, cwd in self._interpolate_commands(
             env_prep.commands
         ):
