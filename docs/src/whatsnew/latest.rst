@@ -77,7 +77,12 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
+#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions
+   :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`.
+   (:pull:`5735`)
+#. `@tkknight`_ introduced ``make html-nitpicky`` target to check all the references
+   in the Iris documentation, including the API documentation.  This is not the
+   default.  (:pull:`5910`)
 
 
 💼 Internal
