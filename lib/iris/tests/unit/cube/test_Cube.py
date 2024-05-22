@@ -919,6 +919,21 @@ class Test_rolling_window(tests.IrisTest):
         )
         self.assertMaskedArrayEqual(expected_result, res_cube.data)
 
+    def test_lazy(self):
+        window = 2
+        self.cube.data = da.ma.masked_array(
+            self.cube.data, mask=([True, False, False, False, True, False])
+        )
+        res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, window, mdtol=0)
+        self.assertTrue(self.cube.has_lazy_data())
+        self.assertTrue(res_cube.has_lazy_data())
+        expected_result = ma.array(
+            [-99.0, 1.5, 2.5, -99.0, -99.0],
+            mask=[True, False, False, True, True],
+            dtype=np.float64,
+        )
+        self.assertMaskedArrayEqual(expected_result, res_cube.data)
+
     def test_ancillary_variables_and_cell_measures_kept(self):
         res_cube = self.multi_dim_cube.rolling_window("val", self.mock_agg, 3)
         self.assertEqual(res_cube.ancillary_variables(), [self.ancillary_variable])
