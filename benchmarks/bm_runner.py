@@ -585,6 +585,17 @@ class TrialRun(_SubParserGenerator):
         _setup_common()
         # get path of data-gen environment, setup by previous call
         python_path = environ["DATA_GEN_PYTHON"]
+
+        # Need to install this here since the ASV `existing:` syntax skips
+        #  the build/install/uninstall steps in asv.conf.json .
+        install_custom_bms = [
+            python_path,
+            "-mpip",
+            "install",
+            str(Path(__file__).parent / "custom_bms"),
+        ]
+        _subprocess_runner(install_custom_bms)
+
         # allow 'on-demand' benchmarks
         environ["ON_DEMAND_BENCHMARKS"] = "1"
         asv_command = [
