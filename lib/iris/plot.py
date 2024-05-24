@@ -43,7 +43,7 @@ BREWER_CITE = "Colours based on ColorBrewer.org"
 PlotDefn = collections.namedtuple("PlotDefn", ("coords", "transpose"))
 
 
-class GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
+class _GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
     # TODO: see cartopy#2390
     #  Remove this once the bug is addressed in a Cartopy release.
     def _draw_preprocess(self, renderer):
@@ -57,7 +57,7 @@ class GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
                 artist._draw_gridliner(renderer=renderer)
 
 
-cartopy.mpl.geoaxes.GeoAxes = GeoAxesPatched
+cartopy.mpl.geoaxes.GeoAxes = _GeoAxesPatched
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
