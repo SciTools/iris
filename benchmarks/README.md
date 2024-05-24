@@ -20,13 +20,13 @@ the PR's base branch, thus showing performance differences introduced
 by the PR. (This run is managed by 
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
 
-`asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see
-[Benchmark environments](#benchmark-environments)).
-
-The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
+To run locally: the **benchmark runner** provides conveniences for
 common benchmark setup and run tasks, including replicating the automated 
-overnight run locally. See `python bm_runner.py --help` for detail.
+overnight run locally. This is accessed via the Nox `benchmarks` session - see
+`nox -s benchmarks -- --help` for detail (_see also: 
+[bm_runner.py](./bm_runner.py)_). Alternatively you can directly run `asv ...`
+commands from this directory (you will still need Nox installed - see
+[Benchmark environments](#benchmark-environments)).
 
 A significant portion of benchmark run time is environment management. Run-time
 can be reduced by placing the benchmark environment on the same file system as
@@ -43,11 +43,17 @@ if it is not already. You can achieve this by either:
 
 * `OVERRIDE_TEST_DATA_REPOSITORY` - required - some benchmarks use
 `iris-test-data` content, and your local `site.cfg` is not available for
-benchmark scripts.
+benchmark scripts. The benchmark runner defers to any value already set in
+the shell, but will otherwise download `iris-test-data` and set the variable
+accordingly.
 * `DATA_GEN_PYTHON` - required - path to a Python executable that can be
 used to generate benchmark test objects/files; see
 [Data generation](#data-generation). The benchmark runner sets this 
-automatically, but will defer to any value already set in the shell.
+automatically, but will defer to any value already set in the shell. Note that
+[Mule](https://github.com/metomi/mule) will be  automatically installed into 
+this environment, and sometimes 
+[iris-test-data](https://github.com/SciTools/iris-test-data) (see 
+`OVERRIDE_TEST_DATA_REPOSITORY`).
 * `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
 test data, which the benchmark scripts will create if it doesn't already
 exist. Defaults to `<root>/benchmarks/.data/` if not set. Note that some of
@@ -61,6 +67,23 @@ interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
 ## Writing benchmarks
 
 [See the ASV docs](https://asv.readthedocs.io/) for full detail.
+
+### What benchmarks to write
+
+It is not possible to maintain a full suite of 'unit style' benchmarks:
+
+* Benchmarks take longer to run than tests.
+* Small benchmarks are more vulnerable to noise - they report a lot of false
+positive regressions.
+
+We therefore recommend writing benchmarks representing scripts or single
+operations that are likely to be run at the user level.
+
+The drawback of this approach: a reported regression is less likely to reveal
+the root cause (e.g. if a commit caused a regression in coordinate-creation 
+time, but the only benchmark covering this was for file-loading). Be prepared
+for manual investigations; and consider committing any useful benchmarks as 
+[on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
 
 ### Data generation
 **Important:** be sure not to use the benchmarking environment to generate any
@@ -85,6 +108,10 @@ repeats _between_ `setup()` calls using the `repeat` attribute.
 estimate run-time, and these will still be subject to the original problem.
 
 ### Scaling / non-Scaling Performance Differences
+
+**(We no longer advocate the below for benchmarks run during CI, given the
+limited available runtime and risk of false-positives. It remains useful for
+manual investigations).**
 
 When comparing performance between commits/file-type/whatever it can be helpful
 to know if the differences exist in scaling or non-scaling parts of the Iris
