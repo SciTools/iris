@@ -43,6 +43,23 @@ BREWER_CITE = "Colours based on ColorBrewer.org"
 PlotDefn = collections.namedtuple("PlotDefn", ("coords", "transpose"))
 
 
+class GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
+    # TODO: see cartopy#2390
+    #  Remove this once the bug is addressed in a Cartopy release.
+    def _draw_preprocess(self, renderer):
+        super()._draw_preprocess(renderer)
+
+        for artist in self.artists:
+            if hasattr(artist, "_draw_gridliner"):
+                # Note this is only necessary since Cartopy v0.23, but is not
+                #  wasteful for earlier versions as _draw_gridliner() includes
+                #  a check for whether a draw is necessary.
+                artist._draw_gridliner(renderer=renderer)
+
+
+cartopy.mpl.geoaxes.GeoAxes = GeoAxesPatched
+
+
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
     def names(coords):
         result = []
