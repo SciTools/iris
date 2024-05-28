@@ -8,7 +8,6 @@ import tracemalloc
 
 from asv_runner.benchmarks.time import TimeBenchmark
 
-
 # TODO: docstrings and naming.
 
 
