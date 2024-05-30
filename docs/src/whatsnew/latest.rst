@@ -124,7 +124,7 @@ This document explains the changes made to Iris for this release
    the results consistent enough to monitor for performance changes.
    (:pull:`5959`)
 
-#. `@rcomer`_ made some ``slices_over`` tests go faster (:pull:`5973`)
+#. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
 
 
 .. comment
