@@ -1090,7 +1090,7 @@ class Test_slices_over(tests.IrisTest):
             _ = self.cube.slices_over(self.cube.ndim + 1)
 
     def test_2d_slice_coord_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(
             [self.cube.coord("time"), self.cube.coord("model_level_number")]
@@ -1109,7 +1109,7 @@ class Test_slices_over(tests.IrisTest):
             )
 
     def test_2d_slice_coord_name_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(["time", "model_level_number"])
         for ct in range(self.long_iterator_max):
@@ -1124,7 +1124,7 @@ class Test_slices_over(tests.IrisTest):
             _ = self.cube.slices_over(["time", "wibble"])
 
     def test_2d_slice_dimension_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over([0, 1])
         for ct in range(self.long_iterator_max):
@@ -1150,7 +1150,7 @@ class Test_slices_over(tests.IrisTest):
             _ = self.cube.slices_over([0, self.cube.ndim + 1])
 
     def test_multidim_slice_coord_given(self):
-        # Slicing over surface altitude returns 100x100 2D cubes, so only check
+        # Slicing over surface altitude returns 10x10 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over("surface_altitude")
         # Define special ndindex iterator for the different dims sliced over.
