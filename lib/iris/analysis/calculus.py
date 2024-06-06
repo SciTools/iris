@@ -760,7 +760,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     The cube standard names must match one of the combinations in
     :data:`DIRECTIONAL_NAMES`.
 
-    This routine is designed to identify the vector quantites which each
+    This routine is designed to identify the vector quantities which each
     of the cubes provided represent and return a list of their 3d
     spatial dimension names and associated phenomenon.
     For example, given a cube of "u wind" and "v wind" the return value

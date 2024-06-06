@@ -4555,12 +4555,6 @@ x            -              -
         -------
         :class:`iris.cube.Cube`.
 
-        Notes
-        -----
-        .. note::
-
-            This operation does not yet have support for lazy evaluation.
-
         Examples
         --------
             >>> import iris, iris.analysis
@@ -4664,7 +4658,7 @@ x            -               -
         # this will add an extra dimension to the data at dimension + 1 which
         # represents the rolled window (i.e. will have a length of window)
         rolling_window_data = iris.util.rolling_window(
-            self.data, window=window, axis=dimension
+            self.core_data(), window=window, axis=dimension
         )
 
         # now update all of the coordinates to reflect the aggregation
@@ -4683,7 +4677,7 @@ x            -               -
                     "coordinate." % coord_.name()
                 )
 
-            new_bounds = iris.util.rolling_window(coord_.points, window)
+            new_bounds = iris.util.rolling_window(coord_.core_points(), window)
 
             if np.issubdtype(new_bounds.dtype, np.str_):
                 # Handle case where the AuxCoord contains string. The points
@@ -4729,9 +4723,12 @@ x            -               -
                 kwargs["weights"] = iris.util.broadcast_to_shape(
                     weights, rolling_window_data.shape, (dimension + 1,)
                 )
-        data_result = aggregator.aggregate(
-            rolling_window_data, axis=dimension + 1, **kwargs
-        )
+
+        if aggregator.lazy_func is not None and self.has_lazy_data():
+            agg_method = aggregator.lazy_aggregate
+        else:
+            agg_method = aggregator.aggregate
+        data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
         result = aggregator.post_process(new_cube, data_result, [coord], **kwargs)
         return result
 

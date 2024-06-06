@@ -459,7 +459,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         local_keys : iterable of str, optional
-            An interable of cube attribute keys. Any cube attributes with
+            An iterable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
 
@@ -2442,7 +2442,7 @@ def save(
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
     local_keys : iterable of str, optional
-        An interable of cube attribute keys. Any cube attributes with
+        An iterable of cube attribute keys. Any cube attributes with
         matching keys will become attributes on the data variable rather
         than global attributes.
 
