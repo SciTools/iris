@@ -535,9 +535,12 @@ def lazy_elementwise(lazy_array, elementwise_op):
     # This makes good practical sense for unit conversions, as a Unit.convert
     # call may cast to float, or not, depending on unit equality : Thus, it's
     # much safer to get udunits to decide that for us.
-    dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
+    meta = da.utils.meta_from_array(lazy_array)
+    new_meta = elementwise_op(meta)
 
-    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
+    return da.map_blocks(
+        elementwise_op, lazy_array, dtype=new_meta.dtype, meta=new_meta
+    )
 
 
 def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
@@ -595,8 +598,12 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         for dim, size in zip(dims, out_sizes):
             out_chunks[dim] = size
 
-        result = data.map_blocks(
-            func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs
-        )
+        # Assume operation does not change dtype and meta if not specified.
+        if "meta" not in kwargs:
+            kwargs["meta"] = da.utils.meta_from_array(data)
+        if "dtype" not in kwargs:
+            kwargs["dtype"] = kwargs["meta"].dtype
+
+        result = data.map_blocks(func, *args, chunks=out_chunks, **kwargs)
 
     return result

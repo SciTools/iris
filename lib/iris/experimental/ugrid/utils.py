@@ -274,6 +274,9 @@ def recombine_submeshes(
     # Notes on resultant calculation properties:
     # 1. map_blocks is chunk-mapped, so it is parallelisable and space-saving
     # 2. However, fetching less than a whole chunk is not efficient
+    meta = np.ma.array(
+        np.empty((0,) * result_array.ndim, dtype=result_array.dtype), mask=True
+    )
     for cube in submesh_cubes:
         # Lazy data array from the region cube
         sub_data = cube.lazy_data()
@@ -297,7 +300,7 @@ def recombine_submeshes(
             sub_data,
             indarr,
             dtype=result_array.dtype,
-            meta=np.ndarray,
+            meta=meta,
         )
 
     # Construct the result cube

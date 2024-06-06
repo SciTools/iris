@@ -481,6 +481,9 @@ class Test___call___lazy(tests.IrisTest):
         self.assertTrue(result.has_lazy_data())
         expected = self.regridder(self.cube)
         self.assertTrue(result == expected)
+        self.assertTrue(
+            isinstance(da.utils.meta_from_array(result.core_data()), np.ma.MaskedArray)
+        )
 
 
 class Test___call____invalid_types(tests.IrisTest):
