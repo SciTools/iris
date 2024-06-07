@@ -1,6 +1,8 @@
 .. include:: common_links.inc
 .. _iris_docs:
 
+:html_theme.sidebar_secondary.remove:
+
 
 Iris
 ====

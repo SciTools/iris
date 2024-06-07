@@ -293,12 +293,13 @@ html_theme = "pydata_sphinx_theme"
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html#configure-the-search-bar-position
 html_sidebars = {
+    "index": [],
     "**": [
         "custom_sidebar_logo_version",
         "search-field",
         "sidebar-nav-bs",
         "sidebar-ethical-ads",
-    ]
+    ],
 }
 
 # See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
