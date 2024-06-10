@@ -417,7 +417,8 @@ def array_equal(array1, array2, withnans=False):
         eqs = array1 == array2
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = bool(np.all(eqs))
+        eq = np.all(eqs)
+        eq = bool(eq) or eq is ma.masked
 
     return eq
 
