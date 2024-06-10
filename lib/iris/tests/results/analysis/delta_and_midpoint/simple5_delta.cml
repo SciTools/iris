@@ -1,2 +1,2 @@
 <?xml version="1.0" ?>
-<auxCoord id="5963bc36" long_name="change_in_foo" points="[90.0, 90.0, 90.0, -270.0]" shape="(4,)" units="Unit('meter')" value_type="float32"/>
+<auxCoord id="5963bc36" long_name="change_in_foo" points="[  90.,   90.,   90., -270.]" shape="(4,)" units="Unit('meter')" value_type="float32"/>

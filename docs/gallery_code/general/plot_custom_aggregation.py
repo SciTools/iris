@@ -12,7 +12,7 @@ In this case, we have a 240-year sequence of yearly average surface temperature
 over North America, and we want to calculate in how many years these exceed a
 certain temperature over a spell of 5 years or more.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,27 +28,25 @@ from iris.util import rolling_window
 # Note: in order to meet the requirements of iris.analysis.Aggregator, it must
 # do the calculation over an arbitrary (given) data axis.
 def count_spells(data, threshold, axis, spell_length):
-    """
+    """Calculate the number of points in a sequence.
+
     Function to calculate the number of points in a sequence where the value
     has exceeded a threshold value for at least a certain number of timepoints.
 
     Generalised to operate on multiple time sequences arranged on a specific
     axis of a multidimensional array.
 
-    Args:
-
-    * data (array):
-        raw data to be compared with value threshold.
-
-    * threshold (float):
-        threshold point for 'significant' datapoints.
-
-    * axis (int):
-        number of the array dimension mapping the time sequences.
-        (Can also be negative, e.g. '-1' means last dimension)
-
-    * spell_length (int):
-        number of consecutive times at which value > threshold to "count".
+    Parameters
+    ----------
+    data : array
+        Raw data to be compared with value threshold.
+    threshold : float
+        Threshold point for 'significant' datapoints.
+    axis : int
+        Number of the array dimension mapping the time sequences.
+        (Can also be negative, e.g. '-1' means last dimension).
+    spell_length : int
+        Number of consecutive times at which value > threshold to "count".
 
     """
     if axis < 0:
@@ -72,7 +70,7 @@ def main():
 
     # Make an aggregator from the user function.
     SPELL_COUNT = Aggregator(
-        "spell_count", count_spells, units_func=lambda units: 1
+        "spell_count", count_spells, units_func=lambda units, **kwargs: 1
     )
 
     # Define the parameters of the test.

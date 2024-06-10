@@ -7,7 +7,7 @@ If you need to make a backwards-incompatible change to a public API
 [#public-api]_ that has been included in a release (e.g. deleting a
 method), then you must first deprecate the old behaviour in at least
 one release, before removing/updating it in the next
-`major release <http://semver.org/>`_.
+`major release <https://semver.org/>`_.
 
 
 Adding a Deprecation
@@ -25,29 +25,29 @@ deprecation is accompanied by the introduction of a new public API.
 
 Under these circumstances the following points apply:
 
- - Using the deprecated API must result in a concise deprecation warning which
-   is an instance of :class:`iris.IrisDeprecation`.
-   It is easiest to call
-   :func:`iris._deprecation.warn_deprecated`, which is a
-   simple wrapper to :func:`warnings.warn` with the signature
-   `warn_deprecation(message, **kwargs)`.
- - Where possible, your deprecation warning should include advice on
-   how to avoid using the deprecated API. For example, you might
-   reference a preferred API, or more detailed documentation elsewhere.
- - You must update the docstring for the deprecated API to include a
-   Sphinx deprecation directive:
+- Using the deprecated API must result in a concise deprecation warning which
+  is an instance of :class:`iris.IrisDeprecation`.
+  It is easiest to call
+  :func:`iris._deprecation.warn_deprecated`, which is a
+  simple wrapper to :func:`warnings.warn` with the signature
+  `warn_deprecation(message, **kwargs)`.
+- Where possible, your deprecation warning should include advice on
+  how to avoid using the deprecated API. For example, you might
+  reference a preferred API, or more detailed documentation elsewhere.
+- You must update the docstring for the deprecated API to include a
+  Sphinx deprecation directive:
 
-    :literal:`.. deprecated:: <VERSION>`
+  :literal:`.. deprecated:: <VERSION>`
 
-   where you should replace `<VERSION>` with the major and minor version
-   of Iris in which this API is first deprecated. For example: `1.8`.
+  where you should replace `<VERSION>` with the major and minor version
+  of Iris in which this API is first deprecated. For example: `1.8`.
 
-   As with the deprecation warning, you should include advice on how to
-   avoid using the deprecated API within the content of this directive.
-   Feel free to include more detail in the updated docstring than in the
-   deprecation warning.
- - You should check the documentation for references to the deprecated
-   API and update them as appropriate.
+  As with the deprecation warning, you should include advice on how to
+  avoid using the deprecated API within the content of this directive.
+  Feel free to include more detail in the updated docstring than in the
+  deprecation warning.
+- You should check the documentation for references to the deprecated
+  API and update them as appropriate.
 
 Changing a Default
 ------------------
@@ -64,14 +64,14 @@ it causes the corresponding public API to use its new default behaviour.
 The following points apply in addition to those for removing a public
 API:
 
- - You should add a new boolean attribute to :data:`iris.FUTURE` (by
-   modifying :class:`iris.Future`) that controls the default behaviour
-   of the public API that needs updating. The initial state of the new
-   boolean attribute should be `False`. You should name the new boolean
-   attribute to indicate that setting it to `True` will select the new
-   default behaviour.
- - You should include a reference to this :data:`iris.FUTURE` flag in your
-   deprecation warning and corresponding Sphinx deprecation directive.
+- You should add a new boolean attribute to :data:`iris.FUTURE` (by
+  modifying :class:`iris.Future`) that controls the default behaviour
+  of the public API that needs updating. The initial state of the new
+  boolean attribute should be `False`. You should name the new boolean
+  attribute to indicate that setting it to `True` will select the new
+  default behaviour.
+- You should include a reference to this :data:`iris.FUTURE` flag in your
+  deprecation warning and corresponding Sphinx deprecation directive.
 
 
 Removing a Deprecation
@@ -94,11 +94,11 @@ and/or example code should be removed/updated as appropriate.
 Changing a Default
 ------------------
 
- - You should update the initial state of the relevant boolean attribute
-   of :data:`iris.FUTURE` to `True`.
- - You should deprecate setting the relevant boolean attribute of
-   :class:`iris.Future` in the same way as described in
-   :ref:`removing-a-public-api`.
+- You should update the initial state of the relevant boolean attribute
+  of :data:`iris.FUTURE` to `True`.
+- You should deprecate setting the relevant boolean attribute of
+  :class:`iris.Future` in the same way as described in
+  :ref:`removing-a-public-api`.
 
 
 .. rubric:: Footnotes

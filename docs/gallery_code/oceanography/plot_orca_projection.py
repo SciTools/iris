@@ -10,7 +10,7 @@ First, the data is projected into the PlateCarree coordinate reference system.
 Second four pcolormesh plots are created from this projected dataset,
 using different projections for the output image.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -37,9 +37,7 @@ def main():
 
     pcarree = projections["PlateCarree"]
     # Transform cube to target projection
-    new_cube, extent = iris.analysis.cartography.project(
-        cube, pcarree, nx=400, ny=200
-    )
+    new_cube, extent = iris.analysis.cartography.project(cube, pcarree, nx=400, ny=200)
 
     # Plot data in each projection
     for name in sorted(projections):

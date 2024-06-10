@@ -1,9 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""A simple mimic of the Pyke 'knowledge_engine'.
+
 A simple mimic of the Pyke 'knowledge_engine', for interfacing to the routines
 in 'iris.fileformats.netcdf' with minimal changes to that code.
 
@@ -18,12 +18,12 @@ API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
 used in :meth:`iris.fileformats.netcdf._actions_activation_stats`.
 
 """
+
 from .actions import run_actions
 
 
 class FactEntity:
-    """
-    An object with an 'entity_lists' property  which is a dict of 'FactList's.
+    r"""An object with an 'entity_lists' property  which is a dict of 'FactList's.
 
     A Factlist, in turn, is an object with property 'case_specific_facts',
     which is a list of tuples of strings
@@ -62,8 +62,7 @@ class FactEntity:
 
 
 class Engine:
-    """
-    A minimal mimic of a Pyke.engine.
+    """A minimal mimic of a Pyke.engine.
 
     Provides just enough API so that the existing code in
     :mod:`iris.fileformats.netcdf` can interface with our new rules functions.
@@ -84,8 +83,7 @@ class Engine:
         self.facts = FactEntity()
 
     def activate(self):
-        """
-        Run all the translation rules to produce a single output cube.
+        """Run all the translation rules to produce a single output cube.
 
         This implicitly references the output variable for this operation,
         set by engine.cf_var (a CFDataVariable).
@@ -97,8 +95,7 @@ class Engine:
         run_actions(self)
 
     def get_kb(self):
-        """
-        Get a FactEntity, which mimic (bits of) a knowledge-base.
+        """Get a FactEntity, which mimic (bits of) a knowledge-base.
 
         Just allowing
         :meth:`iris.fileformats.netcdf._action_activation_stats` to list the
@@ -108,16 +105,11 @@ class Engine:
         return self.facts
 
     def print_stats(self):
-        """
-        No-op, called by
-        :meth:`iris.fileformats.netcdf._action_activation_stats`.
-
-        """
+        """No-op, called by :meth:`iris.fileformats.netcdf._action_activation_stats`."""
         pass
 
     def add_case_specific_fact(self, fact_name, fact_arglist):
-        """
-        Record a fact about the current output operation.
+        """Record a fact about the current output operation.
 
         Roughly,
           facts = self.facts.entity_lists[fact_name].case_specific_facts
@@ -127,8 +119,7 @@ class Engine:
         self.facts.add_fact(fact_name, fact_arglist)
 
     def fact_list(self, fact_name):
-        """
-        Return the facts (arg-lists) for one fact name.
+        """Return the facts (arg-lists) for one fact name.
 
         A shorthand form used only by the new 'actions' routines.
 
@@ -139,12 +130,9 @@ class Engine:
         return self.facts.sect_facts(fact_name)
 
     def add_fact(self, fact_name, fact_arglist):
-        """
-        Add a new fact.
+        """Add a new fact.
 
         A shorthand form used only by the new 'actions' routines.
 
         """
-        self.add_case_specific_fact(
-            fact_name=fact_name, fact_arglist=fact_arglist
-        )
+        self.add_case_specific_fact(fact_name=fact_name, fact_arglist=fact_arglist)

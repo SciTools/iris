@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Extra stock routines for making and manipulating cubes with 2d coordinates,
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Extra stock routines for making and manipulating cubes with 2d coordinates,
 to mimic ocean grid data.
 
 """
@@ -19,8 +17,7 @@ from iris.cube import Cube
 
 
 def expand_1d_x_and_y_bounds_to_2d_xy(x_bounds_1d, y_bounds_1d):
-    """
-    Convert bounds for separate 1-D X and Y coords into bounds for the
+    """Convert bounds for separate 1-D X and Y coords into bounds for the
     equivalent 2D coordinates.
 
     The output arrays have 4 points per cell, for 4 'corners' of a gridcell,
@@ -78,8 +75,7 @@ def expand_1d_x_and_y_bounds_to_2d_xy(x_bounds_1d, y_bounds_1d):
 
 
 def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
-    """
-    Calculate a pair of 2d X+Y coordinates from 1d ones, in a "meshgrid" style.
+    """Calculate a pair of 2d X+Y coordinates from 1d ones, in a "meshgrid" style.
     If the inputs are bounded, the outputs have 4 points per bounds in the
     usual way, i.e. points 0,1,2,3 are the gridcell corners anticlockwise from
     the bottom left.
@@ -88,8 +84,7 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     for coord in (x_coord_1d, y_coord_1d):
         if coord.ndim != 1:
             msg = (
-                "Input coords must be one-dimensional. "
-                'Coordinate "{}" has shape {}.'
+                "Input coords must be one-dimensional. " 'Coordinate "{}" has shape {}.'
             )
             raise ValueError(msg.format(coord.name(), coord.shape))
 
@@ -115,10 +110,9 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
 
 
 def sample_2d_latlons(regional=False, rotated=False, transformed=False):
-    """
-    Construct small 2d cubes with 2d X and Y coordinates.
+    """Construct small 2d cubes with 2d X and Y coordinates.
 
-    This makes cubes with 'expanded' coordinates (4 bounds per cell), analagous
+    This makes cubes with 'expanded' coordinates (4 bounds per cell), analogous
     to ORCA data.
     The coordinates are always geographical, so either it has a coord system
     or they are "true" lats + lons.
@@ -296,9 +290,8 @@ def sample_2d_latlons(regional=False, rotated=False, transformed=False):
     return cube
 
 
-def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
-    """
-    Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
+def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False, upper=True):
+    """Meddle with the XY grid bounds of a 2D cube to make the grid discontiguous.
 
     Changes the points and bounds of a single gridcell, so that it becomes
     discontinuous with an adjacent gridcell : either the one to its right, or
@@ -313,8 +306,7 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
     y_coord = cube.coord(axis="y")
     assert x_coord.shape == y_coord.shape
     assert (
-        coord.bounds.ndim == 3 and coord.shape[-1] == 4
-        for coord in (x_coord, y_coord)
+        coord.bounds.ndim == 3 and coord.shape[-1] == 4 for coord in (x_coord, y_coord)
     )
 
     # For both X and Y coord, move points + bounds to create a discontinuity.
@@ -325,16 +317,22 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
         if not in_y:
             # Make a discontinuity "at" (iy, ix), by moving the right-hand edge
             # of the cell to the midpoint of the existing left+right bounds.
-            new_bds_br = 0.5 * (bds_bl + bds_br)
-            new_bds_tr = 0.5 * (bds_tl + bds_tr)
-            bds_br, bds_tr = new_bds_br, new_bds_tr
+            new_bds_b = 0.5 * (bds_bl + bds_br)
+            new_bds_t = 0.5 * (bds_tl + bds_tr)
+            if upper:
+                bds_br, bds_tr = new_bds_b, new_bds_t
+            else:
+                bds_bl, bds_tl = new_bds_b, new_bds_t
         else:
             # Same but in the 'grid y direction' :
             # Make a discontinuity "at" (iy, ix), by moving the **top** edge of
             # the cell to the midpoint of the existing **top+bottom** bounds.
-            new_bds_tl = 0.5 * (bds_bl + bds_tl)
-            new_bds_tr = 0.5 * (bds_br + bds_tr)
-            bds_tl, bds_tr = new_bds_tl, new_bds_tr
+            new_bds_l = 0.5 * (bds_bl + bds_tl)
+            new_bds_r = 0.5 * (bds_br + bds_tr)
+            if upper:
+                bds_tl, bds_tr = new_bds_l, new_bds_r
+            else:
+                bds_bl, bds_br = new_bds_l, new_bds_r
 
         # Write in the new bounds (all 4 corners).
         bds[at_iy, at_ix] = [bds_bl, bds_br, bds_tr, bds_tl]
@@ -355,7 +353,16 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False):
             msg = "The coordinate {!r} doesn't span a data dimension."
             raise ValueError(msg.format(coord.name()))
 
-        masked_data = ma.masked_array(cube.data)
-        masked_data[at_iy, at_ix] = ma.masked
+    masked_data = ma.masked_array(cube.data)
+
+    # Mask all points which would be found discontiguous.
+    # Note that find_discontiguities finds all instances where a cell is
+    # discontiguous with a neighbouring cell to its *right* or *above*
+    # that cell.
+    masked_data[at_iy, at_ix] = ma.masked
+    if in_y or not upper:
+        masked_data[at_iy, at_ix - 1] = ma.masked
+    if not in_y or not upper:
+        masked_data[at_iy - 1, at_ix] = ma.masked
 
     cube.data = masked_data

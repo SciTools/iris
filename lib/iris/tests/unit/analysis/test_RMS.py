@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.RMS` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -89,9 +88,7 @@ class Test_lazy_aggregate(tests.IrisTest):
 
     def test_2d(self):
         # 2-dimensional input.
-        data = as_lazy_data(
-            np.array([[5, 2, 6, 4], [12, 4, 10, 8]], dtype=np.float64)
-        )
+        data = as_lazy_data(np.array([[5, 2, 6, 4], [12, 4, 10, 8]], dtype=np.float64))
         expected_rms = np.array([4.5, 9.0], dtype=np.float64)
         rms = RMS.lazy_aggregate(data, 1)
         self.assertArrayAlmostEqual(rms, expected_rms)
@@ -101,20 +98,16 @@ class Test_lazy_aggregate(tests.IrisTest):
         data = as_lazy_data(np.array([4, 7, 10, 8], dtype=np.float64))
         weights = np.array([1, 4, 3, 2], dtype=np.float64)
         expected_rms = 8.0
-        # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegex(TypeError, "unexpected keyword argument"):
-            rms = RMS.lazy_aggregate(data, 0, weights=weights)
-            self.assertAlmostEqual(rms, expected_rms)
+        rms = RMS.lazy_aggregate(data, 0, weights=weights)
+        self.assertAlmostEqual(rms, expected_rms)
 
     def test_1d_lazy_weighted(self):
         # 1-dimensional input with lazy weights.
         data = as_lazy_data(np.array([4, 7, 10, 8], dtype=np.float64))
         weights = as_lazy_data(np.array([1, 4, 3, 2], dtype=np.float64))
         expected_rms = 8.0
-        # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegex(TypeError, "unexpected keyword argument"):
-            rms = RMS.lazy_aggregate(data, 0, weights=weights)
-            self.assertAlmostEqual(rms, expected_rms)
+        rms = RMS.lazy_aggregate(data, 0, weights=weights)
+        self.assertAlmostEqual(rms, expected_rms)
 
     def test_2d_weighted(self):
         # 2-dimensional input with weights.
@@ -123,20 +116,16 @@ class Test_lazy_aggregate(tests.IrisTest):
         )
         weights = np.array([[1, 4, 3, 2], [2, 1, 1.5, 0.5]], dtype=np.float64)
         expected_rms = np.array([8.0, 16.0], dtype=np.float64)
-        # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegex(TypeError, "unexpected keyword argument"):
-            rms = RMS.lazy_aggregate(data, 1, weights=weights)
-            self.assertArrayAlmostEqual(rms, expected_rms)
+        rms = RMS.lazy_aggregate(data, 1, weights=weights)
+        self.assertArrayAlmostEqual(rms, expected_rms)
 
     def test_unit_weighted(self):
         # Unit weights should be the same as no weights.
         data = as_lazy_data(np.array([5, 2, 6, 4], dtype=np.float64))
         weights = np.ones_like(data)
         expected_rms = 4.5
-        # https://github.com/dask/dask/issues/3846.
-        with self.assertRaisesRegex(TypeError, "unexpected keyword argument"):
-            rms = RMS.lazy_aggregate(data, 0, weights=weights)
-            self.assertAlmostEqual(rms, expected_rms)
+        rms = RMS.lazy_aggregate(data, 0, weights=weights)
+        self.assertAlmostEqual(rms, expected_rms)
 
     def test_masked(self):
         # Masked entries should be completely ignored.
@@ -152,9 +141,6 @@ class Test_lazy_aggregate(tests.IrisTest):
         self.assertAlmostEqual(rms, expected_rms)
 
     def test_masked_weighted(self):
-        # Weights should work properly with masked arrays, but currently don't
-        # (see https://github.com/dask/dask/issues/3846).
-        # For now, masked weights are simply not supported.
         data = as_lazy_data(
             ma.array(
                 [4, 7, 18, 10, 11, 8],
@@ -164,9 +150,8 @@ class Test_lazy_aggregate(tests.IrisTest):
         )
         weights = np.array([1, 4, 5, 3, 8, 2])
         expected_rms = 8.0
-        with self.assertRaisesRegex(TypeError, "unexpected keyword argument"):
-            rms = RMS.lazy_aggregate(data, 0, weights=weights)
-            self.assertAlmostEqual(rms, expected_rms)
+        rms = RMS.lazy_aggregate(data, 0, weights=weights)
+        self.assertAlmostEqual(rms, expected_rms)
 
 
 class Test_name(tests.IrisTest):

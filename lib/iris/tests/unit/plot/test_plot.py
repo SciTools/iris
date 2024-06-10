@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot.plot` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -62,17 +61,14 @@ class TestStringCoordPlot(TestGraphicStringCoord):
 
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        iplt.plot(
-            self.lat_lon_cube.coord("longitude"), self.lat_lon_cube, axes=ax
-        )
+        iplt.plot(self.lat_lon_cube.coord("longitude"), self.lat_lon_cube, axes=ax)
         plt.close(fig)
 
 
 @tests.skip_plot
 class TestTrajectoryWrap(tests.IrisTest):
-    """
-    Test that a line plot of geographic coordinates wraps around the end of the
-    coordinates rather than plotting accross the map.
+    """Test that a line plot of geographic coordinates wraps around the end of the
+    coordinates rather than plotting across the map.
 
     """
 
@@ -85,18 +81,13 @@ class TestTrajectoryWrap(tests.IrisTest):
         if cs is None:
             cs = self.geog_cs
         return (
-            coords.AuxCoord(
-                lons, "longitude", units="degrees", coord_system=cs
-            ),
-            coords.AuxCoord(
-                lats, "latitude", units="degrees", coord_system=cs
-            ),
+            coords.AuxCoord(lons, "longitude", units="degrees", coord_system=cs),
+            coords.AuxCoord(lats, "latitude", units="degrees", coord_system=cs),
         )
 
     def assertPathsEqual(self, expected, actual):
-        """
-        Assert that the given paths are equal once STOP vertices have been
-        removed
+        """Assert that the given paths are equal once STOP vertices have been
+        removed.
 
         """
         expected = expected.cleaned()
@@ -108,12 +99,10 @@ class TestTrajectoryWrap(tests.IrisTest):
         self.assertArrayEqual(expected.codes, actual.codes)
 
     def check_paths(self, expected_path, expected_path_crs, lines, axes):
-        """
-        Check that the paths in `lines` match the given expected paths when
-        plotted on the given geoaxes
+        """Check that the paths in `lines` match the given expected paths when
+        plotted on the given geoaxes.
 
         """
-
         self.assertEqual(
             1, len(lines), "Expected a single line, got {}".format(len(lines))
         )

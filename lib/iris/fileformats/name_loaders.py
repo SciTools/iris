@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """NAME file format loading functions."""
 
 import collections
@@ -19,6 +18,7 @@ from iris.coords import AuxCoord, CellMethod, DimCoord
 import iris.cube
 from iris.exceptions import TranslationError
 import iris.util
+from iris.warnings import IrisLoadWarning
 
 EARTH_RADIUS = 6371229.0
 NAMEIII_DATETIME_FORMAT = "%d/%m/%Y  %H:%M %Z"
@@ -27,9 +27,7 @@ NAMEII_FIELD_DATETIME_FORMAT = "%H%M%Z %d/%m/%Y"
 NAMEII_TIMESERIES_DATETIME_FORMAT = "%d/%m/%Y  %H:%M:%S"
 
 
-NAMECoord = collections.namedtuple(
-    "NAMECoord", ["name", "dimension", "values"]
-)
+NAMECoord = collections.namedtuple("NAMECoord", ["name", "dimension", "values"])
 
 
 def _split_name_and_units(name):
@@ -48,17 +46,19 @@ def _split_name_and_units(name):
 
 
 def read_header(file_handle):
-    """
+    """Return a dictionary containing the header information.
+
     Return a dictionary containing the header information extracted
     from the the provided NAME file object.
 
-    Args:
-
-    * file_handle (file-like object):
+    Parameters
+    ----------
+    file_handle : file-like object
         A file-like object from which to read the header information.
 
-    Returns:
-        A dictionary containing the extracted header information.
+    Returns
+    -------
+    A dictionary containing the extracted header information.
 
     """
     header = {}
@@ -99,7 +99,8 @@ def read_header(file_handle):
 
 
 def _read_data_arrays(file_handle, n_arrays, shape):
-    """
+    """Return a list of NumPy arrays containing the data extracted.
+
     Return a list of NumPy arrays containing the data extracted from
     the provided file object. The number and shape of the arrays
     must be specified.
@@ -129,33 +130,31 @@ def _read_data_arrays(file_handle, n_arrays, shape):
 def _build_lat_lon_for_NAME_field(
     header, dimindex, x_or_y, coord_names=["longitude", "latitude"]
 ):
-    """
+    """Return regular latitude and longitude coordinates.
+
     Return regular latitude and longitude coordinates extracted from
     the provided header dictionary.
-    """
 
+    """
     if x_or_y == "X":
         start = header["X grid origin"]
         step = header["X grid resolution"]
         count = header["X grid size"]
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(
-            name=coord_names[0], dimension=dimindex, values=pts
-        )
+        lat_lon = NAMECoord(name=coord_names[0], dimension=dimindex, values=pts)
     else:
         start = header["Y grid origin"]
         step = header["Y grid resolution"]
         count = header["Y grid size"]
         pts = start + np.arange(count, dtype=np.float64) * step
-        lat_lon = NAMECoord(
-            name=coord_names[1], dimension=dimindex, values=pts
-        )
+        lat_lon = NAMECoord(name=coord_names[1], dimension=dimindex, values=pts)
 
     return lat_lon
 
 
 def _build_lat_lon_for_NAME_timeseries(column_headings):
-    """
+    """Return regular latitude and longitude coordinates.
+
     Return regular latitude and longitude coordinates extracted from
     the provided column_headings dictionary.
 
@@ -188,26 +187,21 @@ def _build_lat_lon_for_NAME_timeseries(column_headings):
                 new_headings.append(heading)
         column_headings[key] = new_headings
 
-    lon = NAMECoord(
-        name="longitude", dimension=None, values=column_headings["X"]
-    )
-    lat = NAMECoord(
-        name="latitude", dimension=None, values=column_headings["Y"]
-    )
+    lon = NAMECoord(name="longitude", dimension=None, values=column_headings["X"])
+    lat = NAMECoord(name="latitude", dimension=None, values=column_headings["Y"])
 
     return lat, lon
 
 
 def _calc_integration_period(time_avgs):
-    """
+    """Calculate averaging/integration time periods.
+
     Return a list of datetime.timedelta objects determined from the provided
     list of averaging/integration period column headings.
 
     """
     integration_periods = []
-    pattern = re.compile(
-        r"\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*"
-    )
+    pattern = re.compile(r"\s*(\d{1,2}day)?\s*(\d{1,2}hr)?\s*(\d{1,2}min)?\s*(\w*)\s*")
     for time_str in time_avgs:
         days = 0
         hours = 0
@@ -229,8 +223,7 @@ def _calc_integration_period(time_avgs):
 
 
 def _parse_units(units):
-    """
-    Return a known :class:`cf_units.Unit` given a NAME unit
+    """Return a known :class:`cf_units.Unit` given a NAME unit.
 
     .. note::
 
@@ -240,16 +233,16 @@ def _parse_units(units):
         * Units where the characters used are non-standard (i.e. 'mc' for
           micro instead of 'u')
 
-    Args:
-
-    * units (string):
+    Parameters
+    ----------
+    units : str
         NAME units.
 
-    Returns:
-        An instance of :class:`cf_units.Unit`.
+    Returns
+    -------
+    An instance of :class:`cf_units.Unit`.
 
     """
-
     unit_mapper = {
         "Risks/m3": "1",  # Used for Bluetongue
         "TCID50s/m3": "1",  # Used for Foot and Mouth
@@ -273,32 +266,32 @@ def _parse_units(units):
     try:
         units = cf_units.Unit(units)
     except ValueError:
-        warnings.warn("Unknown units: {!r}".format(units))
+        warnings.warn("Unknown units: {!r}".format(units), category=IrisLoadWarning)
         units = cf_units.Unit(None)
 
     return units
 
 
 def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
-    """
-    Parser for the z component of field headings.
+    """Parser for the z component of field headings.
 
     This parse is specifically for handling the z component of NAME field
     headings, which include height above ground level, height above sea level
     and flight level etc.  This function returns an iris coordinate
     representing this field heading.
 
-    Args:
-
-    * z_coord (list):
+    Parameters
+    ----------
+    z_coord : list
         A field heading, specifically the z component.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.coords.AuxCoord`
         An instance of :class:`iris.coords.AuxCoord` representing the
         interpretation of the supplied field heading.
 
     """
-
     # NAMEII - integer/float support.
     # Match against height agl, asl and Pa.
     pattern = re.compile(
@@ -403,10 +396,9 @@ def _cf_height_from_name(z_coord, lower_bound=None, upper_bound=None):
     return coord
 
 
-def _generate_cubes(
-    header, column_headings, coords, data_arrays, cell_methods=None
-):
-    """
+def _generate_cubes(header, column_headings, coords, data_arrays, cell_methods=None):
+    """Generate NAME cubes.
+
     Yield :class:`iris.cube.Cube` instances given
     the headers, column headings, coords and data_arrays extracted
     from a NAME file.
@@ -422,9 +414,7 @@ def _generate_cubes(
         cube = iris.cube.Cube(data_array)
 
         # Determine the name and units.
-        name = "{} {}".format(
-            field_headings["Species"], field_headings["Quantity"]
-        )
+        name = "{} {}".format(field_headings["Species"], field_headings["Quantity"])
         name = name.upper().replace(" ", "_")
         cube.rename(name)
 
@@ -437,9 +427,7 @@ def _generate_cubes(
         # level, time etc.)
         if "Z" in field_headings:
             (upper_bound,) = [
-                field_headings["... to [Z]"]
-                if "... to [Z]" in field_headings
-                else None
+                field_headings["... to [Z]"] if "... to [Z]" in field_headings else None
             ]
             (lower_bound,) = [
                 field_headings["... from [Z]"]
@@ -456,7 +444,7 @@ def _generate_cubes(
         # Define the time unit and use it to serialise the datetime for
         # the time coordinate.
         time_unit = cf_units.Unit(
-            "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
+            "hours since epoch", calendar=cf_units.CALENDAR_STANDARD
         )
 
         # Build time, height, latitude and longitude coordinates.
@@ -510,10 +498,7 @@ def _generate_cubes(
                     )
                 if coord.name == "height" or coord.name == "altitude":
                     icoord.long_name = long_name
-                if (
-                    coord.name == "time"
-                    and "Av or Int period" in field_headings
-                ):
+                if coord.name == "time" and "Av or Int period" in field_headings:
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds.astype(float)
@@ -527,10 +512,7 @@ def _generate_cubes(
                     coord_system=coord_sys,
                     units=coord_units,
                 )
-                if (
-                    coord.name == "time"
-                    and "Av or Int period" in field_headings
-                ):
+                if coord.name == "time" and "Av or Int period" in field_headings:
                     dt = coord.values - field_headings["Av or Int period"]
                     bnds = time_unit.date2num(np.vstack((dt, coord.values)).T)
                     icoord.bounds = bnds[i, :].astype(float)
@@ -571,28 +553,33 @@ def _generate_cubes(
                 cube.attributes[key] = value
 
         if cell_methods is not None:
-            cube.add_cell_method(cell_methods[i])
+            cell_method = cell_methods[i]
+            if cell_method is not None:
+                cube.add_cell_method(cell_method)
 
         yield cube
 
 
 def _build_cell_methods(av_or_ints, coord):
-    """
+    """Create cell-methods.
+
     Return a list of :class:`iris.coords.CellMethod` instances
     based on the provided list of column heading entries and the
     associated coordinate. If a given entry does not correspond to a cell
     method (e.g. "No time averaging"), a value of None is inserted.
 
-    Args:
-
-    * av_or_ints (iterable of strings):
-        An iterable of strings containing the colummn heading entries
+    Parameters
+    ----------
+    av_or_ints : iterable of str
+        An iterable of strings containing the column heading entries
         to be parsed.
-    * coord (string or :class:`iris.coords.Coord`):
+    coord : str or :class:`iris.coords.Coord`
         The coordinate name (or :class:`iris.coords.Coord` instance)
         to which the column heading entries refer.
 
-    Returns:
+    Returns
+    -------
+    list of :class:`iris.coords.CellMethod` or None.
         A list that is the same length as `av_or_ints` containing
         :class:`iris.coords.CellMethod` instances or values of None.
 
@@ -609,23 +596,25 @@ def _build_cell_methods(av_or_ints, coord):
         else:
             cell_method = None
             msg = "Unknown {} statistic: {!r}. Unable to create cell method."
-            warnings.warn(msg.format(coord, av_or_int))
-        cell_methods.append(cell_method)
+            warnings.warn(msg.format(coord, av_or_int), category=IrisLoadWarning)
+        cell_methods.append(cell_method)  # NOTE: this can be a None
     return cell_methods
 
 
 def load_NAMEIII_field(filename):
-    """
+    """Load NAME III cubes.
+
     Load a NAME III grid output file returning a
     generator of :class:`iris.cube.Cube` instances.
 
-    Args:
-
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
     # Loading a file gives a generator of lines which can be progressed using
@@ -693,17 +682,11 @@ def load_NAMEIII_field(filename):
             values=np.array(column_headings["Time"]),
         )
 
-        cell_methods = _build_cell_methods(
-            column_headings["Time Av or Int"], tdim.name
-        )
+        cell_methods = _build_cell_methods(column_headings["Time Av or Int"], tdim.name)
 
         # Build regular latitude and longitude coordinates.
-        lon = _build_lat_lon_for_NAME_field(
-            header, 1, "X", coord_names=coord_names
-        )
-        lat = _build_lat_lon_for_NAME_field(
-            header, 0, "Y", coord_names=coord_names
-        )
+        lon = _build_lat_lon_for_NAME_field(header, 1, "X", coord_names=coord_names)
+        lat = _build_lat_lon_for_NAME_field(header, 0, "Y", coord_names=coord_names)
 
         coords = [lon, lat, tdim]
 
@@ -712,23 +695,23 @@ def load_NAMEIII_field(filename):
         shape = (header["Y grid size"], header["X grid size"])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(
-        header, column_headings, coords, data_arrays, cell_methods
-    )
+    return _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
 
 
 def load_NAMEII_field(filename):
-    """
-    Load a NAME II grid output file returning a
-    generator of :class:`iris.cube.Cube` instances.
+    """Load a NAME II grid output file.
 
-    Args:
+    Load a NAME II grid output file returning a generator of
+    :class:`iris.cube.Cube` instances.
 
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
     with open(filename, "r") as file_handle:
@@ -777,9 +760,7 @@ def load_NAMEII_field(filename):
             if matches:
                 if len(matches.group(1)) > 0:
                     hours = float(matches.group(1))
-            column_headings["Av or Int period"].append(
-                datetime.timedelta(hours=hours)
-            )
+            column_headings["Av or Int period"].append(datetime.timedelta(hours=hours))
 
         # Build a time coordinate.
         tdim = NAMECoord(
@@ -788,9 +769,7 @@ def load_NAMEII_field(filename):
             values=np.array(column_headings["Time"]),
         )
 
-        cell_methods = _build_cell_methods(
-            column_headings["Time Av or Int"], tdim.name
-        )
+        cell_methods = _build_cell_methods(column_headings["Time Av or Int"], tdim.name)
 
         # Build regular latitude and longitude coordinates.
         lon = _build_lat_lon_for_NAME_field(header, 1, "X")
@@ -806,23 +785,23 @@ def load_NAMEII_field(filename):
         shape = (header["Y grid size"], header["X grid size"])
         data_arrays = _read_data_arrays(file_handle, n_arrays, shape)
 
-    return _generate_cubes(
-        header, column_headings, coords, data_arrays, cell_methods
-    )
+    return _generate_cubes(header, column_headings, coords, data_arrays, cell_methods)
 
 
 def load_NAMEIII_timeseries(filename):
-    """
-    Load a NAME III time series file returning a
-    generator of :class:`iris.cube.Cube` instances.
+    """Load a NAME III time series file.
 
-    Args:
+    Load a NAME III time series file returning a generator of
+    :class:`iris.cube.Cube` instances.
 
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
     with open(filename, "r") as file_handle:
@@ -901,17 +880,19 @@ def load_NAMEIII_timeseries(filename):
 
 
 def load_NAMEII_timeseries(filename):
-    """
-    Load a NAME II Time Series file returning a
-    generator of :class:`iris.cube.Cube` instances.
+    """Load a NAME III time series file.
 
-    Args:
+    Load a NAME II Time Series file returning a generator of
+    :class:`iris.cube.Cube` instances.
 
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
     with open(filename, "r") as file_handle:
@@ -955,9 +936,7 @@ def load_NAMEII_timeseries(filename):
 
             # Time is stored in the first two columns.
             t = vals[0].strip() + " " + vals[1].strip()
-            dt = datetime.datetime.strptime(
-                t, NAMEII_TIMESERIES_DATETIME_FORMAT
-            )
+            dt = datetime.datetime.strptime(t, NAMEII_TIMESERIES_DATETIME_FORMAT)
             time_list.append(dt)
 
             # Populate the data arrays.
@@ -974,25 +953,25 @@ def load_NAMEII_timeseries(filename):
 
 
 def load_NAMEIII_version2(filename):
-    """
-    Load a NAME III version 2 file returning a
-    generator of :class:`iris.cube.Cube` instances.
+    """Load a NAME III version 2 file.
 
-    Args:
+    Load a NAME III version 2 file returning a generator of
+    :class:`iris.cube.Cube` instances.
 
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
-
     # loading a file gives a generator of lines which can be progressed
     # using the next() method. This will come in handy as we wish to
     # progress through the file line by line.
     with open(filename, "r") as file_handle:
-
         # define a dictionary to hold the header metadata about this file
         header = read_header(file_handle)
 
@@ -1003,7 +982,6 @@ def load_NAMEIII_version2(filename):
         column_headings = {}
         datacol1 = header["Number of preliminary cols"]
         for line in file_handle:
-
             data = [col.strip() for col in line.split(",")][:-1]
 
             # If first column is not zero we have reached the end
@@ -1079,16 +1057,14 @@ def load_NAMEIII_version2(filename):
             elif zunits == "Pa":
                 z_name = "air_pressure"
             else:
-                ValueError("Vertical coordinate unkown")
+                ValueError("Vertical coordinate unknown")
             zindex = data.index(zgrid[0])
             dim_coords.append("Z")
 
         # Make a list of data lists to hold the data
         # for each column.(aimed at T-Z data)
         data_lists = [[] for i in range(header["Number of field cols"])]
-        coord_lists = [
-            [] for i in range(header["Number of preliminary cols"] - 1)
-        ]
+        coord_lists = [[] for i in range(header["Number of preliminary cols"] - 1)]
 
         # Iterate over the remaining lines which represent the data in a
         # column form.
@@ -1198,22 +1174,22 @@ def load_NAMEIII_version2(filename):
 
 
 def load_NAMEIII_trajectory(filename):
-    """
-    Load a NAME III trajectory file returning a
-    generator of :class:`iris.cube.Cube` instances.
+    """Load a NAME III trajectory file.
 
-    Args:
+    Load a NAME III trajectory file returning a generator of
+    :class:`iris.cube.Cube` instances.
 
-    * filename (string):
+    Parameters
+    ----------
+    filename : str
         Name of file to load.
 
-    Returns:
-        A generator :class:`iris.cube.Cube` instances.
+    Returns
+    -------
+    A generator :class:`iris.cube.Cube` instances.
 
     """
-    time_unit = cf_units.Unit(
-        "hours since epoch", calendar=cf_units.CALENDAR_GREGORIAN
-    )
+    time_unit = cf_units.Unit("hours since epoch", calendar=cf_units.CALENDAR_STANDARD)
 
     with open(filename, "r") as infile:
         header = read_header(infile)

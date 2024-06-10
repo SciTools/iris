@@ -2,7 +2,6 @@
 name: "\U0001F4F0 Custom Issue"
 about: Submit a generic issue to help us improve Iris
 title: ''
-labels: 'New: Issue'
 assignees: ''
 
 ---

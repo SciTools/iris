@@ -1,35 +1,75 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Routines for generating synthetic NetCDF files from template headers."""
 
 from pathlib import Path
 from string import Template
 import subprocess
+from typing import Optional
 
-import netCDF4
+import dask
+from dask import array as da
 import numpy as np
 
+from iris.fileformats.netcdf import _thread_safe_nc
+from iris.tests import env_bin_path
 
-def _file_from_cdl_template(
-    temp_file_dir, dataset_name, dataset_type, template_subs
-):
+NCGEN_PATHSTR = str(env_bin_path("ncgen"))
+
+
+def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str):
+    """Generate a test netcdf file from cdl.
+
+    Source is CDL in either a string or a file.
+    If given a string, will either save a CDL file, or pass text directly.
+    A netcdf output file is always created, at the given path.
+
+    Parameters
+    ----------
+    cdl_str : str or None
+        String containing a CDL description of a netcdf file.
+        If None, 'cdl_path' must be an existing file.
+    cdl_path : str or None
+        Path of temporary text file where cdl_str is written.
+        If None, 'cdl_str' must be given, and is piped direct to ncgen.
+    nc_path : str
+        Path of temporary netcdf file where converted result is put.
+
+    Notes
+    -----
+    For legacy reasons, the path args are 'str's not 'Path's.
+
+    """
+    if cdl_str and cdl_path:
+        with open(cdl_path, "w") as f_out:
+            f_out.write(cdl_str)
+    if cdl_path:
+        # Create netcdf from stored CDL file.
+        call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path, cdl_path]
+        call_kwargs = {}
+    else:
+        # No CDL file : pipe 'cdl_str' directly into the ncgen program.
+        if not cdl_str:
+            raise ValueError("Must provide either 'cdl_str' or 'cdl_path'.")
+        call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path]
+        call_kwargs = dict(input=cdl_str, encoding="ascii")
+
+    subprocess.run(call_args, check=True, **call_kwargs)
+
+
+def _file_from_cdl_template(temp_file_dir, dataset_name, dataset_type, template_subs):
     """Shared template filling behaviour.
 
     Substitutes placeholders in the appropriate CDL template, saves to a
     NetCDF file.
 
     """
-    nc_write_path = (
-        Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
-    )
+    nc_write_path = Path(temp_file_dir).joinpath(dataset_name).with_suffix(".nc")
     # Fetch the specified CDL template type.
     templates_dir = Path(__file__).parent / "file_headers"
-    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(
-        ".cdl"
-    )
+    template_filepath = templates_dir.joinpath(dataset_type).with_suffix(".cdl")
     # Substitute placeholders.
     with open(template_filepath) as file:
         template_string = Template(file.read())
@@ -37,12 +77,7 @@ def _file_from_cdl_template(
 
     # Spawn an "ncgen" command to create an actual NetCDF file from the
     # CDL string.
-    subprocess.run(
-        ["ncgen", "-o" + str(nc_write_path)],
-        input=cdl,
-        encoding="ascii",
-        check=True,
-    )
+    ncgen_from_cdl(cdl_str=cdl, cdl_path=None, nc_path=nc_write_path)
 
     return nc_write_path
 
@@ -54,11 +89,10 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
     dimension size, 'dimension coordinates' and a possible unlimited dimension.
 
     """
-
-    ds = netCDF4.Dataset(nc_path, "r+")
+    ds = _thread_safe_nc.DatasetWrapper(nc_path, "r+")
 
     unlimited_dim_names = [
-        dim for dim in ds.dimensions if ds.dimensions[dim].size == 0
+        dim for dim in ds.dimensions if ds.dimensions[dim].isunlimited()
     ]
     # Data addition dependent on this assumption:
     assert len(unlimited_dim_names) < 2
@@ -79,11 +113,13 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             # so it can be a dim-coord.
             data_size = np.prod(shape)
             data = np.arange(1, data_size + 1, dtype=var.dtype).reshape(shape)
+            var[:] = data
         else:
             # Fill with a plain value.  But avoid zeros, so we can simulate
             # valid ugrid connectivities even when start_index=1.
-            data = np.ones(shape, dtype=var.dtype)  # Do not use zero
-        var[:] = data
+            with dask.config.set({"array.chunk-size": "2048MiB"}):
+                data = da.ones(shape, dtype=var.dtype)  # Do not use zero
+            da.store(data, var)
 
     ds.close()
 

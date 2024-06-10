@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the constrained cube loading mechanism.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the constrained cube loading mechanism."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -45,9 +41,7 @@ class TestSimple(tests.IrisTest):
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 2 * 6)
 
-        constraint = iris.Constraint(
-            model_level_number=lambda c: (c > 30) | (c <= 3)
-        )
+        constraint = iris.Constraint(model_level_number=lambda c: (c > 30) | (c <= 3))
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 43 * 6)
 
@@ -66,6 +60,27 @@ class TestSimple(tests.IrisTest):
         constraint = iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE)
         sub_list = self.slices.extract(constraint)
         self.assertEqual(len(sub_list), 70 * 6)
+
+    def test_coord_availability(self):
+        # "model_level_number" coordinate available
+        constraint = iris.Constraint(model_level_number=lambda x: True)
+        result = self.slices.extract(constraint)
+        self.assertTrue(result)
+
+        # "wibble" coordinate is not available
+        constraint = iris.Constraint(wibble=lambda x: False)
+        result = self.slices.extract(constraint)
+        self.assertFalse(result)
+
+        # "wibble" coordinate is not available
+        constraint = iris.Constraint(wibble=lambda x: True)
+        result = self.slices.extract(constraint)
+        self.assertFalse(result)
+
+        # "lambda x: False" always (confusingly) throws away the cube
+        constraint = iris.Constraint(model_level_number=lambda x: False)
+        result = self.slices.extract(constraint)
+        self.assertFalse(result)
 
     def test_mismatched_type(self):
         constraint = iris.Constraint(model_level_number="aardvark")
@@ -91,16 +106,11 @@ class TestSimple(tests.IrisTest):
         self.assertEqual(len(sub_list), 0)
 
 
-class TestMixin:
-    """
-    Mix-in class for attributes & utilities common to the "normal" and "strict" test cases.
-
-    """
+class ConstraintMixin:
+    """Mix-in class for attributes & utilities common to the "normal" and "strict" test cases."""
 
     def setUp(self):
-        self.dec_path = tests.get_data_path(
-            ["PP", "globClim1", "dec_subset.pp"]
-        )
+        self.dec_path = tests.get_data_path(["PP", "globClim1", "dec_subset.pp"])
         self.theta_path = tests.get_data_path(["PP", "globClim1", "theta.pp"])
 
         self.humidity = iris.Constraint(SN_SPECIFIC_HUMIDITY)
@@ -120,12 +130,8 @@ class TestMixin:
         )
 
         # bound based coord constraint
-        self.level_height_of_model_level_number_10 = iris.Constraint(
-            level_height=1900
-        )
-        self.model_level_number_10_22 = iris.Constraint(
-            model_level_number=[10, 22]
-        )
+        self.level_height_of_model_level_number_10 = iris.Constraint(level_height=1900)
+        self.model_level_number_10_22 = iris.Constraint(model_level_number=[10, 22])
 
         # Invalid constraints
         self.pressure_950 = iris.Constraint(model_level_number=950)
@@ -134,7 +140,7 @@ class TestMixin:
         self.lat_gt_45 = iris.Constraint(latitude=lambda c: c > 45)
 
 
-class RelaxedConstraintMixin(TestMixin):
+class RelaxedConstraintMixin(ConstraintMixin):
     @staticmethod
     def fixup_sigma_to_be_aux(cubes):
         # XXX Fix the cubes such that the sigma coordinate is always an AuxCoord. Pending gh issue #18
@@ -190,9 +196,7 @@ class RelaxedConstraintMixin(TestMixin):
 
         cubes = self.load_match(
             self.dec_path,
-            iris.Constraint(
-                SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10
-            ),
+            iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10),
         )
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, "theta_10")
@@ -257,9 +261,7 @@ class StrictConstraintMixin(RelaxedConstraintMixin):
             self.load_match(self.theta_path, self.pressure_950)
 
     def test_dual_atomic_constraint(self):
-        cubes = self.load_match(
-            self.dec_path, [self.theta, self.level_10 & self.theta]
-        )
+        cubes = self.load_match(self.dec_path, [self.theta, self.level_10 & self.theta])
         self.fixup_sigma_to_be_aux(cubes)
         self.assertCML(cubes, "theta_and_theta_10")
 
@@ -296,11 +298,11 @@ class TestCubeListStrictConstraint(StrictConstraintMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract__names(TestMixin, tests.IrisTest):
+class TestCubeExtract__names(ConstraintMixin, tests.IrisTest):
     def setUp(self):
         fname = iris.sample_data_path("atlantic_profiles.nc")
         self.cubes = iris.load(fname)
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
@@ -353,11 +355,11 @@ class TestCubeExtract__names(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
+class TestCubeExtract__name_constraint(ConstraintMixin, tests.IrisTest):
     def setUp(self):
         fname = iris.sample_data_path("atlantic_profiles.nc")
         self.cubes = iris.load(fname)
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
@@ -393,9 +395,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
     def test_standard_name__None(self):
         cube = self.cubes[self.index]
         cube.standard_name = None
-        constraint = NameConstraint(
-            standard_name=None, long_name=self.long_name
-        )
+        constraint = NameConstraint(standard_name=None, long_name=self.long_name)
         result = self.cubes.extract_cube(constraint)
         self.assertIsNotNone(result)
         self.assertIsNone(result.standard_name)
@@ -415,8 +415,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
 
         # Match - callable.
         kwargs = dict(
-            long_name=lambda item: item is not None
-            and item.startswith("air pot")
+            long_name=lambda item: item is not None and item.startswith("air pot")
         )
         constraint = NameConstraint(**kwargs)
         result = self.cubes.extract_cube(constraint)
@@ -426,9 +425,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
     def test_long_name__None(self):
         cube = self.cubes[self.index]
         cube.long_name = None
-        constraint = NameConstraint(
-            standard_name=self.standard_name, long_name=None
-        )
+        constraint = NameConstraint(standard_name=self.standard_name, long_name=None)
         result = self.cubes.extract_cube(constraint)
         self.assertIsNotNone(result)
         self.assertEqual(result.standard_name, self.standard_name)
@@ -456,9 +453,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
     def test_var_name__None(self):
         cube = self.cubes[self.index]
         cube.var_name = None
-        constraint = NameConstraint(
-            standard_name=self.standard_name, var_name=None
-        )
+        constraint = NameConstraint(standard_name=self.standard_name, var_name=None)
         result = self.cubes.extract_cube(constraint)
         self.assertIsNotNone(result)
         self.assertEqual(result.standard_name, self.standard_name)
@@ -485,9 +480,7 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
     def test_stash__None(self):
         cube = self.cubes[self.index]
         del cube.attributes["STASH"]
-        constraint = NameConstraint(
-            standard_name=self.standard_name, STASH=None
-        )
+        constraint = NameConstraint(standard_name=self.standard_name, STASH=None)
         result = self.cubes.extract_cube(constraint)
         self.assertIsNotNone(result)
         self.assertEqual(result.standard_name, self.standard_name)
@@ -579,9 +572,9 @@ class TestCubeExtract__name_constraint(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestCubeExtract(TestMixin, tests.IrisTest):
+class TestCubeExtract(ConstraintMixin, tests.IrisTest):
     def setUp(self):
-        TestMixin.setUp(self)
+        ConstraintMixin.setUp(self)
         self.cube = iris.load_cube(self.theta_path)
 
     def test_attribute_constraint(self):
@@ -644,7 +637,7 @@ class TestCubeExtract(TestMixin, tests.IrisTest):
 
 
 @tests.skip_data
-class TestConstraints(TestMixin, tests.IrisTest):
+class TestConstraints(ConstraintMixin, tests.IrisTest):
     def test_constraint_expressions(self):
         rt = repr(self.theta)
         rl10 = repr(self.level_10)
@@ -659,15 +652,9 @@ class TestConstraints(TestMixin, tests.IrisTest):
 
     def test_string_repr(self):
         rt = repr(iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE))
-        self.assertEqual(
-            rt, "Constraint(name='%s')" % SN_AIR_POTENTIAL_TEMPERATURE
-        )
+        self.assertEqual(rt, "Constraint(name='%s')" % SN_AIR_POTENTIAL_TEMPERATURE)
 
-        rt = repr(
-            iris.Constraint(
-                SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10
-            )
-        )
+        rt = repr(iris.Constraint(SN_AIR_POTENTIAL_TEMPERATURE, model_level_number=10))
         self.assertEqual(
             rt,
             "Constraint(name='%s', coord_values={'model_level_number': 10})"
@@ -704,9 +691,7 @@ class TestBetween(tests.IrisTest):
         self.run_test(function, numbers, results)
 
     def test_lt_gt(self):
-        function = iris.util.between(
-            2, 4, rh_inclusive=False, lh_inclusive=False
-        )
+        function = iris.util.between(2, 4, rh_inclusive=False, lh_inclusive=False)
         numbers = [1, 2, 3, 4, 5]
         results = [False, False, True, False, False]
         self.run_test(function, numbers, results)

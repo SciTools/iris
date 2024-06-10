@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-High-level plotting extensions to :mod:`iris.plot`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""High-level plotting extensions to :mod:`iris.plot`.
 
 These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
@@ -14,9 +12,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 import cf_units
-from matplotlib import __version__ as _mpl_version
 import matplotlib.pyplot as plt
-from packaging import version
 
 import iris.config
 import iris.coords
@@ -44,25 +40,16 @@ def _title(cube_or_coord, with_units):
             units.is_unknown()
             or units.is_no_unit()
             or units == cf_units.Unit("1")
+            or units.is_time_reference()
         ):
-
             if _use_symbol(units):
                 units = units.symbol
-            elif units.is_time_reference():
-                # iris.plot uses matplotlib.dates.date2num, which is fixed to the below unit.
-                if version.parse(_mpl_version) >= version.parse("3.3"):
-                    days_since = "1970-01-01"
-                else:
-                    days_since = "0001-01-01"
-                units = "days since {}".format(days_since)
             title += " / {}".format(units)
-
     return title
 
 
 def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
-    """Puts labels on the current plot using the given cube."""
-
+    """Put labels on the current plot using the given cube."""
     if axes is None:
         axes = plt.gca()
 
@@ -71,11 +58,9 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
     if result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
         bar = plt.colorbar(
-            result, orientation="horizontal", drawedges=draw_edges
+            result, ax=axes, orientation="horizontal", drawedges=draw_edges
         )
-        has_known_units = not (
-            cube.units.is_unknown() or cube.units.is_no_unit()
-        )
+        has_known_units = not (cube.units.is_unknown() or cube.units.is_no_unit())
         if has_known_units and cube.units != cf_units.Unit("1"):
             # Use shortest unit representation for anything other than time
             if _use_symbol(cube.units):
@@ -100,10 +85,7 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         axes.set_xlabel(_title(plot_defn.coords[0], with_units=True))
         axes.set_ylabel(_title(cube, with_units=True))
     else:
-        msg = (
-            "Unexpected number of dimensions ({}) given to "
-            "_label.".format(ndims)
-        )
+        msg = "Unexpected number of dimensions ({}) given to _label.".format(ndims)
         raise ValueError(msg)
 
 
@@ -118,10 +100,8 @@ def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None):
 def _get_titles(u_object, v_object):
     if u_object is None:
         u_object = iplt._u_object_from_v_object(v_object)
-    xunits = u_object is not None and not u_object.units.is_time_reference()
-    yunits = not v_object.units.is_time_reference()
-    xlabel = _title(u_object, with_units=xunits)
-    ylabel = _title(v_object, with_units=yunits)
+    xlabel = _title(u_object, with_units=True)
+    ylabel = _title(v_object, with_units=True)
     title = ""
     if u_object is None:
         title = _title(v_object, with_units=False)
@@ -143,9 +123,7 @@ def _label_1d_plot(*args, **kwargs):
     axes = kwargs.pop("axes", None)
 
     if len(kwargs) != 0:
-        msg = "Unexpected kwargs {} given to _label_1d_plot".format(
-            kwargs.keys()
-        )
+        msg = "Unexpected kwargs {} given to _label_1d_plot".format(kwargs.keys())
         raise ValueError(msg)
 
     if axes is None:
@@ -157,8 +135,7 @@ def _label_1d_plot(*args, **kwargs):
 
 
 def contour(cube, *args, **kwargs):
-    """
-    Draws contour lines on a labelled plot based on the given Cube.
+    """Draw contour lines on a labelled plot based on the given Cube.
 
     With the basic call signature, contour "level" values are chosen
     automatically::
@@ -175,6 +152,11 @@ def contour(cube, *args, **kwargs):
 
     See :func:`iris.plot.contour` for details of valid keyword arguments.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -184,8 +166,7 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """
-    Draws filled contours on a labelled plot based on the given Cube.
+    """Draw filled contours on a labelled plot based on the given Cube.
 
     With the basic call signature, contour "level" values are chosen
     automatically::
@@ -202,6 +183,10 @@ def contourf(cube, *args, **kwargs):
 
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -211,24 +196,26 @@ def contourf(cube, *args, **kwargs):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """
-    Draws cell outlines on a labelled plot based on the given Cube.
+    """Draw cell outlines on a labelled plot based on the given Cube.
 
-    Kwargs:
-
-    * coords: list of :class:`~iris.coords.Coord` objects or coordinate names
+    Parameters
+    ----------
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-
-    * color: None or mpl color
+    color : str, default="k"
         The color of the cell outlines. If None, the matplotlibrc setting
         patch.edgecolor is used by default.
-
-    * linewidth: None or number
+    linewidth : number, optional
         The width of the lines showing the cell outlines. If None, the default
         width in patch.linewidth in matplotlibrc is used.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     result = iplt.outline(
@@ -240,11 +227,14 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """
-    Draws a labelled pseudocolor plot based on the given Cube.
+    """Draw a labelled pseudocolor plot based on the given Cube.
 
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -254,10 +244,14 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """
-    Draws a labelled pseudocolour plot based on the given Cube.
+    """Draw a labelled pseudocolour plot based on the given Cube.
 
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -268,10 +262,14 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """
-    Draws sample point positions on a labelled plot based on the given Cube.
+    """Draw sample point positions on a labelled plot based on the given Cube.
 
     See :func:`iris.plot.points` for details of valid keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -282,12 +280,15 @@ def points(cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """
-    Draws a labelled line plot based on the given cube(s) or
-    coordinate(s).
+    """Draw a labelled line plot based on the given cube(s) or coordinate(s).
 
     See :func:`iris.plot.plot` for details of valid arguments and
     keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
@@ -297,17 +298,68 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """
-    Draws a labelled scatter plot based on the given cubes or
-    coordinates.
+    """Draw a labelled scatter plot based on the given cubes or coordinates.
 
     See :func:`iris.plot.scatter` for details of valid arguments and
     keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
     result = iplt.scatter(x, y, *args, **kwargs)
     _label_1d_plot(x, y, axes=axes)
+    return result
+
+
+def fill_between(x, y1, y2, *args, **kwargs):
+    """Draw a labelled fill_between plot based on the given cubes or coordinates.
+
+    See :func:`iris.plot.fill_between` for details of valid arguments and
+    keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    """
+    axes = kwargs.get("axes")
+    result = iplt.fill_between(x, y1, y2, *args, **kwargs)
+    _label_1d_plot(x, y1, axes=axes)
+    return result
+
+
+def hist(x, *args, **kwargs):
+    """Compute and plot a labelled histogram.
+
+    See :func:`iris.plot.hist` for details of valid arguments and
+    keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
+    """
+    axes = kwargs.get("axes")
+    result = iplt.hist(x, *args, **kwargs)
+    title = _title(x, with_units=False)
+    label = _title(x, with_units=True)
+
+    if axes is None:
+        axes = plt.gca()
+
+    orientation = kwargs.get("orientation")
+    if orientation == "horizontal":
+        axes.set_ylabel(label)
+    else:
+        axes.set_xlabel(label)
+    axes.set_title(title)
+
     return result
 
 

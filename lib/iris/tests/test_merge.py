@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the cube merging mechanism.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the cube merging mechanism."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -22,15 +18,13 @@ import iris
 from iris._lazy_data import as_lazy_data
 from iris.coords import AuxCoord, DimCoord
 import iris.cube
+from iris.cube import CubeAttrsDict
 import iris.exceptions
 import iris.tests.stock
 
 
 class MergeMixin:
-    """
-    Mix-in class for attributes & utilities common to these test cases.
-
-    """
+    """Mix-in class for attributes & utilities common to these test cases."""
 
     def test_normal_cubes(self):
         cubes = iris.load(self._data_path)
@@ -48,9 +42,7 @@ class MergeMixin:
 
     def test_duplication(self):
         cubes = iris.load(self._data_path)
-        self.assertRaises(
-            iris.exceptions.DuplicateDataError, (cubes + cubes).merge
-        )
+        self.assertRaises(iris.exceptions.DuplicateDataError, (cubes + cubes).merge)
         cubes2 = (cubes + cubes).merge(unique=False)
         self.assertEqual(len(cubes2), 2 * len(cubes))
 
@@ -66,9 +58,7 @@ class TestSingleCube(tests.IrisTest, MergeMixin):
 @tests.skip_data
 class TestMultiCube(tests.IrisTest, MergeMixin):
     def setUp(self):
-        self._data_path = tests.get_data_path(
-            ("PP", "globClim1", "dec_subset.pp")
-        )
+        self._data_path = tests.get_data_path(("PP", "globClim1", "dec_subset.pp"))
         self._num_cubes = 4
         self._prefix = "dec"
 
@@ -169,9 +159,7 @@ class TestDataMergeCombos(tests.IrisTest):
         if expected_fill_value is None:
             data = result.data
             if ma.isMaskedArray(data):
-                np_fill_value = ma.masked_array(
-                    0, dtype=result.dtype
-                ).fill_value
+                np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
                 self.assertEqual(data.fill_value, np_fill_value)
         else:
             data = result.data
@@ -185,12 +173,10 @@ class TestDataMergeCombos(tests.IrisTest):
         fill_combos = itertools.product([None, fill_value], [fill_value, None])
         single_fill_combos = itertools.product([None, fill_value])
         self.combos = itertools.product(self.lazy_combos, fill_combos)
-        self.mixed_combos = itertools.product(
-            self.lazy_combos, single_fill_combos
-        )
+        self.mixed_combos = itertools.product(self.lazy_combos, single_fill_combos)
 
     def test__ndarray_ndarray(self):
-        for (lazy0, lazy1) in self.lazy_combos:
+        for lazy0, lazy1 in self.lazy_combos:
             cubes = iris.cube.CubeList()
             cubes.append(self._make_cube(0, dtype=self.dtype, lazy=lazy0))
             cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))
@@ -308,18 +294,13 @@ class TestDataMergeCombos(tests.IrisTest):
 
     def test_fill_value_invariant_to_order__same_non_None(self):
         fill_value = 1234
-        cubes = [
-            self._make_cube(i, mask=True, fill_value=fill_value)
-            for i in range(3)
-        ]
+        cubes = [self._make_cube(i, mask=True, fill_value=fill_value) for i in range(3)]
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
             self.assertEqual(result.data.fill_value, fill_value)
 
     def test_fill_value_invariant_to_order__all_None(self):
-        cubes = [
-            self._make_cube(i, mask=True, fill_value=None) for i in range(3)
-        ]
+        cubes = [self._make_cube(i, mask=True, fill_value=None) for i in range(3)]
         for combo in itertools.permutations(cubes):
             result = iris.cube.CubeList(combo).merge_cube()
             np_fill_value = ma.masked_array(0, dtype=result.dtype).fill_value
@@ -349,9 +330,7 @@ class TestDataMergeCombos(tests.IrisTest):
 class TestDataMerge(tests.IrisTest):
     def test_extended_proxy_data(self):
         # Get the empty theta cubes for T+1.5 and T+2
-        data_path = tests.get_data_path(
-            ("PP", "COLPEX", "theta_and_orog_subset.pp")
-        )
+        data_path = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         phenom_constraint = iris.Constraint("air_potential_temperature")
         datetime_1 = datetime.datetime(2009, 9, 9, 17, 20)
         datetime_2 = datetime.datetime(2009, 9, 9, 17, 50)
@@ -368,9 +347,7 @@ class TestDataMerge(tests.IrisTest):
         self.assertCML(cubes, ("merge", "theta_two_times.cml"))
 
         # Make sure we get the same result directly from load
-        cubes = iris.load_cube(
-            data_path, phenom_constraint & time_constraint_1_and_2
-        )
+        cubes = iris.load_cube(data_path, phenom_constraint & time_constraint_1_and_2)
         self.assertCML(cubes, ("merge", "theta_two_times.cml"))
 
     def test_real_data(self):
@@ -471,9 +448,7 @@ class TestCombination(tests.IrisTest):
         for name, value in zip(["a", "b", "c", "d"], [a, b, c, d]):
             dtype = np.str_ if isinstance(value, str) else np.float32
             cube.add_aux_coord(
-                AuxCoord(
-                    np.array([value], dtype=dtype), long_name=name, units="1"
-                )
+                AuxCoord(np.array([value], dtype=dtype), long_name=name, units="1")
             )
 
         return cube
@@ -481,19 +456,13 @@ class TestCombination(tests.IrisTest):
     def test_separable_combination(self):
         cubes = iris.cube.CubeList()
         cubes.append(
-            self._make_cube(
-                "2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0
-            )
+            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0)
         )
         cubes.append(
-            self._make_cube(
-                "2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1
-            )
+            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1)
         )
         cubes.append(
-            self._make_cube(
-                "2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2
-            )
+            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2)
         )
         cubes.append(
             self._make_cube(
@@ -511,34 +480,22 @@ class TestCombination(tests.IrisTest):
             )
         )
         cubes.append(
-            self._make_cube(
-                "2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0
-            )
+            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0)
         )
         cubes.append(
-            self._make_cube(
-                "2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1
-            )
+            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1)
         )
         cubes.append(
-            self._make_cube(
-                "2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2
-            )
+            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2)
         )
         cubes.append(
-            self._make_cube(
-                "2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0
-            )
+            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0)
         )
         cubes.append(
-            self._make_cube(
-                "2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1
-            )
+            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1)
         )
         cubes.append(
-            self._make_cube(
-                "2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2
-            )
+            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2)
         )
         cubes.append(
             self._make_cube(
@@ -586,9 +543,7 @@ class TestCombination(tests.IrisTest):
             )
         )
         cube = cubes.merge()
-        self.assertCML(
-            cube, ("merge", "separable_combination.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "separable_combination.cml"), checksum=False)
 
 
 class TestDimSelection(tests.IrisTest):
@@ -616,9 +571,7 @@ class TestDimSelection(tests.IrisTest):
         for name, value, dim in zip(["a", "b"], [a, b], [a_dim, b_dim]):
             dtype = np.str_ if isinstance(value, str) else np.float32
             ctype = DimCoord if dim else AuxCoord
-            coord = ctype(
-                np.array([value], dtype=dtype), long_name=name, units="1"
-            )
+            coord = ctype(np.array([value], dtype=dtype), long_name=name, units="1")
             cube.add_aux_coord(coord)
 
         return cube
@@ -627,9 +580,7 @@ class TestDimSelection(tests.IrisTest):
         templates = (("a", 0), ("b", 1), ("c", 2), ("d", 3))
         cubes = [self._make_cube(a, b) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]
-        self.assertCML(
-            cube, ("merge", "string_a_with_aux.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "string_a_with_aux.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), AuxCoord)
         self.assertIsInstance(cube.coord("b"), DimCoord)
         self.assertTrue(cube.coord("b") in cube.dim_coords)
@@ -638,9 +589,7 @@ class TestDimSelection(tests.IrisTest):
         templates = ((0, "a"), (1, "b"), (2, "c"), (3, "d"))
         cubes = [self._make_cube(a, b) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]
-        self.assertCML(
-            cube, ("merge", "string_b_with_aux.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "string_b_with_aux.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
         self.assertTrue(cube.coord("a") in cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), AuxCoord)
@@ -649,9 +598,7 @@ class TestDimSelection(tests.IrisTest):
         templates = (("a", 0), ("b", 1), ("c", 2), ("d", 3))
         cubes = [self._make_cube(a, b, b_dim=True) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]
-        self.assertCML(
-            cube, ("merge", "string_a_with_dim.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "string_a_with_dim.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), AuxCoord)
         self.assertIsInstance(cube.coord("b"), DimCoord)
         self.assertTrue(cube.coord("b") in cube.dim_coords)
@@ -660,9 +607,7 @@ class TestDimSelection(tests.IrisTest):
         templates = ((0, "a"), (1, "b"), (2, "c"), (3, "d"))
         cubes = [self._make_cube(a, b, a_dim=True) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]
-        self.assertCML(
-            cube, ("merge", "string_b_with_dim.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "string_b_with_dim.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
         self.assertTrue(cube.coord("a") in cube.dim_coords)
         self.assertIsInstance(cube.coord("b"), AuxCoord)
@@ -707,9 +652,7 @@ class TestDimSelection(tests.IrisTest):
 
     def test_a_dim_b_dim(self):
         templates = ((0, 10), (1, 11), (2, 12), (3, 13))
-        cubes = [
-            self._make_cube(a, b, a_dim=True, b_dim=True) for a, b in templates
-        ]
+        cubes = [self._make_cube(a, b, a_dim=True, b_dim=True) for a, b in templates]
         cube = iris.cube.CubeList(cubes).merge()[0]
         self.assertCML(cube, ("merge", "a_dim_b_dim.cml"), checksum=False)
         self.assertIsInstance(cube.coord("a"), DimCoord)
@@ -754,9 +697,7 @@ class TestTimeTripleMerging(tests.IrisTest):
             )
         )
         cube.add_aux_coord(
-            DimCoord(
-                np.array([c], dtype=np.int32), standard_name="time", units="1"
-            )
+            DimCoord(np.array([c], dtype=np.int32), standard_name="time", units="1")
         )
         return cube
 
@@ -907,9 +848,7 @@ class TestTimeTripleMerging(tests.IrisTest):
         cube2 = self._make_cube(1, 20, 1)
         cube3 = self._make_cube(2, 20, 0)
         cube = iris.cube.CubeList([cube1, cube2, cube3]).merge()
-        self.assertCML(
-            cube, ("merge", "time_triple_merging1.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "time_triple_merging1.cml"), checksum=False)
 
     def test_simple2(self):
         cubes = iris.cube.CubeList(
@@ -923,14 +862,10 @@ class TestTimeTripleMerging(tests.IrisTest):
             ]
         )
         cube = cubes.merge()[0]
-        self.assertCML(
-            cube, ("merge", "time_triple_merging2.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "time_triple_merging2.cml"), checksum=False)
 
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
-        self.assertCML(
-            cube, ("merge", "time_triple_merging3.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "time_triple_merging3.cml"), checksum=False)
 
     def test_simple3(self):
         cubes = iris.cube.CubeList(
@@ -944,14 +879,10 @@ class TestTimeTripleMerging(tests.IrisTest):
             ]
         )
         cube = cubes.merge()[0]
-        self.assertCML(
-            cube, ("merge", "time_triple_merging4.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "time_triple_merging4.cml"), checksum=False)
 
         cube = iris.cube.CubeList(cubes[:-1]).merge()[0]
-        self.assertCML(
-            cube, ("merge", "time_triple_merging5.cml"), checksum=False
-        )
+        self.assertCML(cube, ("merge", "time_triple_merging5.cml"), checksum=False)
 
 
 class TestCubeMergeTheoretical(tests.IrisTest):
@@ -959,12 +890,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d()
         cube2 = iris.tests.stock.simple_2d()
 
-        cube1.add_aux_coord(
-            DimCoord(np.int32(10), long_name="pressure", units="Pa")
-        )
-        cube2.add_aux_coord(
-            DimCoord(np.int32(11), long_name="pressure", units="Pa")
-        )
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name="pressure", units="Pa"))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name="pressure", units="Pa"))
 
         r = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertCML(r, ("cube_merge", "test_simple_bound_merge.cml"))
@@ -973,12 +900,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d_w_multidim_coords()
         cube2 = iris.tests.stock.simple_2d_w_multidim_coords()
 
-        cube1.add_aux_coord(
-            DimCoord(np.int32(10), long_name="pressure", units="Pa")
-        )
-        cube2.add_aux_coord(
-            DimCoord(np.int32(11), long_name="pressure", units="Pa")
-        )
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name="pressure", units="Pa"))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name="pressure", units="Pa"))
 
         r = iris.cube.CubeList([cube1, cube2]).merge()[0]
         self.assertCML(r, ("cube_merge", "multidim_coord_merge.cml"))
@@ -993,12 +916,8 @@ class TestCubeMergeTheoretical(tests.IrisTest):
         cube1 = iris.tests.stock.simple_2d(with_bounds=False)
         cube2 = iris.tests.stock.simple_2d(with_bounds=False)
 
-        cube1.add_aux_coord(
-            DimCoord(np.int32(10), long_name="pressure", units="Pa")
-        )
-        cube2.add_aux_coord(
-            DimCoord(np.int32(11), long_name="pressure", units="Pa")
-        )
+        cube1.add_aux_coord(DimCoord(np.int32(10), long_name="pressure", units="Pa"))
+        cube2.add_aux_coord(DimCoord(np.int32(11), long_name="pressure", units="Pa"))
 
         r = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertCML(r, ("cube_merge", "test_simple_merge.cml"))
@@ -1038,9 +957,7 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube.add_dim_coord(iris.coords.DimCoord([0, 1], long_name="x"), 0)
         cube.add_aux_coord(iris.coords.DimCoord(y, long_name="y"))
         if cm:
-            cube.add_cell_measure(
-                iris.coords.CellMeasure([1, 1], long_name="foo"), 0
-            )
+            cube.add_cell_measure(iris.coords.CellMeasure([1, 1], long_name="foo"), 0)
         if av:
             cube.add_ancillary_variable(
                 iris.coords.AncillaryVariable([1, 1], long_name="bar"), 0
@@ -1062,9 +979,7 @@ class TestCubeMergeWithAncils(tests.IrisTest):
     def test_fail_different_cell_measure(self):
         cube1 = self._makecube(0, cm=True)
         cube2 = self._makecube(1)
-        cube2.add_cell_measure(
-            iris.coords.CellMeasure([2, 2], long_name="foo"), 0
-        )
+        cube2.add_cell_measure(iris.coords.CellMeasure([2, 2], long_name="foo"), 0)
         cubes = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertEqual(len(cubes), 2)
 
@@ -1089,9 +1004,7 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube2 = self._makecube(1, av=True)
         cubes = iris.cube.CubeList([cube1, cube2]).merge()
         self.assertEqual(len(cubes), 1)
-        self.assertEqual(
-            cube1.ancillary_variables(), cubes[0].ancillary_variables()
-        )
+        self.assertEqual(cube1.ancillary_variables(), cubes[0].ancillary_variables())
 
     def test_cell_measure_error_msg(self):
         msg = "cube.cell_measures differ"
@@ -1106,6 +1019,83 @@ class TestCubeMergeWithAncils(tests.IrisTest):
         cube2 = self._makecube(1)
         with self.assertRaisesRegex(iris.exceptions.MergeError, msg):
             _ = iris.cube.CubeList([cube1, cube2]).merge_cube()
+
+
+class TestCubeMerge__split_attributes__error_messages(tests.IrisTest):
+    """Specific tests for the detection and wording of attribute-mismatch errors.
+
+    In particular, the adoption of 'split' attributes with the new
+    :class:`iris.cube.CubeAttrsDict` introduces some more subtle possible discrepancies
+    in attributes, where this has also impacted the messaging, so this aims to probe
+    those cases.
+    """
+
+    def _check_merge_error(self, attrs_1, attrs_2, expected_message):
+        """Check the error from a merge failure caused by a mismatch of attributes.
+
+        Build a pair of cubes with given attributes, merge them + check for a match
+        to the expected error message.
+        """
+        cube_1 = iris.cube.Cube(
+            [0],
+            aux_coords_and_dims=[(AuxCoord([1], long_name="x"), None)],
+            attributes=attrs_1,
+        )
+        cube_2 = iris.cube.Cube(
+            [0],
+            aux_coords_and_dims=[(AuxCoord([2], long_name="x"), None)],
+            attributes=attrs_2,
+        )
+        with self.assertRaisesRegex(iris.exceptions.MergeError, expected_message):
+            iris.cube.CubeList([cube_1, cube_2]).merge_cube()
+
+    def test_keys_differ__single(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=1),
+            # Note: matching key 'a' does *not* appear in the message
+            expected_message="cube.attributes keys differ: 'b'",
+        )
+
+    def test_keys_differ__multiple(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=1, c=2),
+            expected_message="cube.attributes keys differ: 'b', 'c'",
+        )
+
+    def test_values_differ__single(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),  # Note: matching key 'a' does not appear
+            attrs_2=dict(a=1, b=3),
+            expected_message="cube.attributes values differ for keys: 'b'",
+        )
+
+    def test_values_differ__multiple(self):
+        self._check_merge_error(
+            attrs_1=dict(a=1, b=2),
+            attrs_2=dict(a=12, b=22),
+            expected_message="cube.attributes values differ for keys: 'a', 'b'",
+        )
+
+    def test_splitattrs_keys_local_global_mismatch(self):
+        # Since Cube.attributes is now a "split-attributes" dictionary, it is now
+        # possible to have "cube1.attributes != cube1.attributes", but also
+        # "set(cube1.attributes.keys()) == set(cube2.attributes.keys())".
+        # I.E. it is now necessary to specifically compare ".globals" and ".locals" to
+        # see *what* differs between two attributes dictionaries.
+        self._check_merge_error(
+            attrs_1=CubeAttrsDict(globals=dict(a=1), locals=dict(b=2)),
+            attrs_2=CubeAttrsDict(locals=dict(a=2)),
+            expected_message="cube.attributes keys differ: 'a', 'b'",
+        )
+
+    def test_splitattrs_keys_local_match_masks_global_mismatch(self):
+        self._check_merge_error(
+            attrs_1=CubeAttrsDict(globals=dict(a=1), locals=dict(a=3)),
+            attrs_2=CubeAttrsDict(globals=dict(a=2), locals=dict(a=3)),
+            expected_message="cube.attributes values differ for keys: 'a'",
+        )
 
 
 if __name__ == "__main__":

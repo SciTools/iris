@@ -1,2 +1,1 @@
-DimCoord(array([347921.16666667, 347921.33333333, 347921.5       , 347921.66666666,
-       347921.83333333, 347922.        ]), standard_name='time', units=Unit('hours since 1970-01-01 00:00:00', calendar='gregorian'))
+<DimCoord: forecast_period / (hours)  [0.]>

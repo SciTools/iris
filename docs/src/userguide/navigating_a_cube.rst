@@ -33,9 +33,9 @@ We have already seen a basic string representation of a cube when printing:
             forecast_reference_time     2006-06-15 00:00:00
             time                        2006-06-15 00:00:00
         Attributes:
-            Conventions                 CF-1.5
+            Conventions                 'CF-1.5'
             STASH                       m01s16i222
-            source                      Data from Met Office Unified Model 6.01
+            source                      'Data from Met Office Unified Model 6.01'
 
 
 This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
@@ -110,6 +110,10 @@ cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute:
 
     print(cube.cell_methods)
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_meteorology_plot_wind_barbs.py`
 
 Accessing Coordinates on the Cube
 ---------------------------------
@@ -169,13 +173,17 @@ We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.a
             my_custom_coordinate        1
             time                        2006-06-15 00:00:00
         Attributes:
-            Conventions                 CF-1.5
+            Conventions                 'CF-1.5'
             STASH                       m01s16i222
-            source                      Data from Met Office Unified Model 6.01
+            source                      'Data from Met Office Unified Model 6.01'
 
 
 The coordinate ``my_custom_coordinate`` now exists on the cube and is listed under the non-dimensioned single valued scalar coordinates.
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_custom_file_loading.py` (Adding Metadata)
 
 Adding and Removing Metadata to the Cube at Load Time
 -----------------------------------------------------
@@ -183,10 +191,10 @@ Adding and Removing Metadata to the Cube at Load Time
 Sometimes when loading a cube problems occur when the amount of metadata is more or less than expected.
 This is often caused by one of the following:
 
- * The file does not contain enough metadata, and therefore the cube cannot know everything about the file.
- * Some of the metadata of the file is contained in the filename, but is not part of the actual file.
- * There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
-   please let us know about it)*
+* The file does not contain enough metadata, and therefore the cube cannot know everything about the file.
+* Some of the metadata of the file is contained in the filename, but is not part of the actual file.
+* There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
+  please let us know about it)*
 
 To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword. 
 

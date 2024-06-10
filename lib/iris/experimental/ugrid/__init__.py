@@ -1,12 +1,11 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
-"""
-Infra-structure for unstructured mesh support, based on
-CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/
+"""Infra-structure for unstructured mesh support.
+
+Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 
 .. note::
 
@@ -14,6 +13,7 @@ CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventio
     definition at :const:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
 
 """
+
 from ...config import get_logger
 from .load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from .mesh import Connectivity, Mesh, MeshCoord

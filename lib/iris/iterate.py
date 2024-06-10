@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Cube functions for iteration in step.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Cube functions for iteration in step."""
 
 from collections.abc import Iterator
 import itertools
@@ -14,42 +10,41 @@ import warnings
 
 import numpy as np
 
+from iris.warnings import IrisUserWarning
+
 __all__ = ["izip"]
 
 
 def izip(*cubes, **kwargs):
-    """
-    Return an iterator for iterating over a collection of cubes in step.
+    """Return an iterator for iterating over a collection of cubes in step.
 
     If the input cubes have dimensions for which there are no common
     coordinates, those dimensions will be treated as orthogonal. The
     resulting iterator will step through combinations of the associated
     coordinates.
 
-    Args:
-
-    * cubes (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    cubes : :class:`iris.cube.Cube`
         One or more :class:`iris.cube.Cube` instances over which to iterate in
         step. Each cube should be provided as a separate argument e.g.
         ``iris.iterate.izip(cube_a, cube_b, cube_c, ...)``.
-
-    Kwargs:
-
-    * coords (string, coord or a list of strings/coords):
+    coords : str, coord or a list of strings/coords
         Coordinate names/coordinates of the desired subcubes (i.e. those
         that are not iterated over). They must all be orthogonal (i.e. point
         to different dimensions).
-    * ordered (Boolean):
+    ordered : bool, optional
         If True (default), the order of the coordinates in the resulting
         subcubes will match the order of the coordinates in the coords
         keyword argument. If False, the order of the coordinates will
         be preserved and will match that of the input cubes.
 
-    Returns:
-        An iterator over a collection of tuples that contain the resulting
-        subcubes.
+    Returns
+    -------
+    An iterator over a collection of tuples that contain the resulting subcubes.
 
-    For example:
+    Examples
+    --------
         >>> e_content, e_density = iris.load_cubes(
         ...     iris.sample_data_path('space_weather.nc'),
         ...     ['total electron content', 'electron density'])
@@ -57,6 +52,11 @@ def izip(*cubes, **kwargs):
         ...                                         coords=['grid_latitude',
         ...                                                 'grid_longitude']):
         ...    pass
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if not cubes:
@@ -108,9 +108,7 @@ def izip(*cubes, **kwargs):
         # Loop over dimensioned coords in each cube.
         for dim in range(len(cube.shape)):
             if dim not in requested_dims:
-                dimensioned_iter_coords.update(
-                    cube.coords(contains_dimension=dim)
-                )
+                dimensioned_iter_coords.update(cube.coords(contains_dimension=dim))
         dimensioned_iter_coords_by_cube.append(dimensioned_iter_coords)
 
     # Check for multidimensional coords - current implementation cannot
@@ -160,16 +158,16 @@ def izip(*cubes, **kwargs):
                 warnings.warn(
                     "Iterating over coordinate '%s' in step whose "
                     "definitions match but whose values "
-                    "differ." % coord_a.name()
+                    "differ." % coord_a.name(),
+                    category=IrisUserWarning,
                 )
 
-    return _ZipSlicesIterator(
-        cubes, requested_dims_by_cube, ordered, coords_by_cube
-    )
+    return _ZipSlicesIterator(cubes, requested_dims_by_cube, ordered, coords_by_cube)
 
 
 class _ZipSlicesIterator(Iterator):
-    """
+    """Support iteration over a collection of cubes.
+
     Extension to _SlicesIterator (see cube.py) to support iteration over a
     collection of cubes in step.
 
@@ -186,12 +184,11 @@ class _ZipSlicesIterator(Iterator):
         # mapping of values (itertool.izip won't catch this).
         if len(requested_dims_by_cube) != len(cubes):
             raise ValueError(
-                "requested_dims_by_cube parameter is not the same"
-                " length as cubes."
+                "requested_dims_by_cube parameter is not the same length as cubes."
             )
         if len(coords_by_cube) != len(cubes):
             raise ValueError(
-                "coords_by_cube parameter is not the same length " "as cubes."
+                "coords_by_cube parameter is not the same length as cubes."
             )
 
         # Create an all encompassing dims_index called master_dims_index that
@@ -216,9 +213,7 @@ class _ZipSlicesIterator(Iterator):
                 # Loop over coords in this dimension (could be just one).
                 for coord in cube_coords:
                     # Search for coord in master_dimensioned_coord_list.
-                    for j, master_coords in enumerate(
-                        master_dimensioned_coord_list
-                    ):
+                    for j, master_coords in enumerate(master_dimensioned_coord_list):
                         # Use coord wrapper with desired equality
                         # functionality.
                         if _CoordWrapper(coord) in master_coords:
@@ -229,7 +224,7 @@ class _ZipSlicesIterator(Iterator):
                         break
                 # If a coordinate with an equivalent definition (i.e. same
                 # metadata) is not found in the master_dimensioned_coord_list,
-                # add the coords assocaited with the dimension to the list,
+                # add the coords associated with the dimension to the list,
                 # add the size of the dimension to the master_dims_index and
                 # store the offset.
                 if not found:
@@ -285,7 +280,8 @@ class _ZipSlicesIterator(Iterator):
 
 
 class _CoordWrapper:
-    """
+    """Create a coordinate wrapper.
+
     Class for creating a coordinate wrapper that allows the use of an
     alternative equality function based on metadata rather than
     metadata + points/bounds.

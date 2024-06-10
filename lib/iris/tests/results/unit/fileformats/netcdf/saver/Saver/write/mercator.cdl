@@ -1,0 +1,25 @@
+dimensions:
+	projection_x_coordinate = 4 ;
+	projection_y_coordinate = 3 ;
+variables:
+	int64 air_pressure_anomaly(projection_y_coordinate, projection_x_coordinate) ;
+		air_pressure_anomaly:standard_name = "air_pressure_anomaly" ;
+		air_pressure_anomaly:grid_mapping = "mercator" ;
+	int mercator ;
+		mercator:grid_mapping_name = "mercator" ;
+		mercator:longitude_of_prime_meridian = 0. ;
+		mercator:semi_major_axis = 6377563.396 ;
+		mercator:semi_minor_axis = 6356256.909 ;
+		mercator:longitude_of_projection_origin = 49. ;
+		mercator:false_easting = 0. ;
+		mercator:false_northing = 0. ;
+		mercator:standard_parallel = 0. ;
+	int64 projection_y_coordinate(projection_y_coordinate) ;
+		projection_y_coordinate:axis = "Y" ;
+		projection_y_coordinate:units = "m" ;
+		projection_y_coordinate:standard_name = "projection_y_coordinate" ;
+	int64 projection_x_coordinate(projection_x_coordinate) ;
+		projection_x_coordinate:axis = "X" ;
+		projection_x_coordinate:units = "m" ;
+		projection_x_coordinate:standard_name = "projection_x_coordinate" ;
+}

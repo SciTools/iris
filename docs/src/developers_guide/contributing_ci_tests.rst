@@ -1,6 +1,6 @@
-.. _developer_testing_ci:
-
 .. include:: ../common_links.inc
+
+.. _developer_testing_ci:
 
 Continuous Integration (CI) Testing
 ===================================
@@ -13,54 +13,53 @@ The `Iris`_ GitHub repository is configured to run checks against all its
 branches automatically whenever a pull-request is created, updated or merged.
 The checks performed are:
 
-* :ref:`testing_cirrus`
+* :ref:`testing_gha`
 * :ref:`testing_cla`
 * :ref:`pre_commit_ci`
 
 
-.. _testing_cirrus:
+.. _testing_gha:
 
-Cirrus-CI
-*********
+GitHub Actions
+**************
 
 Iris unit and integration tests are an essential mechanism to ensure
 that the Iris code base is working as expected.  :ref:`developer_running_tests`
 may be performed manually by a developer locally. However Iris is configured to
-use the `cirrus-ci`_ service for automated Continuous Integration (CI) testing.
+use `GitHub Actions`_ (GHA) for automated Continuous Integration (CI) testing.
 
-The `cirrus-ci`_ configuration file  `.cirrus.yml`_ in the root of the Iris repository
-defines the tasks to be performed by `cirrus-ci`_. For further details
-refer to the `Cirrus-CI Documentation`_. The tasks performed during CI include:
+The Iris GHA YAML configuration files in the ``.github/workflows`` directory
+defines the CI tasks to be performed. For further details
+refer to the `GitHub Actions`_ documentation. The tasks performed during CI include:
 
-* linting the code base and ensuring it adheres to the `black`_ format
 * running the system, integration and unit tests for Iris
 * ensuring the documentation gallery builds successfully
 * performing all doc-tests within the code base
 * checking all URL references within the code base and documentation are valid
 
-The above `cirrus-ci`_ tasks are run automatically against all `Iris`_ branches
+The above GHA tasks are run automatically against all `Iris`_ branches
 on GitHub whenever a pull-request is submitted, updated or merged. See the
-`Cirrus-CI Dashboard`_ for details of recent past and active Iris jobs.
+`Iris GitHub Actions`_ dashboard for details of recent past and active CI jobs.
 
 
-.. _cirrus_test_env:
+.. _gha_test_env:
 
-Cirrus CI Test environment
---------------------------
+GitHub Actions Test Environment
+-------------------------------
 
-The test environment on the Cirrus-CI service is determined from the requirement files
-in ``requirements/ci/py**.yml``.  These are conda environment files that list the entire
-set of build, test and run requirements for Iris.
+The CI test environments for our GHA is determined from the requirement files
+in ``requirements/pyXX.yml``.  These are conda environment files list the top-level
+package dependencies for running and testing Iris.
 
 For reproducible test results, these environments are resolved for all their dependencies
-and stored as lock files in ``requirements/ci/nox.lock``.  The test environments will not
-resolve the dependencies each time, instead they will use the lock file to reproduce the
-same exact environment each time.
+and stored as conda lock files in the ``requirements/locks`` directory.  The test environments
+will not resolve the dependencies each time, instead they will use the lock files to reproduce the
+exact same environment each time.
 
-**If you have updated the requirement yaml files with new dependencies, you will need to
+**If you have updated the requirement YAML files with new dependencies, you will need to
 generate new lock files.** To do this, run the command::
 
-   python tools/update_lockfiles.py -o requirements/ci/nox.lock requirements/ci/py*.yml
+   python tools/update_lockfiles.py -o requirements/locks requirements/py*.yml
 
 or simply::
 
@@ -70,47 +69,13 @@ and add the changed lockfiles to your pull request.
 
 New lockfiles are generated automatically each week to ensure that Iris continues to be
 tested against the latest available version of its dependencies.
-Each week the yaml files in ``requirements/ci`` are resolved by a GitHub Action.
+Each week the yaml files in ``requirements`` are resolved by a GitHub Action.
 If the resolved environment has changed, a pull request is created with the new lock files.
-The CI test suite will run on this pull request and fixes for failed tests can be pushed to
-the ``auto-update-lockfiles`` branch to be included in the PR. 
-Once a developer has pushed to this branch, the auto-update process will not run again until
-the PR is merged, to prevent overwriting developer commits.
-The auto-updater can still be invoked manually in this situation by going to the `GitHub Actions`_
-page for the workflow, and manually running using the "Run Workflow" button.  
-By default, this will also not override developer commits.  To force an update, you must 
-confirm "yes" in the "Run Worflow" prompt.
-
-
-.. _skipping Cirrus-CI tasks:
-
-Skipping Cirrus-CI Tasks
-------------------------
-
-As a developer you may wish to not run all the CI tasks when you are actively
-developing e.g., you are writing documentation and there is no need for linting,
-or long running compute intensive testing tasks to be executed.
-
-As a convenience, it is possible to easily skip one or more tasks by setting
-the appropriate environment variable within the `.cirrus.yml`_ file to a
-**non-empty** string:
-
-* ``SKIP_LINT_TASK`` to skip `flake8`_ linting and `black`_ formatting
-* ``SKIP_TEST_MINIMAL_TASK`` to skip restricted unit and integration testing
-* ``SKIP_TEST_FULL_TASK`` to skip full unit and integration testing
-* ``SKIP_GALLERY_TASK`` to skip building the documentation gallery
-* ``SKIP_DOCTEST_TASK`` to skip running the documentation doc-tests
-* ``SKIP_LINKCHECK_TASK`` to skip checking for broken documentation URL references
-* ``SKIP_ALL_TEST_TASKS`` which is equivalent to setting ``SKIP_TEST_MINIMAL_TASK`` and ``SKIP_TEST_FULL_TASK``
-* ``SKIP_ALL_DOC_TASKS`` which is equivalent to setting ``SKIP_GALLERY_TASK``, ``SKIP_DOCTEST_TASK``, and ``SKIP_LINKCHECK_TASK``
-
-e.g., to skip the linting task, the following are all equivalent::
-
-   SKIP_LINT_TASK: "1"
-   SKIP_LINT_TASK: "true"
-   SKIP_LINT_TASK: "false"
-   SKIP_LINT_TASK: "skip"
-   SKIP_LINT_TASK: "unicorn"
+The CI test suite will run on this pull request. If the tests fail, a developer
+will need to create a new branch based off the ``auto-update-lockfiles`` branch
+and add the required fixes to this new branch. If the fixes are made to the
+``auto-update-lockfiles`` branch these will be overwritten the next time the
+Github Action is run.
 
 
 GitHub Checklist
@@ -127,12 +92,11 @@ Iris target branch by a core developer.
 
 .. _testing_cla:
 
-SciTools CLA Checker
-********************
+`CLA Assistant`_
+****************
 
-A bot which checks that the GitHub author of the pull-request has signed the
-**SciTools Contributor's License Agreement (CLA)**.  For more information on
-this please see https://scitools.org.uk/organisation.html#governance.
+A bot which checks that the GitHub authors of the pull-request have signed the
+|SciTools Contributor's License Agreement (CLA)|_.
 
 
 .. _pre_commit_ci:
@@ -145,10 +109,43 @@ pull-requests given the `Iris`_ GitHub repository `.pre-commit-config.yaml`_.
 
 See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jobs.
 
+.. note::
+
+  The `codespell`_ ``pre-commit`` hook checks the spelling of the whole codebase
+  and documentation.  This hook is configured in the ``[tool.codespell]`` section
+  of the ``pyproject.toml`` file.
+
+  Append to the ``ignore-words-list`` option any **valid words** that are
+  considered **not** a typo and should **not** be corrected by `codespell`_.
+
+ruff
+----
+As of **Iris 3.8** `ruff`_ has been adopted to ensure our codebase is using best
+practice.  `ruff`_ is configured in the `Iris`_ GitHub repository using  
+`.pre-commit-config.yaml`_.  
+
+You can install and run `ruff`_ in your development **iris-dev** conda environment
+via::
+
+   conda activate iris-dev
+   pip install ruff
+   cd iris
+   ruff .
+
+.. note::
+
+  The `ruff`_ ``pre-commit`` hook checks for compliance of the whole codebase.
+  This hook is configured in the ``[tool.ruff]`` section
+  of the ``pyproject.toml`` file.
+
+  Edit the ``.ruff.toml`` file to include any *temporary* rules to be ignored. Edit the ``pyproject.toml`` to include any *permanent* rules to be ignored. We
+  aim to be fully `ruff`_ compliant as possible.
+
+For more information on how to use `ruff`_ please see the `ruff documentation`_.
 
 
-.. _Cirrus-CI Dashboard: https://cirrus-ci.com/github/SciTools/iris
-.. _Cirrus-CI Documentation: https://cirrus-ci.org/guide/writing-tasks/
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
-.. _GitHub Actions: https://github.com/SciTools/iris/actions/workflows/refresh-lockfiles.yml
+.. _CLA Assistant: https://github.com/cla-assistant/cla-assistant
+.. |SciTools Contributor's License Agreement (CLA)| replace:: **SciTools Contributor's License Agreement (CLA)**
+.. _ruff documentation: https://docs.astral.sh/ruff/tutorial/

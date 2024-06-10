@@ -1,5 +1,4 @@
-"""
-Perform test automation with nox.
+"""Perform test automation with nox.
 
 For further details, see https://nox.thea.codes/en/stable/#
 
@@ -16,7 +15,7 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.7", "3.8"]
+_PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -28,16 +27,19 @@ PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
 #: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
 
+# https://github.com/numpy/numpy/pull/19478
+# https://github.com/matplotlib/matplotlib/pull/22099
+#: Common session environment variables.
+ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
+
 
 def session_lockfile(session: nox.sessions.Session) -> Path:
     """Return the path of the session lockfile."""
-    return Path(
-        f"requirements/ci/nox.lock/py{session.python.replace('.', '')}-linux-64.lock"
-    )
+    return Path(f"requirements/locks/py{session.python.replace('.', '')}-linux-64.lock")
 
 
 def session_cachefile(session: nox.sessions.Session) -> Path:
-    """Returns the path of the session lockfile cache."""
+    """Return the path of the session lockfile cache."""
     lockfile = session_lockfile(session)
     tmp_dir = Path(session.create_tmp())
     cache = tmp_dir / lockfile.name
@@ -45,14 +47,18 @@ def session_cachefile(session: nox.sessions.Session) -> Path:
 
 
 def venv_populated(session: nox.sessions.Session) -> bool:
-    """Returns True if the conda venv has been created
-    and the list of packages in the lockfile installed."""
+    """List of packages in the lockfile installed.
+
+    Returns True if the conda venv has been created.
+    """
     return session_cachefile(session).is_file()
 
 
 def venv_changed(session: nox.sessions.Session) -> bool:
-    """Returns True if the installed session is different to that specified
-    in the lockfile."""
+    """Return True if the installed session is different.
+
+    Compares to that specified in the lockfile.
+    """
     changed = False
     cache = session_cachefile(session)
     lockfile = session_lockfile(session)
@@ -66,15 +72,14 @@ def venv_changed(session: nox.sessions.Session) -> bool:
 
 
 def cache_venv(session: nox.sessions.Session) -> None:
-    """
-    Cache the nox session environment.
+    """Cache the nox session environment.
 
     This consists of saving a hexdigest (sha256) of the associated
     conda lock file.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -82,17 +87,16 @@ def cache_venv(session: nox.sessions.Session) -> None:
     cache = session_cachefile(session)
     with open(lockfile, "rb") as fi:
         hexdigest = hashlib.sha256(fi.read()).hexdigest()
-    with open(cache, "w") as fo:
-        fo.write(hexdigest)
+    with open(cache, "w") as fout:
+        fout.write(hexdigest)
 
 
 def cache_cartopy(session: nox.sessions.Session) -> None:
-    """
-    Determine whether to cache the cartopy natural earth shapefiles.
+    """Determine whether to cache the cartopy natural earth shapefiles.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -105,15 +109,15 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
 
 def prepare_venv(session: nox.sessions.Session) -> None:
-    """
-    Create and cache the nox session conda environment, and additionally
-    provide conda environment package details and info.
+    """Create and cache the nox session conda environment.
+
+    Additionally provide conda environment package details and info.
 
     Note that, iris is installed into the environment using pip.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     Notes
@@ -162,76 +166,45 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         )
 
 
-@nox.session
-def precommit(session: nox.sessions.Session):
-    """
-    Perform pre-commit hooks of iris codebase.
-
-    Parameters
-    ----------
-    session: object
-        A `nox.sessions.Session` object.
-
-    """
-    import yaml
-
-    # Pip install the session requirements.
-    session.install("pre-commit")
-
-    # Load the pre-commit configuration YAML file.
-    with open(".pre-commit-config.yaml", "r") as fi:
-        config = yaml.load(fi, Loader=yaml.FullLoader)
-
-    # List of pre-commit hook ids that we don't want to run.
-    excluded = ["no-commit-to-branch"]
-
-    # Enumerate the ids of pre-commit hooks we do want to run.
-    ids = [
-        hook["id"]
-        for entry in config["repos"]
-        for hook in entry["hooks"]
-        if hook["id"] not in excluded
-    ]
-
-    # Execute the pre-commit hooks.
-    [session.run("pre-commit", "run", "--all-files", id) for id in ids]
-
-
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
-    """
-    Perform iris system, integration and unit tests.
+    """Perform iris system, integration and unit tests.
+
+    Coverage testing is enabled if the "--coverage" or "-c" flag is used.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
-    session.run(
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--default-tests",
-        "--system-tests",
-    )
+    session.env.update(ENV)
+    run_args = [
+        "pytest",
+        "-n",
+        "auto",
+        "lib/iris/tests",
+    ]
+    if "-c" in session.posargs or "--coverage" in session.posargs:
+        run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
+    session.run(*run_args)
 
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def doctest(session: nox.sessions.Session):
-    """
-    Perform iris doctests and gallery.
+    """Perform iris doctests and gallery.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.cd("docs")
     session.run(
         "make",
@@ -244,23 +217,36 @@ def doctest(session: nox.sessions.Session):
         "doctest",
         external=True,
     )
-    session.cd("..")
+
+
+@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
+def gallery(session: nox.sessions.Session):
+    """Perform iris gallery doc-tests.
+
+    Parameters
+    ----------
+    session : object
+        A `nox.sessions.Session` object.
+
+    """
+    prepare_venv(session)
+    session.install("--no-deps", "--editable", ".")
+    session.env.update(ENV)
     session.run(
-        "python",
-        "-m",
-        "iris.tests.runner",
-        "--gallery-tests",
+        "pytest",
+        "-n",
+        "auto",
+        "docs/gallery_tests",
     )
 
 
 @nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
 def linkcheck(session: nox.sessions.Session):
-    """
-    Perform iris doc link check.
+    """Perform iris doc link check.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -280,48 +266,52 @@ def linkcheck(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=PY_VER[-1], venv_backend="conda")
-@nox.parametrize(
-    ["ci_mode"],
-    [True, False],
-    ids=["ci compare", "full"],
-)
-def benchmarks(session: nox.sessions.Session, ci_mode: bool):
-    """
-    Perform esmf-regrid performance benchmarks (using Airspeed Velocity).
+@nox.session(python=PY_VER, venv_backend="conda")
+def wheel(session: nox.sessions.Session):
+    """Perform iris local wheel install and import test.
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
-    ci_mode: bool
-        Run a cut-down selection of benchmarks, comparing the current commit to
-        the last commit for performance regressions.
-
-    Notes
-    -----
-    ASV is set up to use ``nox --session=tests --install-only`` to prepare
-    the benchmarking environment. This session environment must use a Python
-    version that is also available for ``--session=tests``.
 
     """
+    prepare_venv(session)
+    session.cd("dist")
+    fname = list(Path(".").glob("scitools_iris-*.whl"))
+    if len(fname) == 0:
+        raise ValueError("Cannot find wheel to install.")
+    if len(fname) > 1:
+        emsg = f"Expected to find 1 wheel to install, found {len(fname)} instead."
+        raise ValueError(emsg)
+    session.install(fname[0].name)
+    session.run(
+        "python",
+        "-c",
+        "import iris; print(f'{iris.__version__=}')",
+        external=True,
+    )
+
+
+@nox.session
+def benchmarks(session: nox.sessions.Session):
+    """Run the Iris benchmark runner. Run session with `-- --help` for help.
+
+    Parameters
+    ----------
+    session : object
+        A `nox.sessions.Session` object.
+
+    """
+    if len(session.posargs) == 0:
+        message = (
+            "This session MUST be run with at least one argument. The "
+            "arguments are passed down to the benchmark runner script. E.g:\n"
+            "nox -s benchmarks -- --help\n"
+            "nox -s benchmarks -- something --help\n"
+            "nox -s benchmarks -- something\n"
+        )
+        session.error(message)
     session.install("asv", "nox")
-    session.cd("benchmarks")
-    # Skip over setup questions for a new machine.
-    session.run("asv", "machine", "--yes")
-
-    def asv_exec(*sub_args: str) -> None:
-        run_args = ["asv", *sub_args]
-        session.run(*run_args)
-
-    if ci_mode:
-        # If on a PR: compare to the base (target) branch.
-        #  Else: compare to previous commit.
-        previous_commit = os.environ.get("PR_BASE_SHA", "HEAD^1")
-        try:
-            asv_exec("continuous", "--factor=1.2", previous_commit, "HEAD")
-        finally:
-            asv_exec("compare", previous_commit, "HEAD")
-    else:
-        # f5ceb808 = first commit supporting nox --install-only .
-        asv_exec("run", "f5ceb808..HEAD")
+    bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
+    session.run("python", bm_runner_path, *session.posargs)

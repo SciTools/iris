@@ -7,24 +7,25 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord bounds="[[1816560.0, 1902960.0]]" id="1d45e087" points="[1859760.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord bounds="[[1816560., 1902960.]]" id="1d45e087" points="[1859760.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[187200.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <dimCoord id="9c8bdf81" points="[187200.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ...,  86.875,  88.125,
+  89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord circular="True" id="f913a8b3" points="[0.0, 1.25, 2.5, ..., 356.25, 357.5, 358.75]" shape="(288,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord circular="True" id="f913a8b3" points="[  0.  ,   1.25,   2.5 , ..., 356.25, 357.5 ,
+ 358.75]" shape="(288,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[2003760.0, 2090160.0]]" id="cb784457" points="[2046960.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <dimCoord bounds="[[2003760., 2090160.]]" id="cb784457" points="[2046960.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods>

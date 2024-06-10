@@ -1,16 +1,16 @@
 """
 Rotated Pole Mapping
-=====================
+====================
 
 This example uses several visualisation methods to achieve an array of
 differing images, including:
 
- * Visualisation of point based data
- * Contouring of point based data
- * Block plot of contiguous bounded data
- * Non native projection and a Natural Earth shaded relief image underlay
+* Visualisation of point based data
+* Contouring of point based data
+* Block plot of contiguous bounded data
+* Non native projection and a Natural Earth shaded relief image underlay
 
-"""
+"""  # noqa: D205, D212, D400
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ def main():
     plt.gca().coastlines()
     iplt.show()
 
-    # Plot #3: Contourf overlayed by coloured point data
+    # Plot #3: Contourf overlaid by coloured point data
     plt.figure()
     qplt.contourf(air_pressure)
     iplt.points(air_pressure, c=air_pressure.data)

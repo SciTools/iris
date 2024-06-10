@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.CubeList` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -10,6 +9,7 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+import copy
 from unittest import mock
 
 from cf_units import Unit
@@ -23,27 +23,41 @@ import iris.exceptions
 from iris.fileformats.pp import STASH
 import iris.tests.stock
 
+NOT_CUBE_MSG = "cannot be put in a cubelist, as it is not a Cube."
+NON_ITERABLE_MSG = "object is not iterable"
+
+
+class Test_append(tests.IrisTest):
+    def setUp(self):
+        self.cubelist = iris.cube.CubeList()
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+
+    def test_pass(self):
+        self.cubelist.append(self.cube1)
+        self.assertEqual(self.cubelist[-1], self.cube1)
+        self.cubelist.append(self.cube2)
+        self.assertEqual(self.cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist.append(None)
+
 
 class Test_concatenate_cube(tests.IrisTest):
     def setUp(self):
-        self.units = Unit(
-            "days since 1970-01-01 00:00:00", calendar="gregorian"
-        )
+        self.units = Unit("days since 1970-01-01 00:00:00", calendar="standard")
         self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
-        self.cube1.add_dim_coord(
-            DimCoord([0, 1, 2], "time", units=self.units), 0
-        )
+        self.cube1.add_dim_coord(DimCoord([0, 1, 2], "time", units=self.units), 0)
 
     def test_pass(self):
         self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
-        self.cube2.add_dim_coord(
-            DimCoord([3, 4, 5], "time", units=self.units), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
         result = CubeList([self.cube1, self.cube2]).concatenate_cube()
         self.assertIsInstance(result, Cube)
 
     def test_fail(self):
-        units = Unit("days since 1970-01-02 00:00:00", calendar="gregorian")
+        units = Unit("days since 1970-01-02 00:00:00", calendar="standard")
         cube2 = Cube([1, 2, 3], "air_temperature", units="K")
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
         with self.assertRaises(iris.exceptions.ConcatenateError):
@@ -51,23 +65,40 @@ class Test_concatenate_cube(tests.IrisTest):
 
     def test_names_differ_fail(self):
         self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
-        self.cube2.add_dim_coord(
-            DimCoord([3, 4, 5], "time", units=self.units), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
         self.cube3 = Cube([1, 2, 3], "air_pressure", units="Pa")
-        self.cube3.add_dim_coord(
-            DimCoord([3, 4, 5], "time", units=self.units), 0
-        )
+        self.cube3.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
         exc_regexp = "Cube names differ: air_temperature != air_pressure"
-        with self.assertRaisesRegex(
-            iris.exceptions.ConcatenateError, exc_regexp
-        ):
+        with self.assertRaisesRegex(iris.exceptions.ConcatenateError, exc_regexp):
             CubeList([self.cube1, self.cube2, self.cube3]).concatenate_cube()
 
     def test_empty(self):
         exc_regexp = "can't concatenate an empty CubeList"
         with self.assertRaisesRegex(ValueError, exc_regexp):
             CubeList([]).concatenate_cube()
+
+
+class Test_extend(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = copy.copy(self.cubelist1)
+        cubelist.extend(self.cubelist2)
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist.extend([self.cube2])
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1.extend(self.cube1)
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1.extend(None)
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist1.extend(range(3))
 
 
 class Test_extract_overlapping(tests.IrisTest):
@@ -115,19 +146,53 @@ class Test_extract_overlapping(tests.IrisTest):
         cubes = iris.cube.CubeList([self.cube[2:, 5:], self.cube[:4, :10]])
         a, b = cubes.extract_overlapping(["time", "latitude"])
         self.assertEqual(a.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(
-            a.coord("latitude"), self.cube.coord("latitude")[5:10]
-        )
+        self.assertEqual(a.coord("latitude"), self.cube.coord("latitude")[5:10])
         self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
-        self.assertEqual(
-            b.coord("latitude"), self.cube.coord("latitude")[5:10]
-        )
+        self.assertEqual(b.coord("latitude"), self.cube.coord("latitude")[5:10])
 
     def test_different_orders(self):
         cubes = iris.cube.CubeList([self.cube[::-1][:4], self.cube[:4]])
         a, b = cubes.extract_overlapping("time")
         self.assertEqual(a.coord("time"), self.cube[::-1].coord("time")[2:4])
         self.assertEqual(b.coord("time"), self.cube.coord("time")[2:4])
+
+
+class Test_iadd(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist1 = iris.cube.CubeList([self.cube1])
+        self.cubelist2 = iris.cube.CubeList([self.cube2])
+
+    def test_pass(self):
+        cubelist = copy.copy(self.cubelist1)
+        cubelist += self.cubelist2
+        self.assertEqual(cubelist, self.cubelist1 + self.cubelist2)
+        cubelist += [self.cube2]
+        self.assertEqual(cubelist[-1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1 += self.cube1
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist1 += 1.0
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist1 += range(3)
+
+
+class Test_insert(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist.insert(1, self.cube2)
+        self.assertEqual(self.cubelist[1], self.cube2)
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist.insert(0, None)
 
 
 class Test_merge_cube(tests.IrisTest):
@@ -167,9 +232,7 @@ class Test_merge__time_triple(tests.IrisTest):
         cube = Cube(np.arange(20).reshape(4, 5))
         cube.add_dim_coord(DimCoord(np.arange(5), long_name="x", units="1"), 1)
         cube.add_dim_coord(DimCoord(np.arange(4), long_name="y", units="1"), 0)
-        cube.add_aux_coord(
-            DimCoord(fp, standard_name="forecast_period", units="1")
-        )
+        cube.add_aux_coord(DimCoord(fp, standard_name="forecast_period", units="1"))
         cube.add_aux_coord(
             DimCoord(rt, standard_name="forecast_reference_time", units="1")
         )
@@ -192,12 +255,8 @@ class Test_merge__time_triple(tests.IrisTest):
             (1, 11, 1),
             (1, 11, 2),
         )
-        en1_cubes = [
-            self._make_cube(*triple, realization=1) for triple in triples
-        ]
-        en2_cubes = [
-            self._make_cube(*triple, realization=2) for triple in triples
-        ]
+        en1_cubes = [self._make_cube(*triple, realization=1) for triple in triples]
+        en2_cubes = [self._make_cube(*triple, realization=2) for triple in triples]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
         self.assertCML(cube, checksum=False)
@@ -214,12 +273,8 @@ class Test_merge__time_triple(tests.IrisTest):
             (1, 11, 1),
             (1, 11, 2),
         )
-        en1_cubes = [
-            self._make_cube(*triple, realization=1) for triple in triples
-        ]
-        en2_cubes = [
-            self._make_cube(*triple, realization=2) for triple in triples
-        ]
+        en1_cubes = [self._make_cube(*triple, realization=1) for triple in triples]
+        en2_cubes = [self._make_cube(*triple, realization=2) for triple in triples]
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
         self.assertCML(cube, checksum=False)
@@ -236,12 +291,8 @@ class Test_merge__time_triple(tests.IrisTest):
             (1, 11, 1),
             (1, 11, 2),
         )
-        en1_cubes = [
-            self._make_cube(*triple, realization=1) for triple in triples
-        ]
-        en2_cubes = [
-            self._make_cube(*triple, realization=2) for triple in triples
-        ]
+        en1_cubes = [self._make_cube(*triple, realization=1) for triple in triples]
+        en2_cubes = [self._make_cube(*triple, realization=2) for triple in triples]
         # Add extra that is a duplicate of one of the time triples
         # but with a different realisation.
         en3_cubes = [self._make_cube(0, 10, 2, realization=3)]
@@ -261,9 +312,7 @@ class Test_merge__time_triple(tests.IrisTest):
             (1, 11, 1),
             (1, 11, 2),
         )
-        en1_cubes = [
-            self._make_cube(*triple, realization=1) for triple in triples
-        ]
+        en1_cubes = [self._make_cube(*triple, realization=1) for triple in triples]
         # Add extra time triple on the end.
         en2_cubes = [
             self._make_cube(*triple, realization=2)
@@ -272,6 +321,34 @@ class Test_merge__time_triple(tests.IrisTest):
         cubes = CubeList(en1_cubes) + CubeList(en2_cubes)
         (cube,) = cubes.merge()
         self.assertCML(cube, checksum=False)
+
+
+class Test_setitem(tests.IrisTest):
+    def setUp(self):
+        self.cube1 = iris.cube.Cube(1, long_name="foo")
+        self.cube2 = iris.cube.Cube(1, long_name="bar")
+        self.cube3 = iris.cube.Cube(1, long_name="boo")
+        self.cubelist = iris.cube.CubeList([self.cube1] * 3)
+
+    def test_pass(self):
+        self.cubelist[1] = self.cube2
+        self.assertEqual(self.cubelist[1], self.cube2)
+        self.cubelist[:2] = (self.cube2, self.cube3)
+        self.assertEqual(
+            self.cubelist,
+            iris.cube.CubeList([self.cube2, self.cube3, self.cube1]),
+        )
+
+    def test_fail(self):
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist[0] = None
+        with self.assertRaisesRegex(ValueError, NOT_CUBE_MSG):
+            self.cubelist[0:2] = [self.cube3, None]
+
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist[:1] = 2.5
+        with self.assertRaisesRegex(TypeError, NON_ITERABLE_MSG):
+            self.cubelist[:1] = self.cube1
 
 
 class Test_xml(tests.IrisTest):
@@ -367,9 +444,7 @@ class Test_extract_cube(ExtractMixin, tests.IrisTest):
         self.check_extract([self.cube_x], self.cons_x, self.cube_x)
 
     def test_single_cube_fail__too_few(self):
-        self.check_extract(
-            [self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1"
-        )
+        self.check_extract([self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1")
 
     def test_single_cube_fail__too_many(self):
         self.check_extract(
@@ -432,8 +507,7 @@ class Test_extract_cubes__noconstraint(ExtractCubesMixin, tests.IrisTest):
 
 
 class ExtractCubesSingleConstraintMixin(ExtractCubesMixin):
-    """
-    Common code for testing extract_cubes with a single constraint.
+    """Common code for testing extract_cubes with a single constraint.
     Generalised, so that we can do the same tests for a "bare" constraint,
     and a list containing a single [constraint].
 
@@ -457,9 +531,7 @@ class ExtractCubesSingleConstraintMixin(ExtractCubesMixin):
         )  # NOTE: always returns list NOT cube
 
     def test_single_cube__fail_mismatch(self):
-        self.check_extract(
-            [self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1"
-        )
+        self.check_extract([self.cube_x], self.cons_y, "Got 0 cubes .* expecting 1")
 
     def test_multi_cube_ok(self):
         self.check_extract(
@@ -498,9 +570,7 @@ class Test_extract_cubes__list_single_constraint(
 
 
 class Test_extract_cubes__multi_constraints(ExtractCubesMixin, tests.IrisTest):
-    """
-    Testing when the 'constraints' arg is a list of multiple constraints.
-    """
+    """Testing when the 'constraints' arg is a list of multiple constraints."""
 
     def test_empty(self):
         # Always fails.
@@ -565,7 +635,7 @@ class Test_iteration(tests.IrisTest):
                 self.scalar_cubes.append(Cube(i, long_name=letter))
 
     def test_iterable(self):
-        self.assertTrue(isinstance(self.scalar_cubes, collections.Iterable))
+        self.assertIsInstance(self.scalar_cubes, collections.abc.Iterable)
 
     def test_iteration(self):
         letters = "abcd" * 5
@@ -578,27 +648,18 @@ class TestPrint(tests.IrisTest):
         self.cubes = CubeList([iris.tests.stock.lat_lon_cube()])
 
     def test_summary(self):
-        expected = (
-            "0: unknown / (unknown)       "
-            "          (latitude: 3; longitude: 4)"
-        )
+        expected = "0: unknown / (unknown)                 (latitude: 3; longitude: 4)"
         self.assertEqual(str(self.cubes), expected)
 
     def test_summary_name_unit(self):
         self.cubes[0].long_name = "aname"
         self.cubes[0].units = "1"
-        expected = (
-            "0: aname / (1)       "
-            "                  (latitude: 3; longitude: 4)"
-        )
+        expected = "0: aname / (1)                         (latitude: 3; longitude: 4)"
         self.assertEqual(str(self.cubes), expected)
 
     def test_summary_stash(self):
         self.cubes[0].attributes["STASH"] = STASH.from_msi("m01s00i004")
-        expected = (
-            "0: m01s00i004 / (unknown)       "
-            "       (latitude: 3; longitude: 4)"
-        )
+        expected = "0: m01s00i004 / (unknown)              (latitude: 3; longitude: 4)"
         self.assertEqual(str(self.cubes), expected)
 
 
@@ -611,9 +672,7 @@ class TestRealiseData(tests.IrisTest):
         call_patch = self.patch("iris._lazy_data.co_realise_cubes")
         test_cubelist.realise_data()
         # Check it was called once, passing cubes as *args.
-        self.assertEqual(
-            call_patch.call_args_list, [mock.call(*mock_cubes_list)]
-        )
+        self.assertEqual(call_patch.call_args_list, [mock.call(*mock_cubes_list)])
 
 
 class Test_CubeList_copy(tests.IrisTest):
@@ -623,6 +682,36 @@ class Test_CubeList_copy(tests.IrisTest):
 
     def test_copy(self):
         self.assertIsInstance(self.copied_cube_list, iris.cube.CubeList)
+
+
+class TestHtmlRepr:
+    """Confirm that Cubelist._repr_html_() creates a fresh
+    :class:`iris.experimental.representation.CubeListRepresentation` object, and uses
+    it in the expected way.
+
+    Notes
+    -----
+    This only tests code connectivity.  The functionality is tested elsewhere, at
+    `iris.tests.unit.experimental.representation.test_CubeListRepresentation`
+    """
+
+    @staticmethod
+    def test__repr_html_():
+        test_cubelist = CubeList([])
+
+        target = "iris.experimental.representation.CubeListRepresentation"
+        with mock.patch(target) as class_mock:
+            # Exercise the function-under-test.
+            test_cubelist._repr_html_()
+
+        assert class_mock.call_args_list == [
+            # "CubeListRepresentation()" was called exactly once, with the cubelist as arg
+            mock.call(test_cubelist)
+        ]
+        assert class_mock.return_value.repr_html.call_args_list == [
+            # "CubeListRepresentation(cubelist).repr_html()" was called exactly once, with no args
+            mock.call()
+        ]
 
 
 if __name__ == "__main__":

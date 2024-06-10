@@ -1,14 +1,11 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-A package for converting cubes to and from specific file formats.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""A package for converting cubes to and from specific file formats."""
 
 from iris.io.format_picker import (
+    DataSourceObjectProtocol,
     FileExtension,
     FormatAgent,
     FormatSpecification,
@@ -17,7 +14,7 @@ from iris.io.format_picker import (
     UriProtocol,
 )
 
-from . import abf, name, netcdf, nimrod, pp, um
+from . import name, netcdf, nimrod, pp, um
 
 __all__ = ["FORMAT_AGENT"]
 
@@ -65,8 +62,7 @@ def _load_grib(*args, **kwargs):
         from iris_grib import load_cubes
     except ImportError:
         raise RuntimeError(
-            "Unable to load GRIB file - "
-            '"iris_grib" package is not installed.'
+            "Unable to load GRIB file - " '"iris_grib" package is not installed.'
         )
 
     return load_cubes(*args, **kwargs)
@@ -125,16 +121,33 @@ FORMAT_AGENT.add_spec(
 )
 
 
-_nc_dap = FormatSpecification(
-    "NetCDF OPeNDAP",
-    UriProtocol(),
-    lambda protocol: protocol in ["http", "https"],
-    netcdf.load_cubes,
-    priority=6,
-    constraint_aware_handler=True,
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "NetCDF OPeNDAP",
+        UriProtocol(),
+        lambda protocol: protocol in ["http", "https"],
+        netcdf.load_cubes,
+        priority=6,
+        constraint_aware_handler=True,
+    )
 )
-FORMAT_AGENT.add_spec(_nc_dap)
-del _nc_dap
+
+# NetCDF file presented as an open, readable netCDF4 dataset (or mimic).
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "NetCDF dataset",
+        DataSourceObjectProtocol(),
+        lambda object: all(
+            hasattr(object, x) for x in ("variables", "dimensions", "groups", "ncattrs")
+        ),
+        # Note: this uses the same call as the above "NetCDF_v4" (and "NetCDF OPeNDAP")
+        # The handler itself needs to detect what is passed + handle it appropriately.
+        netcdf.load_cubes,
+        priority=4,
+        constraint_aware_handler=True,
+    )
+)
+
 
 #
 # UM Fieldsfiles.
@@ -177,7 +190,7 @@ FORMAT_AGENT.add_spec(
 
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "UM Fieldsfile (FF) converted " "with ieee to 32 bit",
+        "UM Fieldsfile (FF) converted with ieee to 32 bit",
         MagicNumber(4),
         0x00000014,
         um.load_cubes_32bit_ieee,
@@ -189,7 +202,7 @@ FORMAT_AGENT.add_spec(
 
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "UM Fieldsfile (FF) ancillary " "converted with ieee to 32 bit",
+        "UM Fieldsfile (FF) ancillary converted with ieee to 32 bit",
         MagicNumber(4),
         0xFFFF8000,
         um.load_cubes_32bit_ieee,
@@ -224,16 +237,19 @@ FORMAT_AGENT.add_spec(
 
 #
 # ABF/ABL
+# TODO: now deprecated, remove later
 #
+def load_cubes_abf_abl(*args, **kwargs):
+    from . import abf
+
+    return abf.load_cubes(*args, **kwargs)
+
+
 FORMAT_AGENT.add_spec(
-    FormatSpecification(
-        "ABF", FileExtension(), ".abf", abf.load_cubes, priority=3
-    )
+    FormatSpecification("ABF", FileExtension(), ".abf", load_cubes_abf_abl, priority=3)
 )
 
 
 FORMAT_AGENT.add_spec(
-    FormatSpecification(
-        "ABL", FileExtension(), ".abl", abf.load_cubes, priority=3
-    )
+    FormatSpecification("ABL", FileExtension(), ".abl", load_cubes_abf_abl, priority=3)
 )

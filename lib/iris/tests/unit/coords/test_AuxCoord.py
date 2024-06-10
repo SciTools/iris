@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.coords.AuxCoord` class.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.coords.AuxCoord` class.
 
 Note: a lot of these methods are actually defined by the :class:`Coord` class,
 but can only be tested on concrete instances (DimCoord or AuxCoord).
@@ -60,8 +58,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertIsNot(
                         pts,
                         self.pts_real,
-                        "Points array is the same instance as the provided "
-                        "array.",
+                        "Points array is the same instance as the provided array.",
                     )
                 else:
                     # the original points were cast to a test dtype.
@@ -87,8 +84,7 @@ class Test__init__(tests.IrisTest, AuxCoordTestMixin):
                     self.assertIsNot(
                         pts,
                         self.pts_real,
-                        "Bounds array is the same instance as the provided "
-                        "array.",
+                        "Bounds array is the same instance as the provided array.",
                     )
                 else:
                     # the original bounds were cast to a test dtype.
@@ -370,7 +366,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             coord_dtype = main_coord.dtype
@@ -417,7 +412,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_type_name,
             bounds_type_name,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             msg = (
@@ -463,7 +457,6 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             sub_coord = main_coord[:2, 1]
 
             msg = (
@@ -474,9 +467,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 main_points = main_coord.core_points()
                 sub_points = sub_coord.core_points()
                 sub_main_points = main_points[:2, 1]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_points, sub_main_points
-                )
+                self.assertEqualRealArraysAndDtypes(sub_points, sub_main_points)
                 self.assertArraysDoNotShareData(
                     sub_points,
                     sub_main_points,
@@ -487,9 +478,7 @@ class Test__getitem__(tests.IrisTest, AuxCoordTestMixin):
                 main_bounds = main_coord.core_bounds()
                 sub_bounds = sub_coord.core_bounds()
                 sub_main_bounds = main_bounds[:2, 1]
-                self.assertEqualRealArraysAndDtypes(
-                    sub_bounds, sub_main_bounds
-                )
+                self.assertEqualRealArraysAndDtypes(sub_bounds, sub_main_bounds)
                 self.assertArraysDoNotShareData(
                     sub_bounds,
                     sub_main_bounds,
@@ -511,7 +500,6 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             coord_dtype = main_coord.dtype
             copied_coord = main_coord.copy()
 
@@ -558,7 +546,6 @@ class Test_copy(tests.IrisTest, AuxCoordTestMixin):
             points_lazyness,
             bounds_lazyness,
         ) in coords_all_dtypes_and_lazynesses(self, AuxCoord):
-
             copied_coord = main_coord.copy()
 
             msg = (

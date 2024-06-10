@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.AncillaryVariable` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -57,9 +56,7 @@ class AncillaryVariableTestMixin(CoordTestMixin):
             mvalues = ma.array(mvalues, copy=True)
             mvalues[0] = ma.masked
             self.masked_data_real = mvalues
-            self.masked_data_lazy = da.from_array(
-                mvalues, mvalues.shape, asarray=False
-            )
+            self.masked_data_lazy = da.from_array(mvalues, mvalues.shape, asarray=False)
 
 
 class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
@@ -68,7 +65,7 @@ class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
         self.setupTestArrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
-        for (ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
+        for ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
             self,
         ):
             data = ancill_var.core_data()
@@ -79,14 +76,12 @@ class Test__init__(tests.IrisTest, AncillaryVariableTestMixin):
                     self.assertArraysShareData(
                         data,
                         self.data_real,
-                        "Data values are not the same "
-                        "data as the provided array.",
+                        "Data values are not the same data as the provided array.",
                     )
                     self.assertIsNot(
                         data,
                         self.data_real,
-                        "Data array is the same instance as the provided "
-                        "array.",
+                        "Data array is the same instance as the provided array.",
                     )
                 else:
                     # the original data values were cast to a test dtype.
@@ -225,10 +220,7 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
         # floating dtype.
         # Check that dtypes remain the same in all cases, taking the dtypes
         # directly from the core data as we have no masking).
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
-            self
-        ):
-
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             ancill_var_dtype = main_ancill_var.dtype
@@ -241,19 +233,14 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
             self.assertEqual(
                 sub_data.dtype,
                 ancill_var_dtype,
-                msg.format(
-                    ancill_var_dtype, data_lazyness, "data", sub_data.dtype
-                ),
+                msg.format(ancill_var_dtype, data_lazyness, "data", sub_data.dtype),
             )
 
     def test_lazyness(self):
         # Index ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
-            self
-        ):
-
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -277,10 +264,7 @@ class Test__getitem__(tests.IrisTest, AncillaryVariableTestMixin):
     def test_real_data_copies(self):
         # Index ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copied by the indexing.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
-            self
-        ):
-
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             sub_ancill_var = main_ancill_var[:2, 1]
 
             msg = (
@@ -308,10 +292,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
         # Copy ancillary variables with real+lazy data, and either an int or
         # floating dtype.
         # Check that lazy data stays lazy and real stays real, in all cases.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
-            self
-        ):
-
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             ancill_var_dtype = main_ancill_var.dtype
             copied_ancill_var = main_ancill_var.copy()
 
@@ -320,9 +301,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
                 "changed lazyness of {} from {!r} to {!r}."
             )
 
-            copied_data_lazyness = lazyness_string(
-                copied_ancill_var.core_data()
-            )
+            copied_data_lazyness = lazyness_string(copied_ancill_var.core_data())
             self.assertEqual(
                 copied_data_lazyness,
                 data_lazyness,
@@ -338,10 +317,7 @@ class Test_copy(tests.IrisTest, AncillaryVariableTestMixin):
     def test_realdata_copies(self):
         # Copy ancillary variables with real+lazy data.
         # In all cases, check that any real arrays are copies, not views.
-        for (main_ancill_var, data_lazyness) in data_all_dtypes_and_lazynesses(
-            self
-        ):
-
+        for main_ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(self):
             copied_ancill_var = main_ancill_var.copy()
 
             msg = (
@@ -433,11 +409,18 @@ class Test__str__(tests.IrisTest):
             units="m",
             attributes={"notes": "Measured from sea level"},
         )
-        expected = (
-            "AncillaryVariable(array([2, 5, 9]), "
-            "standard_name='height', units=Unit('m'), "
-            "long_name='height of detector', var_name='height', "
-            "attributes={'notes': 'Measured from sea level'})"
+        expected = "\n".join(
+            [
+                "AncillaryVariable :  height / (m)",
+                "    data: [2, 5, 9]",
+                "    shape: (3,)",
+                "    dtype: int64",
+                "    standard_name: 'height'",
+                "    long_name: 'height of detector'",
+                "    var_name: 'height'",
+                "    attributes:",
+                "        notes  'Measured from sea level'",
+            ]
         )
         self.assertEqual(expected, ancillary_var.__str__())
 
@@ -447,11 +430,20 @@ class Test__str__(tests.IrisTest):
             units="hours since 1970-01-01 01:00",
             long_name="time of previous valid detection",
         )
-        expected = (
-            "AncillaryVariable([1970-01-01 03:00:00, "
-            "1970-01-01 06:00:00, 1970-01-01 10:00:00], "
-            "standard_name=None, calendar='gregorian', "
-            "long_name='time of previous valid detection')"
+        expected = "\n".join(
+            [
+                (
+                    "AncillaryVariable :  time of previous valid detection / "
+                    "(hours since 1970-01-01 01:00, standard calendar)"
+                ),
+                (
+                    "    data: [1970-01-01 03:00:00, 1970-01-01 06:00:00, "
+                    "1970-01-01 10:00:00]"
+                ),
+                "    shape: (3,)",
+                "    dtype: int64",
+                "    long_name: 'time of previous valid detection'",
+            ]
         )
         self.assertEqual(expected, ancillary_var.__str__())
 
@@ -466,12 +458,7 @@ class Test__repr__(tests.IrisTest):
             units="m",
             attributes={"notes": "Measured from sea level"},
         )
-        expected = (
-            "AncillaryVariable(array([2, 5, 9]), "
-            "standard_name='height', units=Unit('m'), "
-            "long_name='height of detector', var_name='height', "
-            "attributes={'notes': 'Measured from sea level'})"
-        )
+        expected = "<AncillaryVariable: height / (m)  [2, 5, 9]  shape(3,)>"
         self.assertEqual(expected, ancillary_var.__repr__())
 
     def test_time_values(self):
@@ -481,10 +468,8 @@ class Test__repr__(tests.IrisTest):
             long_name="time of previous valid detection",
         )
         expected = (
-            "AncillaryVariable(array([2, 5, 9]), standard_name=None, "
-            "units=Unit('hours since 1970-01-01 01:00', "
-            "calendar='gregorian'), "
-            "long_name='time of previous valid detection')"
+            "<AncillaryVariable: time of previous valid detection / (hours since 1970-01-01 01:00)  "
+            "[...]  shape(3,)>"
         )
         self.assertEqual(expected, ancillary_var.__repr__())
 
@@ -511,79 +496,79 @@ class Test___binary_operator__(tests.IrisTest, AncillaryVariableTestMixin):
             self.assertEqualLazyArraysAndDtypes(expected_data, data)
 
     def test_add(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var + 10
             expected_data = orig_data + 10
             self._check(result, expected_data, data_lazyness)
 
     def test_add_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var += 10
             expected_data = orig_data + 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_add(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 + ancill_var
             expected_data = 10 + orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_subtract(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var - 10
             expected_data = orig_data - 10
             self._check(result, expected_data, data_lazyness)
 
     def test_subtract_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var -= 10
             expected_data = orig_data - 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_subtract(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 - ancill_var
             expected_data = 10 - orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_multiply(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var * 10
             expected_data = orig_data * 10
             self._check(result, expected_data, data_lazyness)
 
     def test_multiply_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var *= 10
             expected_data = orig_data * 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_multiply(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 * ancill_var
             expected_data = 10 * orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_divide(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = ancill_var / 10
             expected_data = orig_data / 10
             self._check(result, expected_data, data_lazyness)
 
     def test_divide_inplace(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             ancill_var /= 10
             expected_data = orig_data / 10
             self._check(ancill_var, expected_data, data_lazyness)
 
     def test_right_divide(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = 10 / ancill_var
             expected_data = 10 / orig_data
             self._check(result, expected_data, data_lazyness)
 
     def test_negative(self):
-        for (ancill_var, orig_data, data_lazyness) in self.test_combinations:
+        for ancill_var, orig_data, data_lazyness in self.test_combinations:
             result = -ancill_var
             expected_data = -orig_data
             self._check(result, expected_data, data_lazyness)
@@ -616,55 +601,41 @@ class Test_is_compatible(tests.IrisTest):
     def test_not_compatible_diff_name(self):
         # Different name() - not compatible
         self.modified_ancill_var.rename("air_temperature")
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_not_compatible_diff_units(self):
         # Different units- not compatible
         self.modified_ancill_var.units = "m"
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_not_compatible_diff_common_attrs(self):
         # Different common attributes - not compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["source"] = "B"
-        self.assertFalse(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertFalse(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_data(self):
         # Different data values - compatible.
         self.modified_ancill_var.data = [10.0, 20.0, 100.0]
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_var_name(self):
         # Different var_name (but same name()) - compatible.
         self.modified_ancill_var.var_name = "obs_num"
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_diff_non_common_attributes(self):
         # Different non-common attributes - compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["origin"] = "B"
-        self.assertTrue(
-            self.ancill_var.is_compatible(self.modified_ancill_var)
-        )
+        self.assertTrue(self.ancill_var.is_compatible(self.modified_ancill_var))
 
     def test_compatible_ignore_common_attribute(self):
         # ignore different common attributes - compatible.
         self.ancill_var.attributes["source"] = "A"
         self.modified_ancill_var.attributes["source"] = "B"
         self.assertTrue(
-            self.ancill_var.is_compatible(
-                self.modified_ancill_var, ignore="source"
-            )
+            self.ancill_var.is_compatible(self.modified_ancill_var, ignore="source")
         )
 
 

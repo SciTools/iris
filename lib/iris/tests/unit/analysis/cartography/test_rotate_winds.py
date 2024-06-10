@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the function
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the function
 :func:`iris.analysis.cartography.rotate_winds`.
 
 """
@@ -16,6 +14,7 @@ import iris.tests as tests  # isort:skip
 import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.analysis.cartography import rotate_winds, unrotate_pole
 import iris.coord_systems
@@ -36,12 +35,8 @@ def uv_cubes(x=None, y=None):
     x2d, y2d = np.meshgrid(x, y)
     u = 10 * (2 * np.cos(2 * np.deg2rad(x2d) + 3 * np.deg2rad(y2d + 30)) ** 2)
     v = 20 * np.cos(6 * np.deg2rad(x2d))
-    lon = DimCoord(
-        x, standard_name="grid_longitude", units="degrees", coord_system=cs
-    )
-    lat = DimCoord(
-        y, standard_name="grid_latitude", units="degrees", coord_system=cs
-    )
+    lon = DimCoord(x, standard_name="grid_longitude", units="degrees", coord_system=cs)
+    lat = DimCoord(y, standard_name="grid_latitude", units="degrees", coord_system=cs)
     u_cube = Cube(u, standard_name="x_wind", units="m/s")
     v_cube = Cube(v, standard_name="y_wind", units="m/s")
     for cube in (u_cube, v_cube):
@@ -51,10 +46,9 @@ def uv_cubes(x=None, y=None):
 
 
 def uv_cubes_3d(ref_cube, n_realization=3):
-    """
-    Return 3d u, v cubes with a grid in a rotated pole CRS taken from
+    """Return 3d u, v cubes with a grid in a rotated pole CRS taken from
     the provided 2d cube, by adding a realization dimension
-    coordinate bound to teh zeroth dimension.
+    coordinate bound to the zeroth dimension.
 
     """
     lat = ref_cube.coord("grid_latitude")
@@ -156,14 +150,9 @@ class TestAnalyticComparison(tests.IrisTest):
             np.radians(trueLongitude) - lambda_angle
         ) + np.sin(np.radians(rotated_lons)) * np.sin(
             np.radians(trueLongitude) - lambda_angle
-        ) * np.cos(
-            phi_angle
-        )
+        ) * np.cos(phi_angle)
         sin_rot = -(
-            (
-                np.sin(np.radians(trueLongitude) - lambda_angle)
-                * np.sin(phi_angle)
-            )
+            (np.sin(np.radians(trueLongitude) - lambda_angle) * np.sin(phi_angle))
             / np.cos(np.radians(rotated_lats))
         )
 
@@ -183,9 +172,7 @@ class TestAnalyticComparison(tests.IrisTest):
         pole_lon = cs_rot.grid_north_pole_longitude
         rotated_lons = u_rot.coord("grid_longitude").points
         rotated_lats = u_rot.coord("grid_latitude").points
-        rotated_lons_2d, rotated_lats_2d = np.meshgrid(
-            rotated_lons, rotated_lats
-        )
+        rotated_lons_2d, rotated_lats_2d = np.meshgrid(rotated_lons, rotated_lats)
         rotated_u, rotated_v = u_rot.data, v_rot.data
         u_ref, v_ref = self._unrotate_equation(
             rotated_lons_2d,
@@ -204,18 +191,14 @@ class TestAnalyticComparison(tests.IrisTest):
         # Check for a small field with varying data.
         target_cs = iris.coord_systems.GeogCS(6371229)
         u_rot, v_rot = uv_cubes()
-        self._check_rotated_to_true(
-            u_rot, v_rot, target_cs, rtol=1e-5, atol=0.0005
-        )
+        self._check_rotated_to_true(u_rot, v_rot, target_cs, rtol=1e-5, atol=0.0005)
 
     def test_rotated_to_true_global(self):
         # Check for global fields with various constant wind values
         # - constant in the rotated pole system, that is.
         # We expect less accuracy where this gets close to the true poles.
         target_cs = iris.coord_systems.GeogCS(6371229)
-        u_rot, v_rot = uv_cubes(
-            x=np.arange(0, 360.0, 15), y=np.arange(-89, 89, 10)
-        )
+        u_rot, v_rot = uv_cubes(x=np.arange(0, 360.0, 15), y=np.arange(-89, 89, 10))
         for vector in ((1, 0), (0, 1), (1, 1), (-3, -1.5)):
             u_rot.data[...] = vector[0]
             v_rot.data[...] = vector[1]
@@ -316,21 +299,11 @@ class TestRotatedToOSGB(tests.IrisTest):
         self.assertEqual(ut.coord("projection_y_coordinate"), expected_y)
         self.assertEqual(vt.coord("projection_y_coordinate"), expected_y)
         # Check dim mapping for 2d coords is yx.
-        expected_dims = u.coord_dims("grid_latitude") + u.coord_dims(
-            "grid_longitude"
-        )
-        self.assertEqual(
-            ut.coord_dims("projection_x_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            ut.coord_dims("projection_y_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            vt.coord_dims("projection_x_coordinate"), expected_dims
-        )
-        self.assertEqual(
-            vt.coord_dims("projection_y_coordinate"), expected_dims
-        )
+        expected_dims = u.coord_dims("grid_latitude") + u.coord_dims("grid_longitude")
+        self.assertEqual(ut.coord_dims("projection_x_coordinate"), expected_dims)
+        self.assertEqual(ut.coord_dims("projection_y_coordinate"), expected_dims)
+        self.assertEqual(vt.coord_dims("projection_x_coordinate"), expected_dims)
+        self.assertEqual(vt.coord_dims("projection_y_coordinate"), expected_dims)
 
     def test_orig_coords(self):
         u, v = self._uv_cubes_limited_extent()
@@ -343,8 +316,8 @@ class TestRotatedToOSGB(tests.IrisTest):
     def test_magnitude_preservation(self):
         u, v = self._uv_cubes_limited_extent()
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
-        orig_sq_mag = u.data ** 2 + v.data ** 2
-        res_sq_mag = ut.data ** 2 + vt.data ** 2
+        orig_sq_mag = u.data**2 + v.data**2
+        res_sq_mag = ut.data**2 + vt.data**2
         self.assertArrayAllClose(orig_sq_mag, res_sq_mag, rtol=5e-4)
 
     def test_data_values(self):
@@ -410,7 +383,11 @@ class TestRotatedToOSGB(tests.IrisTest):
 class TestMasking(tests.IrisTest):
     def test_rotated_to_osgb(self):
         # Rotated Pole data with large extent.
-        x = np.linspace(311.9, 391.1, 10)
+        # A 'correct' answer is not known for this test; it is therefore
+        #  written as a 'benchmark' style test - a change in behaviour will
+        #  cause a test failure, requiring developers to approve/reject the
+        #  new behaviour.
+        x = np.linspace(221.9, 301.1, 10)
         y = np.linspace(-23.6, 24.8, 8)
         u, v = uv_cubes(x, y)
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
@@ -422,14 +399,14 @@ class TestMasking(tests.IrisTest):
         # Snapshot of mask with fixed tolerance of atol=2e-3
         expected_mask = np.array(
             [
-                [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 0, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 0, 0, 0, 0, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
-                [1, 1, 1, 1, 1, 0, 0, 1, 1, 1],
+                [0, 0, 0, 1, 1, 1, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1, 1, 1, 0, 1, 1],
+                [0, 0, 0, 0, 0, 1, 1, 1, 1, 1],
+                [0, 0, 0, 0, 1, 1, 1, 0, 0, 0],
+                [0, 0, 0, 1, 1, 1, 1, 1, 0, 0],
+                [0, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+                [0, 1, 1, 1, 0, 1, 1, 1, 0, 0],
+                [0, 1, 0, 0, 0, 0, 1, 1, 1, 0],
             ],
             np.bool_,
         )
@@ -437,16 +414,16 @@ class TestMasking(tests.IrisTest):
         self.assertArrayEqual(expected_mask, vt.data.mask)
 
         # Check unmasked values have sufficiently small error in mag.
-        expected_mag = np.sqrt(u.data ** 2 + v.data ** 2)
+        expected_mag = np.sqrt(u.data**2 + v.data**2)
         # Use underlying data to ignore mask in calculation.
-        res_mag = np.sqrt(ut.data.data ** 2 + vt.data.data ** 2)
+        res_mag = np.sqrt(ut.data.data**2 + vt.data.data**2)
         # Calculate percentage error (note there are no zero magnitudes
         # so we can divide safely).
         anom = 100.0 * np.abs(res_mag - expected_mag) / expected_mag
-        self.assertTrue(anom[~ut.data.mask].max() < 0.1)
+        assert anom[~ut.data.mask].max() == pytest.approx(0.3227935)
 
     def test_rotated_to_unrotated(self):
-        # Suffiently accurate so that no mask is introduced.
+        # Sufficiently accurate so that no mask is introduced.
         u, v = uv_cubes()
         ut, vt = rotate_winds(u, v, iris.coord_systems.GeogCS(6371229))
         self.assertFalse(ma.isMaskedArray(ut.data))
@@ -475,22 +452,84 @@ class TestRoundTrip(tests.IrisTest):
         )
         # Shift longitude from 0 to 360 -> -180 to 180.
         x2d = np.where(x2d > 180, x2d - 360, x2d)
-        res_x = res_u.coord(
-            "projection_x_coordinate", coord_system=orig_cs
-        ).points
-        res_y = res_u.coord(
-            "projection_y_coordinate", coord_system=orig_cs
-        ).points
+        res_x = res_u.coord("projection_x_coordinate", coord_system=orig_cs).points
+        res_y = res_u.coord("projection_y_coordinate", coord_system=orig_cs).points
         self.assertArrayAlmostEqual(res_x, x2d)
         self.assertArrayAlmostEqual(res_y, y2d)
-        res_x = res_v.coord(
-            "projection_x_coordinate", coord_system=orig_cs
-        ).points
-        res_y = res_v.coord(
-            "projection_y_coordinate", coord_system=orig_cs
-        ).points
+        res_x = res_v.coord("projection_x_coordinate", coord_system=orig_cs).points
+        res_y = res_v.coord("projection_y_coordinate", coord_system=orig_cs).points
         self.assertArrayAlmostEqual(res_x, x2d)
         self.assertArrayAlmostEqual(res_y, y2d)
+
+
+class TestNonEarthPlanet(tests.IrisTest):
+    def test_non_earth_semimajor_axis(self):
+        u, v = uv_cubes()
+        u.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(123)
+        u.coord("grid_longitude").coord_system = iris.coord_systems.GeogCS(123)
+        v.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(123)
+        v.coord("grid_longitude").coord_system = iris.coord_systems.GeogCS(123)
+        other_cs = iris.coord_systems.RotatedGeogCS(
+            0, 0, ellipsoid=iris.coord_systems.GeogCS(123)
+        )
+        rotate_winds(u, v, other_cs)
+
+
+class TestLazyRotateWinds(tests.IrisTest):
+    def _compare_lazy_rotate_winds(self, masked):
+        # Compute wind rotation with lazy data and compare results
+
+        # Choose target coord system that will (not) lead to masked results
+        if masked:
+            coord_sys = iris.coord_systems.OSGB()
+        else:
+            coord_sys = iris.coord_systems.GeogCS(6371229)
+
+        u, v = uv_cubes()
+
+        # Create deep copy of the cubes with rechunked lazy data to check if
+        # input data is modified, and if Dask metadata is preserved
+        u_lazy = u.copy(data=u.copy().lazy_data().rechunk([2, 1]))
+        v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1, 2]))
+
+        ut_ref, vt_ref = rotate_winds(u, v, coord_sys)
+        self.assertFalse(ut_ref.has_lazy_data())
+        self.assertFalse(vt_ref.has_lazy_data())
+        # Ensure that choice of target coordinates leads to (no) masking
+        self.assertTrue(ma.isMaskedArray(ut_ref.data) == masked)
+
+        # Results are lazy if at least one component is lazy
+        ut, vt = rotate_winds(u_lazy, v, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u, v_lazy, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        ut, vt = rotate_winds(u_lazy, v_lazy, coord_sys)
+        self.assertTrue(ut.has_lazy_data())
+        self.assertTrue(vt.has_lazy_data())
+        self.assertTrue(ut.core_data().chunksize == (2, 1))
+        self.assertTrue(vt.core_data().chunksize == (1, 2))
+        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
+        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+
+        # Ensure that input data has not been modified
+        self.assertArrayAllClose(u.data, u_lazy.data, rtol=1e-5)
+        self.assertArrayAllClose(v.data, v_lazy.data, rtol=1e-5)
+
+    def test_lazy_rotate_winds_masked(self):
+        self._compare_lazy_rotate_winds(True)
+
+    def test_lazy_rotate_winds_notmasked(self):
+        self._compare_lazy_rotate_winds(False)
 
 
 if __name__ == "__main__":

@@ -7,151 +7,62 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` |iris_version| Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: |iris_version| Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
-   The highlights for this minor release of Iris include:
+   The highlights for this major/minor release of Iris include:
 
-   * We've added support for `UGRID`_ meshes which can now be loaded and attached
-     to a cube.
+   * N/A
 
-   And finally, get in touch with us on `GitHub`_ if you have any issues or
-   feature requests for improving Iris. Enjoy!
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
 ================
 
-#. Welcome to `@wjbenfold`_, `@tinyendian`_, `@larsbarring`_, `@akuhnregnier`_,
-   `@bsherratt`_ and `@aaronspring`_ who made their first contributions to Iris.
-   The first of many we hope!
-#. Congratulations to `@wjbenfold`_ who has become a core developer for Iris! 🎉
+#. N/A
 
 
 ✨ Features
 ===========
 
-#. `@bjlittle`_, `@pp-mo`_, `@trexfeathers`_ and `@stephenworsley`_ added
-   support for unstructured meshes, as described by `UGRID`_. This involved
-   adding a data model (:pull:`3968`, :pull:`4014`, :pull:`4027`, :pull:`4036`,
-   :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
-   supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
-   Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
-   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
-   :class:`iris.experimental.ugrid.mesh.MeshCoord` and
-   :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
-   A :class:`iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
-   type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
-   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
-   on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
-   property :attr:`~iris.cube.Cube.mesh` which returns a
-   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
-   :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
-
-#. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
-   for files using the `UGRID`_ conventions.
-   The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
-   provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
-   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
-   (:pull:`4058`).
-
-#. `@pp-mo`_ added support to save cubes with meshes to netcdf files, using the
-   `UGRID`_ conventions.
-   The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
-   A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
-   :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
-   (i.e. not attached to cubes).
-   (:pull:`4318` and :pull:`4339`).
-
-#. `@trexfeathers`_ added :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`
-   for inferring a :class:`~iris.experimental.ugrid.mesh.Mesh` from an
-   appropriate collection of :class:`iris.coords.Coord`\ s.
-
-#. `@larsbarring`_ updated :func:`~iris.util.equalise_attributes` to return a list of dictionaries
-   containing the attributes removed from each :class:`~iris.cube.Cube`. (:pull:`4357`)
-
-#. `@trexfeathers`_ enabled streaming of **all** lazy arrays when saving to
-   NetCDF files (was previously just :class:`~iris.cube.Cube`
-   :attr:`~iris.cube.Cube.data`). This is
-   important given the much greater size of
-   :class:`~iris.coords.AuxCoord` :attr:`~iris.coords.AuxCoord.points` and
-   :class:`~iris.experimental.ugrid.mesh.Connectivity`
-   :attr:`~iris.experimental.ugrid.mesh.Connectivity.indices` under the
-   `UGRID`_ model. (:pull:`4375`)
-
-#. `@bsherratt`_ added a `threshold` parameter to
-   :meth:`~iris.cube.Cube.intersection` (:pull:`4363`)
-
-#. `@wjbenfold`_ added test data to ci benchmarks so that it is accessible to
-   benchmark scripts. Also added a regridding benchmark that uses this data
-   (:pull:`4402`)
+#. N/A
 
 
 🐛 Bugs Fixed
 =============
 
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.intersection` for special cases where
-   one cell's bounds align with the requested maximum and negative minimum, fixing
-   :issue:`4221`. (:pull:`4278`)
+#. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
+   to the array content. (:pull:`5801`)
 
-#. `@bsherratt`_ fixed further edge cases in
-   :meth:`~iris.cube.Cube.intersection`, including :issue:`3698` (:pull:`4363`)
-
-#. `@tinyendian`_ fixed the error message produced by :meth:`~iris.cube.CubeList.concatenate_cube`
-   when a cube list contains cubes with different names, which will no longer report
-   "Cube names differ: var1 != var1" if var1 appears multiple times in the list
-   (:issue:`4342`, :pull:`4345`)
-
-#. `@larsbarring`_ fixed :class:`~iris.coord_systems.GeoCS` to handle spherical ellipsoid
-   parameter inverse_flattening = 0 (:issue: `4146`, :pull:`4348`)
-
-#. `@pdearnshaw`_ fixed an error in the call to :class:`cftime.datetime` in
-   :mod:`~iris.fileformats.pp_save_rules` that prevented the saving to PP of climate
-   means for DJF (:pull:`4391`)
-
-#. `@wjbenfold`_ improved the error message for failure of :meth:`~iris.cube.CubeList.concatenate`
-   to indicate that the value of a scalar coordinate may be mismatched, rather than the metadata
-   (:issue:`4096`, :pull:`4387`)
-
-#. `@bsherratt`_ fixed a regression to the NAME file loader introduced in 3.0.4,
-   as well as some long-standing bugs with vertical coordinates and number
-   formats. (:pull:`4411`)
-
-#. `@rcomer`_ fixed :meth:`~iris.cube.Cube.subset` to alway return ``None`` if
-   no value match is found.  (:pull:`4417`)
-
-#. `@wjbenfold`_ resolved an issue that previously caused regridding with lazy
-   data to take significantly longer than with real data. Relevant benchmark
-   shows a time decrease from >10s to 625ms. (:issue:`4280`, :pull:`4400`)
-
-#. `@wjbenfold`_ changed :meth:`iris.util.points_step` to stop it from warning
-   when applied to a single point (:issue:`4250`, :pull:`4367`)
-
-#. `@trexfeathers`_ changed :class:`~iris.coords._DimensionalMetadata` and
-   :class:`~iris.experimental.ugrid.Connectivity` equality methods to preserve
-   array laziness, allowing efficient comparisons even with larger-than-memory
-   objects. (:pull:`4439`)
-
-#. `@rcomer`_ modified :meth:`~iris.cube.Cube.aggregated_by` to calculate new
-   coordinate bounds using minimum and maximum for unordered coordinates,
-   fixing :issue:`1528`. (:pull:`4315`)
+#. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
+   :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `@rcomer`_ removed the *target* parameter from
+   :func:`~iris.fileformats.pp.as_fields` and
+   :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
+   (:pull:`5783`)
 
 
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@bouweandela`_ added the option to specify the Dask chunks of the target
+   array in :func:`iris.util.broadcast_to_shape`. (:pull:`5620`)
 
+#. `@schlunma`_ allowed :func:`iris.analysis.cartography.area_weights` to
+   return dask arrays with arbitrary chunks. (:pull:`5658`)
+
+#. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
+   data. (:pull:`5795`)
 
 🔥 Deprecations
 ===============
@@ -162,111 +73,68 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@bjlittle`_ introduced the ``cartopy >=0.20`` minimum pin.
-   (:pull:`4331`)
-
-#. `@trexfeathers`_ introduced the ``cf-units >=3`` and ``nc-time-axis >=1.3``
-   minimum pins. (:pull:`4356`)
-
-#. `@bjlittle`_ introduced the ``numpy >=1.19`` minimum pin, in
-   accordance with `NEP-29`_ deprecation policy. (:pull:`4386`)
+#. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should
+   now be used, currently being v7.2.6.
+   (:pull:`5901`)
 
 
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated the "Plotting Wind Direction Using Quiver" Gallery
-   example. (:pull:`4120`)
-
-#. `@trexfeathers`_ included `Iris GitHub Discussions`_ in
-   :ref:`get involved <development_where_to_start>`. (:pull:`4307`)
-
-#. `@wjbenfold`_ improved readability in :ref:`userguide interpolation
-   section <interpolation>`. (:pull:`4314`)
-
-#. `@wjbenfold`_ added explanation about the absence of | operator for
-   :class:`iris.Constraint` to :ref:`userguide loading section
-   <constrained-loading>` and to api reference documentation. (:pull:`4321`)
-
-#. `@trexfeathers`_ added more detail on making `iris-test-data`_ available
-   during :ref:`developer_running_tests`. (:pull:`4359`)
-
-#. `@lbdreyer`_ added a section to the release documentation outlining the role
-   of the :ref:`release_manager`. (:pull:`4413`)
-
-#. `@trexfeathers`_ encouraged contributors to include type hinting in code
-   they are working on - :ref:`code_formatting`. (:pull:`4390`)
+#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
 💼 Internal
 ===========
 
-#. `@trexfeathers`_ set the linkcheck to ignore
-   http://www.nationalarchives.gov.uk/doc/open-government-licence since this
-   always works locally, but never within CI. (:pull:`4307`)
+#. `@bouweandela`_ removed a workaround in :meth:`~iris.cube.CubeList.merge` for an
+   issue with :func:`dask.array.stack` which has been solved since 2017. (:pull:`5923`)
 
-#. `@wjbenfold`_ netCDF integration tests now skip ``TestConstrainedLoad`` if
-   test data is missing (:pull:`4319`)
+#. `@trexfeathers`_ introduced a temporary fix for Airspeed Velocity's
+   deprecated use of the ``conda --force`` argument. To be removed once
+   `airspeed-velocity/asv#1397`_ is merged and released. (:pull:`5931`)
 
-#. `@wjbenfold`_ excluded ``Good First Issue`` labelled issues from being
-   marked stale. (:pull:`4317`)
+#. `@trexfeathers`_ created :func:`iris.tests.stock.realistic_4d_w_everything`;
+   providing a :class:`~iris.cube.Cube` aimed to exercise as much of Iris as
+   possible. (:pull:`5949`)
 
-#. `@tkknight`_ added additional make targets for reducing the time of the
-   documentation build including ``html-noapi`` and ``html-quick``.
-   Useful for development purposes only.  For more information see
-   :ref:`contributing.documentation.building` the documentation. (:pull:`4333`)
+#. `@trexfeathers`_ deactivated any small 'unit-style' benchmarks for default
+   benchmark runs, and introduced larger more 'real world' benchmarks where
+   coverage was needed. (:pull:`5949`).
 
-#. `@rcomer`_ modified the ``animation`` test to prevent it throwing a warning
-   that sometimes interferes with unrelated tests. (:pull:`4330`)
+#. `@trexfeathers`_ made a Nox `benchmarks` session as the recommended entry
+   point for running benchmarks. (:pull:`5951`)
 
-#. `@rcomer`_ removed a now redundant workaround in :func:`~iris.plot.contourf`.
-   (:pull:`4349`)
+#. `@ESadek-MO`_ added further `benchmarks` for aggregation and collapse.
+   (:pull:`5954`)
 
-#. `@trexfeathers`_ refactored :mod:`iris.experimental.ugrid` into sub-modules.
-   (:pull:`4347`).
+#. `@trexfeathers`_ set the benchmark data generation environment to
+   automatically install iris-test-data during setup. (:pull:`5958`)
 
-#. `@bjlittle`_ enabled the `sort-all`_ `pre-commit`_ hook to automatically
-   sort ``__all__`` entries into alphabetical order. (:pull:`4353`)
+#. `@pp-mo`_ reworked benchmark peak-memory measurement to use the
+   `tracemalloc <https://docs.python.org/3.12/library/tracemalloc.html>`_
+   package.
+   (:pull:`5948`)
 
-#. `@rcomer`_ modified a NetCDF saver test to prevent it triggering a numpy
-   deprecation warning.  (:issue:`4374`, :pull:`4376`)
+#. `@pp-mo`_ added a benchmark 'trialrun' sub-command, to quickly test
+   benchmarks during development. (:pull:`5957`)
 
-#. `@akuhnregnier`_ removed addition of period from
-   :func:`~iris.analysis.cartography.wrap_lons` and updated affected tests
-   using assertArrayAllClose following :issue:`3993`.
-   (:pull:`4421`)
-   
-#. `@rcomer`_ updated some tests to work with Matplotlib v3.5. (:pull:`4428`)
+#. `@pp-mo`_ moved several memory-measurement benchmarks from 'on-demand' to
+   the standard set, in hopes that use of 'tracemalloc' (:pull:`5948`) makes
+   the results consistent enough to monitor for performance changes.
+   (:pull:`5959`)
 
-#. `@rcomer`_ applied minor fixes to some regridding tests. (:pull:`4432`)
+#. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
 
-#. `@lbdreyer`_ corrected the license PyPI classifier. (:pull:`4435`)
-
-#. `@aaronspring <https://github.com/aaronspring>`_ exchanged `dask` with
-   `dask-core` in testing environments reducing the number of dependencies
-   installed for testing. (:pull:`4434`)
-
-#. `@wjbenfold`_ prevented github action runs in forks (:issue:`4441`,
-   :pull:`4444`)
-
-#. `@wjbenfold`_ fixed tests for hybrid formulae that weren't being found by
-   nose (:issue:`4431`, :pull:`4450`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-.. _@aaronspring: https://github.com/aaronspring
-.. _@akuhnregnier: https://github.com/akuhnregnier
-.. _@bsherratt: https://github.com/bsherratt
-.. _@larsbarring: https://github.com/larsbarring
-.. _@pdearnshaw: https://github.com/pdearnshaw
-.. _@tinyendian: https://github.com/tinyendian
+.. _@hsteptoe: https://github.com/hsteptoe
+
 
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
-.. _NEP-29: https://numpy.org/neps/nep-0029-deprecation_policy.html
-.. _UGRID: http://ugrid-conventions.github.io/ugrid-conventions/
-.. _sort-all: https://github.com/aio-libs/sort-all
+.. _airspeed-velocity/asv#1397: https://github.com/airspeed-velocity/asv/pull/1397

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for regridding."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -111,8 +110,9 @@ class TestUnstructured(tests.IrisTest):
 
 class TestZonalMean_global(tests.IrisTest):
     def setUp(self):
-        np.random.seed(0)
-        self.src = iris.cube.Cube(np.random.random_integers(0, 10, (140, 1)))
+        self.src = iris.cube.Cube(
+            np.random.default_rng().integers(0, 10, size=(140, 1))
+        )
         s_crs = iris.coord_systems.GeogCS(6371229.0)
         sy_coord = iris.coords.DimCoord(
             np.linspace(-90, 90, 140),
@@ -146,9 +146,7 @@ class TestZonalMean_global(tests.IrisTest):
         sx_coord = self.src.coord(axis="x")
         sy_coord = self.src.coord(axis="y")
         x_coord = sx_coord.copy(points, bounds=bounds)
-        grid = iris.cube.Cube(
-            np.zeros([sy_coord.points.size, x_coord.points.size])
-        )
+        grid = iris.cube.Cube(np.zeros([sy_coord.points.size, x_coord.points.size]))
         grid.add_dim_coord(sy_coord, 0)
         grid.add_dim_coord(x_coord, 1)
 
@@ -184,9 +182,7 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         grid_x.coord_system = grid_crs
         grid_y = sy_coord.copy(np.linspace(-10, 10, 100))
         grid_y.coord_system = grid_crs
-        grid = iris.cube.Cube(
-            np.zeros([grid_y.points.size, grid_x.points.size])
-        )
+        grid = iris.cube.Cube(np.zeros([grid_y.points.size, grid_x.points.size]))
         grid.add_dim_coord(grid_y, 0)
         grid.add_dim_coord(grid_x, 1)
 

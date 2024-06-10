@@ -1,13 +1,10 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
-"""
-Utility operations specific to unstructured data.
+"""Utility operations specific to unstructured data."""
 
-"""
 from typing import AnyStr, Iterable, Union
 
 import dask.array as da
@@ -21,8 +18,7 @@ def recombine_submeshes(
     submesh_cubes: Union[Iterable[Cube], Cube],
     index_coord_name: AnyStr = "i_mesh_index",
 ) -> Cube:
-    """
-    Put data from sub-meshes back onto the original full mesh.
+    """Put data from sub-meshes back onto the original full mesh.
 
     The result is a cube like ``mesh_cube``, but with its data replaced by a
     combination of the data in the ``submesh_cubes``.
@@ -98,10 +94,7 @@ def recombine_submeshes(
     result_dtype = None
     indexcoord_metadata = None
     for i_sub, cube in enumerate(submesh_cubes):
-        sub_str = (
-            f"Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, "
-            f'"{cube.name()}"'
-        )
+        sub_str = f"Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, " f'"{cube.name()}"'
 
         # Check dimensionality.
         if cube.ndim != mesh_cube.ndim:
@@ -147,9 +140,7 @@ def recombine_submeshes(
                 )
             else:
                 # non-mesh dims : look for dim-coords (only)
-                full_coord = mesh_cube.coords(
-                    dim_coords=True, dimensions=(i_dim,)
-                )
+                full_coord = mesh_cube.coords(dim_coords=True, dimensions=(i_dim,))
                 sub_coord = cube.coords(dim_coords=True, dimensions=(i_dim,))
 
             if full_coord:
@@ -220,7 +211,7 @@ def recombine_submeshes(
     # Use the mesh_dim to transpose inputs + outputs, if required, as it is
     # simpler for all the array operations to always have the mesh dim *last*.
     if mesh_dim == mesh_cube.ndim - 1:
-        # Mesh dim is already the last one : no tranpose required
+        # Mesh dim is already the last one : no transpose required
         untranspose_dims = None
     else:
         dim_range = np.arange(mesh_cube.ndim, dtype=int)
@@ -236,8 +227,7 @@ def recombine_submeshes(
 
         mesh_cube = transposed_copy(mesh_cube, tranpose_dims)
         submesh_cubes = [
-            transposed_copy(region_cube, tranpose_dims)
-            for region_cube in submesh_cubes
+            transposed_copy(region_cube, tranpose_dims) for region_cube in submesh_cubes
         ]
 
         # Also prepare for transforming the output back to the original order

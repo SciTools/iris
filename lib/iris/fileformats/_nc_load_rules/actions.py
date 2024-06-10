@@ -1,14 +1,13 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Replacement code for the Pyke rules.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Replacement code for the Pyke rules.
 
 For now, we are still emulating various aspects of how our original Pyke-based
 code used the Pyke 'engine' to hold translation data, both Pyke-specific and
 not :
+
 1) basic details from the iris.fileformats.cf analysis of the file are
    recorded before translating each output cube, using
    "engine.assert_case_specific_fact(name, args)".
@@ -18,7 +17,7 @@ not :
 
 3) Iris-specific info is (still) stored in additional properties created on
    the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rule_triggered, .filename
+       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
 
 Our "rules" are just action routines.
 The top-level 'run_actions' routine decides which actions to call, based on the
@@ -46,11 +45,30 @@ import warnings
 from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
+import iris.warnings
 
 from . import helpers as hh
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(funcName)s]")
+
+
+class _WarnComboCfLoadIgnoring(
+    iris.warnings.IrisCfLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
+
+
+class _WarnComboLoadIgnoring(
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+):
+    """One-off combination of warning classes - enhances user filtering."""
+
+    pass
 
 
 def _default_rulenamesfunc(func_name):
@@ -78,7 +96,7 @@ def action_function(func):
             # but also may vary depending on whether it successfully
             # triggered, and if so what it matched.
             rule_name = _default_rulenamesfunc(func.__name__)
-        engine.rule_triggered.add(rule_name)
+        engine.rules_triggered.add(rule_name)
 
     func._rulenames_func = _default_rulenamesfunc
     return inner
@@ -86,7 +104,7 @@ def action_function(func):
 
 @action_function
 def action_default(engine):
-    """Standard operations for every cube."""
+    """Perform standard operations for every cube."""
     hh.build_cube_metadata(engine)
 
 
@@ -110,8 +128,12 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
         hh.build_transverse_mercator_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_STEREO: (
-        hh.has_supported_stereographic_parameters,
+        None,
         hh.build_stereographic_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_POLAR: (
+        hh.has_supported_polar_stereographic_parameters,
+        hh.build_polar_stereographic_coordinate_system,
     ),
     hh.CF_GRID_MAPPING_LAMBERT_CONFORMAL: (
         None,
@@ -132,6 +154,14 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
     hh.CF_GRID_MAPPING_GEOSTATIONARY: (
         None,
         hh.build_geostationary_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_OBLIQUE: (
+        None,
+        hh.build_oblique_mercator_coordinate_system,
+    ),
+    hh.CF_GRID_MAPPING_ROTATED_MERCATOR: (
+        None,
+        hh.build_oblique_mercator_coordinate_system,
     ),
 }
 
@@ -184,16 +214,19 @@ def action_provides_coordinate(engine, dimcoord_fact):
 
     # Identify the "type" of a coordinate variable
     coord_type = None
-    # NOTE: must test for rotated cases *first*, as 'is_longitude' and
-    # 'is_latitude' functions also accept rotated cases.
-    if hh.is_rotated_latitude(engine, var_name):
-        coord_type = "rotated_latitude"
-    elif hh.is_rotated_longitude(engine, var_name):
-        coord_type = "rotated_longitude"
-    elif hh.is_latitude(engine, var_name):
-        coord_type = "latitude"
+
+    if hh.is_latitude(engine, var_name):
+        # N.B. result of 'is_rotated_lat/lon' checks are valid ONLY when the
+        # relevant 'is_lat/lon' is also True.
+        if hh.is_rotated_latitude(engine, var_name):
+            coord_type = "rotated_latitude"
+        else:
+            coord_type = "latitude"
     elif hh.is_longitude(engine, var_name):
-        coord_type = "longitude"
+        if hh.is_rotated_longitude(engine, var_name):
+            coord_type = "rotated_longitude"
+        else:
+            coord_type = "longitude"
     elif hh.is_time(engine, var_name):
         coord_type = "time"
     elif hh.is_time_period(engine, var_name):
@@ -253,9 +286,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     coord_type, var_name = providescoord_fact
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
-    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[
-        coord_type
-    ]
+    coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -464,7 +495,10 @@ def action_formula_type(engine, formula_root_fact):
         succeed = False
         rule_name += f"(FAILED - unrecognised formula type = {formula_type!r})"
         msg = f"Ignored formula of unrecognised type: {formula_type!r}."
-        warnings.warn(msg)
+        warnings.warn(
+            msg,
+            category=_WarnComboCfLoadIgnoring,
+        )
     if succeed:
         # Check we don't already have one.
         existing_type = engine.requires.get("formula_type")
@@ -479,7 +513,10 @@ def action_formula_type(engine, formula_root_fact):
                 f"Formula of type ={formula_type!r} "
                 f"overrides another of type ={existing_type!r}.)"
             )
-            warnings.warn(msg)
+            warnings.warn(
+                msg,
+                category=_WarnComboLoadIgnoring,
+            )
         rule_name += f"_{formula_type}"
         # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
         engine.requires["formula_type"] = formula_type
@@ -500,8 +537,7 @@ def action_formula_term(engine, formula_term_fact):
 
 
 def run_actions(engine):
-    """
-    Run all actions for a cube.
+    """Run all actions for a cube.
 
     This is the top-level "activation" function which runs all the appropriate
     rules actions to translate facts and build all the cube elements.
@@ -509,7 +545,6 @@ def run_actions(engine):
     The specific cube being translated is "engine.cube".
 
     """
-
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.tests.IrisTest` class."""
 
 # import iris tests first so that some things can be initialised before
@@ -66,8 +65,7 @@ class _MaskedArrayEquality(metaclass=ABCMeta):
             self._func(self.arr1, arr2, strict=False)
 
 
-@tests.iristest_timing_decorator
-class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest_nometa):
+class Test_assertMaskedArrayEqual(_MaskedArrayEquality, tests.IrisTest):
     @property
     def _func(self):
         return self.assertMaskedArrayEqual
@@ -114,10 +112,7 @@ class Test_assertMaskedArrayEqual__Nonmaasked(tests.IrisTest):
         self.assertMaskedArrayEqual(arr1, arr2)
 
 
-@tests.iristest_timing_decorator
-class Test_assertMaskedArrayAlmostEqual(
-    _MaskedArrayEquality, tests.IrisTest_nometa
-):
+class Test_assertMaskedArrayAlmostEqual(_MaskedArrayEquality, tests.IrisTest):
     @property
     def _func(self):
         return self.assertMaskedArrayAlmostEqual

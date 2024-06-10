@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
 import re
@@ -16,7 +15,11 @@ import numpy as np
 import iris
 import iris.coord_systems
 from iris.coords import DimCoord
-from iris.exceptions import CoordinateNotFoundError, TranslationError
+from iris.exceptions import (
+    CoordinateNotFoundError,
+    TranslationError,
+)
+from iris.warnings import IrisNimrodTranslationWarning
 
 __all__ = ["run"]
 
@@ -24,26 +27,30 @@ __all__ = ["run"]
 NIMROD_DEFAULT = -32767.0
 
 TIME_UNIT = cf_units.Unit(
-    "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_GREGORIAN
+    "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_STANDARD
 )
 
 
-class TranslationWarning(Warning):
+class TranslationWarning(IrisNimrodTranslationWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisNimrodTranslationWarning`."""
+
+    # TODO: remove at the next major release.
     pass
 
 
 def is_missing(field, value):
-    """Returns True if value matches an "is-missing" number."""
-    return any(
-        np.isclose(value, [field.int_mdi, field.float32_mdi, NIMROD_DEFAULT])
-    )
+    """Return True if value matches an "is-missing" number."""
+    return any(np.isclose(value, [field.int_mdi, field.float32_mdi, NIMROD_DEFAULT]))
 
 
 def name(cube, field, handle_metadata_errors):
     """Set the cube's name from the field.
+
     Modifies the Nimrod object title based on other meta-data in the
     Nimrod field and known use cases.
+
     Adds "mean_of" or "standard_deviation_of_" to the cube name if appropriate.
+
     """
     title_from_field_code = {
         12: "air_pressure",
@@ -85,17 +92,12 @@ def name(cube, field, handle_metadata_errors):
 
 
 def remove_unprintable_chars(input_str):
-    """
-    Removes unprintable characters from a string and returns the result.
-    """
-    return "".join(
-        c if c in string.printable else " " for c in input_str
-    ).strip()
+    """Remove unprintable characters from a string and return the result."""
+    return "".join(c if c in string.printable else " " for c in input_str).strip()
 
 
 def units(cube, field):
-    """
-    Set the cube's units from the field.
+    """Set the cube's units from the field.
 
     Takes into account nimrod unit strings of the form unit*?? where the data
     needs to converted by dividing by ??. Also converts units we know Iris
@@ -135,9 +137,9 @@ def units(cube, field):
         if "^" in unit_list[1]:
             # Split out magnitude
             unit_sublist = unit_list[1].split("^")
-            cube.data = cube.data.astype(np.float32) / float(
-                unit_sublist[0]
-            ) ** float(unit_sublist[1])
+            cube.data = cube.data.astype(np.float32) / float(unit_sublist[0]) ** float(
+                unit_sublist[1]
+            )
         else:
             cube.data = cube.data.astype(np.float32) / float(unit_list[1])
         field_units = unit_list[0]
@@ -178,9 +180,8 @@ def units(cube, field):
     except ValueError:
         # Just add it as an attribute.
         warnings.warn(
-            "Unhandled units '{0}' recorded in cube attributes.".format(
-                field_units
-            )
+            "Unhandled units '{0}' recorded in cube attributes.".format(field_units),
+            category=IrisNimrodTranslationWarning,
         )
         cube.attributes["invalid_units"] = field_units
 
@@ -205,10 +206,7 @@ def time(cube, field):
     period_seconds = None
     if field.period_minutes == 32767:
         period_seconds = field.period_seconds
-    elif (
-        not is_missing(field, field.period_minutes)
-        and field.period_minutes != 0
-    ):
+    elif not is_missing(field, field.period_minutes) and field.period_minutes != 0:
         period_seconds = field.period_minutes * 60
     if period_seconds:
         bounds = np.array([point - period_seconds, point], dtype=np.int64)
@@ -242,9 +240,7 @@ def reference_time(cube, field):
 
 
 def forecast_period(cube):
-    """
-    Add a forecast_period coord based on existing time and
-    forecast_reference_time coords.
+    """Add forecast_period coord based on existing time and forecast_reference_time coords.
 
     Must be run after time() and reference_time()
 
@@ -277,10 +273,7 @@ def forecast_period(cube):
 
 
 def mask_cube(cube, field):
-    """
-    Updates cube.data to be a masked array if appropriate.
-
-    """
+    """Update cube.data to be a masked array if appropriate."""
     dtype = cube.dtype
     masked_points = None
     if field.datum_type == 1:
@@ -290,33 +283,28 @@ def mask_cube(cube, field):
         # field.data are floats
         masked_points = np.isclose(field.data, field.float32_mdi)
     if np.any(masked_points):
-        cube.data = np.ma.masked_array(
-            cube.data, mask=masked_points, dtype=dtype
-        )
+        cube.data = np.ma.masked_array(cube.data, mask=masked_points, dtype=dtype)
 
 
 def experiment(cube, field):
     """Add an 'experiment number' to the cube, if present in the field."""
     if not is_missing(field, field.experiment_num):
         cube.add_aux_coord(
-            DimCoord(
-                field.experiment_num, long_name="experiment_number", units="1"
-            )
+            DimCoord(field.experiment_num, long_name="experiment_number", units="1")
         )
 
 
 def proj_biaxial_ellipsoid(field, handle_metadata_errors):
-    """
-    Returns the correct dictionary of arguments needed to define an
-    iris.coord_systems.GeogCS.
+    """Return correct dict of arguments needed to define an iris.coord_systems.GeogCS.
 
     Based firstly on the value given by ellipsoid, then by grid if ellipsoid is
     missing, select the right pre-defined ellipsoid dictionary (Airy_1830 or
     international_1924).
 
-    References:
-        Airy 1830: https://georepository.com/ellipsoid_7001/Airy-1830.html
-        International 1924: https://georepository.com/ellipsoid_7022/International-1924.html
+    References
+    ----------
+    Airy 1830: https://georepository.com/ellipsoid_7001/Airy-1830.html
+    International 1924: https://georepository.com/ellipsoid_7022/International-1924.html
 
     """
     airy_1830 = {
@@ -331,15 +319,10 @@ def proj_biaxial_ellipsoid(field, handle_metadata_errors):
         ellipsoid = airy_1830
     elif field.proj_biaxial_ellipsoid == 1:
         ellipsoid = international_1924
-    elif (
-        is_missing(field, field.proj_biaxial_ellipsoid)
-        and handle_metadata_errors
-    ):
+    elif is_missing(field, field.proj_biaxial_ellipsoid) and handle_metadata_errors:
         if field.horizontal_grid_type == 0:
             ellipsoid = airy_1830
-        elif (
-            field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4
-        ):
+        elif field.horizontal_grid_type == 1 or field.horizontal_grid_type == 4:
             ellipsoid = international_1924
         else:
             raise TranslationError(
@@ -357,10 +340,13 @@ def proj_biaxial_ellipsoid(field, handle_metadata_errors):
 
 
 def set_british_national_grid_defaults(field, handle_metadata_errors):
-    """Check for missing coord-system meta-data and set default values for
-    the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
-    files are missing these."""
+    """Check for missing coord-system meta-data and set default values.
 
+    Check for missing coord-system meta-data and set default values for
+    the Ordnance Survey GB Transverse Mercator projection. Some Radarnet
+    files are missing these.
+
+    """
     if handle_metadata_errors:
         if is_missing(field, field.true_origin_latitude):
             field.true_origin_latitude = 49.0
@@ -391,6 +377,7 @@ def set_british_national_grid_defaults(field, handle_metadata_errors):
 
 def coord_system(field, handle_metadata_errors):
     """Define the coordinate system for the field.
+
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
     Transverse Mercator projections will default to the British National Grid if any
@@ -413,7 +400,8 @@ def coord_system(field, handle_metadata_errors):
         if any([is_missing(field, v) for v in crs_args]):
             warnings.warn(
                 "Coordinate Reference System is not completely defined. "
-                "Plotting and reprojection may be impaired."
+                "Plotting and reprojection may be impaired.",
+                category=IrisNimrodTranslationWarning,
             )
         coord_sys = iris.coord_systems.TransverseMercator(
             *crs_args, iris.coord_systems.GeogCS(**ellipsoid)
@@ -427,6 +415,7 @@ def coord_system(field, handle_metadata_errors):
 
 def horizontal_grid(cube, field, handle_metadata_errors):
     """Add X and Y coordinates to the cube.
+
     Handles Transverse Mercator, Universal Transverse Mercator and Plate Carree.
 
     coordinate reference system is supplied by coord_system(field)
@@ -444,8 +433,7 @@ def horizontal_grid(cube, field, handle_metadata_errors):
         y_coord_name = "latitude"
     else:
         raise TranslationError(
-            "Horizontal grid type {} not "
-            "implemented".format(field.horizontal_grid_type)
+            "Horizontal grid type {} not implemented".format(field.horizontal_grid_type)
         )
     points = np.linspace(
         field.x_origin,
@@ -472,8 +460,13 @@ def horizontal_grid(cube, field, handle_metadata_errors):
 
 
 def vertical_coord(cube, field):
-    """Add a vertical coord to the cube, with bounds, if appropriate.
-    Handles special numbers for "at-sea-level" (8888) and "at-ground-level" (9999)."""
+    """Add a vertical coord to the cube, with bounds.
+
+    Add a vertical coord to the cube, with bounds, if appropriate.
+    Handles special numbers for "at-sea-level" (8888) and "at-ground-level"
+    (9999).
+
+    """
     # vertical_codes contains conversions from the Nimrod Documentation for the
     # header entry 20 for the vertical coordinate type
     # Unhandled vertical_codes values (no use case identified):
@@ -531,7 +524,7 @@ def vertical_coord(cube, field):
             f"{field.vertical_coord_type} != {field.reference_vertical_coord_type}. "
             f"Assuming {field.vertical_coord_type}"
         )
-        warnings.warn(msg)
+        warnings.warn(msg, category=IrisNimrodTranslationWarning)
 
     coord_point = field.vertical_coord
     if coord_point == 8888.0:
@@ -553,9 +546,7 @@ def vertical_coord(cube, field):
             return
         # A bounded vertical coord starting from the surface
         coord_point = 0.0
-        coord_args = vertical_codes.get(
-            field.reference_vertical_coord_type, None
-        )
+        coord_args = vertical_codes.get(field.reference_vertical_coord_type, None)
     coord_point = np.array(coord_point, dtype=np.float32)
     if (
         field.reference_vertical_coord >= 0.0
@@ -568,17 +559,14 @@ def vertical_coord(cube, field):
         bounds = None
 
     if coord_args:
-        new_coord = iris.coords.AuxCoord(
-            coord_point, bounds=bounds, **coord_args
-        )
+        new_coord = iris.coords.AuxCoord(coord_point, bounds=bounds, **coord_args)
         # Add coordinate to cube
         cube.add_aux_coord(new_coord)
         return
 
     warnings.warn(
-        "Vertical coord {!r} not yet handled"
-        "".format(field.vertical_coord_type),
-        TranslationWarning,
+        "Vertical coord {!r} not yet handled".format(field.vertical_coord_type),
+        category=TranslationWarning,
     )
 
 
@@ -651,9 +639,7 @@ def attributes(cube, field):
     # Remove member number from cube_source. This commonly takes the form ek04 where ek
     # indicates the model and 04 is the realization number. As the number is represented
     # by a realization coord, stripping it from here allows cubes to be merged.
-    match = re.match(
-        r"^(?P<model_code>\w\w)(?P<realization>\d\d)$", cube_source
-    )
+    match = re.match(r"^(?P<model_code>\w\w)(?P<realization>\d\d)$", cube_source)
     try:
         r_coord = cube.coord("realization")
     except CoordinateNotFoundError:
@@ -668,9 +654,11 @@ def attributes(cube, field):
 
 
 def known_threshold_coord(field):
-    """
-    Supplies known threshold coord meta-data for known use cases.
-    threshold_value_alt exists because some meta-data are mis-assigned in the Nimrod data.
+    """Supply known threshold coord meta-data for known use cases.
+
+    threshold_value_alt exists because some meta-data are mis-assigned in the
+    Nimrod data.
+
     """
     coord_keys = {}
     if (
@@ -714,10 +702,13 @@ def known_threshold_coord(field):
 
 
 def probability_coord(cube, field, handle_metadata_errors):
-    """
-    Adds a coord relating to probability meta-data from the header to the
+    """Add a coord relating to probability meta-data from the header to the cube.
+
+    Add a coord relating to probability meta-data from the header to the
     cube if appropriate.
+
     Must be run after the name method.
+
     """
     probtype_lookup = {
         1: {
@@ -765,9 +756,7 @@ def probability_coord(cube, field, handle_metadata_errors):
     if handle_metadata_errors:
         coord_keys.update(known_threshold_coord(field))
     if not coord_keys.get("units"):
-        coord_keys["units"] = units_from_field_code.get(
-            field.field_code, "unknown"
-        )
+        coord_keys["units"] = units_from_field_code.get(field.field_code, "unknown")
     coord_val = None
     # coord_val could come from the threshold_value or threshold_value_alt:
     if field.threshold_value_alt > -32766.0:
@@ -785,9 +774,7 @@ def probability_coord(cube, field, handle_metadata_errors):
     ):
         try:
             coord_val = [
-                int(x.strip("pc"))
-                for x in cube.name().split(" ")
-                if x.find("pc") > 0
+                int(x.strip("pc")) for x in cube.name().split(" ") if x.find("pc") > 0
             ][0]
         except IndexError:
             pass
@@ -818,7 +805,8 @@ def probability_coord(cube, field, handle_metadata_errors):
             )
             warnings.warn(
                 f"No default units for {coord_name} coord of {cube.name()}. "
-                "Meta-data may be incomplete."
+                "Meta-data may be incomplete.",
+                category=IrisNimrodTranslationWarning,
             )
         new_coord = iris.coords.AuxCoord(
             np.array(coord_val, dtype=np.float32), bounds=bounds, **coord_keys
@@ -848,7 +836,7 @@ def probability_coord(cube, field, handle_metadata_errors):
 
 
 def soil_type_coord(cube, field):
-    """Add soil type as a coord if appropriate"""
+    """Add soil type as a coord if appropriate."""
     soil_type_codes = {
         1: "broadleaf_tree",
         2: "needleleaf_tree",
@@ -866,9 +854,7 @@ def soil_type_coord(cube, field):
     soil_name = soil_type_codes.get(field.soil_type, None)
     if soil_name:
         cube.add_aux_coord(
-            iris.coords.AuxCoord(
-                soil_name, standard_name="soil_type", units=None
-            )
+            iris.coords.AuxCoord(soil_name, standard_name="soil_type", units=None)
         )
 
 
@@ -902,19 +888,19 @@ def time_averaging(cube, field):
 
 
 def run(field, handle_metadata_errors=True):
-    """
-    Convert a NIMROD field to an Iris cube.
+    """Convert a NIMROD field to an Iris cube.
 
-    Args:
+    Parameters
+    ----------
+    field : :class:`~iris.fileformats.nimrod.NimrodField`
+    handle_metadata_errors : bool, default=True
+        Set to False to omit handling of known meta-data deficiencies
+        in Nimrod-format data.
 
-        * field - a :class:`~iris.fileformats.nimrod.NimrodField`
-
-        * handle_metadata_errors - Set to False to omit handling of known meta-data deficiencies
-                                   in Nimrod-format data
-
-    Returns:
-
-        * A new :class:`~iris.cube.Cube`, created from the NimrodField.
+    Returns
+    -------
+    :class:`~iris.cube.Cube`
+        A new :class:`~iris.cube.Cube`, created from the NimrodField.
 
     """
     cube = iris.cube.Cube(field.data)

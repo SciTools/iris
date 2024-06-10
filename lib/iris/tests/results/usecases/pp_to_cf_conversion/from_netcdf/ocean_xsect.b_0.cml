@@ -8,48 +8,51 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord bounds="[[0.0, 10.0],
-		[10.0, 20.0],
-		[20.0, 30.0],
-		[30.0, 40.2],
-		[40.2, 55.5],
-		[55.5, 78.5],
-		[78.5, 113.0],
-		[113.0, 164.8],
-		[164.8, 242.6],
-		[242.6, 359.4],
-		[359.4, 534.7],
-		[534.7, 797.9],
-		[797.9, 1193.2],
-		[1193.2, 1808.5],
-		[1808.5, 2423.8],
-		[2423.8, 3039.0],
-		[3039.0, 3654.3],
-		[3654.3, 4269.5],
-		[4269.5, 4884.8],
-		[4884.8, 5500.1]]" id="c88482b3" points="[5.0, 15.0, 25.0, 35.1, 47.85, 67.0, 95.75,
-		138.9, 203.7, 301.0, 447.05, 666.3, 995.55,
-		1500.85, 2116.15, 2731.4, 3346.65, 3961.9,
-		4577.15, 5192.45]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth">
+        <dimCoord bounds="[[   0.      ,   10.      ],
+ [  10.      ,   20.      ],
+ [  20.      ,   30.      ],
+ [  30.      ,   40.199997],
+ [  40.199997,   55.5     ],
+ [  55.5     ,   78.5     ],
+ [  78.5     ,  113.      ],
+ [ 113.      ,  164.8     ],
+ [ 164.8     ,  242.6     ],
+ [ 242.6     ,  359.3999  ],
+ [ 359.3999  ,  534.69995 ],
+ [ 534.69995 ,  797.8999  ],
+ [ 797.8999  , 1193.2     ],
+ [1193.2     , 1808.5     ],
+ [1808.5     , 2423.8     ],
+ [2423.8     , 3039.      ],
+ [3039.      , 3654.3     ],
+ [3654.3     , 4269.5     ],
+ [4269.5     , 4884.801   ],
+ [4884.801   , 5500.1016  ]]" id="c88482b3" points="[5.0000000e+00, 1.5000000e+01, 2.5000000e+01,
+ 3.5100006e+01, 4.7850006e+01, 6.7000000e+01,
+ 9.5750000e+01, 1.3889999e+02, 2.0370000e+02,
+ 3.0100000e+02, 4.4705005e+02, 6.6630005e+02,
+ 9.9555005e+02, 1.5008501e+03, 2.1161499e+03,
+ 2.7313999e+03, 3.3466499e+03, 3.9618999e+03,
+ 4.5771484e+03, 5.1924492e+03]" shape="(20,)" standard_name="depth" units="Unit('m')" value_type="float32" var_name="depth">
           <attributes>
             <attribute name="positive" value="down"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[-1900800.0, 172800.0]]" id="1d45e087" points="[-864000.0]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
+        <dimCoord bounds="[[-1900800.,   172800.]]" id="1d45e087" points="[-864000.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64" var_name="forecast_period"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[949680.0]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
+        <dimCoord id="9c8bdf81" points="[949680.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="forecast_reference_time"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ..., 86.875, 88.125,
-		89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
+        <dimCoord id="77a50eb5" points="[-89.375, -88.125, -86.875, ...,  86.875,  88.125,
+  89.375]" shape="(144,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="latitude">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[-951120.0, 1122480.0]]" id="cb784457" points="[85680.0]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[[-951120., 1122480.]]" id="cb784457" points="[85680.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

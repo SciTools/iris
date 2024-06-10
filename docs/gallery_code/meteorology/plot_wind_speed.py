@@ -9,7 +9,7 @@ are co-located in space in this case.
 For the second plot, the data used for the arrows is normalised to produce
 arrows with a uniform size on the plot.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import cartopy.feature as cfeat
 import matplotlib.pyplot as plt
@@ -27,16 +27,14 @@ def main():
     vwind = iris.load_cube(infile, "y_wind")
 
     # Create a cube containing the wind speed.
-    windspeed = (uwind ** 2 + vwind ** 2) ** 0.5
+    windspeed = (uwind**2 + vwind**2) ** 0.5
     windspeed.rename("windspeed")
 
     # Plot the wind speed as a contour plot.
     qplt.contourf(windspeed, 20)
 
     # Show the lake on the current axes.
-    lakes = cfeat.NaturalEarthFeature(
-        "physical", "lakes", "50m", facecolor="none"
-    )
+    lakes = cfeat.NaturalEarthFeature("physical", "lakes", "50m", facecolor="none")
     plt.gca().add_feature(lakes)
 
     # Add arrows to show the wind vectors.

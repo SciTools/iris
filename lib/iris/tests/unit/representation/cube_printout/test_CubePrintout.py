@@ -1,22 +1,16 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_printout.CubePrintout`."""
+
 import iris.tests as tests  # isort:skip
 
 import numpy as np
 
 from iris._representation.cube_printout import CubePrinter
 from iris._representation.cube_summary import CubeSummary
-from iris.coords import (
-    AncillaryVariable,
-    AuxCoord,
-    CellMeasure,
-    CellMethod,
-    DimCoord,
-)
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 from iris.tests.stock.mesh import sample_mesh_cube
 
@@ -115,9 +109,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_columns_long_coordname(self):
         cube = Cube([0], long_name="short", units=1)
-        coord = AuxCoord(
-            [0], long_name="very_very_very_very_very_long_coord_name"
-        )
+        coord = AuxCoord([0], long_name="very_very_very_very_very_long_coord_name")
         cube.add_aux_coord(coord, 0)
         rep = cube_replines(cube)
         expected = [
@@ -133,16 +125,16 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_columns_long_attribute(self):
         cube = Cube([0], long_name="short", units=1)
-        cube.attributes[
-            "very_very_very_very_very_long_name"
-        ] = "longish string extends beyond dim columns"
+        cube.attributes["very_very_very_very_very_long_name"] = (
+            "longish string extends beyond dim columns"
+        )
         rep = cube_replines(cube)
         expected = [
             "short / (1)                                (-- : 1)",
             "    Attributes:",
             (
                 "        very_very_very_very_very_long_name "
-                "longish string extends beyond dim columns"
+                "'longish string extends beyond dim columns'"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -152,19 +144,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
         # include : vector + scalar
         cube = Cube([0, 1], long_name="name", units=1)
         # Add a pair of vector coords with same name but different attributes.
-        cube.add_aux_coord(
-            AuxCoord([0, 1], long_name="co1", attributes=dict(a=1)), 0
-        )
-        cube.add_aux_coord(
-            AuxCoord([0, 1], long_name="co1", attributes=dict(a=2)), 0
-        )
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=1)), 0)
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=2)), 0)
         # Likewise for scalar coords with same name but different attributes.
-        cube.add_aux_coord(
-            AuxCoord([0], long_name="co2", attributes=dict(a=10, b=12))
-        )
-        cube.add_aux_coord(
-            AuxCoord([1], long_name="co2", attributes=dict(a=10, b=11))
-        )
+        cube.add_aux_coord(AuxCoord([0], long_name="co2", attributes=dict(a=10, b=12)))
+        cube.add_aux_coord(AuxCoord([1], long_name="co2", attributes=dict(a=10, b=11)))
 
         rep = cube_replines(cube)
         expected = [
@@ -241,9 +225,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
         cube = Cube(0, long_name="name", units=1)
         cube.add_aux_coord(AuxCoord([1], long_name="co"))
         cube.add_aux_coord(
-            AuxCoord(
-                [2], long_name="co", attributes=dict(note="string content")
-            )
+            AuxCoord([2], long_name="co", attributes=dict(note="string content"))
         )
         rep = cube_replines(cube)
         expected = [
@@ -337,13 +319,25 @@ class TestCubePrintout__to_string(tests.IrisTest):
 
     def test_section_vector_ancils(self):
         cube = Cube(np.zeros((2, 3)), long_name="name", units=1)
-        cube.add_ancillary_variable(
-            AncillaryVariable([0, 1], long_name="av1"), 0
-        )
+        cube.add_ancillary_variable(AncillaryVariable([0, 1], long_name="av1"), 0)
 
         rep = cube_replines(cube)
         expected = [
             "name / (1)                          (-- : 2; -- : 3)",
+            "    Ancillary variables:",
+            "        av1                             x       -",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_vector_ancils_length_1(self):
+        # Check ancillary variables that map to a cube dimension of length 1
+        # are not interpreted as scalar ancillary variables.
+        cube = Cube(np.zeros((1, 3)), long_name="name", units=1)
+        cube.add_ancillary_variable(AncillaryVariable([0], long_name="av1"), 0)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 1; -- : 3)",
             "    Ancillary variables:",
             "        av1                             x       -",
         ]
@@ -356,6 +350,20 @@ class TestCubePrintout__to_string(tests.IrisTest):
         rep = cube_replines(cube)
         expected = [
             "name / (1)                          (-- : 2; -- : 3)",
+            "    Cell measures:",
+            "        cm                              -       x",
+        ]
+        self.assertEqual(rep, expected)
+
+    def test_section_vector_cell_measures_length_1(self):
+        # Check cell measures that map to a cube dimension of length 1 are not
+        # interpreted as scalar cell measures.
+        cube = Cube(np.zeros((2, 1)), long_name="name", units=1)
+        cube.add_cell_measure(CellMeasure([0], long_name="cm"), 1)
+
+        rep = cube_replines(cube)
+        expected = [
+            "name / (1)                          (-- : 2; -- : 1)",
             "    Cell measures:",
             "        cm                              -       x",
         ]
@@ -388,9 +396,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "A string value which is very very very very very very "
             "very very very very very very very very long."
         )
-        cube.add_aux_coord(
-            AuxCoord([long_string], long_name="very_long_string")
-        )
+        cube.add_aux_coord(AuxCoord([long_string], long_name="very_long_string"))
 
         rep = cube_replines(cube)
         expected = [
@@ -424,8 +430,8 @@ class TestCubePrintout__to_string(tests.IrisTest):
         rep = cube_replines(cube)
         expected = [
             "name / (1)                          (-- : 2; -- : 3)",
-            "    Ancillary variables:",
-            "        av                              -       -",
+            "    Scalar ancillary variables:",
+            "        av",
         ]
         self.assertEqual(rep, expected)
 
@@ -442,7 +448,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        list                        [3]",
             "        number                      1.2",
-            "        string                      four five in a string",
+            "        string                      'four five in a string'",
             "        z_tupular                   (6, (7, 8))",
         ]
         self.assertEqual(rep, expected)
@@ -464,12 +470,12 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "    Attributes:",
             "        escaped                     'escaped\\tstring'",
             (
-                "        long                        this is very very very "
-                "very very very very very very very very very very..."
+                "        long                        'this is very very very "
+                "very very very very very very very very very very ...'"
             ),
             (
                 "        long_multi                  'multi\\nline, "
-                "this is very very very very very very very very very very..."
+                "this is very very very very very very very very very very ...'"
             ),
         ]
         self.assertEqual(rep, expected)
@@ -488,7 +494,7 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "        array                       array([1.2, 3.4])",
             (
                 "        bigarray                    array([[ 0, 1], [ 2, 3], "
-                "[ 4, 5], [ 6, 7], [ 8, 9], [10, 11], [12, 13],..."
+                "[ 4, 5], [ 6, 7], [ 8, 9], [10, 11], [12, 13], ..."
             ),
         ]
         self.assertEqual(rep, expected)
@@ -509,10 +515,11 @@ class TestCubePrintout__to_string(tests.IrisTest):
         expected = [
             "name / (1)                          (-- : 1)",
             "    Cell methods:",
-            "        stdev                       area",
-            "        mean                        y (10m, vertical), time (3min, =duration)",
+            "        0                           area: stdev",
+            "        1                           y: time: mean (interval: 10m"
+            " interval: 3min comment: vertical comment: =duration)",
         ]
-        self.assertEqual(rep, expected)
+        self.assertEqual(expected, rep)
 
     def test_unstructured_cube(self):
         # Check a sample mesh-cube against the expected result.
@@ -528,6 +535,9 @@ class TestCubePrintout__to_string(tests.IrisTest):
             "        longitude                         -               x",
             "    Auxiliary coordinates:",
             "        mesh_face_aux                     -               x",
+            "    Mesh:",
+            "        name                        unknown",
+            "        location                    face",
         ]
         self.assertEqual(rep, expected)
 

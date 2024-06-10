@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # -*- coding: utf-8 -*-
 #
@@ -16,18 +15,22 @@
 #
 # All configuration values have a default; values that are commented out
 # serve to show the default.
-
 # ----------------------------------------------------------------------------
 
+"""Config for sphinx."""
+
 import datetime
+from importlib.metadata import version as get_version
+from inspect import getsource
 import ntpath
 import os
 from pathlib import Path
 import re
+from subprocess import run
 import sys
+from tempfile import gettempdir
+from urllib.parse import quote
 import warnings
-
-import iris
 
 
 # function to write  useful output to stdout, prefixing the source.
@@ -41,19 +44,32 @@ skip_api = os.environ.get("SKIP_API")
 # -- Are we running on the readthedocs server, if so do some setup -----------
 on_rtd = os.environ.get("READTHEDOCS") == "True"
 
+# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
+rtd_version = os.environ.get("READTHEDOCS_VERSION")
+if rtd_version is not None:
+    # Make rtd_version safe for use in shields.io badges.
+    rtd_version = rtd_version.replace("_", "__")
+    rtd_version = rtd_version.replace("-", "--")
+    rtd_version = quote(rtd_version)
+
+# branch, tag, external (for pull request builds), or unknown.
+rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
+
+# For local testing purposes we can force being on RTD and the version
+# on_rtd = True           # useful for testing
+# rtd_version = "latest"  # useful for testing
+# rtd_version = "stable"  # useful for testing
+# rtd_version_type = "tag"  # useful for testing
+# rtd_version = "my_branch"   # useful for testing
+
 if on_rtd:
     autolog("Build running on READTHEDOCS server")
 
     # list all the READTHEDOCS environment variables that may be of use
-    # at some point
     autolog("Listing all environment variables on the READTHEDOCS server...")
 
     for item, value in os.environ.items():
         autolog("[READTHEDOCS] {} = {}".format(item, value))
-
-# This is the rtd reference to the version, such as: latest, stable, v3.0.1 etc
-# For local testing purposes this could be explicitly set latest or stable.
-rtd_version = os.environ.get("READTHEDOCS_VERSION")
 
 # -- Path setup --------------------------------------------------------------
 
@@ -67,7 +83,7 @@ sys.path.append(os.path.abspath("sphinxext"))
 # add some sample files from the developers guide..
 sys.path.append(os.path.abspath(os.path.join("developers_guide")))
 
-# why isnt the iris path added to it is discoverable too?  We dont need to,
+# why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
 # is added then the travis build will likely fail.
 
@@ -82,20 +98,11 @@ copyright = f"{copyright_years}, Iris Contributors"
 author = "Iris Developers"
 
 # The version info for the project you're documenting, acts as replacement for
-# |version| and |release|, also used in various other places throughout the
-# built documents.
-
-# The short X.Y version.
-if iris.__version__ == "dev":
-    version = "dev"
-else:
-    # major.minor.patch-dev -> major.minor.patch
-    version = ".".join(iris.__version__.split("-")[0].split(".")[:3])
-# The full version, including alpha/beta/rc tags.
-release = iris.__version__
-
-autolog("Iris Version = {}".format(version))
-autolog("Iris Release = {}".format(release))
+# |version|, also used in various other places throughout the built documents.
+version = get_version("scitools-iris")
+release = version
+autolog(f"Iris Version = {version}")
+autolog(f"Iris Release = {release}")
 
 # -- General configuration ---------------------------------------------------
 
@@ -117,7 +124,7 @@ def _dotv(version):
 
 # Automate the discovery of the python versions tested with CI.
 python_support = sorted(
-    [fname.stem for fname in Path(".").glob("../../requirements/ci/py*.yml")]
+    [fname.stem for fname in Path(".").glob("../../requirements/py*.yml")]
 )
 
 if not python_support:
@@ -138,7 +145,7 @@ rst_epilog = f"""
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
+# extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
     "sphinx.ext.todo",
@@ -152,9 +159,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
-    "sphinx_panels",
-    # TODO: Spelling extension disabled until the dependencies can be included
-    # "sphinxcontrib.spelling",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
@@ -163,13 +168,8 @@ extensions = [
 if skip_api == "1":
     autolog("Skipping the API docs generation (SKIP_API=1)")
 else:
-    # better api documentation (custom)
-    extensions.extend(
-        ["custom_class_autodoc", "custom_data_autodoc", "generate_package_rst"]
-    )
-
-# -- panels extension ---------------------------------------------------------
-# See https://sphinx-panels.readthedocs.io/en/latest/
+    extensions.extend(["sphinxcontrib.apidoc"])
+    extensions.extend(["api_rst_formatting"])
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -187,32 +187,57 @@ napoleon_use_rtype = True
 napoleon_use_keyword = True
 napoleon_custom_sections = None
 
-# -- spellingextension --------------------------------------------------------
-# See https://sphinxcontrib-spelling.readthedocs.io/en/latest/customize.html
-spelling_lang = "en_GB"
-# The lines in this file must only use line feeds (no carriage returns).
-spelling_word_list_filename = ["spelling_allow.txt"]
-spelling_show_suggestions = False
-spelling_show_whole_line = False
-spelling_ignore_importable_modules = True
-spelling_ignore_python_builtins = True
-
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = ">>> "
+copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_is_regexp = True
+copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
-# api generation configuration
-autodoc_member_order = "groupwise"
-autodoc_default_flags = ["show-inheritance"]
+# sphinx.ext.autodoc configuration --------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
+autodoc_default_options = {
+    "members": True,
+    "member-order": "alphabetical",
+    "undoc-members": True,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
+}
+
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
+autodoc_typehints = "none"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
-autoclass_content = "init"
+autoclass_content = "both"
 modindex_common_prefix = ["iris"]
+
+# -- apidoc extension ---------------------------------------------------------
+# See https://github.com/sphinx-contrib/apidoc
+source_code_root = (Path(__file__).parents[2]).absolute()
+module_dir = source_code_root / "lib"
+apidoc_module_dir = str(module_dir)
+apidoc_output_dir = str(Path(__file__).parent / "generated/api")
+apidoc_toc_file = False
+
+apidoc_excluded_paths = [
+    str(module_dir / "iris/tests"),
+    str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
+]
+
+apidoc_module_first = True
+apidoc_separate_modules = True
+apidoc_extra_args = []
+
+autolog(f"[sphinx-apidoc] source_code_root = {source_code_root}")
+autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
+autolog(f"[sphinx-apidoc] apidoc_output_dir = {apidoc_output_dir}")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -221,10 +246,16 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
+    "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    "pandas": ("https://pandas.pydata.org/docs/", None),
+    "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -240,8 +271,12 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
+    "discussion": (
+        "https://github.com/SciTools/iris/discussions/%s",
+        "Discussion #%s",
+    ),
 }
 
 # -- Doctest ("make doctest")--------------------------------------------------
@@ -253,43 +288,91 @@ doctest_global_setup = "import iris"
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_logo = "_static/iris-logo-title.png"
-html_favicon = "_static/favicon.ico"
-html_theme = "sphinx_rtd_theme"
+html_favicon = "_static/iris-logo.svg"
+html_theme = "pydata_sphinx_theme"
 
-html_theme_options = {
-    "display_version": True,
-    "style_external_links": True,
-    "logo_only": "True",
+# See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html#configure-the-search-bar-position
+html_sidebars = {
+    "**": [
+        "custom_sidebar_logo_version",
+        "search-field",
+        "sidebar-nav-bs",
+        "sidebar-ethical-ads",
+    ]
 }
 
+# See https://pydata-sphinx-theme.readthedocs.io/en/latest/user_guide/configuring.html
+html_theme_options = {
+    "footer_start": ["copyright", "sphinx-version"],
+    "footer_end": ["custom_footer"],
+    "navigation_depth": 3,
+    "navigation_with_keys": False,
+    "show_toc_level": 2,
+    "show_prev_next": True,
+    "navbar_align": "content",
+    # removes the search box from the top bar
+    "navbar_persistent": [],
+    # TODO: review if 6 links is too crowded.
+    "header_links_before_dropdown": 6,
+    "github_url": "https://github.com/SciTools/iris",
+    "twitter_url": "https://twitter.com/scitools_iris",
+    # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
+    "icon_links": [
+        {
+            "name": "GitHub Discussions",
+            "url": "https://github.com/SciTools/iris/discussions",
+            "icon": "far fa-comments",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/scitools-iris/",
+            "icon": "fas fa-box",
+        },
+        {
+            "name": "Conda",
+            "url": "https://anaconda.org/conda-forge/iris",
+            "icon": "fas fa-boxes",
+        },
+    ],
+    "use_edit_page_button": True,
+    # Omit `theme-switcher` from navbar_end below to disable it
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    # "navbar_end": ["navbar-icon-links"],
+    # https://pydata-sphinx-theme.readthedocs.io/en/v0.11.0/user_guide/branding.html#different-logos-for-light-and-dark-mode
+    "logo": {
+        "image_light": "_static/iris-logo-title.svg",
+        "image_dark": "_static/iris-logo-title-dark.svg",
+    },
+}
+
+# if we are building via Read The Docs and it is the latest (not stable)
+if on_rtd and rtd_version == "latest":
+    html_theme_options["announcement"] = f"""
+        You are viewing the <b>latest</b> unreleased documentation
+        <strong>{version}</strong>. You can switch to a
+        <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a>
+        version."""
+
+rev_parse = run(["git", "rev-parse", "--short", "HEAD"], capture_output=True)
+commit_sha = rev_parse.stdout.decode().strip()
+
 html_context = {
+    # pydata_theme
+    "github_repo": "iris",
+    "github_user": "scitools",
+    "github_version": "main",
+    "doc_path": "docs/src",
+    # default theme.  Also disabled the button in the html_theme_options.
+    # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
+    "default_mode": "auto",
+    # custom
+    "on_rtd": on_rtd,
     "rtd_version": rtd_version,
+    "rtd_version_type": rtd_version_type,
     "version": version,
     "copyright_years": copyright_years,
     "python_version": build_python_version,
-    # menu_links and menu_links_name are used in _templates/layout.html
-    # to include some nice icons.  See http://fontawesome.io for a list of
-    # icons (used in the sphinx_rtd_theme)
-    "menu_links_name": "Support",
-    "menu_links": [
-        (
-            '<i class="fa fa-github fa-fw"></i> Source Code',
-            "https://github.com/SciTools/iris",
-        ),
-        (
-            '<i class="fa fa-comments fa-fw"></i> GitHub Discussions',
-            "https://github.com/SciTools/iris/discussions",
-        ),
-        (
-            '<i class="fa fa-question fa-fw"></i> StackOverflow for "How Do I?"',
-            "https://stackoverflow.com/questions/tagged/python-iris",
-        ),
-        (
-            '<i class="fa fa-book fa-fw"></i> Legacy Documentation',
-            "https://scitools.org.uk/iris/docs/v2.4.0/index.html",
-        ),
-    ],
+    "commit_sha": commit_sha,
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -301,17 +384,25 @@ html_style = "theme_override.css"
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
-    "http://cfconventions.org",
-    "http://code.google.com/p/msysgit/downloads/list",
-    "http://effbot.org",
+    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
+    "https://cfconventions.org",
+    "https://code.google.com/p/msysgit/downloads/list",
+    "https://effbot.org",
+    "https://help.github.com",
+    "https://docs.github.com",
     "https://github.com",
-    "http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "http://schacon.github.com/git",
-    "http://scitools.github.com/cartopy",
-    "http://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
+    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
+    "https://scitools.github.com/cartopy",
+    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
     "https://software.ac.uk/how-cite-software",
-    "http://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "http://www.nationalarchives.gov.uk/doc/open-government-licence",
+    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
+    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
+    "https://www.metoffice.gov.uk/",
+    "https://biggus.readthedocs.io/",
+    "https://stickler-ci.com/",
+    "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
+    "https://www.flaticon.com/",
 ]
 
 # list of sources to exclude from the build.
@@ -320,6 +411,26 @@ exclude_patterns = []
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
 
+
+def reset_modules(gallery_conf, fname):
+    """Force re-registering of nc-time-axis with matplotlib for each example.
+
+    Required for sphinx-gallery>=0.11.0.
+    """
+    from sys import modules
+
+    _ = modules.pop("nc_time_axis", None)
+
+
+# https://sphinx-gallery.github.io/dev/configuration.html#importing-callables
+reset_modules_dir = Path(gettempdir()) / reset_modules.__name__
+reset_modules_dir.mkdir(exist_ok=True)
+(reset_modules_dir / f"{reset_modules.__name__}.py").write_text(
+    getsource(reset_modules)
+)
+sys.path.insert(0, str(reset_modules_dir))
+
+
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": ["../gallery_code"],
@@ -327,18 +438,16 @@ sphinx_gallery_conf = {
     "gallery_dirs": ["generated/gallery"],
     # filename pattern for the files in the gallery
     "filename_pattern": "/plot_",
-    # filename patternt to ignore in the gallery
+    # filename pattern to ignore in the gallery
     "ignore_pattern": r"__init__\.py",
+    # force gallery building, unless overridden (see src/Makefile)
+    "plot_gallery": "'True'",
+    "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
 }
 
 # -----------------------------------------------------------------------------
-# Remove matplotlib agg warnings from generated doc when using plt.show
-warnings.filterwarnings(
-    "ignore",
-    category=UserWarning,
-    message="Matplotlib is currently using agg, which is a"
-    " non-GUI backend, so cannot show the figure.",
-)
+# Remove warnings
+warnings.filterwarnings("ignore")
 
 # -- numfig options (built-in) ------------------------------------------------
 # Enable numfig.

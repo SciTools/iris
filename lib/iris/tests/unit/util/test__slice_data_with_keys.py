@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test function :func:`iris.util._slice_data_with_keys`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.util._slice_data_with_keys`.
 
 Note: much of the functionality really belongs to the other routines,
 :func:`iris.util._build_full_slice_given_keys`, and
@@ -41,9 +39,7 @@ class DummyArray:
         shape_array = np.zeros(self.shape)
         shape_array = shape_array.__getitem__(keys)
         new_shape = shape_array.shape
-        return DummyArray(
-            new_shape, _indexing_record_list=self._getitem_call_keys
-        )
+        return DummyArray(new_shape, _indexing_record_list=self._getitem_call_keys)
 
 
 class Indexer:
@@ -105,9 +101,7 @@ class Test_indexing(MixinIndexingTest, tests.IrisTest):
     def test_1d_tuple(self):
         # The call makes tuples into 1-D arrays, and a trailing Ellipsis is
         # added (for the 1-D case only).
-        self.check(
-            (3,), Index[((2, 0, 1),)], [(np.array([2, 0, 1]), Ellipsis)]
-        )
+        self.check((3,), Index[((2, 0, 1),)], [(np.array([2, 0, 1]), Ellipsis)])
 
     def test_fail_1d_2keys(self):
         msg = "More slices .* than dimensions"
@@ -227,15 +221,11 @@ class Test_dimensions_mapping(MixinIndexingTest, tests.IrisTest):
         self.check((3, 4), Index[1, :], expect_map={None: None, 0: None, 1: 0})
 
     def test_2d_losedim1(self):
-        self.check(
-            (3, 4), Index[1:4, 2], expect_map={None: None, 0: 0, 1: None}
-        )
+        self.check((3, 4), Index[1:4, 2], expect_map={None: None, 0: 0, 1: None})
 
     def test_2d_loseboth(self):
         # Two indices give scalar result.
-        self.check(
-            (3, 4), Index[1, 2], expect_map={None: None, 0: None, 1: None}
-        )
+        self.check((3, 4), Index[1, 2], expect_map={None: None, 0: None, 1: None})
 
     def test_3d_losedim1(self):
         # Cutting out the middle dim.
@@ -268,9 +258,7 @@ class TestResults(tests.IrisTest):
         self.check([1, 2, 3], Index[:], [1, 2, 3], {None: None, 0: 0})
 
     def test_1d_tuple(self):
-        self.check(
-            [1, 2, 3], Index[((2, 0, 1, 0),)], [3, 1, 2, 1], {None: None, 0: 0}
-        )
+        self.check([1, 2, 3], Index[((2, 0, 1, 0),)], [3, 1, 2, 1], {None: None, 0: 0})
 
     def test_fail_1d_2keys(self):
         msg = "More slices .* than dimensions"

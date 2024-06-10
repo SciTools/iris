@@ -58,7 +58,7 @@ Features
 
 * Use the latest release of Cartopy, v0.8.0.
 
-.. _OPeNDAP: http://www.opendap.org/about
+.. _OPeNDAP: https://www.opendap.org
 .. _exp-regrid:
 
 Experimental Regridding Enhancements
@@ -132,7 +132,7 @@ Cubes can now be loaded directly from the internet, via OPeNDAP_.
 
 For example::
 
-        cubes = iris.load("http://geoport.whoi.edu/thredds/dodsC/bathy/gom15")
+        cubes = iris.load("https://geoport.whoi.edu/thredds/dodsC/bathy/gom15")
 
 
 .. _geotiff_export:
@@ -182,8 +182,7 @@ Cubes With no Vertical Coord can now be Exported to GRIB
 --------------------------------------------------------
 
 Iris can now export cubes with no vertical coord to GRIB.
-The solution is still under discussion: See 
-https://github.com/SciTools/iris/issues/519.
+The solution is still under discussion: See :issue:`519`.
 
 
 .. _simple_cfg:

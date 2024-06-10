@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.as_concrete_data`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -61,7 +60,8 @@ class Test_as_concrete_data(tests.IrisTest):
     def test_lazy_scalar_proxy(self):
         a = np.array(5)
         proxy = MyProxy(a)
-        lazy_array = as_lazy_data(proxy)
+        meta = np.empty((0,) * proxy.ndim, dtype=proxy.dtype)
+        lazy_array = as_lazy_data(proxy, meta=meta)
         self.assertTrue(is_lazy_data(lazy_array))
         result = as_concrete_data(lazy_array)
         self.assertFalse(is_lazy_data(result))
@@ -70,7 +70,8 @@ class Test_as_concrete_data(tests.IrisTest):
     def test_lazy_scalar_proxy_masked(self):
         a = np.ma.masked_array(5, True)
         proxy = MyProxy(a)
-        lazy_array = as_lazy_data(proxy)
+        meta = np.ma.array(np.empty((0,) * proxy.ndim, dtype=proxy.dtype), mask=True)
+        lazy_array = as_lazy_data(proxy, meta=meta)
         self.assertTrue(is_lazy_data(lazy_array))
         result = as_concrete_data(lazy_array)
         self.assertFalse(is_lazy_data(result))

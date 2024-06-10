@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._concatenate.concatenate.py`."""
 
 # import iris tests first so that some things can be initialised
@@ -15,6 +14,7 @@ import numpy.ma as ma
 
 from iris._concatenate import concatenate
 from iris._lazy_data import as_lazy_data
+from iris.aux_factory import HybridHeightFactory
 import iris.coords
 import iris.cube
 from iris.exceptions import ConcatenateError
@@ -30,7 +30,7 @@ class TestEpoch(tests.IrisTest):
                 standard_name="air_temperature",
                 units="K",
             )
-            unit = cf_units.Unit(reftime, calendar="gregorian")
+            unit = cf_units.Unit(reftime, calendar="standard")
             coord = iris.coords.DimCoord(
                 points=np.array(coord_points, dtype=np.float32),
                 standard_name="time",
@@ -57,9 +57,7 @@ class TestMessages(tests.IrisTest):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
         # Time coord
-        t_unit = cf_units.Unit(
-            "hours since 1970-01-01 00:00:00", calendar="gregorian"
-        )
+        t_unit = cf_units.Unit("hours since 1970-01-01 00:00:00", calendar="standard")
         t_coord = iris.coords.DimCoord(
             points=np.arange(2, dtype=np.float32),
             standard_name="time",
@@ -90,16 +88,24 @@ class TestMessages(tests.IrisTest):
             iris.coords.AuxCoord([0, 1, 2], long_name="foo", units="1"),
             data_dims=(1,),
         )
+        # Cell Measures
         cube.add_cell_measure(
             iris.coords.CellMeasure([0, 1, 2], long_name="bar", units="1"),
             data_dims=(1,),
         )
+        # Ancillary Variables
         cube.add_ancillary_variable(
-            iris.coords.AncillaryVariable(
-                [0, 1, 2], long_name="baz", units="1"
-            ),
+            iris.coords.AncillaryVariable([0, 1, 2], long_name="baz", units="1"),
             data_dims=(1,),
         )
+        # Derived Coords
+        delta = iris.coords.AuxCoord(0.0, var_name="delta", units="m")
+        sigma = iris.coords.AuxCoord(1.0, var_name="sigma", units="1")
+        orog = iris.coords.AuxCoord(2.0, var_name="orog", units="m")
+        cube.add_aux_coord(delta, ())
+        cube.add_aux_coord(sigma, ())
+        cube.add_aux_coord(orog, ())
+        cube.add_aux_factory(HybridHeightFactory(delta, sigma, orog))
         self.cube = cube
 
     def test_definition_difference_message(self):
@@ -190,6 +196,22 @@ class TestMessages(tests.IrisTest):
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 
+    def test_derived_coord_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.remove_aux_factory(cube_2.aux_factories[0])
+        exc_regexp = "Derived coordinates differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_derived_coord_metadata_difference_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.aux_factories[0].units = "km"
+        exc_regexp = "Derived coordinates metadata differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
     def test_ndim_difference_message(self):
         cube_1 = self.cube
         cube_2 = iris.cube.Cube(
@@ -212,6 +234,14 @@ class TestMessages(tests.IrisTest):
         cube_2 = cube_1.copy()
         cube_2.data.dtype = np.float64
         exc_regexp = "Data types differ: .* != .*"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
+
+    def test_dim_coords_overlap_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        cube_2.coord("time").points = np.arange(1, 3, dtype=np.float32)
+        exc_regexp = "Found cubes with overlap on concatenate axis"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
 
@@ -328,7 +358,7 @@ class TestOrder(tests.IrisTest):
 
 
 class TestConcatenate__dask(tests.IrisTest):
-    def build_lazy_cube(self, points, bounds=None, nx=4):
+    def build_lazy_cube(self, points, bounds=None, nx=4, aux_coords=False):
         data = np.arange(len(points) * nx).reshape(len(points), nx)
         data = as_lazy_data(data)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -336,6 +366,11 @@ class TestConcatenate__dask(tests.IrisTest):
         lon = iris.coords.DimCoord(np.arange(nx), "longitude")
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
+        if aux_coords:
+            bounds = np.arange(len(points) * nx * 4).reshape(len(points), nx, 4)
+            bounds = as_lazy_data(bounds)
+            aux_coord = iris.coords.AuxCoord(data, var_name="aux_coord", bounds=bounds)
+            cube.add_aux_coord(aux_coord, (0, 1))
         return cube
 
     def test_lazy_concatenate(self):
@@ -344,6 +379,20 @@ class TestConcatenate__dask(tests.IrisTest):
         (cube,) = concatenate([c1, c2])
         self.assertTrue(cube.has_lazy_data())
         self.assertFalse(ma.isMaskedArray(cube.data))
+
+    def test_lazy_concatenate_aux_coords(self):
+        c1 = self.build_lazy_cube([1, 2], aux_coords=True)
+        c2 = self.build_lazy_cube([3, 4, 5], aux_coords=True)
+        (result,) = concatenate([c1, c2])
+
+        self.assertTrue(c1.coord("aux_coord").has_lazy_points())
+        self.assertTrue(c1.coord("aux_coord").has_lazy_bounds())
+
+        self.assertTrue(c2.coord("aux_coord").has_lazy_points())
+        self.assertTrue(c2.coord("aux_coord").has_lazy_bounds())
+
+        self.assertTrue(result.coord("aux_coord").has_lazy_points())
+        self.assertTrue(result.coord("aux_coord").has_lazy_bounds())
 
     def test_lazy_concatenate_masked_array_mixed_deferred(self):
         c1 = self.build_lazy_cube([1, 2])

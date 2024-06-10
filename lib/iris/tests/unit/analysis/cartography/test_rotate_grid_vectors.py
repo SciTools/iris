@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the function
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the function
 :func:`iris.analysis.cartography.rotate_grid_vectors`.
 
 """
@@ -24,16 +22,14 @@ from iris.tests.stock import sample_2d_latlons
 
 
 class TestRotateGridVectors(tests.IrisTest):
-    def _check_angles_calculation(
-        self, angles_in_degrees=True, nan_angles_mask=None
-    ):
+    def _check_angles_calculation(self, angles_in_degrees=True, nan_angles_mask=None):
         # Check basic maths on a 2d latlon grid.
         u_cube = sample_2d_latlons(regional=True, transformed=True)
         u_cube.units = "ms-1"
         u_cube.rename("dx")
         u_cube.data[...] = 0
         v_cube = u_cube.copy()
-        v_cube.name("dy")
+        v_cube.rename("dy")
 
         # Define 6 different vectors, repeated in each data row.
         in_vu = np.array([(0, 1), (2, -1), (-1, -1), (-3, 1), (2, 0), (0, 0)])
@@ -71,7 +67,7 @@ class TestRotateGridVectors(tests.IrisTest):
         ang_diffs = out_angs - expect_angs
         # Fix for null vectors, and +/-360 differences.
         ang_diffs[np.abs(out_mags) < 0.001] = 0.0
-        ang_diffs = ang_diffs % 360.0
+        ang_diffs[np.isclose(np.abs(ang_diffs), 360.0)] = 0.0
         # Check that any differences are very small.
         self.assertArrayAllClose(ang_diffs, 0.0)
 
@@ -97,13 +93,11 @@ class TestRotateGridVectors(tests.IrisTest):
         u_cube.rename("dx")
         u_cube.data[...] = 1.0
         v_cube = u_cube.copy()
-        v_cube.name("dy")
+        v_cube.rename("dy")
         v_cube.data[...] = 0.0
 
         # Setup a fake angles result from the inner call to 'gridcell_angles'.
-        angles_result_data = np.array(
-            [[0.0, 90.0, 180.0], [-180.0, -90.0, 270.0]]
-        )
+        angles_result_data = np.array([[0.0, 90.0, 180.0], [-180.0, -90.0, 270.0]])
         angles_result_cube = Cube(angles_result_data, units="degrees")
         angles_kwargs = {"this": 2}
         angles_call_patch = self.patch(
@@ -112,13 +106,9 @@ class TestRotateGridVectors(tests.IrisTest):
         )
 
         # Call the routine.
-        result = rotate_grid_vectors(
-            u_cube, v_cube, grid_angles_kwargs=angles_kwargs
-        )
+        result = rotate_grid_vectors(u_cube, v_cube, grid_angles_kwargs=angles_kwargs)
 
-        self.assertEqual(
-            angles_call_patch.call_args_list, [mock_call(u_cube, this=2)]
-        )
+        self.assertEqual(angles_call_patch.call_args_list, [mock_call(u_cube, this=2)])
 
         out_u, out_v = [cube.data for cube in result]
         # Records what results should be for the various n*90deg rotations.

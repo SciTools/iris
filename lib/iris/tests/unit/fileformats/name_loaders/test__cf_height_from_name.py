@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.analysis.name_loaders._cf_height_from_name`
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.analysis.name_loaders._cf_height_from_name`
 function.
 
 """
@@ -205,7 +203,7 @@ class TestAll_NAMEIII(TestAll):
         self.assertEqual(com, res)
 
     def test_malformed_height_above_ground(self):
-        # Parse height above ground level, with additonal stuff at the string
+        # Parse height above ground level, with additional stuff at the string
         # end (agl).
         data = "Z = 50.00000 m agl and stuff"
         res = _cf_height_from_name(data)

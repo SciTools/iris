@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :mod:`iris.analysis.trajectory`."""
 
 # import iris tests first so that some things can be initialised before
@@ -22,9 +21,7 @@ import iris.tests.stock as istk
 class TestColpex(tests.IrisTest):
     def setUp(self):
         # Load the COLPEX data => TZYX
-        path = tests.get_data_path(
-            ["PP", "COLPEX", "theta_and_orog_subset.pp"]
-        )
+        path = tests.get_data_path(["PP", "COLPEX", "theta_and_orog_subset.pp"])
         cube = iris.load_cube(path, "air_potential_temperature")
         cube.coord("grid_latitude").bounds = None
         cube.coord("grid_longitude").bounds = None
@@ -40,12 +37,8 @@ class TestColpex(tests.IrisTest):
             [("grid_latitude", [-0.1188]), ("grid_longitude", [359.57958984])],
         )
         expected = self.cube[..., 10, 0].data
-        self.assertArrayAllClose(
-            single_point[..., 0].data, expected, rtol=2.0e-7
-        )
-        self.assertCML(
-            single_point, ("trajectory", "single_point.cml"), checksum=False
-        )
+        self.assertArrayAllClose(single_point[..., 0].data, expected, rtol=2.0e-7)
+        self.assertCML(single_point, ("trajectory", "single_point.cml"), checksum=False)
 
     def test_trajectory_extraction_calc(self):
         # Pull out another point and test against a manually calculated result.
@@ -82,9 +75,7 @@ class TestColpex(tests.IrisTest):
         trajectory = Trajectory(waypoints, sample_count=100)
         sample_points = self._traj_to_sample_points(trajectory)
         trajectory_cube = traj_interpolate(self.cube, sample_points)
-        self.assertCML(
-            trajectory_cube, ("trajectory", "constant_latitude.cml")
-        )
+        self.assertCML(trajectory_cube, ("trajectory", "constant_latitude.cml"))
 
     def test_trajectory_extraction_zigzag(self):
         # Extract a zig-zag trajectory
@@ -122,9 +113,7 @@ class TestColpex(tests.IrisTest):
             dtype=np.float32,
         )
 
-        self.assertCML(
-            trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False
-        )
+        self.assertCML(trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False)
         self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
 
     def test_colpex__nearest(self):
@@ -132,12 +121,8 @@ class TestColpex(tests.IrisTest):
         # snapshot.
         test_cube = self.cube[0][0]
         # Test points on a regular grid, a bit larger than the source region.
-        xmin, xmax = [
-            fn(test_cube.coord(axis="x").points) for fn in (np.min, np.max)
-        ]
-        ymin, ymax = [
-            fn(test_cube.coord(axis="x").points) for fn in (np.min, np.max)
-        ]
+        xmin, xmax = [fn(test_cube.coord(axis="x").points) for fn in (np.min, np.max)]
+        ymin, ymax = [fn(test_cube.coord(axis="x").points) for fn in (np.min, np.max)]
         fractions = [-0.23, -0.01, 0.27, 0.624, 0.983, 1.052, 1.43]
         x_points = [xmin + frac * (xmax - xmin) for frac in fractions]
         y_points = [ymin + frac * (ymax - ymin) for frac in fractions]
@@ -205,9 +190,7 @@ class TestColpex(tests.IrisTest):
 class TestTriPolar(tests.IrisTest):
     def setUp(self):
         # load data
-        cubes = iris.load(
-            tests.get_data_path(["NetCDF", "ORCA2", "votemper.nc"])
-        )
+        cubes = iris.load(tests.get_data_path(["NetCDF", "ORCA2", "votemper.nc"]))
         cube = cubes[0]
         # The netCDF file has different data types for the points and
         # bounds of 'depth'. This wasn't previously supported, so we
@@ -216,8 +199,10 @@ class TestTriPolar(tests.IrisTest):
         cube.coord("depth").bounds = b32
         self.cube = cube
         # define a latitude trajectory (put coords in a different order
-        # to the cube, just to be awkward)
-        latitudes = list(range(-90, 90, 2))
+        # to the cube, just to be awkward) although avoid south pole
+        # singularity as a sample point and the issue of snapping to
+        # multi-equidistant closest points from within orca antarctic hole
+        latitudes = list(range(-80, 90, 2))
         longitudes = [-90] * len(latitudes)
         self.sample_points = [
             ("longitude", longitudes),
@@ -226,10 +211,8 @@ class TestTriPolar(tests.IrisTest):
 
     def test_tri_polar(self):
         # extract
-        sampled_cube = traj_interpolate(self.cube, self.sample_points)
-        self.assertCML(
-            sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml")
-        )
+        sampled_cube = traj_interpolate(self.cube, self.sample_points, method="nearest")
+        self.assertCML(sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml"))
 
     def test_tri_polar_method_linear_fails(self):
         # Try to request linear interpolation.
@@ -329,8 +312,12 @@ class TestLazyData(tests.IrisTest):
         # Put a lazy array into the cube so we can test deferred loading.
         cube.data = as_lazy_data(cube.data)
 
+        # Use opionated grid-latitudes to avoid the issue of platform
+        # specific behaviour within SciPy cKDTree choosing a different
+        # equi-distant nearest neighbour point when there are multiple
+        # valid candidates.
         traj = (
-            ("grid_latitude", [20.5, 21.5, 22.5, 23.5]),
+            ("grid_latitude", [20.4, 21.6, 22.6, 23.6]),
             ("grid_longitude", [31, 32, 33, 34]),
         )
         xsec = traj_interpolate(cube, traj, method="nearest")

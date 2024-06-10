@@ -1,12 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Integration tests for NetCDF-UGRID file saving.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Integration tests for NetCDF-UGRID file saving."""
 
-"""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -14,17 +11,15 @@ import iris.tests as tests  # isort:skip
 import glob
 from pathlib import Path
 import shutil
-from subprocess import check_call
 import tempfile
 
 import iris
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 import iris.fileformats.netcdf
-from iris.tests import IrisTest
-from iris.tests.stock.netcdf import _add_standard_data
+from iris.tests.stock.netcdf import _add_standard_data, ncgen_from_cdl
 
 
-class TestBasicSave(IrisTest):
+class TestBasicSave(tests.IrisTest):
     @classmethod
     def setUpClass(cls):
         cls.temp_dir = Path(tempfile.mkdtemp())
@@ -46,12 +41,10 @@ class TestBasicSave(IrisTest):
 
     def test_example_result_cdls(self):
         # Snapshot the result of saving the example cases.
-        for ex_name, filepath in self.example_names_paths.items():
+        for ex_name, cdl_path in self.example_names_paths.items():
+            # Create a test netcdf file.
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
-            # Create a netcdf file from the test CDL.
-            check_call(
-                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
-            )
+            ncgen_from_cdl(cdl_str=None, cdl_path=cdl_path, nc_path=target_ncfile_path)
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)
             # Load as Iris data
@@ -61,22 +54,18 @@ class TestBasicSave(IrisTest):
             resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
             iris.save(cubes, resave_ncfile_path)
             # Check the output against a CDL snapshot.
-            refdir_relpath = (
-                "integration/experimental/ugrid_save/TestBasicSave/"
-            )
-            reffile_name = str(Path(filepath).name).replace(".nc", ".cdl")
+            refdir_relpath = "integration/experimental/ugrid_save/TestBasicSave/"
+            reffile_name = str(Path(cdl_path).name).replace(".nc", ".cdl")
             reffile_path = refdir_relpath + reffile_name
             self.assertCDL(resave_ncfile_path, reference_filename=reffile_path)
 
     def test_example_roundtrips(self):
         # Check that save-and-loadback leaves Iris data unchanged,
         # for data derived from each UGRID example CDL.
-        for ex_name, filepath in self.example_names_paths.items():
+        for ex_name, cdl_path in self.example_names_paths.items():
+            # Create a test netcdf file.
             target_ncfile_path = str(self.temp_dir / f"{ex_name}.nc")
-            # Create a netcdf file from the test CDL.
-            check_call(
-                f"ncgen {filepath} -k4 -o {target_ncfile_path}", shell=True
-            )
+            ncgen_from_cdl(cdl_str=None, cdl_path=cdl_path, nc_path=target_ncfile_path)
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)
             # Load the original as Iris data
@@ -107,9 +96,7 @@ class TestBasicSave(IrisTest):
                 self.assertEqual(orig.location, reloaded.location)
                 orig_mesh = orig.mesh
                 reloaded_mesh = reloaded.mesh
-                self.assertEqual(
-                    orig_mesh.all_coords, reloaded_mesh.all_coords
-                )
+                self.assertEqual(orig_mesh.all_coords, reloaded_mesh.all_coords)
                 self.assertEqual(
                     orig_mesh.all_connectivities,
                     reloaded_mesh.all_connectivities,

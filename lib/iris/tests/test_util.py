@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test iris.util
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test iris.util."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -27,9 +23,7 @@ import iris.util
 class TestMonotonic(tests.IrisTest):
     def assertMonotonic(self, array, direction=None, **kwargs):
         if direction is not None:
-            mono, dir = iris.util.monotonic(
-                array, return_direction=True, **kwargs
-            )
+            mono, dir = iris.util.monotonic(array, return_direction=True, **kwargs)
             if not mono:
                 self.fail("Array was not monotonic:/n %r" % array)
             if dir != np.sign(direction):
@@ -93,15 +87,11 @@ class TestClipString(tests.IrisTest):
         # Test with a clip length that means the string will be clipped
 
         clip_length = 109
-        result = iris.util.clip_string(
-            self.test_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(self.test_string, clip_length, self.rider)
 
         # Check the length is between what we requested ( + rider length) and the length of the original string
         self.assertTrue(
-            clip_length + len(self.rider)
-            <= len(result)
-            < len(self.test_string),
+            clip_length + len(self.rider) <= len(result) < len(self.test_string),
             "String was not clipped.",
         )
 
@@ -115,9 +105,7 @@ class TestClipString(tests.IrisTest):
         # Test with a clip length that is longer than the string
 
         clip_length = 10999
-        result = iris.util.clip_string(
-            self.test_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(self.test_string, clip_length, self.rider)
         self.assertEqual(
             len(result),
             len(self.test_string),
@@ -133,9 +121,7 @@ class TestClipString(tests.IrisTest):
     def test_invalid_clip_lengths(self):
         # Clip values less than or equal to zero are not valid
         for clip_length in [0, -100]:
-            result = iris.util.clip_string(
-                self.test_string, clip_length, self.rider
-            )
+            result = iris.util.clip_string(self.test_string, clip_length, self.rider)
             self.assertEqual(
                 len(result),
                 len(self.test_string),
@@ -144,16 +130,14 @@ class TestClipString(tests.IrisTest):
 
     def test_default_values(self):
         # Get the default values specified in the function
-        argspec = inspect.getargspec(iris.util.clip_string)
+        argspec = inspect.getfullargspec(iris.util.clip_string)
         arg_dict = dict(zip(argspec.args[-2:], argspec.defaults))
 
         result = iris.util.clip_string(
             self.test_string, arg_dict["clip_length"], arg_dict["rider"]
         )
 
-        self.assertLess(
-            len(result), len(self.test_string), "String was not clipped."
-        )
+        self.assertLess(len(result), len(self.test_string), "String was not clipped.")
 
         rider_returned = result[-len(arg_dict["rider"]) :]
         self.assertEqual(
@@ -161,15 +145,12 @@ class TestClipString(tests.IrisTest):
         )
 
     def test_trim_string_with_no_spaces(self):
-
         clip_length = 200
         no_space_string = "a" * 500
 
         # Since this string has no spaces, clip_string will not be able to gracefully clip it
         # but will instead clip it exactly where the user specified
-        result = iris.util.clip_string(
-            no_space_string, clip_length, self.rider
-        )
+        result = iris.util.clip_string(no_space_string, clip_length, self.rider)
 
         expected_length = clip_length + len(self.rider)
 
@@ -189,9 +170,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_b = stock.realistic_4d()
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "compatible_cubes.str.txt")
@@ -205,9 +184,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_b.attributes["Conventions"] = "CF-1.6"
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_attr.str.txt")
@@ -219,9 +196,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.standard_name = "relative_humidity"
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_name.str.txt")
@@ -233,9 +208,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         test_cube_a.units = cf_units.Unit("m")
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_unit.str.txt")
@@ -247,9 +220,7 @@ class TestDescribeDiff(iris.tests.IrisTest):
         )
 
         return_sio = StringIO()
-        iris.util.describe_diff(
-            test_cube_a, test_cube_b, output_file=return_sio
-        )
+        iris.util.describe_diff(test_cube_a, test_cube_b, output_file=return_sio)
         return_str = return_sio.getvalue()
 
         self.assertString(return_str, "incompatible_meth.str.txt")
@@ -268,110 +239,10 @@ class TestDescribeDiff(iris.tests.IrisTest):
 
         with self.temp_filename() as filename:
             with open(filename, "w") as f:
-                iris.util.describe_diff(
-                    test_cube_a, test_cube_b, output_file=f
-                )
+                iris.util.describe_diff(test_cube_a, test_cube_b, output_file=f)
                 f.close()
 
             self.assertFilesEqual(filename, "incompatible_cubes.str.txt")
-
-
-@tests.skip_data
-class TestAsCompatibleShape(tests.IrisTest):
-    def test_slice(self):
-        cube = tests.stock.realistic_4d()
-        sliced = cube[1, :, 2, :-2]
-        expected = cube[1:2, :, 2:3, :-2]
-        res = iris.util.as_compatible_shape(sliced, cube)
-        self.assertEqual(res, expected)
-
-    def test_transpose(self):
-        cube = tests.stock.realistic_4d()
-        transposed = cube.copy()
-        transposed.transpose()
-        expected = cube
-        res = iris.util.as_compatible_shape(transposed, cube)
-        self.assertEqual(res, expected)
-
-    def test_slice_and_transpose(self):
-        cube = tests.stock.realistic_4d()
-        sliced_and_transposed = cube[1, :, 2, :-2]
-        sliced_and_transposed.transpose()
-        expected = cube[1:2, :, 2:3, :-2]
-        res = iris.util.as_compatible_shape(sliced_and_transposed, cube)
-        self.assertEqual(res, expected)
-
-    def test_collapsed(self):
-        cube = tests.stock.realistic_4d()
-        collapsed = cube.collapsed("model_level_number", iris.analysis.MEAN)
-        expected_shape = list(cube.shape)
-        expected_shape[1] = 1
-        expected_data = collapsed.data.reshape(expected_shape)
-        res = iris.util.as_compatible_shape(collapsed, cube)
-        self.assertCML(
-            res, ("util", "as_compatible_shape_collapsed.cml"), checksum=False
-        )
-        self.assertMaskedArrayEqual(expected_data, res.data)
-
-    def test_reduce_dimensionality(self):
-        # Test that as_compatible_shape() can demote
-        # length one dimensions to scalars.
-        cube = tests.stock.realistic_4d()
-        src = cube[:, 2:3]
-        expected = reduced = cube[:, 2]
-        res = iris.util.as_compatible_shape(src, reduced)
-        self.assertEqual(res, expected)
-
-    def test_anonymous_dims(self):
-        cube = tests.stock.realistic_4d()
-        # Move all coords from dim_coords to aux_coords.
-        for coord in cube.dim_coords:
-            dim = cube.coord_dims(coord)
-            cube.remove_coord(coord)
-            cube.add_aux_coord(coord, dim)
-
-        sliced = cube[1, :, 2, :-2]
-        expected = cube[1:2, :, 2:3, :-2]
-        res = iris.util.as_compatible_shape(sliced, cube)
-        self.assertEqual(res, expected)
-
-    def test_scalar_auxcoord(self):
-        def dim_to_aux(cube, coord_name):
-            """Convert coordinate on cube from DimCoord to AuxCoord."""
-            coord = cube.coord(coord_name)
-            coord = iris.coords.AuxCoord.from_coord(coord)
-            cube.replace_coord(coord)
-
-        cube = tests.stock.realistic_4d()
-        src = cube[:, :, 3]
-        dim_to_aux(src, "grid_latitude")
-        expected = cube[:, :, 3:4]
-        dim_to_aux(expected, "grid_latitude")
-        res = iris.util.as_compatible_shape(src, cube)
-        self.assertEqual(res, expected)
-
-    def test_2d_auxcoord_transpose(self):
-        dim_coord1 = iris.coords.DimCoord(range(3), long_name="first_dim")
-        dim_coord2 = iris.coords.DimCoord(range(4), long_name="second_dim")
-        aux_coord_2d = iris.coords.AuxCoord(
-            np.arange(12).reshape(3, 4), long_name="spanning"
-        )
-        aux_coord_2d_T = iris.coords.AuxCoord(
-            np.arange(12).reshape(3, 4).T, long_name="spanning"
-        )
-        src = iris.cube.Cube(
-            np.ones((3, 4)),
-            dim_coords_and_dims=[(dim_coord1, 0), (dim_coord2, 1)],
-            aux_coords_and_dims=[(aux_coord_2d, (0, 1))],
-        )
-        target = iris.cube.Cube(
-            np.ones((4, 3)),
-            dim_coords_and_dims=[(dim_coord1, 1), (dim_coord2, 0)],
-            aux_coords_and_dims=[(aux_coord_2d_T, (0, 1))],
-        )
-
-        res = iris.util.as_compatible_shape(src, target)
-        self.assertEqual(res[0], target[0])
 
 
 if __name__ == "__main__":

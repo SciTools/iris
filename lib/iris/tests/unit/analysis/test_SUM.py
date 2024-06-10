@@ -1,14 +1,14 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.SUM` aggregator."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -91,6 +91,14 @@ class Test_weights_and_returned(tests.IrisTest):
         self.assertArrayEqual(data, [14, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
 
+    def test_masked_weights_and_returned(self):
+        array = ma.array(self.cube_2d.data, mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]])
+        data, weights = SUM.aggregate(
+            array, axis=0, weights=self.weights, returned=True
+        )
+        self.assertArrayEqual(data, [14, 9, 8, 4, 15])
+        self.assertArrayEqual(weights, [4, 2, 1, 1, 2])
+
 
 class Test_lazy_weights_and_returned(tests.IrisTest):
     def setUp(self):
@@ -127,6 +135,17 @@ class Test_lazy_weights_and_returned(tests.IrisTest):
         self.assertTrue(is_lazy_data(lazy_data))
         self.assertArrayEqual(lazy_data.compute(), [14, 9, 11, 13, 15])
         self.assertArrayEqual(weights, [4, 2, 2, 2, 2])
+
+    def test_masked_weights_and_returned(self):
+        array = da.ma.masked_array(
+            self.cube_2d.lazy_data(), mask=[[0, 0, 1, 0, 0], [0, 0, 0, 1, 0]]
+        )
+        lazy_data, weights = SUM.lazy_aggregate(
+            array, axis=0, weights=self.weights, returned=True
+        )
+        self.assertTrue(is_lazy_data(lazy_data))
+        self.assertArrayEqual(lazy_data.compute(), [14, 9, 8, 4, 15])
+        self.assertArrayEqual(weights, [4, 2, 1, 1, 2])
 
 
 class Test_aggregate_shape(tests.IrisTest):

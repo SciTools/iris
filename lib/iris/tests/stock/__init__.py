@@ -1,27 +1,29 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-A collection of routines which create standard Cubes/files for test purposes.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""A collection of routines which create standard Cubes/files for test purposes."""
 
-"""
 import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 import os.path
+from typing import NamedTuple
 
+from cartopy.crs import CRS
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
+from iris.analysis import cartography
 import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
-from iris.coords import AuxCoord, CellMethod, DimCoord
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
+from iris.experimental import ugrid
+from iris.util import mask_cube
 
 from ._stock_2d_latlons import (  # noqa
     make_bounds_discontiguous_at_point,
@@ -30,8 +32,7 @@ from ._stock_2d_latlons import (  # noqa
 
 
 def lat_lon_cube():
-    """
-    Returns a cube with a latitude and longitude suitable for testing
+    """Returns a cube with a latitude and longitude suitable for testing
     saving to PP/NetCDF etc.
 
     """
@@ -55,8 +56,7 @@ def lat_lon_cube():
 
 
 def global_pp():
-    """
-    Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
+    """Returns a two-dimensional cube derived from PP/aPPglob1/global.pp.
 
     The standard_name and unit attributes are added to compensate for the
     broken STASH encoding in that file.
@@ -80,8 +80,7 @@ def simple_pp():
 
 
 def simple_1d(with_bounds=True):
-    """
-    Returns an abstract, one-dimensional cube.
+    """Returns an abstract, one-dimensional cube.
 
     >>> print(simple_1d())
     thingness                           (foo: 11)
@@ -99,14 +98,18 @@ def simple_1d(with_bounds=True):
     bounds = np.column_stack(
         [np.arange(11, dtype=np.int32), np.arange(11, dtype=np.int32) + 1]
     )
-    coord = DimCoord(points, long_name="foo", units="1", bounds=bounds)
+    coord = DimCoord(
+        points,
+        long_name="foo",
+        units="1",
+        bounds=bounds if with_bounds else None,
+    )
     cube.add_dim_coord(coord, 0)
     return cube
 
 
 def simple_2d(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d())
     thingness                           (bar: 3; foo: 4)
@@ -133,9 +136,7 @@ def simple_2d(with_bounds=True):
         bounds=y_bounds if with_bounds else None,
     )
     x_points = np.array([-7.5, 7.5, 22.5, 37.5])
-    x_bounds = np.array(
-        [[-15, 0], [0, 15], [15, 30], [30, 45]], dtype=np.int32
-    )
+    x_bounds = np.array([[-15, 0], [0, 15], [15, 30], [30, 45]], dtype=np.int32)
     x_coord = DimCoord(
         x_points,
         long_name="foo",
@@ -149,8 +150,7 @@ def simple_2d(with_bounds=True):
 
 
 def simple_2d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_2d_w_multidim_coords())
     thingness                           (*ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -171,8 +171,7 @@ def simple_2d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d_w_multidim_coords(with_bounds=True):
-    """
-    Returns an abstract, two-dimensional, optionally bounded, cube.
+    """Returns an abstract, two-dimensional, optionally bounded, cube.
 
     >>> print(simple_3d_w_multidim_coords())
     thingness                           (wibble: 2; *ANONYMOUS*: 3; *ANONYMOUS*: 4)
@@ -249,8 +248,7 @@ def simple_3d_w_multidim_coords(with_bounds=True):
 
 
 def simple_3d():
-    """
-    Returns an abstract three dimensional cube.
+    """Returns an abstract three dimensional cube.
 
     >>> print(simple_3d())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -289,8 +287,7 @@ def simple_3d():
 
 
 def simple_3d_mask():
-    """
-    Returns an abstract three dimensional cube that has data masked.
+    """Returns an abstract three dimensional cube that has data masked.
 
     >>> print(simple_3d_mask())
     thingness / (1)                     (wibble: 2; latitude: 3; longitude: 4)
@@ -316,8 +313,7 @@ def simple_3d_mask():
 
 
 def track_1d(duplicate_x=False):
-    """
-    Returns a one-dimensional track through two-dimensional space.
+    """Returns a one-dimensional track through two-dimensional space.
 
     >>> print(track_1d())
     air_temperature                     (y, x: 11)
@@ -342,22 +338,16 @@ def track_1d(duplicate_x=False):
     coord = AuxCoord(pts, "projection_x_coordinate", units="1", bounds=bounds)
     cube.add_aux_coord(coord, [0])
     if duplicate_x:
-        coord = AuxCoord(
-            pts, "projection_x_coordinate", units="1", bounds=bounds
-        )
+        coord = AuxCoord(pts, "projection_x_coordinate", units="1", bounds=bounds)
         cube.add_aux_coord(coord, [0])
-    coord = AuxCoord(
-        pts * 2, "projection_y_coordinate", units="1", bounds=bounds * 2
-    )
+    coord = AuxCoord(pts * 2, "projection_y_coordinate", units="1", bounds=bounds * 2)
     cube.add_aux_coord(coord, 0)
     return cube
 
 
 def simple_2d_w_multidim_and_scalars():
     data = np.arange(50, dtype=np.int32).reshape((5, 10))
-    cube = iris.cube.Cube(
-        data, long_name="test 2d dimensional cube", units="meters"
-    )
+    cube = iris.cube.Cube(data, long_name="test 2d dimensional cube", units="meters")
 
     # DimCoords
     dim1 = DimCoord(
@@ -399,9 +389,36 @@ def simple_2d_w_multidim_and_scalars():
     return cube
 
 
-def hybrid_height():
+def simple_2d_w_cell_measure_ancil_var():
+    """Returns a two dimensional cube with a CellMeasure and AncillaryVariable.
+
+    >>> print(simple_2d_w_cell_measure_ancil_var())
+    thingness / (1)                     (bar: 3; foo: 4)
+        Dimension coordinates:
+            bar                             x       -
+            foo                             -       x
+        Cell measures:
+            cell_area                       x       x
+        Ancillary variables:
+            quality_flag                    x       -
+        Scalar coordinates:
+            wibble                      1
+
     """
-    Returns a two-dimensional (Z, X), hybrid-height cube.
+    cube = simple_2d()
+    cube.add_aux_coord(AuxCoord([1], long_name="wibble"), None)
+    cube.add_ancillary_variable(
+        AncillaryVariable([1, 2, 3], standard_name="quality_flag"), 0
+    )
+    cube.add_cell_measure(
+        CellMeasure(np.arange(12).reshape(3, 4), standard_name="cell_area"),
+        (0, 1),
+    )
+    return cube
+
+
+def hybrid_height():
+    """Returns a two-dimensional (Z, X), hybrid-height cube.
 
     >>> print(hybrid_height())
     TODO: Update!
@@ -423,9 +440,7 @@ def hybrid_height():
     """
     data = np.arange(12, dtype="i8").reshape((3, 4))
 
-    orography = AuxCoord(
-        [10, 25, 50, 5], standard_name="surface_altitude", units="m"
-    )
+    orography = AuxCoord([10, 25, 50, 5], standard_name="surface_altitude", units="m")
     model_level = AuxCoord([2, 1, 0], standard_name="model_level_number")
     level_height = DimCoord(
         [100, 50, 10],
@@ -439,9 +454,7 @@ def hybrid_height():
         long_name="sigma",
         bounds=[[0.7, 0.85], [0.85, 0.97], [0.97, 1.0]],
     )
-    hybrid_height = iris.aux_factory.HybridHeightFactory(
-        level_height, sigma, orography
-    )
+    hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
 
     cube = iris.cube.Cube(
         data,
@@ -466,28 +479,20 @@ def simple_4d_with_hybrid_height():
         0,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(4, dtype="i8") + 10, "model_level_number", units="1"
-        ),
+        DimCoord(np.arange(4, dtype="i8") + 10, "model_level_number", units="1"),
         1,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(5, dtype="i8") + 20, "grid_latitude", units="degrees"
-        ),
+        DimCoord(np.arange(5, dtype="i8") + 20, "grid_latitude", units="degrees"),
         2,
     )
     cube.add_dim_coord(
-        DimCoord(
-            np.arange(6, dtype="i8") + 30, "grid_longitude", units="degrees"
-        ),
+        DimCoord(np.arange(6, dtype="i8") + 30, "grid_longitude", units="degrees"),
         3,
     )
 
     cube.add_aux_coord(
-        AuxCoord(
-            np.arange(4, dtype="i8") + 40, long_name="level_height", units="m"
-        ),
+        AuxCoord(np.arange(4, dtype="i8") + 40, long_name="level_height", units="m"),
         1,
     )
     cube.add_aux_coord(
@@ -514,8 +519,7 @@ def simple_4d_with_hybrid_height():
 
 
 def realistic_3d():
-    """
-    Returns a realistic 3d cube.
+    """Returns a realistic 3d cube.
 
     >>> print(repr(realistic_3d()))
     <iris 'Cube' of air_potential_temperature (time: 7; grid_latitude: 9;
@@ -560,8 +564,7 @@ def realistic_3d():
 
 
 def realistic_4d():
-    """
-    Returns a realistic 4d cube.
+    """Returns a realistic 4d cube.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -622,12 +625,8 @@ def realistic_4d():
         units="1",
         attributes={"positive": "up"},
     )
-    sigma = icoords.AuxCoord(
-        sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds
-    )
-    orography = icoords.AuxCoord(
-        orography, standard_name="surface_altitude", units="m"
-    )
+    sigma = icoords.AuxCoord(sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds)
+    orography = icoords.AuxCoord(orography, standard_name="surface_altitude", units="m")
     time = icoords.DimCoord(
         time_pts, standard_name="time", units="hours since 1970-01-01 00:00:00"
     )
@@ -635,9 +634,7 @@ def realistic_4d():
         forecast_period_pts, standard_name="forecast_period", units="hours"
     )
 
-    hybrid_height = iris.aux_factory.HybridHeightFactory(
-        level_height, sigma, orography
-    )
+    hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
 
     cube = iris.cube.Cube(
         data,
@@ -657,8 +654,7 @@ def realistic_4d():
 
 
 def realistic_4d_no_derived():
-    """
-    Returns a realistic 4d cube without hybrid height
+    """Returns a realistic 4d cube without hybrid height.
 
     >>> print(repr(realistic_4d()))
     <iris 'Cube' of air_potential_temperature (time: 6; model_level_number: 70;
@@ -722,9 +718,270 @@ def realistic_4d_w_missing_data():
     return cube
 
 
-def ocean_sigma_z():
+def realistic_4d_w_everything(w_mesh=False):
+    """Returns a cube that will exercise as much of Iris as possible.
+
+    Uses :func:`realistic_4d` as a basis, then modifies accordingly.
+
+    Parameters
+    ----------
+    w_mesh : bool, optional
+        If True, the horizontal grid will be replaced with a mesh representation.
     """
-    Return a sample cube with an
+    cube = realistic_4d()
+
+    grid_lon, grid_lat = [cube.coord(n) for n in ("grid_longitude", "grid_latitude")]
+    (lon_dim,), (lat_dim,) = [c.cube_dims(cube) for c in (grid_lon, grid_lat)]
+    horizontal_shape = (cube.shape[lon_dim], cube.shape[lat_dim])
+
+    # Mask a corner of the cube.
+    mask = np.ones(np.array(cube.shape) // 2)
+    padding = np.stack(
+        [np.subtract(cube.shape, mask.shape), np.zeros_like(cube.shape)], axis=1
+    )
+    mask = np.pad(mask, padding)
+    cube = mask_cube(cube, mask)
+
+    ################
+    # Add various missing types of metadata.
+
+    cube.long_name = "Air Potential Temperature"
+    cube.var_name = "air_temp"
+
+    cell_method = CellMethod("mean", coords="time", intervals="1 hour")
+    cube.add_cell_method(cell_method)
+
+    cell_areas = cartography.area_weights(cube, normalize=True)
+    # Index cell_areas to just get the lat and lon dimensions.
+    slices = tuple(
+        slice(None) if i in (lat_dim, lon_dim) else 0 for i in range(cube.ndim)
+    )
+    cell_areas = cell_areas[slices]
+    cell_measure = CellMeasure(
+        data=cell_areas,
+        standard_name="cell_area",
+    )
+    cube.add_cell_measure(cell_measure, (lat_dim, lon_dim))
+
+    ancillary_variable = AncillaryVariable(
+        data=np.remainder(cube.data.astype(int), 2),
+        standard_name="quality_flag",
+    )
+    cube.add_ancillary_variable(ancillary_variable, np.arange(cube.ndim))
+
+    ################
+    # Add 2-dimensional coordinates for lon/lat in the default coord system.
+
+    class XY(NamedTuple):
+        """Syntactic sugar for storing x and y components."""
+
+        x: np.ndarray | int | float
+        y: np.ndarray | int | float
+
+    def get_default_lat_lon(lat: np.ndarray, lon: np.ndarray) -> XY:
+        """Represent the given lon-lat points/bounds in the default CRS.
+
+        The original coordinates are rotated so the output is therefore arrays
+        for constructing a 2D coordinate.
+        """
+        default_cs = GeogCS(cartography.DEFAULT_SPHERICAL_EARTH_RADIUS)
+        default_crs: CRS = default_cs.as_cartopy_crs()
+
+        mesh = np.meshgrid(lat, lon)
+        transformed = default_crs.transform_points(
+            cube.coord_system().as_cartopy_crs(),
+            *mesh,
+        )
+        no_z = transformed[..., :2]
+        return XY(*no_z.T)
+
+    default_points = get_default_lat_lon(grid_lat.points, grid_lon.points)
+    corners = [
+        get_default_lat_lon(
+            grid_lat.bounds[:, corner.y],
+            grid_lon.bounds[:, corner.x],
+        )
+        for corner in [XY(0, 0), XY(1, 0), XY(1, 1), XY(0, 1)]
+    ]
+    default_bounds = XY(
+        np.stack([c.x for c in corners], axis=-1),
+        np.stack([c.y for c in corners], axis=-1),
+    )
+
+    default_lon = AuxCoord(
+        default_points.x,
+        bounds=default_bounds.x,
+        standard_name="longitude",
+        units="degrees",
+    )
+    default_lat = AuxCoord(
+        default_points.y,
+        bounds=default_bounds.y,
+        standard_name="latitude",
+        units="degrees",
+    )
+    cube.add_aux_coord(default_lon, (lat_dim, lon_dim))
+    cube.add_aux_coord(default_lat, (lat_dim, lon_dim))
+
+    ################
+    # Optionally convert the horizontal grid to a mesh representation.
+
+    def flatten_dim_metadata(dim_metadata: icoords._DimensionalMetadata):
+        flat_values = dim_metadata._values.flatten()
+        kwargs = dim_metadata.metadata._asdict()
+        if getattr(dim_metadata, "bounds", None) is not None:
+            flat_bounds = dim_metadata.bounds.reshape(
+                [len(flat_values), dim_metadata.bounds.shape[-1]]
+            )
+            kwargs["bounds"] = flat_bounds
+        new_instance = dim_metadata.__class__(flat_values, **kwargs)
+        return new_instance
+
+    def remove_duplicate_nodes(mesh: ugrid.Mesh):
+        """Remove duplicate nodes from a mesh.
+
+        Mesh.from_coords() does not do this due to complications like lazy
+        arrays. Not a problem here.
+        """
+        # TODO:
+        #  Contained in a function because this _could_ be generalised into a
+        #  public function. Would need to make it handle Dask arrays and masked
+        #  indices.
+
+        # Example nodes: [a, b, c, a, c, b, d]
+        #  (Real nodes are X-Y pairs so a 2d array).
+        # Example faces: [[0, 1, 2, 6], [3, 4, 5, 6]]
+        #  I.e. faces made by connecting: a-b-c-d , a-c-b-d
+        # Processed nodes: [a, b, c, d]
+        # Processed faces: [[0, 1, 2, 3], [0, 2, 1, 3]]
+
+        nodes = np.stack([c.points for c in mesh.node_coords])
+        face_node = mesh.face_node_connectivity
+
+        # first_instances = a full length array but always with the index of
+        #  the first instance of each node e.g.: [0, 1, 2, 0, 2, 1, 3]
+        nodes_unique, first_instances = np.unique(
+            nodes,
+            return_inverse=True,
+            axis=1,
+        )
+        # E.g. indexing [0, 1, 2, 0, 2, 1, 3] with [[0, 1, 2, 6], [3, 4, 5, 6]]
+        #  -> [[0, 1, 2, 3], [0, 2, 1, 3]]
+        indices_unique = first_instances[face_node.indices]
+        # Connectivity indices expected to be a masked array.
+        indices_unique = np.ma.masked_array(indices_unique, mask=face_node.indices.mask)
+
+        # Replace the original node coords and face-node connectivity with the
+        #  unique-d versions.
+        node_x, node_y = [
+            AuxCoord(nodes_unique[i], **c.metadata._asdict())
+            for i, c in enumerate(mesh.node_coords)
+        ]
+        mesh.add_coords(node_x=node_x, node_y=node_y)
+        conn_kwargs = dict(indices=indices_unique, start_index=0)
+        mesh.add_connectivities(
+            ugrid.Connectivity(**(face_node.metadata._asdict() | conn_kwargs))
+        )
+
+        return mesh
+
+    new_mesh = ugrid.Mesh.from_coords(
+        flatten_dim_metadata(default_lon),
+        flatten_dim_metadata(default_lat),
+    )
+    new_mesh = remove_duplicate_nodes(new_mesh)
+
+    # Create a new Cube with the horizontal (XY) dimensions flattened into a
+    #  UGRID mesh.
+    def reshape_for_mesh(shape: tuple):
+        new_shape = []
+        for dim, len in enumerate(shape):
+            if dim not in (lat_dim, lon_dim):
+                new_shape.append(len)
+        new_shape.append(np.prod(horizontal_shape))
+        return new_shape
+
+    mesh_cube = Cube(
+        cube.data.reshape(reshape_for_mesh(cube.shape)),
+        **cube.metadata._asdict(),
+    )
+    for mesh_coord in new_mesh.to_MeshCoords("face"):
+        mesh_cube.add_aux_coord(mesh_coord, mesh_cube.ndim - 1)
+
+    # Add all appropriate dimensional metadata from the original cube, reshaped
+    #  where necessary.
+    dim_metadata_groups = [
+        cube.dim_coords,
+        cube.aux_coords,
+        cube.cell_measures(),
+        cube.ancillary_variables(),
+    ]
+    add_methods = {
+        AncillaryVariable: Cube.add_ancillary_variable,
+        AuxCoord: Cube.add_aux_coord,
+        CellMeasure: Cube.add_cell_measure,
+        DimCoord: Cube.add_dim_coord,
+    }
+    for dim_metadata_group in dim_metadata_groups:
+        for dim_metadata in dim_metadata_group:
+            add_method = add_methods[type(dim_metadata)]
+            cube_dims = dim_metadata.cube_dims(cube)
+
+            if cube_dims == (lat_dim,) or cube_dims == (lon_dim,):
+                # For realistic_4d() this is just lat and lon, and we're using
+                #  the mesh coords for those.
+                continue
+
+            elif cube_dims == (lat_dim, lon_dim):
+                dim_metadata = flatten_dim_metadata(dim_metadata)
+                add_method(mesh_cube, dim_metadata, mesh_cube.ndim - 1)
+
+            elif {lat_dim, lon_dim}.issubset(cube_dims):
+                # Simplify implementation by not handling bounds.
+                assert getattr(dim_metadata, "bounds", None) is None
+                new_shape = reshape_for_mesh(dim_metadata.shape)
+                new_dims = list(cube_dims)
+                for dim in (lat_dim, lon_dim):
+                    new_dims.remove(dim)
+                new_dims.append(mesh_cube.ndim - 1)
+                dim_metadata = dim_metadata.__class__(
+                    dim_metadata._values.reshape(new_shape),
+                    **dim_metadata.metadata._asdict(),
+                )
+                add_method(mesh_cube, dim_metadata, new_dims)
+
+            else:
+                try:
+                    add_method(mesh_cube, dim_metadata, cube_dims)
+                except iris.exceptions.CannotAddError as err:
+                    if isinstance(dim_metadata, DimCoord):
+                        mesh_cube.add_aux_coord(dim_metadata, cube_dims)
+                    else:
+                        raise err
+
+    for cell_method in cube.cell_methods:
+        if cell_method not in mesh_cube.cell_methods:
+            # Think some get copied across implicitly? Not sure how.
+            mesh_cube.add_cell_method(cell_method)
+
+    for aux_factory in cube.aux_factories:
+        coord_mapping = {
+            id(dep): mesh_cube.coord(dep.name())
+            for key, dep in aux_factory.dependencies.items()
+            if dep.name() in [c.name() for c in mesh_cube.coords()]
+        }
+        aux_factory = aux_factory.updated(coord_mapping)
+        mesh_cube.add_aux_factory(aux_factory)
+
+    if w_mesh:
+        result = mesh_cube
+    else:
+        result = cube
+    return result
+
+
+def ocean_sigma_z():
+    """Return a sample cube with an
     :class:`iris.aux_factory.OceanSigmaZFactory` vertical coordinate.
 
     This is a fairly small cube with real coordinate arrays.  The coordinate

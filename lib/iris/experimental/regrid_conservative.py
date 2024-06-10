@@ -1,28 +1,44 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Support for conservative regridding via ESMPy.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Support for conservative regridding via ESMPy.
+
+.. deprecated:: 3.2.0
+
+    This package will be removed in a future release.
+    Please use
+    `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+    instead.
 
 """
+
+import functools
 
 import cartopy.crs as ccrs
 import numpy as np
 
 import iris
+from iris._deprecation import warn_deprecated
 from iris.analysis._interpolation import get_xy_dim_coords
-from iris.analysis._regrid import RectilinearRegridder
+from iris.analysis._regrid import RectilinearRegridder, _create_cube
 from iris.util import _meshgrid
+
+wmsg = (
+    "The 'iris.experimental.regrid_conservative' package is deprecated since "
+    "version 3.2, and will be removed in a future release.  Please use "
+    "iris-emsf-regrid instead. "
+    "See https://github.com/SciTools-incubator/iris-esmf-regrid."
+)
+warn_deprecated(wmsg)
+
 
 #: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
 _CRS_TRUELATLON = ccrs.Geodetic()
 
 
 def _convert_latlons(crs, x_array, y_array):
-    """
-    Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
+    """Convert x+y coords in a given crs to (x,y) values in true-lat-lons.
 
     .. note::
 
@@ -34,28 +50,23 @@ def _convert_latlons(crs, x_array, y_array):
     return ll_values[..., 0], ll_values[..., 1]
 
 
-def _make_esmpy_field(
-    x_coord, y_coord, ref_name="field", data=None, mask=None
-):
-    """
-    Create an ESMPy ESMF.Field on given coordinates.
+def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
+    """Create an ESMPy ESMF.Field on given coordinates.
 
     Create a ESMF.Grid from the coordinates, defining corners and centre
     positions as lats+lons.
     Add a grid mask if provided.
     Create and return a Field mapped on this Grid, setting data if provided.
 
-    Args:
-
-    * x_coord, y_coord (:class:`iris.coords.Coord`):
+    Parameters
+    ----------
+    x_coord, y_coord : :class:`iris.coords.Coord`
         One-dimensional coordinates of shape (nx,) and (ny,).
         Their contiguous bounds define an ESMF.Grid of shape (nx, ny).
-
-    Kwargs:
-
-    * data (:class:`numpy.ndarray`, shape (nx,ny)):
+    ref_name : stre, default="field"
+    data : :class:`numpy.ndarray`, shape (nx,ny), optional
         Set the Field data content.
-    * mask (:class:`numpy.ndarray`, boolean, shape (nx,ny)):
+    mask : :class:`numpy.ndarray`, bool, shape (nx,ny), optional
         Add a mask item to the grid, assigning it 0/1 where mask=False/True.
 
     """
@@ -85,7 +96,7 @@ def _make_esmpy_field(
     # NOTE: we don't care about Iris' idea of where the points 'really' are
     # *but* ESMF requires the data in the CENTER for conservative regrid,
     # according to the documentation :
-    #  - http://www.earthsystemmodeling.org/
+    #  - https://www.earthsystemmodeling.org/
     #        esmf_releases/public/last/ESMF_refdoc.pdf
     #  - section  22.2.3 : ESMF_REGRIDMETHOD
     #
@@ -128,38 +139,38 @@ def _make_esmpy_field(
 
 
 def regrid_conservative_via_esmpy(source_cube, grid_cube):
-    """
-    Perform a conservative regridding with ESMPy.
+    """Perform a conservative regridding with ESMPy.
 
     Regrids the data of a source cube onto a new grid defined by a destination
     cube.
 
-    Args:
-
-    * source_cube (:class:`iris.cube.Cube`):
+    Parameters
+    ----------
+    source_cube : :class:`iris.cube.Cube`
         Source data.  Must have two identifiable horizontal dimension
         coordinates.
-    * grid_cube (:class:`iris.cube.Cube`):
+    grid_cube : :class:`iris.cube.Cube`
         Define the target horizontal grid:  Only the horizontal dimension
         coordinates are actually used.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.cube.Cube`
         A new cube derived from source_cube, regridded onto the specified
         horizontal grid.
 
+    Notes
+    -----
     Any additional coordinates which map onto the horizontal dimensions are
     removed, while all other metadata is retained.
     If there are coordinate factories with 2d horizontal reference surfaces,
     the reference surfaces are also regridded, using ordinary bilinear
     interpolation.
 
-    .. note::
-
-        Both source and destination cubes must have two dimension coordinates
-        identified with axes 'X' and 'Y' which share a coord_system with a
-        Cartopy CRS.
-        The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds` of
-        these.
+    Both source and destination cubes must have two dimension coordinates
+    identified with axes 'X' and 'Y' which share a coord_system with a
+    Cartopy CRS.  The grids are defined by :meth:`iris.coords.Coord.contiguous_bounds`
+    of these.
 
     .. note::
 
@@ -168,7 +179,30 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
         To alter this, make a prior call to ESMF.Manager().
 
+    .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use
+        `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
+        instead.
+
+        For example :
+
+        .. code::
+
+            from emsf_regrid.schemes import ESMFAreaWeighted
+            result = src_cube.regrid(grid_cube, ESMFAreaWeighted())
+
     """
+    wmsg = (
+        "The function "
+        "'iris.experimental.regrid_conservative."
+        "regrid_weighted_curvilinear_to_rectilinear' "
+        "has been deprecated, and will be removed in a future release.  "
+        "Please consult the docstring for details."
+    )
+    warn_deprecated(wmsg)
+
     # Lazy import so we can build the docs with no ESMF.
     import ESMF
 
@@ -285,16 +319,23 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
 
     # Return result as a new cube based on the source.
     # TODO: please tidy this interface !!!
-    return RectilinearRegridder._create_cube(
-        fullcube_data,
-        src=source_cube,
-        x_dim=src_dims_xy[0],
-        y_dim=src_dims_xy[1],
+    _regrid_callback = functools.partial(
+        RectilinearRegridder._regrid,
         src_x_coord=src_coords[0],
         src_y_coord=src_coords[1],
-        grid_x_coord=dst_coords[0],
-        grid_y_coord=dst_coords[1],
         sample_grid_x=sample_grid_x,
         sample_grid_y=sample_grid_y,
-        regrid_callback=RectilinearRegridder._regrid,
+    )
+
+    def regrid_callback(*args, **kwargs):
+        _data, dims = args
+        return _regrid_callback(_data, *dims, **kwargs)
+
+    return _create_cube(
+        fullcube_data,
+        source_cube,
+        [src_dims_xy[0], src_dims_xy[1]],
+        [dst_coords[0], dst_coords[1]],
+        2,
+        regrid_callback,
     )

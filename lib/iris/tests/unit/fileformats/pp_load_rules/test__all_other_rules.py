@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the `iris.fileformats.pp_load_rules._all_other_rules` function.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the `iris.fileformats.pp_load_rules._all_other_rules` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -160,9 +156,7 @@ class TestCrossSectionalTime(TestField):
             t1=nc_datetime(2000, 1, 2, hour=0, minute=0, second=0),
             t2=nc_datetime(2000, 1, 3, hour=0, minute=0, second=0),
             lbtim=mock.Mock(ia=1, ib=2, ic=2),
-            lbcode=SplittableInt(
-                31323, {"iy": slice(0, 2), "ix": slice(2, 4)}
-            ),
+            lbcode=SplittableInt(31323, {"iy": slice(0, 2), "ix": slice(2, 4)}),
             x_bounds=None,
             y_bounds=time_bounds,
             _x_coord_name=lambda: "longitude",
@@ -211,7 +205,6 @@ class TestCrossSectionalTime(TestField):
 
 
 class TestLBTIMx2x_ZeroYears(TestField):
-
     _spec = [
         "lbtim",
         "lbcode",

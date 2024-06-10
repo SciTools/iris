@@ -1,0 +1,35 @@
+name: "conda-env-cache"
+description: "create and cache the conda environment"
+
+#
+# Assumes the environment contains the following variables:
+#   - CONDA
+#
+inputs:
+  cache_build:
+    description: "conda environment cache build number"
+    required: false
+    default: "0"
+  cache_period:
+    description: "conda environment cache timestamp"
+    required: true
+  env_name:
+    description: "environment name"
+    required: true
+  install_packages:
+    description: "conda packages to install into environment"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      id: conda-env-cache
+      with:
+        path: ${{ env.CONDA }}/envs/${{ inputs.env_name }}
+        key: ${{ runner.os }}-conda-env-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+
+    - if: steps.conda-env-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        conda install --quiet --name ${{ inputs.env_name }} ${{ inputs.install_packages }}

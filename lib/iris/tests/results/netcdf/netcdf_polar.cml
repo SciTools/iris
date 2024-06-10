@@ -1,0 +1,45 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" long_name="toa_brightness_temperature" standard_name="toa_brightness_temperature" units="K" var_name="data">
+    <attributes>
+      <attribute name="Conventions" value="CF-1.7"/>
+      <attribute name="Note" value="This dataset is for test purposes only"/>
+      <attribute name="acknowledgement" value="EUMETSAT"/>
+      <attribute name="creator_email" value="sat_systems@metoffice.gov.uk"/>
+      <attribute name="creator_name" value="Satellite Applications, Met Office"/>
+      <attribute name="creator_type" value="group"/>
+      <attribute name="geospatial_lat_max" value="2.2e-44"/>
+      <attribute name="geospatial_lat_min" value="0.0"/>
+      <attribute name="geospatial_lon_max" value="0.0"/>
+      <attribute name="geospatial_lon_min" value="0.0"/>
+      <attribute name="history" value="Created: 2016-05-23T09:40:00Z"/>
+      <attribute name="institution" value="Met Office, UK"/>
+      <attribute name="instrument" value="SEVIRI"/>
+      <attribute name="keywords" value="Infra-red, brightness temperature, MSG, SEVIRI"/>
+      <attribute name="platform" value="MSG"/>
+      <attribute name="source" value="EUMETSAT"/>
+      <attribute name="standard_name_vocabulary" value="CF Standard Name Table v27"/>
+      <attribute name="summary" value="Infra-red channel top of atmosphere brightness temperature, central wavelength of 10.80 microns, Stereographic projection"/>
+      <attribute name="title" value="TOA brightness temperature, 10.80 micron (MSG)"/>
+    </attributes>
+    <coords>
+      <coord datadims="[1]">
+        <dimCoord id="4a6c092a" points="[-2281878. , -2246394.2, -2210911.2, ...,
+  6695437. ,  6730919.5,  6766404. ]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
+          <polarStereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord id="40a8d3c7" points="[ -981693.3 , -1017193.44, -1052694.1 , ...,
+ -6555247.  , -6590747.  , -6626247.  ]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
+          <polarStereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
+        </dimCoord>
+      </coord>
+      <coord>
+        <dimCoord id="cb784457" points="[406500.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float32" var_name="time"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0xa4b27b3b" dtype="float32" mask_checksum="0xdb4fbb14" shape="(160, 256)"/>
+  </cube>
+</cubes>

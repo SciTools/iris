@@ -1,23 +1,24 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.experimental.ugrid.mesh.MeshCoord`."""
 
-"""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+from platform import python_version
+import re
 import unittest.mock as mock
 
 import dask.array as da
 import numpy as np
+from packaging import version
+import pytest
 
-from iris._lazy_data import is_lazy_data
-from iris.common.metadata import BaseMetadata
+from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris.common.metadata import BaseMetadata, CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
 from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
@@ -44,23 +45,18 @@ class Test___init__(tests.IrisTest):
         # underlying mesh coordinate.
         for axis in Mesh.AXES:
             meshcoord = sample_meshcoord(axis=axis)
-            # N.B.
-            node_x_coord = meshcoord.mesh.coord(include_nodes=True, axis=axis)
-            for key in node_x_coord.metadata._fields:
+            face_x_coord = meshcoord.mesh.coord(include_faces=True, axis=axis)
+            for key in face_x_coord.metadata._fields:
                 meshval = getattr(meshcoord, key)
-                if key == "var_name":
-                    # var_name is unused.
-                    self.assertIsNone(meshval)
-                else:
-                    # names, units and attributes are derived from the node coord.
-                    self.assertEqual(meshval, getattr(node_x_coord, key))
+                # All relevant attributes are derived from the face coord.
+                self.assertEqual(meshval, getattr(face_x_coord, key))
 
     def test_fail_bad_mesh(self):
         with self.assertRaisesRegex(TypeError, "must be a.*Mesh"):
             sample_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
-        for loc in Mesh.LOCATIONS:
+        for loc in Mesh.ELEMENTS:
             meshcoord = sample_meshcoord(location=loc)
             self.assertEqual(meshcoord.location, loc)
 
@@ -80,8 +76,12 @@ class Test__readonly_properties(tests.IrisTest):
     def test_fixed_metadata(self):
         # Check that you cannot set any of these on an existing MeshCoord.
         meshcoord = self.meshcoord
+        if version.parse(python_version()) >= version.parse("3.11"):
+            msg = "object has no setter"
+        else:
+            msg = "can't set attribute"
         for prop in ("mesh", "location", "axis"):
-            with self.assertRaisesRegex(AttributeError, "can't set"):
+            with self.assertRaisesRegex(AttributeError, msg):
                 setattr(meshcoord, prop, mock.sentinel.odd)
 
     def test_coord_system(self):
@@ -102,8 +102,7 @@ class Test__readonly_properties(tests.IrisTest):
 
 
 class Test__inherited_properties(tests.IrisTest):
-    """
-    Check the settability and effect on equality of the common BaseMetadata
+    """Check the settability and effect on equality of the common BaseMetadata
     properties inherited from Coord : i.e. names/units/attributes.
 
     Though copied from the mesh at creation, they are also changeable.
@@ -135,9 +134,7 @@ class Test__points_and_bounds(tests.IrisTest):
     # See Test_MeshCoord__dataviews for more detailed checks.
     def test_node(self):
         meshcoord = sample_meshcoord(location="node")
-        n_nodes = (
-            iris.tests.stock.mesh._TEST_N_NODES
-        )  # n-nodes default for sample mesh
+        n_nodes = iris.tests.stock.mesh._TEST_N_NODES  # n-nodes default for sample mesh
         self.assertIsNone(meshcoord.core_bounds())
         self.assertArrayAllClose(meshcoord.points, 1100 + np.arange(n_nodes))
 
@@ -146,9 +143,7 @@ class Test__points_and_bounds(tests.IrisTest):
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
         self.assertEqual(points.shape, meshcoord.shape)
         self.assertEqual(bounds.shape, meshcoord.shape + (2,))
-        self.assertArrayAllClose(
-            meshcoord.points, [2100, 2101, 2102, 2103, 2104]
-        )
+        self.assertArrayAllClose(meshcoord.points, [2100, 2101, 2102, 2103, 2104])
         self.assertArrayAllClose(
             meshcoord.bounds,
             [
@@ -238,9 +233,7 @@ class Test__getitem__(tests.IrisTest):
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
-        meshcoord2 = meshcoord[
-            :,
-        ]
+        meshcoord2 = meshcoord[:,]
         self.assertIsNot(meshcoord2, meshcoord)
         self.assertEqual(meshcoord2, meshcoord)
         # In this case, we should *NOT* copy the linked Mesh object.
@@ -268,42 +261,124 @@ class Test__str_repr(tests.IrisTest):
 
     def _expected_elements_regexp(
         self,
-        mesh_strstyle=True,
-        standard_name=True,
-        long_name=True,
-        attributes=True,
+        standard_name="longitude",
+        long_name=None,
+        attributes=False,
+        location="face",
+        axis="x",
+        var_name=None,
     ):
-        regexp = r"^MeshCoord\(mesh="
-        if mesh_strstyle:
-            regexp += r"Mesh\('test_mesh'\)"
-        else:
-            regexp += "<Mesh object at .*>"
-        regexp += r", location='face', axis='x', shape=\(3,\)"
+        # Printed name is standard or long -- we don't have a case with neither
+        coord_name = standard_name or long_name
+        # Construct regexp in 'sections'
+        # NB each consumes up to first non-space in the next line
+        regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
+        regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
+        regexp += f"location: '{location}'\n *"
+
+        # Now some optional sections : whichever comes first will match
+        # arbitrary content leading up to it.
+        matched_upto = False
+
+        def upto_first_expected(regexp, matched_any_upto):
+            if not matched_any_upto:
+                regexp += ".*"
+                matched_any_upto = True
+            return regexp, matched_any_upto
+
         if standard_name:
-            regexp += ", standard_name='longitude'"
-        regexp += r", units=Unit\('degrees_east'\)"
+            regexp, matched_upto = upto_first_expected(regexp, matched_upto)
+            regexp += f"standard_name: '{standard_name}'\n *"
         if long_name:
-            regexp += ", long_name='long-name'"
+            regexp, matched_upto = upto_first_expected(regexp, matched_upto)
+            regexp += f"long_name: '{long_name}'\n *"
+        if var_name:
+            regexp, matched_upto = upto_first_expected(regexp, matched_upto)
+            regexp += f"var_name: '{var_name}'\n *"
         if attributes:
-            regexp += r", attributes={'a': 1, 'b': 'c'}"
-        regexp += r"\)$"
+            # if we expected attributes, they should come next
+            # TODO: change this when each attribute goes on a new line
+            regexp, matched_upto = upto_first_expected(regexp, matched_upto)
+            # match 'attributes:' followed by N*lines with larger indent
+            regexp += "attributes:(\n        [^ \n]+ +[^ \n]+)+\n    "
+        # After those items, expect 'axis' next
+        # N.B. this FAILS if we had attributes when we didn't expect them
+        regexp += f"axis: '{axis}'$"  # N.B. this is always the end
+
+        # Compile regexp, also allowing matches across newlines
+        regexp = re.compile(regexp, flags=re.DOTALL)
         return regexp
 
     def test_repr(self):
+        # A simple check for the condensed form.
         result = repr(self.meshcoord)
-        re_expected = self._expected_elements_regexp(mesh_strstyle=False)
+        expected = (
+            "<MeshCoord: longitude / (unknown)  "
+            "mesh(test_mesh) location(face)  [...]+bounds  shape(3,)>"
+        )
+        self.assertEqual(expected, result)
+
+    def test_repr_lazy(self):
+        # Displays lazy content (and does not realise!).
+        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
+        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        result = repr(self.meshcoord)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        expected = (
+            "<MeshCoord: longitude / (unknown)  "
+            "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
+        )
+        self.assertEqual(expected, result)
+
+    def test_repr__nameless_mesh(self):
+        # Check what it does when the Mesh doesn't have a name.
+        self.mesh.long_name = None
+        assert self.mesh.name() == "unknown"
+        result = repr(self.meshcoord)
+        re_expected = (
+            r".MeshCoord: longitude / \(unknown\)  "
+            r"mesh\(.Mesh object at 0x[^>]+.\) location\(face\) "
+        )
         self.assertRegex(result, re_expected)
 
     def test__str__(self):
+        # Basic output contains mesh, location, standard_name, long_name,
+        # attributes, mesh, location and axis
         result = str(self.meshcoord)
-        re_expected = self._expected_elements_regexp(mesh_strstyle=True)
+        re_expected = self._expected_elements_regexp()
+        self.assertRegex(result, re_expected)
+
+    def test__str__lazy(self):
+        # Displays lazy content (and does not realise!).
+        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
+        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
+
+        result = str(self.meshcoord)
+        self.assertTrue(self.meshcoord.has_lazy_points())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
+
+        self.assertIn("points: <lazy>", result)
+        self.assertIn("bounds: <lazy>", result)
+        re_expected = self._expected_elements_regexp()
         self.assertRegex(result, re_expected)
 
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
         result = str(meshcoord)
-        re_expected = r", location='edge', axis='y'"
+        re_expected = self._expected_elements_regexp(
+            standard_name="latitude",
+            long_name=None,
+            location="edge",
+            axis="y",
+            attributes=None,
+        )
         self.assertRegex(result, re_expected)
+        # Basic output contains standard_name, long_name, attributes
 
     def test_str_no_long_name(self):
         mesh = self.mesh
@@ -314,18 +389,6 @@ class Test__str_repr(tests.IrisTest):
         meshcoord = sample_meshcoord(mesh=self.mesh)
         result = str(meshcoord)
         re_expected = self._expected_elements_regexp(long_name=False)
-        self.assertRegex(result, re_expected)
-
-    def test_str_no_standard_name(self):
-        mesh = self.mesh
-        # Remove the standard_name of the node coord in the mesh.
-        node_coord = mesh.coord(include_nodes=True, axis="x")
-        node_coord.standard_name = None
-        node_coord.axis = "x"  # This is required : but it's a kludge !!
-        # Make a new meshcoord, based on the modified mesh.
-        meshcoord = sample_meshcoord(mesh=self.mesh)
-        result = str(meshcoord)
-        re_expected = self._expected_elements_regexp(standard_name=False)
         self.assertRegex(result, re_expected)
 
     def test_str_no_attributes(self):
@@ -375,9 +438,11 @@ class Test_cube_containment(tests.IrisTest):
 
     def test_find_by_name(self):
         meshcoord = self.meshcoord
+        # hack to give it a long name
+        meshcoord.long_name = "odd_case"
         cube = self.cube
         self.assertIs(cube.coord(standard_name="longitude"), meshcoord)
-        self.assertIs(cube.coord(long_name="long-name"), meshcoord)
+        self.assertIs(cube.coord(long_name="odd_case"), meshcoord)
 
     def test_find_by_axis(self):
         meshcoord = self.meshcoord
@@ -447,8 +512,7 @@ class Test_auxcoord_conversion(tests.IrisTest):
 
 
 class Test_MeshCoord__dataviews(tests.IrisTest):
-    """
-    Fuller testing of points and bounds calculations and behaviour.
+    """Fuller testing of points and bounds calculations and behaviour.
     Including connectivity missing-points (non-square faces).
 
     """
@@ -461,12 +525,12 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         lazy_sources=False,
         location="face",
         inds_start_index=0,
-        inds_src_dim=0,
+        inds_location_axis=0,
         facenodes_changes=None,
     ):
         # Construct a miniature face-nodes mesh for testing.
         # NOTE: we will make our connectivity arrays with standard
-        # start_index=0 and src_dim=0 :  We only adjust that (if required) when
+        # start_index=0 and location_axis=0 :  We only adjust that (if required) when
         # creating the actual connectivities.
         face_nodes_array = np.array(
             [
@@ -505,7 +569,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         edge_xs = self.EDGECOORDS_BASENUM + np.arange(n_edges)
         face_xs = self.FACECOORDS_BASENUM + np.arange(n_faces)
 
-        # Record all these for re-use in tests
+        # Record all these for reuse in tests
         self.n_faces = n_faces
         self.n_nodes = n_nodes
         self.face_xs = face_xs
@@ -551,26 +615,26 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             inds_start_index
             + (
                 face_nodes_array.transpose()
-                if inds_src_dim == 1
+                if inds_location_axis == 1
                 else face_nodes_array
             ),
             cf_role="face_node_connectivity",
             long_name="face_nodes",
             start_index=inds_start_index,
-            src_dim=inds_src_dim,
+            location_axis=inds_location_axis,
         )
 
         edge_node_conn = Connectivity(
             inds_start_index
             + (
                 edge_nodes_array.transpose()
-                if inds_src_dim == 1
+                if inds_location_axis == 1
                 else edge_nodes_array
             ),
             cf_role="edge_node_connectivity",
             long_name="edge_nodes",
             start_index=inds_start_index,
-            src_dim=inds_src_dim,
+            location_axis=inds_location_axis,
         )
 
         self.mesh = Mesh(
@@ -654,9 +718,9 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # NB simpler than faces : no possibility of missing points
         self.assertArrayAlmostEqual(result, expected)
 
-    def test_bounds_connectivity__src_dim_1(self):
+    def test_bounds_connectivity__location_axis_1(self):
         # Test with a transposed indices array.
-        self._make_test_meshcoord(inds_src_dim=1)
+        self._make_test_meshcoord(inds_location_axis=1)
         self._check_expected_bounds_values()
 
     def test_bounds_connectivity__start_index_1(self):
@@ -708,9 +772,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             # Indicate how many "extra" missing results this should cause.
             "n_extra_bad_points": 2,
         }
-        self._make_test_meshcoord(
-            facenodes_changes=facenodes_modify, lazy_sources=lazy
-        )
+        self._make_test_meshcoord(facenodes_changes=facenodes_modify, lazy_sources=lazy)
         self._check_expected_bounds_values()
 
     def test_bounds_badvalues__real(self):
@@ -718,6 +780,138 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
 
     def test_bounds_badvalues__lazy(self):
         self._check_bounds_bad_index_values(lazy=True)
+
+
+class Test__metadata:
+    def setup_mesh(self, location, axis):
+        # Create a standard test mesh + attach it to the test instance.
+        mesh = sample_mesh()
+
+        # Modify the metadata of specific coordinates used in this test.
+        def select_coord(location, axis):
+            kwargs = {f"include_{location}s": True, "axis": axis}
+            return mesh.coord(**kwargs)
+
+        node_coord = select_coord("node", axis)
+        location_coord = select_coord(location, axis)
+        for i_place, coord in enumerate((node_coord, location_coord)):
+            coord.standard_name = "longitude" if axis == "x" else "latitude"
+            coord.units = "degrees"
+            coord.long_name = f"long_name_{i_place}"
+            coord.var_name = f"var_name_{i_place}"
+            coord.attributes = {"att": i_place}
+
+        # attach all the relevant testcase context to the test instance.
+        self.mesh = mesh
+        self.location = location
+        self.axis = axis
+        self.location_coord = location_coord
+        self.node_coord = node_coord
+
+    def coord_metadata_matches(self, test_coord, ref_coord):
+        # Check that two coords match, in all the basic Coord identity/phenomenon
+        # metadata fields -- so it works even between coords of different subclasses.
+        for key in CoordMetadata._fields:
+            assert getattr(test_coord, key) == getattr(ref_coord, key)
+
+    @pytest.fixture(params=["face", "edge"])
+    def location_face_or_edge(self, request):
+        # Fixture to parametrise over location = face/edge
+        return request.param
+
+    @pytest.fixture(params=["x", "y"])
+    def axis_x_or_y(self, request):
+        # Fixture to parametrise over axis = X/Y
+        return request.param
+
+    def test_node_meshcoord(self, axis_x_or_y):
+        # MeshCoord metadata matches that of the relevant node coord.
+        self.setup_mesh(location="node", axis=axis_x_or_y)
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
+        self.coord_metadata_matches(meshcoord, self.node_coord)
+
+    def test_faceedge_basic(self, location_face_or_edge, axis_x_or_y):
+        # MeshCoord metadata matches that of the face/edge ("points") coord.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
+        self.coord_metadata_matches(meshcoord, self.location_coord)
+
+    @pytest.mark.parametrize("fieldname", ["long_name", "var_name", "attributes"])
+    def test_faceedge_dontcare_fields(
+        self, location_face_or_edge, axis_x_or_y, fieldname
+    ):
+        # Check that it's ok for the face/edge and node coords to have different
+        # long-name, var-name or attributes.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        if fieldname == "attributes":
+            different_value = {"myattrib": "different attributes"}
+        else:
+            # others are just arbitrary strings.
+            different_value = "different"
+        setattr(self.location_coord, fieldname, different_value)
+        # Mostly.. just check this does not cause an error, as it would do if we
+        # modified "standard_name" or "units" (see other tests) ...
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
+        # ... but also, check that the result matches the expected face/edge coord.
+        self.coord_metadata_matches(meshcoord, self.location_coord)
+
+    def test_faceedge_fail_mismatched_stdnames(
+        self, location_face_or_edge, axis_x_or_y
+    ):
+        # Different "standard_name" for node and face/edge causes an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        node_name = f"projection_{axis_x_or_y}_coordinate"
+        self.node_coord.standard_name = node_name
+        location_name = "longitude" if axis_x_or_y == "x" else "latitude"
+        msg = (
+            "Node coordinate .*"
+            f"disagrees with the {location_face_or_edge} coordinate .*, "
+            'in having a "standard_name" value of '
+            f"'{node_name}' instead of '{location_name}'"
+        )
+        with pytest.raises(ValueError, match=msg):
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
+
+    def test_faceedge_fail_missing_stdnames(self, location_face_or_edge, axis_x_or_y):
+        # "standard_name" compared with None also causes an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        self.node_coord.standard_name = None
+        # N.B. in the absence of a standard-name, we **must** provide an extra ".axis"
+        # property, or the coordinate cannot be correctly identified in the Mesh.
+        # This is a bit of a kludge, but works with current code.
+        self.node_coord.axis = axis_x_or_y
+
+        location_name = "longitude" if axis_x_or_y == "x" else "latitude"
+        msg = (
+            "Node coordinate .*"
+            f"disagrees with the {location_face_or_edge} coordinate .*, "
+            'in having a "standard_name" value of '
+            f"None instead of '{location_name}'"
+        )
+        with pytest.raises(ValueError, match=msg):
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
+
+    def test_faceedge_fail_mismatched_units(self, location_face_or_edge, axis_x_or_y):
+        # Different "units" for node and face/edge causes an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        self.node_coord.units = "hPa"
+        msg = (
+            "Node coordinate .*"
+            f"disagrees with the {location_face_or_edge} coordinate .*, "
+            'in having a "units" value of '
+            "'hPa' instead of 'degrees'"
+        )
+        with pytest.raises(ValueError, match=msg):
+            self.mesh.to_MeshCoord(location=location_face_or_edge, axis=axis_x_or_y)
+
+    def test_faceedge_missing_units(self, location_face_or_edge, axis_x_or_y):
+        # Units compared with a None ("unknown") is not an error.
+        self.setup_mesh(location_face_or_edge, axis_x_or_y)
+        self.node_coord.units = None
+        # This is OK
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
+        # ... but also, check that the result matches the expected face/edge coord.
+        self.coord_metadata_matches(meshcoord, self.location_coord)
 
 
 if __name__ == "__main__":

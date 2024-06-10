@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for :class:`iris.analysis._area_weighted.AreaWeightedRegridder`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :class:`iris.analysis._area_weighted.AreaWeightedRegridder`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -16,11 +12,13 @@ from unittest import mock
 import numpy as np
 
 from iris import load_cube
-from iris.analysis._area_weighted import AreaWeightedRegridder
+from iris.analysis._area_weighted import (
+    AreaWeightedRegridder,
+    _regrid_area_weighted_rectilinear_src_and_grid__prepare,
+)
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-import iris.experimental.regrid as eregrid
 
 
 class Test(tests.IrisTest):
@@ -46,19 +44,17 @@ class Test(tests.IrisTest):
     def check_mdtol(self, mdtol=None):
         src_grid, target_grid = self.grids()
         # Get _regrid_info result
-        _regrid_info = (
-            eregrid._regrid_area_weighted_rectilinear_src_and_grid__prepare(
-                src_grid, target_grid
-            )
+        _regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
+            src_grid, target_grid
         )
-        self.assertEqual(len(_regrid_info), 10)
+        self.assertEqual(len(_regrid_info), 9)
         with mock.patch(
-            "iris.experimental.regrid."
+            "iris.analysis._area_weighted."
             "_regrid_area_weighted_rectilinear_src_and_grid__prepare",
             return_value=_regrid_info,
         ) as prepare:
             with mock.patch(
-                "iris.experimental.regrid."
+                "iris.analysis._area_weighted."
                 "_regrid_area_weighted_rectilinear_src_and_grid__perform",
                 return_value=mock.sentinel.result,
             ) as perform:
@@ -84,9 +80,7 @@ class Test(tests.IrisTest):
         # Prepare:
         self.assertEqual(prepare.call_count, 1)
         _, args, kwargs = prepare.mock_calls[0]
-        self.assertEqual(
-            self.extract_grid(args[1]), self.extract_grid(target_grid)
-        )
+        self.assertEqual(self.extract_grid(args[1]), self.extract_grid(target_grid))
 
         # Perform:
         self.assertEqual(perform.call_count, 2)
@@ -219,9 +213,7 @@ class Test(tests.IrisTest):
         src.add_dim_coord(lat, 1)
         src.add_dim_coord(lon, 2)
         result = regridder(src)
-        self.assertArrayShapeStats(
-            result, (5, 9, 8), expected_mean, expected_std
-        )
+        self.assertArrayShapeStats(result, (5, 9, 8), expected_mean, expected_std)
         # Check data with dims in different order
         # Reshape src so that the coords are ordered [x, z, y],
         # the mean and std statistics should be the same
@@ -231,9 +223,7 @@ class Test(tests.IrisTest):
         src.add_dim_coord(levels, 1)
         src.add_dim_coord(lat, 2)
         result = regridder(src)
-        self.assertArrayShapeStats(
-            result, (8, 5, 9), expected_mean, expected_std
-        )
+        self.assertArrayShapeStats(result, (8, 5, 9), expected_mean, expected_std)
         # Check data with dims in different order
         # Reshape src so that the coords are ordered [y, x, z],
         # the mean and std statistics should be the same
@@ -243,9 +233,7 @@ class Test(tests.IrisTest):
         src.add_dim_coord(lon, 1)
         src.add_dim_coord(levels, 2)
         result = regridder(src)
-        self.assertArrayShapeStats(
-            result, (9, 8, 5), expected_mean, expected_std
-        )
+        self.assertArrayShapeStats(result, (9, 8, 5), expected_mean, expected_std)
 
 
 @tests.skip_data
@@ -253,10 +241,7 @@ class TestLazy(tests.IrisTest):
     # Setup
     def setUp(self) -> None:
         # Prepare a cube and a template
-
-        cube_file_path = tests.get_data_path(
-            ["NetCDF", "regrid", "regrid_xyt.nc"]
-        )
+        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
         self.cube = load_cube(cube_file_path)
 
         template_file_path = tests.get_data_path(

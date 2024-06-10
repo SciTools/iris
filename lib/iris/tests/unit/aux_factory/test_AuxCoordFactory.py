@@ -1,16 +1,14 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for `iris.aux_factory.AuxCoordFactory`.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for `iris.aux_factory.AuxCoordFactory`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
+
+from unittest import mock
 
 import numpy as np
 
@@ -140,10 +138,10 @@ class Test__nd_bounds(tests.IrisTest):
 @tests.skip_data
 class Test_lazy_aux_coords(tests.IrisTest):
     def setUp(self):
-        path = tests.get_data_path(
-            ["NetCDF", "testing", "small_theta_colpex.nc"]
-        )
-        self.cube = iris.load_cube(path, "air_potential_temperature")
+        path = tests.get_data_path(["NetCDF", "testing", "small_theta_colpex.nc"])
+        # While loading, "turn off" loading small variables as real data.
+        with mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0):
+            self.cube = iris.load_cube(path, "air_potential_temperature")
 
     def _check_lazy(self):
         coords = self.cube.aux_coords + self.cube.derived_coords

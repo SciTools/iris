@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.load` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -26,9 +25,7 @@ class Test_convert_constraints(tests.IrisTest):
         self.assertTrue(pp_filter(stcube))
 
     def test_stash_object(self):
-        constraint = iris.AttributeConstraint(
-            STASH=STASH.from_msi("m01s03i236")
-        )
+        constraint = iris.AttributeConstraint(STASH=STASH.from_msi("m01s03i236"))
         pp_filter = _convert_constraints(constraint)
         stcube = mock.Mock(stash=STASH.from_msi("m01s03i236"))
         self.assertTrue(pp_filter(stcube))

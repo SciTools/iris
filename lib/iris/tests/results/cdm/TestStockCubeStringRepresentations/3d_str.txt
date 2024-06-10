@@ -13,4 +13,4 @@ air_potential_temperature / (K)     (model_level_number: 70; grid_latitude: 100;
         forecast_period             0.0 hours
         time                        2009-09-09 17:10:00
     Attributes:
-        source                      Iris test case
+        source                      'Iris test case'

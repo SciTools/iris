@@ -1,17 +1,17 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the main loading API.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the main loading API."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
+import pathlib
+from unittest import mock
+
 import iris
+from iris.fileformats.netcdf import _thread_safe_nc
 import iris.io
 
 
@@ -19,6 +19,11 @@ import iris.io
 class TestLoad(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load(paths)
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -71,6 +76,10 @@ class TestLoadCube(tests.IrisTest):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         _ = iris.load_cube(paths)
 
+    def test_path_object(self):
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        _ = iris.load_cube(paths)
+
     def test_not_enough(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         with self.assertRaises(iris.exceptions.ConstraintMismatchError):
@@ -89,6 +98,11 @@ class TestLoadCube(tests.IrisTest):
 class TestLoadCubes(tests.IrisTest):
     def test_normal(self):
         paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load_cubes(paths)
+        self.assertEqual(len(cubes), 1)
+
+    def test_path_object(self):
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
         cubes = iris.load_cubes(paths)
         self.assertEqual(len(cubes), 1)
 
@@ -111,19 +125,33 @@ class TestLoadCubes(tests.IrisTest):
             iris.load_cube(paths)
 
 
-class TestOpenDAP(tests.IrisTest):
-    def test_load(self):
-        # Check that calling iris.load_* with a http URI triggers a call to
-        # ``iris.io.load_http``
+@tests.skip_data
+class TestLoadRaw(tests.IrisTest):
+    def test_normal(self):
+        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        cubes = iris.load_raw(paths)
+        self.assertEqual(len(cubes), 1)
 
-        url = "http://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
+    def test_path_object(self):
+        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        cubes = iris.load_raw(paths)
+        self.assertEqual(len(cubes), 1)
+
+
+class TestOPeNDAP(tests.IrisTest):
+    def setUp(self):
+        self.url = "https://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
+
+    def test_load_http_called(self):
+        # Check that calling iris.load_* with an http URI triggers a call to
+        # ``iris.io.load_http``
 
         class LoadHTTPCalled(Exception):
             pass
 
         def new_load_http(passed_urls, *args, **kwargs):
             self.assertEqual(len(passed_urls), 1)
-            self.assertEqual(url, passed_urls[0])
+            self.assertEqual(self.url, passed_urls[0])
             raise LoadHTTPCalled()
 
         try:
@@ -137,10 +165,29 @@ class TestOpenDAP(tests.IrisTest):
                 iris.load_cubes,
             ]:
                 with self.assertRaises(LoadHTTPCalled):
-                    fn(url)
+                    fn(self.url)
 
         finally:
             iris.io.load_http = orig
+
+    @tests.skip_data
+    def test_netCDF_Dataset_call(self):
+        # Check that load_http calls netCDF4.Dataset and supplies the expected URL.
+
+        # To avoid making a request to an OPeNDAP server in a test, instead
+        # mock the call to netCDF.Dataset so that it returns a dataset for a
+        # local file.
+        filename = tests.get_data_path(
+            ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
+        )
+        fake_dataset = _thread_safe_nc.DatasetWrapper(filename)
+
+        with mock.patch(
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            return_value=fake_dataset,
+        ) as dataset_loader:
+            next(iris.io.load_http([self.url], callback=None))
+        dataset_loader.assert_called_with(self.url, mode="r")
 
 
 if __name__ == "__main__":

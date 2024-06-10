@@ -14,15 +14,15 @@ reST is a lightweight markup language intended to be highly readable in
 source format. This guide will cover some of the more frequently used advanced
 reST markup syntaxes, for the basics of reST the following links may be useful:
 
- * https://www.sphinx-doc.org/en/master/usage/restructuredtext/
- * http://packages.python.org/an_example_pypi_project/sphinx.html
+* https://www.sphinx-doc.org/en/master/usage/restructuredtext/
+* https://packages.python.org/an_example_pypi_project/sphinx.html
 
-Reference documentation for reST can be found at http://docutils.sourceforge.net/rst.html.
+Reference documentation for reST can be found at https://docutils.sourceforge.net/rst.html.
 
 Creating Links
 --------------
-Basic links can be created with ```Text of the link <http://example.com>`_``
-which will look like `Text of the link <http://example.com>`_
+Basic links can be created with ```Text of the link <https://example.com>`_``
+which will look like `Text of the link <https://example.com>`_
 
 
 Documents in the same project can be cross referenced with the syntax
@@ -41,4 +41,4 @@ syntax ``:py:class:`zipfile.ZipFile``` which will result in links such as
 :py:class:`zipfile.ZipFile` and :py:class:`numpy.ndarray`.
 
 
-.. _reST: http://en.wikipedia.org/wiki/ReStructuredText
+.. _reST: https://en.wikipedia.org/wiki/ReStructuredText

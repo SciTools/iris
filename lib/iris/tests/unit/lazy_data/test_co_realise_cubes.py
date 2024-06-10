@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris._lazy data.co_realise_cubes`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -22,6 +21,7 @@ class ArrayAccessCounter:
         self.ndim = array.ndim
         self._array = array
         self.access_count = 0
+        self.meta = np.empty((0,) * array.ndim, dtype=array.dtype)
 
     def __getitem__(self, keys):
         self.access_count += 1
@@ -56,7 +56,7 @@ class Test_co_realise_cubes(tests.IrisTest):
 
     def test_combined_access(self):
         wrapped_array = ArrayAccessCounter(np.arange(3.0))
-        lazy_array = as_lazy_data(wrapped_array)
+        lazy_array = as_lazy_data(wrapped_array, meta=wrapped_array.meta)
         derived_a = lazy_array + 1
         derived_b = lazy_array + 2
         derived_c = lazy_array + 3

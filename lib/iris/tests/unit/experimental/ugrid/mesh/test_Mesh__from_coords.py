@@ -1,12 +1,9 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`."""
 
-"""
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -48,12 +45,8 @@ class Test1Dim(tests.IrisTest):
         mesh = self.create()
         self.assertEqual(1, mesh.topology_dimension)
 
-        self.assertArrayEqual(
-            [0, 1, 1, 2, 2, 3], mesh.node_coords.node_x.points
-        )
-        self.assertArrayEqual(
-            [0, 1, 2, 3, 1, 2], mesh.node_coords.node_y.points
-        )
+        self.assertArrayEqual([0, 1, 1, 2, 2, 3], mesh.node_coords.node_x.points)
+        self.assertArrayEqual([0, 1, 2, 3, 1, 2], mesh.node_coords.node_y.points)
         self.assertArrayEqual([0.5, 1.5, 2.5], mesh.edge_coords.edge_x.points)
         self.assertArrayEqual([0.5, 2.5, 1.5], mesh.edge_coords.edge_y.points)
         self.assertIsNone(getattr(mesh, "face_coords", None))
@@ -105,12 +98,8 @@ class Test1Dim(tests.IrisTest):
 
     def test_lazy(self):
         self.lon = AuxCoord.from_coord(self.lon)
-        self.lon = self.lon.copy(
-            self.lon.lazy_points(), self.lon.lazy_bounds()
-        )
-        self.lat = self.lat.copy(
-            self.lat.lazy_points(), self.lat.lazy_bounds()
-        )
+        self.lon = self.lon.copy(self.lon.lazy_points(), self.lon.lazy_bounds())
+        self.lat = self.lat.copy(self.lat.lazy_points(), self.lat.lazy_bounds())
 
         mesh = self.create()
         for coord in list(mesh.all_coords):
@@ -125,17 +114,11 @@ class Test1Dim(tests.IrisTest):
         self.lat = lat_orig.copy(
             points=lat_orig.points, bounds=np.tile(lat_orig.bounds, 2)
         )
-        with self.assertRaisesRegex(
-            ValueError, "bounds shapes are not identical"
-        ):
+        with self.assertRaisesRegex(ValueError, "bounds shapes are not identical"):
             _ = self.create()
 
-        self.lat = lat_orig.copy(
-            points=lat_orig.points[-1], bounds=lat_orig.bounds[-1]
-        )
-        with self.assertRaisesRegex(
-            ValueError, "points shapes are not identical"
-        ):
+        self.lat = lat_orig.copy(points=lat_orig.points[-1], bounds=lat_orig.bounds[-1])
+        with self.assertRaisesRegex(ValueError, "points shapes are not identical"):
             _ = self.create()
 
     def test_reorder(self):
@@ -149,9 +132,7 @@ class Test1Dim(tests.IrisTest):
     def test_non_xy(self):
         for coord in self.lon, self.lat:
             coord.standard_name = None
-        lon_name, lat_name = [
-            coord.long_name for coord in (self.lon, self.lat)
-        ]
+        lon_name, lat_name = [coord.long_name for coord in (self.lon, self.lat)]
         # Swap the coords.
         self.lat, self.lon = self.lon, self.lat
         with self.assertLogs(logger, "INFO", "Unable to find 'X' and 'Y'"):
@@ -188,9 +169,7 @@ class Test2Dim(Test1Dim):
         for conn_name in Connectivity.UGRID_CF_ROLES:
             conn = getattr(mesh, conn_name, None)
             if conn_name == "face_node_connectivity":
-                self.assertArrayEqual(
-                    [[0, 1, 2], [3, 4, 5], [6, 7, 8]], conn.indices
-                )
+                self.assertArrayEqual([[0, 1, 2], [3, 4, 5], [6, 7, 8]], conn.indices)
             else:
                 self.assertIsNone(conn)
 
@@ -216,9 +195,7 @@ class Test2Dim(Test1Dim):
         self.lat.bounds = np.ma.masked_equal(lat_bounds, 999)
 
         mesh = self.create()
-        self.assertArrayEqual(
-            mesh.face_node_connectivity.src_lengths(), [4, 4, 3]
-        )
+        self.assertArrayEqual(mesh.face_node_connectivity.location_lengths(), [4, 4, 3])
         self.assertEqual(mesh.node_coords.node_x.points[-1], 0.0)
         self.assertEqual(mesh.node_coords.node_y.points[-1], 0.0)
 
@@ -247,7 +224,5 @@ class TestInvalidPoints(tests.IrisTest):
     def test_2d_coord(self):
         cube = simple_2d_w_multidim_coords()[:3, :3]
         coord_1, coord_2 = cube.coords()
-        with self.assertRaisesRegex(
-            ValueError, "Expected coordinate ndim == 1"
-        ):
+        with self.assertRaisesRegex(ValueError, "Expected coordinate ndim == 1"):
             _ = Mesh.from_coords(coord_1, coord_2)

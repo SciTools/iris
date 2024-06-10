@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.coord_categorisation.add_categorised_coord`."""
 
 # import iris tests first so that some things can be initialised before
@@ -24,9 +23,7 @@ class Test_add_categorised_coord(tests.IrisTest):
     def setUp(self):
         # Factor out common variables and objects.
         self.cube = mock.Mock(name="cube", coords=mock.Mock(return_value=[]))
-        self.coord = mock.Mock(
-            name="coord", points=np.arange(12).reshape(3, 4)
-        )
+        self.coord = mock.Mock(name="coord", points=np.arange(12).reshape(3, 4))
         self.units = "units"
         self.vectorised = mock.Mock(name="vectorized_result")
 
@@ -36,7 +33,7 @@ class Test_add_categorised_coord(tests.IrisTest):
         # The reason we use numpy.vectorize is to support multi-dimensional
         # coordinate points.
         def fn(coord, v):
-            return v ** 2
+            return v**2
 
         with mock.patch(
             "numpy.vectorize", return_value=self.vectorised
@@ -79,9 +76,9 @@ class Test_add_categorised_coord(tests.IrisTest):
 
         self.assertEqual(
             aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(
-                self.coord, self.coord.points
-            ).astype("|S64"),
+            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points).astype(
+                "|S64"
+            ),
         )
 
 
@@ -90,9 +87,7 @@ class Test_add_day_of_year(tests.IrisTest):
         self.expected = {
             "standard": np.array(list(range(360, 367)) + list(range(1, 4))),
             "gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
-            "proleptic_gregorian": np.array(
-                list(range(360, 367)) + list(range(1, 4))
-            ),
+            "proleptic_gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
             "noleap": np.array(list(range(359, 366)) + list(range(1, 4))),
             "julian": np.array(list(range(360, 367)) + list(range(1, 4))),
             "all_leap": np.array(list(range(360, 367)) + list(range(1, 4))),
@@ -124,9 +119,7 @@ class Test_add_day_of_year(tests.IrisTest):
             points = cube.coord("day_of_year").points
             expected_points = self.expected[calendar]
             msg = "Test failed for the following calendar: {}."
-            self.assertArrayEqual(
-                points, expected_points, err_msg=msg.format(calendar)
-            )
+            self.assertArrayEqual(points, expected_points, err_msg=msg.format(calendar))
 
 
 if __name__ == "__main__":

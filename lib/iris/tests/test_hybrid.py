@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the hybrid vertical coordinate representations.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the hybrid vertical coordinate representations."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -19,6 +15,7 @@ import numpy as np
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 import iris.tests.stock
+from iris.warnings import IrisIgnoringBoundsWarning
 
 
 @tests.skip_plot
@@ -35,9 +32,7 @@ class TestRealistic4d(tests.GraphicsTest):
         self.assertEqual(self.altitude.attributes, {"positive": "up"})
 
     def test_points(self):
-        self.assertAlmostEqual(
-            self.altitude.points.min(), np.float32(191.84892)
-        )
+        self.assertAlmostEqual(self.altitude.points.min(), np.float32(191.84892))
         self.assertAlmostEqual(self.altitude.points.max(), np.float32(40000))
 
     def test_transpose(self):
@@ -65,11 +60,7 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has surface_altitude and delta dependencies.
         factory = cube.aux_factory(name="altitude")
-        t = [
-            key
-            for key, coord in factory.dependencies.items()
-            if coord is not None
-        ]
+        t = [key for key, coord in factory.dependencies.items() if coord is not None]
         self.assertCountEqual(t, ["orography", "delta"])
 
     def test_removing_orography(self):
@@ -81,11 +72,7 @@ class TestRealistic4d(tests.GraphicsTest):
 
         # Check the factory now only has sigma and delta dependencies.
         factory = cube.aux_factory(name="altitude")
-        t = [
-            key
-            for key, coord in factory.dependencies.items()
-            if coord is not None
-        ]
+        t = [key for key, coord in factory.dependencies.items() if coord is not None]
         self.assertCountEqual(t, ["sigma", "delta"])
 
     def test_derived_coords(self):
@@ -136,7 +123,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
+            with self.assertRaises(IrisIgnoringBoundsWarning):
                 _ = HybridHeightFactory(orography=sigma)
 
     def test_bounded_orography(self):
@@ -154,7 +141,7 @@ class TestRealistic4d(tests.GraphicsTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(UserWarning, msg):
+            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
                 self.cube.coord("altitude")
 
 
@@ -215,10 +202,8 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaises(UserWarning):
-                _ = HybridPressureFactory(
-                    sigma=sigma, surface_air_pressure=sigma
-                )
+            with self.assertRaises(IrisIgnoringBoundsWarning):
+                _ = HybridPressureFactory(sigma=sigma, surface_air_pressure=sigma)
 
     def test_bounded_surface_pressure(self):
         # Start with everything normal
@@ -235,7 +220,7 @@ class TestHybridPressure(tests.IrisTest):
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with self.assertRaisesRegex(UserWarning, msg):
+            with self.assertRaisesRegex(IrisIgnoringBoundsWarning, msg):
                 self.cube.coord("air_pressure")
 
 

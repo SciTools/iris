@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.tests.stock.netcdf` module."""
 
 import shutil
@@ -88,9 +87,7 @@ class Test_create_file__xios_3d_face_half_levels(XIOSFileMixin):
 
     def test_basic_load(self):
         cube = self.create_synthetic_test_cube()
-        self.check_cube(
-            cube, shape=(1, 38, 866), location="face", level="half"
-        )
+        self.check_cube(cube, shape=(1, 38, 866), location="face", level="half")
 
     def test_scale_mesh(self):
         cube = self.create_synthetic_test_cube(n_faces=10)
@@ -98,15 +95,11 @@ class Test_create_file__xios_3d_face_half_levels(XIOSFileMixin):
 
     def test_scale_time(self):
         cube = self.create_synthetic_test_cube(n_times=3)
-        self.check_cube(
-            cube, shape=(3, 38, 866), location="face", level="half"
-        )
+        self.check_cube(cube, shape=(3, 38, 866), location="face", level="half")
 
     def test_scale_levels(self):
         cube = self.create_synthetic_test_cube(n_levels=10)
-        self.check_cube(
-            cube, shape=(1, 10, 866), location="face", level="half"
-        )
+        self.check_cube(cube, shape=(1, 10, 866), location="face", level="half")
 
 
 class Test_create_file__xios_3d_face_full_levels(XIOSFileMixin):
@@ -117,9 +110,7 @@ class Test_create_file__xios_3d_face_full_levels(XIOSFileMixin):
 
     def test_basic_load(self):
         cube = self.create_synthetic_test_cube()
-        self.check_cube(
-            cube, shape=(1, 39, 866), location="face", level="full"
-        )
+        self.check_cube(cube, shape=(1, 39, 866), location="face", level="full")
 
     def test_scale_mesh(self):
         cube = self.create_synthetic_test_cube(n_faces=10)
@@ -127,15 +118,11 @@ class Test_create_file__xios_3d_face_full_levels(XIOSFileMixin):
 
     def test_scale_time(self):
         cube = self.create_synthetic_test_cube(n_times=3)
-        self.check_cube(
-            cube, shape=(3, 39, 866), location="face", level="full"
-        )
+        self.check_cube(cube, shape=(3, 39, 866), location="face", level="full")
 
     def test_scale_levels(self):
         cube = self.create_synthetic_test_cube(n_levels=10)
-        self.check_cube(
-            cube, shape=(1, 10, 866), location="face", level="full"
-        )
+        self.check_cube(cube, shape=(1, 10, 866), location="face", level="full")
 
 
 if __name__ == "__main__":

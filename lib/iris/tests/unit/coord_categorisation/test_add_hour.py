@@ -1,11 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test coordinate categorisation function add_hour.
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test coordinate categorisation function add_hour."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -25,14 +22,12 @@ class Test_add_hour(tests.IrisTest):
 
         # use hour numbers as data values also (don't actually use this for
         # anything)
-        cube = iris.cube.Cube(
-            hour_numbers, long_name="test cube", units="metres"
-        )
+        cube = iris.cube.Cube(hour_numbers, long_name="test cube", units="metres")
 
         time_coord = iris.coords.DimCoord(
             hour_numbers,
             standard_name="time",
-            units=cf_units.Unit("hours since epoch", "gregorian"),
+            units=cf_units.Unit("hours since epoch", "standard"),
         )
         cube.add_dim_coord(time_coord, 0)
 

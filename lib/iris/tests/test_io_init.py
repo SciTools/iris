@@ -1,48 +1,63 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the io/__init__.py module.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the io/__init__.py module."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
 
 from io import BytesIO
+from pathlib import Path
 
 import iris.fileformats as iff
 import iris.io
 
 
 class TestDecodeUri(tests.IrisTest):
-    def test_decode_uri(self):
+    def test_decode_uri__str(self):
         tests = {
-            "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp": (
+            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
-                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                uri,
             ),
-            r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp": (
+            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
                 "file",
-                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                uri,
             ),
-            "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp": (
+            (uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
+                uri[:4],
+                uri[5:],
+            ),
+            (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
+                uri[:5],
+                uri[6:],
+            ),
+            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
-                "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
-            ),
-            "http://www.somehost.com:8080/resource/thing.grib": (
-                "http",
-                "//www.somehost.com:8080/resource/thing.grib",
-            ),
-            "/data/local/someDir/2013-11-25T13:49:17.632797": (
-                "file",
-                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                uri,
             ),
         }
-        for uri, pair in tests.items():
-            self.assertEqual(pair, iris.io.decode_uri(uri))
+        for uri, expected in tests.items():
+            self.assertEqual(expected, iris.io.decode_uri(uri))
+
+    def test_decode_uri__path(self):
+        tests = {
+            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
+                "file",
+                uri,
+            ),
+            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
+                "file",
+                uri,
+            ),
+        }
+        for uri, expected in tests.items():
+            self.assertEqual(expected, iris.io.decode_uri(Path(uri)))
 
 
 class TestFileFormatPicker(tests.IrisTest):
@@ -105,7 +120,7 @@ class TestFileFormatPicker(tests.IrisTest):
         ]
 
         # test that each filespec is identified as the expected format
-        for (expected_format_name, file_spec) in test_specs:
+        for expected_format_name, file_spec in test_specs:
             test_path = tests.get_data_path(file_spec)
             with open(test_path, "rb") as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
@@ -131,7 +146,7 @@ class TestFileFormatPicker(tests.IrisTest):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
         # This may need to change in the future if other protocols are
         # supported.
-        DAP_URI = "http://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
+        DAP_URI = "https://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
         self.assertEqual(a.name, "NetCDF OPeNDAP")
 

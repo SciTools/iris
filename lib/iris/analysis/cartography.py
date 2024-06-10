@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Various utilities and numeric transformations relevant to cartography.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Various utilities and numeric transformations relevant to cartography."""
 
 from collections import namedtuple
 import copy
@@ -15,6 +11,7 @@ import warnings
 import cartopy.crs as ccrs
 import cartopy.img_transform
 import cf_units
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -22,6 +19,7 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 from iris.util import _meshgrid
+import iris.warnings
 
 from ._grid_angles import gridcell_angles, rotate_grid_vectors
 
@@ -54,18 +52,30 @@ PartialDifferential = namedtuple("PartialDifferential", "dx1 dy1")
 
 
 def wrap_lons(lons, base, period):
-    """
-    Wrap longitude values into the range between base and base+period.
+    """Wrap longitude values into the range between base and base+period.
 
+    Parameters
+    ----------
+    lons :
+    base :
+    period :
+
+    Examples
+    --------
     .. testsetup::
 
         import numpy as np
         from iris.analysis.cartography import wrap_lons
 
-    For example:
+    ::
+
         >>> print(wrap_lons(np.array([185, 30, -200, 75]), -180, 360))
         [-175.   30.  160.   75.]
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
@@ -74,7 +84,11 @@ def wrap_lons(lons, base, period):
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
-    """
+    """Convert rotated-pole to unrotated longitudes and latitudes.
+
+    ``pole_lat`` should describe the location of the rotated pole that
+    describes the arrays of rotated-pole longitudes and latitudes.
+
     Convert arrays of rotated-pole longitudes and latitudes to unrotated
     arrays of longitudes and latitudes. The values of ``pole_lon`` and
     ``pole_lat`` should describe the location of the rotated pole that
@@ -84,37 +98,35 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
     rectilinear grid, the arrays of rotated-pole longitudes and latitudes must
     be of the same shape as each other.
 
-    Example::
-
-        lons, lats = unrotate_pole(rotated_lons, rotated_lats, \
-          pole_lon, pole_lat)
-
     .. note:: Uses proj.4 to perform the conversion.
 
-    Args:
+    Parameters
+    ----------
+    rotated_lons :
+        An array of rotated-pole longitude values.
+    rotated_lats :
+        An array of rotated-pole latitude values.
+    pole_lon :
+        The longitude of the rotated pole that describes the arrays of
+        rotated-pole longitudes and latitudes.
+    pole_lat :
+        The latitude of the rotated pole that describes the arrays of
+        rotated-pole longitudes and latitudes.
 
-        * rotated_lons:
-            An array of rotated-pole longitude values.
-        * rotated_lats:
-            An array of rotated-pole latitude values.
-        * pole_lon:
-            The longitude of the rotated pole that describes the arrays of
-            rotated-pole longitudes and latitudes.
-        * pole_lat:
-            The latitude of the rotated pole that describes the arrays of
-            rotated-pole longitudes and latitudes.
+    Returns
+    -------
+    An array of unrotated longitudes and an array of unrotated latitudes.
 
-    Returns:
-        An array of unrotated longitudes and an array of unrotated latitudes.
+    Examples
+    --------
+    ::
+
+        lons, lats = unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat)
 
     """
-    src_proj = ccrs.RotatedGeodetic(
-        pole_longitude=pole_lon, pole_latitude=pole_lat
-    )
+    src_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon, pole_latitude=pole_lat)
     target_proj = ccrs.Geodetic()
-    res = target_proj.transform_points(
-        x=rotated_lons, y=rotated_lats, src_crs=src_proj
-    )
+    res = target_proj.transform_points(x=rotated_lons, y=rotated_lats, src_crs=src_proj)
     unrotated_lon = res[..., 0]
     unrotated_lat = res[..., 1]
 
@@ -122,9 +134,9 @@ def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
 
 
 def rotate_pole(lons, lats, pole_lon, pole_lat):
-    """
-    Convert arrays of longitudes and latitudes to arrays of rotated-pole
-    longitudes and latitudes. The values of ``pole_lon`` and ``pole_lat``
+    """Convert unrotated longitudes and latitudes to rotated-pole.
+
+    The values of ``pole_lon`` and ``pole_lat``
     should describe the rotated pole that the arrays of longitudes and
     latitudes are to be rotated onto.
 
@@ -132,35 +144,34 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
     the arrays of rotated-pole longitudes and latitudes must be of the same
     shape as each other.
 
-    Example::
-
-        rotated_lons, rotated_lats = rotate_pole(lons, lats,\
-         pole_lon, pole_lat)
-
     .. note:: Uses proj.4 to perform the conversion.
 
-    Args:
+    Parameters
+    ----------
+    lons :
+        An array of longitude values.
+    lats :
+        An array of latitude values.
+    pole_lon :
+        The longitude of the rotated pole that the arrays of longitudes and
+        latitudes are to be rotated onto.
+    pole_lat :
+        The latitude of the rotated pole that the arrays of longitudes and
+        latitudes are to be rotated onto.
 
-        * lons:
-            An array of longitude values.
-        * lats:
-            An array of latitude values.
-        * pole_lon:
-            The longitude of the rotated pole that the arrays of longitudes and
-            latitudes are to be rotated onto.
-        * pole_lat:
-            The latitude of the rotated pole that the arrays of longitudes and
-            latitudes are to be rotated onto.
+    Returns
+    -------
+    An array of rotated-pole longitudes and an array of rotated-pole latitudes.
 
-    Returns:
-        An array of rotated-pole longitudes and an array of rotated-pole
-        latitudes.
+    Examples
+    --------
+    ::
+
+        rotated_lons, rotated_lats = rotate_pole(lons, lats, pole_lon, pole_lat)
 
     """
     src_proj = ccrs.Geodetic()
-    target_proj = ccrs.RotatedGeodetic(
-        pole_longitude=pole_lon, pole_latitude=pole_lat
-    )
+    target_proj = ccrs.RotatedGeodetic(pole_longitude=pole_lon, pole_latitude=pole_lat)
     res = target_proj.transform_points(x=lons, y=lats, src_crs=src_proj)
     rotated_lon = res[..., 0]
     rotated_lat = res[..., 1]
@@ -169,35 +180,36 @@ def rotate_pole(lons, lats, pole_lon, pole_lat):
 
 
 def _get_lon_lat_coords(cube):
-    lat_coords = [
-        coord for coord in cube.coords() if "latitude" in coord.name()
-    ]
-    lon_coords = [
-        coord for coord in cube.coords() if "longitude" in coord.name()
-    ]
+    def search_for_coord(coord_iterable, coord_name):
+        return [coord for coord in coord_iterable if coord_name in coord.name()]
+
+    lat_coords = search_for_coord(cube.dim_coords, "latitude") or search_for_coord(
+        cube.coords(), "latitude"
+    )
+    lon_coords = search_for_coord(cube.dim_coords, "longitude") or search_for_coord(
+        cube.coords(), "longitude"
+    )
     if len(lat_coords) > 1 or len(lon_coords) > 1:
         raise ValueError(
-            "Calling `_get_lon_lat_coords` with multiple lat or lon coords"
+            "Calling `_get_lon_lat_coords` with multiple same-type (i.e. dim/aux) lat or lon coords"
             " is currently disallowed"
         )
     lat_coord = lat_coords[0]
     lon_coord = lon_coords[0]
-    return (lon_coord, lat_coord)
+    return lon_coord, lat_coord
 
 
 def _xy_range(cube, mode=None):
-    """
-    Return the x & y range of this Cube.
+    """Return the x & y range of this Cube.
 
-    Args:
-
-        * cube - The cube for which to calculate xy extents.
-
-    Kwargs:
-
-        * mode - If the coordinate has bounds, set this to specify the
-                 min/max calculation.
-                 Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
+    Parameters
+    ----------
+    cube :
+        The cube for which to calculate xy extents.
+    mode : optional
+        If the coordinate has bounds, set this to specify the
+        min/max calculation.
+        Set to iris.coords.POINT_MODE or iris.coords.BOUND_MODE.
 
     """
     # Helpful error if we have an inappropriate CoordSystem
@@ -207,9 +219,7 @@ def _xy_range(cube, mode=None):
         iris.coord_systems.RotatedGeogCS,
     )
     if (cs is not None) and not isinstance(cs, cs_valid_types):
-        raise ValueError(
-            "Latlon coords cannot be found with {0}.".format(type(cs))
-        )
+        raise ValueError("Latlon coords cannot be found with {0}.".format(type(cs)))
 
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
     cs = cube.coord_system("CoordSystem")
@@ -222,9 +232,7 @@ def _xy_range(cube, mode=None):
 
     if x_coord.has_bounds():
         if mode not in [iris.coords.POINT_MODE, iris.coords.BOUND_MODE]:
-            raise ValueError(
-                'When the coordinate has bounds, please specify "mode".'
-            )
+            raise ValueError('When the coordinate has bounds, please specify "mode".')
         _mode = mode
     else:
         _mode = iris.coords.POINT_MODE
@@ -255,16 +263,23 @@ def _xy_range(cube, mode=None):
 
 
 def get_xy_grids(cube):
-    """
-    Return 2D X and Y points for a given cube.
+    """Return 2D X and Y points for a given cube.
 
-    Args:
+    Parameters
+    ----------
+    cube :
+        The cube for which to generate 2D X and Y points.
 
-        * cube - The cube for which to generate 2D X and Y points.
-
-    Example::
+    Examples
+    --------
+    ::
 
         x, y = get_xy_grids(cube)
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -285,14 +300,24 @@ def get_xy_grids(cube):
 
 
 def get_xy_contiguous_bounded_grids(cube):
-    """
-    Return 2d arrays for x and y bounds.
+    """Return 2d arrays for x and y bounds.
 
     Returns array of shape (n+1, m+1).
 
-    Example::
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+
+    Examples
+    --------
+    ::
 
         xs, ys = get_xy_contiguous_bounded_grids(cube)
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -307,22 +332,26 @@ def get_xy_contiguous_bounded_grids(cube):
 def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     """Calculate spherical segment areas.
 
-    - radian_lat_bounds    -- [n,2] array of latitude bounds (radians)
-    - radian_lon_bounds    -- [n,2] array of longitude bounds (radians)
-    - radius_of_earth      -- radius of the earth
-                              (currently assumed spherical)
-
     Area weights are calculated for each lat/lon cell as:
 
-        .. math::
+    .. math::
 
-            r^2 (lon_1 - lon_0) ( sin(lat_1) - sin(lat_0))
+        r^2 (lon_1 - lon_0) ( sin(lat_1) - sin(lat_0))
 
     The resulting array will have a shape of
     *(radian_lat_bounds.shape[0], radian_lon_bounds.shape[0])*
 
     The calculations are done at 64 bit precision and the returned array
     will be of type numpy.float64.
+
+    Parameters
+    ----------
+    radian_lat_bounds :
+        [n,2] array of latitude bounds (radians).
+    radian_lon_bounds :
+        [n,2] array of longitude bounds (radians).
+    radius_of_earth :
+        Radius of the earth (currently assumed spherical).
 
     """
     # ensure pairs of bounds
@@ -335,7 +364,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
         raise ValueError("Bounds must be [n,2] array")
 
     # fill in a new array of areas
-    radius_sqr = radius_of_earth ** 2
+    radius_sqr = radius_of_earth**2
     radian_lat_64 = radian_lat_bounds.astype(np.float64)
     radian_lon_64 = radian_lon_bounds.astype(np.float64)
 
@@ -347,51 +376,67 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     return np.abs(areas)
 
 
-def area_weights(cube, normalize=False):
-    r"""
-    Returns an array of area weights, with the same dimensions as the cube.
+def area_weights(cube, normalize=False, compute=True, chunks=None):
+    r"""Return an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
     dimensions.
-
-    Args:
-
-    * cube (:class:`iris.cube.Cube`):
-        The cube to calculate area weights for.
-
-    Kwargs:
-
-    * normalize (False/True):
-        If False, weights are grid cell areas. If True, weights are grid
-        cell areas divided by the total grid area.
 
     The cube must have coordinates 'latitude' and 'longitude' with bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
-        .. math::
+    .. math::
 
-            r^2 (lon_1 - lon_0) (\sin(lat_1) - \sin(lat_0))
+        r^2 (lon_1 - lon_0) (\sin(lat_1) - \sin(lat_0))
 
     Currently, only supports a spherical datum.
     Uses earth radius from the cube, if present and spherical.
     Defaults to iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS.
+
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        The cube to calculate area weights for.
+    normalize : bool, default=False
+        If False, weights are grid cell areas. If True, weights are grid
+        cell areas divided by the total grid area.
+    compute : bool, default=True
+        If False, return a lazy dask array. If True, return a numpy array.
+    chunks : tuple, optional
+        If compute is False and a value is provided, then the result will use
+        these chunks instead of the same chunks as the cube data. The values
+        provided here will only be used along dimensions that are not latitude
+        or longitude.
+
+    Returns
+    -------
+    broad_weights :
 
     """
     # Get the radius of the earth
     cs = cube.coord_system("CoordSystem")
     if isinstance(cs, iris.coord_systems.GeogCS):
         if cs.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            warnings.warn(
+                "Assuming spherical earth from ellipsoid.",
+                category=iris.warnings.IrisDefaultingWarning,
+            )
         radius_of_earth = cs.semi_major_axis
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and (
         cs.ellipsoid is not None
     ):
         if cs.ellipsoid.inverse_flattening != 0.0:
-            warnings.warn("Assuming spherical earth from ellipsoid.")
+            warnings.warn(
+                "Assuming spherical earth from ellipsoid.",
+                category=iris.warnings.IrisDefaultingWarning,
+            )
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
-        warnings.warn("Using DEFAULT_SPHERICAL_EARTH_RADIUS.")
+        warnings.warn(
+            "Using DEFAULT_SPHERICAL_EARTH_RADIUS.",
+            category=iris.warnings.IrisDefaultingWarning,
+        )
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
     # Get the lon and lat coords and axes
@@ -399,8 +444,9 @@ def area_weights(cube, normalize=False):
         lon, lat = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError(
-            "Cannot get latitude/longitude "
-            "coordinates from cube {!r}.".format(cube.name())
+            "Cannot get latitude/longitude coordinates from cube {!r}.".format(
+                cube.name()
+            )
         )
 
     if lat.ndim > 1:
@@ -437,7 +483,13 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
+    if compute:
+        lat_bounds = lat.bounds
+        lon_bounds = lon.bounds
+    else:
+        lat_bounds = lat.lazy_bounds()
+        lon_bounds = lon.lazy_bounds()
+    ll_weights = _quadrant_area(lat_bounds, lon_bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -453,15 +505,16 @@ def area_weights(cube, normalize=False):
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
     broad_weights = iris.util.broadcast_to_shape(
-        ll_weights, cube.shape, broadcast_dims
+        ll_weights, cube.shape, broadcast_dims, chunks=chunks
     )
 
     return broad_weights
 
 
 def cosine_latitude_weights(cube):
-    r"""
-    Returns an array of latitude weights, with the same dimensions as
+    r"""Calculate cosine latitude weights, with the same dimensions as the cube.
+
+    Return an array of latitude weights, with the same dimensions as
     the cube. The weights are the cosine of latitude.
 
     These are n-dimensional latitude weights repeated over the dimensions
@@ -473,12 +526,16 @@ def cosine_latitude_weights(cube):
 
     Weights are calculated for each latitude as:
 
-        .. math::
+    .. math::
 
-           w_l = \cos \phi_l
+        w_l = \cos \phi_l
 
-    Examples:
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
 
+    Examples
+    --------
     Compute weights suitable for averaging type operations::
 
         from iris.analysis.cartography import cosine_latitude_weights
@@ -493,19 +550,20 @@ def cosine_latitude_weights(cube):
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = np.sqrt(cosine_latitude_weights(cube))
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
-    lat_coords = [
-        coord for coord in cube.coords() if "latitude" in coord.name()
-    ]
+    lat_coords = [coord for coord in cube.coords() if "latitude" in coord.name()]
     if len(lat_coords) > 1:
         raise ValueError("Multiple latitude coords are currently disallowed.")
     try:
         lat = lat_coords[0]
     except IndexError:
         raise ValueError(
-            "Cannot get latitude "
-            "coordinate from cube {!r}.".format(cube.name())
+            "Cannot get latitude coordinate from cube {!r}.".format(cube.name())
         )
 
     # Get the dimension position(s) of the latitude coordinate.
@@ -526,9 +584,8 @@ def cosine_latitude_weights(cube):
         lat.points > np.pi / 2.0 + threshold
     ):
         warnings.warn(
-            "Out of range latitude values will be "
-            "clipped to the valid range.",
-            UserWarning,
+            "Out of range latitude values will be clipped to the valid range.",
+            category=iris.warnings.IrisDefaultingWarning,
         )
     points = lat.points
     l_weights = np.cos(points).clip(0.0, 1.0)
@@ -541,16 +598,13 @@ def cosine_latitude_weights(cube):
         if dim is not None:
             wshape.append(l_weights.shape[idim])
     l_weights = l_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(
-        l_weights, cube.shape, broadcast_dims
-    )
+    broad_weights = iris.util.broadcast_to_shape(l_weights, cube.shape, broadcast_dims)
 
     return broad_weights
 
 
 def project(cube, target_proj, nx=None, ny=None):
-    """
-    Nearest neighbour regrid to a specified target projection.
+    """Nearest neighbour regrid to a specified target projection.
 
     Return a new cube that is the result of projecting a cube with 1 or 2
     dimensional latitude-longitude coordinates from its coordinate system into
@@ -559,24 +613,33 @@ def project(cube, target_proj, nx=None, ny=None):
     prevent one from directly visualising the data, e.g. when the longitude
     and latitude are two dimensional and do not make up a regular grid.
 
-    Args:
-        * cube
-            An instance of :class:`iris.cube.Cube`.
-        * target_proj
-            An instance of the Cartopy Projection class, or an instance of
-            :class:`iris.coord_systems.CoordSystem` from which a projection
-            will be obtained.
-    Kwargs:
-        * nx
-            Desired number of sample points in the x direction for a domain
-            covering the globe.
-        * ny
-            Desired number of sample points in the y direction for a domain
-            covering the globe.
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
+    target_proj : :class:`iris.coord_systems.CoordSystem`
+        An instance of the Cartopy Projection class, or an instance of
+        :class:`iris.coord_systems.CoordSystem` from which a projection
+        will be obtained.
+    nx : optional
+        Desired number of sample points in the x direction for a domain
+        covering the globe.
+    ny : optional
+        Desired number of sample points in the y direction for a domain
+        covering the globe.
 
-    Returns:
+    Returns
+    -------
+    :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube` and a list describing the
         extent of the projection.
+
+    Notes
+    -----
+    .. note::
+
+        If there are both dim and aux latitude-longitude coordinates, only
+        the dim coordinates will be used.
 
     .. note::
 
@@ -590,6 +653,11 @@ def project(cube, target_proj, nx=None, ny=None):
         Masked arrays are handled by passing their masked status to the
         resulting nearest neighbour values.  If masked, the value in the
         resulting cube is set to 0.
+
+    .. note::
+
+        This function does not maintain laziness when called; it realises data.
+        See more at :doc:`/userguide/real_and_lazy_data`.
 
     .. warning::
 
@@ -610,8 +678,9 @@ def project(cube, target_proj, nx=None, ny=None):
         lon_coord, lat_coord = _get_lon_lat_coords(cube)
     except IndexError:
         raise ValueError(
-            "Cannot get latitude/longitude "
-            "coordinates from cube {!r}.".format(cube.name())
+            "Cannot get latitude/longitude coordinates from cube {!r}.".format(
+                cube.name()
+            )
         )
 
     if lat_coord.coord_system != lon_coord.coord_system:
@@ -632,7 +701,8 @@ def project(cube, target_proj, nx=None, ny=None):
         # Assume WGS84 latlon if unspecified
         warnings.warn(
             "Coordinate system of latitude and longitude "
-            "coordinates is not specified. Assuming WGS84 Geodetic."
+            "coordinates is not specified. Assuming WGS84 Geodetic.",
+            category=iris.warnings.IrisDefaultingWarning,
         )
         orig_cs = iris.coord_systems.GeogCS(
             semi_major_axis=6378137.0, inverse_flattening=298.257223563
@@ -669,8 +739,7 @@ def project(cube, target_proj, nx=None, ny=None):
     # Determine dimension mappings - expect either 1d or 2d
     if lat_coord.ndim != lon_coord.ndim:
         raise ValueError(
-            "The latitude and longitude coordinates have "
-            "different dimensionality."
+            "The latitude and longitude coordinates have different dimensionality."
         )
 
     latlon_ndim = lat_coord.ndim
@@ -819,12 +888,12 @@ def project(cube, target_proj, nx=None, ny=None):
     discarded_coords = coords_to_ignore.difference([lat_coord, lon_coord])
     if discarded_coords:
         warnings.warn(
-            "Discarding coordinates that share dimensions with "
-            "{} and {}: {}".format(
+            "Discarding coordinates that share dimensions with {} and {}: {}".format(
                 lat_coord.name(),
                 lon_coord.name(),
                 [coord.name() for coord in discarded_coords],
-            )
+            ),
+            category=iris.warnings.IrisIgnoringWarning,
         )
 
     # TODO handle derived coords/aux_factories
@@ -836,19 +905,21 @@ def project(cube, target_proj, nx=None, ny=None):
 
 
 def _transform_xy(crs_from, x, y, crs_to):
-    """
-    Shorthand function to transform 2d points between coordinate
-    reference systems.
+    """Shorthand function to transform 2d points between coordinate reference systems.
 
-    Args:
-
-    * crs_from, crs_to (:class:`cartopy.crs.Projection`):
+    Parameters
+    ----------
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
-    * x, y (arrays):
-        point locations defined in 'crs_from'.
+    x, y : array
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
-    Returns:
-        x, y :  Arrays of locations defined in 'crs_to'.
+    Returns
+    -------
+    x, y
+        Arrays of locations defined in 'crs_to'.
 
     """
     pts = crs_to.transform_points(crs_from, x, y)
@@ -856,19 +927,23 @@ def _transform_xy(crs_from, x, y, crs_to):
 
 
 def _inter_crs_differentials(crs1, x, y, crs2):
-    """
-    Calculate coordinate partial differentials from crs1 to crs2.
+    """Calculate coordinate partial differentials from crs1 to crs2.
 
     Returns dx2/dx1, dy2/dx1, dx2/dy1 and dy2/dy1, at given locations.
 
-    Args:
-
-    * crs1, crs2 (`cartopy.crs.Projection`):
-        The coordinate systems, "from" and "to".
-    * x, y (array):
+    Parameters
+    ----------
+    crs1 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "from".
+    x, y : array
         Point locations defined in 'crs1'.
+    crs2 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "to".
 
-    Returns:
+
+    Returns
+    -------
+    arrays
         (dx2/dx1, dy2/dx1, dx2/dy1, dy2/dy1) at given locations. Each
         element of this tuple will be the same shape as the 'x' and 'y'
         arrays and will be the partial differentials between the two systems.
@@ -907,33 +982,33 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
 
 def _crs_distance_differentials(crs, x, y):
-    """
+    """Calculate d(distance) / d(x) and ... / d(y).
+
     Calculate d(distance) / d(x) and ... / d(y) for a coordinate
     reference system at specified locations.
 
-    Args:
-
-    * crs (:class:`cartopy.crs.Projection`):
+    Parameters
+    ----------
+    crs : :class:`cartopy.crs.Projection`
         The coordinate reference system.
-    * x, y (array):
+    x, y : array
         Locations at which to calculate the differentials,
         defined in 'crs' coordinate reference system.
 
-    Returns:
-        (abs(ds/dx), abs(ds/dy)).
+    Returns
+    -------
+    (abs(ds/dx), abs(ds/dy))
         Numerically approximated partial differentials,
         i.e. scaling factors between changes in distance and changes in
         coordinate values.
 
     """
     # Make a true-latlon coordinate system for distance calculations.
-    crs_latlon = ccrs.Geodetic(globe=ccrs.Globe(ellipse="sphere"))
+    crs_latlon = ccrs.Geodetic(globe=crs.globe)
     # Transform points to true-latlon (just to get the true latitudes).
     _, true_lat = _transform_xy(crs, x, y, crs_latlon)
     # Get coordinate differentials w.r.t. true-latlon.
-    dlon_dx, dlat_dx, dlon_dy, dlat_dy = _inter_crs_differentials(
-        crs, x, y, crs_latlon
-    )
+    dlon_dx, dlat_dx, dlon_dy, dlat_dy = _inter_crs_differentials(crs, x, y, crs_latlon)
     # Calculate effective scalings of X and Y coordinates.
     lat_factor = np.cos(np.deg2rad(true_lat)) ** 2
     ds_dx = np.sqrt(dlat_dx * dlat_dx + dlon_dx * dlon_dx * lat_factor)
@@ -942,27 +1017,29 @@ def _crs_distance_differentials(crs, x, y):
 
 
 def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
-    """
+    """Transform distance vectors to another coordinate reference system.
+
     Transform distance vectors from one coordinate reference system to
     another, preserving magnitude and physical direction.
 
-    Args:
-
-    * u_dist, v_dist (array):
+    Parameters
+    ----------
+    u_dist, v_dist : array
         Components of each vector along the x and y directions of the source
         crs at each location.
-    * ds (`DistanceDifferential`):
+    ds : `DistanceDifferential`
         Distance differentials for the source and the target crs at specified
         locations.
-    * dx2, dy2 (`PartialDifferential`):
+    dx2, dy2 : `PartialDifferential`
         Partial differentials from the source to the target crs.
 
-    Returns:
+    Returns
+    -------
+    tuple
         (ut_dist, vt_dist): Tuple of arrays containing the vector components
         along the x and y directions of the target crs at each location.
 
     """
-
     # Scale input distance vectors --> source-coordinate differentials.
     u1, v1 = u_dist / ds.dx1, v_dist / ds.dy1
     # Transform vectors into the target system.
@@ -974,28 +1051,29 @@ def _transform_distance_vectors(u_dist, v_dist, ds, dx2, dy2):
     return u2_dist, v2_dist
 
 
-def _transform_distance_vectors_tolerance_mask(
-    src_crs, x, y, tgt_crs, ds, dx2, dy2
-):
-    """
+def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, dy2):
+    """Return a mask that can be applied to data array to mask elements.
+
     Return a mask that can be applied to data array to mask elements
     where the magnitude of vectors are not preserved due to numerical
-    errors introduced by the tranformation between coordinate systems.
+    errors introduced by the transformation between coordinate systems.
 
-    Args:
-    * src_crs (`cartopy.crs.Projection`):
+    Parameters
+    ----------
+    src_crs : `cartopy.crs.Projection`
         The source coordinate reference systems.
-    * x, y (array):
+    x, y : array
         Locations of each vector defined in 'src_crs'.
-    * tgt_crs (`cartopy.crs.Projection`):
+    tgt_crs : `cartopy.crs.Projection`
         The target coordinate reference systems.
-    * ds (`DistanceDifferential`):
-        Distance differentials for src_crs and tgt_crs at specified locations
-    * dx2, dy2 (`PartialDifferential`):
+    ds : `DistanceDifferential`
+        Distance differentials for src_crs and tgt_crs at specified locations.
+    dx2, dy2 : `PartialDifferential`
         Partial differentials from src_crs to tgt_crs.
 
-    Returns:
-        2d boolean array that is the same shape as x and y.
+    Returns
+    -------
+    2d boolean array that is the same shape as x and y.
 
     """
     if x.shape != y.shape:
@@ -1008,10 +1086,10 @@ def _transform_distance_vectors_tolerance_mask(
     u_one_t, v_zero_t = _transform_distance_vectors(ones, zeros, ds, dx2, dy2)
     u_zero_t, v_one_t = _transform_distance_vectors(zeros, ones, ds, dx2, dy2)
     # Squared magnitudes should be equal to one within acceptable tolerance.
-    # A value of atol=2e-3 is used, which corresponds to a change in magnitude
-    # of approximately 0.1%.
-    sqmag_1_0 = u_one_t ** 2 + v_zero_t ** 2
-    sqmag_0_1 = u_zero_t ** 2 + v_one_t ** 2
+    # A value of atol=2e-3 is used, which masks any magnitude changes >0.5%
+    #  (approx percentage - based on experimenting).
+    sqmag_1_0 = u_one_t**2 + v_zero_t**2
+    sqmag_0_1 = u_zero_t**2 + v_one_t**2
     mask = np.logical_not(
         np.logical_and(
             np.isclose(sqmag_1_0, ones, atol=2e-3),
@@ -1022,8 +1100,7 @@ def _transform_distance_vectors_tolerance_mask(
 
 
 def rotate_winds(u_cube, v_cube, target_cs):
-    r"""
-    Transform wind vectors to a different coordinate system.
+    r"""Transform wind vectors to a different coordinate system.
 
     The input cubes contain U and V components parallel to the local X and Y
     directions of the input grid at each point.
@@ -1037,23 +1114,27 @@ def rotate_winds(u_cube, v_cube, target_cs):
     also have two 2-dimensional auxiliary coordinates containing the X and
     Y locations in the target coordinate system.
 
-    Args:
-
-    * u_cube
+    Parameters
+    ----------
+    u_cube :
         An instance of :class:`iris.cube.Cube` that contains the x-component
         of the vector.
-    * v_cube
+    v_cube :
         An instance of :class:`iris.cube.Cube` that contains the y-component
         of the vector.
-    * target_cs
+    target_cs :
         An instance of :class:`iris.coord_systems.CoordSystem` that specifies
         the new grid directions.
 
-    Returns:
+    Returns
+    -------
+    (u', v') tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.
 
+    Notes
+    -----
     .. note::
 
         The U and V values relate to distance, with units such as 'm s-1'.
@@ -1064,6 +1145,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
         The names of the output cubes are those of the inputs, prefixed with
         'transformed\_' (e.g. 'transformed_x_wind').
+
+    .. note::
+
+            This function does not maintain laziness when called; it realises data.
+            See more at :doc:`/userguide/real_and_lazy_data`.
 
     .. warning::
 
@@ -1090,15 +1176,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
     )
     if u_cube.coord(axis="x") != v_cube.coord(axis="x"):
         raise ValueError(
-            msg.format(
-                u_cube.coord(axis="x").name(), v_cube.coord(axis="x").name()
-            )
+            msg.format(u_cube.coord(axis="x").name(), v_cube.coord(axis="x").name())
         )
     if u_cube.coord(axis="y") != v_cube.coord(axis="y"):
         raise ValueError(
-            msg.format(
-                u_cube.coord(axis="y").name(), v_cube.coord(axis="y").name()
-            )
+            msg.format(u_cube.coord(axis="y").name(), v_cube.coord(axis="y").name())
         )
 
     # Check x and y coords have the same coordinate system.
@@ -1145,13 +1227,11 @@ def rotate_winds(u_cube, v_cube, target_cs):
     # Check the dimension mappings match between u_cube and v_cube.
     if u_cube.coord_dims(x_coord) != v_cube.coord_dims(x_coord):
         raise ValueError(
-            "Dimension mapping of x coordinate differs "
-            "between u and v cubes."
+            "Dimension mapping of x coordinate differs between u and v cubes."
         )
     if u_cube.coord_dims(y_coord) != v_cube.coord_dims(y_coord):
         raise ValueError(
-            "Dimension mapping of y coordinate differs "
-            "between u and v cubes."
+            "Dimension mapping of y coordinate differs between u and v cubes."
         )
     x_dims = u_cube.coord_dims(x_coord)
     y_dims = u_cube.coord_dims(y_coord)
@@ -1169,9 +1249,15 @@ def rotate_winds(u_cube, v_cube, target_cs):
         x = x.transpose()
         y = y.transpose()
 
-    # Create resulting cubes.
-    ut_cube = u_cube.copy()
-    vt_cube = v_cube.copy()
+    # Create resulting cubes - produce lazy output data if at least
+    # one input cube has lazy data
+    lazy_output = u_cube.has_lazy_data() or v_cube.has_lazy_data()
+    if lazy_output:
+        ut_cube = u_cube.copy(data=da.empty_like(u_cube.lazy_data()))
+        vt_cube = v_cube.copy(data=da.empty_like(v_cube.lazy_data()))
+    else:
+        ut_cube = u_cube.copy()
+        vt_cube = v_cube.copy()
     ut_cube.rename("transformed_{}".format(u_cube.name()))
     vt_cube.rename("transformed_{}".format(v_cube.name()))
 
@@ -1199,8 +1285,12 @@ def rotate_winds(u_cube, v_cube, target_cs):
     apply_mask = mask.any()
     if apply_mask:
         # Make masked arrays to accept masking.
-        ut_cube.data = ma.asanyarray(ut_cube.data)
-        vt_cube.data = ma.asanyarray(vt_cube.data)
+        if lazy_output:
+            ut_cube = ut_cube.copy(data=da.ma.empty_like(ut_cube.core_data()))
+            vt_cube = vt_cube.copy(data=da.ma.empty_like(vt_cube.core_data()))
+        else:
+            ut_cube.data = ma.asanyarray(ut_cube.data)
+            vt_cube.data = ma.asanyarray(vt_cube.data)
 
     # Project vectors with u, v components one horiz slice at a time and
     # insert into the resulting cubes.
@@ -1213,16 +1303,20 @@ def rotate_winds(u_cube, v_cube, target_cs):
         for dim in dims:
             index[dim] = slice(None, None)
         index = tuple(index)
-        u = u_cube.data[index]
-        v = v_cube.data[index]
+        u = u_cube.core_data()[index]
+        v = v_cube.core_data()[index]
         ut, vt = _transform_distance_vectors(u, v, ds, dx2, dy2)
         if apply_mask:
-            ut = ma.asanyarray(ut)
-            ut[mask] = ma.masked
-            vt = ma.asanyarray(vt)
-            vt[mask] = ma.masked
-        ut_cube.data[index] = ut
-        vt_cube.data[index] = vt
+            if lazy_output:
+                ut = da.ma.masked_array(ut, mask=mask)
+                vt = da.ma.masked_array(vt, mask=mask)
+            else:
+                ut = ma.asanyarray(ut)
+                ut[mask] = ma.masked
+                vt = ma.asanyarray(vt)
+                vt[mask] = ma.masked
+        ut_cube.core_data()[index] = ut
+        vt_cube.core_data()[index] = vt
 
     # Calculate new coords of locations in target coordinate system.
     xyz_tran = target_crs.transform_points(src_crs, x, y)

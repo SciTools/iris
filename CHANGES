@@ -373,7 +373,7 @@ Features added
  
 Incompatible changes
 --------------------
-* The Iris data model is now fully aligned with the `CF data model <http://cf-pcmdi.llnl.gov/documents/cf-conventions/>`_ .
+* The Iris data model is now fully aligned with the `CF data model <https://cf-pcmdi.llnl.gov/documents/cf-conventions/>`_ .
   Iris remains file-format independent, as is the underlying CF data model.
 * Cube merging has been re-written for the new CF data model with the benefit that some corner cases are now better handled. 
   Some users may find that their cubes, once merged, now have a smaller total shape and more intelligent handling of dimension coordinate picking.
@@ -433,7 +433,7 @@ Features added
   given cubes (see :func:`iris.iterate.izip`).
 * Cell methods will now appear in the printout of a cube.
 * Supporting software dependency versions have been updated. Of particular note is matplotlib which has gone from version 1.0.1
-  up to `1.1.0 <http://matplotlib.sourceforge.net/users/whats_new.html#new-in-matplotlib-1-1>`_ . This may have a small impact on
+  up to `1.1.0 <https://matplotlib.sourceforge.net/users/whats_new.html#new-in-matplotlib-1-1>`_ . This may have a small impact on
   some plot element placements.  
 
 Incompatible changes

@@ -1,3 +1,5 @@
+.. _gallery_index:
+
 Gallery
 =======
 
@@ -23,4 +25,4 @@ you may start the jupyter notebook via::
 
 If you wish to contribute to the gallery see the 
 :ref:`contributing.documentation.gallery` section of the 
-:ref:`contributing.documentation`.
+:ref:`contributing.documentation_full`.

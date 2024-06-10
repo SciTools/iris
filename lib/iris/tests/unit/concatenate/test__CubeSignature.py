@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test class :class:`iris._concatenate._CubeSignature`."""
 
 # import iris tests first so that some things can be initialised
@@ -24,10 +23,8 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
         data = np.arange(nt, dtype=np.float32)
         cube = Cube(data, standard_name="air_temperature", units="K")
         # Temporal coordinate.
-        t_units = Unit("hours since 1970-01-01 00:00:00", calendar="gregorian")
-        t_coord = DimCoord(
-            points=np.arange(nt), standard_name="time", units=t_units
-        )
+        t_units = Unit("hours since 1970-01-01 00:00:00", calendar="standard")
+        t_coord = DimCoord(points=np.arange(nt), standard_name="time", units=t_units)
         cube.add_dim_coord(t_coord, 0)
 
         # Increasing 1D time-series cube.
@@ -45,9 +42,7 @@ class Test__coordinate_dim_metadata_equality(tests.IrisTest):
 
         # Scalar 0D time-series cube with scalar time coordinate.
         cube = Cube(0, standard_name="air_temperature", units="K")
-        cube.add_aux_coord(
-            DimCoord(points=nt, standard_name="time", units=t_units)
-        )
+        cube.add_aux_coord(DimCoord(points=nt, standard_name="time", units=t_units))
         self.scalar_cube = cube
 
     def test_scalar_non_common_axis(self):

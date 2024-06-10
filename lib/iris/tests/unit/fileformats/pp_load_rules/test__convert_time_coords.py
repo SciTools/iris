@@ -1,10 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for
 :func:`iris.fileformats.pp_load_rules._convert_time_coords`.
 
 """
@@ -13,9 +11,7 @@ Unit tests for
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-import unittest
-
-from cf_units import CALENDAR_360_DAY, CALENDAR_GREGORIAN, Unit
+from cf_units import CALENDAR_360_DAY, CALENDAR_STANDARD, Unit
 from cftime import datetime as nc_datetime
 import numpy as np
 
@@ -40,7 +36,7 @@ def _lbcode(value=None, ix=None, iy=None):
     return result
 
 
-_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_GREGORIAN)
+_EPOCH_HOURS_UNIT = Unit("hours since epoch", calendar=CALENDAR_STANDARD)
 _HOURS_UNIT = Unit("hours")
 
 
@@ -337,12 +333,8 @@ class TestLBCODE3xx(TestField):
         lbcode = _lbcode(value=31323)
         lbtim = _lbtim(ib=2, ic=2)
         calendar = CALENDAR_360_DAY
-        t1 = nc_datetime(
-            1970, 1, 3, hour=0, minute=0, second=0, calendar=calendar
-        )
-        t2 = nc_datetime(
-            1970, 1, 4, hour=0, minute=0, second=0, calendar=calendar
-        )
+        t1 = nc_datetime(1970, 1, 3, hour=0, minute=0, second=0, calendar=calendar)
+        t2 = nc_datetime(1970, 1, 4, hour=0, minute=0, second=0, calendar=calendar)
         lbft = 24 * 4
         coords_and_dims = _convert_time_coords(
             lbcode=lbcode,
@@ -407,10 +399,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         lbtim = _lbtim(ia=0, ib=1, ic=1)
         forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
         # Validity time - vector of different values
-        t1 = [
-            nc_datetime(1970, 1, 9, hour=(3 + fp))
-            for fp in forecast_period_in_hours
-        ]
+        t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in forecast_period_in_hours]
         t1_dims = (0,)
         # Forecast reference time - scalar
         t2 = nc_datetime(1970, 1, 9, hour=3)
@@ -457,15 +446,10 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         lbtim = _lbtim(ia=0, ib=1, ic=1)
         forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
         # Validity time - vector of different values
-        t1 = [
-            nc_datetime(1970, 1, 9, hour=(3 + fp))
-            for fp in forecast_period_in_hours
-        ]
+        t1 = [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in forecast_period_in_hours]
         t1_dims = (0,)
         # Forecast reference time - vector of same values
-        t2 = [
-            nc_datetime(1970, 1, 9, hour=3) for _ in forecast_period_in_hours
-        ]
+        t2 = [nc_datetime(1970, 1, 9, hour=3) for _ in forecast_period_in_hours]
         t2_dims = (0,)
         lbft = None  # Not used.
 
@@ -532,16 +516,11 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
 
         # Expected coords.
         points = [
-            [(year - 1970) * 365 * 24 + 12 - hour for hour in hours]
-            for year in years
+            [(year - 1970) * 365 * 24 + 12 - hour for hour in hours] for year in years
         ]
-        fp_coord = AuxCoord(
-            points, standard_name="forecast_period", units="hours"
-        )
+        fp_coord = AuxCoord(points, standard_name="forecast_period", units="hours")
         points = (years - 1970) * 24 * 365 + (24 * 8) + 12
-        time_coord = DimCoord(
-            points, standard_name="time", units=_EPOCH_HOURS_UNIT
-        )
+        time_coord = DimCoord(points, standard_name="time", units=_EPOCH_HOURS_UNIT)
         points = (24 * 8) + hours
         fref_time_coord = DimCoord(
             points,
@@ -565,10 +544,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         years = np.array([1970, 1971, 1972])
         # Validity time - 2d array of different values
         t1 = [
-            [
-                nc_datetime(year, 1, 9, hour=(3 + fp))
-                for fp in forecast_period_in_hours
-            ]
+            [nc_datetime(year, 1, 9, hour=(3 + fp)) for fp in forecast_period_in_hours]
             for year in years
         ]
         t1_dims = (0, 1)
@@ -588,19 +564,13 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
 
         # Expected coords.
         fp_coord = AuxCoord(
-            [
-                forecast_period_in_hours + (year - 1970) * 365 * 24
-                for year in years
-            ],
+            [forecast_period_in_hours + (year - 1970) * 365 * 24 for year in years],
             standard_name="forecast_period",
             units="hours",
         )
         time_coord = AuxCoord(
             [
-                (24 * 8)
-                + 3
-                + forecast_period_in_hours
-                + (year - 1970) * 365 * 24
+                (24 * 8) + 3 + forecast_period_in_hours + (year - 1970) * 365 * 24
                 for year in years
             ],
             standard_name="time",
@@ -627,10 +597,7 @@ class TestArrayInputWithLBTIM_0_1_1(TestField):
         forecast_period_in_hours = np.array([0, 3, 6, 9, 12])
         # Validity time - vector of different values
         t1 = np.array(
-            [
-                nc_datetime(1970, 1, 9, hour=(3 + fp))
-                for fp in forecast_period_in_hours
-            ]
+            [nc_datetime(1970, 1, 9, hour=(3 + fp)) for fp in forecast_period_in_hours]
         )
         t1_dims = (0,)
         # Forecast reference time - vector of same values
@@ -699,9 +666,7 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
 
         # Expected coords.
         points = lbft - (48 - hours) / 2.0
-        bounds = np.array(
-            [lbft - (48 - hours), np.ones_like(hours) * lbft]
-        ).transpose()
+        bounds = np.array([lbft - (48 - hours), np.ones_like(hours) * lbft]).transpose()
         fp_coord = AuxCoord(
             points,
             standard_name="forecast_period",
@@ -733,7 +698,6 @@ class TestArrayInputWithLBTIM_0_2_1(TestField):
 
 
 class TestArrayInputWithLBTIM_0_3_1(TestField):
-    @unittest.skip("#3508 investigate unit test failure")
     def test_t1_scalar_t2_list(self):
         lbtim = _lbtim(ib=3, ic=1)
         lbcode = _lbcode(1)
@@ -756,9 +720,13 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
         )
 
         # Expected coords.
+        leap_year_adjust = np.array([0, 24, 24])
         points = np.ones_like(years) * lbft
         bounds = np.array(
-            [lbft - ((years - 1970) * 365 * 24 + 2 * 24), points]
+            [
+                lbft - ((years - 1970) * 365 * 24 + 2 * 24 + leap_year_adjust),
+                points,
+            ]
         ).transpose()
         fp_coord = AuxCoord(
             points,
@@ -766,10 +734,8 @@ class TestArrayInputWithLBTIM_0_3_1(TestField):
             units="hours",
             bounds=bounds,
         )
-        points = (years - 1970) * 365 * 24 + 10 * 24 + 9
-        bounds = np.array(
-            [np.ones_like(points) * (8 * 24 + 9), points]
-        ).transpose()
+        points = (years - 1970) * 365 * 24 + 10 * 24 + 9 + leap_year_adjust
+        bounds = np.array([np.ones_like(points) * (8 * 24 + 9), points]).transpose()
         # The time coordinate is an AuxCoord as the lower bound for each
         # cell is the same so it does not meet the monotonicity requirement.
         time_coord = AuxCoord(

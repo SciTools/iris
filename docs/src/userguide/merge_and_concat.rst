@@ -16,20 +16,20 @@ issues from occurring.
 Both ``merge`` and ``concatenate`` take multiple cubes as input and
 result in fewer cubes as output. The following diagram illustrates the two processes:
 
-.. image:: merge_and_concat.png
+.. image:: merge_and_concat.svg
    :alt: Pictographic of merge and concatenation.
    :align: center
 
 There is one major difference between the ``merge`` and ``concatenate`` processes.
 
- * The ``merge`` process combines multiple input cubes into a
-   single resultant cube with new dimensions created from the
-   *scalar coordinate values* of the input cubes.
+* The ``merge`` process combines multiple input cubes into a
+  single resultant cube with new dimensions created from the
+  *scalar coordinate values* of the input cubes.
 
- * The ``concatenate`` process combines multiple input cubes into a
-   single resultant cube with the same *number of dimensions* as the input cubes,
-   but with the length of one or more dimensions extended by *joining together
-   sequential dimension coordinates*.
+* The ``concatenate`` process combines multiple input cubes into a
+  single resultant cube with the same *number of dimensions* as the input cubes,
+  but with the length of one or more dimensions extended by *joining together
+  sequential dimension coordinates*.
 
 Let's imagine 28 individual cubes representing the
 temperature at a location ``(y, x)``; one cube for each day of February. We can use
@@ -128,7 +128,7 @@ make a new ``z`` dimension coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: merge.png
+.. image:: merge.svg
    :alt: Pictographic of merge.
    :align: center
 
@@ -253,6 +253,11 @@ which are described below.
 Using CubeList.concatenate
 ==========================
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_projections_and_annotations.py` (Brief concatenating examples)
+
 The :meth:`CubeList.concatenate <iris.cube.CubeList.concatenate>` method operates on a list
 of cubes and returns a new :class:`~iris.cube.CubeList` containing the cubes
 that have been concatenated.
@@ -289,7 +294,7 @@ cubes to form a new cube with an extended ``t`` coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: concat.png
+.. image:: concat.svg
    :alt: Pictographic of concatenate.
    :align: center
 

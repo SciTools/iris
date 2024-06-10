@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.Future` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -12,6 +11,7 @@ import iris.tests as tests  # isort:skip
 import warnings
 
 from iris import Future
+import iris._deprecation
 
 
 def patched_future(value=False, deprecated=False, error=False):
@@ -45,14 +45,12 @@ class Test___setattr__(tests.IrisTest):
     def test_deprecated_warning(self):
         future = patched_future(deprecated=True, error=False)
         msg = "'Future' property 'example_future_flag' is deprecated"
-        with self.assertWarnsRegexp(msg):
+        with self.assertWarnsRegex(iris._deprecation.IrisDeprecation, msg):
             future.example_future_flag = False
 
     def test_deprecated_error(self):
         future = patched_future(deprecated=True, error=True)
-        exp_emsg = (
-            "'Future' property 'example_future_flag' has been deprecated"
-        )
+        exp_emsg = "'Future' property 'example_future_flag' has been deprecated"
         with self.assertRaisesRegex(AttributeError, exp_emsg):
             future.example_future_flag = False
 

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.promote_aux_coord_to_dim_coord`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -21,9 +20,7 @@ class Test(tests.IrisTest):
         cube_a = stock.hybrid_height()
         cube_b = cube_a.copy()
         promote_aux_coord_to_dim_coord(cube_b, "model_level_number")
-        self.assertEqual(
-            cube_b.dim_coords, (cube_a.coord("model_level_number"),)
-        )
+        self.assertEqual(cube_b.dim_coords, (cube_a.coord("model_level_number"),))
 
     def test_old_dim_coord_is_now_aux_coord(self):
         cube_a = stock.hybrid_height()

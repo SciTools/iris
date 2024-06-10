@@ -1,8 +1,8 @@
 """
 Multi-Line Temperature Profile Plot
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+===================================
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 
@@ -24,7 +24,6 @@ def main():
     )
 
     for cube in temperature.slices("longitude"):
-
         # Create a string label to identify this cube (i.e. latitude: value).
         cube_label = "latitude: %s" % cube.coord("latitude").points[0]
 

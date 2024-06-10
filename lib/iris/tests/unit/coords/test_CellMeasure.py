@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.CellMeasure` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -93,30 +92,26 @@ class Tests(tests.IrisTest):
         copy_measure = self.measure.copy(new_vals)
         self.assertArrayEqual(copy_measure.data, new_vals)
 
-    def test_repr_other_metadata(self):
-        expected = (
-            ", long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'}"
-        )
-        self.assertEqual(self.measure._repr_other_metadata(), expected)
-
     def test___str__(self):
-        expected = (
-            "CellMeasure(array([10., 12., 16.,  9.]), "
-            "measure='area', standard_name='cell_area', "
-            "units=Unit('m^2'), long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'})"
+        expected = "\n".join(
+            [
+                "CellMeasure :  cell_area / (m^2)",
+                "    data: [10., 12., 16.,  9.]",
+                "    shape: (4,)",
+                "    dtype: float64",
+                "    standard_name: 'cell_area'",
+                "    long_name: 'measured_area'",
+                "    var_name: 'area'",
+                "    attributes:",
+                "        notes  '1m accuracy'",
+                "    measure: 'area'",
+            ]
         )
         self.assertEqual(self.measure.__str__(), expected)
 
     def test___repr__(self):
-        expected = (
-            "CellMeasure(array([10., 12., 16.,  9.]), "
-            "measure='area', standard_name='cell_area', "
-            "units=Unit('m^2'), long_name='measured_area', "
-            "var_name='area', attributes={'notes': '1m accuracy'})"
-        )
-        self.assertEqual(self.measure.__repr__(), expected)
+        expected = "<CellMeasure: cell_area / (m^2)  [10., 12., 16., 9.]  shape(4,)>"
+        self.assertEqual(expected, self.measure.__repr__())
 
     def test__eq__(self):
         self.assertEqual(self.measure, self.measure)

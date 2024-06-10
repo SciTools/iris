@@ -6,18 +6,18 @@ Pull Request Checklist
 ======================
 
 All pull request will be reviewed by a core developer who will manage the
-process of merging. It is the responsibility of a developer submitting a
+process of merging. It is the responsibility of the contributor submitting a
 pull request to do their best to deliver a pull request which meets the
 requirements of the project it is submitted to.
 
-The check list summarises criteria which will be checked before a pull request
-is merged.  Before submitting a pull request please consider this list.
+This check list summarises criteria which will be checked before a pull request
+is merged.  Before submitting a pull request please consider the following:
 
 
 #. **Provide a helpful description** of the Pull Request.  This should include:
 
-  * The aim of the change / the problem addressed / a link to the issue.
-  * How the change has been delivered.
+   * The aim of the change / the problem addressed / a link to the issue.
+   * How the change has been delivered.
 
 #. **Include a "What's New" entry**, if appropriate.
    See :ref:`whats_new_contributions`.
@@ -29,20 +29,19 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check all modified and new source files conform to the required**
    :ref:`code_formatting`.
 
-#. **Check all new dependencies added to the** `requirements/ci/`_ **yaml
+#. **Check all new dependencies added to the** `requirements`_ **yaml
    files.**  If dependencies have been added then new nox testing lockfiles
-   should be generated too, see :ref:`cirrus_test_env`.
+   should be generated too, see :ref:`gha_test_env`.
 
 #. **Check the source documentation been updated to explain all new or changed
-   features**.  See :ref:`docstrings`.
+   features**.  Note, we now use numpydoc strings.  Any touched code should
+   be updated to use the docstrings formatting. See :ref:`docstrings`.
 
 #. **Include code examples inside the docstrings where appropriate**.  See
    :ref:`contributing.documentation.testing`.
 
 #. **Check the documentation builds without warnings or errors**.  See
    :ref:`contributing.documentation.building`
-
-#. **Check for any new dependencies in the** `.cirrus.yml`_ **config file.**
 
 #. **Check for any new dependencies in the** `readthedocs.yml`_ **file**.  This
    file is used to build the documentation that is served from
@@ -51,12 +50,10 @@ is merged.  Before submitting a pull request please consider this list.
 #. **Check for updates needed for supporting projects for test or example
    data**.  For example:
 
-    * `iris-test-data`_ is a github project containing all the data to support
-      the tests.
-    * `iris-sample-data`_ is a github project containing all the data to support
-      the gallery and examples.
-    * `test-iris-imagehash`_ is a github project containing reference plot
-      images to support Iris :ref:`testing.graphics`.
+   * `iris-test-data`_ is a github project containing all the data to support
+     the tests.
+   * `iris-sample-data`_ is a github project containing all the data to support
+     the gallery and examples.
 
    If new files are required by tests or code examples, they must be added to
    the appropriate supporting project via a suitable pull-request.  This pull

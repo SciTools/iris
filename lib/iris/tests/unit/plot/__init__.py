@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.plot` module."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -19,9 +18,7 @@ class TestGraphicStringCoord(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
         self.cube = simple_2d(with_bounds=True)
-        self.cube.add_aux_coord(
-            AuxCoord(list("abcd"), long_name="str_coord"), 1
-        )
+        self.cube.add_aux_coord(AuxCoord(list("abcd"), long_name="str_coord"), 1)
         self.lat_lon_cube = lat_lon_cube()
 
     def tick_loc_and_label(self, axis_name, axes=None):
@@ -61,8 +58,7 @@ class TestGraphicStringCoord(tests.GraphicsTest):
 
 @tests.skip_plot
 class MixinCoords:
-    """
-    Mixin class of common plotting tests providing 2-dimensional
+    """Mixin class of common plotting tests providing 2-dimensional
     permutations of coordinates and anonymous dimensions.
 
     """

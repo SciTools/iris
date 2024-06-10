@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving PP files."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -24,6 +23,7 @@ from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.util
+from iris.warnings import IrisUserWarning
 
 
 class TestVertical(tests.IrisTest):
@@ -32,7 +32,7 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(
             len(coords),
             1,
-            "failed to find exactly one coord" " using: {}".format(kwargs),
+            "failed to find exactly one coord using: {}".format(kwargs),
         )
         self.assertEqual(coords[0].points, point)
         if bounds is not None:
@@ -103,9 +103,7 @@ class TestVertical(tests.IrisTest):
             cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
 
         self.assertIn("soil", cube.standard_name)
-        self._test_coord(
-            cube, point, bounds=[lower, upper], standard_name="depth"
-        )
+        self._test_coord(cube, point, bounds=[lower, upper], standard_name="depth")
 
         # Now use the save rules to convert the Cube back into a PPField.
         field = iris.fileformats.pp.PPField3()
@@ -133,9 +131,7 @@ class TestVertical(tests.IrisTest):
         with mock.patch("iris.fileformats.pp.load", new=load):
             cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
 
-        self._test_coord(
-            cube, potm_value, standard_name="air_potential_temperature"
-        )
+        self._test_coord(cube, potm_value, standard_name="air_potential_temperature")
 
         # Now use the save rules to convert the Cube back into a PPField.
         field = iris.fileformats.pp.PPField3()
@@ -210,9 +206,7 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(pressure_cube.units, "Pa")
 
         # Check the data cube is set up to use hybrid-pressure.
-        self._test_coord(
-            data_cube, model_level, standard_name="model_level_number"
-        )
+        self._test_coord(data_cube, model_level, standard_name="model_level_number")
         self._test_coord(
             data_cube,
             delta,
@@ -286,11 +280,12 @@ class TestVertical(tests.IrisTest):
             return_value=iter([data_field, pressure_field, pressure_field])
         )
         msg = "Multiple reference cubes for surface_air_pressure"
-        with mock.patch(
-            "iris.fileformats.pp.load", new=load
-        ) as load, mock.patch("warnings.warn") as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             _, _, _ = iris.fileformats.pp.load_cubes("DUMMY")
-            warn.assert_called_with(msg)
+            warn.assert_called_with(msg, category=IrisUserWarning)
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -321,9 +316,7 @@ class TestVertical(tests.IrisTest):
         cube.add_aux_coord(sigma_coord)
         cube.add_aux_coord(surface_altitude_coord, (0, 1))
         cube.add_aux_factory(
-            HybridHeightFactory(
-                delta_coord, sigma_coord, surface_altitude_coord
-            )
+            HybridHeightFactory(delta_coord, sigma_coord, surface_altitude_coord)
         )
 
         field = iris.fileformats.pp.PPField3()
@@ -368,9 +361,7 @@ class TestVertical(tests.IrisTest):
         cube.add_aux_coord(sigma_coord)
         cube.add_aux_coord(surface_air_pressure_coord, (0, 1))
         cube.add_aux_factory(
-            HybridPressureFactory(
-                delta_coord, sigma_coord, surface_air_pressure_coord
-            )
+            HybridPressureFactory(delta_coord, sigma_coord, surface_air_pressure_coord)
         )
 
         field = iris.fileformats.pp.PPField3()
@@ -406,21 +397,20 @@ class TestVertical(tests.IrisTest):
 
         # Convert field to a cube.
         load = mock.Mock(return_value=iter([data_field]))
-        with mock.patch(
-            "iris.fileformats.pp.load", new=load
-        ) as load, mock.patch("warnings.warn") as warn:
+        with (
+            mock.patch("iris.fileformats.pp.load", new=load) as load,
+            mock.patch("warnings.warn") as warn,
+        ):
             (data_cube,) = iris.fileformats.pp.load_cubes("DUMMY")
 
         msg = (
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_with(msg)
+        warn.assert_called_with(msg, category=IrisUserWarning)
 
         # Check the data cube is set up to use hybrid height.
-        self._test_coord(
-            data_cube, model_level, standard_name="model_level_number"
-        )
+        self._test_coord(data_cube, model_level, standard_name="model_level_number")
         self._test_coord(
             data_cube,
             delta,
@@ -481,9 +471,7 @@ class TestSaveLBFT(tests.IrisTest):
             )
         )
         if season:
-            cube.add_aux_coord(
-                AuxCoord(long_name="clim_season", points=season)
-            )
+            cube.add_aux_coord(AuxCoord(long_name="clim_season", points=season))
             cube.add_cell_method(CellMethod("DUMMY", "clim_season"))
         return cube
 
@@ -624,9 +612,7 @@ class TestCoordinateForms(tests.IrisTest):
 @tests.skip_data
 class TestLoadLittleendian(tests.IrisTest):
     def test_load_sample(self):
-        file_path = tests.get_data_path(
-            ("PP", "little_endian", "qrparm.orog.pp")
-        )
+        file_path = tests.get_data_path(("PP", "little_endian", "qrparm.orog.pp"))
         # Ensure it just loads.
         cube = iris.load_cube(file_path, "surface_altitude")
         self.assertEqual(cube.shape, (110, 160))
@@ -648,9 +634,7 @@ class TestLoadLittleendian(tests.IrisTest):
 @tests.skip_data
 class TestAsCubes(tests.IrisTest):
     def setUp(self):
-        dpath = tests.get_data_path(
-            ["PP", "meanMaxMin", "200806081200__qwpb.T24.pp"]
-        )
+        dpath = tests.get_data_path(["PP", "meanMaxMin", "200806081200__qwpb.T24.pp"])
         self.ppfs = iris.fileformats.pp.load(dpath)
 
     def test_pseudo_level_filter(self):
@@ -683,11 +667,9 @@ class TestAsCubes(tests.IrisTest):
 class TestSaveLBPROC(tests.IrisTest):
     def create_cube(self, longitude_coord="longitude"):
         cube = Cube(np.zeros((2, 3, 4)))
-        tunit = Unit("days since epoch", calendar="gregorian")
+        tunit = Unit("days since epoch", calendar="standard")
         tcoord = DimCoord(np.arange(2), standard_name="time", units=tunit)
-        xcoord = DimCoord(
-            np.arange(3), standard_name=longitude_coord, units="degrees"
-        )
+        xcoord = DimCoord(np.arange(3), standard_name=longitude_coord, units="degrees")
         ycoord = DimCoord(points=np.arange(4))
         cube.add_dim_coord(tcoord, 0)
         cube.add_dim_coord(xcoord, 1)
@@ -713,9 +695,7 @@ class TestSaveLBPROC(tests.IrisTest):
 
     def test_grid_longitudinal_mean_only(self):
         cube = self.create_cube(longitude_coord="grid_longitude")
-        cube.add_cell_method(
-            CellMethod(method="mean", coords="grid_longitude")
-        )
+        cube.add_cell_method(CellMethod(method="mean", coords="grid_longitude"))
         field = self.convert_cube_to_field(cube)
         self.assertEqual(int(field.lbproc), 64)
 
@@ -741,9 +721,7 @@ class TestCallbackLoad(tests.IrisTest):
         return callback_ignore_cube_exception
 
     def test_ignore_cube_callback(self):
-        test_dataset = tests.get_data_path(
-            ["PP", "globClim1", "dec_subset.pp"]
-        )
+        test_dataset = tests.get_data_path(["PP", "globClim1", "dec_subset.pp"])
         exception_callback = self.callback_wrapper()
         result_cubes = iris.load(test_dataset, callback=exception_callback)
         n_result_cubes = len(result_cubes)

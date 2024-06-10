@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.array_equal`."""
 
 # import iris tests first so that some things can be initialised before
@@ -20,7 +19,7 @@ from iris.util import unify_time_units
 
 
 class Test(tests.IrisTest):
-    def simple_1d_time_cubes(self, calendar="gregorian"):
+    def simple_1d_time_cubes(self, calendar="standard"):
         coord_points = [1, 2, 3, 4, 5]
         data_points = [273, 275, 278, 277, 274]
         reftimes = [
@@ -91,9 +90,7 @@ class Test(tests.IrisTest):
 
     def test_multiple_time_coords_in_cube(self):
         cube0, cube1 = self.simple_1d_time_cubes()
-        units = cf_units.Unit(
-            "days since 1980-05-02 00:00:00", calendar="gregorian"
-        )
+        units = cf_units.Unit("days since 1980-05-02 00:00:00", calendar="standard")
         aux_coord = iris.coords.AuxCoord(
             72, standard_name="forecast_reference_time", units=units
         )
@@ -111,6 +108,34 @@ class Test(tests.IrisTest):
         expected = "hours since 1970-01-01 00:00:00"
         unify_time_units(cubelist)
         self._common(expected, cubelist)
+
+    def test_units_dtype_ints(self):
+        cube0, cube1 = self.simple_1d_time_cubes()
+        cube0.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=int)
+        cube1.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=int)
+        cubelist = iris.cube.CubeList([cube0, cube1])
+        unify_time_units(cubelist)
+        assert len(cubelist.concatenate()) == 1
+
+    def test_units_bounded_dtype_ints(self):
+        cube0, cube1 = self.simple_1d_time_cubes()
+        cube0.coord("time").bounds = np.array(
+            [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]], dtype=int
+        )
+        cube1.coord("time").bounds = np.array(
+            [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]], dtype=np.float64
+        )
+        cubelist = iris.cube.CubeList([cube0, cube1])
+        unify_time_units(cubelist)
+        assert len(cubelist.concatenate()) == 1
+
+    def test_units_dtype_int_float(self):
+        cube0, cube1 = self.simple_1d_time_cubes()
+        cube0.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=int)
+        cube1.coord("time").points = np.array([1, 2, 3, 4, 5], dtype=np.float64)
+        cubelist = iris.cube.CubeList([cube0, cube1])
+        unify_time_units(cubelist)
+        assert len(cubelist.concatenate()) == 1
 
 
 if __name__ == "__main__":

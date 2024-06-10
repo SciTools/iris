@@ -51,7 +51,7 @@ Bug Fixes
 
 * The CF conventions state that certain ``formula_terms`` terms may be omitted
   and assumed to be zero 
-  (http://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#dimensionless-v-coord)
+  (https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#dimensionless-v-coord)
   so Iris now allows factories to be constructed with missing terms.
 
 * In the User Guide's contour plot example, clabel inline is set to be False

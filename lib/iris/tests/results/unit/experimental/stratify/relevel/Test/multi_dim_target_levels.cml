@@ -9,9 +9,9 @@
         <dimCoord id="62e940e0" points="[-180]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord datadims="[0, 1, 2]">
-        <auxCoord id="de9ef2ae" long_name="thingness" points="[[[0]],
+        <auxCoord id="de9ef2ae" long_name="thingness" points="[[[ 0]],
 
-		[[12]]]" shape="(2, 1, 1)" units="Unit('1')" value_type="int32"/>
+ [[12]]]" shape="(2, 1, 1)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

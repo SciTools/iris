@@ -1,29 +1,19 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Provides testing capabilities and customisations specific to Iris.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Provides testing capabilities and customisations specific to Iris.
 
 .. note:: This module needs to control the matplotlib backend, so it
           **must** be imported before ``matplotlib.pyplot``.
 
 The primary class for this module is :class:`IrisTest`.
 
-By default, this module sets the matplotlib backend to "agg". But when
-this module is imported it checks ``sys.argv`` for the flag "-d". If
-found, it is removed from ``sys.argv`` and the matplotlib backend is
-switched to "tkagg" to allow the interactive visual inspection of
-graphical test results.
-
 """
 
-import codecs
 import collections
 from collections.abc import Mapping
 import contextlib
-import datetime
 import difflib
 import filecmp
 import functools
@@ -34,44 +24,30 @@ import json
 import math
 import os
 import os.path
+from pathlib import Path
 import re
 import shutil
 import subprocess
 import sys
-import threading
-from typing import Dict, List
+from typing import AnyStr
 import unittest
 from unittest import mock
 import warnings
 import xml.dom.minidom
 import zlib
 
-import filelock
 import numpy as np
 import numpy.ma as ma
 import requests
 
 import iris.config
 import iris.cube
+import iris.fileformats
+import iris.tests.graphics as graphics
 import iris.util
 
-# Test for availability of matplotlib.
-# (And remove matplotlib as an iris.tests dependency.)
-try:
-    import matplotlib
+MPL_AVAILABLE = graphics.MPL_AVAILABLE
 
-    # Override any user settings e.g. from matplotlibrc file.
-    matplotlib.rcdefaults()
-    # Set backend *after* rcdefaults, as we don't want that overridden (#3846).
-    matplotlib.use("agg")
-    # Standardise the figure size across matplotlib versions.
-    # This permits matplotlib png image comparison.
-    matplotlib.rcParams["figure.figsize"] = [8.0, 6.0]
-    import matplotlib.pyplot as plt
-except ImportError:
-    MPL_AVAILABLE = False
-else:
-    MPL_AVAILABLE = True
 
 try:
     from osgeo import gdal  # noqa
@@ -111,10 +87,6 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
-#: Default perceptual hash size.
-_HASH_SIZE = 16
-#: Default maximum perceptual hash hamming distance.
-_HAMMING_DISTANCE = 2
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")
@@ -129,18 +101,6 @@ if "--create-missing" in sys.argv:
     sys.argv.remove("--create-missing")
     print("Allowing creation of missing test results.")
     os.environ["IRIS_TEST_CREATE_MISSING"] = "true"
-
-
-# Whether to display matplotlib output to the screen.
-_DISPLAY_FIGURES = False
-
-if MPL_AVAILABLE and "-d" in sys.argv:
-    sys.argv.remove("-d")
-    plt.switch_backend("tkagg")
-    _DISPLAY_FIGURES = True
-
-# Threading non re-entrant blocking lock to ensure thread-safe plotting.
-_lock = threading.Lock()
 
 
 def main():
@@ -164,67 +124,79 @@ def main():
                 11,
                 "                       NOTE: To compare results of failing tests, ",
             )
-            lines.insert(
-                12, "                             use idiff.py instead"
-            )
+            lines.insert(12, "                             use idiff.py instead")
             lines.insert(
                 13,
                 "  --data-files-used    Save a list of files used to a temporary file",
             )
-            lines.insert(
-                14, "  -m                   Create missing test results"
-            )
+            lines.insert(14, "  -m                   Create missing test results")
             print("\n".join(lines))
     else:
         unittest.main()
 
 
-def get_data_path(relative_path):
-    """
-    Return the absolute path to a data file when given the relative path
-    as a string, or sequence of strings.
+def _assert_masked_array(assertion, a, b, strict, **kwargs):
+    # Compare masks.
+    a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
+    np.testing.assert_array_equal(a_mask, b_mask)
+
+    if strict:
+        # Compare all data values.
+        assertion(a.data, b.data, **kwargs)
+    else:
+        # Compare only unmasked data values.
+        assertion(
+            ma.compressed(a),
+            ma.compressed(b),
+            **kwargs,
+        )
+
+
+def assert_masked_array_equal(a, b, strict=False):
+    """Check that masked arrays are equal. This requires the
+    unmasked values and masks to be identical.
+
+    Parameters
+    ----------
+    a, b : array-like
+        Two arrays to compare.
+    strict : bool, optional
+        If True, perform a complete mask and data array equality check.
+        If False (default), the data array equality considers only unmasked
+        elements.
 
     """
-    if not isinstance(relative_path, str):
-        relative_path = os.path.join(*relative_path)
-    test_data_dir = iris.config.TEST_DATA_DIR
-    if test_data_dir is None:
-        test_data_dir = ""
-    data_path = os.path.join(test_data_dir, relative_path)
-
-    if _EXPORT_DATAPATHS_FILE is not None:
-        _EXPORT_DATAPATHS_FILE.write(data_path + "\n")
-
-    if isinstance(data_path, str) and not os.path.exists(data_path):
-        # if the file is gzipped, ungzip it and return the path of the ungzipped
-        # file.
-        gzipped_fname = data_path + ".gz"
-        if os.path.exists(gzipped_fname):
-            with gzip.open(gzipped_fname, "rb") as gz_fh:
-                try:
-                    with open(data_path, "wb") as fh:
-                        fh.writelines(gz_fh)
-                except IOError:
-                    # Put ungzipped data file in a temporary path, since we
-                    # can't write to the original path (maybe it is owned by
-                    # the system.)
-                    _, ext = os.path.splitext(data_path)
-                    data_path = iris.util.create_temp_filename(suffix=ext)
-                    with open(data_path, "wb") as fh:
-                        fh.writelines(gz_fh)
-
-    return data_path
+    _assert_masked_array(np.testing.assert_array_equal, a, b, strict)
 
 
-class IrisTest_nometa(unittest.TestCase):
+def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
+    """Check that masked arrays are almost equal. This requires the
+    masks to be identical, and the unmasked values to be almost
+    equal.
+
+    Parameters
+    ----------
+    a, b : array-like
+        Two arrays to compare.
+    strict : bool, optional
+        If True, perform a complete mask and data array equality check.
+        If False (default), the data array equality considers only unmasked
+        elements.
+    decimal : int, optional, default=6
+        Equality tolerance level for
+        :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
+        'abs(desired-actual) < 0.5 * 10**(-decimal)'
+
+    """
+    _assert_masked_array(
+        np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
+    )
+
+
+class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
     _assertion_counts = collections.defaultdict(int)
-
-    @classmethod
-    def setUpClass(cls):
-        # Ensure that the CF profile if turned-off for testing.
-        iris.site_configuration["cf_profile"] = None
 
     def _assert_str_same(
         self,
@@ -251,9 +223,44 @@ class IrisTest_nometa(unittest.TestCase):
             )
 
     @staticmethod
-    def get_result_path(relative_path):
+    def get_data_path(relative_path):
+        """Return the absolute path to a data file when given the relative path
+        as a string, or sequence of strings.
+
         """
-        Returns the absolute path to a result file when given the relative path
+        if not isinstance(relative_path, str):
+            relative_path = os.path.join(*relative_path)
+        test_data_dir = iris.config.TEST_DATA_DIR
+        if test_data_dir is None:
+            test_data_dir = ""
+        data_path = os.path.join(test_data_dir, relative_path)
+
+        if _EXPORT_DATAPATHS_FILE is not None:
+            _EXPORT_DATAPATHS_FILE.write(data_path + "\n")
+
+        if isinstance(data_path, str) and not os.path.exists(data_path):
+            # if the file is gzipped, ungzip it and return the path of the ungzipped
+            # file.
+            gzipped_fname = data_path + ".gz"
+            if os.path.exists(gzipped_fname):
+                with gzip.open(gzipped_fname, "rb") as gz_fh:
+                    try:
+                        with open(data_path, "wb") as fh:
+                            fh.writelines(gz_fh)
+                    except IOError:
+                        # Put ungzipped data file in a temporary path, since we
+                        # can't write to the original path (maybe it is owned by
+                        # the system.)
+                        _, ext = os.path.splitext(data_path)
+                        data_path = iris.util.create_temp_filename(suffix=ext)
+                        with open(data_path, "wb") as fh:
+                            fh.writelines(gz_fh)
+
+        return data_path
+
+    @staticmethod
+    def get_result_path(relative_path):
+        """Returns the absolute path to a result file when given the relative path
         as a string, or sequence of strings.
 
         """
@@ -261,35 +268,16 @@ class IrisTest_nometa(unittest.TestCase):
             relative_path = os.path.join(*relative_path)
         return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
 
-    def assertStringEqual(
-        self, reference_str, test_str, type_comparison_name="strings"
-    ):
-        if reference_str != test_str:
-            diff = "\n".join(
-                difflib.unified_diff(
-                    reference_str.splitlines(),
-                    test_str.splitlines(),
-                    "Reference",
-                    "Test result",
-                    "",
-                    "",
-                    0,
-                )
-            )
-            self.fail(
-                "{} do not match:\n{}".format(type_comparison_name, diff)
-            )
-
     def result_path(self, basename=None, ext=""):
-        """
-        Return the full path to a test result, generated from the \
+        """Return the full path to a test result, generated from the \
         calling file, class and, optionally, method.
 
-        Optional kwargs :
-
-            * basename    - File basename. If omitted, this is \
-                            generated from the calling method.
-            * ext         - Appended file extension.
+        Parameters
+        ----------
+        basename : optional, default=None
+            File basename. If omitted, this is generated from the calling method.
+        ext : str, optional, default=""
+            Appended file extension.
 
         """
         if ext and not ext.startswith("."):
@@ -334,27 +322,22 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertCML(cubes, reference_filename, checksum=False)
 
     def assertCDL(self, netcdf_filename, reference_filename=None, flags="-h"):
-        """
-        Test that the CDL for the given netCDF file matches the contents
+        """Test that the CDL for the given netCDF file matches the contents
         of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * netcdf_filename:
+        Parameters
+        ----------
+        netcdf_filename :
             The path to the netCDF file.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * flags:
+        flags : str, optional
             Command-line flags for `ncdump`, as either a whitespace
             separated string or an iterable. Defaults to '-h'.
 
@@ -373,8 +356,8 @@ class IrisTest_nometa(unittest.TestCase):
             flags = list(map(str, flags))
 
         try:
-            # Python3 only: use subprocess.run()
-            args = ["ncdump"] + flags + [netcdf_filename]
+            exe_path = env_bin_path("ncdump")
+            args = [exe_path] + flags + [netcdf_filename]
             cdl = subprocess.check_output(args, stderr=subprocess.STDOUT)
         except subprocess.CalledProcessError as exc:
             print(exc.output)
@@ -403,27 +386,22 @@ class IrisTest_nometa(unittest.TestCase):
         self._check_same(cdl, reference_path, type_comparison_name="CDL")
 
     def assertCML(self, cubes, reference_filename=None, checksum=True):
-        """
-        Test that the CML for the given cubes matches the contents of
+        """Test that the CML for the given cubes matches the contents of
         the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * cubes:
+        Parameters
+        ----------
+        cubes :
             Either a Cube or a sequence of Cubes.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
             :meth:`iris.tests.IrisTest.result_path`.
-
-        * checksum:
+        checksum : bool, optional
             When True, causes the CML to include a checksum for each
             Cube's data. Defaults to True.
 
@@ -442,9 +420,7 @@ class IrisTest_nometa(unittest.TestCase):
         reference_path = self.get_result_path(reference_filename)
         self._check_same(xml, reference_path)
 
-    def assertTextFile(
-        self, source_filename, reference_filename, desc="text file"
-    ):
+    def assertTextFile(self, source_filename, reference_filename, desc="text file"):
         """Check if two text files are the same, printing any diffs."""
         with open(source_filename) as source_file:
             source_text = source_file.readlines()
@@ -474,9 +450,7 @@ class IrisTest_nometa(unittest.TestCase):
             with open(reference_path, "r") as reference_file:
                 stats = json.load(reference_file)
                 self.assertEqual(stats.get("shape", []), list(data.shape))
-                self.assertEqual(
-                    stats.get("masked", False), ma.is_masked(data)
-                )
+                self.assertEqual(stats.get("masked", False), ma.is_masked(data))
                 nstats = np.array(
                     (
                         stats.get("mean", 0.0),
@@ -522,20 +496,16 @@ class IrisTest_nometa(unittest.TestCase):
             shutil.copy(test_filename, reference_path)
 
     def assertString(self, string, reference_filename=None):
-        """
-        Test that `string` matches the contents of the reference file.
+        """Test that `string` matches the contents of the reference file.
 
         If the environment variable IRIS_TEST_CREATE_MISSING is
         non-empty, the reference file is created if it doesn't exist.
 
-        Args:
-
-        * string:
+        Parameters
+        ----------
+        string : str
             The string to check.
-
-        Kwargs:
-
-        * reference_filename:
+        reference_filename : optional, default=None
             The relative path (relative to the test results directory).
             If omitted, the result is generated from the calling
             method's name, class, and module using
@@ -546,9 +516,7 @@ class IrisTest_nometa(unittest.TestCase):
             reference_path = self.result_path(None, "txt")
         else:
             reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            string, reference_path, type_comparison_name="Strings"
-        )
+        self._check_same(string, reference_path, type_comparison_name="Strings")
 
     def assertRepr(self, obj, reference_filename):
         self.assertString(repr(obj), reference_filename)
@@ -559,19 +527,14 @@ class IrisTest_nometa(unittest.TestCase):
                 reference = "".join(
                     part.decode("utf-8") for part in reference_fh.readlines()
                 )
-            self._assert_str_same(
-                reference, item, reference_path, type_comparison_name
-            )
+            self._assert_str_same(reference, item, reference_path, type_comparison_name)
         else:
             self._ensure_folder(reference_path)
             with open(reference_path, "wb") as reference_fh:
                 reference_fh.writelines(part.encode("utf-8") for part in item)
 
     def assertXMLElement(self, obj, reference_filename):
-        """
-        Calls the xml_element method given obj and asserts the result is the same as the test file.
-
-        """
+        """Calls the xml_element method given obj and asserts the result is the same as the test file."""
         doc = xml.dom.minidom.Document()
         doc.appendChild(obj.xml_element(doc))
         # sort the attributes on xml elements before testing against known good state.
@@ -580,9 +543,7 @@ class IrisTest_nometa(unittest.TestCase):
         doc = iris.cube.Cube._sort_xml_attrs(doc)
         pretty_xml = doc.toprettyxml(indent="  ")
         reference_path = self.get_result_path(reference_filename)
-        self._check_same(
-            pretty_xml, reference_path, type_comparison_name="XML"
-        )
+        self._check_same(pretty_xml, reference_path, type_comparison_name="XML")
 
     def assertArrayEqual(self, a, b, err_msg=""):
         np.testing.assert_array_equal(a, b, err_msg=err_msg)
@@ -599,19 +560,8 @@ class IrisTest_nometa(unittest.TestCase):
         matches.extend(message for message in messages if expr.search(message))
 
     @contextlib.contextmanager
-    def assertWarnsRegexp(self, expected_regexp=""):
-        # Check that a warning is raised matching a given expression.
-        with self._recordWarningMatches(expected_regexp) as matches:
-            yield
-
-        msg = "Warning matching '{}' not raised."
-        msg = msg.format(expected_regexp)
-        self.assertTrue(matches, msg)
-
-    @contextlib.contextmanager
     def assertLogs(self, logger=None, level=None, msg_regex=None):
-        """
-        An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
+        """An extended version of the usual :meth:`unittest.TestCase.assertLogs`,
         which also exercises the logger's message formatting.
 
         Also adds the ``msg_regex`` kwarg:
@@ -654,100 +604,25 @@ class IrisTest_nometa(unittest.TestCase):
         msg = msg.format(expected_regexp, matches)
         self.assertFalse(matches, msg)
 
-    def _assertMaskedArray(self, assertion, a, b, strict, **kwargs):
-        # Define helper function to extract unmasked values as a 1d
-        # array.
-        def unmasked_data_as_1d_array(array):
-            array = ma.asarray(array)
-            if array.ndim == 0:
-                if array.mask:
-                    data = np.array([])
-                else:
-                    data = np.array([array.data])
-            else:
-                data = array.data[~ma.getmaskarray(array)]
-            return data
-
-        # Compare masks. This will also check that the array shapes
-        # match, which is not tested when comparing unmasked values if
-        # strict is False.
-        a_mask, b_mask = ma.getmaskarray(a), ma.getmaskarray(b)
-        np.testing.assert_array_equal(a_mask, b_mask)
-
-        if strict:
-            assertion(a.data, b.data, **kwargs)
-        else:
-            assertion(
-                unmasked_data_as_1d_array(a),
-                unmasked_data_as_1d_array(b),
-                **kwargs,
-            )
-
-    def assertMaskedArrayEqual(self, a, b, strict=False):
-        """
-        Check that masked arrays are equal. This requires the
-        unmasked values and masks to be identical.
-
-        Args:
-
-        * a, b (array-like):
-            Two arrays to compare.
-
-        Kwargs:
-
-        * strict (bool):
-            If True, perform a complete mask and data array equality check.
-            If False (default), the data array equality considers only unmasked
-            elements.
-
-        """
-        self._assertMaskedArray(np.testing.assert_array_equal, a, b, strict)
+    assertMaskedArrayEqual = staticmethod(assert_masked_array_equal)
 
     def assertArrayAlmostEqual(self, a, b, decimal=6):
         np.testing.assert_array_almost_equal(a, b, decimal=decimal)
 
-    def assertMaskedArrayAlmostEqual(self, a, b, decimal=6, strict=False):
-        """
-        Check that masked arrays are almost equal. This requires the
-        masks to be identical, and the unmasked values to be almost
-        equal.
-
-        Args:
-
-        * a, b (array-like):
-            Two arrays to compare.
-
-        Kwargs:
-
-        * strict (bool):
-            If True, perform a complete mask and data array equality check.
-            If False (default), the data array equality considers only unmasked
-            elements.
-
-        * decimal (int):
-            Equality tolerance level for
-            :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
-            'abs(desired-actual) < 0.5 * 10**(-decimal)'
-
-        """
-        self._assertMaskedArray(
-            np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
-        )
+    assertMaskedArrayAlmostEqual = staticmethod(assert_masked_array_almost_equal)
 
     def assertArrayAllClose(self, a, b, rtol=1.0e-7, atol=1.0e-8, **kwargs):
-        """
-        Check arrays are equal, within given relative + absolute tolerances.
+        """Check arrays are equal, within given relative + absolute tolerances.
 
-        Args:
-
-        * a, b (array-like):
+        Parameters
+        ----------
+        a, b : array-like
             Two arrays to compare.
-
-        Kwargs:
-
-        * rtol, atol (float):
+        rtol, atol : float, optional
             Relative and absolute tolerances to apply.
 
+        Other Parameters
+        ----------------
         Any additional kwargs are passed to numpy.testing.assert_allclose.
 
         Performs pointwise toleranced comparison, and raises an assertion if
@@ -800,15 +675,12 @@ class IrisTest_nometa(unittest.TestCase):
             os.remove(filename)
 
     def file_checksum(self, file_path):
-        """
-        Generate checksum from file.
-        """
+        """Generate checksum from file."""
         with open(file_path, "rb") as in_file:
             return zlib.crc32(in_file.read())
 
     def _unique_id(self):
-        """
-        Returns the unique ID for the current assertion.
+        """Returns the unique ID for the current assertion.
 
         The ID is composed of two parts: a unique ID for the current test
         (which is itself composed of the module, class, and test names), and
@@ -849,9 +721,7 @@ class IrisTest_nometa(unittest.TestCase):
 
     def _check_reference_file(self, reference_path):
         reference_exists = os.path.isfile(reference_path)
-        if not (
-            reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")
-        ):
+        if not (reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")):
             msg = "Missing test result: {}".format(reference_path)
             raise AssertionError(msg)
         return reference_exists
@@ -862,8 +732,7 @@ class IrisTest_nometa(unittest.TestCase):
             os.makedirs(dir_path)
 
     def check_graphic(self):
-        """
-        Check the hash of the current matplotlib figure matches the expected
+        """Check the hash of the current matplotlib figure matches the expected
         image hash for the current graphic test.
 
         To create missing image test results, set the IRIS_TEST_CREATE_MISSING
@@ -872,137 +741,10 @@ class IrisTest_nometa(unittest.TestCase):
         output directory, and the imagerepo.json file being updated.
 
         """
-        from PIL import Image
-        import imagehash
-
-        dev_mode = os.environ.get("IRIS_TEST_CREATE_MISSING")
-        unique_id = self._unique_id()
-        repo_fname = os.path.join(_RESULT_PATH, "imagerepo.json")
-        with open(repo_fname, "rb") as fi:
-            repo: Dict[str, List[str]] = json.load(
-                codecs.getreader("utf-8")(fi)
-            )
-
-        try:
-            #: The path where the images generated by the tests should go.
-            image_output_directory = os.path.join(
-                os.path.dirname(__file__), "result_image_comparison"
-            )
-            if not os.access(image_output_directory, os.W_OK):
-                if not os.access(os.getcwd(), os.W_OK):
-                    raise IOError(
-                        "Write access to a local disk is required "
-                        "to run image tests.  Run the tests from a "
-                        "current working directory you have write "
-                        "access to to avoid this issue."
-                    )
-                else:
-                    image_output_directory = os.path.join(
-                        os.getcwd(), "iris_image_test_output"
-                    )
-            result_fname = os.path.join(
-                image_output_directory, "result-" + unique_id + ".png"
-            )
-
-            if not os.path.isdir(image_output_directory):
-                # Handle race-condition where the directories are
-                # created sometime between the check above and the
-                # creation attempt below.
-                try:
-                    os.makedirs(image_output_directory)
-                except OSError as err:
-                    # Don't care about "File exists"
-                    if err.errno != 17:
-                        raise
-
-            def _create_missing():
-                fname = "{}.png".format(phash)
-                base_uri = (
-                    "https://scitools.github.io/test-iris-imagehash/"
-                    "images/v4/{}"
-                )
-                uri = base_uri.format(fname)
-                hash_fname = os.path.join(image_output_directory, fname)
-                uris = repo.setdefault(unique_id, [])
-                uris.append(uri)
-                print("Creating image file: {}".format(hash_fname))
-                figure.savefig(hash_fname)
-                msg = "Creating imagerepo entry: {} -> {}"
-                print(msg.format(unique_id, uri))
-                lock = filelock.FileLock(
-                    os.path.join(_RESULT_PATH, "imagerepo.lock")
-                )
-                # The imagerepo.json file is a critical resource, so ensure
-                # thread safe read/write behaviour via platform independent
-                # file locking.
-                with lock.acquire(timeout=600):
-                    with open(repo_fname, "wb") as fo:
-                        json.dump(
-                            repo,
-                            codecs.getwriter("utf-8")(fo),
-                            indent=4,
-                            sort_keys=True,
-                        )
-
-            # Calculate the test result perceptual image hash.
-            buffer = io.BytesIO()
-            figure = plt.gcf()
-            figure.savefig(buffer, format="png")
-            buffer.seek(0)
-            phash = imagehash.phash(Image.open(buffer), hash_size=_HASH_SIZE)
-
-            if unique_id not in repo:
-                # The unique id might not be fully qualified, e.g.
-                # expects iris.tests.test_quickplot.TestLabels.test_contour.0,
-                # but got test_quickplot.TestLabels.test_contour.0
-                # if we find single partial match from end of the key
-                # then use that, else fall back to the unknown id state.
-                matches = [key for key in repo if key.endswith(unique_id)]
-                if len(matches) == 1:
-                    unique_id = matches[0]
-
-            if unique_id in repo:
-                uris = repo[unique_id]
-                # Extract the hex basename strings from the uris.
-                hexes = [
-                    os.path.splitext(os.path.basename(uri))[0] for uri in uris
-                ]
-                # Create the expected perceptual image hashes from the uris.
-                to_hash = imagehash.hex_to_hash
-                expected = [to_hash(uri_hex) for uri_hex in hexes]
-
-                # Calculate hamming distance vector for the result hash.
-                distances = [e - phash for e in expected]
-
-                if np.all([hd > _HAMMING_DISTANCE for hd in distances]):
-                    if dev_mode:
-                        _create_missing()
-                    else:
-                        figure.savefig(result_fname)
-                        msg = (
-                            "Bad phash {} with hamming distance {} "
-                            "for test {}."
-                        )
-                        msg = msg.format(phash, distances, unique_id)
-                        if _DISPLAY_FIGURES:
-                            emsg = "Image comparison would have failed: {}"
-                            print(emsg.format(msg))
-                        else:
-                            emsg = "Image comparison failed: {}"
-                            raise AssertionError(emsg.format(msg))
-            else:
-                if dev_mode:
-                    _create_missing()
-                else:
-                    figure.savefig(result_fname)
-                    emsg = "Missing image test result: {}."
-                    raise AssertionError(emsg.format(unique_id))
-
-            if _DISPLAY_FIGURES:
-                plt.show()
-
-        finally:
-            plt.close()
+        graphics.check_graphic(
+            self._unique_id(),
+            _RESULT_PATH,
+        )
 
     def _remove_testcase_patches(self):
         """Helper to remove per-testcase patches installed by :meth:`patch`."""
@@ -1013,15 +755,17 @@ class IrisTest_nometa(unittest.TestCase):
         self.testcase_patches.clear()
 
     def patch(self, *args, **kwargs):
-        """
-        Install a mock.patch, to be removed after the current test.
+        """Install a mock.patch, to be removed after the current test.
 
         The patch is created with mock.patch(*args, **kwargs).
 
-        Returns:
-            The substitute object returned by patch.start().
+        Returns
+        -------
+        The substitute object returned by patch.start().
 
-        For example::
+        Examples
+        --------
+        ::
 
             mock_call = self.patch('module.Class.call', return_value=1)
             module_Class_instance.call(3, 4)
@@ -1049,8 +793,7 @@ class IrisTest_nometa(unittest.TestCase):
         return start_result
 
     def assertArrayShapeStats(self, result, shape, mean, std_dev, rtol=1e-6):
-        """
-        Assert that the result, a cube, has the provided shape and that the
+        """Assert that the result, a cube, has the provided shape and that the
         mean and standard deviation of the data array are also as provided.
         Thus build confidence that a cube processing operation, such as a
         cube.regrid, has maintained its behaviour.
@@ -1061,22 +804,19 @@ class IrisTest_nometa(unittest.TestCase):
         self.assertArrayAllClose(result.data.std(), std_dev, rtol=rtol)
 
     def assertDictEqual(self, lhs, rhs, msg=None):
-        """
+        """Dictionary Comparison.
+
         This method overrides unittest.TestCase.assertDictEqual (new in Python3.1)
         in order to cope with dictionary comparison where the value of a key may
         be a numpy array.
 
         """
         if not isinstance(lhs, Mapping):
-            emsg = (
-                f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
-            )
+            emsg = f"Provided LHS argument is not a 'Mapping', got {type(lhs)}."
             self.fail(emsg)
 
         if not isinstance(rhs, Mapping):
-            emsg = (
-                f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
-            )
+            emsg = f"Provided RHS argument is not a 'Mapping', got {type(rhs)}."
             self.fail(emsg)
 
         if set(lhs.keys()) != set(rhs.keys()):
@@ -1104,9 +844,7 @@ class IrisTest_nometa(unittest.TestCase):
                     raise AssertionError(emsg)
 
                 self.assertMaskedArrayEqual(lvalue, rvalue)
-            elif isinstance(lvalue, np.ndarray) or isinstance(
-                rvalue, np.ndarray
-            ):
+            elif isinstance(lvalue, np.ndarray) or isinstance(rvalue, np.ndarray):
                 if not isinstance(lvalue, np.ndarray):
                     emsg = (
                         f"Dictionary key {key!r} values are not equal, "
@@ -1135,123 +873,106 @@ class IrisTest_nometa(unittest.TestCase):
     def assertEqualAndKind(self, value, expected):
         # Check a value, and also its type 'kind' = float/integer/string.
         self.assertEqual(value, expected)
-        self.assertEqual(
-            np.array(value).dtype.kind, np.array(expected).dtype.kind
-        )
+        self.assertEqual(np.array(value).dtype.kind, np.array(expected).dtype.kind)
 
 
-# An environment variable controls whether test timings are output.
-#
-# NOTE: to run tests with timing output, nosetests cannot be used.
-# At present, that includes not using "python setup.py test"
-# The typically best way is like this :
-#    $ export IRIS_TEST_TIMINGS=1
-#    $ python -m unittest discover -s iris.tests
-# and commonly adding ...
-#    | grep "TIMING TEST" >iris_test_output.txt
-#
-_PRINT_TEST_TIMINGS = bool(int(os.environ.get("IRIS_TEST_TIMINGS", 0)))
-
-
-def _method_path(meth, cls):
-    return ".".join([cls.__module__, cls.__name__, meth.__name__])
-
-
-def _testfunction_timing_decorator(fn, cls):
-    # Function decorator for making a testcase print its execution time.
-    @functools.wraps(fn)
-    def inner(*args, **kwargs):
-        start_time = datetime.datetime.now()
-        try:
-            result = fn(*args, **kwargs)
-        finally:
-            end_time = datetime.datetime.now()
-            elapsed_time = (end_time - start_time).total_seconds()
-            msg = '\n  TEST TIMING -- "{}" took : {:12.6f} sec.'
-            name = _method_path(fn, cls)
-            print(msg.format(name, elapsed_time))
-        return result
-
-    return inner
-
-
-def iristest_timing_decorator(cls):
-    # Class decorator to make all "test_.." functions print execution timings.
-    if _PRINT_TEST_TIMINGS:
-        # NOTE: 'dir' scans *all* class properties, including inherited ones.
-        attr_names = dir(cls)
-        for attr_name in attr_names:
-            attr = getattr(cls, attr_name)
-            if callable(attr) and attr_name.startswith("test"):
-                attr = _testfunction_timing_decorator(attr, cls)
-                setattr(cls, attr_name, attr)
-    return cls
-
-
-class _TestTimingsMetaclass(type):
-    # An alternative metaclass for IrisTest subclasses, which makes
-    # them print execution timings for all the testcases.
-    # This is equivalent to applying the @iristest_timing_decorator to
-    # every test class that inherits from IrisTest.
-    # NOTE: however, it means you *cannot* specify a different metaclass for
-    # your test class inheriting from IrisTest.
-    # See below for how to solve that where needed.
-    def __new__(cls, clsname, base_classes, attrs):
-        result = type.__new__(cls, clsname, base_classes, attrs)
-        if _PRINT_TEST_TIMINGS:
-            result = iristest_timing_decorator(result)
-        return result
-
-
-class IrisTest(IrisTest_nometa, metaclass=_TestTimingsMetaclass):
-    # Derive the 'ordinary' IrisTest from IrisTest_nometa, but add the
-    # metaclass that enables test timings output.
-    # This means that all subclasses also get the timing behaviour.
-    # However, if a different metaclass is *wanted* for an IrisTest subclass,
-    # this would cause a metaclass conflict.
-    # Instead, you can inherit from IrisTest_nometa and apply the
-    # @iristest_timing_decorator explicitly to your new testclass.
-    pass
-
-
+get_data_path = IrisTest.get_data_path
 get_result_path = IrisTest.get_result_path
 
 
-class GraphicsTestMixin:
-
-    # nose directive: dispatch tests concurrently.
-    _multiprocess_can_split_ = True
-
-    def setUp(self):
-        # Acquire threading non re-entrant blocking lock to ensure
-        # thread-safe plotting.
-        _lock.acquire()
-        # Make sure we have no unclosed plots from previous tests before
-        # generating this one.
-        if MPL_AVAILABLE:
-            plt.close("all")
-
-    def tearDown(self):
-        # If a plotting test bombs out it can leave the current figure
-        # in an odd state, so we make sure it's been disposed of.
-        if MPL_AVAILABLE:
-            plt.close("all")
-        # Release the non re-entrant blocking lock.
-        _lock.release()
-
-
-class GraphicsTest(GraphicsTestMixin, IrisTest):
+class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
     pass
 
 
-class GraphicsTest_nometa(GraphicsTestMixin, IrisTest_nometa):
-    # Graphicstest without the metaclass providing test timings.
-    pass
+class PPTest:
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
+
+    @contextlib.contextmanager
+    def cube_save_test(
+        self,
+        reference_txt_path,
+        reference_cubes=None,
+        reference_pp_path=None,
+        **kwargs,
+    ):
+        """A context manager for testing the saving of Cubes to PP files.
+
+        Args:
+
+        * reference_txt_path:
+            The path of the file containing the textual PP reference data.
+
+        Kwargs:
+
+        * reference_cubes:
+            The cube(s) from which the textual PP reference can be re-built if necessary.
+        * reference_pp_path:
+            The location of a PP file from which the textual PP reference can be re-built if necessary.
+            NB. The "reference_cubes" argument takes precedence over this argument.
+
+        The return value from the context manager is the name of a temporary file
+        into which the PP data to be tested should be saved.
+
+        Example::
+            with self.cube_save_test(reference_txt_path, reference_cubes=cubes) as temp_pp_path:
+                iris.save(cubes, temp_pp_path)
+
+        """
+        # Watch out for a missing reference text file
+        if not os.path.isfile(reference_txt_path):
+            if reference_cubes:
+                temp_pp_path = iris.util.create_temp_filename(".pp")
+                try:
+                    iris.save(reference_cubes, temp_pp_path, **kwargs)
+                    self._create_reference_txt(reference_txt_path, temp_pp_path)
+                finally:
+                    os.remove(temp_pp_path)
+            elif reference_pp_path:
+                self._create_reference_txt(reference_txt_path, reference_pp_path)
+            else:
+                raise ValueError(
+                    "Missing all of reference txt file, cubes, and PP path."
+                )
+
+        temp_pp_path = iris.util.create_temp_filename(".pp")
+        try:
+            # This value is returned to the target of the "with" statement's "as" clause.
+            yield temp_pp_path
+
+            # Load deferred data for all of the fields (but don't do anything with it)
+            pp_fields = list(iris.fileformats.pp.load(temp_pp_path))
+            for pp_field in pp_fields:
+                pp_field.data
+            with open(reference_txt_path, "r") as reference_fh:
+                reference = "".join(reference_fh)
+            self._assert_str_same(
+                reference + "\n",
+                str(pp_fields) + "\n",
+                reference_txt_path,
+                type_comparison_name="PP files",
+            )
+        finally:
+            os.remove(temp_pp_path)
+
+    def _create_reference_txt(self, txt_path, pp_path):
+        # Load the reference data
+        pp_fields = list(iris.fileformats.pp.load(pp_path))
+        for pp_field in pp_fields:
+            pp_field.data
+
+        # Clear any header words we don't use
+        unused = ("lbexp", "lbegin", "lbnrec", "lbproj", "lbtyp")
+        for pp_field in pp_fields:
+            for word_name in unused:
+                setattr(pp_field, word_name, 0)
+
+        # Save the textual representation of the PP fields
+        with open(txt_path, "w") as txt_file:
+            txt_file.writelines(str(pp_fields))
 
 
 def skip_data(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of
+    """Decorator to choose whether to run tests, based on the availability of
     external data.
 
     Example usage:
@@ -1266,16 +987,13 @@ def skip_data(fn):
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 
-    skip = unittest.skipIf(
-        condition=no_data, reason="Test(s) require external data."
-    )
+    skip = unittest.skipIf(condition=no_data, reason="Test(s) require external data.")
 
     return skip(fn)
 
 
 def skip_gdal(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of the
+    """Decorator to choose whether to run tests, based on the availability of the
     GDAL library.
 
     Example usage:
@@ -1284,29 +1002,11 @@ def skip_gdal(fn):
             ...
 
     """
-    skip = unittest.skipIf(
-        condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'."
-    )
+    skip = unittest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
     return skip(fn)
 
 
-def skip_plot(fn):
-    """
-    Decorator to choose whether to run tests, based on the availability of the
-    matplotlib library.
-
-    Example usage:
-        @skip_plot
-        class MyPlotTests(test.GraphicsTest):
-            ...
-
-    """
-    skip = unittest.skipIf(
-        condition=not MPL_AVAILABLE,
-        reason="Graphics tests require the matplotlib library.",
-    )
-
-    return skip(fn)
+skip_plot = graphics.skip_plot
 
 
 skip_sample_data = unittest.skipIf(
@@ -1334,8 +1034,7 @@ skip_stratify = unittest.skipIf(
 
 
 def no_warnings(func):
-    """
-    Provides a decorator to ensure that there are no warnings raised
+    """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
 
     """
@@ -1347,8 +1046,34 @@ def no_warnings(func):
         self.assertEqual(
             0,
             warn.call_count,
-            ("Got unexpected warnings." " \n{}".format(warn.call_args_list)),
+            ("Got unexpected warnings.\n{}".format(warn.call_args_list)),
         )
         return result
 
     return wrapped
+
+
+def env_bin_path(exe_name: AnyStr = None):
+    """Return a Path object for (an executable in) the environment bin directory.
+
+    Parameters
+    ----------
+    exe_name : str
+        If set, the name of an executable to append to the path.
+
+    Returns
+    -------
+    exe_path : Path
+        A path to the bin directory, or an executable file within it.
+
+    Notes
+    -----
+    For use in tests which spawn commands which should call executables within
+    the Python environment, since many IDEs (Eclipse, PyCharm) don't
+    automatically include this location in $PATH (as opposed to $PYTHONPATH).
+    """
+    exe_path = Path(os.__file__)
+    exe_path = (exe_path / "../../../bin").resolve()
+    if exe_name is not None:
+        exe_path = exe_path / exe_name
+    return exe_path

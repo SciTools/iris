@@ -1,3 +1,5 @@
+"""Simple 1D plot using iris.plot.plot() with a legend."""
+
 import matplotlib.pyplot as plt
 
 import iris
@@ -13,7 +15,6 @@ temperature = iris.load_cube(fname)
 temperature = temperature[5:9, :]
 
 for cube in temperature.slices("longitude"):
-
     # Create a string label to identify this cube (i.e. latitude: value)
     cube_label = "latitude: %s" % cube.coord("latitude").points[0]
 
@@ -32,7 +33,7 @@ plt.legend(ncol=2)
 plt.grid(True)
 
 # Provide some axis labels
-plt.ylabel("Temerature / kelvin")
+plt.ylabel("Temperature / kelvin")
 plt.xlabel("Longitude / degrees")
 
 # And a sensible title

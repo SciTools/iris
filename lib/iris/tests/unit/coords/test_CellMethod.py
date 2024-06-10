@@ -1,11 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the :class:`iris.coords.CellMethod`.
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the :class:`iris.coords.CellMethod`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -22,7 +19,7 @@ class Test(tests.IrisTest):
     def _check(self, token, coord, default=False):
         result = CellMethod(self.method, coords=coord)
         token = token if not default else BaseMetadata.DEFAULT_NAME
-        expected = "{}: {}".format(self.method, token)
+        expected = "{}: {}".format(token, self.method)
         self.assertEqual(str(result), expected)
 
     def test_coord_standard_name(self):
@@ -64,27 +61,27 @@ class Test(tests.IrisTest):
     def test_string(self):
         token = "air_temperature"
         result = CellMethod(self.method, coords=token)
-        expected = "{}: {}".format(self.method, token)
+        expected = "{}: {}".format(token, self.method)
         self.assertEqual(str(result), expected)
 
     def test_string_default(self):
         token = "air temperature"  # includes space
         result = CellMethod(self.method, coords=token)
-        expected = "{}: unknown".format(self.method)
+        expected = "unknown: {}".format(self.method)
         self.assertEqual(str(result), expected)
 
     def test_mixture(self):
         token = "air_temperature"
         coord = AuxCoord(1, standard_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "{}: {}, {}".format(self.method, token, token)
+        expected = "{}: {}: {}".format(token, token, self.method)
         self.assertEqual(str(result), expected)
 
     def test_mixture_default(self):
         token = "air temperature"  # includes space
         coord = AuxCoord(1, long_name=token)
         result = CellMethod(self.method, coords=[coord, token])
-        expected = "{}: unknown, unknown".format(self.method)
+        expected = "unknown: unknown: {}".format(self.method)
         self.assertEqual(str(result), expected)
 
 

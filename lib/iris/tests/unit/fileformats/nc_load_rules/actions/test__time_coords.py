@@ -1,21 +1,18 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Unit tests for the engine.activate() call within the
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for the engine.activate() call within the
 `iris.fileformats.netcdf._load_cube` function.
 
 Tests for rules activation relating to 'time' and 'time_period' coords.
 
 """
+
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
-from iris.tests.unit.fileformats.nc_load_rules.actions import (
-    Mixin__nc_load_actions,
-)
+from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
 class Opts(dict):
@@ -66,10 +63,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         # NB we don't necessarily *use* either of these
         dims_and_lens = {timedim_name: 2, perioddim_name: 3}
         dims_string = "\n".join(
-            [
-                f"        {name} = {length} ;"
-                for name, length in dims_and_lens.items()
-            ]
+            [f"        {name} = {length} ;" for name, length in dims_and_lens.items()]
         )
 
         phenom_auto_dims = []
@@ -144,8 +138,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         else:
             phenom_coords_string = " ".join(phenom_coords)
             phenom_coords_string = (
-                "            "
-                f'phenom:coordinates = "{phenom_coords_string}" ; '
+                "            " f'phenom:coordinates = "{phenom_coords_string}" ; '
             )
 
         # Create a testcase with time dims + coords.
@@ -167,8 +160,7 @@ netcdf test {{
         return cdl_string
 
     def check_result(self, cube, time_is="dim", period_is="missing"):
-        """
-        Check presence of expected dim/aux-coords in the result cube.
+        """Check presence of expected dim/aux-coords in the result cube.
 
         Both of 'time_is' and 'period_is' can take values 'dim', 'aux' or
         'missing'.
@@ -227,9 +219,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
     which = None
 
     def run_testcase(self, coord_dim_name=None, **opts):
-        """
-        Specialise 'run_testcase' for single-coord 'time' or 'period' testing.
-        """
+        """Specialise 'run_testcase' for single-coord 'time' or 'period' testing."""
         which = self.which
         assert which in ("time", "period")
 
@@ -260,9 +250,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         return result
 
     def check_result(self, cube, coord_is="dim"):
-        """
-        Specialise 'check_result' for single-coord 'time' or 'period' testing.
-        """
+        """Specialise 'check_result' for single-coord 'time' or 'period' testing."""
         # Pass generic 'coord_is' option to parent as time/period options.
         which = self.which
         assert which in ("time", "period")
@@ -313,7 +301,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #     002 : fc_provides_coordinate_(time[[_period]])
         #     003 : fc_build_coordinate_(time[[_period]])
         msg = "Failed to create.* dimension coordinate"
-        result = self.run_testcase(values_all_zero=True, warning=msg)
+        result = self.run_testcase(values_all_zero=True, warning_regex=msg)
         self.check_result(result, "aux")
 
     def test_dim_fails_typeident(self):

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -80,7 +79,8 @@ class TestLoad(tests.IrisTest):
     @tests.skip_data
     def test_load_kwarg(self):
         """Tests that the handle_metadata_errors kwarg is effective by setting it to
-        False with a file with known incomplete meta-data (missing ellipsoid)."""
+        False with a file with known incomplete meta-data (missing ellipsoid).
+        """
         datafile = "u1096_ng_ek00_pressure_2km"
         with self.assertRaisesRegex(
             TranslationError,

@@ -7,10 +7,9 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: :opticon:`report` v3.1.0 Release Highlights
-   :container: + shadow
-   :title: text-primary text-center font-weight-bold
-   :body: bg-light
+.. dropdown:: v3.1.0 Release Highlights
+   :color: primary
+   :icon: info
    :animate: fade-in
    :open:
 
@@ -25,8 +24,8 @@ This document explains the changes made to Iris for this release
    * Multiple improvements to developer guide documentation.
      See entries in the :ref:`"Documentation" section <docs_section>`, below.
 
-   And finally, get in touch with us on `GitHub`_ if you have any issues or
-   feature requests for improving Iris. Enjoy!
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
 
 
 📢 Announcements
@@ -227,9 +226,8 @@ This document explains the changes made to Iris for this release
 #. `@akuhnregnier`_ replaced `deprecated numpy 1.20 aliases for builtin types`_.
    (:pull:`3997`)
 
-#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+#. `@bjlittle`_ added conditional task execution to ``.cirrus.yml`` to allow
+   developers to easily disable `cirrus-ci`_ tasks. (:pull:`4019`)
 
 #. `@bjlittle`_ and `@jamesp`_ addressed a regression in behaviour when using
    `conda`_ 4.10.0 within `cirrus-ci`_. (:pull:`4084`)
@@ -283,7 +281,7 @@ This document explains the changes made to Iris for this release
    (:pull:`4198`)
 
 #. `@lbdreyer`_ updated the CF standard name table to the latest version: 
-   `v77 <http://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
+   `v77 <https://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
    (:pull:`4282`)
 
 #. `@jamesp`_ updated a test to the latest numpy version (:pull:`3977`)
@@ -291,9 +289,8 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ enabled `cirrus-ci`_ compute credits for non-draft pull-requests
    from collaborators targeting the Iris ``master`` branch. (:pull:`4007`)
 
-#. `@bjlittle`_ added conditional task execution to `.cirrus.yml`_ to allow
-   developers to easily disable `cirrus-ci`_ tasks. See
-   :ref:`skipping Cirrus-CI tasks`. (:pull:`4019`)
+#. `@bjlittle`_ added conditional task execution to ``.cirrus.yml`` to allow
+   developers to easily disable `cirrus-ci`_ tasks. (:pull:`4019`)
 
 
 
@@ -315,7 +312,6 @@ This document explains the changes made to Iris for this release
 .. _blacken-docs: https://github.com/asottile/blacken-docs
 .. _conda-lock: https://github.com/conda-incubator/conda-lock
 .. _deprecated numpy 1.20 aliases for builtin types: https://numpy.org/doc/1.20/release/1.20.0-notes.html#using-the-aliases-of-builtin-types-like-np-int-is-deprecated
-.. _GitHub: https://github.com/SciTools/iris/issues/new/choose
 .. _Met Office: https://www.metoffice.gov.uk/
 .. _numpy: https://numpy.org/doc/stable/release/1.20.0-notes.html
 .. |pre-commit.ci| image:: https://results.pre-commit.ci/badge/github/SciTools/iris/main.svg
@@ -326,4 +322,4 @@ This document explains the changes made to Iris for this release
 .. _Python 3.6: https://www.python.org/downloads/release/python-360/
 .. _Python 3.8: https://www.python.org/downloads/release/python-380/
 .. _README.md: https://github.com/SciTools/iris#-----
-.. _xxhash: http://cyan4973.github.io/xxHash/
+.. _xxhash: https://cyan4973.github.io/xxHash/

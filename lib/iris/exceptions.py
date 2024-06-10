@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Exceptions specific to the Iris package.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Exceptions specific to the Iris package."""
 
 
 class IrisError(Exception):
@@ -71,18 +67,13 @@ class InvalidCubeError(IrisError):
 
 
 class ConstraintMismatchError(IrisError):
-    """
-    Raised when a constraint operation has failed to find the correct number
-    of results.
-
-    """
+    """Raised when a constraint operation has failed to find the correct number of results."""
 
     pass
 
 
 class NotYetImplementedError(IrisError):
-    """
-    Raised by missing functionality.
+    """Raised by missing functionality.
 
     Different meaning to NotImplementedError, which is for abstract methods.
 
@@ -98,29 +89,23 @@ class TranslationError(IrisError):
 
 
 class IgnoreCubeException(IrisError):
-    """
-    Raised from a callback function when a cube should be ignored on load.
-
-    """
+    """Raised from a callback function when a cube should be ignored on load."""
 
     pass
 
 
 class ConcatenateError(IrisError):
-    """
-    Raised when concatenate is expected to produce a single cube, but fails to
-    do so.
-
-    """
+    """Raised when concatenate is expected to produce a single cube, but fails to do so."""
 
     def __init__(self, differences):
-        """
-        Creates a ConcatenateError with a list of textual descriptions of
+        """Create a ConcatenateError with a list of textual descriptions of differences.
+
+        Create a ConcatenateError with a list of textual descriptions of
         the differences which prevented a concatenate.
 
-        Args:
-
-        * differences:
+        Parameters
+        ----------
+        differences : list of str
             The list of strings which describe the differences.
 
         """
@@ -128,26 +113,22 @@ class ConcatenateError(IrisError):
 
     def __str__(self):
         return "\n  ".join(
-            ["failed to concatenate into a single cube."]
-            + list(self.differences)
+            ["failed to concatenate into a single cube."] + list(self.differences)
         )
 
 
 class MergeError(IrisError):
-    """
-    Raised when merge is expected to produce a single cube, but fails to
-    do so.
-
-    """
+    """Raised when merge is expected to produce a single cube, but fails to do so."""
 
     def __init__(self, differences):
-        """
+        """Create a MergeError with a list of textual descriptions of the differences.
+
         Creates a MergeError with a list of textual descriptions of
         the differences which prevented a merge.
 
-        Args:
-
-        * differences:
+        Parameters
+        ----------
+        differences : list of str
             The list of strings which describe the differences.
 
         """
@@ -172,5 +153,11 @@ class LazyAggregatorError(Exception):
 
 class UnitConversionError(IrisError):
     """Raised when Iris is unable to convert a unit."""
+
+    pass
+
+
+class CannotAddError(ValueError):
+    """Raised when an object (e.g. coord) cannot be added to a :class:`~iris.cube.Cube`."""
 
     pass

@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris._merge.ProtoCube` class."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -77,8 +76,7 @@ class Mixin_register(metaclass=ABCMeta):
             self.assertTrue(result)
 
 
-@tests.iristest_timing_decorator
-class Test_register__match(Mixin_register, tests.IrisTest_nometa):
+class Test_register__match(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return []
@@ -88,8 +86,7 @@ class Test_register__match(Mixin_register, tests.IrisTest_nometa):
         return example_cube()
 
 
-@tests.iristest_timing_decorator
-class Test_register__standard_name(Mixin_register, tests.IrisTest_nometa):
+class Test_register__standard_name(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.standard_name", "air_temperature", "air_density"]
@@ -101,8 +98,7 @@ class Test_register__standard_name(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__long_name(Mixin_register, tests.IrisTest_nometa):
+class Test_register__long_name(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.long_name", "screen_air_temp", "Belling"]
@@ -114,8 +110,7 @@ class Test_register__long_name(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__var_name(Mixin_register, tests.IrisTest_nometa):
+class Test_register__var_name(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.var_name", "'airtemp'", "'airtemp2'"]
@@ -127,8 +122,7 @@ class Test_register__var_name(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__units(Mixin_register, tests.IrisTest_nometa):
+class Test_register__units(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.units", "'K'", "'C'"]
@@ -140,8 +134,7 @@ class Test_register__units(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__attributes_unequal(Mixin_register, tests.IrisTest_nometa):
+class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.attributes", "'mint'"]
@@ -153,10 +146,7 @@ class Test_register__attributes_unequal(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__attributes_unequal_array(
-    Mixin_register, tests.IrisTest_nometa
-):
+class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.attributes", "'mint'"]
@@ -174,10 +164,7 @@ class Test_register__attributes_unequal_array(
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__attributes_superset(
-    Mixin_register, tests.IrisTest_nometa
-):
+class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.attributes", "'stuffed'"]
@@ -189,10 +176,7 @@ class Test_register__attributes_superset(
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__attributes_multi_diff(
-    Mixin_register, tests.IrisTest_nometa
-):
+class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.attributes", "'sam'", "'mint'"]
@@ -215,8 +199,7 @@ class Test_register__attributes_multi_diff(
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__cell_method(Mixin_register, tests.IrisTest_nometa):
+class Test_register__cell_method(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.cell_methods"]
@@ -228,8 +211,7 @@ class Test_register__cell_method(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__data_shape(Mixin_register, tests.IrisTest_nometa):
+class Test_register__data_shape(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube.shape", "(2,)", "(3,)"]
@@ -241,8 +223,7 @@ class Test_register__data_shape(Mixin_register, tests.IrisTest_nometa):
         return cube
 
 
-@tests.iristest_timing_decorator
-class Test_register__data_dtype(Mixin_register, tests.IrisTest_nometa):
+class Test_register__data_dtype(Mixin_register, tests.IrisTest):
     @property
     def fragments(self):
         return ["cube data dtype", "int32", "int8"]
@@ -307,7 +288,6 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
 
 
 class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
-
     _mergetest_type = "coord"
 
     def setUp(self):
@@ -324,33 +304,21 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         self.check_fail("aux_coords (scalar)", "latitude", "longitude")
 
     def test_vector_dim_coords_and_dims_one_extra(self):
-        self.cube2.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
         self.check_fail("dim_coords", "latitude")
 
     def test_vector_dim_coords_and_dims_both_extra(self):
-        self.cube2.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], standard_name="longitude"), 0
-        )
+        self.cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], standard_name="longitude"), 0)
         self.check_fail("dim_coords", "latitude", "longitude")
 
     def test_vector_aux_coords_and_dims_one_extra(self):
-        self.cube2.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
+        self.cube2.add_aux_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
         self.check_fail("aux_coords (non-scalar)", "latitude")
 
     def test_vector_aux_coords_and_dims_both_extra(self):
-        self.cube2.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="latitude"), 0
-        )
-        self.cube1.add_aux_coord(
-            DimCoord([1, 2, 3], standard_name="longitude"), 0
-        )
+        self.cube2.add_aux_coord(DimCoord([1, 2, 3], standard_name="latitude"), 0)
+        self.cube1.add_aux_coord(DimCoord([1, 2, 3], standard_name="longitude"), 0)
         self.check_fail("aux_coords (non-scalar)", "latitude", "longitude")
 
     def test_factory_defns_one_extra(self):
@@ -387,15 +355,9 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="longitude"), 1)
         cube2.add_dim_coord(DimCoord([1, 2, 3], standard_name="altitude"), 2)
 
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinimity"), 0
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinomity"), 1
-        )
-        self.cube1.add_dim_coord(
-            DimCoord([1, 2, 3], long_name="equinumity"), 2
-        )
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinimity"), 0)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinomity"), 1)
+        self.cube1.add_dim_coord(DimCoord([1, 2, 3], long_name="equinumity"), 2)
 
         # dim
         cube2.add_aux_coord(DimCoord([1, 2, 3], var_name="one"), 0)
@@ -428,9 +390,7 @@ class _MergeTest_coordprops(_MergeTest):
         proto_cube.register(self.cube2, error_on_mismatch=True)
 
     def _props_fail(self, *terms):
-        self.check_fail(
-            self._mergetest_type, self.coord_to_change.name(), *terms
-        )
+        self.check_fail(self._mergetest_type, self.coord_to_change.name(), *terms)
 
     def test_standard_name(self):
         self.coord_to_change.standard_name = "soil_temperature"
@@ -462,7 +422,6 @@ class _MergeTest_coordprops(_MergeTest):
 
 
 class Test_register__CoordSig_scalar(_MergeTest_coordprops, tests.IrisTest):
-
     _mergetest_type = "aux_coords (scalar)"
 
     def setUp(self):
@@ -504,7 +463,6 @@ class _MergeTest_coordprops_vect(_MergeTest_coordprops):
 
 
 class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
-
     _mergetest_type = "dim_coords"
     _coord_typename = "dim_coord"
 
@@ -533,7 +491,6 @@ class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
 
 
 class Test_register__CoordSig_aux(_MergeTest_coordprops_vect, tests.IrisTest):
-
     _mergetest_type = "aux_coords (non-scalar)"
     _coord_typename = "aux_coord"
 

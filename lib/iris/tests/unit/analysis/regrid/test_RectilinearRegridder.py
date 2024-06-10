@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis._regrid.RectilinearRegridder`."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -33,7 +32,7 @@ class Test__regrid__linear(tests.IrisTest):
         self.xs, self.ys = np.meshgrid(self.x.points, self.y.points)
 
         def transformation(x, y):
-            return x + y ** 2
+            return x + y**2
 
         # Construct a function which adds dimensions to the 2D data array
         # so that we can test higher dimensional functionality.
@@ -243,8 +242,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
     def setUp(self):
         self.methods = ("linear", "nearest")
         self.test_dtypes = [
-            np.dtype(spec)
-            for spec in ("i1", "i2", "i4", "i8", "f2", "f4", "f8")
+            np.dtype(spec) for spec in ("i1", "i2", "i4", "i8", "f2", "f4", "f8")
         ]
 
     def _regrid(self, data, method, extrapolation_mode=None):
@@ -257,9 +255,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         kwargs = dict(method=method)
         if extrapolation_mode is not None:
             kwargs["extrapolation_mode"] = extrapolation_mode
-        result = regrid(
-            data, x_dim, y_dim, x_coord, y_coord, grid_x, grid_y, **kwargs
-        )
+        result = regrid(data, x_dim, y_dim, x_coord, y_coord, grid_x, grid_y, **kwargs)
         return result
 
     def test_default_ndarray(self):
@@ -478,9 +474,7 @@ class Test___call___lazy(tests.IrisTest):
         self.args = ("linear", "mask")
         self.regridder = Regridder(self.cube, self.cube, *self.args)
         self.lazy_cube = self.cube.copy(da.asarray(self.cube.data))
-        self.lazy_regridder = Regridder(
-            self.lazy_cube, self.lazy_cube, *self.args
-        )
+        self.lazy_regridder = Regridder(self.lazy_cube, self.lazy_cube, *self.args)
 
     def test_lazy_regrid(self):
         result = self.lazy_regridder(self.lazy_cube)
@@ -1291,9 +1285,7 @@ class Test___call____circular(tests.IrisTest):
         src.add_aux_coord(level_height)
         src.add_aux_coord(sigma)
         src.add_aux_coord(surface_altitude, [0, 1])
-        hybrid_height = HybridHeightFactory(
-            level_height, sigma, surface_altitude
-        )
+        hybrid_height = HybridHeightFactory(level_height, sigma, surface_altitude)
         src.add_aux_factory(hybrid_height)
         self.src = src
 
@@ -1319,9 +1311,7 @@ class Test___call____circular(tests.IrisTest):
             result = regridder(src_cube)
             results.append(result)
             self.assertFalse(result.coord("longitude").circular)
-            cml = RESULT_DIR + (
-                "{}_circular_src{}.cml".format(method, missingmask),
-            )
+            cml = RESULT_DIR + ("{}_circular_src{}.cml".format(method, missingmask),)
             self.assertCMLApproxData(result, cml)
         return results
 
@@ -1393,12 +1383,8 @@ class Test___call____circular(tests.IrisTest):
         # Make src and dst test cubes.
         def make_2d_cube(x_points, y_points, data):
             cube = Cube(data)
-            y_coord = DimCoord(
-                y_points, standard_name="latitude", units="degrees"
-            )
-            x_coord = DimCoord(
-                x_points, standard_name="longitude", units="degrees"
-            )
+            y_coord = DimCoord(y_points, standard_name="latitude", units="degrees")
+            x_coord = DimCoord(x_points, standard_name="longitude", units="degrees")
             x_coord.circular = True
             cube.add_dim_coord(y_coord, 0)
             cube.add_dim_coord(x_coord, 1)
@@ -1430,9 +1416,7 @@ class Test___call____circular(tests.IrisTest):
             # masked at the specific expected points.
             expected_result_data = ma.array(result_basic.data)
             expected_result_data.mask = result_masks[method]
-            self.assertMaskedArrayEqual(
-                result_masked.data, expected_result_data
-            )
+            self.assertMaskedArrayEqual(result_masked.data, expected_result_data)
 
     def test_circular_grid(self):
         # Non-circular src -> circular grid

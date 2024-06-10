@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.io.run_callback` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -22,9 +21,7 @@ class Test_run_callback(tests.IrisTest):
 
     def test_no_callback(self):
         # No callback results in the cube being returned.
-        self.assertEqual(
-            iris.io.run_callback(None, self.cube, None, None), self.cube
-        )
+        self.assertEqual(iris.io.run_callback(None, self.cube, None, None), self.cube)
 
     def test_ignore_cube(self):
         # Ignore cube should result in None being returned.
@@ -32,9 +29,7 @@ class Test_run_callback(tests.IrisTest):
             raise iris.exceptions.IgnoreCubeException()
 
         cube = self.cube
-        self.assertEqual(
-            iris.io.run_callback(callback, cube, None, None), None
-        )
+        self.assertEqual(iris.io.run_callback(callback, cube, None, None), None)
 
     def test_callback_no_return(self):
         # Check that a callback not returning anything still results in the
@@ -43,9 +38,7 @@ class Test_run_callback(tests.IrisTest):
             pass
 
         cube = self.cube
-        self.assertEqual(
-            iris.io.run_callback(callback, cube, None, None), cube
-        )
+        self.assertEqual(iris.io.run_callback(callback, cube, None, None), cube)
 
     def test_bad_callback_return_type(self):
         # Check that a TypeError is raised with a bad callback return value.
@@ -53,7 +46,7 @@ class Test_run_callback(tests.IrisTest):
             return iris.cube.CubeList()
 
         with self.assertRaisesRegex(
-            TypeError, "Callback function returned an " "unhandled data type."
+            TypeError, "Callback function returned an unhandled data type."
         ):
             iris.io.run_callback(callback, None, None, None)
 

@@ -1,0 +1,8 @@
+<tr class="iris">
+    <td class="iris-title iris-word-cell">Attributes</td>
+    <td class="iris-title"></td>
+</tr>
+<tr class="iris">
+    <td class="iris-word-cell iris-subheading-cell">	newlines-string</td>
+    <td class="iris-word-cell" colspan="1">&#x27;string\nwith\nnewlines&#x27;</td>
+</tr>

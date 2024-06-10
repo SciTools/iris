@@ -1,8 +1,7 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp._create_field_data` function."""
 
 # Import iris.tests first so that some things can be initialised before
@@ -56,6 +55,7 @@ class Test__create_field_data(tests.IrisTest):
         data_shape = (100, 120)
         proxy = mock.Mock(
             dtype=np.dtype("f4"),
+            dask_meta=np.empty((0,) * len(data_shape), dtype=np.dtype("f4")),
             shape=data_shape,
             spec=pp.PPDataProxy,
             ndim=len(data_shape),

@@ -1,0 +1,15 @@
+{% extends "!layout.html" %}
+
+{% block body %}
+
+<h1>Test: {{ test }}</h1>
+
+
+{% for hash, file in hashfiles %}
+<div>
+    <h3>{{hash}}</h3>
+    <img src="{{file}}" />
+</div>
+{% endfor %}
+
+{% endblock %}

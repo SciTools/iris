@@ -5,12 +5,15 @@ Plotting a Cube
 ===============
 
 Iris utilises the power of Python's 
-`Matplotlib <http://matplotlib.sourceforge.net/>`_ package in order to generate 
+`Matplotlib <https://matplotlib.org/>`_ package in order to generate 
 high quality, production ready 1D and 2D plots. 
-The functionality of the Matplotlib 
-`pyplot <http://matplotlib.sourceforge.net/api/pyplot_api.html>`_ module has 
+The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
+.. seealso::
+
+    Relevant gallery example:
+    :ref:`sphx_glr_generated_gallery_general_plot_zonal_means.py` (Plotting with multiple axes)
 
 ***************************
 Matplotlib's Pyplot Basics
@@ -83,9 +86,9 @@ so ensure that interactive mode is turned off with::
 
         plt.interactive(False)
 
-
-Saving a Plot
-=============
+===============
+ Saving a Plot
+===============
 
 The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()** 
 in that they are both *non-interactive* visualisation modes. 
@@ -102,15 +105,15 @@ see :py:func:`matplotlib.pyplot.savefig`).
 
 Some of the formats which are supported by **plt.savefig**:
 
-	======  ======  ======================================================================
-	Format  Type    Description
-	======  ======  ======================================================================
-	EPS     Vector  Encapsulated PostScript
-	PDF     Vector  Portable Document Format
-	PNG     Raster  Portable Network Graphics, a format with a lossless compression method
-	PS      Vector  PostScript, ideal for printer output
-	SVG     Vector  Scalable Vector Graphics, XML based
-	======  ======  ======================================================================
+======  ======  ======================================================================
+Format  Type    Description
+======  ======  ======================================================================
+EPS     Vector  Encapsulated PostScript
+PDF     Vector  Portable Document Format
+PNG     Raster  Portable Network Graphics, a format with a lossless compression method
+PS      Vector  PostScript, ideal for printer output
+SVG     Vector  Scalable Vector Graphics, XML based
+======  ======  ======================================================================
 
 ******************
 Iris Cube Plotting
@@ -126,12 +129,12 @@ wrapper functions.
 
 As a rule of thumb:
 
-   * if you wish to do a visualisation with a cube, use ``iris.plot`` or 
-     ``iris.quickplot``.
-   * if you wish to show, save or manipulate **any** visualisation, 
-     including ones created with Iris, use ``matplotlib.pyplot``.
-   * if you wish to create a non cube visualisation, also use 
-     ``matplotlib.pyplot``.
+* if you wish to do a visualisation with a cube, use ``iris.plot`` or
+  ``iris.quickplot``.
+* if you wish to show, save or manipulate **any** visualisation,
+  including ones created with Iris, use ``matplotlib.pyplot``.
+* if you wish to create a non cube visualisation, also use
+  ``matplotlib.pyplot``.
 
 The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module, 
 except that ``quickplot`` will add a title, x and y labels and a colorbar 
@@ -206,7 +209,7 @@ the temperature at some latitude cross-sections.
     that any useful functions or variables defined within the script can be 
     imported into other scripts without running all of the code and thus 
     creating an unwanted plot. This is discussed in more detail at 
-    `<http://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
+    `<https://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
 
     In order to run this example, you will need to copy the code into a file 
     and run it using ``python my_file.py``.
@@ -218,7 +221,7 @@ Plotting 2-Dimensional Cubes
 Creating Maps
 -------------
 Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem`,
-a cartopy :class:`~cartopy.mpl.GeoAxes` instance is created, which can be
+a cartopy :class:`~cartopy.mpl.geoaxes.GeoAxes` instance is created, which can be
 accessed with the :func:`matplotlib.pyplot.gca` function.
 
 Given the current map, you can draw gridlines and coastlines amongst other 
@@ -226,8 +229,8 @@ things.
 
 .. seealso::
 
-    :meth:`cartopy's gridlines() <cartopy.mpl.GeoAxes.gridlines>`,
-    :meth:`cartopy's coastlines() <cartopy.mpl.GeoAxes.coastlines>`.
+    :meth:`cartopy's gridlines() <cartopy.mpl.geoaxes.GeoAxes.gridlines>`,
+    :meth:`cartopy's coastlines() <cartopy.mpl.geoaxes.GeoAxes.coastlines>`.
 
 
 Cube Contour
@@ -282,7 +285,7 @@ These colour schemes are freely available under the following licence::
       Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
       You may obtain a copy of the License at
   
-      http://www.apache.org/licenses/LICENSE-2.0
+      https://www.apache.org/licenses/LICENSE-2.0
   
       Unless required by applicable law or agreed to in writing, software distributed
       under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
@@ -290,7 +293,7 @@ These colour schemes are freely available under the following licence::
       specific language governing permissions and limitations under the License.
 
 To include a reference in a journal article or report please refer to 
-`section 5 <http://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
+`section 5 <https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
 in the citation guidance provided by Cynthia Brewer.
    
 For adding citations to Iris plots, see :ref:`brewer-cite` (below). 

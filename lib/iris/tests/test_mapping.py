@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Tests map creation.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Tests map creation."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -105,9 +101,7 @@ class TestUnmappable(tests.GraphicsTest):
 class TestMappingSubRegion(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
-        cube_path = tests.get_data_path(
-            ("PP", "aPProt1", "rotatedMHtimecube.pp")
-        )
+        cube_path = tests.get_data_path(("PP", "aPProt1", "rotatedMHtimecube.pp"))
         cube = iris.load_cube(cube_path)[0]
         # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
@@ -160,9 +154,7 @@ class TestLowLevel(tests.GraphicsTest):
         self.cube = iris.tests.stock.global_pp()
         self.few = 4
         self.few_levels = list(range(280, 300, 5))
-        self.many_levels = np.linspace(
-            self.cube.data.min(), self.cube.data.max(), 40
-        )
+        self.many_levels = np.linspace(self.cube.data.min(), self.cube.data.max(), 40)
 
     def test_simple(self):
         iplt.contour(self.cube)
@@ -211,16 +203,17 @@ class TestBoundedCube(tests.GraphicsTest):
 
     def test_default_projection_and_extent(self):
         self.assertEqual(
-            iplt.default_projection(self.cube), ccrs.PlateCarree()
+            iplt.default_projection(self.cube),
+            ccrs.PlateCarree(
+                globe=self.cube.coord_system("CoordSystem").as_cartopy_globe()
+            ),
         )
         np_testing.assert_array_almost_equal(
             iplt.default_projection_extent(self.cube),
             [0.0, 360.0, -89.99995422, 89.99998474],
         )
         np_testing.assert_array_almost_equal(
-            iplt.default_projection_extent(
-                self.cube, mode=iris.coords.BOUND_MODE
-            ),
+            iplt.default_projection_extent(self.cube, mode=iris.coords.BOUND_MODE),
             [-1.875046, 358.124954, -90, 90],
         )
 
@@ -237,12 +230,6 @@ class TestLimitedAreaCube(tests.GraphicsTest):
 
     def test_pcolormesh(self):
         iplt.pcolormesh(self.cube)
-        self.check_graphic()
-
-    def test_grid(self):
-        iplt.pcolormesh(self.cube, facecolors="none", edgecolors="blue")
-        # the result is a graphic which has coloured edges. This is a mpl bug,
-        # see https://github.com/matplotlib/matplotlib/issues/1302
         self.check_graphic()
 
     def test_outline(self):

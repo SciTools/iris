@@ -1,12 +1,8 @@
 # Copyright Iris contributors
 #
-# This file is part of Iris and is released under the LGPL license.
-# See COPYING and COPYING.LESSER in the root of the repository for full
-# licensing details.
-"""
-Test the file loading mechanism.
-
-"""
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test the file loading mechanism."""
 
 # import iris tests first so that some things can be initialised before importing anything else
 import iris.tests as tests  # isort:skip
@@ -16,8 +12,7 @@ import iris
 @tests.skip_data
 class TestFileLoad(tests.IrisTest):
     def _test_file(self, src_path, reference_filename):
-        """
-        Checks the result of loading the given file spec, or creates the
+        """Checks the result of loading the given file spec, or creates the
         reference file if it doesn't exist.
 
         """

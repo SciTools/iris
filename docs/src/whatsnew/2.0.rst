@@ -36,7 +36,7 @@ Features
   * The *new* in-place arithmetic operators :data:`__iadd__`, :data:`__idiv__`,
     :data:`__imul__`, :data:`__isub__`, and :data:`__itruediv__` have been
     added to support :class:`~iris.cube.Cube` operations :data:`+=`,
-    :data:`/=`, :data:`*=`, and :data:`-=`. Note that, for **divison**
+    :data:`/=`, :data:`*=`, and :data:`-=`. Note that, for **division**
     *__future__.division* is always in effect.
 
 * Changes to the :class:`iris.coords.Coord`:
@@ -295,6 +295,6 @@ Documentation
 
 
 .. _Biggus: https://biggus.readthedocs.io/en/latest/
-.. _Dask: http://dask.pydata.org/en/latest/
+.. _Dask: https://dask.pydata.org/en/latest/
 .. _iris_grib: https://github.com/SciTools/iris-grib/
-.. _schedulers: http://dask.pydata.org/en/latest/scheduler-overview.html
+.. _schedulers: https://dask.pydata.org/en/latest/scheduler-overview.html

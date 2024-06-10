@@ -14,7 +14,7 @@ The y-axis of the first plot produced will be automatically inverted due to the
 presence of the attribute positive=down on the depth coordinate. This means
 depth values intuitively increase downward on the y-axis.
 
-"""
+"""  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt
 
@@ -34,7 +34,7 @@ def main():
     # the southern portion of the domain, and limit the depth of the profile
     # to 1000m.
     lon_cons = iris.Constraint(longitude=330.5)
-    lat_cons = iris.Constraint(latitude=lambda l: -10 < l < -9)
+    lat_cons = iris.Constraint(latitude=lambda lat: -10 < lat < -9)
     depth_cons = iris.Constraint(depth=lambda d: d <= 1000)
     theta_1000m = theta.extract(depth_cons & lon_cons & lat_cons)
     salinity_1000m = salinity.extract(depth_cons & lon_cons & lat_cons)
