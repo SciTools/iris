@@ -407,7 +407,7 @@ def array_equal(array1, array2, withnans=False):
     def normalise_array(array):
         if not is_lazy_data(array):
             if not ma.isMaskedArray(array):
-                array = np.asarray(array)
+                array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
