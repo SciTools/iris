@@ -16,6 +16,7 @@ from iris import _concatenate
     [
         (np.arange(2), da.arange(2), True),
         (np.array([1], dtype=np.float32), np.array([1], dtype=bool), True),
+        (np.array([np.nan, 1.0]), np.array([np.nan, 1.0]), True),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 1]), True),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 0]), False),
         (da.arange(6).reshape((2, 3)), da.arange(6, chunks=1).reshape((2, 3)), True),
