@@ -414,6 +414,11 @@ def array_equal(array1, array2, withnans=False):
 
     eq = array1.shape == array2.shape
     if eq:
+        array1_masked = ma.is_masked(array1)
+        eq = array1_masked == ma.is_masked(array2)
+    if eq and array1_masked:
+        eq = np.array_equal(ma.getmask(array1), ma.getmask(array2))
+    if eq:
         eqs = array1 == array2
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)

@@ -44,10 +44,15 @@ class Test(tests.IrisTest):
         self.assertTrue(array_equal(array_a, array_b))
         self.assertFalse(array_equal(array_a, array_c))
 
-    def test_masked_is_ignored(self):
+    def test_masked_is_not_ignored(self):
         array_a = ma.masked_array([1, 2, 3], mask=[1, 0, 1])
         array_b = ma.masked_array([2, 2, 2], mask=[1, 0, 1])
         self.assertTrue(array_equal(array_a, array_b))
+
+    def test_masked_is_different(self):
+        array_a = ma.masked_array([1, 2, 3], mask=[1, 0, 1])
+        array_b = ma.masked_array([1, 2, 2], mask=[0, 0, 1])
+        self.assertFalse(array_equal(array_a, array_b))
 
     def test_fully_masked_arrays(self):
         array_a = ma.masked_array(np.arange(24).reshape(2, 3, 4), mask=True)

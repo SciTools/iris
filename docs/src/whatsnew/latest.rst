@@ -51,6 +51,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
    (:pull:`5783`)
 
+#. `@stephenworsley`_ made masked arrays on Iris objects now compare as equal
+   precisely when all unmasked points are equal and when the masks are identical.
+   This is due to changes in :func:`~iris.util.array_equal` which previously
+   ignored masks entirely. (:pull:`4457`)
+
 
 🚀 Performance Enhancements
 ===========================
