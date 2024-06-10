@@ -14,6 +14,8 @@ import iris
 from iris.analysis import AreaWeighted, PointInCell
 from iris.coords import AuxCoord
 
+from . import TrackAddedMemoryAllocation
+
 
 class HorizontalChunkedRegridding:
     def setup(self) -> None:
@@ -46,6 +48,20 @@ class HorizontalChunkedRegridding:
         out.data
 
     def time_regrid_area_w_new_grid(self) -> None:
+        # Regrid the chunked cube
+        out = self.chunked_cube.regrid(self.template_cube, self.scheme_area_w)
+        # Realise data
+        out.data
+
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_mem_regrid_area_w(self) -> None:
+        # Regrid the chunked cube
+        out = self.cube.regrid(self.template_cube, self.scheme_area_w)
+        # Realise data
+        out.data
+
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_mem_regrid_area_w_new_grid(self) -> None:
         # Regrid the chunked cube
         out = self.chunked_cube.regrid(self.template_cube, self.scheme_area_w)
         # Realise data
@@ -89,6 +105,13 @@ class CurvilinearRegridding:
         self.scheme_pic = PointInCell()
 
     def time_regrid_pic(self) -> None:
+        # Regrid the cube onto the template.
+        out = self.cube.regrid(self.template_cube, self.scheme_pic)
+        # Realise the data
+        out.data
+
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_mem_regrid_pic(self) -> None:
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, self.scheme_pic)
         # Realise the data
