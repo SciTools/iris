@@ -12,7 +12,9 @@ Eventual destination: dedicated module in :mod:`iris` root.
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
+from contextlib import contextmanager
 from typing import Iterable
+import warnings
 
 from cf_units import Unit
 from dask import array as da
@@ -25,6 +27,7 @@ from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...util import array_equal, clip_string, guess_coord_axis
+from ...warnings import IrisVagueMetadataWarning
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -2838,6 +2841,47 @@ class MeshCoord(AuxCoord):
 
         # Translate "self[:,]" as "self.copy()".
         return self.copy()
+
+    def collapsed(self, dims_to_collapse=None):
+        """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
+
+        Replaces the points & bounds with a simple bounded region.
+
+        The coordinate that is collapsed is a :class:`~iris.coords.AuxCoord`
+        copy of this :class:`MeshCoord`, since a :class:`MeshCoord`
+        does not have its own points/bounds - they are derived from the
+        associated :class:`Mesh`. See :meth:`iris.coords.AuxCoord.collapsed`.
+        """
+
+        @contextmanager
+        def temp_suppress_warning():
+            """Add IrisVagueMetadataWarning filter then removes it after yielding.
+
+            A workaround to mimic catch_warnings(), given python/cpython#73858.
+            """
+            warnings.filterwarnings("ignore", category=IrisVagueMetadataWarning)
+            added_warning = warnings.filters[0]
+
+            yield
+
+            # (warnings.filters is usually mutable but this is not guaranteed).
+            new_filters = list(warnings.filters)
+            new_filters.remove(added_warning)
+            warnings.filters = new_filters
+
+        aux_coord = AuxCoord.from_coord(self)
+
+        # Reuse existing AuxCoord collapse logic, but with a custom
+        #  mesh-specific warning.
+        message = (
+            "Collapsing a mesh coordinate. "
+            f"Metadata may not be fully descriptive for {self.name()}."
+        )
+        warnings.warn(message, category=IrisVagueMetadataWarning)
+        with temp_suppress_warning():
+            collapsed_coord = aux_coord.collapsed(dims_to_collapse)
+
+        return collapsed_coord
 
     def copy(self, points=None, bounds=None):
         """Make a copy of the MeshCoord.
