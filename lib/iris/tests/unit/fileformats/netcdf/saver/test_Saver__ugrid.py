@@ -508,9 +508,9 @@ class TestSaveUgrid__cube(tests.IrisTest):
             self.assertEqual(props["location"], "face")
             self.assertEqual(props["coordinates"], "face_x face_y")
 
-        # the data variables map the appropriate node dimensions
+        # the data variables map the appropriate node dimension
         self.assertEqual(a_props[_VAR_DIMS], ["Mesh2d_faces"])
-        self.assertEqual(b_props[_VAR_DIMS], ["Mesh2d_faces_0"])
+        self.assertEqual(b_props[_VAR_DIMS], ["Mesh2d_faces"])
 
     def test_multi_cubes_different_mesh(self):
         # Check that we can correctly distinguish 2 different meshes.
@@ -1188,7 +1188,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         # mesh2
         self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d_0"), "Mesh2d_nodes_0"
+            vars_meshdim(vars, "node", mesh_name="Mesh2d_0"), "Mesh2d_nodes"
         )
         self.assertEqual(
             vars_meshdim(vars, "face", mesh_name="Mesh2d_0"), "Mesh2d_faces_0"
@@ -1196,7 +1196,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         if "edge_coordinates" in vars["Mesh2d_0"]:
             self.assertEqual(
                 vars_meshdim(vars, "edge", mesh_name="Mesh2d_0"),
-                "Mesh2d_edge_0",
+                "Mesh2d_edge",
             )
 
         # the relevant coords + connectivities are also distinct
@@ -1215,17 +1215,17 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             )
 
         # mesh2
-        self.assertEqual(vars["node_x_0"][_VAR_DIMS], ["Mesh2d_nodes_0"])
+        self.assertEqual(vars["node_x_0"][_VAR_DIMS], ["Mesh2d_nodes"])
         self.assertEqual(vars["face_x_0"][_VAR_DIMS], ["Mesh2d_faces_0"])
         self.assertEqual(
             vars["mesh2d_faces_0"][_VAR_DIMS],
             ["Mesh2d_faces_0", "Mesh2d_0_face_N_nodes"],
         )
         if "edge_coordinates" in vars["Mesh2d_0"]:
-            self.assertEqual(vars["longitude_0"][_VAR_DIMS], ["Mesh2d_edge_0"])
+            self.assertEqual(vars["longitude_0"][_VAR_DIMS], ["Mesh2d_edge"])
             self.assertEqual(
                 vars["mesh2d_edge_0"][_VAR_DIMS],
-                ["Mesh2d_edge_0", "Mesh2d_0_edge_N_nodes"],
+                ["Mesh2d_edge", "Mesh2d_0_edge_N_nodes"],
             )
 
     def test_multiple_equal_mesh(self):
@@ -1269,8 +1269,9 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # Check the dims are as expected
         self.assertEqual(dims["Mesh2d_faces"], 3)
         self.assertEqual(dims["Mesh2d_faces_0"], 4)
+        # There are no 'second' edge and node dims
+        self.assertEqual(dims["Mesh2d_nodes"], 5)
         self.assertEqual(dims["Mesh2d_edge"], 2)
-        self.assertEqual(dims["Mesh2d_edge_0"], 2)
 
 
 # WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
