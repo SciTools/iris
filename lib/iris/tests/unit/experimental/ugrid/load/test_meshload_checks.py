@@ -1,3 +1,9 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for mesh handling within iris netcdf loads."""
+
 import pytest
 
 import iris
@@ -23,7 +29,7 @@ class TestMeshLoad:
             extra_data:coordinates = "node_x node_y" ;
             {location_cdl}
             extra_data:mesh = "mesh" ;
-"""
+        """
         # Insert this into the definitions part of the 'standard' testfile CDL
         extended_cdl = _TEST_CDL_HEAD + extra_cdl + _TEST_CDL_TAIL
         testfile_path = cdl_to_nc(extended_cdl, tmpdir=self.tmpdir)
