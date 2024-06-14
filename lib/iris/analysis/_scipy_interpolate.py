@@ -218,7 +218,7 @@ class _RegularGridInterpolator:
             n_result_values = len(indices[0])
             n_non_zero = n_result_values * n_src_values_per_result_value
             weights = np.ones(n_non_zero, dtype=norm_distances[0].dtype)
-            col_indices = np.empty(n_non_zero)
+            col_indices = np.empty(n_non_zero, dtype=int)
             row_ptrs = np.arange(
                 0,
                 n_non_zero + n_src_values_per_result_value,
