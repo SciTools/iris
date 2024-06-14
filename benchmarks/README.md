@@ -20,13 +20,13 @@ the PR's base branch, thus showing performance differences introduced
 by the PR. (This run is managed by 
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
 
-`asv ...` commands must be run from this directory. You will need to have ASV
-installed, as well as Nox (see
-[Benchmark environments](#benchmark-environments)).
-
-The benchmark runner ([bm_runner.py](./bm_runner.py)) provides conveniences for
+To run locally: the **benchmark runner** provides conveniences for
 common benchmark setup and run tasks, including replicating the automated 
-overnight run locally. See `python bm_runner.py --help` for detail.
+overnight run locally. This is accessed via the Nox `benchmarks` session - see
+`nox -s benchmarks -- --help` for detail (_see also: 
+[bm_runner.py](./bm_runner.py)_). Alternatively you can directly run `asv ...`
+commands from this directory (you will still need Nox installed - see
+[Benchmark environments](#benchmark-environments)).
 
 A significant portion of benchmark run time is environment management. Run-time
 can be reduced by placing the benchmark environment on the same file system as
@@ -43,11 +43,17 @@ if it is not already. You can achieve this by either:
 
 * `OVERRIDE_TEST_DATA_REPOSITORY` - required - some benchmarks use
 `iris-test-data` content, and your local `site.cfg` is not available for
-benchmark scripts.
+benchmark scripts. The benchmark runner defers to any value already set in
+the shell, but will otherwise download `iris-test-data` and set the variable
+accordingly.
 * `DATA_GEN_PYTHON` - required - path to a Python executable that can be
 used to generate benchmark test objects/files; see
 [Data generation](#data-generation). The benchmark runner sets this 
-automatically, but will defer to any value already set in the shell.
+automatically, but will defer to any value already set in the shell. Note that
+[Mule](https://github.com/metomi/mule) will be  automatically installed into 
+this environment, and sometimes 
+[iris-test-data](https://github.com/SciTools/iris-test-data) (see 
+`OVERRIDE_TEST_DATA_REPOSITORY`).
 * `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
 test data, which the benchmark scripts will create if it doesn't already
 exist. Defaults to `<root>/benchmarks/.data/` if not set. Note that some of

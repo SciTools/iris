@@ -13,6 +13,8 @@ import numpy as np
 import iris
 from iris.analysis.trajectory import interpolate
 
+from . import TrackAddedMemoryAllocation
+
 
 class TrajectoryInterpolation:
     def setup(self) -> None:
@@ -33,7 +35,21 @@ class TrajectoryInterpolation:
         # Realise the data
         out_cube.data
 
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_trajectory_linear(self) -> None:
+        # Regrid the cube onto the template.
+        out_cube = interpolate(self.cube, self.sample_points, method="linear")
+        # Realise the data
+        out_cube.data
+
     def time_trajectory_nearest(self) -> None:
+        # Regrid the cube onto the template.
+        out_cube = interpolate(self.cube, self.sample_points, method="nearest")
+        # Realise the data
+        out_cube.data
+
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_trajectory_nearest(self) -> None:
         # Regrid the cube onto the template.
         out_cube = interpolate(self.cube, self.sample_points, method="nearest")
         # Realise the data

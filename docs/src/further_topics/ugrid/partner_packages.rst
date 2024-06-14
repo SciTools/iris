@@ -93,7 +93,7 @@ Applications
 * Regrid unstructured to structured.
 * Regrid with dask integration, computing in parallel and maintaining data
   laziness.
-* | Save a prepared regridder for re-use in subsequent runs.
+* | Save a prepared regridder for reuse in subsequent runs.
   | Regridders can even be re-used on sources with different masks - a
     significant efficiency gain.
 
