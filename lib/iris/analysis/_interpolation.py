@@ -200,13 +200,8 @@ class RectilinearInterpolator:
               set to NaN.
 
         """
-        # Trigger any deferred loading of the source cube's data and snapshot
-        # its state to ensure that the interpolator is impervious to external
-        # changes to the original source cube. The data is loaded to prevent
-        # the snapshot having lazy data, avoiding the potential for the
-        # same data to be loaded again and again.
-        if src_cube.has_lazy_data():
-            src_cube.data
+        # Snapshot the cube state to ensure that the interpolator is impervious
+        # to external changes to the original source cube.
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
@@ -592,7 +587,7 @@ class RectilinearInterpolator:
 
         sample_points = _canonical_sample_points(self._src_coords, sample_points)
 
-        data = self._src_cube.data
+        data = self._src_cube.core_data()
         # Interpolate the cube payload.
         interpolated_data = self._points(sample_points, data)
 
