@@ -905,7 +905,7 @@ class _ProtoCube:
             if not match:
                 mismatch_error_msg = (
                     f"Cannot find an axis to concatenate over for phenomenon "
-                    f"{self._cube_signature.defn.name()}"
+                    f"`{self._cube.name()}`"
                 )
 
         # Check for compatible coordinate extents.
@@ -931,8 +931,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Auxiliary coordinates differ for phenomenon"
-                                f" {self._cube_signature.defn.name()}:\n"
+                                "Auxiliary coordinates are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -952,8 +952,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Cell measures differ for phenomenon"
-                                f" {self._cube_signature.defn.name()}:\n"
+                                "Cell measures are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -973,8 +973,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Ancillary variables differ for phenomenon"
-                                f" {self._cube_signature.defn.name()}:\n"
+                                "Ancillary variables are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -994,8 +994,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Derived coordinates differ for phenomenon"
-                                f" {self._cube_signature.defn.name()}:\n"
+                                "Derived coordinates are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -1019,10 +1019,10 @@ class _ProtoCube:
             if existing_order == _CONSTANT and this_order != _CONSTANT:
                 self._coord_signature.dim_order[dim_ind] = this_order
 
-        if mismatch_error_msg:
-            if not match and error_on_mismatch:
+        if mismatch_error_msg and not match:
+            if error_on_mismatch:
                 raise iris.exceptions.ConcatenateError([mismatch_error_msg])
-            elif not match:
+            else:
                 warnings.warn(
                     mismatch_error_msg, category=iris.warnings.IrisUserWarning
                 )

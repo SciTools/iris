@@ -30,7 +30,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@ESadek-MO`_ updated the error messages in :func:`~iris.cube.Cube.concatenate`
+#. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
    to better explain the error. (:pull:`6005`)
 
 
