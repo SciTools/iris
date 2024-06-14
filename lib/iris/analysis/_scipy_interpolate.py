@@ -306,7 +306,12 @@ class _RegularGridInterpolator:
         idx_res = []
         for i, yi in zip(indices, norm_distances):
             idx_res.append(np.where(yi <= 0.5, i, i + 1))
-        return self.values[tuple(idx_res)]
+        if is_lazy_data(self.values):
+            # dask arrays do not (yet) support fancy indexing
+            indexer = self.values.vindex
+        else:
+            indexer = self.values
+        return indexer[tuple(idx_res)]
 
     def _find_indices(self, xi):
         # find relevant edges between which xi are situated
