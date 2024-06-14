@@ -1,7 +1,11 @@
 import itertools
 
+import dask.array
 import numpy as np
-from scipy.sparse import csr_matrix
+
+from sparse import GCXS
+
+from iris._lazy_data import is_lazy_data
 
 # ============================================================================
 # |                        Copyright SciPy                                   |
@@ -238,11 +242,13 @@ class _RegularGridInterpolator:
                     weights[i::n_src_values_per_result_value] *= cw
 
             n_src_values = np.prod(list(map(len, self.grid)))
-            sparse_matrix = csr_matrix(
+            sparse_matrix = GCXS(
                 (weights, col_indices, row_ptrs),
+                compressed_axes=[0],
                 shape=(n_result_values, n_src_values),
             )
-
+            if is_lazy_data(self.values):
+                sparse_matrix = dask.array.from_array(sparse_matrix)
             prepared = (xi_shape, method, sparse_matrix, None, out_of_bounds)
 
         return prepared
@@ -289,10 +295,10 @@ class _RegularGridInterpolator:
     def _evaluate_linear_sparse(self, sparse_matrix):
         ndim = len(self.grid)
         if ndim == self.values.ndim:
-            result = sparse_matrix * self.values.reshape(-1)
+            result = sparse_matrix @ self.values.reshape(-1)
         else:
             shape = (sparse_matrix.shape[1], -1)
-            result = sparse_matrix * self.values.reshape(shape)
+            result = sparse_matrix @ self.values.reshape(shape)
 
         return result
 
