@@ -668,7 +668,7 @@ class RectilinearInterpolator:
 
 
 def _is_masked_array(array):
-    """ Equivalent to func:`numpy.ma.isMaskedArray`, but works for both lazy AND realised arrays.  """
+    """Equivalent to func:`numpy.ma.isMaskedArray`, but works for both lazy AND realised arrays."""
     if is_lazy_data(array):
         is_masked_array = is_masked_data(array)
     else:
@@ -677,7 +677,7 @@ def _is_masked_array(array):
 
 
 def _get_data(array):
-    """ Equivalent to :func:`np.ma.getdata`, but works for both lazy AND realised arrays. """
+    """Equivalent to :func:`np.ma.getdata`, but works for both lazy AND realised arrays."""
     if is_lazy_data(array):
         result = dask.array.ma.getdata(array)
     else:
@@ -686,7 +686,7 @@ def _get_data(array):
 
 
 def _get_mask_array(array):
-    """ Equivalent to func:`numpy.ma.getmaskarray`, but works for both lazy AND realised arrays.  """
+    """Equivalent to func:`numpy.ma.getmaskarray`, but works for both lazy AND realised arrays."""
     if is_lazy_data(array):
         result = dask.array.ma.getmaskarray(array)
     else:

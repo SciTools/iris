@@ -2,7 +2,6 @@ import itertools
 
 import dask.array
 import numpy as np
-
 from sparse import GCXS
 
 from iris._lazy_data import is_lazy_data
