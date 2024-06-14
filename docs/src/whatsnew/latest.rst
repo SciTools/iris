@@ -30,7 +30,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@ESadek-MO`_ updated the errors in ``concatenate`` to better
 
 
 🐛 Bugs Fixed

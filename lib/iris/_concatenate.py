@@ -904,9 +904,8 @@ class _ProtoCube:
             )
             if not match:
                 mismatch_error_msg = (
-                    "Incompatible coordinate signatures:\n"
-                    f"a: {coord_signature}\n"
-                    f"b: {candidate_axis}"
+                    f"Cannot find an axis to concatenate over for phenomenon "
+                    f"{self._cube_signature.defn.name()}"
                 )
 
         # Check for compatible coordinate extents.
@@ -932,7 +931,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Auxiliary coordinates differ:\n"
+                                "Auxiliary coordinates differ for phenomenon"
+                                f" {self._cube_signature.defn.name()}:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -952,7 +952,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Cell measures differ:\n"
+                                "Cell measures differ for phenomenon"
+                                f" {self._cube_signature.defn.name()}:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -972,7 +973,8 @@ class _ProtoCube:
                     ):
                         if not coord_a == coord_b:
                             mismatch_error_msg = (
-                                "Ancillary variables differ:\n"
+                                "Ancillary variables differ for phenomenon"
+                                f" {self._cube_signature.defn.name()}:\n"
                                 f"a: {coord_a}\n"
                                 f"b: {coord_b}"
                             )
@@ -991,9 +993,12 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
-                            "Derived coordinates differ:\n"
-                            f"a: {coord_a}\n"
-                            f"b: {coord_b}"
+                            mismatch_error_msg = (
+                                "Derived coordinates differ for phenomenon"
+                                f" {self._cube_signature.defn.name()}:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         if match:

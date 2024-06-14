@@ -246,6 +246,45 @@ class TestMessages(tests.IrisTest):
             _ = concatenate([cube_1, cube_2], True)
 
 
+class TestNonMetadataMessages(TestMessages):
+    def setUp(self):
+        super().setUp()
+        cube_2 = self.cube.copy()
+        cube_2.coord("time").points = cube_2.coord("time").points + 2
+        self.cube_2 = cube_2
+
+    def test_dim_coords_same_message(self):
+        pass
+
+    def test_aux_coords_diff_message(self):
+        self.cube_2.coord("foo").points = [3, 4, 5]
+
+        exc_regexp = "Auxiliary coordinates differ for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+
+    def test_cell_measures_diff_message(self):
+        self.cube_2.cell_measure("bar").data = [3, 4, 5]
+
+        exc_regexp = "Cell measures differ for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+
+    def test_ancillary_variable_diff_message(self):
+        self.cube_2.ancillary_variable("baz").data = [3, 4, 5]
+
+        exc_regexp = "Ancillary variables differ for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+
+    def test_derived_coords_diff_message(self):
+        self.cube_2.aux_factories[0].update(self.cube_2.coord("sigma"), None)
+
+        exc_regexp = "Derived coordinates differ for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+
+
 class TestOrder(tests.IrisTest):
     def _make_cube(self, points, bounds=None):
         nx = 4
