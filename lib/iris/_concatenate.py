@@ -893,6 +893,7 @@ class _ProtoCube:
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)
         match = self._cube_signature.match(cube_signature, error_on_mismatch)
+        mismatch_error_msg = None
 
         # Check for compatible coordinate signatures.
         if match:
@@ -901,17 +902,21 @@ class _ProtoCube:
             match = candidate_axis is not None and (
                 candidate_axis == axis or axis is None
             )
+            if not match:
+                mismatch_error_msg = (
+                    "Incompatible coordinate signatures:\n"
+                    f"a: {coord_signature}\n"
+                    f"b: {candidate_axis}"
+                )
 
         # Check for compatible coordinate extents.
         if match:
             dim_ind = self._coord_signature.dim_mapping.index(candidate_axis)
             match = self._sequence(coord_signature.dim_extents[dim_ind], candidate_axis)
             if error_on_mismatch and not match:
-                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
-                raise iris.exceptions.ConcatenateError([msg])
+                mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
             elif not match:
-                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
-                warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+                mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
 
         # Check for compatible AuxCoords.
         if match:
@@ -926,6 +931,11 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Auxiliary coordinates differ:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible CellMeasures.
@@ -941,6 +951,11 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Cell measures differ:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible AncillaryVariables.
@@ -956,6 +971,11 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Ancillary variables differ:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible derived coordinates.
@@ -971,6 +991,9 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            "Derived coordinates differ:\n"
+                            f"a: {coord_a}\n"
+                            f"b: {coord_b}"
                             match = False
 
         if match:
@@ -990,6 +1013,14 @@ class _ProtoCube:
             this_order = coord_signature.dim_order[dim_ind]
             if existing_order == _CONSTANT and this_order != _CONSTANT:
                 self._coord_signature.dim_order[dim_ind] = this_order
+
+        if mismatch_error_msg:
+            if not match and error_on_mismatch:
+                raise iris.exceptions.ConcatenateError([mismatch_error_msg])
+            elif not match:
+                warnings.warn(
+                    mismatch_error_msg, category=iris.warnings.IrisUserWarning
+                )
 
         return match
 
