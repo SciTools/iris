@@ -52,7 +52,7 @@ class TestEpoch(tests.IrisTest):
         self.assertEqual(result[0].shape, (10,))
 
 
-class TestMessages(tests.IrisTest):
+class _MessagesMixin(tests.IrisTest):
     def setUp(self):
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -107,6 +107,18 @@ class TestMessages(tests.IrisTest):
         cube.add_aux_coord(orog, ())
         cube.add_aux_factory(HybridHeightFactory(delta, sigma, orog))
         self.cube = cube
+
+
+class TestMessages(_MessagesMixin):
+    def setUp(self):
+        super().setUp()
+
+    def test_dim_coords_same_message(self):
+        cube_1 = self.cube
+        cube_2 = cube_1.copy()
+        exc_regexp = "Cannot find an axis to concatenate over for phenomenon *"
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([cube_1, cube_2], True)
 
     def test_definition_difference_message(self):
         cube_1 = self.cube
@@ -244,6 +256,50 @@ class TestMessages(tests.IrisTest):
         exc_regexp = "Found cubes with overlap on concatenate axis"
         with self.assertRaisesRegex(ConcatenateError, exc_regexp):
             _ = concatenate([cube_1, cube_2], True)
+
+
+class TestNonMetadataMessages(_MessagesMixin):
+    def setUp(self):
+        super().setUp()
+        cube_2 = self.cube.copy()
+        cube_2.coord("time").points = cube_2.coord("time").points + 2
+        self.cube_2 = cube_2
+
+    def test_aux_coords_diff_message(self):
+        self.cube_2.coord("foo").points = [3, 4, 5]
+
+        exc_regexp = "Auxiliary coordinates are unequal for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+        with self.assertWarnsRegex(iris.warnings.IrisUserWarning, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], False)
+
+    def test_cell_measures_diff_message(self):
+        self.cube_2.cell_measure("bar").data = [3, 4, 5]
+
+        exc_regexp = "Cell measures are unequal for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+        with self.assertWarnsRegex(iris.warnings.IrisUserWarning, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], False)
+
+    def test_ancillary_variable_diff_message(self):
+        self.cube_2.ancillary_variable("baz").data = [3, 4, 5]
+
+        exc_regexp = "Ancillary variables are unequal for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+        with self.assertWarnsRegex(iris.warnings.IrisUserWarning, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], False)
+
+    def test_derived_coords_diff_message(self):
+        self.cube_2.aux_factories[0].update(self.cube_2.coord("sigma"), None)
+
+        exc_regexp = "Derived coordinates are unequal for phenomenon * "
+        with self.assertRaisesRegex(ConcatenateError, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], True)
+        with self.assertWarnsRegex(iris.warnings.IrisUserWarning, exc_regexp):
+            _ = concatenate([self.cube, self.cube_2], False)
 
 
 class TestOrder(tests.IrisTest):
