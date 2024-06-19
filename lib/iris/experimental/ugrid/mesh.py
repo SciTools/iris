@@ -1989,6 +1989,14 @@ class MeshIndexSet(Mesh):
             mesh, location, indices
         )
 
+    def __eq__(self, other):
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) == id(other)
+
+    def __ne__(self, other):
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) != id(other)
+
 
 class _MeshIndexManager:
     def __init__(self, mesh, location, indices):
@@ -2008,12 +2016,12 @@ class _MeshIndexManager:
         if self.location == "node":
             return self.indices
         elif self.location == "edge":
-            connectivity = self.mesh.edge_node_connectivity
+            connectivity = self.mesh.edge_node_connectivity[self.indices]
             node_set = list(set(connectivity.indices.compressed()))
             node_set.sort()
             return node_set
         elif self.location == "face":
-            connectivity = self.mesh.face_node_connectivity
+            connectivity = self.mesh.face_node_connectivity[self.indices]
             node_set = list(set(connectivity.indices.compressed()))
             node_set.sort()
             return node_set
@@ -2045,31 +2053,58 @@ class _MeshIndexCoordinateManager(_MeshIndexManager):
     def __init__(self, mesh, location, indices):
         super().__init__(mesh, location, indices)
         self.ALL = self.REQUIRED + self.OPTIONAL
+        self._members = {}
         self._members = {member: getattr(self, member) for member in self.ALL}
+
+    def __eq__(self, other):
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) == id(other)
+
+    def __ne__(self, other):
+        # TBD: this is a minimalist implementation and requires to be revisited
+        return id(self) != id(other)
 
     @property
     def node_x(self):
-        return self.mesh._coord_manager.node_x[self.node_indices]
+        if "node_x" in self._members:
+            return self._members["node_x"]
+        else:
+            return self.mesh._coord_manager.node_x[self.node_indices]
 
     @property
     def node_y(self):
-        return self.mesh._coord_manager.node_y[self.node_indices]
+        if "node_y" in self._members:
+            return self._members["node_y"]
+        else:
+            return self.mesh._coord_manager.node_y[self.node_indices]
 
     @property
     def edge_x(self):
-        return self.mesh._coord_manager.edge_x[self.edge_indices]
+        if "edge_x" in self._members:
+            return self._members["edge_x"]
+        else:
+            return self.mesh._coord_manager.edge_x[self.edge_indices]
 
     @property
     def edge_y(self):
-        return self.mesh._coord_manager.edge_y[self.edge_indices]
+        if "edge_y" in self._members:
+            return self._members["edge_y"]
+        else:
+            return self.mesh._coord_manager.edge_y[self.edge_indices]
 
     @property
     def face_x(self):
-        return self.mesh._coord_manager.face_x[self.face_indices]
+        if "face_x" in self._members:
+            return self._members["face_x"]
+        else:
+            return self.mesh._coord_manager.face_x[self.face_indices]
 
     @property
     def face_y(self):
-        return self.mesh._coord_manager.face_y[self.face_indices]
+        if "face_y" in self._members:
+            return self._members["face_y"]
+        else:
+            return self.mesh._coord_manager.face_y[self.face_indices]
 
     @property
     def node_coords(self):
@@ -2084,16 +2119,16 @@ class _MeshIndexCoordinateManager(_MeshIndexManager):
         return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
 
     def filters(
-            self,
-            item=None,
-            standard_name=None,
-            long_name=None,
-            var_name=None,
-            attributes=None,
-            axis=None,
-            include_nodes=None,
-            include_edges=None,
-            include_faces=None,
+        self,
+        item=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        attributes=None,
+        axis=None,
+        include_nodes=None,
+        include_edges=None,
+        include_faces=None,
     ):
         # TBD: support coord_systems?
 
@@ -2175,8 +2210,19 @@ class _MeshIndexConnectivityManager(_MeshIndexManager):
             return None
         else:
             connectivity = self.mesh.edge_node_connectivity[self.edge_indices]
-            connectivity.indices = np.vectorize(self.node_index_dict.get)(
+            connectivity_indices = np.vectorize(self.node_index_dict.get)(
                 connectivity.indices
+            )
+            connectivity = Connectivity(
+                connectivity_indices,
+                connectivity.cf_role,
+                standard_name=connectivity.standard_name,
+                long_name=connectivity.long_name,
+                var_name=connectivity.var_name,
+                units=connectivity.units,
+                attributes=connectivity.attributes,
+                start_index=connectivity.start_index,
+                location_axis=connectivity.location_axis,
             )
             return connectivity
 
@@ -2186,8 +2232,19 @@ class _MeshIndexConnectivityManager(_MeshIndexManager):
             return None
         else:
             connectivity = self.mesh.face_node_connectivity[self.face_indices]
-            connectivity.indices = np.vectorize(self.node_index_dict.get)(
+            connectivity_indices = np.vectorize(self.node_index_dict.get)(
                 connectivity.indices
+            )
+            connectivity = Connectivity(
+                connectivity_indices,
+                connectivity.cf_role,
+                standard_name=connectivity.standard_name,
+                long_name=connectivity.long_name,
+                var_name=connectivity.var_name,
+                units=connectivity.units,
+                attributes=connectivity.attributes,
+                start_index=connectivity.start_index,
+                location_axis=connectivity.location_axis,
             )
             return connectivity
 
