@@ -65,6 +65,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
 
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
+
 🔥 Deprecations
 ===============
 
