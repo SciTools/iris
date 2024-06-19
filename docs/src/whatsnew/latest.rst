@@ -43,6 +43,10 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
+#. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
+   meshes.  (:issue:`5908`, :pull:`6004`)
+
+
 💣 Incompatible Changes
 =======================
 
