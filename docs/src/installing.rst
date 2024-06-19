@@ -19,45 +19,48 @@ Iris can be installed using conda or pip.
 .. note:: This documentation was built using Python |python_version|.
 
 
-.. _installing_using_conda:
+.. _installing_a_released_version:
 
-Installing a Released Version Using Conda
------------------------------------------
+Installing a Released Version
+-----------------------------
 
-To install Iris using conda, you must first download and install conda,
-for example from https://docs.conda.io/en/latest/miniconda.html.
+.. tab-set::
 
-Once conda is installed, you can install Iris using conda with the following
-command::
+    .. tab-item:: conda-forge
 
-  conda install -c conda-forge iris
+        To install Iris using conda, you must first download and install conda,
+        for example from https://docs.conda.io/en/latest/miniconda.html.
 
-If you wish to run any of the code in the gallery you will also
-need the Iris sample data. This can also be installed using conda::
+        Once conda is installed, you can install Iris using conda with the following
+        command::
 
-  conda install -c conda-forge iris-sample-data
+          conda install -c conda-forge iris
 
-Further documentation on using conda and the features it provides can be found
-at https://docs.conda.io/projects/conda/en/latest/index.html.
+        If you wish to run any of the code in the gallery you will also
+        need the Iris sample data. This can also be installed using conda::
 
-.. _installing_using_pip:
+          conda install -c conda-forge iris-sample-data
 
-Installing a Released Version Using Pip
----------------------------------------
+        Further documentation on using conda and the features it provides can be found
+        at https://docs.conda.io/projects/conda/en/latest/index.html.
 
-Iris is also available from https://pypi.org/ so can be installed with ``pip``::
+    .. tab-item:: PyPI
 
-  pip install scitools-iris
+        Iris is also available from https://pypi.org/ so can be installed with ``pip``::
 
-If you wish to run any of the code in the gallery you will also
-need the Iris sample data. This can also be installed using pip::
+          pip install scitools-iris
 
-  pip install iris-sample-data
+        If you wish to run any of the code in the gallery you will also
+        need the Iris sample data. This can also be installed using pip::
+
+          pip install iris-sample-data
+
+
 
 .. _installing_from_source:
 
-Installing a Development Version from a Git Checkout
-----------------------------------------------------
+Installing a Development Version
+--------------------------------
 
 The latest Iris source release is available from
 https://github.com/SciTools/iris.
