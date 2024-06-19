@@ -2038,7 +2038,6 @@ class _MeshIndexManager:
 
 
 class _MeshIndexCoordinateManager(_MeshIndexManager):
-
     REQUIRED = (
         "node_x",
         "node_y",
