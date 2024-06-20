@@ -1216,13 +1216,6 @@ class Saver:
                     assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
-                    if dim_name is not None:
-                        # For mesh-identifying coords, we require the *same*
-                        # coord, not an identical one (i.e. "is" not "==")
-                        stored_coord = self._dim_names_and_coords.coord(dim_name)
-                        if dim_element is not stored_coord:
-                            # This is *not* a proper match after all.
-                            dim_name = None
                     if dim_name is None:
                         # No existing dim matches this, so assign a new name
                         if location == "node":
