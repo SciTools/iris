@@ -2781,6 +2781,11 @@ class MeshCoord(AuxCoord):
                     )
                     raise ValueError(msg)
 
+        # Don't use 'coord_system' as a constructor arg, since for
+        # MeshCoords it is deduced from the mesh.
+        # (Otherwise a non-None coord_system breaks the 'copy' operation)
+        use_metadict.pop("coord_system")
+
         # Call parent constructor to handle the common constructor args.
         super().__init__(points, bounds=bounds, **use_metadict)
 
@@ -2806,8 +2811,19 @@ class MeshCoord(AuxCoord):
 
     @property
     def coord_system(self):
-        """The coordinate-system of a MeshCoord is always 'None'."""
-        return None
+        """The coordinate-system of a MeshCoord comes from its origin coords."""
+        select_kwargs = {
+            f"include_{self.location}s": True,
+            "axis": self.axis,
+        }
+        try:
+            location_coord = self.mesh.coord(**select_kwargs)
+            coord_system = location_coord.coord_system
+        except CoordinateNotFoundError:
+            # No location coord : possible in UGRID but probably not Iris (at present).
+            coord_system = None
+
+        return coord_system
 
     @coord_system.setter
     def coord_system(self, value):
