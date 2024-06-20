@@ -2874,8 +2874,8 @@ class MeshCoord(AuxCoord):
         # Reuse existing AuxCoord collapse logic, but with a custom
         #  mesh-specific warning.
         message = (
-            "Collapsing a mesh coordinate. "
-            f"Metadata may not be fully descriptive for {self.name()}."
+            "Collapsing a mesh coordinate - cannot check for contiguity."
+            f"Metadata may not be fully descriptive for '{self.name()}'."
         )
         warnings.warn(message, category=IrisVagueMetadataWarning)
         with temp_suppress_warning():
