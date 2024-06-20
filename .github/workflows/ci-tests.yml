@@ -141,6 +141,8 @@ jobs:
         run: |
           nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v4
+      - name: "upload coverage report"
         if: ${{ matrix.coverage }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

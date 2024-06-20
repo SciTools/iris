@@ -66,7 +66,7 @@ creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
-There are three context manangers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
+There are three context managers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
 :meth:`~iris.fileformats.netcdf.loader.ChunkControl.set`. This allows you to specify the chunksize for each dimension,
 and to specify a ``var_name`` specifically to change.
 

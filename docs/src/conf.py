@@ -21,12 +21,14 @@
 
 import datetime
 from importlib.metadata import version as get_version
+from inspect import getsource
 import ntpath
 import os
 from pathlib import Path
 import re
 from subprocess import run
 import sys
+from tempfile import gettempdir
 from urllib.parse import quote
 import warnings
 
@@ -422,6 +424,26 @@ exclude_patterns = []
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
 
+
+def reset_modules(gallery_conf, fname):
+    """Force re-registering of nc-time-axis with matplotlib for each example.
+
+    Required for sphinx-gallery>=0.11.0.
+    """
+    from sys import modules
+
+    _ = modules.pop("nc_time_axis", None)
+
+
+# https://sphinx-gallery.github.io/dev/configuration.html#importing-callables
+reset_modules_dir = Path(gettempdir()) / reset_modules.__name__
+reset_modules_dir.mkdir(exist_ok=True)
+(reset_modules_dir / f"{reset_modules.__name__}.py").write_text(
+    getsource(reset_modules)
+)
+sys.path.insert(0, str(reset_modules_dir))
+
+
 sphinx_gallery_conf = {
     # path to your example scripts
     "examples_dirs": ["../gallery_code"],
@@ -433,11 +455,7 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
-    # force re-registering of nc-time-axis with matplotlib for each example,
-    # required for sphinx-gallery>=0.11.0
-    "reset_modules": (
-        lambda gallery_conf, fname: sys.modules.pop("nc_time_axis", None),
-    ),
+    "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
 }
 
 # -----------------------------------------------------------------------------

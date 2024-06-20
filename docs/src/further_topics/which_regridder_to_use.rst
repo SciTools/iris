@@ -341,7 +341,7 @@ of ``kg m-2`` as an area weighted sum. With ``mdtol=0`` this will consistently
 underestimate this total and with ``mdtol=1`` will consistently overestimate. This can
 be somewhat mitigated with a choice of ``mdtol=0.5``, but you should still be aware of
 potential inaccuracies. It should be noted that this choice of ``mdtol`` is highly
-context dependent and there wil likely be occasions where a choice of ``mdtol=0`` or
+context dependent and there will likely be occasions where a choice of ``mdtol=0`` or
 ``mdtol=1`` is more suitable. The important thing is to *know your data, know what*
 *you're doing with your data and know how your regridder fits in this process*.
 

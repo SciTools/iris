@@ -395,8 +395,9 @@ def array_equal(array1, array2, withnans=False):
 
     Notes
     -----
-    This provides much the same functionality as :func:`numpy.array_equal`, but
-    with additional support for arrays of strings and NaN-tolerant operation.
+    This provides similar functionality to :func:`numpy.array_equal`, but
+    will compare arrays as unequal when their masks differ and has
+    additional support for arrays of strings and NaN-tolerant operation.
 
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
@@ -406,17 +407,24 @@ def array_equal(array1, array2, withnans=False):
 
     def normalise_array(array):
         if not is_lazy_data(array):
-            array = np.asarray(array)
+            if not ma.isMaskedArray(array):
+                array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
+        array1_masked = ma.is_masked(array1)
+        eq = array1_masked == ma.is_masked(array2)
+    if eq and array1_masked:
+        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
+    if eq:
         eqs = array1 == array2
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = bool(np.all(eqs))
+        eq = np.all(eqs)
+        eq = bool(eq) or eq is ma.masked
 
     return eq
 
