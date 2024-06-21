@@ -33,6 +33,12 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
    to better explain the error. (:pull:`6005`)
 
+#. `@trexfeathers`_ added the
+   :meth:`~iris.experimental.ugrid.mesh.MeshCoord.collapsed` method to
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, enabling collapsing of
+   the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
+   :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
+
 
 🐛 Bugs Fixed
 =============
