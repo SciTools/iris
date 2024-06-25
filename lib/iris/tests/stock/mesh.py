@@ -20,7 +20,14 @@ _TEST_N_EDGES = 5
 _TEST_N_BOUNDS = 4
 
 
-def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
+def sample_mesh(
+    n_nodes=None,
+    n_faces=None,
+    n_edges=None,
+    lazy_values=False,
+    nodes_per_face=None,
+    masked_connecteds=False,
+):
     """Make a test mesh.
 
     Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
@@ -38,6 +45,11 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         If not 0, face coords and a 'face_node_connectivity' are included.
     lazy_values : bool, default=False
         If True, all content values of coords and connectivities are lazy.
+    nodes_per_face : int or None
+        Number of nodes per face. Default is 4.
+    masked_connecteds : bool, default=False
+        If True, mask some of the connected spaces in the connectivity indices
+        arrays.
 
     """
     if lazy_values:
@@ -53,6 +65,8 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         n_faces = _TEST_N_FACES
     if n_edges is None:
         n_edges = _TEST_N_EDGES
+    if nodes_per_face is None:
+        nodes_per_face = _TEST_N_BOUNDS
     node_x = AuxCoord(
         1100 + arr.arange(n_nodes),
         standard_name="longitude",
@@ -76,6 +90,9 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
         conns = arr.arange(n_edges * 2, dtype=int)
         # Missing nodes include #0-5, because we add 5.
         conns = ((conns + 5) % n_nodes).reshape((n_edges, 2))
+        if masked_connecteds:
+            conns[0, -1] = -1
+            conns = arr.ma.masked_less(conns, 0)
         edge_nodes = Connectivity(conns, cf_role="edge_node_connectivity")
         connectivities.append(edge_nodes)
 
@@ -88,8 +105,11 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     else:
         # Define a rather arbitrary face-nodes connectivity.
         # Some nodes are left out, because n_faces*n_bounds < n_nodes.
-        conns = arr.arange(n_faces * _TEST_N_BOUNDS, dtype=int)
-        conns = (conns % n_nodes).reshape((n_faces, _TEST_N_BOUNDS))
+        conns = arr.arange(n_faces * nodes_per_face, dtype=int)
+        conns = (conns % n_nodes).reshape((n_faces, nodes_per_face))
+        if masked_connecteds:
+            conns[0, -1] = -1
+            conns = arr.ma.masked_less(conns, 0)
         face_nodes = Connectivity(conns, cf_role="face_node_connectivity")
         connectivities.append(face_nodes)
 
