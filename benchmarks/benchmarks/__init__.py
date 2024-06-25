@@ -5,9 +5,15 @@
 """Common code for benchmarks."""
 
 from os import environ
+from pathlib import Path
+import sys
 import tracemalloc
 
 import numpy as np
+
+# Install any custom benchmarks.
+custom_bm = Path(__file__).parent / "custom_bms"
+sys.path.append(str(custom_bm))
 
 
 def disable_repeat_between_setup(benchmark_object):

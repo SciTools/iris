@@ -585,6 +585,7 @@ class TrialRun(_SubParserGenerator):
         _setup_common()
         # get path of data-gen environment, setup by previous call
         python_path = environ["DATA_GEN_PYTHON"]
+
         # allow 'on-demand' benchmarks
         environ["ON_DEMAND_BENCHMARKS"] = "1"
         asv_command = [
