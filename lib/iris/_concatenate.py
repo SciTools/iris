@@ -288,6 +288,21 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     __slots__ = ()
 
 
+def _arrayhash(x: np.ndarray) -> np.ndarray:
+    """Compute a hash from a numpy array."""
+    return np.frombuffer(xxh3_64_digest(x.tobytes()), dtype=np.int64)
+
+
+def _chunk(x: np.ndarray, axis: int, keepdims: bool) -> np.ndarray:
+    """Compute a hash from a numpy array and keep the array dimensions."""
+    return _arrayhash(x).reshape((1,) * x.ndim)
+
+
+def _aggregate(x: np.ndarray, axis: int, keepdims: bool) -> np.int64:
+    """Compute a hash from a numpy array."""
+    return _arrayhash(x)[0]
+
+
 def _hash_array(a: da.Array | np.ndarray) -> np.int64:
     """Calculate a hash representation of the provided array.
 
@@ -307,15 +322,11 @@ def _hash_array(a: da.Array | np.ndarray) -> np.int64:
         The array's hash.
 
     """
-
-    def arrayhash(x):
-        return np.frombuffer(xxh3_64_digest(x.tobytes()), dtype=np.int64)
-
     return da.reduction(
         a,
-        chunk=lambda x, axis, keepdims: arrayhash(x).reshape((1,) * a.ndim),
-        combine=lambda x, axis, keepdims: arrayhash(x).reshape((1,) * a.ndim),
-        aggregate=lambda x, axis, keepdims: arrayhash(x)[0],
+        chunk=_chunk,
+        combine=_chunk,
+        aggregate=_aggregate,
         keepdims=False,
         meta=np.empty(tuple(), dtype=np.int64),
         dtype=np.int64,
