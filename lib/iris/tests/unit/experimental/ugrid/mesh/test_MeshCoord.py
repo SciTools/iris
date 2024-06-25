@@ -24,6 +24,13 @@ from iris.cube import Cube
 from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
+from iris.warnings import IrisVagueMetadataWarning
+
+
+@pytest.fixture(params=["face", "edge"])
+def location_face_or_edge(request):
+    # Fixture to parametrise over location = face/edge
+    return request.param
 
 
 class Test___init__(tests.IrisTest):
@@ -814,11 +821,6 @@ class Test__metadata:
         for key in CoordMetadata._fields:
             assert getattr(test_coord, key) == getattr(ref_coord, key)
 
-    @pytest.fixture(params=["face", "edge"])
-    def location_face_or_edge(self, request):
-        # Fixture to parametrise over location = face/edge
-        return request.param
-
     @pytest.fixture(params=["x", "y"])
     def axis_x_or_y(self, request):
         # Fixture to parametrise over axis = X/Y
@@ -912,6 +914,75 @@ class Test__metadata:
         meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
         # ... but also, check that the result matches the expected face/edge coord.
         self.coord_metadata_matches(meshcoord, self.location_coord)
+
+
+class Test_collapsed:
+    """Very simple operation that in theory is fully tested elsewhere
+    (Test_auxcoord_conversion, and existing tests of AuxCoord.collapsed()),
+    but there is still need to check that the operation is valid for any
+    expected MeshCoord variety.
+    """
+
+    @pytest.fixture(params=[False, True], ids=["real", "lazy"])
+    def lazy(self, request):
+        return request.param
+
+    @pytest.fixture(params=[4, 5], ids=["quads", "pentagons"])
+    def nodes_per_face(self, request):
+        return request.param
+
+    @pytest.fixture(params=[False, True], ids=["conn_no_masks", "conn_has_masks"])
+    def masked_connecteds(self, request):
+        return request.param
+
+    @staticmethod
+    @pytest.fixture
+    def mesh_coord(location_face_or_edge, lazy, nodes_per_face, masked_connecteds):
+        mesh = sample_mesh(
+            lazy_values=lazy,
+            nodes_per_face=nodes_per_face,
+            masked_connecteds=masked_connecteds,
+        )
+        coord = sample_meshcoord(
+            mesh=mesh,
+            location=location_face_or_edge,
+        )
+        return coord
+
+    @staticmethod
+    @pytest.fixture
+    def mesh_coord_basic():
+        return sample_meshcoord()
+
+    def test_works(self, mesh_coord):
+        """Just check that the operation succeeds.
+
+        The points/bounds produced by collapsing a MeshCoord are suspect
+        (hence a warning is raised), so we will not assert for 'correct'
+        values.
+        """
+        collapsed = mesh_coord.collapsed()
+        assert collapsed.points.shape == (1,)
+        assert collapsed.bounds.shape == (1, 2)
+
+    def test_warns(self, mesh_coord_basic):
+        """Confirm that the correct warning has been raised.
+
+        Also confirm that the original AuxCoord warning has NOT been raised -
+        successfully suppressed.
+        """
+        with pytest.warns(IrisVagueMetadataWarning) as record:
+            _ = mesh_coord_basic.collapsed()
+
+        # Len 1 means that no other warnings were raised.
+        assert len(record) == 1
+        message = record[0].message.args[0]
+        assert message.startswith("Collapsing a mesh coordinate")
+
+    def test_aux_collapsed_called(self, mesh_coord_basic):
+        with mock.patch.object(AuxCoord, "collapsed") as mocked:
+            _ = mesh_coord_basic.collapsed()
+            mocked.assert_called_once()
 
 
 if __name__ == "__main__":
