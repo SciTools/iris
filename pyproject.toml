@@ -162,6 +162,17 @@ ignore = [
     "lib/iris/std_names.py",
 ]
 
+[tool.mypy]
+# See https://mypy.readthedocs.io/en/stable/config_file.html
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "truthy-bool"]
+exclude = [
+    'noxfile\.py',
+    'docs/src/conf\.py'
+]
+
 [tool.numpydoc_validation]
 checks = [
     "all",  # Enable all numpydoc validation rules, apart from the following:

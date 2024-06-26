@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from typing import ClassVar
+
 import iris.tests as tests  # isort:skip
 
 from abc import ABCMeta, abstractmethod
@@ -239,7 +241,7 @@ class _MergeTest:
     # A mixin test class for common test methods implementation.
 
     # used by check routine: inheritors must implement it
-    _mergetest_type = NotImplementedError
+    _mergetest_type: ClassVar[str]
 
     def check_merge_fails_with_message(self):
         proto_cube = iris._merge.ProtoCube(self.cube1)
@@ -382,7 +384,7 @@ class _MergeTest_coordprops(_MergeTest):
     # A mixin test class for common coordinate properties tests.
 
     # This must be implemented by inheritors.
-    _mergetest_type = NotImplementedError
+    _mergetest_type: ClassVar[str]
 
     def test_nochange(self):
         # This should simply succeed.
@@ -444,8 +446,8 @@ class Test_register__CoordSig_scalar(_MergeTest_coordprops, tests.IrisTest):
 class _MergeTest_coordprops_vect(_MergeTest_coordprops):
     # A derived mixin test class.
     # Adds extra props test for aux+dim coords (test points, bounds + dims)
-    _mergetest_type = NotImplementedError
-    _coord_typename = NotImplementedError
+    _mergetest_type: ClassVar[str]
+    _coord_typename: ClassVar[str]
 
     def test_points(self):
         self.coord_to_change.points = self.coord_to_change.points + 1.0

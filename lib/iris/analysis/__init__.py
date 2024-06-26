@@ -1848,7 +1848,7 @@ This aggregator handles masked data, which it treats as interrupting a run,
 and lazy data.
 
 """
-MAX_RUN.name = lambda: "max_run"
+MAX_RUN.name = lambda: "max_run"  # type: ignore[method-assign]
 
 
 GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)

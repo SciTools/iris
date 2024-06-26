@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from typing import Any
+
 import iris.tests as tests  # isort:skip
 
 from iris.tests.unit.plot import TestGraphicStringCoord
@@ -39,7 +41,7 @@ class Test2dCoords(tests.IrisTest, Mixin2dCoordsPlot):
 @tests.skip_plot
 class Test2dContigTol(tests.IrisTest, Mixin2dCoordsContigTol):
     # Extra call kwargs expected -- unlike 'pcolor', there are none.
-    additional_kwargs = {}
+    additional_kwargs: dict[str, Any] = {}
 
     def blockplot_func(self):
         return PLOT_FUNCTION_TO_TEST

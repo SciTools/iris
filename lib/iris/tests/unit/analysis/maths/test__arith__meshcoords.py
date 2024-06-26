@@ -44,7 +44,7 @@ class MeshLocationsMixin:
 
     # Modify the inherited data operation, to test with a mesh-cube.
     # Also, optionally, test with derived coordinates.
-    def _base_testcube(self):
+    def _base_testcube(self, include_derived=False):
         cube = super()._base_testcube(include_derived=self.use_derived_coords)
         cube = _convert_to_meshcube(cube)
         self.cube_xy_dimcoords = ["i_mesh_face"]

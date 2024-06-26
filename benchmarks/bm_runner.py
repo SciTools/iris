@@ -136,7 +136,7 @@ def _setup_common() -> None:
 
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     """Run through a list of commits comparing each one to the next."""
-    commits = [commit[:8] for commit in commits]
+    commits = tuple(commit[:8] for commit in commits)
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
@@ -235,19 +235,19 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
 
             for login_type in ("author", "mergedBy"):
                 gh_query = f'.["{login_type}"]["login"]'
-                command = shlex.split(
+                commandlist = shlex.split(
                     f"gh pr view {pr_tag[1:]} "
                     f"--json {login_type} -q '{gh_query}' "
                     f"--repo {repo}"
                 )
-                login = _subprocess_runner_capture(command)
+                login = _subprocess_runner_capture(commandlist)
 
-                command = [
+                commandlist = [
                     "curl",
                     "-s",
                     f"https://api.github.com/users/{login}",
                 ]
-                login_info = _subprocess_runner_capture(command)
+                login_info = _subprocess_runner_capture(commandlist)
                 is_user = '"type": "User"' in login_info
                 if is_user:
                     assignee = login
@@ -313,7 +313,7 @@ class _SubParserGenerator(ABC):
     description: str = NotImplemented
     epilog: str = NotImplemented
 
-    def __init__(self, subparsers: ArgumentParser.add_subparsers) -> None:
+    def __init__(self, subparsers: argparse._SubParsersAction[ArgumentParser]) -> None:
         self.subparser: ArgumentParser = subparsers.add_parser(
             self.name,
             description=self.description,
@@ -476,10 +476,12 @@ class _CSPerf(_SubParserGenerator, ABC):
         environ["ON_DEMAND_BENCHMARKS"] = "True"
         commit_range = "upstream/main^!"
 
-        asv_command = ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        asv_command_str = (
+            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        )
 
         # Only do a single round.
-        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command))
+        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command_str))
         try:
             _subprocess_runner([*asv_command, *args.asv_args], asv=True)
         except subprocess.CalledProcessError as err:
@@ -584,7 +586,7 @@ class TrialRun(_SubParserGenerator):
             environ["DATA_GEN_PYTHON"] = str(python_path)
         _setup_common()
         # get path of data-gen environment, setup by previous call
-        python_path = environ["DATA_GEN_PYTHON"]
+        python_path = Path(environ["DATA_GEN_PYTHON"])
         # allow 'on-demand' benchmarks
         environ["ON_DEMAND_BENCHMARKS"] = "1"
         asv_command = [
