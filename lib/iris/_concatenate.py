@@ -561,8 +561,7 @@ class _CubeSignature:
         #
         for coord in self.dim_coords:
             dims = cube.coord_dims(coord)
-            metadata = _CoordMetaData(coord, dims)
-            self.dim_metadata.append(metadata)
+            self.dim_metadata.append(_CoordMetaData(coord, dims))
             self.dim_mapping.append(dims[0])
 
         #
@@ -582,10 +581,8 @@ class _CubeSignature:
         for coord in sorted(cube.aux_coords, key=key_func):
             dims = cube.coord_dims(coord)
             if dims:
-                metadata = _CoordMetaData(coord, dims)
-                self.aux_metadata.append(metadata)
-                coord_and_dims = _CoordAndDims(coord, tuple(dims))
-                self.aux_coords_and_dims.append(coord_and_dims)
+                self.aux_metadata.append(_CoordMetaData(coord, dims))
+                self.aux_coords_and_dims.append(_CoordAndDims(coord, tuple(dims)))
             else:
                 self.scalar_coords.append(coord)
 
@@ -594,17 +591,13 @@ class _CubeSignature:
 
         for cm in sorted(cube.cell_measures(), key=meta_key_func):
             dims = cube.cell_measure_dims(cm)
-            metadata = _OtherMetaData(cm, dims)
-            self.cm_metadata.append(metadata)
-            cm_and_dims = _CoordAndDims(cm, tuple(dims))
-            self.cell_measures_and_dims.append(cm_and_dims)
+            self.cm_metadata.append(_OtherMetaData(cm, dims))
+            self.cell_measures_and_dims.append(_CoordAndDims(cm, tuple(dims)))
 
         for av in sorted(cube.ancillary_variables(), key=meta_key_func):
             dims = cube.ancillary_variable_dims(av)
-            metadata = _OtherMetaData(av, dims)
-            self.av_metadata.append(metadata)
-            av_and_dims = _CoordAndDims(av, tuple(dims))
-            self.ancillary_variables_and_dims.append(av_and_dims)
+            self.av_metadata.append(_OtherMetaData(av, dims))
+            self.ancillary_variables_and_dims.append(_CoordAndDims(av, tuple(dims)))
 
         def name_key_func(factory):
             return factory.name()
@@ -612,10 +605,10 @@ class _CubeSignature:
         for factory in sorted(cube.aux_factories, key=name_key_func):
             coord = factory.make_coord(cube.coord_dims)
             dims = cube.coord_dims(coord)
-            metadata = _CoordMetaData(coord, dims)
-            self.derived_metadata.append(metadata)
-            coord_and_dims = _DerivedCoordAndDims(coord, tuple(dims), factory)
-            self.derived_coords_and_dims.append(coord_and_dims)
+            self.derived_metadata.append(_CoordMetaData(coord, dims))
+            self.derived_coords_and_dims.append(
+                _DerivedCoordAndDims(coord, tuple(dims), factory)
+            )
 
     def _coordinate_differences(self, other, attr, reason="metadata"):
         """Determine the names of the coordinates that differ.
