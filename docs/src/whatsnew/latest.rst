@@ -30,7 +30,14 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
+   to better explain the error. (:pull:`6005`)
+
+#. `@trexfeathers`_ added the
+   :meth:`~iris.experimental.ugrid.mesh.MeshCoord.collapsed` method to
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, enabling collapsing of
+   the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
+   :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
 
 
 🐛 Bugs Fixed
@@ -43,6 +50,10 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
+#. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
+   meshes.  (:issue:`5908`, :pull:`6004`)
+
+
 💣 Incompatible Changes
 =======================
 
@@ -50,6 +61,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.pp.as_fields` and
    :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
    (:pull:`5783`)
+
+#. `@stephenworsley`_ made masked arrays on Iris objects now compare as equal
+   precisely when all unmasked points are equal and when the masks are identical.
+   This is due to changes in :func:`~iris.util.array_equal` which previously
+   ignored masks entirely. (:pull:`4457`)
 
 
 🚀 Performance Enhancements
@@ -63,6 +79,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
+
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
 
 🔥 Deprecations
 ===============
