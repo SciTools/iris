@@ -313,7 +313,7 @@ class _SubParserGenerator(ABC):
     description: str = NotImplemented
     epilog: str = NotImplemented
 
-    def __init__(self, subparsers) -> None:
+    def __init__(self, subparsers: argparse._SubParsersAction[ArgumentParser]) -> None:
         self.subparser: ArgumentParser = subparsers.add_parser(
             self.name,
             description=self.description,
