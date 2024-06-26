@@ -11,12 +11,11 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
 import threading
-from typing import Iterator
 import warnings
 
 import numpy as np
@@ -765,10 +764,7 @@ class ChunkControl(threading.local):
                     raise ValueError(msg)
                 dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
                 for dim_name, chunksize in dimension_chunksizes.items():
-                    if not (
-                        isinstance(dim_name, str)  # type: ignore[redundant-expr]
-                        and isinstance(chunksize, int)
-                    ):
+                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):
                         msg = (
                             "'dimension_chunksizes' kwargs should be a dict "
                             f"of `str: int` pairs, not {dimension_chunksizes!r}."

@@ -2291,7 +2291,7 @@ class Saver:
 
     def _lazy_stream_data(
         self,
-        data: np.ndarray | da.Array,
+        data: np.typing.ArrayLike,
         cf_var: CFVariable,
     ) -> None:
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:

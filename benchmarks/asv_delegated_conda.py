@@ -100,7 +100,8 @@ class CondaDelegated(Conda):
     def _update_info(self) -> None:
         """Make sure class properties reflect the actual environment being used."""
         # Follow symlink if it has been created.
-        actual_path = Path(self._path).resolve()  # type: ignore[has-type]
+        self._path: str
+        actual_path = Path(self._path).resolve()
         self._path = str(actual_path)
 
         # Get custom environment's Python version if it exists yet.

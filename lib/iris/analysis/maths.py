@@ -558,12 +558,12 @@ def exponentiate(cube, exponent, in_place=False):
     )
     if cube.has_lazy_data():
 
-        def power(data):
+        def power(data, out=None):
             return operator.pow(data, exponent)
 
     else:
 
-        def power(data, out=None):  # type: ignore[misc]
+        def power(data, out=None):
             return np.power(data, exponent, out)
 
     return _math_op_common(

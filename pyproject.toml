@@ -167,7 +167,7 @@ ignore = [
 ignore_missing_imports = true
 warn_unused_configs = true
 warn_unreachable = true
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+enable_error_code = ["ignore-without-code", "truthy-bool"]
 exclude = [
     'noxfile\.py',
     'docs/src/conf\.py'

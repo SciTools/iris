@@ -11,6 +11,7 @@ from typing import Union
 import dask.array as da
 import numpy as np
 
+from iris.common.metadata import CoordMetadata
 from iris.cube import Cube
 
 
@@ -93,7 +94,7 @@ def recombine_submeshes(
 
     result_metadata = None
     result_dtype = None
-    indexcoord_metadata = None
+    indexcoord_metadata: CoordMetadata | None = None
     for i_sub, cube in enumerate(submesh_cubes):
         sub_str = f'Submesh cube #{i_sub + 1}/{len(submesh_cubes)}, "{cube.name()}"'
 
@@ -197,7 +198,7 @@ def recombine_submeshes(
                     if indexcoord_metadata is None:
                         # Store first occurrence (from first region-cube)
                         indexcoord_metadata = sub_metadata
-                    elif sub_metadata != indexcoord_metadata:  # type: ignore[unreachable]
+                    elif sub_metadata != indexcoord_metadata:
                         # This code is unreachable, is this a bug?
                         # Compare subsequent occurrences (from other region-cubes)
                         err = (
