@@ -18,6 +18,7 @@ might be recorded either globally or locally.
 
 """
 
+from collections.abc import Sequence
 import inspect
 import json
 import os
@@ -47,12 +48,11 @@ import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 # A list of "global-style" attribute names : those which should be global attributes by
 # default (i.e. file- or group-level, *not* attached to a variable).
 
-_GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
+_GLOBAL_TEST_ATTRS = sorted(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
 # one is processed.
-_GLOBAL_TEST_ATTRS -= set(["conventions"])
-_GLOBAL_TEST_ATTRS = sorted(_GLOBAL_TEST_ATTRS)
+_GLOBAL_TEST_ATTRS = [a for a in _GLOBAL_TEST_ATTRS if a != "conventions"]
 
 
 # Define a fixture to parametrise tests over the 'global-style' test attributes.
@@ -95,7 +95,7 @@ _SKIP_WARNCHECK = "_no_warnings_check"
 
 
 def check_captured_warnings(
-    expected_keys: List[str],
+    expected_keys: List[str] | str | None,
     captured_warnings: List[warnings.WarningMessage],
     allow_possible_legacy_warning: bool = False,
 ):
@@ -109,13 +109,14 @@ def check_captured_warnings(
     # TODO: when iris.FUTURE.save_split_attrs is removed, we can remove the
     #  'allow_possible_legacy_warning' arg.
 
+    if expected_keys == _SKIP_WARNCHECK:
+        # No check at all in this case
+        return
+
     if expected_keys is None:
         expected_keys = []
-    elif hasattr(expected_keys, "upper"):
+    elif isinstance(expected_keys, str):
         # Handle a single string
-        if expected_keys == _SKIP_WARNCHECK:
-            # No check at all in this case
-            return
         expected_keys = [expected_keys]
 
     if allow_possible_legacy_warning:
@@ -126,14 +127,14 @@ def check_captured_warnings(
         )
         expected_keys.append(legacy_message_key)
 
-    expected_keys = [re.compile(key) for key in expected_keys]
+    expected_patterns = [re.compile(key) for key in expected_keys]
     found_results = [str(warning.message) for warning in captured_warnings]
-    remaining_keys = expected_keys.copy()
+    remaining_keys = expected_patterns.copy()
     for i_message, message in enumerate(found_results.copy()):
         for key in remaining_keys:
             if key.search(message):
                 # Hit : replace one message in the list with its matching "key"
-                found_results[i_message] = key
+                found_results[i_message] = key  # type: ignore[call-overload]
                 # remove the matching key
                 remaining_keys.remove(key)
                 # skip on to next message
@@ -142,9 +143,11 @@ def check_captured_warnings(
     if allow_possible_legacy_warning:
         # Remove any unused "legacy attribute saving" key.
         # N.B. this is the *only* key we will tolerate not being used.
-        expected_keys = [key for key in expected_keys if key != legacy_message_key]
+        expected_patterns = [
+            key for key in expected_patterns if key != legacy_message_key
+        ]
 
-    assert set(found_results) == set(expected_keys)
+    assert set(found_results) == set(expected_patterns)
 
 
 class MixinAttrsTesting:
@@ -361,8 +364,8 @@ class MixinAttrsTesting:
 
     def fetch_results(
         self,
-        filepath: str = None,
-        cubes: Iterable[Cube] = None,
+        filepath: str | None = None,
+        cubes: Iterable[Cube] | None = None,
         oldstyle_combined: bool = False,
     ):
         """Return testcase results from an output file or cubes in a standardised form.
@@ -561,11 +564,11 @@ def decode_matrix_input(input_spec):
     return result
 
 
-def encode_matrix_result(results: List[List[str]]) -> List[str]:
+def encode_matrix_result(results) -> List[str]:
     # Re-code a set of output results, [*[global-value, *local-values]] as a list of
     # strings, like ["GaL-b"] or ["GaLabc", "GbLabc"].
     # N.B. again assuming that all values are just one-character strings, or None.
-    assert isinstance(results, Iterable) and len(results) >= 1
+    assert isinstance(results, Sequence) and len(results) >= 1
     if not isinstance(results[0], list):
         results = [results]
     assert all(
@@ -1345,7 +1348,7 @@ class TestSave(MixinAttrsTesting):
 
         self.captured_warnings = captured_warnings
 
-    def run_save_testcase_legacytype(self, attr_name: str, values: list):
+    def run_save_testcase_legacytype(self, attr_name: str, values):
         """Legacy-type means : before cubes had split attributes.
 
         This just means we have only one "set" of cubes, with ***no*** distinct global
@@ -1357,7 +1360,9 @@ class TestSave(MixinAttrsTesting):
 
         self.run_save_testcase(attr_name, [None] + values)
 
-    def check_save_results(self, expected: list, expected_warnings: List[str] = None):
+    def check_save_results(
+        self, expected: list, expected_warnings: List[str] | None = None
+    ):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
         check_captured_warnings(

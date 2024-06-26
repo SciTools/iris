@@ -9,6 +9,7 @@ To avoid replicating implementation-dependent test and conversion code.
 """
 
 from functools import lru_cache, wraps
+from types import ModuleType
 from typing import Sequence
 
 import dask
@@ -376,7 +377,7 @@ def _combine(
     lazy = any(is_lazy_data(a) for a in arrays)
     masked = any(is_masked_data(a) for a in arrays)
 
-    array_module = np
+    array_module: ModuleType = np
     if masked:
         if lazy:
             # Avoid inconsistent array type when slicing resulting array

@@ -18,7 +18,6 @@ from typing import (
     Mapping,
     MutableMapping,
     Optional,
-    Union,
 )
 import warnings
 from xml.dom.minidom import Document
@@ -789,7 +788,7 @@ class CubeAttrsDict(MutableMapping):
 
     def __init__(
         self,
-        combined: Optional[Union[Mapping, str]] = "__unspecified",
+        combined: Optional[Mapping] = None,
         locals: Optional[Mapping] = None,
         globals: Optional[Mapping] = None,
     ):
@@ -837,10 +836,11 @@ class CubeAttrsDict(MutableMapping):
 
         """
         # First initialise locals + globals, defaulting to empty.
-        self.locals = locals
-        self.globals = globals
+        # See https://github.com/python/mypy/issues/3004
+        self.locals = locals  # type: ignore[assignment]
+        self.globals = globals  # type: ignore[assignment]
         # Update with combined, if present.
-        if not isinstance(combined, str) or combined != "__unspecified":
+        if combined is not None:
             # Treat a single input with 'locals' and 'globals' properties as an
             # existing CubeAttrsDict, and update from its content.
             # N.B. enforce deep copying, consistent with general Iris usage.
@@ -3958,14 +3958,16 @@ class Cube(CFVariableMixin):
     def __hash__(self):
         return hash(id(self))
 
-    __add__ = iris.analysis.maths.add
+    def __add__(self, other):
+        return iris.analysis.maths.add(self, other)
 
     def __iadd__(self, other):
         return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
-    __sub__ = iris.analysis.maths.subtract
+    def __sub__(self, other):
+        return iris.analysis.maths.subtract(self, other)
 
     def __isub__(self, other):
         return iris.analysis.maths.subtract(self, other, in_place=True)
@@ -3973,7 +3975,8 @@ class Cube(CFVariableMixin):
     def __rsub__(self, other):
         return (-self) + other
 
-    __mul__ = iris.analysis.maths.multiply
+    def __mul__(self, other):
+        return iris.analysis.maths.multiply(self, other)
 
     def __imul__(self, other):
         return iris.analysis.maths.multiply(self, other, in_place=True)

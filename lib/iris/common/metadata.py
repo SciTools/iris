@@ -141,7 +141,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     DEFAULT_NAME = "unknown"  # the fall-back name for metadata identity
 
-    _members = (
+    _members: str | Iterable[str] = (
         "standard_name",
         "long_name",
         "var_name",
@@ -870,7 +870,7 @@ class CellMeasureMetadata(BaseMetadata):
 class CoordMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.coords.Coord`."""
 
-    _members = ("coord_system", "climatological")
+    _members: str | Iterable[str] = ("coord_system", "climatological")
 
     __slots__ = ()
 

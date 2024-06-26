@@ -1274,7 +1274,7 @@ class _ProtoCube:
                 # Concatenate the data together.
                 dim = dims.index(self.axis)
                 data = [
-                    skton.signature.cell_measures_and_dims[i].coord.data
+                    skton.signature.cell_measures_and_dims[i].coord.core_data()
                     for skton in skeletons
                 ]
                 data = concatenate_arrays(tuple(data), axis=dim)
@@ -1314,7 +1314,7 @@ class _ProtoCube:
                 # Concatenate the data together.
                 dim = dims.index(self.axis)
                 data = [
-                    skton.signature.ancillary_variables_and_dims[i].coord.data
+                    skton.signature.ancillary_variables_and_dims[i].coord.core_data()
                     for skton in skeletons
                 ]
                 data = concatenate_arrays(tuple(data), axis=dim)

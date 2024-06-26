@@ -80,6 +80,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
 
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
+
 🔥 Deprecations
 ===============
 
@@ -142,6 +145,9 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
 
+#. `@bouweandela`_ enabled mypy checks for type hints.
+   The entire team would like to thank Bouwe for putting in the hard
+   work on an unglamorous but highly valuable contribution. (:pull:`5956`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
