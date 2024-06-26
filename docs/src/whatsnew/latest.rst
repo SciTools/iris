@@ -49,6 +49,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
+#. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
+   fixing :issue:`3653`. (:pull:`4294`)
+
 
 #. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
    meshes.  (:issue:`5908`, :pull:`6004`)

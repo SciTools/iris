@@ -11,12 +11,14 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
+from typing import Iterable, Optional, Union
 import warnings
 import zlib
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import numpy.typing as npt
 
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -32,10 +34,14 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
-import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
 DEFAULT_IGNORE_AXIS = False
+
+# Define some typing aliases.
+Dims = Union[int, Iterable[int]]
+RealData = Union[np.ndarray, ma.MaskedArray]
+RealOrLazyData = Union[RealData, da.Array]
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
@@ -238,7 +244,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """Return a lazy array representing the dimensional metadata values."""
         return self._values_dm.lazy_data()
 
-    def _core_values(self):
+    def _core_values(self) -> RealOrLazyData:
         """Value array of this dimensional metadata which may be a NumPy array or a dask array."""
         result = self._values_dm.core_data()
         if not _lazy.is_lazy_data(result):
@@ -771,7 +777,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return self._values_dm.dtype
 
     @property
-    def ndim(self):
+    def ndim(self) -> int:
         """Return the number of dimensions of the current dimensional metadata object."""
         return self._values_dm.ndim
 
@@ -1584,7 +1590,7 @@ class Coord(_DimensionalMetadata):
         self._values = points
 
     @property
-    def bounds(self):
+    def bounds(self) -> Optional[RealData]:
         """Coordinate bounds values.
 
         The coordinate bounds values, as a NumPy array,
@@ -1716,11 +1722,11 @@ class Coord(_DimensionalMetadata):
             lazy_bounds = self._bounds_dm.lazy_data()
         return lazy_bounds
 
-    def core_points(self):
+    def core_points(self) -> RealOrLazyData:
         """Core points array at the core of this coord, which may be a NumPy array or a dask array."""
         return super()._core_values()
 
-    def core_bounds(self):
+    def core_bounds(self) -> Optional[RealOrLazyData]:
         """Core bounds. The points array at the core of this coord, which may be a NumPy array or a dask array."""
         result = None
         if self.has_bounds():
@@ -2099,7 +2105,7 @@ class Coord(_DimensionalMetadata):
 
         return Cell(point, bound)
 
-    def collapsed(self, dims_to_collapse=None):
+    def collapsed(self, dims_to_collapse: Optional[Dims] = None) -> "Coord":
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
@@ -2108,28 +2114,46 @@ class Coord(_DimensionalMetadata):
         # through to numpy
         if isinstance(dims_to_collapse, (int, np.integer)):
             dims_to_collapse = (dims_to_collapse,)
-        if isinstance(dims_to_collapse, list):
+        if isinstance(dims_to_collapse, Iterable):
             dims_to_collapse = tuple(dims_to_collapse)
 
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            def serialize(x):
-                return "|".join([str(i) for i in x.flatten()])
+            def serialize(
+                x: npt.NDArray[np.str_], axis: Optional[Iterable[int]]
+            ) -> Union[npt.NDArray[np.str_], str]:
+                if axis is None:
+                    return "|".join(str(i) for i in x.flatten())
+
+                # np.apply_along_axis does not work with str.join, so we
+                # need to loop through the array directly. First move (possibly
+                # multiple) axis of interest to trailing dim(s), then make a 2D
+                # array we can loop through.
+                work_array = np.moveaxis(x, axis, range(-len(axis), 0))
+                out_shape = work_array.shape[: -len(axis)]
+                work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
+
+                joined = []
+                for arr_slice in work_array:
+                    joined.append(serialize(arr_slice, None))
+
+                return np.array(joined).reshape(out_shape)
 
             bounds = None
             if self.has_bounds():
-                shape = self._bounds_dm.shape[1:]
-                bounds = []
-                for index in np.ndindex(shape):
-                    index_slice = (slice(None),) + tuple(index)
-                    bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype("U{}".format(max(map(len, bounds))))
-                bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
-            points = serialize(self.points)
-            dtype = np.dtype("U{}".format(len(points)))
+                # Express dims_to_collapse as non-negative integers.
+                if dims_to_collapse is None:
+                    dims_to_collapse = range(self.ndim)
+                else:
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse
+                    )
+                bounds = serialize(self.bounds, dims_to_collapse)
+
+            points = serialize(self.points, dims_to_collapse)
             # Create the new collapsed coordinate.
-            coord = self.copy(points=np.array(points, dtype=dtype), bounds=bounds)
+            coord = self.copy(points=np.array(points), bounds=bounds)
         else:
             # Collapse the coordinate by calculating the bounded extremes.
             if self.ndim > 1:
