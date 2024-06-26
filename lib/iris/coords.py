@@ -2801,7 +2801,12 @@ class DimCoord(Coord):
 
         return bounds
 
-    @Coord.bounds.setter  # type: ignore[attr-defined]
+    @property
+    def bounds(self):
+        # Overridden just to allow .setter override.
+        return super().bounds
+
+    @bounds.setter
     def bounds(self, bounds):
         if bounds is not None:
             # Ensure we have a realised array of new bounds values.
