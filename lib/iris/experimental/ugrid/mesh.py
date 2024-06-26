@@ -2811,16 +2811,22 @@ class MeshCoord(AuxCoord):
 
     @property
     def coord_system(self):
-        """The coordinate-system of a MeshCoord comes from its origin coords."""
+        """The coordinate-system of a MeshCoord comes from the related mesh coord."""
+        # This matches where the coord metadata is drawn from.
+        # See : https://github.com/SciTools/iris/issues/4860
         select_kwargs = {
             f"include_{self.location}s": True,
             "axis": self.axis,
         }
         try:
+            # NOTE: at present, a MeshCoord *always* references a related mesh coord of
+            # its location, from which it's points are taken.
+            # However this might change in future ..
+            # see : https://github.com/SciTools/iris/discussions/4438#bounds-no-points
             location_coord = self.mesh.coord(**select_kwargs)
             coord_system = location_coord.coord_system
         except CoordinateNotFoundError:
-            # No location coord : possible in UGRID but probably not Iris (at present).
+            # No such coord : possible in UGRID, but probably not Iris (at present).
             coord_system = None
 
         return coord_system
