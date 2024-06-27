@@ -30,7 +30,14 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
+   to better explain the error. (:pull:`6005`)
+
+#. `@trexfeathers`_ added the
+   :meth:`~iris.experimental.ugrid.mesh.MeshCoord.collapsed` method to
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, enabling collapsing of
+   the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
+   :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
 
 
 🐛 Bugs Fixed
@@ -43,6 +50,10 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
+#. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
+   meshes.  (:issue:`5908`, :pull:`6004`)
+
+
 💣 Incompatible Changes
 =======================
 
@@ -50,6 +61,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.pp.as_fields` and
    :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
    (:pull:`5783`)
+
+#. `@stephenworsley`_ made masked arrays on Iris objects now compare as equal
+   precisely when all unmasked points are equal and when the masks are identical.
+   This is due to changes in :func:`~iris.util.array_equal` which previously
+   ignored masks entirely. (:pull:`4457`)
 
 
 🚀 Performance Enhancements
@@ -63,6 +79,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
+
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
 
 🔥 Deprecations
 ===============
@@ -114,15 +133,21 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ reworked benchmark peak-memory measurement to use the
    `tracemalloc <https://docs.python.org/3.12/library/tracemalloc.html>`_
    package.
-   (:pull: `5948`)
+   (:pull:`5948`)
 
 #. `@pp-mo`_ added a benchmark 'trialrun' sub-command, to quickly test
-   benchmarks during development. (:pull: `5957`)
+   benchmarks during development. (:pull:`5957`)
 
 #. `@pp-mo`_ moved several memory-measurement benchmarks from 'on-demand' to
-   the standard set, in hopes that use of 'tracemalloc' (:pull: `5948`) makes
+   the standard set, in hopes that use of 'tracemalloc' (:pull:`5948`) makes
    the results consistent enough to monitor for performance changes.
-   (:pull: `5959`)
+   (:pull:`5959`)
+
+#. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
+
+#. `@bouweandela`_ enabled mypy checks for type hints.
+   The entire team would like to thank Bouwe for putting in the hard
+   work on an unglamorous but highly valuable contribution. (:pull:`5956`)
 
 #. `@trexfeathers`_ re-wrote the delegated ASV environment plugin to be less
    brittle. (:pull:`5963`)

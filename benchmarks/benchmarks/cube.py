@@ -55,7 +55,7 @@ class CubeCreation:
             new_cube.attributes = self.cube_kwargs["attributes"]
             new_cube.cell_methods = self.cube_kwargs["cell_methods"]
             for coord, dims in self.cube_kwargs["dim_coords_and_dims"]:
-                coord: coords.DimCoord  # Type hint to help linters.
+                assert isinstance(coord, coords.DimCoord)  # Type hint to help linters.
                 new_cube.add_dim_coord(coord, dims)
             for coord, dims in self.cube_kwargs["aux_coords_and_dims"]:
                 new_cube.add_aux_coord(coord, dims)

@@ -10,6 +10,7 @@ integration tests.
 
 """
 
+from collections.abc import Iterator
 from unittest import mock
 
 import dask.array as da
@@ -42,13 +43,13 @@ class Test__lazy_stream_data:
     # should make ***no difference to any of these tests***.
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["nocompute", "compute"])
-    def compute(request) -> bool:
+    def compute(request) -> Iterator[bool]:
         yield request.param
 
     # A fixture to parametrise tests over real and lazy-type data.
     @staticmethod
     @pytest.fixture(params=["realdata", "lazydata", "emulateddata"])
-    def data_form(request) -> bool:
+    def data_form(request) -> Iterator[bool]:
         yield request.param
 
     @staticmethod
