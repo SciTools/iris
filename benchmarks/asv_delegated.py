@@ -35,26 +35,26 @@ class EnvPrepCommands:
 
     def __init__(self, environment: Environment, raw_commands: tuple[str]):
         env_var = self.ENV_PARENT_VAR
-        raw_commands = list(raw_commands)
+        raw_commands_list = list(raw_commands)
 
-        (first_command,) = environment._interpolate_commands(raw_commands[0])
+        (first_command,) = environment._interpolate_commands(raw_commands_list[0])
+        env: dict
         command, env, return_codes, cwd = first_command
 
         valid = command == []
         valid = valid and return_codes == {0}
         valid = valid and cwd is None
-        env: dict
         valid = valid and list(env.keys()) == [env_var]
         if not valid:
             message = (
                 "First command MUST ONLY "
                 f"define the {env_var} env var, with no command e.g: "
-                f"`{env_var}=foo/`. Got: \n {raw_commands[0]}"
+                f"`{env_var}=foo/`. Got: \n {raw_commands_list[0]}"
             )
             raise ValueError(message)
 
         self.env_parent = Path(env[env_var]).resolve()
-        self.commands = raw_commands[1:]
+        self.commands = raw_commands_list[1:]
 
 
 class CommitFinder(dict[str, EnvPrepCommands]):
@@ -86,13 +86,13 @@ class CommitFinder(dict[str, EnvPrepCommands]):
             if parent_hash[:8] == commit_hash[:8]:
                 distance = 0
             elif len(parents) == 0:
-                distance = None
+                distance = -1
             else:
                 distance = len(parents)
             return distance
 
         parentage = {commit: parent_distance(commit) for commit in self.keys()}
-        parentage = {k: v for k, v in parentage.items() if v is not None}
+        parentage = {k: v for k, v in parentage.items() if v >= 0}
         if len(parentage) == 0:
             message = f"No env prep script available for commit: {commit_hash} ."
             raise KeyError(message)
