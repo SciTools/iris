@@ -149,6 +149,13 @@ This document explains the changes made to Iris for this release
    The entire team would like to thank Bouwe for putting in the hard
    work on an unglamorous but highly valuable contribution. (:pull:`5956`)
 
+#. `@trexfeathers`_ re-wrote the delegated ASV environment plugin to reduce
+   complexity, remove unnecessary slow operations, apply the least-surprise
+   principle, be more robust against failures, and improve the ability to
+   benchmark historic commits (especially older Python versions).
+   (:pull:`5963`)
+
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:

@@ -6,7 +6,6 @@
 
 from abc import ABC, abstractmethod
 import argparse
-from argparse import ArgumentParser
 from datetime import datetime
 from importlib import import_module
 from os import environ
@@ -16,7 +15,7 @@ import shlex
 import subprocess
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
-from typing import Literal
+from typing import Literal, Protocol
 
 # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
 #  for more.
@@ -313,8 +312,13 @@ class _SubParserGenerator(ABC):
     description: str = NotImplemented
     epilog: str = NotImplemented
 
-    def __init__(self, subparsers: argparse._SubParsersAction[ArgumentParser]) -> None:
-        self.subparser: ArgumentParser = subparsers.add_parser(
+    class _SubParsersType(Protocol):
+        """Duck typing since argparse._SubParsersAction is private."""
+
+        def add_parser(self, name, **kwargs) -> argparse.ArgumentParser: ...
+
+    def __init__(self, subparsers: _SubParsersType) -> None:
+        self.subparser = subparsers.add_parser(
             self.name,
             description=self.description,
             epilog=self.epilog,
@@ -626,7 +630,7 @@ class GhPost(_SubParserGenerator):
 
 
 def main():
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
         epilog=(
             "More help is available within each sub-command."
