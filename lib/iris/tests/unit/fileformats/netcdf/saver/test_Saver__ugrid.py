@@ -178,7 +178,7 @@ def mesh_location_size(mesh, location):
 
 
 # A simple "standard" test mesh for multiple uses, which we can use for cubes
-# that ** a mesh (since we don't support mesh equality).
+# that *share* a mesh (since we don't support mesh equality).
 # However, we defer creating this until needed, as it can cause an import loop.
 _DEFAULT_MESH = None
 
