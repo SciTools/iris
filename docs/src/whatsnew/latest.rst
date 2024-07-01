@@ -53,6 +53,9 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
    meshes.  (:issue:`5908`, :pull:`6004`)
 
+#. `ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` to set
+   `pp.lbelv` of surface fields to 9999. (:issue:`3280`, :pull:`5734`)
+
 
 💣 Incompatible Changes
 =======================
