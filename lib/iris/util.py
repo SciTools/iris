@@ -14,6 +14,7 @@ import os
 import os.path
 import sys
 import tempfile
+from typing import Literal
 
 import cf_units
 from dask import array as da
@@ -252,7 +253,10 @@ def describe_diff(cube_a, cube_b, output_file=None):
             )
 
 
-def guess_coord_axis(coord):
+Axis = Literal["X", "Y", "Z", "T"]
+
+
+def guess_coord_axis(coord) -> Axis | None:
     """Return a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
@@ -276,7 +280,7 @@ def guess_coord_axis(coord):
     :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
-    axis = None
+    axis: Axis | None = None
 
     if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
         return axis
