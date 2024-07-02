@@ -1199,7 +1199,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
     def test_multiple_different_meshes(self):
         # Create 2 meshes with different faces, but same edges.
-        # N.B. they should *not* then share an edge dimension !
+        # N.B. they should then share an edge dimension.
         mesh1 = make_mesh(n_faces=3, n_edges=2)
         mesh2 = make_mesh(n_faces=4, n_edges=2)
 
