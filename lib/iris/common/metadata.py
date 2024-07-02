@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides the infrastructure to support the common metadata API."""
 
+from __future__ import annotations
+
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
@@ -11,6 +13,7 @@ from copy import deepcopy
 from functools import lru_cache, wraps
 import re
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
@@ -150,6 +153,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     )
 
     __slots__ = ()
+
+    standard_name: str | None
+    long_name: str | None
+    var_name: str | None
+    units: cf_units.Unit
+    attributes: Mapping
 
     @lenient_service
     def __eq__(self, other):
@@ -681,7 +690,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 result = cls(**kwargs)
         return result
 
-    def name(self, default=None, token=False):
+    def name(self, default: str | None = None, token: bool = False) -> str:
         """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
