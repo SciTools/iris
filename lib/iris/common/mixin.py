@@ -4,8 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides common metadata mixin behaviour."""
 
+from __future__ import annotations
+
 from collections.abc import Mapping
 from functools import wraps
+from typing import Any
 
 import cf_units
 
@@ -138,11 +141,17 @@ class LimitedAttributeDict(dict):
 
 
 class CFVariableMixin:
+    _metadata_manager: Any
+
     @wraps(BaseMetadata.name)
-    def name(self, default=None, token=None):
+    def name(
+        self,
+        default: str | None = None,
+        token: bool | None = None,
+    ) -> str:
         return self._metadata_manager.name(default=default, token=token)
 
-    def rename(self, name):
+    def rename(self, name: str | None) -> None:
         """Change the human-readable name.
 
         If 'name' is a valid standard name it will assign it to
@@ -161,30 +170,30 @@ class CFVariableMixin:
         self.var_name = None
 
     @property
-    def standard_name(self):
+    def standard_name(self) -> str | None:
         """The CF Metadata standard name for the object."""
         return self._metadata_manager.standard_name
 
     @standard_name.setter
-    def standard_name(self, name):
+    def standard_name(self, name: str | None) -> None:
         self._metadata_manager.standard_name = _get_valid_standard_name(name)
 
     @property
-    def long_name(self):
+    def long_name(self) -> str | None:
         """The CF Metadata long name for the object."""
         return self._metadata_manager.long_name
 
     @long_name.setter
-    def long_name(self, name):
+    def long_name(self, name: str | None) -> None:
         self._metadata_manager.long_name = name
 
     @property
-    def var_name(self):
+    def var_name(self) -> str | None:
         """The NetCDF variable name for the object."""
         return self._metadata_manager.var_name
 
     @var_name.setter
-    def var_name(self, name):
+    def var_name(self, name: str | None) -> None:
         if name is not None:
             result = self._metadata_manager.token(name)
             if result is None or not name:
@@ -193,20 +202,20 @@ class CFVariableMixin:
         self._metadata_manager.var_name = name
 
     @property
-    def units(self):
+    def units(self) -> cf_units.Unit:
         """The S.I. unit of the object."""
         return self._metadata_manager.units
 
     @units.setter
-    def units(self, unit):
+    def units(self, unit: cf_units.Unit | str | None) -> None:
         self._metadata_manager.units = cf_units.as_unit(unit)
 
     @property
-    def attributes(self):
+    def attributes(self) -> LimitedAttributeDict:
         return self._metadata_manager.attributes
 
     @attributes.setter
-    def attributes(self, attributes):
+    def attributes(self, attributes: Mapping) -> None:
         self._metadata_manager.attributes = LimitedAttributeDict(attributes or {})
 
     @property
