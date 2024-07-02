@@ -61,6 +61,12 @@ class Test_map_complete_blocks(tests.IrisTest):
         self.assertTrue(is_lazy_data(result))
         self.assertArrayEqual(result.compute(), self.func_result)
 
+    def test_dask_masked_array_input(self):
+        array = da.ma.masked_array(np.arange(2), mask=np.arange(2))
+        result = map_complete_blocks(array, self.func, dims=tuple(), out_sizes=tuple())
+        self.assertTrue(is_lazy_data(result))
+        self.assertArrayEqual(result.compute(), np.ma.masked_array([1, 2], mask=[0, 1]))
+
     def test_rechunk(self):
         lazy_array = da.asarray(self.array, chunks=((1, 1), (2, 2)))
         cube, _ = create_mock_cube(lazy_array)
