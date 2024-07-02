@@ -469,7 +469,7 @@ class _CubeSignature:
 
         for factory in sorted(cube.aux_factories, key=name_key_func):
             coord = factory.make_coord(cube.coord_dims)
-            dims = cube.coord_dims(coord)
+            dims = factory.derived_dims(cube.coord_dims)
             metadata = _CoordMetaData(coord, dims)
             self.derived_metadata.append(metadata)
             coord_and_dims = _DerivedCoordAndDims(coord, tuple(dims), factory)
