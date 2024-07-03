@@ -32,7 +32,19 @@ def create_mock_cube(array):
 class Test_map_complete_blocks(tests.IrisTest):
     def setUp(self):
         self.array = np.arange(8).reshape(2, 4)
-        self.func = lambda chunk: chunk + 1
+
+        def func(chunk):
+            """Use a function that cannot be 'sampled'.
+
+            To make sure the call to map_blocks is correct for any function,
+            we define this function that cannot be called with size 0 arrays
+            to infer the output meta.
+            """
+            if chunk.size == 0:
+                raise ValueError
+            return chunk + 1
+
+        self.func = func
         self.func_result = self.array + 1
 
     def test_non_lazy_input(self):
@@ -65,6 +77,7 @@ class Test_map_complete_blocks(tests.IrisTest):
         array = da.ma.masked_array(np.arange(2), mask=np.arange(2))
         result = map_complete_blocks(array, self.func, dims=tuple(), out_sizes=tuple())
         self.assertTrue(is_lazy_data(result))
+        self.assertTrue(isinstance(da.utils.meta_from_array(result), np.ma.MaskedArray))
         self.assertArrayEqual(result.compute(), np.ma.masked_array([1, 2], mask=[0, 1]))
 
     def test_rechunk(self):
