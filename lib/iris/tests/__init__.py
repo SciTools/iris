@@ -192,6 +192,11 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
     )
 
 
+def assert_cml(cubes, reference_filename=None, checksum=True):
+    test = IrisTest()
+    test.assertCML(cubes, reference_filename, checksum)
+
+
 class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
