@@ -37,7 +37,7 @@ This document explains the changes made to Iris for this release
 =============
 
 #. `@bouweandela`_ updated the ``chunktype`` of Dask arrays, so it corresponds
-   to the array content. (:pull:`5801`)
+   to the array content. (:pull:`5801`) and (:pull:`5989`)
 
 #. `@rcomer`_ made the :obj:`~iris.analysis.WPERCENTILE` aggregator work with
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
