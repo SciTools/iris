@@ -27,50 +27,58 @@ def tearDownModule():
         rmtree(TMP_DIR)
 
 
-def cdl_to_nc(cdl):
-    cdl_path = str(TMP_DIR / "tst.cdl")
-    nc_path = str(TMP_DIR / f"{uuid4()}.nc")
+def cdl_to_nc(cdl, tmpdir=None):
+    if tmpdir is None:
+        tmpdir = TMP_DIR
+    cdl_path = str(tmpdir / "tst.cdl")
+    nc_path = str(tmpdir / f"{uuid4()}.nc")
     # Use ncgen to convert this into an actual (temporary) netCDF file.
     ncgen_from_cdl(cdl_str=cdl, cdl_path=cdl_path, nc_path=nc_path)
     return nc_path
 
 
-class TestsBasic(tests.IrisTest):
+_TEST_CDL_HEAD = """
+netcdf mesh_test {
+    dimensions:
+        node = 3 ;
+        face = 1 ;
+        vertex = 3 ;
+        levels = 2 ;
+    variables:
+        int mesh ;
+            mesh:cf_role = "mesh_topology" ;
+            mesh:topology_dimension = 2 ;
+            mesh:node_coordinates = "node_x node_y" ;
+            mesh:face_node_connectivity = "face_nodes" ;
+        float node_x(node) ;
+            node_x:standard_name = "longitude" ;
+        float node_y(node) ;
+            node_y:standard_name = "latitude" ;
+        int face_nodes(face, vertex) ;
+            face_nodes:cf_role = "face_node_connectivity" ;
+            face_nodes:start_index = 0 ;
+        int levels(levels) ;
+        float node_data(levels, node) ;
+            node_data:coordinates = "node_x node_y" ;
+            node_data:location = "node" ;
+            node_data:mesh = "mesh" ;
+"""
+
+_TEST_CDL_TAIL = """
+data:
+        mesh = 0;
+        node_x = 0., 2., 1.;
+        node_y = 0., 0., 1.;
+        face_nodes = 0, 1, 2;
+        levels = 1, 2;
+        node_data = 0., 0., 0.;
+    }
+"""
+
+
+class TestLoadErrors(tests.IrisTest):
     def setUp(self):
-        self.ref_cdl = """
-            netcdf mesh_test {
-                dimensions:
-                    node = 3 ;
-                    face = 1 ;
-                    vertex = 3 ;
-                    levels = 2 ;
-                variables:
-                    int mesh ;
-                        mesh:cf_role = "mesh_topology" ;
-                        mesh:topology_dimension = 2 ;
-                        mesh:node_coordinates = "node_x node_y" ;
-                        mesh:face_node_connectivity = "face_nodes" ;
-                    float node_x(node) ;
-                        node_x:standard_name = "longitude" ;
-                    float node_y(node) ;
-                        node_y:standard_name = "latitude" ;
-                    int face_nodes(face, vertex) ;
-                        face_nodes:cf_role = "face_node_connectivity" ;
-                        face_nodes:start_index = 0 ;
-                    int levels(levels) ;
-                    float node_data(levels, node) ;
-                        node_data:coordinates = "node_x node_y" ;
-                        node_data:location = "node" ;
-                        node_data:mesh = "mesh" ;
-                data:
-                    mesh = 0;
-                    node_x = 0., 2., 1.;
-                    node_y = 0., 0., 1.;
-                    face_nodes = 0, 1, 2;
-                    levels = 1, 2;
-                    node_data = 0., 0., 0.;
-                }
-            """
+        self.ref_cdl = _TEST_CDL_HEAD + _TEST_CDL_TAIL
         self.nc_path = cdl_to_nc(self.ref_cdl)
 
     def add_second_mesh(self):

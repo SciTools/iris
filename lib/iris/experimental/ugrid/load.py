@@ -485,9 +485,27 @@ def _build_mesh_coords(mesh, cf_var):
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    mesh_dim_name = element_dimensions[cf_var.location]
-    # (Only expecting 1 mesh dimension per cf_var).
-    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+    location = getattr(cf_var, "location", "<empty>")
+    if location is None or location not in element_dimensions:
+        # We should probably issue warnings and recover, but that is too much
+        # work.  Raising a more intelligible error is easy to do though.
+        msg = (
+            f"mesh data variable {cf_var.name!r} has an invalid "
+            f"location={location!r}."
+        )
+        raise ValueError(msg)
+    mesh_dim_name = element_dimensions.get(location)
+    if mesh_dim_name is None:
+        msg = f"mesh {mesh.name!r} has no {location} dimension."
+        raise ValueError(msg)
+    if mesh_dim_name in cf_var.dimensions:
+        mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+    else:
+        msg = (
+            f"mesh data variable {cf_var.name!r} does not have the "
+            f"{location} mesh dimension {mesh_dim_name!r}, in its dimensions."
+        )
+        raise ValueError(msg)
 
     mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
     return mesh_coords, mesh_dim

@@ -60,9 +60,9 @@ class MetaDataItem:
 def create_metadata(
     dim_coord: bool = True,
     scalar: bool = False,
-    order: int = None,
+    order: int | None = None,
     circular: bool | None = False,
-    coord_dtype: np.dtype = None,
+    coord_dtype=None,
     lazy: bool = True,
     with_bounds: bool | None = False,
 ) -> MetaDataItem:
@@ -121,7 +121,7 @@ def create_metadata(
         coord.metadata = iris.common.CoordMetadata.from_metadata(metadata)
 
     dims = tuple([dim for dim in range(coord.ndim)])
-    kwargs = {"scalar": scalar}
+    kwargs: dict[str, Any] = {"scalar": scalar}
 
     if dim_coord:
         kwargs["circular"] = circular

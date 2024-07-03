@@ -33,18 +33,18 @@ class MockCubeSignature:
     cell_measures_and_dims: bool | None = None
     ancillary_variables_and_dims: bool | None = None
     derived_coords_and_dims: bool | None = None
-    dim_coords: list[DimCoord, ...] = field(default_factory=list)
+    dim_coords: list[DimCoord] = field(default_factory=list)
     dim_mapping: bool | None = None
-    dim_extents: list[_Extent, ...] = field(default_factory=list)
-    dim_order: list[int, ...] = field(default_factory=list)
-    dim_metadata: list[_CoordMetaData, ...] = field(default_factory=list)
+    dim_extents: list[_Extent] = field(default_factory=list)
+    dim_order: list[int] = field(default_factory=list)
+    dim_metadata: list[_CoordMetaData] = field(default_factory=list)
 
 
 @pytest.mark.parametrize("order", [_DECREASING, _INCREASING])
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_dim(order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
+def test_dim(order: int, coord_dtype, lazy: bool, with_bounds: bool) -> None:
     """Test extent calculation of vector dimension coordinates."""
     metadata = create_metadata(
         dim_coord=True,
@@ -54,6 +54,7 @@ def test_dim(order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -
         lazy=lazy,
         with_bounds=with_bounds,
     )
+    assert isinstance(metadata.coord, DimCoord)  # Type hint for linters.
     dim_metadata = [_CoordMetaData(metadata.coord, metadata.dims)]
     cube_signature = MockCubeSignature(
         dim_coords=[metadata.coord], dim_metadata=dim_metadata
@@ -86,7 +87,7 @@ def test_dim(order: int, coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -
 @pytest.mark.parametrize("coord_dtype", [np.int32, np.float32])
 @pytest.mark.parametrize("lazy", [False, True])
 @pytest.mark.parametrize("with_bounds", [False, True])
-def test_dim__scalar(coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> None:
+def test_dim__scalar(coord_dtype, lazy: bool, with_bounds: bool) -> None:
     """Test extent calculation of scalar dimension coordinates."""
     metadata = create_metadata(
         dim_coord=True,
@@ -96,6 +97,7 @@ def test_dim__scalar(coord_dtype: np.dtype, lazy: bool, with_bounds: bool) -> No
         lazy=lazy,
         with_bounds=with_bounds,
     )
+    assert isinstance(metadata.coord, DimCoord)  # Hint for mypy.
     dim_metadata = [_CoordMetaData(metadata.coord, metadata.dims)]
     cube_signature = MockCubeSignature(
         dim_coords=[metadata.coord], dim_metadata=dim_metadata
