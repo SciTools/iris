@@ -26,6 +26,8 @@ from iris import _concatenate
             da.ma.masked_array([1, 2], mask=[0, 1]),
             True,
         ),
+        (np.array(["a", "b"]), np.array(["a", "b"]), True),
+        (np.array(["a"]), np.array(["b"]), False),
     ],
 )
 def test_compute_hashes(a, b, eq):
@@ -33,8 +35,14 @@ def test_compute_hashes(a, b, eq):
     assert eq == (hashes[_concatenate.array_id(a)] == hashes[_concatenate.array_id(b)])
 
 
-def test_arrayhash_incompatible_chunks_raises():
+def test_arrayhash_equal_incompatible_chunks_raises():
     hash1 = _concatenate._ArrayHash(1, chunks=(1, 1))
     hash2 = _concatenate._ArrayHash(1, chunks=(2,))
     with pytest.raises(ValueError):
         hash1 == hash2
+
+
+def test_arrayhash_equal_incompatible_type_raises():
+    hash = _concatenate._ArrayHash(1, chunks=(1, 1))
+    with pytest.raises(TypeError):
+        hash == object()

@@ -350,7 +350,7 @@ class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
-            return NotImplemented
+            raise TypeError(f"Unable to compare {repr(self)} to {repr(other)}")
         if self.chunks != other.chunks:
             raise ValueError(
                 "Unable to compare arrays with different chunks: "
