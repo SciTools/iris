@@ -80,6 +80,40 @@ class Test_map_complete_blocks(tests.IrisTest):
         self.assertTrue(isinstance(da.utils.meta_from_array(result), np.ma.MaskedArray))
         self.assertArrayEqual(result.compute(), np.ma.masked_array([1, 2], mask=[0, 1]))
 
+    def test_dask_array_input_with_meta(self):
+        lazy_array = da.asarray(self.array, chunks=((1, 1), (4,)))
+        meta = np.empty((), dtype=np.float32)
+
+        def func(chunk):
+            if chunk.size == 0:
+                raise ValueError
+            return (chunk + 1).astype(np.float32)
+
+        result = map_complete_blocks(
+            lazy_array, func, dims=(1,), out_sizes=(4,), meta=meta
+        )
+        self.assertTrue(isinstance(da.utils.meta_from_array(result), np.ndarray))
+        self.assertTrue(result.dtype == meta.dtype)
+        self.assertTrue(result.compute().dtype == meta.dtype)
+        self.assertArrayEqual(result.compute(), self.func_result)
+
+    def test_dask_array_input_with_dtype(self):
+        lazy_array = da.ma.masked_array(self.array, chunks=((1, 1), (4,)))
+        dtype = np.float32
+
+        def func(chunk):
+            if chunk.size == 0:
+                raise ValueError
+            return (chunk + 1).astype(np.float32)
+
+        result = map_complete_blocks(
+            lazy_array, func, dims=(1,), out_sizes=(4,), dtype=dtype
+        )
+        self.assertTrue(isinstance(da.utils.meta_from_array(result), np.ma.MaskedArray))
+        self.assertTrue(result.dtype == dtype)
+        self.assertTrue(result.compute().dtype == dtype)
+        self.assertArrayEqual(result.compute(), self.func_result)
+
     def test_rechunk(self):
         lazy_array = da.asarray(self.array, chunks=((1, 1), (2, 2)))
         cube, _ = create_mock_cube(lazy_array)

@@ -601,7 +601,9 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         # Assume operation does not change dtype and meta if not specified.
         if "meta" not in kwargs:
             kwargs["meta"] = da.utils.meta_from_array(data)
-        if "dtype" not in kwargs:
+        if "dtype" in kwargs:
+            kwargs["meta"] = kwargs["meta"].astype(kwargs["dtype"])
+        else:
             kwargs["dtype"] = kwargs["meta"].dtype
 
         result = data.map_blocks(func, *args, chunks=out_chunks, **kwargs)
