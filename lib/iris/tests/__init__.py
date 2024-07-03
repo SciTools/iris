@@ -193,6 +193,26 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
 
 
 def assert_cml(cubes, reference_filename=None, checksum=True):
+    """Test that the CML for the given cubes matches the contents of
+    the reference file.
+
+    If the environment variable IRIS_TEST_CREATE_MISSING is
+    non-empty, the reference file is created if it doesn't exist.
+
+    Parameters
+    ----------
+    cubes :
+        Either a Cube or a sequence of Cubes.
+    reference_filename : optional, default=None
+        The relative path (relative to the test results directory).
+        If omitted, the result is generated from the calling
+        method's name, class, and module using
+        :meth:`iris.tests.IrisTest.result_path`.
+    checksum : bool, optional
+        When True, causes the CML to include a checksum for each
+        Cube's data. Defaults to True.
+
+    """
     test = IrisTest()
     test.assertCML(cubes, reference_filename, checksum)
 

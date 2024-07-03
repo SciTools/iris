@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the iteration of cubes in step."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 from functools import reduce
 import itertools
 import operator
@@ -20,11 +16,12 @@ import pytest
 import iris
 import iris.analysis
 import iris.iterate
+import iris.tests
 import iris.tests.stock
 from iris.warnings import IrisUserWarning
 
 
-@tests.skip_data
+@iris.tests.skip_data
 class TestIterateFunctions:
     @pytest.fixture(autouse=True)
     def setUp(self):
@@ -203,10 +200,8 @@ class TestIterateFunctions:
         assert count == nslices
 
     def test_izip_subcube_of_same(self):
-        for _ in range(3):
+        for k in range(2):
             super_cube = self.cube_a
-            # Random int to pick coord value to calc subcube
-            k = random.randint(0, super_cube.shape[0] - 1)
             sub_cube = super_cube[k, :, :]
             super_slice_iterator = super_cube.slices(self.coord_names)
             j = 0
@@ -469,7 +464,7 @@ class TestIterateFunctions:
         # The two coords are orthogonal so we can use them with izip
         it = iris.iterate.izip(cube1, cube2, coords=["y", "x"])
         cubes = list(np.array(list(it)).flatten())
-        tests.assert_cml(cubes, ("iterate", "izip_nd_ortho.cml"))
+        iris.tests.assert_cml(cubes, ("iterate", "izip_nd_ortho.cml"))
 
     def _check_2d_slices(self):
         # Helper method to verify slices from izip match those from
@@ -546,7 +541,3 @@ class TestIterateFunctions:
             assert slice_b == expected_b
             count += 1
         assert count == nslices
-
-
-if __name__ == "__main__":
-    tests.main()
