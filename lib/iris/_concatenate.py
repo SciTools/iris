@@ -322,15 +322,17 @@ def _hash_array(a: da.Array | np.ndarray) -> np.int64:
         The array's hash.
 
     """
-    return da.reduction(
-        a,
-        chunk=_chunk,
-        combine=_chunk,
-        aggregate=_aggregate,
-        keepdims=False,
-        meta=np.empty(tuple(), dtype=np.int64),
-        dtype=np.int64,
-    )
+    if isinstance(a, da.Array):
+        return da.reduction(
+            a,
+            chunk=_chunk,
+            combine=_chunk,
+            aggregate=_aggregate,
+            keepdims=False,
+            meta=np.empty(tuple(), dtype=np.int64),
+            dtype=np.int64,
+        )
+    return _aggregate(a, 0, False)
 
 
 class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
@@ -390,14 +392,17 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
             same_dtype_arrays = [a.astype(dtype) for a in group]
         else:
             same_dtype_arrays = group
-        # Unify chunks as the hash depends on the chunks.
-        indices = tuple(range(group[0].ndim))[::-1]
-        argpairs = [(a, indices) for a in same_dtype_arrays]
-        rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))[1]
+        if any(isinstance(a, da.Array) for a in same_dtype_arrays):
+            # Unify chunks as the hash depends on the chunks.
+            indices = tuple(range(group[0].ndim))[::-1]
+            argpairs = [(a, indices) for a in same_dtype_arrays]
+            rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))[1]
+        else:
+            rechunked_arrays = same_dtype_arrays
         for array, rechunked in zip(group, rechunked_arrays):
             hashes[array_id(array)] = (
                 _hash_array(rechunked),
-                rechunked.chunks,
+                rechunked.chunks if isinstance(rechunked, da.Array) else tuple(),
             )
 
     hashes = dask.compute(hashes)[0]
