@@ -45,13 +45,15 @@ class Concatenate:
     cube_list: CubeList
 
     def setup(self):
-        source_cube = realistic_4d_w_everything()
-        second_cube = source_cube.copy()
-        first_dim_coord = second_cube.coord(dimensions=0, dim_coords=True)
-        first_dim_coord.points = (
-            first_dim_coord.points + np.ptp(first_dim_coord.points) + 1
-        )
-        self.cube_list = CubeList([source_cube, second_cube])
+        source_cube = realistic_4d_w_everything(lazy=True)
+        self.cube_list = CubeList([source_cube])
+        for _ in range(24):
+            next_cube = self.cube_list[-1].copy()
+            first_dim_coord = next_cube.coord(dimensions=0, dim_coords=True)
+            first_dim_coord.points = (
+                first_dim_coord.points + np.ptp(first_dim_coord.points) + 1
+            )
+            self.cube_list.append(next_cube)
 
     def time_concatenate(self):
         _ = self.cube_list.concatenate_cube()
