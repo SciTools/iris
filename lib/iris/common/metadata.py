@@ -12,12 +12,15 @@ from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from functools import lru_cache, wraps
 import re
+from typing import TYPE_CHECKING, Any
 
 import cf_units
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
+if TYPE_CHECKING:
+    from iris.coords import CellMethod
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -158,7 +161,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     long_name: str | None
     var_name: str | None
     units: cf_units.Unit
-    attributes: Mapping
+    attributes: Any
 
     @lenient_service
     def __eq__(self, other):
@@ -1045,6 +1048,8 @@ class CubeMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.cube.Cube`."""
 
     _members = "cell_methods"
+
+    cell_methods: tuple[CellMethod, ...]
 
     __slots__ = ()
 
