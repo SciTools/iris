@@ -211,7 +211,7 @@ autodoc_default_options = {
 }
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
-autodoc_typehints = "none"
+autodoc_typehints = "description"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
