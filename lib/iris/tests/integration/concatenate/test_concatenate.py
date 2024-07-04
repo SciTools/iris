@@ -12,6 +12,7 @@ using :func:`iris.util.unify_time_units`.
 import iris.tests as tests  # isort:skip
 
 import cf_units
+import dask.array as da
 import numpy as np
 
 from iris._concatenate import _DerivedCoordAndDims, concatenate
@@ -157,6 +158,16 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (4, 2))
 
+    def test_lazy_cell_measure(self):
+        cube_a = self.create_cube()
+        cube_a.cell_measure("volume").data = da.array([0, 15])
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+
+        result = concatenate([cube_a, cube_b])
+        assert len(result) == 1
+        assert result[0].cell_measure("volume").has_lazy_data()
+
 
 class Test_cubes_with_ancillary_variables(tests.IrisTest):
     def create_cube(self):
@@ -193,6 +204,16 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         result = concatenate([cube_a, cube_b], check_ancils=False)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0].shape, (4, 2))
+
+    def test_lazy_ancillary_variables(self):
+        cube_a = self.create_cube()
+        cube_a.ancillary_variable("quality").data = da.array([0, 15])
+        cube_b = cube_a.copy()
+        cube_b.coord("time").points = [12, 18]
+
+        result = concatenate([cube_a, cube_b])
+        assert len(result) == 1
+        assert result[0].ancillary_variable("quality").has_lazy_data()
 
 
 class Test_cubes_with_derived_coord(tests.IrisTest):

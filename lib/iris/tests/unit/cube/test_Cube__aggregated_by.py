@@ -581,11 +581,14 @@ class Test_aggregated_by__climatology(tests.IrisTest):
 
         if second_categorised:
             categorised_coord2 = AuxCoord(np.tile([0, 1, 2, 3, 4], 4), long_name="cat2")
-            categorised_coords = [categorised_coord1, categorised_coord2]
+            categorised_coords: AuxCoord | list[AuxCoord] = [
+                categorised_coord1,
+                categorised_coord2,
+            ]
         else:
             categorised_coords = categorised_coord1
 
-        aux_coords_and_dims = [
+        aux_coords_and_dims: list[tuple[AuxCoord, int | tuple[int, ...]]] = [
             (categorised_coord1, axes[0]),
         ]
 

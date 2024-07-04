@@ -7,7 +7,7 @@
 from pathlib import Path
 from string import Template
 import subprocess
-from typing import Optional
+from typing import Any, Optional
 
 import dask
 from dask import array as da
@@ -48,7 +48,7 @@ def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
     if cdl_path:
         # Create netcdf from stored CDL file.
         call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path, cdl_path]
-        call_kwargs = {}
+        call_kwargs: dict[str, Any] = {}
     else:
         # No CDL file : pipe 'cdl_str' directly into the ncgen program.
         if not cdl_str:

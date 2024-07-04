@@ -31,7 +31,7 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 _AuxCoverage = namedtuple(
-    "AuxCoverage",
+    "_AuxCoverage",
     [
         "cube",
         "common_items_aux",
@@ -45,18 +45,18 @@ _AuxCoverage = namedtuple(
 )
 
 _CategoryItems = namedtuple(
-    "CategoryItems",
+    "_CategoryItems",
     ["items_dim", "items_aux", "items_scalar"],
 )
 
 _DimCoverage = namedtuple(
-    "DimCoverage",
+    "_DimCoverage",
     ["cube", "metadata", "coords", "dims_common", "dims_local", "dims_free"],
 )
 
-_Item = namedtuple("Item", ["metadata", "coord", "dims"])
+_Item = namedtuple("_Item", ["metadata", "coord", "dims"])
 
-_PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
+_PreparedFactory = namedtuple("_PreparedFactory", ["container", "dependencies"])
 
 
 @dataclass
@@ -95,7 +95,7 @@ class _PreparedItem:
         return result
 
 
-_PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
+_PreparedMetadata = namedtuple("_PreparedMetadata", ["combined", "src", "tgt"])
 
 
 class Resolve:

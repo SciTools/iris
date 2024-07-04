@@ -88,7 +88,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_unique(pandas_series: pd.Series):
+def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
     """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
@@ -104,7 +104,7 @@ def _series_index_unique(pandas_series: pd.Series):
     levels_range = range(pandas_index.nlevels)
     if unique_number == 1:
         # Scalar - identical for all indices.
-        result = ()
+        result: tuple[int, ...] | None = ()
     else:
         result = None
         levels_combinations = chain(

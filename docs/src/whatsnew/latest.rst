@@ -33,6 +33,12 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
    to better explain the error. (:pull:`6005`)
 
+#. `@trexfeathers`_ added the
+   :meth:`~iris.experimental.ugrid.mesh.MeshCoord.collapsed` method to
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, enabling collapsing of
+   the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
+   :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
+
 
 🐛 Bugs Fixed
 =============
@@ -73,6 +79,9 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
+
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
 
 🔥 Deprecations
 ===============
@@ -135,6 +144,16 @@ This document explains the changes made to Iris for this release
    (:pull:`5959`)
 
 #. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
+
+#. `@bouweandela`_ enabled mypy checks for type hints.
+   The entire team would like to thank Bouwe for putting in the hard
+   work on an unglamorous but highly valuable contribution. (:pull:`5956`)
+
+#. `@trexfeathers`_ re-wrote the delegated ASV environment plugin to reduce
+   complexity, remove unnecessary slow operations, apply the least-surprise
+   principle, be more robust against failures, and improve the ability to
+   benchmark historic commits (especially older Python versions).
+   (:pull:`5963`)
 
 
 .. comment

@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
+from typing import ClassVar
 from unittest.mock import Mock
 
 from geovista import Transform
@@ -43,7 +44,7 @@ def default_cs():
 
 
 class ParentClass:
-    MOCKED_OPERATION = NotImplemented
+    MOCKED_OPERATION: ClassVar[str]
 
     @pytest.fixture()
     def expected(self):
