@@ -52,6 +52,9 @@ class DuckTimerForMemory:
 class TracemallocBenchmark(TimeBenchmark):
     """Benchmark for growth in process resident memory, repeating for accuracy.
 
+    Benchmark operations prefixed with ``tracemalloc_`` or ``Tracemalloc`` will
+    use this benchmark class.
+
     Inherits behaviour from :class:`asv_runner.benchmarks.time.TimeBenchmark`,
     see https://asv.readthedocs.io/en/stable/benchmarks.html#timing-benchmarks.
 
@@ -75,8 +78,7 @@ class TracemallocBenchmark(TimeBenchmark):
         default behaviour from
         :class:`asv_runner.benchmarks.time.TimeBenchmark`.
     type : str = "tracemalloc"
-        The type of this benchmark. All benchmark operations prefixed with
-        ``tracemalloc_`` will use this benchmark class.
+        The name of this benchmark type.
     unit : str = "bytes"
         The units of the measured metric (i.e. the growth in memory).
 

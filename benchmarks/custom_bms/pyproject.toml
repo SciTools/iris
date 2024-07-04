@@ -1,0 +1,9 @@
+[build-system]
+requires = ["setuptools"]
+
+[project]
+name = "custom_bms"
+version = "1.0"
+
+[tool.setuptools]
+packages = ["asv_bench"]
