@@ -18,6 +18,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
+from typing import ClassVar
 import warnings
 
 import numpy as np
@@ -71,7 +72,7 @@ class CFVariable(metaclass=ABCMeta):
 
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.
-    cf_identity = None
+    cf_identity: ClassVar[str | None] = None
 
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.

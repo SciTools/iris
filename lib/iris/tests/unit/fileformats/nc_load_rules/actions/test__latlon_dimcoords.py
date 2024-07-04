@@ -10,6 +10,8 @@ rotated and non-rotated.
 
 """
 
+from typing import Literal
+
 import iris.tests as tests  # isort: skip
 
 from iris.coord_systems import GeogCS, RotatedGeogCS
@@ -21,7 +23,7 @@ class Mixin_latlon_dimcoords(Mixin__nc_load_actions):
 
     # Control to test either longitude or latitude coords.
     # Set by inheritor classes, which are actual TestCases.
-    lat_1_or_lon_0 = None
+    lat_1_or_lon_0: Literal[0, 1]
 
     def setUp(self):
         super().setUp()
@@ -130,7 +132,7 @@ netcdf test {{
         # It should also be a dim-coord
         self.assertEqual(1, len(cube.coords(dim_coords=True)))
         (coord,) = coords
-        if self.debug:
+        if self.debug_info:
             print("")
             print("DEBUG : result coord =", coord)
             print("")

@@ -94,6 +94,7 @@ import importlib
 import itertools
 import os.path
 import threading
+from typing import Callable, Literal
 
 import iris._constraints
 import iris.config
@@ -189,7 +190,7 @@ class Future(threading.local):
         return msg.format(self.datum_support, self.pandas_ndim, self.save_split_attrs)
 
     # deprecated_options = {'example_future_flag': 'warning',}
-    deprecated_options = {}
+    deprecated_options: dict[str, Literal["error", "warning"]] = {}
 
     def __setattr__(self, name, value):
         if name in self.deprecated_options:
@@ -248,7 +249,10 @@ FUTURE = Future()
 
 # Initialise the site configuration dictionary.
 #: Iris site configuration dictionary.
-site_configuration = {}
+site_configuration: dict[
+    Literal["cf_profile", "cf_patch", "cf_patch_conventions"],
+    Callable | Literal[False] | None,
+] = {}
 
 try:
     from iris.site_config import update as _update
