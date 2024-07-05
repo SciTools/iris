@@ -56,6 +56,6 @@ class Concatenate:
     def time_concatenate(self):
         _ = self.cube_list.concatenate_cube()
 
-    # @TrackAddedMemoryAllocation.decorator_repeating()
-    def tracemalloc_merge(self):
+    @TrackAddedMemoryAllocation.decorator_repeating()
+    def track_addedmem_merge(self):
         _ = self.cube_list.concatenate_cube()
