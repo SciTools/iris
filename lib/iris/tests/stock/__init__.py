@@ -268,7 +268,6 @@ def simple_3d():
 
     """
     cube = Cube(np.arange(24, dtype=np.int32).reshape((2, 3, 4)))
-    more = [cube.copy() for _ in range(10)]
     cube.long_name = "thingness"
     cube.units = "1"
     wibble_coord = DimCoord(
