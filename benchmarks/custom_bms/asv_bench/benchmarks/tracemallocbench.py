@@ -64,8 +64,6 @@ class TracemallocBenchmark(TimeBenchmark):
         A list of objects from which to draw attributes.
     """
 
-    # TODO: confirm that this can both detect regressions and dial-out noise.
-
     name_regex = re.compile("^(Tracemalloc[A-Z_].+)|(tracemalloc_.+)$")
 
     param: tuple
