@@ -20,6 +20,11 @@ from asv_runner.benchmarks.time import TimeBenchmark, wall_timer
 class TracemallocBenchmark(TimeBenchmark):
     """Benchmark for growth in process resident memory, repeating for accuracy.
 
+    Obviously limited as to what it actually measures : Relies on the current
+    process not having significant unused (de-allocated) memory when the
+    tested codeblock runs, and only reliable when the code allocates a
+    significant amount of new memory.
+
     Benchmark operations prefixed with ``tracemalloc_`` or ``Tracemalloc`` will
     use this benchmark class.
 

@@ -6,7 +6,7 @@
 
 from iris import save
 
-from .. import TrackAddedMemoryAllocation, on_demand_benchmark
+from .. import on_demand_benchmark
 from ..generate_data.ugrid import make_cube_like_2d_cubesphere, make_cube_like_umfield
 from . import _N_CUBESPHERE_UM_EQUIVALENT, _UM_DIMS_YX
 
@@ -36,6 +36,5 @@ class NetcdfSave:
     def time_save_data_netcdf(self, data_type):
         self._save_data(self.cube)
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_save_data_netcdf(self, data_type):
+    def tracemalloc_save_data_netcdf(self, data_type):
         self._save_data(self.cube)

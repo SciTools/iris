@@ -18,7 +18,6 @@ from iris import load, load_cube, save
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.experimental.ugrid.utils import recombine_submeshes
 
-from ... import TrackAddedMemoryAllocation
 from ...generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
@@ -171,8 +170,7 @@ class CombineRegionsCreateCube(MixinCombineRegions):
     def time_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_create_combined_cube(self, n_cubesphere):
+    def tracemalloc_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
 
@@ -182,8 +180,7 @@ class CombineRegionsComputeRealData(MixinCombineRegions):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_compute_data(self, n_cubesphere):
+    def tracemalloc_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
 
@@ -201,8 +198,7 @@ class CombineRegionsSaveData(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_save(self, n_cubesphere):
+    def tracemalloc_save(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")
 
     def track_filesize_saved(self, n_cubesphere):
@@ -229,6 +225,5 @@ class CombineRegionsFileStreamedCalc(MixinCombineRegions):
         # Save to disk, which must compute data + stream it to file.
         save(self.recombined_cube, "tmp.nc")
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_stream_file2file(self, n_cubesphere):
+    def tracemalloc_stream_file2file(self, n_cubesphere):
         save(self.recombined_cube, "tmp.nc")

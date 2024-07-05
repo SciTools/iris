@@ -7,7 +7,6 @@
 from iris import save
 from iris.experimental.ugrid import save_mesh
 
-from . import TrackAddedMemoryAllocation, on_demand_benchmark
 from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
@@ -38,8 +37,7 @@ class NetcdfSave:
         if is_unstructured:
             self._save_mesh(self.cube)
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_netcdf_save(self, n_cubesphere, is_unstructured):
+    def tracemalloc_netcdf_save(self, n_cubesphere, is_unstructured):
         # Don't need to copy the cube here since track_ benchmarks don't
         #  do repeats between self.setup() calls.
         self._save_data(self.cube, do_copy=False)
