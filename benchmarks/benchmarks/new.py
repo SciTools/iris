@@ -1,12 +1,12 @@
 import random
 from time import sleep
 
-import numpy as np
+from iris.tests.stock import simple_3d
 
 
 class Me:
     def tracemalloc_test(self):
-        a = np.arange(100000)
+        a = simple_3d()
 
     def time_test(self):
         sleep(1)
