@@ -54,14 +54,6 @@ class TracemallocBenchmark(TimeBenchmark):
     unit : str = "bytes"
         The units of the measured metric (i.e. the growth in memory).
 
-    Parameters
-    ----------
-    name : str
-        The name of the benchmark.
-    func : callable
-        The function to benchmark.
-    attr_sources : list
-        A list of objects from which to draw attributes.
     """
 
     name_regex = re.compile("^(Tracemalloc[A-Z_].+)|(tracemalloc_.+)$")

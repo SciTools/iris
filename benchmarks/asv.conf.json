@@ -60,5 +60,5 @@
     ],
     "install_command": [],
     "uninstall_command": [],
-    "build_command": ["python -mpip install {conf_dir}/custom_bms"]
+    "build_command": ["python {conf_dir}/custom_bms/install.py"]
 }
