@@ -155,6 +155,7 @@ This document explains the changes made to Iris for this release
    benchmark historic commits (especially older Python versions).
    (:pull:`5963`)
 
+#. `@bouweandela`_ made some tests for :func:`~iris.iterate.izip` faster. (:pull:`6041`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
