@@ -46,25 +46,27 @@ class Test_as_lazy_data(tests.IrisTest):
         chunks = (12,)
         optimum = self.patch("iris._lazy_data._optimum_chunksize")
         optimum.return_value = chunks
-        _ = as_lazy_data(data, chunks=None, dask_chunking=True)
+        _ = as_lazy_data(data, chunks="auto")
         self.assertFalse(optimum.called)
-
-    def test_dask_chunking_error(self):
-        data = np.arange(24)
-        chunks = (12,)
-        optimum = self.patch("iris._lazy_data._optimum_chunksize")
-        optimum.return_value = chunks
-        with self.assertRaisesRegex(
-            ValueError,
-            r"Dask chunking chosen, but chunks already assigned value",
-        ):
-            as_lazy_data(data, chunks=chunks, dask_chunking=True)
 
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
         masked_constant = masked_data[0]
         result = as_lazy_data(masked_constant)
         self.assertIsInstance(result, da.core.Array)
+
+    def test_missing_meta(self):
+        class MyProxy:
+            pass
+
+        data = MyProxy()
+
+        with self.assertRaisesRegex(
+            ValueError,
+            r"`meta` cannot be `None` if `data` is anything other than a Numpy "
+            r"or Dask array.",
+        ):
+            as_lazy_data(data)
 
 
 class Test__optimised_chunks(tests.IrisTest):

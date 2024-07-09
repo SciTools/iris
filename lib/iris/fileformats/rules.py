@@ -251,10 +251,12 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     return result_cube
 
 
-_loader_attrs = ("field_generator", "field_generator_kwargs", "converter")
-
-
-class Loader(collections.namedtuple("Loader", _loader_attrs)):
+class Loader(
+    collections.namedtuple(
+        "Loader",
+        ("field_generator", "field_generator_kwargs", "converter"),
+    )
+):
     def __new__(cls, field_generator, field_generator_kwargs, converter):
         """Create a definition of a field-based Cube loader.
 

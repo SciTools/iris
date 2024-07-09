@@ -6,7 +6,6 @@
 
 from abc import ABC, abstractmethod
 import argparse
-from argparse import ArgumentParser
 from datetime import datetime
 from importlib import import_module
 from os import environ
@@ -16,7 +15,7 @@ import shlex
 import subprocess
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
-from typing import Literal
+from typing import Literal, Protocol
 
 # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
 #  for more.
@@ -91,17 +90,16 @@ def _prep_data_gen_env() -> None:
         ).resolve()
         environ[data_gen_var] = str(data_gen_python)
 
+        def clone_resource(name: str, clone_source: str) -> Path:
+            resource_dir = data_gen_python.parents[1] / "resources"
+            resource_dir.mkdir(exist_ok=True)
+            clone_dir = resource_dir / name
+            if not clone_dir.is_dir():
+                _subprocess_runner(["git", "clone", clone_source, str(clone_dir)])
+            return clone_dir
+
         echo("Installing Mule into data generation environment ...")
-        mule_dir = data_gen_python.parents[1] / "resources" / "mule"
-        if not mule_dir.is_dir():
-            _subprocess_runner(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/metomi/mule.git",
-                    str(mule_dir),
-                ]
-            )
+        mule_dir = clone_resource("mule", "https://github.com/metomi/mule.git")
         _subprocess_runner(
             [
                 str(data_gen_python),
@@ -111,6 +109,14 @@ def _prep_data_gen_env() -> None:
                 str(mule_dir / "mule"),
             ]
         )
+
+        test_data_var = "OVERRIDE_TEST_DATA_REPOSITORY"
+        if test_data_var not in environ:
+            echo("Installing iris-test-data into data generation environment ...")
+            test_data_dir = clone_resource(
+                "iris-test-data", "https://github.com/SciTools/iris-test-data.git"
+            )
+            environ[test_data_var] = str(test_data_dir / "test_data")
 
         echo("Data generation environment ready.")
 
@@ -129,7 +135,7 @@ def _setup_common() -> None:
 
 def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
     """Run through a list of commits comparing each one to the next."""
-    commits = [commit[:8] for commit in commits]
+    commits = tuple(commit[:8] for commit in commits)
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
@@ -228,19 +234,19 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
 
             for login_type in ("author", "mergedBy"):
                 gh_query = f'.["{login_type}"]["login"]'
-                command = shlex.split(
+                commandlist = shlex.split(
                     f"gh pr view {pr_tag[1:]} "
                     f"--json {login_type} -q '{gh_query}' "
                     f"--repo {repo}"
                 )
-                login = _subprocess_runner_capture(command)
+                login = _subprocess_runner_capture(commandlist)
 
-                command = [
+                commandlist = [
                     "curl",
                     "-s",
                     f"https://api.github.com/users/{login}",
                 ]
-                login_info = _subprocess_runner_capture(command)
+                login_info = _subprocess_runner_capture(commandlist)
                 is_user = '"type": "User"' in login_info
                 if is_user:
                     assignee = login
@@ -306,8 +312,13 @@ class _SubParserGenerator(ABC):
     description: str = NotImplemented
     epilog: str = NotImplemented
 
-    def __init__(self, subparsers: ArgumentParser.add_subparsers) -> None:
-        self.subparser: ArgumentParser = subparsers.add_parser(
+    class _SubParsersType(Protocol):
+        """Duck typing since argparse._SubParsersAction is private."""
+
+        def add_parser(self, name, **kwargs) -> argparse.ArgumentParser: ...
+
+    def __init__(self, subparsers: _SubParsersType) -> None:
+        self.subparser = subparsers.add_parser(
             self.name,
             description=self.description,
             epilog=self.epilog,
@@ -469,10 +480,12 @@ class _CSPerf(_SubParserGenerator, ABC):
         environ["ON_DEMAND_BENCHMARKS"] = "True"
         commit_range = "upstream/main^!"
 
-        asv_command = ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        asv_command_str = (
+            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        )
 
         # Only do a single round.
-        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command))
+        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command_str))
         try:
             _subprocess_runner([*asv_command, *args.asv_args], asv=True)
         except subprocess.CalledProcessError as err:
@@ -537,6 +550,63 @@ class Custom(_SubParserGenerator):
         _subprocess_runner([args.asv_sub_command, *args.asv_args], asv=True)
 
 
+class TrialRun(_SubParserGenerator):
+    name = "trialrun"
+    description = (
+        "Fast trial-run a given benchmark, to check it works : "
+        "in a provided or latest-lockfile environment, "
+        "with no repeats for accuracy of measurement."
+    )
+    epilog = (
+        "e.g. python bm_runner.py trialrun "
+        "MyBenchmarks.time_calc ${DATA_GEN_PYTHON}"
+        "\n\nNOTE: 'runpath' also replaces $DATA_GEN_PYTHON during the run."
+    )
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "benchmark",
+            type=str,
+            help=(
+                "A benchmark name, possibly including wildcards, "
+                "as supported by the ASV '--bench' argument."
+            ),
+        )
+        self.subparser.add_argument(
+            "runpath",
+            type=str,
+            help=(
+                "A path to an existing python executable, "
+                "to completely bypass environment building."
+            ),
+        )
+
+    @staticmethod
+    def func(args: argparse.Namespace) -> None:
+        if args.runpath:
+            # Shortcut creation of a data-gen environment
+            # - which is also the trial-run env.
+            python_path = Path(args.runpath).resolve()
+            environ["DATA_GEN_PYTHON"] = str(python_path)
+        _setup_common()
+        # get path of data-gen environment, setup by previous call
+        python_path = Path(environ["DATA_GEN_PYTHON"])
+        # allow 'on-demand' benchmarks
+        environ["ON_DEMAND_BENCHMARKS"] = "1"
+        asv_command = [
+            "run",
+            "--bench",
+            args.benchmark,
+            # no repeats for timing accuracy
+            "--quick",
+            "--show-stderr",
+            # do not build a unique env : run test in data-gen environment
+            "--environment",
+            f"existing:{python_path}",
+        ] + args.asv_args
+        _subprocess_runner(asv_command, asv=True)
+
+
 class GhPost(_SubParserGenerator):
     name = "_gh_post"
     description = (
@@ -560,13 +630,26 @@ class GhPost(_SubParserGenerator):
 
 
 def main():
-    parser = ArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Run the Iris performance benchmarks (using Airspeed Velocity).",
-        epilog="More help is available within each sub-command.",
+        epilog=(
+            "More help is available within each sub-command."
+            "\n\nNOTE(1): a separate python environment is created to "
+            "construct test files.\n   Set $DATA_GEN_PYTHON to avoid the cost "
+            "of this."
+            "\nNOTE(2): iris-test-data is downloaded and cached within the "
+            "data generation environment.\n   Set "
+            "$OVERRIDE_TEST_DATA_REPOSITORY to avoid the cost of this."
+            "\nNOTE(3): test data is cached within the "
+            "benchmarks code directory, and uses a lot of disk space "
+            "of disk space (Gb).\n   Set $BENCHMARK_DATA to specify where this "
+            "space can be safely allocated."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(required=True)
 
-    for gen in (Overnight, Branch, CPerf, SPerf, Custom, GhPost):
+    for gen in (Overnight, Branch, CPerf, SPerf, Custom, TrialRun, GhPost):
         _ = gen(subparsers).subparser
 
     parsed = parser.parse_args()

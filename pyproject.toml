@@ -133,7 +133,7 @@ local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --durations=25"
 testpaths = "lib/iris"
 
 [tool.coverage.run]
@@ -153,13 +153,24 @@ exclude_lines = [
 ]
 
 [tool.codespell]
-ignore-words-list = "alpha-numeric,degreee,discontiguities,lazyness,meaned,nin"
-skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin"
+skip = "./CODE_OF_CONDUCT.md,_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
 
 [tool.check-manifest]
 ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
+]
+
+[tool.mypy]
+# See https://mypy.readthedocs.io/en/stable/config_file.html
+ignore_missing_imports = true
+warn_unused_configs = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "truthy-bool"]
+exclude = [
+    'noxfile\.py',
+    'docs/src/conf\.py'
 ]
 
 [tool.numpydoc_validation]

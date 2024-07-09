@@ -1467,7 +1467,8 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
     axis : int
         Axis to calculate percentiles over.
     weights : ndarray
-        Array with the weights.  Must have same shape as data.
+        Array with the weights.  Must have same shape as data or the shape of
+        data along axis.
     percent : float or sequence of floats
         Percentile rank/s at which to extract value/s.
     returned : bool, default=False
@@ -1475,12 +1476,18 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
         first element and the sum of the weights as the second element.
 
     """
-    # Ensure that data and weights arrays are same shape.
-    if data.shape != weights.shape:
-        raise ValueError("_weighted_percentile: weights wrong shape.")
+    # Ensure that weights array is the same shape as data, or the shape of data along
+    # axis.
+    if data.shape != weights.shape and data.shape[axis : axis + 1] != weights.shape:
+        raise ValueError(
+            f"For data array of shape {data.shape}, weights should be {data.shape} or {data.shape[axis : axis + 1]}"
+        )
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
-    weights = np.rollaxis(weights, axis, start=data.ndim)
+    if weights.ndim > 1:
+        weights = np.rollaxis(weights, axis, start=data.ndim)
+    elif data.ndim > 1:
+        weights = np.broadcast_to(weights, data.shape)
     quantiles = np.array(percent) / 100.0
     # Add data mask to weights if necessary.
     if ma.isMaskedArray(data):
@@ -1841,7 +1848,7 @@ This aggregator handles masked data, which it treats as interrupting a run,
 and lazy data.
 
 """
-MAX_RUN.name = lambda: "max_run"
+MAX_RUN.name = lambda: "max_run"  # type: ignore[method-assign]
 
 
 GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)

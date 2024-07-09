@@ -11,12 +11,11 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
 import threading
-from typing import Union
 import warnings
 
 import numpy as np
@@ -240,7 +239,7 @@ def _get_cf_var_data(cf_var, filename):
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
-                result = as_lazy_data(proxy, chunks=None, dask_chunking=True)
+                result = as_lazy_data(proxy, meta=proxy.dask_meta, chunks="auto")
             else:
                 chunks = cf_var.cf_data.chunking()
                 if chunks is None:
@@ -285,7 +284,10 @@ def _get_cf_var_data(cf_var, filename):
                 if dims_fixed is None:
                     dims_fixed = [dims_fixed]
                 result = as_lazy_data(
-                    proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+                    proxy,
+                    meta=proxy.dask_meta,
+                    chunks=chunks,
+                    dims_fixed=tuple(dims_fixed),
                 )
     return result
 
@@ -702,9 +704,9 @@ class ChunkControl(threading.local):
     @contextmanager
     def set(
         self,
-        var_names: Union[str, Iterable[str]] = None,
+        var_names: str | Iterable[str] | None = None,
         **dimension_chunksizes: Mapping[str, int],
-    ) -> None:
+    ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
@@ -755,7 +757,7 @@ class ChunkControl(threading.local):
                 # A specific name match should override a '*' setting, but
                 # that is implemented elsewhere.
                 if not isinstance(var_name, str):
-                    msg = (
+                    msg = (  # type: ignore[unreachable]
                         "'var_names' should be an iterable of strings, "
                         f"not {var_names!r}."
                     )
@@ -775,7 +777,7 @@ class ChunkControl(threading.local):
             self.mode = old_mode
 
     @contextmanager
-    def from_file(self) -> None:
+    def from_file(self) -> Iterator[None]:
         r"""Ensure the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
@@ -798,7 +800,7 @@ class ChunkControl(threading.local):
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
     @contextmanager
-    def as_dask(self) -> None:
+    def as_dask(self) -> Iterator[None]:
         """Rely on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes

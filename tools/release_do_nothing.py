@@ -327,7 +327,7 @@ def finalise_whats_new(
 
     message = (
         "Commit and push all the What's New changes.\n"
-        f'git commit -am "Whats new updates for {release_strings.tag} .";\n'
+        f"git commit -am \"What's new updates for {release_strings.tag} .\";\n"
         f"git push -u origin {working_branch};"
     )
     _wait_for_done(message)
@@ -759,7 +759,7 @@ def merge_back(
 
         message = (
             "Commit and push all the What's New changes.\n"
-            'git commit -am "Restore latest Whats New files.";\n'
+            "git commit -am \"Restore latest What's New files.\";\n"
             f"git push -u origin {working_branch};"
         )
         _wait_for_done(message)

@@ -7,9 +7,9 @@
 from collections import defaultdict, namedtuple
 import warnings
 
-import dask.array as da
 import numpy as np
 
+from iris._lazy_data import concatenate as concatenate_arrays
 import iris.coords
 import iris.cube
 import iris.exceptions
@@ -893,6 +893,7 @@ class _ProtoCube:
         # Check for compatible cube signatures.
         cube_signature = _CubeSignature(cube)
         match = self._cube_signature.match(cube_signature, error_on_mismatch)
+        mismatch_error_msg = None
 
         # Check for compatible coordinate signatures.
         if match:
@@ -901,17 +902,20 @@ class _ProtoCube:
             match = candidate_axis is not None and (
                 candidate_axis == axis or axis is None
             )
+            if not match:
+                mismatch_error_msg = (
+                    f"Cannot find an axis to concatenate over for phenomenon "
+                    f"`{self._cube.name()}`"
+                )
 
         # Check for compatible coordinate extents.
         if match:
             dim_ind = self._coord_signature.dim_mapping.index(candidate_axis)
             match = self._sequence(coord_signature.dim_extents[dim_ind], candidate_axis)
             if error_on_mismatch and not match:
-                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
-                raise iris.exceptions.ConcatenateError([msg])
+                mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, cannot concatenate overlapping cubes"
             elif not match:
-                msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
-                warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+                mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
 
         # Check for compatible AuxCoords.
         if match:
@@ -926,6 +930,12 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Auxiliary coordinates are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible CellMeasures.
@@ -941,6 +951,12 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Cell measures are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible AncillaryVariables.
@@ -956,6 +972,12 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Ancillary variables are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         # Check for compatible derived coordinates.
@@ -971,6 +993,12 @@ class _ProtoCube:
                         or candidate_axis not in coord_b.dims
                     ):
                         if not coord_a == coord_b:
+                            mismatch_error_msg = (
+                                "Derived coordinates are unequal for phenomenon"
+                                f" `{self._cube.name()}`:\n"
+                                f"a: {coord_a}\n"
+                                f"b: {coord_b}"
+                            )
                             match = False
 
         if match:
@@ -990,6 +1018,14 @@ class _ProtoCube:
             this_order = coord_signature.dim_order[dim_ind]
             if existing_order == _CONSTANT and this_order != _CONSTANT:
                 self._coord_signature.dim_order[dim_ind] = this_order
+
+        if mismatch_error_msg and not match:
+            if error_on_mismatch:
+                raise iris.exceptions.ConcatenateError([mismatch_error_msg])
+            else:
+                warnings.warn(
+                    mismatch_error_msg, category=iris.warnings.IrisUserWarning
+                )
 
         return match
 
@@ -1109,10 +1145,10 @@ class _ProtoCube:
                 # Concatenate the data together.
                 dim = dims.index(self.axis)
                 data = [
-                    skton.signature.cell_measures_and_dims[i].coord.data
+                    skton.signature.cell_measures_and_dims[i].coord.core_data()
                     for skton in skeletons
                 ]
-                data = np.concatenate(tuple(data), axis=dim)
+                data = concatenate_arrays(tuple(data), axis=dim)
 
                 # Generate the associated metadata.
                 kwargs = cube_signature.cm_metadata[i].defn._asdict()
@@ -1149,10 +1185,10 @@ class _ProtoCube:
                 # Concatenate the data together.
                 dim = dims.index(self.axis)
                 data = [
-                    skton.signature.ancillary_variables_and_dims[i].coord.data
+                    skton.signature.ancillary_variables_and_dims[i].coord.core_data()
                     for skton in skeletons
                 ]
-                data = np.concatenate(tuple(data), axis=dim)
+                data = concatenate_arrays(tuple(data), axis=dim)
 
                 # Generate the associated metadata.
                 kwargs = cube_signature.av_metadata[i].defn._asdict()
@@ -1245,7 +1281,7 @@ class _ProtoCube:
         skeletons = self._skeletons
         data = [skeleton.data for skeleton in skeletons]
 
-        data = da.concatenate(data, self.axis)
+        data = concatenate_arrays(data, self.axis)
 
         return data
 

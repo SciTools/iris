@@ -18,14 +18,12 @@ from typing import (
     Mapping,
     MutableMapping,
     Optional,
-    Union,
 )
 import warnings
 from xml.dom.minidom import Document
 import zlib
 
 from cf_units import Unit
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -791,7 +789,7 @@ class CubeAttrsDict(MutableMapping):
 
     def __init__(
         self,
-        combined: Optional[Union[Mapping, str]] = "__unspecified",
+        combined: Optional[Mapping] = None,
         locals: Optional[Mapping] = None,
         globals: Optional[Mapping] = None,
     ):
@@ -839,10 +837,11 @@ class CubeAttrsDict(MutableMapping):
 
         """
         # First initialise locals + globals, defaulting to empty.
-        self.locals = locals
-        self.globals = globals
+        # See https://github.com/python/mypy/issues/3004
+        self.locals = locals  # type: ignore[assignment]
+        self.globals = globals  # type: ignore[assignment]
         # Update with combined, if present.
-        if not isinstance(combined, str) or combined != "__unspecified":
+        if combined is not None:
             # Treat a single input with 'locals' and 'globals' properties as an
             # existing CubeAttrsDict, and update from its content.
             # N.B. enforce deep copying, consistent with general Iris usage.
@@ -3135,12 +3134,7 @@ class Cube(CFVariableMixin):
             result = chunks[0]
         else:
             chunk_data = [chunk.core_data() for chunk in chunks]
-            if self.has_lazy_data():
-                func = da.concatenate
-            else:
-                module = ma if ma.isMaskedArray(self.data) else np
-                func = module.concatenate
-            data = func(chunk_data, dim)
+            data = _lazy.concatenate(chunk_data, axis=dim)
             result = iris.cube.Cube(data)
             result.metadata = deepcopy(self.metadata)
 
@@ -3998,14 +3992,16 @@ class Cube(CFVariableMixin):
     def __hash__(self):
         return hash(id(self))
 
-    __add__ = iris.analysis.maths.add
+    def __add__(self, other):
+        return iris.analysis.maths.add(self, other)
 
     def __iadd__(self, other):
         return iris.analysis.maths.add(self, other, in_place=True)
 
     __radd__ = __add__
 
-    __sub__ = iris.analysis.maths.subtract
+    def __sub__(self, other):
+        return iris.analysis.maths.subtract(self, other)
 
     def __isub__(self, other):
         return iris.analysis.maths.subtract(self, other, in_place=True)
@@ -4013,7 +4009,8 @@ class Cube(CFVariableMixin):
     def __rsub__(self, other):
         return (-self) + other
 
-    __mul__ = iris.analysis.maths.multiply
+    def __mul__(self, other):
+        return iris.analysis.maths.multiply(self, other)
 
     def __imul__(self, other):
         return iris.analysis.maths.multiply(self, other, in_place=True)
@@ -4466,13 +4463,10 @@ x            -              -
 
         # Choose appropriate data and functions for data aggregation.
         if aggregator.lazy_func is not None and self.has_lazy_data():
-            stack = da.stack
             input_data = self.lazy_data()
             agg_method = aggregator.lazy_aggregate
         else:
             input_data = self.data
-            # Note numpy.stack does not preserve masks.
-            stack = ma.stack if ma.isMaskedArray(input_data) else np.stack
             agg_method = aggregator.aggregate
 
         # Create data and weights slices.
@@ -4509,11 +4503,11 @@ x            -              -
         # before combining the different slices.
         if return_weights:
             result, weights_result = list(zip(*result))
-            aggregateby_weights = stack(weights_result, axis=dimension_to_groupby)
+            aggregateby_weights = _lazy.stack(weights_result, axis=dimension_to_groupby)
         else:
             aggregateby_weights = None
 
-        aggregateby_data = stack(result, axis=dimension_to_groupby)
+        aggregateby_data = _lazy.stack(result, axis=dimension_to_groupby)
         # Ensure plain ndarray is output if plain ndarray was input.
         if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
             aggregateby_data = ma.getdata(aggregateby_data)
@@ -4594,12 +4588,6 @@ x            -              -
         Returns
         -------
         :class:`iris.cube.Cube`.
-
-        Notes
-        -----
-        .. note::
-
-            This operation does not yet have support for lazy evaluation.
 
         Examples
         --------
@@ -4704,7 +4692,7 @@ x            -               -
         # this will add an extra dimension to the data at dimension + 1 which
         # represents the rolled window (i.e. will have a length of window)
         rolling_window_data = iris.util.rolling_window(
-            self.data, window=window, axis=dimension
+            self.core_data(), window=window, axis=dimension
         )
 
         # now update all of the coordinates to reflect the aggregation
@@ -4723,7 +4711,7 @@ x            -               -
                     "coordinate." % coord_.name()
                 )
 
-            new_bounds = iris.util.rolling_window(coord_.points, window)
+            new_bounds = iris.util.rolling_window(coord_.core_points(), window)
 
             if np.issubdtype(new_bounds.dtype, np.str_):
                 # Handle case where the AuxCoord contains string. The points
@@ -4769,9 +4757,12 @@ x            -               -
                 kwargs["weights"] = iris.util.broadcast_to_shape(
                     weights, rolling_window_data.shape, (dimension + 1,)
                 )
-        data_result = aggregator.aggregate(
-            rolling_window_data, axis=dimension + 1, **kwargs
-        )
+
+        if aggregator.lazy_func is not None and self.has_lazy_data():
+            agg_method = aggregator.lazy_aggregate
+        else:
+            agg_method = aggregator.aggregate
+        data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
         result = aggregator.post_process(new_cube, data_result, [coord], **kwargs)
         return result
 

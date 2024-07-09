@@ -7,8 +7,9 @@ Benchmarking
 Iris includes architecture for benchmarking performance and other metrics of
 interest. This is done using the `Airspeed Velocity`_ (ASV) package.
 
-Full detail on the setup and how to run or write benchmarks is in
-`benchmarks/README.md`_ in the Iris repository.
+
+.. note:: Full detail on the setup and how to run or write benchmarks is in
+          `benchmarks/README.md`_ in the Iris repository.
 
 Continuous Integration
 ----------------------

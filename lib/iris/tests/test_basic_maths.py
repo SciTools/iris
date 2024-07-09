@@ -874,7 +874,7 @@ class TestCoordMathOperations(tests.IrisTest):
 
     def test_coord_op_coord__fail(self):
         for op, symbol in zip(self.ops, self.symbols):
-            emsg = f"AuxCoord \{symbol} DimCoord"  # noqa: W605
+            emsg = rf"AuxCoord \{symbol} DimCoord"
             with self.assertRaisesRegex(NotYetImplementedError, emsg):
                 _ = op(self.aux, self.dim)
 
