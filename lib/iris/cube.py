@@ -20,7 +20,7 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, Self, TypeGuard
+from typing import TYPE_CHECKING, Any, Optional, TypeGuard
 import warnings
 from xml.dom.minidom import Document
 import zlib
@@ -2965,7 +2965,7 @@ class Cube(CFVariableMixin):
     # TypeError with a useful message if a Cube is iterated over.
     __iter__ = None
 
-    def __getitem__(self, keys) -> Self:
+    def __getitem__(self, keys) -> Cube:
         """Cube indexing has been implemented at the data level.
 
         Cube indexing (through use of square bracket notation) has been
@@ -3074,7 +3074,7 @@ class Cube(CFVariableMixin):
 
         return cube
 
-    def subset(self, coord: AuxCoord | DimCoord) -> Self | None:
+    def subset(self, coord: AuxCoord | DimCoord) -> Cube | None:
         """Get a subset of the cube by providing the desired resultant coordinate.
 
         Get a subset of the cube by providing the desired resultant
@@ -3124,13 +3124,13 @@ class Cube(CFVariableMixin):
             result = self[tuple(full_slice)]
         return result
 
-    def extract(self, constraint: iris.Constraint | str | None) -> Self:
+    def extract(self, constraint: iris.Constraint | str | None) -> Cube:
         """Filter cube by the given constraint using :meth:`iris.Constraint.extract`."""
         # Cast the constraint into a proper constraint if it is not so already
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
-    def intersection(self, *args, **kwargs) -> Self:
+    def intersection(self, *args, **kwargs) -> Cube:
         """Return the intersection of the cube with specified coordinate ranges.
 
         Coordinate ranges can be specified as:
@@ -3230,7 +3230,7 @@ class Cube(CFVariableMixin):
         max_inclusive: bool = True,
         ignore_bounds: bool = False,
         threshold=0,
-    ) -> Self:
+    ) -> Cube:
         coord = self.coord(name_or_coord)
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -3533,7 +3533,7 @@ class Cube(CFVariableMixin):
         | DimCoord
         | int
         | Iterable[str | AuxCoord | DimCoord | int],
-    ) -> Iterable[Self]:
+    ) -> Iterable[Cube]:
         """Return an iterator of all subcubes.
 
         Return an iterator of all subcubes along a given coordinate or
@@ -3633,7 +3633,7 @@ class Cube(CFVariableMixin):
         | int
         | Iterable[str | AuxCoord | DimCoord | int],
         ordered: bool = True,
-    ) -> Iterator[Self]:
+    ) -> Iterator[Cube]:
         """Return an iterator of all subcubes given the coordinates or dimension indices.
 
         Return an iterator of all subcubes given the coordinates or dimension
@@ -3995,7 +3995,7 @@ class Cube(CFVariableMixin):
 
         return cube_xml_element
 
-    def copy(self, data: np.typing.ArrayLike | None = None) -> Self:
+    def copy(self, data: np.typing.ArrayLike | None = None) -> Cube:
         """Return a deep copy of this cube.
 
         Parameters
@@ -4180,7 +4180,7 @@ class Cube(CFVariableMixin):
         coords: str | AuxCoord | DimCoord | Iterable[str | AuxCoord | DimCoord],
         aggregator: iris.analysis.Aggregator,
         **kwargs,
-    ) -> Self:
+    ) -> Cube:
         """Collapse one or more dimensions over the cube given the coordinate/s and an aggregation.
 
         Examples of aggregations that may be used include
@@ -4419,7 +4419,7 @@ class Cube(CFVariableMixin):
         aggregator: iris.analysis.Aggregator,
         climatological: bool = False,
         **kwargs,
-    ) -> Self:
+    ) -> Cube:
         """Perform aggregation over the cube given one or more "group coordinates".
 
         A "group coordinate" is a coordinate where repeating values represent a
@@ -4708,7 +4708,7 @@ x            -              -
         aggregator: iris.analysis.Aggregator,
         window: int,
         **kwargs,
-    ) -> Self:
+    ) -> Cube:
         """Perform rolling window aggregation on a cube.
 
         Perform rolling window aggregation on a cube given a coordinate, an
