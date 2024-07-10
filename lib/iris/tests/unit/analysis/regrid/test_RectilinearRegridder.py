@@ -480,19 +480,19 @@ class Test___call___lazy(tests.IrisTest):
     def test_lazy_regrid(self):
         result = self.lazy_regridder(self.lazy_cube)
         self.assertTrue(result.has_lazy_data())
-        self.assertTrue(
-            isinstance(da.utils.meta_from_array(result.core_data()), np.ndarray)
-        )
+        meta = da.utils.meta_from_array(result.core_data())
+        self.assertTrue(meta.__class__ is np.ndarray)
         expected = self.regridder(self.cube)
+        self.assertEqual(result.dtype, expected.dtype)
         self.assertTrue(result == expected)
 
     def test_lazy_masked_regrid(self):
         result = self.lazy_regridder(self.lazy_masked_cube)
         self.assertTrue(result.has_lazy_data())
-        self.assertTrue(
-            isinstance(da.utils.meta_from_array(result.core_data()), np.ma.MaskedArray)
-        )
+        meta = da.utils.meta_from_array(result.core_data())
+        self.assertTrue(isinstance(meta, np.ma.MaskedArray))
         expected = self.regridder(self.cube)
+        self.assertEqual(result.dtype, expected.dtype)
         self.assertTrue(result == expected)
 
 
