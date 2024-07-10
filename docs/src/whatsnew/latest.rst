@@ -83,6 +83,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
    ancillary variables and cell measures lazy. (:pull:`6010`)
 
+#. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster for cubes
+   that have coordinate factories. (:pull:`6038`)
+
 🔥 Deprecations
 ===============
 
@@ -155,6 +158,7 @@ This document explains the changes made to Iris for this release
    benchmark historic commits (especially older Python versions).
    (:pull:`5963`)
 
+#. `@bouweandela`_ made some tests for :func:`~iris.iterate.izip` faster. (:pull:`6041`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
