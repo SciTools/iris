@@ -2471,7 +2471,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-        :class:`iris.experimental.ugrid.mesh.Mesh` or None
+        :class:`iris.experimental.ugrid.Mesh` or None
             The mesh of the cube
             :class:`~iris.experimental.ugrid.MeshCoord`'s,
             or ``None``.
