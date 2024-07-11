@@ -7,7 +7,6 @@
 
 from __future__ import annotations
 
-from collections import OrderedDict
 from collections.abc import (
     Container,
     Iterable,
@@ -25,7 +24,6 @@ import warnings
 from xml.dom.minidom import Document
 import zlib
 
-import cf_units
 from cf_units import Unit
 import dask.array as da
 import numpy as np
@@ -49,8 +47,8 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 
 if TYPE_CHECKING:
-    from iris.experimental.ugrid import Mesh, MeshCoord
-    from iris.experimental.ugrid.mesh import Location
+    import iris.experimental.ugrid
+    from iris.experimental.ugrid import MeshCoord
 import iris.exceptions
 import iris.util
 import iris.warnings
@@ -557,7 +555,7 @@ class CubeList(list):
             raise ValueError("can't concatenate an empty CubeList")
 
         names = [cube.metadata.name() for cube in self]
-        unique_names = list(OrderedDict.fromkeys(names))
+        unique_names = list(dict.fromkeys(names))
         if len(unique_names) == 1:
             res = concatenate(
                 self,
@@ -1185,7 +1183,7 @@ class Cube(CFVariableMixin):
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
-        units: cf_units.Unit | str | None = None,
+        units: Unit | str | None = None,
         attributes: Mapping | None = None,
         cell_methods: Iterable[CellMethod] | None = None,
         dim_coords_and_dims: Iterable[tuple[DimCoord, int]] | None = None,
@@ -1213,33 +1211,33 @@ class Cube(CFVariableMixin):
             array_like (as described in :func:`numpy.asarray`).
 
             See :attr:`Cube.data<iris.cube.Cube.data>`.
-        standard_name : optional
+        standard_name :
             The standard name for the Cube's data.
-        long_name : optional
+        long_name :
             An unconstrained description of the cube.
-        var_name : optional
+        var_name :
             The NetCDF variable name for the cube.
-        units : optional
+        units :
             The unit of the cube, e.g. ``"m s-1"`` or ``"kelvin"``.
-        attributes : optional
+        attributes :
             A dictionary of cube attributes.
-        cell_methods : optional
+        cell_methods :
             A tuple of CellMethod objects, generally set by Iris, e.g.
             ``(CellMethod("mean", coords='latitude'), )``.
-        dim_coords_and_dims : optional
+        dim_coords_and_dims :
             A list of coordinates with scalar dimension mappings, e.g
             ``[(lat_coord, 0), (lon_coord, 1)]``.
-        aux_coords_and_dims : optional
+        aux_coords_and_dims :
             A list of coordinates with dimension mappings,
             e.g ``[(lat_coord, 0), (lon_coord, (0, 1))]``.
             See also :meth:`Cube.add_dim_coord()<iris.cube.Cube.add_dim_coord>`
             and :meth:`Cube.add_aux_coord()<iris.cube.Cube.add_aux_coord>`.
-        aux_factories : optional
+        aux_factories :
             A list of auxiliary coordinate factories. See
             :mod:`iris.aux_factory`.
-        cell_measures_and_dims : optional
+        cell_measures_and_dims :
             A list of CellMeasures with dimension mappings.
-        ancillary_variables_and_dims : optional
+        ancillary_variables_and_dims :
             A list of AncillaryVariables with dimension mappings.
 
         Examples
@@ -1272,7 +1270,7 @@ class Cube(CFVariableMixin):
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
 
-        #: An instance of :class:`cf_units.Unit` describing the Cube's data.
+        #: An instance of :class:`Unit` describing the Cube's data.
         self.units = units
 
         #: The "long name" for the Cube's phenomenon.
@@ -1405,7 +1403,7 @@ class Cube(CFVariableMixin):
         other :
             An instance of :class:`iris.cube.Cube` or
             :class:`iris.cube.CubeMetadata`.
-        ignore : optional
+        ignore :
            A single attribute key or iterable of attribute keys to ignore when
            comparing the cubes. Default is None. To ignore all attributes set
            this to other.attributes.
@@ -1447,7 +1445,7 @@ class Cube(CFVariableMixin):
 
         return compatible
 
-    def convert_units(self, unit: str | cf_units.Unit) -> None:
+    def convert_units(self, unit: str | Unit) -> None:
         """Change the cube's units, converting the values in the data array.
 
         For example, if a cube's :attr:`~iris.cube.Cube.units` are
@@ -1500,7 +1498,7 @@ class Cube(CFVariableMixin):
         coord :
             The :class:`iris.coords.DimCoord` or :class:`iris.coords.AuxCoord`
             instance to add to the cube.
-        data_dims : optional
+        data_dims :
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
@@ -1658,7 +1656,7 @@ class Cube(CFVariableMixin):
         cell_measure :
             The :class:`iris.coords.CellMeasure`
             instance to add to the cube.
-        data_dims : optional
+        data_dims :
             Integer or iterable of integers giving the data dimensions spanned
             by the coordinate.
 
@@ -1696,7 +1694,7 @@ class Cube(CFVariableMixin):
         ancillary_variable :
             The :class:`iris.coords.AncillaryVariable` instance to be added to
             the cube.
-        data_dims : optional
+        data_dims :
             Integer or iterable of integers giving the data dimensions spanned
             by the ancillary variable.
 
@@ -1723,7 +1721,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        dim_coord : :class:`iris.coords.DimCoord`
+        dim_coord :
             The :class:`iris.coords.DimCoord` instance to add to the cube.
         data_dim :
             Integer giving the data dimension spanned by the coordinate.
@@ -1817,7 +1815,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coord : str or coord
+        coord :
             The (name of the) coordinate to remove from the cube.
 
         See Also
@@ -1839,7 +1837,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        cell_measure : str or cell_measure
+        cell_measure :
             The (name of the) cell measure to remove from the cube. As either
 
             * (a) a :attr:`standard_name`, :attr:`long_name`, or
@@ -1878,7 +1876,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        ancillary_variable : str or AncillaryVariable
+        ancillary_variable :
             The (name of the) AncillaryVariable to remove from the cube.
 
         """
@@ -1916,7 +1914,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coord : str or coord
+        coord :
             The (name of the) coord to look for.
 
         Returns
@@ -1977,7 +1975,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        cell_measure : str or CellMeasure
+        cell_measure :
             The (name of the) cell measure to look for.
 
         Returns
@@ -2045,15 +2043,15 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name : optional
+        name :
             If not None, matches against factory.name().
-        standard_name : optional
+        standard_name :
             The CF standard name of the desired coordinate factory.
             If None, does not check for standard name.
-        long_name : optional
+        long_name :
             An unconstrained description of the coordinate factory.
             If None, does not check for long_name.
-        var_name : optional
+        var_name :
             The NetCDF variable name of the desired coordinate factory.
             If None, does not check for var_name.
 
@@ -2131,7 +2129,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord : optional
+        name_or_coord :
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2142,39 +2140,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name : optional
+        standard_name :
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name : optional
+        long_name :
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name : optional
+        var_name :
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes : optional
+        attributes :
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-        axis : optional
+        axis :
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension : optional
+        contains_dimension :
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions : optional
+        dimensions :
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system : optional
+        coord_system :
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords : optional
+        dim_coords :
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords : optional
+        mesh_coords :
             Set to ``True`` to return only coordinates which are
             :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
@@ -2293,7 +2291,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord : optional
+        name_or_coord :
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2304,39 +2302,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name : optional
+        standard_name :
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name : optional
+        long_name :
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name : optional
+        var_name :
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes : optional
+        attributes :
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
-        axis : optional
+        axis :
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension : optional
+        contains_dimension :
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions : optional
+        dimensions :
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system : optional
+        coord_system :
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords : optional
+        dim_coords :
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords : optional
+        mesh_coords :
             Set to ``True`` to return only coordinates which are
             :class:`~iris.experimental.ugrid.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
@@ -2410,7 +2408,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        spec : optional
+        spec :
             The the name or type of a coordinate system subclass.
             E.g. ::
 
@@ -2461,7 +2459,7 @@ class Cube(CFVariableMixin):
         return result  # type: ignore[return-value]
 
     @property
-    def mesh(self) -> Mesh | None:
+    def mesh(self) -> iris.experimental.ugrid.Mesh | None:
         r"""Return the unstructured :class:`~iris.experimental.ugrid.Mesh` associated with the cube.
 
         Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
@@ -2485,7 +2483,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def location(self) -> Location | None:
+    def location(self) -> iris.experimental.ugrid.mesh.Location | None:
         r"""Return the mesh "location" of the cube data.
 
         Return the mesh "location" of the cube data, if the cube has any
@@ -2537,7 +2535,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_cell_measure : optional
+        name_or_cell_measure :
             Either
 
             * (a) a :attr:`standard_name`, :attr:`long_name`, or
@@ -2641,7 +2639,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_ancillary_variable : optional
+        name_or_ancillary_variable :
             Either
 
             * (a) a :attr:`standard_name`, :attr:`long_name`, or
@@ -2934,11 +2932,11 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        shorten : bool, default=False
+        shorten :
             If set, produce a one-line summary of minimal width, showing only
             the cube name, units and dimensions.
             When not set (default), produces a full multi-line summary string.
-        name_padding : int, default=35
+        name_padding :
             Control the *minimum* width of the cube name + units,
             i.e. the indent of the dimension map section.
 
@@ -3541,7 +3539,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        ref_to_slice : str, coord, dimension index or a list of these
+        ref_to_slice :
             Determines which dimensions will be iterated along (i.e. the
             dimensions that are not returned in the subcubes).
             A mix of input types can also be provided.
@@ -3641,12 +3639,12 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        ref_to_slice : str, coord, dimension index or a list of these
+        ref_to_slice :
             Determines which dimensions will be returned in the subcubes (i.e.
             the dimensions that are not iterated over).
             A mix of input types can also be provided. They must all be
             orthogonal (i.e. point to different dimensions).
-        ordered : bool, default=True
+        ordered :
             If True, subcube dimensions are ordered to match the dimension order
             in `ref_to_slice`. If False, the order will follow that of
             the source cube.
@@ -3758,7 +3756,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        new_order : list of ints, optional
+        new_order :
             By default, reverse the dimensions, otherwise permute the
             axes according to the values given.
 
@@ -4000,7 +3998,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        data : optional
+        data :
             Replace the data of the cube copy with provided data payload.
 
         Returns
@@ -4210,12 +4208,12 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coords : str, coord or a list of strings/coords
+        coords :
             Coordinate names/coordinates over which the cube should be
             collapsed.
-        aggregator : :class:`iris.analysis.Aggregator`
+        aggregator :
             Aggregator to be applied for collapse operation.
-        **kwargs : dict, optional
+        **kwargs :
             Aggregation function keyword arguments.
 
         Returns
@@ -4445,17 +4443,17 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coords : (list of coord names or :class:`iris.coords.Coord` instances)
+        coords :
             One or more coordinates over which group aggregation is to be
             performed.
-        aggregator : :class:`iris.analysis.Aggregator`
+        aggregator :
             Aggregator to be applied to each group.
-        climatological : bool, default=False
+        climatological :
             Indicates whether the output is expected to be climatological. For
             any aggregated time coord(s), this causes the climatological flag to
             be set and the point for each cell to equal its first bound, thereby
             preserving the time of year.
-        **kwargs : dict, optional
+        **kwargs :
             Aggregator and aggregation function keyword arguments.
 
         Returns
@@ -4716,14 +4714,14 @@ x            -              -
 
         Parameters
         ----------
-        coord : str or :class:`iris.coords.Coord`
+        coord :
             The coordinate over which to perform the rolling window
             aggregation.
-        aggregator : :class:`iris.analysis.Aggregator`
+        aggregator :
             Aggregator to be applied to the data.
-        window : int
+        window :
             Size of window to use.
-        **kwargs : dict, optional
+        **kwargs :
             Aggregator and aggregation function keyword arguments. The weights
             argument to the aggregator, if any, should be a 1d array, cube, or
             (names of) :meth:`~iris.cube.Cube.coords`,

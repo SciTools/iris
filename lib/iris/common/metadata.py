@@ -702,10 +702,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         Parameters
         ----------
-        default : optional
+        default :
             The fall-back string representing the default name. Defaults to
             the string 'unknown'.
-        token : bool, default=False
+        token :
             If True, ensures that the name returned satisfies the criteria for
             the characters required by a valid NetCDF name. If it is not
             possible to return a valid name, then a ValueError exception is
