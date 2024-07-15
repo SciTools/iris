@@ -283,7 +283,7 @@ class CFUGridReader(cf.CFReader):
 
     """
 
-    _variable_types = cf.CFReader._variable_types + (
+    _variable_types = cf.CFReader._variable_types + (  # type: ignore[assignment]
         CFUGridConnectivityVariable,
         CFUGridAuxiliaryCoordinateVariable,
         CFUGridMeshVariable,

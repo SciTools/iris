@@ -7,6 +7,7 @@
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 import re
+from typing import ClassVar
 import warnings
 
 import cartopy.crs as ccrs
@@ -48,7 +49,7 @@ def _float_or_None(arg):
 class CoordSystem(metaclass=ABCMeta):
     """Abstract base class for coordinate systems."""
 
-    grid_mapping_name = None
+    grid_mapping_name: ClassVar[str | None] = None
 
     def __eq__(self, other):
         """Override equality.

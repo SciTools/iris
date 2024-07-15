@@ -210,7 +210,7 @@ class CombineRegionsSaveData(MixinCombineRegions):
         return os.path.getsize("tmp.nc") * 1.0e-6
 
 
-CombineRegionsSaveData.track_filesize_saved.unit = "Mb"
+CombineRegionsSaveData.track_filesize_saved.unit = "Mb"  # type: ignore[attr-defined]
 
 
 class CombineRegionsFileStreamedCalc(MixinCombineRegions):

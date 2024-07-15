@@ -780,7 +780,7 @@ class TestQuickplotPlot(tests.GraphicsTest, Slice1dMixin):
         self.draw_method = qplt.plot
 
 
-_load_cube_once_cache = {}
+_load_cube_once_cache: dict[tuple[str, str], iris.cube.Cube] = {}
 
 
 def load_cube_once(filename, constraint):

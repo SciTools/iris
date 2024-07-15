@@ -290,6 +290,7 @@ class VariableEmulator(typing.Protocol):
     """
 
     _data_array: np.typing.ArrayLike
+    shape: tuple[int, ...]
 
 
 CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
@@ -953,8 +954,8 @@ class Saver:
         ]
 
         # Include any relevant mesh location coordinates.
-        mesh: Mesh = getattr(cube, "mesh")
-        mesh_location: str = getattr(cube, "location")
+        mesh: Mesh | None = getattr(cube, "mesh")
+        mesh_location: str | None = getattr(cube, "location")
         if mesh and mesh_location:
             location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
                 mesh, f"{mesh_location}_coords"
@@ -1216,13 +1217,6 @@ class Saver:
                     assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
-                    if dim_name is not None:
-                        # For mesh-identifying coords, we require the *same*
-                        # coord, not an identical one (i.e. "is" not "==")
-                        stored_coord = self._dim_names_and_coords.coord(dim_name)
-                        if dim_element is not stored_coord:
-                            # This is *not* a proper match after all.
-                            dim_name = None
                     if dim_name is None:
                         # No existing dim matches this, so assign a new name
                         if location == "node":
@@ -2334,7 +2328,7 @@ class Saver:
                     data: np.typing.ArrayLike,
                     cf_var: CFVariable,
                 ) -> None:
-                    cf_var[:] = data
+                    cf_var[:] = data  # type: ignore[index]
 
             # Store the data.
             store(data, cf_var)
