@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 from os.path import join as path_join
 import shutil
 import tempfile
+import warnings
 
 import pytest
 
@@ -146,6 +147,16 @@ data:
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
+
+    def test_no_datum_no_warn(self):
+        new_cdl = self.datum_wkt_cdl.splitlines()
+        new_cdl = [line for line in new_cdl if "DATUM" not in line]
+        new_cdl = "\n".join(new_cdl)
+        nc_path = tlc.cdl_to_nc(new_cdl)
+        with warnings.catch_warnings():
+            # pytest's recommended way to assert for no warnings.
+            warnings.simplefilter("error", FutureWarning)
+            _ = iris.load_cube(nc_path)
 
     def test_load_datum_cf_var(self):
         expected = "OSGB 1936"
