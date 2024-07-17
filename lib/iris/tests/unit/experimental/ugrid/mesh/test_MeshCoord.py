@@ -795,12 +795,8 @@ class Test__metadata:
         mesh = sample_mesh()
 
         # Modify the metadata of specific coordinates used in this test.
-        def select_coord(location, axis):
-            kwargs = {f"include_{location}s": True, "axis": axis}
-            return mesh.coord(**kwargs)
-
-        node_coord = select_coord("node", axis)
-        location_coord = select_coord(location, axis)
+        node_coord = mesh.coord(axis=axis, location="node")
+        location_coord = mesh.coord(axis=axis, location=location)
         for i_place, coord in enumerate((node_coord, location_coord)):
             coord.standard_name = "longitude" if axis == "x" else "latitude"
             coord.units = "degrees"

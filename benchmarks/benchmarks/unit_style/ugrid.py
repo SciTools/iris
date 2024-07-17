@@ -93,9 +93,8 @@ class Mesh(UGridCommon):
         )
 
         def get_coords_and_axes(location):
-            search_kwargs = {f"include_{location}s": True}
             return [
-                (source_mesh.coord(axis=axis, **search_kwargs), axis)
+                (source_mesh.coord(axis=axis, location=location), axis)
                 for axis in ("x", "y")
             ]
 
