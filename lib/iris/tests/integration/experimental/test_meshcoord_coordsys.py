@@ -110,3 +110,20 @@ def test_assigned_mesh_cs(tmp_path):
     #  since there are no dim-coords, or any other coord with a c-s.
     # TODO: this may be a mistake -- see https://github.com/SciTools/iris/issues/6051
     assert cube.coord_system() is assigned_cs
+
+
+def test_meshcoord_coordsys_copy(tmp_path):
+    # Check that copying a meshcoord with a coord system works properly.
+    nc_path = tmp_path / "test_temp.nc"
+    make_file(nc_path)
+    with PARSE_UGRID_ON_LOAD.context():
+        cube = iris.load_cube(nc_path, "node_data")
+    node_coord = cube.mesh.coord(include_nodes=True, axis="x")
+    assigned_cs = GeogCS(1.0)
+    node_coord.coord_system = assigned_cs
+    mesh_coord = cube.coord(axis="x")
+    assert mesh_coord.coord_system is assigned_cs
+    meshco_copy = mesh_coord.copy()
+    assert meshco_copy == mesh_coord
+    # Note: still the same object, because it is derived from the same node_coord
+    assert meshco_copy.coord_system is assigned_cs

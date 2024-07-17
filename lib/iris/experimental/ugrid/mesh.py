@@ -2814,7 +2814,10 @@ class MeshCoord(AuxCoord):
 
     @property
     def coord_system(self):
-        """The coordinate-system of a MeshCoord comes from the related mesh coord."""
+        """The coordinate-system of a MeshCoord.
+
+        It comes from the `related` location coordinate in the mesh.
+        """
         # This matches where the coord metadata is drawn from.
         # See : https://github.com/SciTools/iris/issues/4860
         select_kwargs = {
@@ -2822,8 +2825,8 @@ class MeshCoord(AuxCoord):
             "axis": self.axis,
         }
         try:
-            # NOTE: at present, a MeshCoord *always* references a related mesh coord of
-            # its location, from which it's points are taken.
+            # NOTE: at present, a MeshCoord *always* references the relevant location
+            # coordinate in the mesh, from which its points are taken.
             # However this might change in future ..
             # see : https://github.com/SciTools/iris/discussions/4438#bounds-no-points
             location_coord = self.mesh.coord(**select_kwargs)
