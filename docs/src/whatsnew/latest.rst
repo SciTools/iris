@@ -55,7 +55,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ fixed the datum :class:`python:FutureWarning` to only be raised if
    the ``datum_support`` :class:`~iris.Future` flag is disabled AND a datum is
-   present the loaded NetCDF grid mapping. (:issue:`5749`, :pull:`6050`)
+   present on the loaded NetCDF grid mapping. (:issue:`5749`, :pull:`6050`)
 
 
 💣 Incompatible Changes
