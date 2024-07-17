@@ -101,6 +101,21 @@ class ParseUGridOnLoad(threading.local):
         Do not use -- due to be removed at next major release :
         UGRID loading is now **always** active for files containing a UGRID mesh.
 
+        Examples
+        --------
+        Replace usage, for example:
+
+        .. code-block:: python
+
+            with iris.experimental.ugrid.PARSE_UGRID_ON_LOAD.context():
+                mesh_cubes = iris.load(path)
+
+        with:
+
+        .. code-block:: python
+
+            mesh_cubes = iris.load(path)
+
         """
         wmsg = (
             "iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD has been deprecated "
