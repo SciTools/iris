@@ -21,7 +21,7 @@ from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.common.metadata import BaseMetadata, CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
-from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
+from iris.experimental.ugrid.mesh import Connectivity, MeshCoord, MeshXY
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 from iris.warnings import IrisVagueMetadataWarning
@@ -50,7 +50,7 @@ class Test___init__(tests.IrisTest):
     def test_derived_properties(self):
         # Check the derived properties of the meshcoord against the correct
         # underlying mesh coordinate.
-        for axis in Mesh.AXES:
+        for axis in MeshXY.AXES:
             meshcoord = sample_meshcoord(axis=axis)
             face_x_coord = meshcoord.mesh.coord(include_faces=True, axis=axis)
             for key in face_x_coord.metadata._fields:
@@ -63,16 +63,16 @@ class Test___init__(tests.IrisTest):
             sample_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
-        for loc in Mesh.ELEMENTS:
+        for loc in MeshXY.ELEMENTS:
             meshcoord = sample_meshcoord(location=loc)
             self.assertEqual(meshcoord.location, loc)
 
     def test_fail_bad_location(self):
-        with self.assertRaisesRegex(ValueError, "not a valid Mesh location"):
+        with self.assertRaisesRegex(ValueError, "not a valid MeshXY location"):
             sample_meshcoord(location="bad")
 
     def test_fail_bad_axis(self):
-        with self.assertRaisesRegex(ValueError, "not a valid Mesh axis"):
+        with self.assertRaisesRegex(ValueError, "not a valid MeshXY axis"):
             sample_meshcoord(axis="q")
 
 
@@ -280,7 +280,7 @@ class Test__str_repr(tests.IrisTest):
         # Construct regexp in 'sections'
         # NB each consumes up to first non-space in the next line
         regexp = f"MeshCoord :  {coord_name} / [^\n]+\n *"
-        regexp += r"mesh: \<Mesh: 'test_mesh'>\n *"
+        regexp += r"mesh: \<MeshXY: 'test_mesh'>\n *"
         regexp += f"location: '{location}'\n *"
 
         # Now some optional sections : whichever comes first will match
@@ -349,7 +349,7 @@ class Test__str_repr(tests.IrisTest):
         result = repr(self.meshcoord)
         re_expected = (
             r".MeshCoord: longitude / \(unknown\)  "
-            r"mesh\(.Mesh object at 0x[^>]+.\) location\(face\) "
+            r"mesh\(.MeshXY object at 0x[^>]+.\) location\(face\) "
         )
         self.assertRegex(result, re_expected)
 
@@ -607,7 +607,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         co_edgex = AuxCoord(
             edge_xs, standard_name="longitude", long_name="edge_x", units=1
         )
-        # N.B. the Mesh requires 'Y's as well.
+        # N.B. the MeshXY requires 'Y's as well.
         co_nodey = co_nodex.copy()
         co_nodey.rename("latitude")
         co_nodey.long_name = "node_y"
@@ -644,7 +644,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
             location_axis=inds_location_axis,
         )
 
-        self.mesh = Mesh(
+        self.mesh = MeshXY(
             topology_dimension=2,
             node_coords_and_axes=[(co_nodex, "x"), (co_nodey, "y")],
             connectivities=[face_node_conn, edge_node_conn],
@@ -879,7 +879,7 @@ class Test__metadata:
         self.setup_mesh(location_face_or_edge, axis_x_or_y)
         self.node_coord.standard_name = None
         # N.B. in the absence of a standard-name, we **must** provide an extra ".axis"
-        # property, or the coordinate cannot be correctly identified in the Mesh.
+        # property, or the coordinate cannot be correctly identified in the MeshXY.
         # This is a bit of a kludge, but works with current code.
         self.node_coord.axis = axis_x_or_y
 

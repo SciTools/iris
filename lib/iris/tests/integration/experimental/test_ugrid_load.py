@@ -19,7 +19,7 @@ import pytest
 
 from iris import Constraint, load
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
-from iris.experimental.ugrid.mesh import Mesh
+from iris.experimental.ugrid.mesh import MeshXY
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
@@ -172,7 +172,7 @@ class TestTolerantLoading(XIOSFileMixin):
 
     def test_mesh_no_topology_dimension(self):
         # Check that the load generates a suitable warning.
-        warn_regex = r"Mesh variable.* has no 'topology_dimension'"
+        warn_regex = r"MeshXY variable.* has no 'topology_dimension'"
         with pytest.warns(IrisCfWarning, match=warn_regex):
             template = "minimal_bad_topology_dim"
             dim_line = ""  # don't create ANY topology_dimension property
@@ -212,7 +212,7 @@ class Test_load_mesh(tests.IrisTest):
                 tests.get_data_path(["NetCDF", "unstructured_grid", file_name])
             )
         # NOTE: cannot use CML tests as this isn't supported for non-Cubes.
-        self.assertIsInstance(mesh, Mesh)
+        self.assertIsInstance(mesh, MeshXY)
         self.assertEqual(mesh.var_name, mesh_var_name)
 
     def test_full_file(self):

@@ -8,9 +8,9 @@ import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.experimental.ugrid.mesh import Connectivity, Mesh, MeshCoord
+from iris.experimental.ugrid.mesh import Connectivity, MeshCoord, MeshXY
 
-# Default creation controls for creating a test Mesh.
+# Default creation controls for creating a test MeshXY.
 # Note: we're not creating any kind of sensible 'normal' mesh here, the numbers
 # of nodes/faces/edges are quite arbitrary and the connectivities we generate
 # are pretty random too.
@@ -30,7 +30,7 @@ def sample_mesh(
 ):
     """Make a test mesh.
 
-    Mesh has nodes, plus faces and/or edges, with face-coords and edge-coords,
+    MeshXY has nodes, plus faces and/or edges, with face-coords and edge-coords,
     numbers of which can be controlled.
 
     Parameters
@@ -118,7 +118,7 @@ def sample_mesh(
         face_y = AuxCoord(3200 + arr.arange(n_faces), standard_name="latitude")
         face_coords_and_axes = [(face_x, "x"), (face_y, "y")]
 
-    mesh = Mesh(
+    mesh = MeshXY(
         topology_dimension=2,
         node_coords_and_axes=[(node_x, "x"), (node_y, "y")],
         connectivities=connectivities,
@@ -142,7 +142,7 @@ def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
 
 
 def sample_mesh_cube(nomesh_faces=None, n_z=2, with_parts=False, **meshcoord_kwargs):
-    """Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a Mesh).
+    """Create a 2d test cube with 1 'normal' and 1 unstructured dimension (with a MeshXY).
 
     Result contains : dimcoords for both dims; an auxcoord on the unstructured
     dim; 2 mesh-coords.
