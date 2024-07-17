@@ -39,6 +39,12 @@ This document explains the changes made to Iris for this release
    the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
    :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
 
+#. `@pp-mo`_ made a MeshCoord inherit a coordinate system from its location coord,
+   as it does its metadata.  N.B. mesh location coords can not however load a
+   coordinate system from netcdf at present, as this needs the 'extended'
+   grid-mappping syntax -- see : :issue:`3388`.
+   (:issue:`5562`, :pull:`6016`)
+
 
 🐛 Bugs Fixed
 =============
