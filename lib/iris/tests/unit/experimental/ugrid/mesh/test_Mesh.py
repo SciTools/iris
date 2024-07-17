@@ -297,7 +297,7 @@ class TestProperties1D(TestMeshCommon):
             include_nodes=False,
         )
         self.assertRaisesRegex(
-            ValueError, "Expected location.*got.*foo", func, location=["node","foo"]
+            ValueError, "Expected location.*got.*foo", func, location=["node", "foo"]
         )
 
     def test_coords_elements(self):
