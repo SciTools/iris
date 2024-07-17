@@ -579,20 +579,60 @@ class Connectivity(_DimensionalMetadata):
         return element
 
 
-class MeshXY(CFVariableMixin):
+class Mesh(CFVariableMixin, ABC):
     """A container representing the UGRID ``cf_role`` ``mesh_topology``.
 
-    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
+    Warnings
+    --------
+    This class is not yet implemented. It is a placeholder for a future
+    implementation of the UGRID mesh with the minimum possible assumptions. For
+    instance: it is in theory possible for mesh node coordinates to be ANY
+    combination of ANY coordinate type, e.g. spherical coordinates or an S2
+    coordinate; the current :class:`MeshXY` subclass is based on the assumption
+    of an X and a Y coordinate (e.g. longitude and latitude).
+
+    .. todo::
+        If SciTools/iris#5994 is agreed upon: implement this class.
+          - Move whatever is appropriate from :class:`MeshXY` into this class,
+            leaving behind only those elements specific to the assumption of
+            X and Y node coordinates.
+          - Remove the docstring warning, the NotImplementedError, and the uses
+            of ABC/abstractmethod.
+          - Add a cross-reference in the docstring for :class:`MeshXY`.
+          - Search the Iris codebase for uses of :class:`MeshXY` and work out
+            if/how they can be refactored to work with the more flexible
+            :class:`Mesh`.
+
+    """
+
+    @abstractmethod
+    def __init__(self):
+        message = (
+            f"The {self.__class__.__name__} class is not yet implemented. "
+            "Use the MeshXY class instead."
+        )
+        raise NotImplementedError(message)
+
+
+class MeshXY(Mesh):
+    """A container representing the UGRID ``cf_role`` ``mesh_topology``.
+
+    A container representing the UGRID [1]_ ``cf_role`` ``mesh_topology``, supporting
     1D network, 2D triangular, and 2D flexible mesh topologies.
 
-    .. note::
+    Based on the assumption of 2 :attr:`node_coords` - one associated with the
+    X-axis (e.g. longitude) and 1 with the Y-axis (e.g. latitude). UGRID
+    describing alternative node coordinates (e.g. spherical) cannot be
+    represented.
 
-        The 3D layered and fully 3D unstructured mesh topologies are not supported
-        at this time.
+    Notes
+    -----
+    The 3D layered and fully 3D unstructured mesh topologies are not supported
+    at this time.
 
-    .. seealso::
-
-        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    References
+    ----------
+    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
 
     """
 
