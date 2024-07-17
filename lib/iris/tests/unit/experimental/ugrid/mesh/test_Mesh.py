@@ -227,7 +227,25 @@ class TestProperties1D(TestMeshCommon):
         func = self.mesh.coord
         exception = CoordinateNotFoundError
         self.assertRaisesRegex(exception, ".*but found 2", func, include_nodes=True)
+        self.assertRaisesRegex(exception, ".*but found 2", func, location="node")
         self.assertRaisesRegex(exception, ".*but found none", func, axis="t")
+        self.assertRaisesRegex(
+            ValueError,
+            "include_edges.*incompatible with.*node",
+            func,
+            location="node",
+            include_edges=True,
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            "include_nodes.*incompatible with.*node",
+            func,
+            location="node",
+            include_nodes=False,
+        )
+        self.assertRaisesRegex(
+            ValueError, "Expected location.*got `foo`", func, location="foo"
+        )
 
     def test_coords(self):
         # General results. Method intended for inheritance.
@@ -238,6 +256,9 @@ class TestProperties1D(TestMeshCommon):
             {"long_name": "long_name"},
             {"var_name": "node_lon"},
             {"attributes": {"test": 1}},
+            {"include_nodes": True},
+            {"location": "node"},
+            {"location": ["node", "edge"]},
         )
 
         fake_coord = AuxCoord([0])
@@ -248,6 +269,10 @@ class TestProperties1D(TestMeshCommon):
             {"long_name": "foo"},
             {"var_name": "foo"},
             {"attributes": {"test": 2}},
+            {"include_nodes": False},
+            {"include_edges": True},
+            {"location": "face"},
+            {"location": ["face", "edge"]},
         )
 
         func = self.mesh.coords
@@ -255,6 +280,25 @@ class TestProperties1D(TestMeshCommon):
             self.assertIn(self.NODE_LON, func(**kwargs))
         for kwargs in negative_kwargs:
             self.assertNotIn(self.NODE_LON, func(**kwargs))
+
+        func = self.mesh.coords
+        self.assertRaisesRegex(
+            ValueError,
+            "include_edges.*incompatible with.*node",
+            func,
+            location=["node", "face"],
+            include_edges=True,
+        )
+        self.assertRaisesRegex(
+            ValueError,
+            "include_nodes.*incompatible with.*node",
+            func,
+            location=["node", "face"],
+            include_nodes=False,
+        )
+        self.assertRaisesRegex(
+            ValueError, "Expected location.*got.*foo", func, location=["node","foo"]
+        )
 
     def test_coords_elements(self):
         # topology_dimension-specific results. Method intended to be overridden.

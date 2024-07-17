@@ -1555,6 +1555,8 @@ class Mesh(CFVariableMixin):
 
         """
         if location is not None:
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(f"Expected location to be one of `node`, `edge` or `face`, got `{location}`")
             include_nodes_new = location == "node"
             include_edges_new = location == "edge"
             include_faces_new = location == "face"
@@ -1661,8 +1663,13 @@ class Mesh(CFVariableMixin):
         if location is not None:
             if isinstance(location, str):
                 _location = [location]
-            else:
+            elif isinstance(location, Iterable):
                 _location = location
+            else:
+                raise TypeError(f"Expected location to be string or an Iterable, got {type(location)}")
+            for loc in _location:
+                if loc not in ["node", "edge", "face"]:
+                    raise ValueError(f"Expected location to contain only `node`, `edge` or `face`, got `{location}`")
             include_nodes_new = "node" in _location
             include_edges_new = "edge" in _location
             include_faces_new = "face" in _location
