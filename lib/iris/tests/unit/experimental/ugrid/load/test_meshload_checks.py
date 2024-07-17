@@ -7,7 +7,6 @@
 import pytest
 
 import iris
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 
 from .test_load_meshes import (
     _TEST_CDL_HEAD,
@@ -55,8 +54,7 @@ class TestMeshLoad:
         # Check that the default cdl construction loads OK
         self.tmpdir = tmp_path_factory.mktemp("meshload")
         testnc = self._create_testnc()
-        with PARSE_UGRID_ON_LOAD.context():
-            iris.load(testnc)
+        iris.load(testnc)
 
     def test_extrameshvar__fail(self, failnc):
         # Check that the expected errors are raised in various cases.
@@ -78,6 +76,5 @@ class TestMeshLoad:
         else:
             raise ValueError(f"unexpected param: {param}")
 
-        with PARSE_UGRID_ON_LOAD.context():
-            with pytest.raises(ValueError, match=match_msg):
-                iris.load(failnc)
+        with pytest.raises(ValueError, match=match_msg):
+            iris.load(failnc)

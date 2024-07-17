@@ -13,7 +13,7 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_meshes, logger
+from iris.experimental.ugrid.load import load_meshes, logger
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -98,8 +98,7 @@ class TestLoadErrors(tests.IrisTest):
 
     def test_with_data(self):
         nc_path = cdl_to_nc(self.ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_path)
+        meshes = load_meshes(nc_path)
 
         files = list(meshes.keys())
         self.assertEqual(1, len(files))
@@ -114,8 +113,7 @@ class TestLoadErrors(tests.IrisTest):
         ref_cdl = "\n".join(cdl_lines)
 
         nc_path = cdl_to_nc(ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_path)
+        meshes = load_meshes(nc_path)
 
         files = list(meshes.keys())
         self.assertEqual(1, len(files))
@@ -135,23 +133,20 @@ class TestLoadErrors(tests.IrisTest):
         ref_cdl = "\n".join(cdl_lines)
 
         nc_path = cdl_to_nc(ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_path)
+        meshes = load_meshes(nc_path)
 
         self.assertDictEqual({}, meshes)
 
     def test_multi_files(self):
         files_count = 3
         nc_paths = [cdl_to_nc(self.ref_cdl) for _ in range(files_count)]
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_paths)
+        meshes = load_meshes(nc_paths)
         self.assertEqual(files_count, len(meshes))
 
     def test_multi_meshes(self):
         ref_cdl, second_name = self.add_second_mesh()
         nc_path = cdl_to_nc(ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_path)
+        meshes = load_meshes(nc_path)
 
         files = list(meshes.keys())
         self.assertEqual(1, len(files))
@@ -165,8 +160,7 @@ class TestLoadErrors(tests.IrisTest):
         second_cdl, second_name = self.add_second_mesh()
         cdls = [self.ref_cdl, second_cdl]
         nc_paths = [cdl_to_nc(cdl) for cdl in cdls]
-        with PARSE_UGRID_ON_LOAD.context():
-            meshes = load_meshes(nc_paths, second_name)
+        meshes = load_meshes(nc_paths, second_name)
 
         files = list(meshes.keys())
         self.assertEqual(1, len(files))
@@ -183,17 +177,13 @@ class TestLoadErrors(tests.IrisTest):
 
     def test_invalid_scheme(self):
         with self.assertRaisesRegex(ValueError, "Iris cannot handle the URI scheme:.*"):
-            with PARSE_UGRID_ON_LOAD.context():
-                _ = load_meshes("foo://bar")
+            _ = load_meshes("foo://bar")
 
     @tests.skip_data
     def test_non_nc(self):
         log_regex = r"Ignoring non-NetCDF file:.*"
         with self.assertLogs(logger, level="INFO", msg_regex=log_regex):
-            with PARSE_UGRID_ON_LOAD.context():
-                meshes = load_meshes(
-                    tests.get_data_path(["PP", "simple_pp", "global.pp"])
-                )
+            meshes = load_meshes(tests.get_data_path(["PP", "simple_pp", "global.pp"]))
         self.assertDictEqual({}, meshes)
 
 
@@ -205,8 +195,7 @@ class TestsHttp(tests.IrisTest):
 
     def test_http(self):
         url = "https://foo"
-        with PARSE_UGRID_ON_LOAD.context():
-            _ = load_meshes(url)
+        _ = load_meshes(url)
         self.format_agent_mock.assert_called_with(url, None)
 
     def test_mixed_sources(self):
@@ -215,8 +204,7 @@ class TestsHttp(tests.IrisTest):
         file.touch()
         glob = f"{TMP_DIR}/*.nc"
 
-        with PARSE_UGRID_ON_LOAD.context():
-            _ = load_meshes([url, glob])
+        _ = load_meshes([url, glob])
         file_uris = [call[0][0] for call in self.format_agent_mock.call_args_list]
         for source in (url, Path(file).name):
             self.assertIn(source, file_uris)

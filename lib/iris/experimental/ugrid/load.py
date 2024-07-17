@@ -10,6 +10,11 @@ Extensions to Iris' NetCDF loading to allow the construction of
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
+.. seealso::
+
+    The UGRID Conventions,
+    https://ugrid-conventions.github.io/ugrid-conventions/
+
 """
 
 from contextlib import contextmanager
@@ -18,6 +23,7 @@ from pathlib import Path
 import threading
 import warnings
 
+from ..._deprecation import warn_deprecated
 from ...config import get_logger
 from ...coords import AuxCoord
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
@@ -60,20 +66,20 @@ class ParseUGridOnLoad(threading.local):
         :const:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
         Use :meth:`context` to temporarily activate.
 
-        .. seealso::
-
-            The UGRID Conventions,
-            https://ugrid-conventions.github.io/ugrid-conventions/
+        Notes
+        -----
+            .. deprecated:: 1.10
+        Do not use -- due to be removed at next major release :
+        UGRID loading is now **always** active for files containing a UGRID mesh.
 
         """
-        self._state = False
 
     def __bool__(self):
-        return self._state
+        return True
 
     @contextmanager
     def context(self):
-        """Temporarily activate experimental UGRID-aware NetCDF loading.
+        """Activate UGRID-aware NetCDF loading.
 
         Use the standard Iris loading API while within the context manager. If
         the loaded file(s) include any UGRID content, this will be parsed and
@@ -89,12 +95,20 @@ class ParseUGridOnLoad(threading.local):
                                          constraint=my_constraint,
                                          callback=my_callback)
 
+        Notes
+        -----
+            .. deprecated:: 1.10
+        Do not use -- due to be removed at next major release :
+        UGRID loading is now **always** active for files containing a UGRID mesh.
+
         """
-        try:
-            self._state = True
-            yield
-        finally:
-            self._state = False
+        wmsg = (
+            "iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD has been deprecated "
+            "and will be removed. Please remove all uses : these are no longer needed, "
+            "as UGRID loading is now applied to any file containing a mesh."
+        )
+        warn_deprecated(wmsg)
+        yield
 
 
 #: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.experimental.ugrid.load.ParseUGridOnLoad`.
@@ -173,15 +187,6 @@ def load_meshes(uris, var_name=None):
     #  on a Cube.
 
     from ...fileformats import FORMAT_AGENT
-
-    if not PARSE_UGRID_ON_LOAD:
-        # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
-        #  an invisible assumption.
-        message = (
-            f"PARSE_UGRID_ON_LOAD is {bool(PARSE_UGRID_ON_LOAD)}. Must be "
-            f"True to enable mesh loading."
-        )
-        raise ValueError(message)
 
     if isinstance(uris, str):
         uris = [uris]
