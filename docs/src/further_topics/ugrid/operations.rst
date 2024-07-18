@@ -60,24 +60,6 @@ subsequent example operations on this page.
 
         >>> import numpy as np
 
-                >>> from iris.coords import AuxCoord
-                >>> from iris.experimental.ugrid import Connectivity, MeshXY
-
-                # Going to create the following mesh
-                #  (node indices are shown to aid understanding):
-                #
-                #  0----1
-                #  |    |
-
-                >>> from iris.coords import AuxCoord
-                >>> from iris.experimental.ugrid import Connectivity, MeshXY
-
-                # Going to create the following mesh
-                #  (node indices are shown to aid understanding):
-                #
-                #  0----1
-                #  |    |
-
         >>> from iris.coords import AuxCoord
         >>> from iris.experimental.ugrid import Connectivity, MeshXY
 
