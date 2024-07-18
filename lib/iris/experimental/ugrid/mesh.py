@@ -1488,9 +1488,6 @@ class Mesh(CFVariableMixin):
         attributes=None,
         axis=None,
         location=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
     ):
         """Return a single :class:`~iris.coords.AuxCoord` coordinate.
 
@@ -1540,12 +1537,6 @@ class Mesh(CFVariableMixin):
             ``Y``, ``Z`` and ``T`` (case-insensitive).
         location : str, optional
             The desired location. Accepts the values ``node``, ``edge`` or ``face``.
-        include_nodes : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edges : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_faces : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
 
         Returns
         -------
@@ -1559,24 +1550,11 @@ class Mesh(CFVariableMixin):
                 raise ValueError(
                     f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
                 )
-            include_nodes_new = location == "node"
-            include_edges_new = location == "edge"
-            include_faces_new = location == "face"
-            if include_nodes not in [None, include_nodes_new]:
-                msg = f"Value of `include_nodes` ({include_nodes}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_nodes = include_nodes_new
-            if include_edges not in [None, include_edges_new]:
-                msg = f"Value of `include_edges` ({include_edges}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_edges = include_edges_new
-            if include_faces not in [None, include_faces_new]:
-                msg = f"Value of `include_faces` ({include_faces}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_faces = include_faces_new
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            incudes_nodes, includes_edges, includes_faces = None
 
         result = self._coord_manager.filter(
             item=item,
@@ -1645,15 +1623,8 @@ class Mesh(CFVariableMixin):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        location : str, list of str, optional
-            The desired location or list of locations. Accepts the values ``node``,
-            ``edge`` or ``face``.
-        include_nodes : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edges : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_faces : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
@@ -1663,37 +1634,15 @@ class Mesh(CFVariableMixin):
 
         """
         if location is not None:
-            if isinstance(location, str):
-                _location = [location]
-            elif isinstance(location, Iterable):
-                _location = location
-            else:
-                raise TypeError(
-                    f"Expected location to be string or an Iterable, got {type(location)}"
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
                 )
-            for loc in _location:
-                if loc not in ["node", "edge", "face"]:
-                    raise ValueError(
-                        f"Expected location to contain only `node`, `edge` or `face`, got `{location}`"
-                    )
-            include_nodes_new = "node" in _location
-            include_edges_new = "edge" in _location
-            include_faces_new = "face" in _location
-            if include_nodes not in [None, include_nodes_new]:
-                msg = f"Value of `include_nodes` ({include_nodes}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_nodes = include_nodes_new
-            if include_edges not in [None, include_edges_new]:
-                msg = f"Value of `include_edges` ({include_edges}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_edges = include_edges_new
-            if include_faces not in [None, include_faces_new]:
-                msg = f"Value of `include_faces` ({include_faces}) is incompatible with `location` ({location})"
-                raise ValueError(msg)
-            else:
-                include_faces = include_faces_new
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            incudes_nodes, includes_edges, includes_faces = None
 
         result = self._coord_manager.filters(
             item=item,
@@ -1802,9 +1751,7 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`.
 
@@ -1843,15 +1790,9 @@ class Mesh(CFVariableMixin):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched
-            for potential removal.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
+            TODO: should this allow a list?
 
         Returns
         -------
@@ -1862,6 +1803,17 @@ class Mesh(CFVariableMixin):
         """
         # Filter out absent arguments - only expecting face coords sometimes,
         # same will be true of volumes in future.
+        if location is not None:
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                )
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            incudes_nodes, includes_edges, includes_faces = None
+
         kwargs = {
             "item": item,
             "standard_name": standard_name,

@@ -226,23 +226,8 @@ class TestProperties1D(TestMeshCommon):
         # See Mesh.coords tests for thorough coverage of cases.
         func = self.mesh.coord
         exception = CoordinateNotFoundError
-        self.assertRaisesRegex(exception, ".*but found 2", func, include_nodes=True)
         self.assertRaisesRegex(exception, ".*but found 2", func, location="node")
         self.assertRaisesRegex(exception, ".*but found none", func, axis="t")
-        self.assertRaisesRegex(
-            ValueError,
-            "include_edges.*incompatible with.*node",
-            func,
-            location="node",
-            include_edges=True,
-        )
-        self.assertRaisesRegex(
-            ValueError,
-            "include_nodes.*incompatible with.*node",
-            func,
-            location="node",
-            include_nodes=False,
-        )
         self.assertRaisesRegex(
             ValueError, "Expected location.*got `foo`", func, location="foo"
         )
@@ -256,9 +241,7 @@ class TestProperties1D(TestMeshCommon):
             {"long_name": "long_name"},
             {"var_name": "node_lon"},
             {"attributes": {"test": 1}},
-            {"include_nodes": True},
             {"location": "node"},
-            {"location": ["node", "edge"]},
         )
 
         fake_coord = AuxCoord([0])
@@ -269,10 +252,7 @@ class TestProperties1D(TestMeshCommon):
             {"long_name": "foo"},
             {"var_name": "foo"},
             {"attributes": {"test": 2}},
-            {"include_nodes": False},
-            {"include_edges": True},
             {"location": "face"},
-            {"location": ["face", "edge"]},
         )
 
         func = self.mesh.coords
@@ -281,23 +261,8 @@ class TestProperties1D(TestMeshCommon):
         for kwargs in negative_kwargs:
             self.assertNotIn(self.NODE_LON, func(**kwargs))
 
-        func = self.mesh.coords
         self.assertRaisesRegex(
-            ValueError,
-            "include_edges.*incompatible with.*node",
-            func,
-            location=["node", "face"],
-            include_edges=True,
-        )
-        self.assertRaisesRegex(
-            ValueError,
-            "include_nodes.*incompatible with.*node",
-            func,
-            location=["node", "face"],
-            include_nodes=False,
-        )
-        self.assertRaisesRegex(
-            ValueError, "Expected location.*got.*foo", func, location=["node", "foo"]
+            ValueError, "Expected location.*got.*foo", self.mesh.coords, location="foo"
         )
 
     def test_coords_elements(self):
@@ -312,19 +277,8 @@ class TestProperties1D(TestMeshCommon):
         kwargs_expected = (
             ({"axis": "x"}, ["node_x", "edge_x"]),
             ({"axis": "y"}, ["node_y", "edge_y"]),
-            ({"include_nodes": True}, ["node_x", "node_y"]),
-            ({"include_edges": True}, ["edge_x", "edge_y"]),
-            ({"include_nodes": False}, ["edge_x", "edge_y"]),
-            ({"include_edges": False}, ["node_x", "node_y"]),
-            (
-                {"include_nodes": True, "include_edges": True},
-                ["node_x", "node_y", "edge_x", "edge_y"],
-            ),
-            ({"include_nodes": False, "include_edges": False}, []),
-            (
-                {"include_nodes": False, "include_edges": True},
-                ["edge_x", "edge_y"],
-            ),
+            ({"location": "node"}, ["node_x", "node_y"]),
+            ({"location": "edge"}, ["edge_x", "edge_y"]),
         )
 
         func = self.mesh.coords
@@ -334,7 +288,7 @@ class TestProperties1D(TestMeshCommon):
 
         log_regex = r".*filter non-existent.*"
         with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
-            self.assertEqual([], func(include_faces=True))
+            self.assertEqual([], func(location="face"))
 
     def test_edge_dimension(self):
         self.assertEqual(self.kwargs["edge_dimension"], self.mesh.edge_dimension)
@@ -615,32 +569,8 @@ class TestProperties2D(TestProperties1D):
         kwargs_expected = (
             ({"axis": "x"}, ["node_x", "edge_x", "face_x"]),
             ({"axis": "y"}, ["node_y", "edge_y", "face_y"]),
-            ({"include_nodes": True}, ["node_x", "node_y"]),
-            ({"include_edges": True}, ["edge_x", "edge_y"]),
-            (
-                {"include_nodes": False},
-                ["edge_x", "edge_y", "face_x", "face_y"],
-            ),
-            (
-                {"include_edges": False},
-                ["node_x", "node_y", "face_x", "face_y"],
-            ),
-            (
-                {"include_faces": False},
-                ["node_x", "node_y", "edge_x", "edge_y"],
-            ),
-            (
-                {"include_faces": True, "include_edges": True},
-                ["edge_x", "edge_y", "face_x", "face_y"],
-            ),
-            (
-                {"include_faces": False, "include_edges": False},
-                ["node_x", "node_y"],
-            ),
-            (
-                {"include_faces": False, "include_edges": True},
-                ["edge_x", "edge_y"],
-            ),
+            ({"location": "node"}, ["node_x", "node_y"]),
+            ({"location": "edge"}, ["edge_x", "edge_y"]),
         )
 
         func = self.mesh.coords
@@ -1240,7 +1170,7 @@ class TestOperations2D(TestOperations1D):
         super().test_remove_coords()
         self.mesh.add_coords(face_x=self.FACE_LON)
         self.assertEqual(self.FACE_LON, self.mesh.face_coords.face_x)
-        self.mesh.remove_coords(include_faces=True)
+        self.mesh.remove_coords(location="face")
         self.assertEqual(None, self.mesh.face_coords.face_x)
 
     def test_to_MeshCoord_face(self):

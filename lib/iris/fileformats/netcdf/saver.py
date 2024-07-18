@@ -1204,7 +1204,7 @@ class Saver:
                 if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
                     # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(include_nodes=True, axis="x")
+                    dim_coords = mesh.coords(location="node", axis="x")
                 else:
                     # For face/edge, use the relevant "optionally required"
                     # connectivity variable.

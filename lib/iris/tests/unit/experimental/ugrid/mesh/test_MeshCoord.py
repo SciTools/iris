@@ -52,7 +52,7 @@ class Test___init__(tests.IrisTest):
         # underlying mesh coordinate.
         for axis in Mesh.AXES:
             meshcoord = sample_meshcoord(axis=axis)
-            face_x_coord = meshcoord.mesh.coord(include_faces=True, axis=axis)
+            face_x_coord = meshcoord.mesh.coord(location="face", axis=axis)
             for key in face_x_coord.metadata._fields:
                 meshval = getattr(meshcoord, key)
                 # All relevant attributes are derived from the face coord.
@@ -390,7 +390,7 @@ class Test__str_repr(tests.IrisTest):
     def test_str_no_long_name(self):
         mesh = self.mesh
         # Remove the long_name of the node coord in the mesh.
-        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord = mesh.coord(location="node", axis="x")
         node_coord.long_name = None
         # Make a new meshcoord, based on the modified mesh.
         meshcoord = sample_meshcoord(mesh=self.mesh)
@@ -401,7 +401,7 @@ class Test__str_repr(tests.IrisTest):
     def test_str_no_attributes(self):
         mesh = self.mesh
         # No attributes on the node coord in the mesh.
-        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord = mesh.coord(location="node", axis="x")
         node_coord.attributes = None
         # Make a new meshcoord, based on the modified mesh.
         meshcoord = sample_meshcoord(mesh=self.mesh)
@@ -412,7 +412,7 @@ class Test__str_repr(tests.IrisTest):
     def test_str_empty_attributes(self):
         mesh = self.mesh
         # Empty attributes dict on the node coord in the mesh.
-        node_coord = mesh.coord(include_nodes=True, axis="x")
+        node_coord = mesh.coord(location="node", axis="x")
         node_coord.attributes.clear()
         # Make a new meshcoord, based on the modified mesh.
         meshcoord = sample_meshcoord(mesh=self.mesh)
@@ -743,8 +743,8 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # Fetch the relevant source objects from the mesh.
         def fetch_sources_from_mesh():
             return (
-                mesh.coord(include_nodes=True, axis="x"),
-                mesh.coord(include_faces=True, axis="x"),
+                mesh.coord(location="node", axis="x"),
+                mesh.coord(location="face", axis="x"),
                 mesh.face_node_connectivity,
             )
 
