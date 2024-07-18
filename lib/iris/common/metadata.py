@@ -1602,7 +1602,8 @@ def metadata_manager_factory(cls, **kwargs):
 
 #: Convenience collection of lenient metadata combine services.
 # TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
-# here (currently in experimental.ugrid).
+# here (currently in iris.ugrid).
+# TODO: complete iris.ugrid replacement
 SERVICES_COMBINE = [
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,

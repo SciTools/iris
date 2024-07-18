@@ -8,8 +8,8 @@ import pytest
 
 import iris
 from iris.coord_systems import GeogCS
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.ugrid.load import PARSE_UGRID_ON_LOAD
 
 TEST_CDL = """
 netcdf mesh_test {
