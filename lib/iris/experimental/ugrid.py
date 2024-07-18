@@ -28,9 +28,34 @@ experimental.
 
 from .._deprecation import warn_deprecated
 from ..ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
-from ..ugrid.mesh import Connectivity, Mesh, MeshCoord
+from ..ugrid.mesh import Connectivity as _Connectivity
+from ..ugrid.mesh import Mesh as _Mesh
+from ..ugrid.mesh import MeshCoord as _MeshCoord
 from ..ugrid.save import save_mesh
 from ..ugrid.utils import recombine_submeshes
+
+
+# NOTE: publishing the original Mesh, MeshCoord and Connectivity here causes a Sphinx
+# Sphinx warning, E.G.:
+#   "WARNING: duplicate object description of iris.ugrid.mesh.Mesh, other instance
+#       in generated/api/iris.experimental.ugrid, use :no-index: for one of them"
+# For some reason, this only happens for the classes, and not the functions.
+#
+# This is a fatal problem, i.e. breaks the build since we are building with -W.
+# We couldn't fix this with "autodoc_suppress_warnings", so the solution for now is to
+# wrap the classes.  Which is really ugly.
+# TODO: remove this when we remove iris.experimental.ugrid
+class Mesh(_Mesh):
+    pass
+
+
+class MeshCoord(_MeshCoord):
+    pass
+
+
+class Connectivity(_Connectivity):
+    pass
+
 
 __all__ = [
     "Connectivity",
