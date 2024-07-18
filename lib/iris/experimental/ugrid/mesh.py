@@ -1553,7 +1553,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incudes_nodes, includes_edges, includes_faces = None
+            incude_nodes = include_edges = include_faces = None
 
         result = self._coord_manager.filter(
             item=item,
@@ -1641,7 +1641,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incudes_nodes, includes_edges, includes_faces = None
+            incude_nodes = include_edges = include_faces = None
 
         result = self._coord_manager.filters(
             item=item,
@@ -1811,7 +1811,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incudes_nodes, includes_edges, includes_faces = None
+            incude_nodes = include_edges = include_faces = None
 
         kwargs = {
             "item": item,
