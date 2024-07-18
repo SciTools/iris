@@ -21,7 +21,7 @@ from iris.common.metadata import (
     CubeMetadata,
 )
 from iris.common.mixin import CFVariableMixin, LimitedAttributeDict
-from iris.experimental.ugrid.metadata import ConnectivityMetadata
+from iris.ugrid.metadata import ConnectivityMetadata
 
 
 class Test__getter(tests.IrisTest):

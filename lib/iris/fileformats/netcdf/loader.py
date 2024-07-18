@@ -578,11 +578,12 @@ def load_cubes(file_sources, callback=None, constraints=None):
     Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
-    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    # TODO: rationalise UGRID/mesh handling once iris.ugrid is folded
+    # TODO: complete iris.ugrid replacement
     # into standard behaviour.
     # Deferred import to avoid circular imports.
-    from iris.experimental.ugrid.cf import CFUGridReader
-    from iris.experimental.ugrid.load import (
+    from iris.ugrid.cf import CFUGridReader
+    from iris.ugrid.load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )
@@ -683,8 +684,8 @@ class ChunkControl(threading.local):
         :class:`~iris.coords.AncillaryVariable` etc.
         This can be overridden, if required, by variable-specific settings.
 
-        For this purpose, :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
-        :class:`~iris.experimental.ugrid.mesh.Connectivity` are not
+        For this purpose, :class:`~iris.ugrid.mesh.MeshCoord` and
+        :class:`~iris.ugrid.mesh.Connectivity` are not
         :class:`~iris.cube.Cube` components, and chunk control on a
         :class:`~iris.cube.Cube` data-variable will not affect them.
 
