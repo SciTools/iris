@@ -39,6 +39,12 @@ This document explains the changes made to Iris for this release
    the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
    :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
 
+#. `@pp-mo`_ made a MeshCoord inherit a coordinate system from its location coord,
+   as it does its metadata.  N.B. mesh location coords can not however load a
+   coordinate system from netcdf at present, as this needs the 'extended'
+   grid-mappping syntax -- see : :issue:`3388`.
+   (:issue:`5562`, :pull:`6016`)
+
 
 🐛 Bugs Fixed
 =============
@@ -52,6 +58,10 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
    meshes.  (:issue:`5908`, :pull:`6004`)
+
+#. `@trexfeathers`_ fixed the datum :class:`python:FutureWarning` to only be raised if
+   the ``datum_support`` :class:`~iris.Future` flag is disabled AND a datum is
+   present on the loaded NetCDF grid mapping. (:issue:`5749`, :pull:`6050`)
 
 
 💣 Incompatible Changes
