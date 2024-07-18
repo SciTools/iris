@@ -1553,7 +1553,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incude_nodes = include_edges = include_faces = None
+            include_nodes = include_edges = include_faces = None
 
         result = self._coord_manager.filter(
             item=item,
@@ -1641,7 +1641,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incude_nodes = include_edges = include_faces = None
+            include_nodes = include_edges = include_faces = None
 
         result = self._coord_manager.filters(
             item=item,
@@ -1791,7 +1791,6 @@ class Mesh(CFVariableMixin):
             ``Y``, ``Z`` and ``T`` (case-insensitive).
         location : str, optional
             The desired location. Accepts the values ``node``, ``edge`` or ``face``.
-            TODO: should this allow a list?
 
         Returns
         -------
@@ -1802,6 +1801,7 @@ class Mesh(CFVariableMixin):
         """
         # Filter out absent arguments - only expecting face coords sometimes,
         # same will be true of volumes in future.
+        # TODO: should location be allowed to be a list?
         if location is not None:
             if location not in ["node", "edge", "face"]:
                 raise ValueError(
@@ -1811,7 +1811,7 @@ class Mesh(CFVariableMixin):
             include_edges = location == "edge"
             include_faces = location == "face"
         else:
-            incude_nodes = include_edges = include_faces = None
+            include_nodes = include_edges = include_faces = None
 
         kwargs = {
             "item": item,
