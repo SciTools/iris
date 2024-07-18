@@ -1002,8 +1002,7 @@ class Mesh(CFVariableMixin):
                     main_conn_string = main_conn.summary(shorten=True, linewidth=0)
                     line(f"{main_conn_name}: {main_conn_string}", 2)
                 # Print coords
-                include_key = f"include_{element}s"
-                coords = self.coords(**{include_key: True})
+                coords = self.coords(location=element)
                 if coords:
                     line(f"{element} coordinates", 2)
                     for coord in coords:
@@ -2747,13 +2746,13 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_coord = self.mesh.coord(location="node", axis=self.axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
         use_metadict = node_metadict.copy()
         if location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            location_coord = self.mesh.coord(axis=axis, location=location)
+            location_coord = self.mesh.coord(location=location, axis=axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
@@ -2835,16 +2834,12 @@ class MeshCoord(AuxCoord):
         """
         # This matches where the coord metadata is drawn from.
         # See : https://github.com/SciTools/iris/issues/4860
-        select_kwargs = {
-            f"include_{self.location}s": True,
-            "axis": self.axis,
-        }
         try:
             # NOTE: at present, a MeshCoord *always* references the relevant location
             # coordinate in the mesh, from which its points are taken.
             # However this might change in future ..
             # see : https://github.com/SciTools/iris/discussions/4438#bounds-no-points
-            location_coord = self.mesh.coord(**select_kwargs)
+            location_coord = self.mesh.coord(location=self.location, axis=self.axis)
             coord_system = location_coord.coord_system
         except CoordinateNotFoundError:
             # No such coord : possible in UGRID, but probably not Iris (at present).
@@ -3053,16 +3048,16 @@ class MeshCoord(AuxCoord):
 
         """
         mesh, location, axis = self.mesh, self.location, self.axis
-        node_coord = self.mesh.coord(include_nodes=True, axis=axis)
+        node_coord = self.mesh.coord(location="node", axis=axis)
 
         if location == "node":
             points_coord = node_coord
             bounds_connectivity = None
         elif location == "edge":
-            points_coord = self.mesh.coord(include_edges=True, axis=axis)
+            points_coord = self.mesh.coord(location="edge", axis=axis)
             bounds_connectivity = mesh.edge_node_connectivity
         elif location == "face":
-            points_coord = self.mesh.coord(include_faces=True, axis=axis)
+            points_coord = self.mesh.coord(location="face", axis=axis)
             bounds_connectivity = mesh.face_node_connectivity
 
         # The points output is the points of the relevant element-type coord.
