@@ -61,7 +61,7 @@ subsequent example operations on this page.
         >>> import numpy as np
 
         >>> from iris.coords import AuxCoord
-        >>> from iris.experimental.ugrid import Connectivity, MeshXY
+        >>> from iris.ugrid import Connectivity, MeshXY
 
         # Going to create the following mesh
         #  (node indices are shown to aid understanding):
@@ -143,8 +143,8 @@ Making a Cube (with a Mesh)
 .. rubric:: |tagline: making a cube|
 
 Creating a :class:`~iris.cube.Cube` is unchanged; the
-:class:`~iris.experimental.ugrid.MeshXY` is linked via a
-:class:`~iris.experimental.ugrid.MeshCoord` (see :ref:`ugrid MeshCoords`):
+:class:`~iris.ugrid.MeshXY` is linked via a
+:class:`~iris.ugrid.MeshCoord` (see :ref:`ugrid MeshCoords`):
 
 .. dropdown:: Code
     :icon: code
@@ -205,7 +205,7 @@ Save
 .. note:: UGRID saving support is limited to the NetCDF file format.
 
 The Iris saving process automatically detects if the :class:`~iris.cube.Cube`
-has an associated :class:`~iris.experimental.ugrid.MeshXY` and automatically
+has an associated :class:`~iris.ugrid.MeshXY` and automatically
 saves the file in a UGRID-conformant format:
 
 .. dropdown:: Code
@@ -282,8 +282,8 @@ saves the file in a UGRID-conformant format:
         }
         <BLANKLINE>
 
-The :func:`iris.experimental.ugrid.save_mesh` function allows
-:class:`~iris.experimental.ugrid.MeshXY`\es to be saved to file without
+The :func:`iris.ugrid.save_mesh` function allows
+:class:`~iris.ugrid.MeshXY`\es to be saved to file without
 associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: Code
@@ -293,7 +293,7 @@ associated :class:`~iris.cube.Cube`\s:
 
         >>> from subprocess import run
 
-        >>> from iris.experimental.ugrid import save_mesh
+        >>> from iris.ugrid import save_mesh
 
         >>> mesh_path = "my_mesh.nc"
         >>> save_mesh(my_mesh, mesh_path)
@@ -356,7 +356,7 @@ Load
 While Iris' UGRID support remains :mod:`~iris.experimental`, parsing UGRID when
 loading a file remains **optional**. To load UGRID data from a file into the
 Iris mesh data model, use the
-:const:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` context manager:
+:const:`iris.ugrid.PARSE_UGRID_ON_LOAD` context manager:
 
 .. dropdown:: Code
     :icon: code
@@ -364,7 +364,7 @@ Iris mesh data model, use the
     .. doctest:: ugrid_operations
 
         >>> from iris import load
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
         ...     loaded_cubelist = load(cubelist_path)
@@ -412,15 +412,15 @@ etcetera:
 .. note::
 
     We recommend caution if constraining on coordinates associated with a
-    :class:`~iris.experimental.ugrid.MeshXY`. An individual coordinate value
+    :class:`~iris.ugrid.MeshXY`. An individual coordinate value
     might not be shared by any other data points, and using a coordinate range
     will demand notably higher performance given the size of the dimension
     versus structured grids
     (:ref:`see the data model detail <ugrid implications>`).
 
-The :func:`iris.experimental.ugrid.load_mesh` and
-:func:`~iris.experimental.ugrid.load_meshes` functions allow only
-:class:`~iris.experimental.ugrid.MeshXY`\es to be loaded from a file without
+The :func:`iris.ugrid.load_mesh` and
+:func:`~iris.ugrid.load_meshes` functions allow only
+:class:`~iris.ugrid.MeshXY`\es to be loaded from a file without
 creating any associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: Code
@@ -428,7 +428,7 @@ creating any associated :class:`~iris.cube.Cube`\s:
 
     .. doctest:: ugrid_operations
 
-        >>> from iris.experimental.ugrid import load_mesh
+        >>> from iris.ugrid import load_mesh
 
         >>> with PARSE_UGRID_ON_LOAD.context():
         ...     loaded_mesh = load_mesh(cubelist_path)
@@ -493,7 +493,7 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
 
         >>> from iris import load_cube, sample_data_path
         >>> from iris.experimental.geovista import cube_to_polydata
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
         ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
@@ -541,11 +541,11 @@ As described in :doc:`data_model`, indexing for a range along a
 :class:`~iris.cube.Cube`\'s :meth:`~iris.cube.Cube.mesh_dim` will not provide
 a contiguous region, since **position on the unstructured dimension is
 unrelated to spatial position**. This means that subsetted
-:class:`~iris.experimental.ugrid.MeshCoord`\s cannot be reliably interpreted
-as intended, and subsetting a :class:`~iris.experimental.ugrid.MeshCoord` is
+:class:`~iris.ugrid.MeshCoord`\s cannot be reliably interpreted
+as intended, and subsetting a :class:`~iris.ugrid.MeshCoord` is
 therefore set to return an :class:`~iris.coords.AuxCoord` instead - breaking
 the link between :class:`~iris.cube.Cube` and
-:class:`~iris.experimental.ugrid.MeshXY`:
+:class:`~iris.ugrid.MeshXY`:
 
 .. dropdown:: Code
     :icon: code
@@ -595,7 +595,7 @@ below:
         >>> from geovista.geodesic import BBox
         >>> from iris import load_cube, sample_data_path
         >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
         >>> with PARSE_UGRID_ON_LOAD.context():
         ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
@@ -667,7 +667,7 @@ with the
 
         >>> from esmf_regrid.experimental.unstructured_scheme import MeshToGridESMFRegridder
         >>> from iris import load, load_cube
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
+        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
         # You could also download these files from github.com/SciTools/iris-test-data.
         >>> from iris.tests import get_data_path
@@ -751,7 +751,7 @@ with the
 The initialisation process is computationally expensive so we use caching to
 improve performance. Once a regridder has been initialised, it can be used on
 any :class:`~iris.cube.Cube` which has been defined on the same
-:class:`~iris.experimental.ugrid.MeshXY` (or on the same **grid** in the case of
+:class:`~iris.ugrid.MeshXY` (or on the same **grid** in the case of
 :class:`~esmf_regrid.experimental.unstructured_scheme.GridToMeshESMFRegridder`).
 Since calling a regridder is usually a lot faster than initialising, reusing
 regridders can save a lot of time. We can demonstrate the reuse of the
@@ -819,19 +819,19 @@ Equality
 
 .. rubric:: |tagline: equality|
 
-:class:`~iris.experimental.ugrid.MeshXY` comparison is supported, and comparing
-two ':class:`~iris.experimental.ugrid.MeshXY`-:class:`~iris.cube.Cube`\s' will
+:class:`~iris.ugrid.MeshXY` comparison is supported, and comparing
+two ':class:`~iris.ugrid.MeshXY`-:class:`~iris.cube.Cube`\s' will
 include a comparison of the respective
-:class:`~iris.experimental.ugrid.MeshXY`\es, with no extra action needed by the
+:class:`~iris.ugrid.MeshXY`\es, with no extra action needed by the
 user.
 
 .. note::
 
     Keep an eye on memory demand when comparing large
-    :class:`~iris.experimental.ugrid.MeshXY`\es, but note that
-    :class:`~iris.experimental.ugrid.MeshXY`\ equality is enabled for lazy
+    :class:`~iris.ugrid.MeshXY`\es, but note that
+    :class:`~iris.ugrid.MeshXY`\ equality is enabled for lazy
     processing (:doc:`/userguide/real_and_lazy_data`), so if the
-    :class:`~iris.experimental.ugrid.MeshXY`\es being compared are lazy the
+    :class:`~iris.ugrid.MeshXY`\es being compared are lazy the
     process will use less memory than their total size.
 
 Combining Cubes
@@ -842,23 +842,23 @@ Combining Cubes
 
 Merging or concatenating :class:`~iris.cube.Cube`\s (described in
 :doc:`/userguide/merge_and_concat`) with two different
-:class:`~iris.experimental.ugrid.MeshXY`\es is not possible - a
+:class:`~iris.ugrid.MeshXY`\es is not possible - a
 :class:`~iris.cube.Cube` must be associated with just a single
-:class:`~iris.experimental.ugrid.MeshXY`, and merge/concatenate are not yet
-capable of combining multiple :class:`~iris.experimental.ugrid.MeshXY`\es into
+:class:`~iris.ugrid.MeshXY`, and merge/concatenate are not yet
+capable of combining multiple :class:`~iris.ugrid.MeshXY`\es into
 one.
 
 :class:`~iris.cube.Cube`\s that include
-:class:`~iris.experimental.ugrid.MeshCoord`\s can still be merged/concatenated
+:class:`~iris.ugrid.MeshCoord`\s can still be merged/concatenated
 on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, since such
 :class:`~iris.cube.Cube`\s will by definition share the same
-:class:`~iris.experimental.ugrid.MeshXY`.
+:class:`~iris.ugrid.MeshXY`.
 
 .. seealso::
 
     You may wish to investigate
-    :func:`iris.experimental.ugrid.recombine_submeshes`, which can be used
-    for a very specific type of :class:`~iris.experimental.ugrid.MeshXY`
+    :func:`iris.ugrid.recombine_submeshes`, which can be used
+    for a very specific type of :class:`~iris.ugrid.MeshXY`
     combination not detailed here.
 
 Arithmetic
@@ -869,7 +869,7 @@ Arithmetic
 
 Cube Arithmetic (described in :doc:`/userguide/cube_maths`)
 has been extended to handle :class:`~iris.cube.Cube`\s that include
-:class:`~iris.experimental.ugrid.MeshCoord`\s, and hence have a ``cube.mesh``.
+:class:`~iris.ugrid.MeshCoord`\s, and hence have a ``cube.mesh``.
 
 Cubes with meshes can be combined in arithmetic operations like
 "ordinary" cubes. They can combine with other cubes without that mesh
