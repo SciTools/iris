@@ -125,6 +125,12 @@ This document explains the changes made to Iris for this release
    to be compatible with GeoVista v0.5, as well as previous versions.
    (:pull:`6064`)
 
+#. `@pp-mo`_ temporarily pinned matplotlib to ">=3.5, !=3.9.1", to avoid current CI
+   test failures on plot results, apparently due to a matplotlib bug.
+   See : https://github.com/matplotlib/matplotlib/issues/28567
+   (:pull:`6065`)
+
+
 
 📚 Documentation
 ================
