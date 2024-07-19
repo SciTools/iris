@@ -82,6 +82,12 @@ This document explains the changes made to Iris for this release
    more flexible parent class (:class:`~iris.experimental.ugrid.mesh.Mesh`).
    (:issue:`6052` :pull:`6056`)
 
+#. `@stephenworsley`_ replaced the ``include_nodes``, ``include_edges`` and
+   ``include_faces`` arguments with a single ``location`` argument in the
+   :class:`~iris.experimental.ugrid.Mesh` methods
+   :meth:`~iris.experimental.ugrid.Mesh.coord`, :meth:`~iris.experimental.ugrid.Mesh.coords`
+   and :meth:`~iris.experimental.ugrid.Mesh.remove_coords`. (:pull:`6055`)
+
 
 🚀 Performance Enhancements
 ===========================

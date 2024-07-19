@@ -97,7 +97,7 @@ def test_assigned_mesh_cs(tmp_path):
     make_file(nc_path)
     with PARSE_UGRID_ON_LOAD.context():
         cube = iris.load_cube(nc_path, "node_data")
-    nodeco_x = cube.mesh.coord(include_nodes=True, axis="x")
+    nodeco_x = cube.mesh.coord(location="node", axis="x")
     meshco_x, meshco_y = [cube.coord(axis=ax) for ax in ("x", "y")]
     assert nodeco_x.coord_system is None
     assert meshco_x.coord_system is None
@@ -118,7 +118,7 @@ def test_meshcoord_coordsys_copy(tmp_path):
     make_file(nc_path)
     with PARSE_UGRID_ON_LOAD.context():
         cube = iris.load_cube(nc_path, "node_data")
-    node_coord = cube.mesh.coord(include_nodes=True, axis="x")
+    node_coord = cube.mesh.coord(location="node", axis="x")
     assigned_cs = GeogCS(1.0)
     node_coord.coord_system = assigned_cs
     mesh_coord = cube.coord(axis="x")
