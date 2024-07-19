@@ -261,12 +261,12 @@ class MeshCoordMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.coords.MeshCoord`."""
 
     _members = ("location", "axis")
-    # NOTE: in future, we may add 'mesh' as part of this metadata,
-    # as the MeshXY seems part of the 'identity' of a MeshCoord.
-    # For now we omit it, particularly as we don't yet implement MeshXY.__eq__.
-    #
-    # Thus, for now, the MeshCoord class will need to handle 'mesh' explicitly
-    # in identity / comparison, but in future that may be simplified.
+    # NOTE: does *not* include 'mesh'.
+    # This is analogous to how CubeMetadata likewise omits Cube "dimensional" metadata,
+    # i.e. coords / ancillaries / cell_measures.
+    # (1) This allows `Mesh.coord` to pick a MeshCoord matching one from another cube.
+    # (2) because of this, MeshCoord identity / comparison logic must handle 'mesh'
+    # explicitly, in addition to metadata comparison.  Again, as for Cube and coords.
 
     __slots__ = ()
 
