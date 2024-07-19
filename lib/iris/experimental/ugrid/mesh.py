@@ -1544,17 +1544,6 @@ class Mesh(CFVariableMixin):
             that matched the given criteria.
 
         """
-        if location is not None:
-            if location not in ["node", "edge", "face"]:
-                raise ValueError(
-                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
-                )
-            include_nodes = location == "node"
-            include_edges = location == "edge"
-            include_faces = location == "face"
-        else:
-            include_nodes = include_edges = include_faces = None
-
         result = self._coord_manager.filter(
             item=item,
             standard_name=standard_name,
@@ -1562,9 +1551,7 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())[0]
 
@@ -1577,9 +1564,6 @@ class Mesh(CFVariableMixin):
         attributes=None,
         axis=None,
         location=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
     ):
         """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh`.
 
@@ -1632,17 +1616,6 @@ class Mesh(CFVariableMixin):
             :class:`Mesh` that matched the given criteria.
 
         """
-        if location is not None:
-            if location not in ["node", "edge", "face"]:
-                raise ValueError(
-                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
-                )
-            include_nodes = location == "node"
-            include_edges = location == "edge"
-            include_faces = location == "face"
-        else:
-            include_nodes = include_edges = include_faces = None
-
         result = self._coord_manager.filters(
             item=item,
             standard_name=standard_name,
@@ -1650,9 +1623,7 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())
 
@@ -1799,34 +1770,17 @@ class Mesh(CFVariableMixin):
             the :class:`Mesh` that matched the given criteria.
 
         """
-        # Filter out absent arguments - only expecting face coords sometimes,
-        # same will be true of volumes in future.
-        # TODO: should location be allowed to be a list?
-        if location is not None:
-            if location not in ["node", "edge", "face"]:
-                raise ValueError(
-                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
-                )
-            include_nodes = location == "node"
-            include_edges = location == "edge"
-            include_faces = location == "face"
-        else:
-            include_nodes = include_edges = include_faces = None
+        result = self._coord_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            location=location,
+        )
 
-        kwargs = {
-            "item": item,
-            "standard_name": standard_name,
-            "long_name": long_name,
-            "var_name": var_name,
-            "attributes": attributes,
-            "axis": axis,
-            "include_nodes": include_nodes,
-            "include_edges": include_edges,
-            "include_faces": include_faces,
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v}
-
-        return self._coord_manager.remove(**kwargs)
+        return result
 
     def xml_element(self, doc):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`Mesh`.
@@ -2218,21 +2172,21 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         # TBD: support coord_systems?
 
-        # Preserve original argument before modifying.
-        face_requested = include_faces
-
-        # Rationalise the tri-state behaviour.
-        args = [include_nodes, include_edges, include_faces]
-        state = not any(set(filter(lambda arg: arg is not None, args)))
-        include_nodes, include_edges, include_faces = map(
-            lambda arg: arg if arg is not None else state, args
-        )
+        # Determine locations to include.
+        if location is not None:
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                )
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            include_nodes = include_edges = include_faces = True
 
         def populated_coords(coords_tuple):
             return list(filter(None, list(coords_tuple)))
@@ -2245,7 +2199,7 @@ class _Mesh1DCoordinateManager:
         if hasattr(self, "face_coords"):
             if include_faces:
                 members += populated_coords(self.face_coords)
-        elif face_requested:
+        elif location == "face":
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
@@ -2272,8 +2226,7 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2282,8 +2235,7 @@ class _Mesh1DCoordinateManager:
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
+            location=location,
         )
 
 
@@ -2358,9 +2310,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2369,9 +2319,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
 
 
