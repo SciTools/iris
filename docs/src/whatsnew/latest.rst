@@ -120,6 +120,11 @@ This document explains the changes made to Iris for this release
    now be used, currently being v7.2.6.
    (:pull:`5901`)
 
+#. `@trexfeathers`_ updated the :mod:`iris.experimental.geovista`
+   documentation's use of :class:`geovista.geodesic.BBox`
+   to be compatible with GeoVista v0.5, as well as previous versions.
+   (:pull:`6064`)
+
 
 📚 Documentation
 ================
