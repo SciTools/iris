@@ -16,14 +16,14 @@ Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-
 
 from ...config import get_logger
 from .load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
-from .mesh import Connectivity, Mesh, MeshCoord
+from .mesh import Connectivity, MeshCoord, MeshXY
 from .save import save_mesh
 from .utils import recombine_submeshes
 
 __all__ = [
     "Connectivity",
-    "Mesh",
     "MeshCoord",
+    "MeshXY",
     "PARSE_UGRID_ON_LOAD",
     "load_mesh",
     "load_meshes",

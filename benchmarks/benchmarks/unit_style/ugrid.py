@@ -80,7 +80,7 @@ class ConnectivityLazy(Connectivity):
         self.object = self.create()
 
 
-class Mesh(UGridCommon):
+class MeshXY(UGridCommon):
     def setup(self, n_faces, lazy=False):
         ####
         # Steal everything from the sample mesh for benchmarking creation of a
@@ -124,7 +124,7 @@ class Mesh(UGridCommon):
         self.eq_object = deepcopy(self.object)
 
     def create(self):
-        return ugrid.Mesh(**self.mesh_kwargs)
+        return ugrid.MeshXY(**self.mesh_kwargs)
 
     def time_add_connectivities(self, n_faces):
         self.object.add_connectivities(self.face_node)
@@ -149,8 +149,8 @@ class Mesh(UGridCommon):
 
 
 @disable_repeat_between_setup
-class MeshLazy(Mesh):
-    """Lazy equivalent of :class:`Mesh`."""
+class MeshXYLazy(MeshXY):
+    """Lazy equivalent of :class:`MeshXY`."""
 
     def setup(self, n_faces, lazy=True):
         super().setup(n_faces, lazy=lazy)

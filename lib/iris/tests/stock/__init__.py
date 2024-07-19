@@ -837,10 +837,10 @@ def realistic_4d_w_everything(w_mesh=False):
         new_instance = dim_metadata.__class__(flat_values, **kwargs)
         return new_instance
 
-    def remove_duplicate_nodes(mesh: ugrid.Mesh):
+    def remove_duplicate_nodes(mesh: ugrid.MeshXY):
         """Remove duplicate nodes from a mesh.
 
-        Mesh.from_coords() does not do this due to complications like lazy
+        MeshXY.from_coords() does not do this due to complications like lazy
         arrays. Not a problem here.
         """
         # TODO:
@@ -885,7 +885,7 @@ def realistic_4d_w_everything(w_mesh=False):
 
         return mesh
 
-    new_mesh = ugrid.Mesh.from_coords(
+    new_mesh = ugrid.MeshXY.from_coords(
         flatten_dim_metadata(default_lon),
         flatten_dim_metadata(default_lat),
     )

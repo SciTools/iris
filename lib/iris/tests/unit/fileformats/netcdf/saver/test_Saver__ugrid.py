@@ -22,7 +22,7 @@ import numpy as np
 from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
-from iris.experimental.ugrid.mesh import Connectivity, Mesh
+from iris.experimental.ugrid.mesh import Connectivity, MeshXY
 from iris.experimental.ugrid.save import save_mesh
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests.stock import realistic_4d
@@ -115,7 +115,7 @@ def build_mesh(
                 connectivities[role] = conn
             applyargs(conn, kwargs)
 
-    mesh = Mesh(
+    mesh = MeshXY(
         topology_dimension=topology_dimension,
         node_coords_and_axes=zip(node_coords, XY_LOCS),
         edge_coords_and_axes=zip(edge_coords, XY_LOCS),
@@ -196,7 +196,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
     Parameters
     ----------
-    mesh : :class:`iris.experimental.ugrid.mesh.Mesh` or None, optional
+    mesh : :class:`iris.experimental.ugrid.mesh.MeshXY` or None, optional
         If None, use 'default_mesh()'
     location : str, optional, default="face"
         Which mesh element to map the cube to.
@@ -719,7 +719,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         nodesfirst_faces_conn = face_nodes_conn.transpose()
         nodesfirst_edges_conn = edge_nodes_conn.transpose()
         # Make a new mesh with both face and edge connectivities 'transposed'.
-        mesh2 = Mesh(
+        mesh2 = MeshXY(
             topology_dimension=mesh.topology_dimension,
             node_coords_and_axes=zip(mesh.node_coords, XY_LOCS),
             face_coords_and_axes=zip(mesh.face_coords, XY_LOCS),
@@ -768,7 +768,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             start_index=1,
         )
         # Make a new mesh with altered connectivities.
-        mesh2 = Mesh(
+        mesh2 = MeshXY(
             topology_dimension=mesh.topology_dimension,
             node_coords_and_axes=zip(mesh.node_coords, XY_LOCS),
             face_coords_and_axes=zip(mesh.face_coords, XY_LOCS),
@@ -870,7 +870,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
     def test_location_coord_units(self):
         # Check that units on mesh locations are handled correctly.
-        # NOTE: at present, the Mesh class cannot handle coordinates that are
+        # NOTE: at present, the MeshXY class cannot handle coordinates that are
         # not recognised by 'guess_coord_axis' == suitable standard names
         mesh = make_mesh(
             nodecoord_xyargs=(
@@ -954,7 +954,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 (None, None, "meshvar_x"),
                 (None, None, "meshvar_x"),
             ),
-            # standard_name only : does not apply to Mesh
+            # standard_name only : does not apply to MeshXY
             (
                 ("air_temperature", None, None),
                 ("air_temperature", None, "Mesh_2d"),
@@ -1017,7 +1017,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # N.B. this is basically centralised in Saver._get_mesh_variable_name,
         # but we test in an implementation-neutral way (as it's fairly easy).
 
-        # Options here are limited because the Mesh relies on guess_axis so,
+        # Options here are limited because the MeshXY relies on guess_axis so,
         # for now anyway, coords *must* have a known X/Y-type standard-name
         coord_names_tests = [
             # standard_name only
@@ -1041,7 +1041,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 ("projection_x_coordinate", "long name", "x_var_name"),
             ),
             # # no standard name ?
-            # # not possible at present, as Mesh requires a recognisable
+            # # not possible at present, as MeshXY requires a recognisable
             # # standard_name to identify the axis of a location-coord.
             # # TODO: test this if+when Mesh usage is relaxed
             # (

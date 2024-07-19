@@ -9,7 +9,7 @@ import tempfile
 
 from iris import load_cube
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
-from iris.experimental.ugrid.mesh import Mesh, MeshCoord
+from iris.experimental.ugrid.mesh import MeshCoord, MeshXY
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -50,7 +50,7 @@ class XIOSFileMixin(tests.IrisTest):
 
         # Also a few checks on the attached mesh-related information.
         last_dim = cube.ndim - 1
-        self.assertIsInstance(cube.mesh, Mesh)
+        self.assertIsInstance(cube.mesh, MeshXY)
         self.assertEqual(cube.mesh_dim(), last_dim)
         self.assertEqual(cube.location, location)
         for coord_name in ("longitude", "latitude"):
