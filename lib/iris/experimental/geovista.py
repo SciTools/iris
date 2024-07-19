@@ -231,7 +231,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
     The parameters of :func:`extract_unstructured_region` have been designed with
     flexibility and reuse in mind. This is demonstrated below.
 
-    >>> from geovista import BBox
+    >>> from geovista.geodesic import BBox
     >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
     >>> print(cube_w_mesh.shape)
     (72, 96)
