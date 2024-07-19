@@ -168,13 +168,6 @@ class TestLoadErrors(tests.IrisTest):
         self.assertEqual(1, len(file_meshes))
         self.assertEqual(second_name, file_meshes[0].var_name)
 
-    def test_no_parsing(self):
-        nc_path = cdl_to_nc(self.ref_cdl)
-        with self.assertRaisesRegex(
-            ValueError, ".*Must be True to enable mesh loading."
-        ):
-            _ = load_meshes(nc_path)
-
     def test_invalid_scheme(self):
         with self.assertRaisesRegex(ValueError, "Iris cannot handle the URI scheme:.*"):
             _ = load_meshes("foo://bar")

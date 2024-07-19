@@ -263,11 +263,6 @@ class TestsMesh(tests.IrisTest):
         cls.nc_path = cdl_to_nc(cls.ref_cdl)
         cls.mesh_cubes = list(load_cubes(cls.nc_path))
 
-    def test_mesh_handled(self):
-        cubes_no_ugrid = list(load_cubes(self.nc_path))
-        self.assertEqual(4, len(cubes_no_ugrid))
-        self.assertEqual(2, len(self.mesh_cubes))
-
     def test_standard_dims(self):
         for cube in self.mesh_cubes:
             self.assertIsNotNone(cube.coords("levels"))
