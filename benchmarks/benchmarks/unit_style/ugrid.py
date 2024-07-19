@@ -93,9 +93,8 @@ class MeshXY(UGridCommon):
         )
 
         def get_coords_and_axes(location):
-            search_kwargs = {f"include_{location}s": True}
             return [
-                (source_mesh.coord(axis=axis, **search_kwargs), axis)
+                (source_mesh.coord(axis=axis, location=location), axis)
                 for axis in ("x", "y")
             ]
 
@@ -114,7 +113,7 @@ class MeshXY(UGridCommon):
         self.node_x = self.object.node_coords.node_x
         # Kwargs for reuse in search and remove methods.
         self.connectivities_kwarg = dict(cf_role="edge_node_connectivity")
-        self.coords_kwarg = dict(include_faces=True)
+        self.coords_kwarg = dict(location="face")
 
         # TODO: an opportunity for speeding up runtime if needed, since
         #  eq_object is not needed for all benchmarks. Just don't generate it
