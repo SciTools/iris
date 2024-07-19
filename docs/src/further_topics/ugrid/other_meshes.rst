@@ -25,7 +25,7 @@ A FESOM mesh encoded in a NetCDF file includes:
 
 To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
-:class:`~iris.experimental.ugrid.mesh.Mesh`.
+:class:`~iris.experimental.ugrid.mesh.MeshXY`.
 
 .. dropdown:: Code
     :icon: code
@@ -33,7 +33,7 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.experimental.ugrid import Mesh
+        >>> from iris.experimental.ugrid import MeshXY
 
 
         >>> temperature_cube = iris.load_cube("my_file.nc", "sea_surface_temperature")
@@ -62,7 +62,7 @@ as the **nodes** when creating the Iris
 
         # Use a Mesh to represent the Cube's horizontal geography, by replacing
         #  the existing face AuxCoords with new MeshCoords.
-        >>> fesom_mesh = Mesh.from_coords(temperature_cube.coord('longitude'),
+        >>> fesom_mesh = MeshXY.from_coords(temperature_cube.coord('longitude'),
         ...                               temperature_cube.coord('latitude'))
         >>> for new_coord in fesom_mesh.to_MeshCoords("face"):
         ...     old_coord = temperature_cube.coord(new_coord.name())
@@ -85,7 +85,7 @@ as the **nodes** when creating the Iris
                 ...
 
         >>> print(temperature_cube.mesh)
-        Mesh : 'unknown'
+        MeshXY : 'unknown'
             topology_dimension: 2
             node
                 node_dimension: 'Mesh2d_node'
@@ -113,7 +113,7 @@ An SMC grid encoded in a NetCDF file includes:
 
 From this information we can derive face corner coordinates, which will be used
 as the **nodes** when creating the Iris
-:class:`~iris.experimental.ugrid.mesh.Mesh`.
+:class:`~iris.experimental.ugrid.mesh.MeshXY`.
 
 
 .. dropdown:: Code
@@ -122,7 +122,7 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.experimental.ugrid import Mesh
+        >>> from iris.experimental.ugrid import MeshXY
         >>> import numpy as np
 
 
@@ -177,7 +177,7 @@ as the **nodes** when creating the Iris
 
         # Use a Mesh to represent the Cube's horizontal geography, by replacing
         #  the existing face AuxCoords with new MeshCoords.
-        >>> smc_mesh = Mesh.from_coords(faces_x, faces_y)
+        >>> smc_mesh = MeshXY.from_coords(faces_x, faces_y)
         >>> for new_coord in smc_mesh.to_MeshCoords("face"):
         ...     old_coord = wave_cube.coord(new_coord.name())
         ...     unstructured_dim, = old_coord.cube_dims(wave_cube)
@@ -209,7 +209,7 @@ as the **nodes** when creating the Iris
                 ...
 
         >>> print(wave_cube.mesh)
-        Mesh : 'unknown'
+        MeshXY : 'unknown'
             topology_dimension: 2
             node
                 node_dimension: 'Mesh2d_node'
@@ -265,7 +265,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
         >>> import iris
         >>> from iris.coords import AuxCoord, CellMeasure
         >>> from iris.cube import Cube
-        >>> from iris.experimental.ugrid.mesh import Mesh, Connectivity
+        >>> from iris.experimental.ugrid.mesh import MeshXY, Connectivity
 
 
         >>> filepath = iris.sample_data_path('orca2_votemper.nc')
@@ -313,14 +313,14 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
         ... )
 
         >>> # Create a mesh object.
-        >>> mesh = Mesh(
+        >>> mesh = MeshXY(
         ...     topology_dimension=2,
         ...     node_coords_and_axes=[(node_x_co, 'x'), (node_y_co, 'y')],
         ...     connectivities=face_nodes_conn,
         ...     face_coords_and_axes=[(face_x_co, 'x'), (face_y_co, 'y')]
         ... )
         >>> print(mesh)
-        Mesh : 'unknown'
+        MeshXY : 'unknown'
             topology_dimension: 2
             node
                 node_dimension: 'Mesh2d_node'

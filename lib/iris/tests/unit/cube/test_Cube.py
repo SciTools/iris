@@ -2210,7 +2210,7 @@ class Test__init__mesh(tests.IrisTest):
         meshco_y = sample_meshcoord(axis="y")  # Own (different) mesh
         meshco_y.mesh.long_name = "new_name"
         n_faces = meshco_x.shape[0]
-        with self.assertRaisesRegex(ValueError, "Mesh.* does not match"):
+        with self.assertRaisesRegex(ValueError, "MeshXY.* does not match"):
             Cube(
                 np.zeros(n_faces),
                 aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],

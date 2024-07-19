@@ -14,5 +14,5 @@ on:
 
 jobs:
   refresh_lockfiles:
-    uses: scitools/workflows/.github/workflows/refresh-lockfiles.yml@2024.07.2
+    uses: scitools/workflows/.github/workflows/refresh-lockfiles.yml@2024.07.3
     secrets: inherit

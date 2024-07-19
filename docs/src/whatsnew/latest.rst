@@ -77,6 +77,11 @@ This document explains the changes made to Iris for this release
    This is due to changes in :func:`~iris.util.array_equal` which previously
    ignored masks entirely. (:pull:`4457`)
 
+#. `@trexfeathers`_ renamed the ``Mesh`` class to
+   :class:`~iris.experimental.ugrid.mesh.MeshXY`, in preparation for a future
+   more flexible parent class (:class:`~iris.experimental.ugrid.mesh.Mesh`).
+   (:issue:`6052` :pull:`6056`)
+
 #. `@stephenworsley`_ replaced the ``include_nodes``, ``include_edges`` and
    ``include_faces`` arguments with a single ``location`` argument in the
    :class:`~iris.experimental.ugrid.Mesh` methods
