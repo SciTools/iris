@@ -279,6 +279,7 @@ class TestProperties1D(TestMeshCommon):
             ({"axis": "y"}, ["node_y", "edge_y"]),
             ({"location": "node"}, ["node_x", "node_y"]),
             ({"location": "edge"}, ["edge_x", "edge_y"]),
+            ({"location": "face"}, ["face_x", "face_y"]),
         )
 
         func = self.mesh.coords
