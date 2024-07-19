@@ -252,7 +252,7 @@ class TestProperties1D(TestMeshCommon):
             {"long_name": "foo"},
             {"var_name": "foo"},
             {"attributes": {"test": 2}},
-            {"location": "face"},
+            {"location": "edge"},
         )
 
         func = self.mesh.coords
