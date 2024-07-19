@@ -2996,17 +2996,14 @@ class MeshCoord(AuxCoord):
 
         """
         mesh, location, axis = self.mesh, self.location, self.axis
-        node_coord = self.mesh.coord(location="node", axis=axis)
+        node_coord = mesh.coord(location="node", axis=axis)
 
         if location == "node":
             points_coord = node_coord
             bounds_connectivity = None
-        elif location == "edge":
-            points_coord = self.mesh.coord(location="edge", axis=axis)
-            bounds_connectivity = mesh.edge_node_connectivity
-        elif location == "face":
-            points_coord = self.mesh.coord(location="face", axis=axis)
-            bounds_connectivity = mesh.face_node_connectivity
+        else:
+            points_coord = mesh.coord(location=location, axis=axis)
+            bounds_connectivity = getattr(mesh, f"{location}_node_connectivity")
 
         # The points output is the points of the relevant element-type coord.
         points = points_coord.core_points()
