@@ -1040,8 +1040,7 @@ class MeshXY(Mesh):
                     main_conn_string = main_conn.summary(shorten=True, linewidth=0)
                     line(f"{main_conn_name}: {main_conn_string}", 2)
                 # Print coords
-                include_key = f"include_{element}s"
-                coords = self.coords(**{include_key: True})
+                coords = self.coords(location=element)
                 if coords:
                     line(f"{element} coordinates", 2)
                     for coord in coords:
@@ -1525,9 +1524,7 @@ class MeshXY(Mesh):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         """Return a single :class:`~iris.coords.AuxCoord` coordinate.
 
@@ -1575,12 +1572,8 @@ class MeshXY(Mesh):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
@@ -1596,9 +1589,7 @@ class MeshXY(Mesh):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())[0]
 
@@ -1610,9 +1601,7 @@ class MeshXY(Mesh):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`.
 
@@ -1655,12 +1644,8 @@ class MeshXY(Mesh):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
@@ -1676,9 +1661,7 @@ class MeshXY(Mesh):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())
 
@@ -1776,9 +1759,7 @@ class MeshXY(Mesh):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`MeshXY`.
 
@@ -1817,15 +1798,8 @@ class MeshXY(Mesh):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched
-            for potential removal.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
@@ -1834,22 +1808,17 @@ class MeshXY(Mesh):
             the :class:`MeshXY` that matched the given criteria.
 
         """
-        # Filter out absent arguments - only expecting face coords sometimes,
-        # same will be true of volumes in future.
-        kwargs = {
-            "item": item,
-            "standard_name": standard_name,
-            "long_name": long_name,
-            "var_name": var_name,
-            "attributes": attributes,
-            "axis": axis,
-            "include_nodes": include_nodes,
-            "include_edges": include_edges,
-            "include_faces": include_faces,
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v}
+        result = self._coord_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            location=location,
+        )
 
-        return self._coord_manager.remove(**kwargs)
+        return result
 
     def xml_element(self, doc):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`MeshXY`.
@@ -2241,21 +2210,21 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         # TBD: support coord_systems?
 
-        # Preserve original argument before modifying.
-        face_requested = include_faces
-
-        # Rationalise the tri-state behaviour.
-        args = [include_nodes, include_edges, include_faces]
-        state = not any(set(filter(lambda arg: arg is not None, args)))
-        include_nodes, include_edges, include_faces = map(
-            lambda arg: arg if arg is not None else state, args
-        )
+        # Determine locations to include.
+        if location is not None:
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                )
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            include_nodes = include_edges = include_faces = True
 
         def populated_coords(coords_tuple):
             return list(filter(None, list(coords_tuple)))
@@ -2268,7 +2237,7 @@ class _Mesh1DCoordinateManager:
         if hasattr(self, "face_coords"):
             if include_faces:
                 members += populated_coords(self.face_coords)
-        elif face_requested:
+        elif location == "face":
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
@@ -2295,8 +2264,7 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2305,8 +2273,7 @@ class _Mesh1DCoordinateManager:
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
+            location=location,
         )
 
 
@@ -2381,9 +2348,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2392,9 +2357,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
 
 
@@ -2769,14 +2732,13 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_coord = self.mesh.coord(location="node", axis=self.axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
         use_metadict = node_metadict.copy()
         if location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            kwargs = {f"include_{location}s": True, "axis": axis}
-            location_coord = self.mesh.coord(**kwargs)
+            location_coord = self.mesh.coord(location=location, axis=axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
@@ -2858,16 +2820,12 @@ class MeshCoord(AuxCoord):
         """
         # This matches where the coord metadata is drawn from.
         # See : https://github.com/SciTools/iris/issues/4860
-        select_kwargs = {
-            f"include_{self.location}s": True,
-            "axis": self.axis,
-        }
         try:
             # NOTE: at present, a MeshCoord *always* references the relevant location
             # coordinate in the mesh, from which its points are taken.
             # However this might change in future ..
             # see : https://github.com/SciTools/iris/discussions/4438#bounds-no-points
-            location_coord = self.mesh.coord(**select_kwargs)
+            location_coord = self.mesh.coord(location=self.location, axis=self.axis)
             coord_system = location_coord.coord_system
         except CoordinateNotFoundError:
             # No such coord : possible in UGRID, but probably not Iris (at present).
@@ -3076,17 +3034,14 @@ class MeshCoord(AuxCoord):
 
         """
         mesh, location, axis = self.mesh, self.location, self.axis
-        node_coord = self.mesh.coord(include_nodes=True, axis=axis)
+        node_coord = mesh.coord(location="node", axis=axis)
 
         if location == "node":
             points_coord = node_coord
             bounds_connectivity = None
-        elif location == "edge":
-            points_coord = self.mesh.coord(include_edges=True, axis=axis)
-            bounds_connectivity = mesh.edge_node_connectivity
-        elif location == "face":
-            points_coord = self.mesh.coord(include_faces=True, axis=axis)
-            bounds_connectivity = mesh.face_node_connectivity
+        else:
+            points_coord = mesh.coord(location=location, axis=axis)
+            bounds_connectivity = getattr(mesh, f"{location}_node_connectivity")
 
         # The points output is the points of the relevant element-type coord.
         points = points_coord.core_points()
