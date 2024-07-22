@@ -138,6 +138,8 @@ This document explains the changes made to Iris for this release
 #. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
+#. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
+
 💼 Internal
 ===========
 
