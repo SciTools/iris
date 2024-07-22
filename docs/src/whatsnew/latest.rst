@@ -107,6 +107,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster for cubes
    that have coordinate factories. (:pull:`6038`)
 
+#. `@bouweandela`_ made the time coordinate categorisation functions in
+   :mod:`iris.coord_categorisation` faster. (:pull:`5999`)
+
 🔥 Deprecations
 ===============
 
