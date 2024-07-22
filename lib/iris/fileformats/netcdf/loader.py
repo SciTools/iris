@@ -583,7 +583,6 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # Deferred import to avoid circular imports.
     from iris.experimental.ugrid.cf import CFUGridReader
     from iris.experimental.ugrid.load import (
-        PARSE_UGRID_ON_LOAD,
         _build_mesh_coords,
         _meshes_from_cf,
     )
@@ -600,15 +599,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     for file_source in file_sources:
         # Ingest the file.  At present may be a filepath or an open netCDF4.Dataset.
-        meshes = {}
-        if PARSE_UGRID_ON_LOAD:
-            cf_reader_class = CFUGridReader
-        else:
-            cf_reader_class = iris.fileformats.cf.CFReader
-
-        with cf_reader_class(file_source) as cf:
-            if PARSE_UGRID_ON_LOAD:
-                meshes = _meshes_from_cf(cf)
+        with CFUGridReader(file_source) as cf:
+            meshes = _meshes_from_cf(cf)
 
             # Process each CF data variable.
             data_variables = list(cf.cf_group.data_variables.values()) + list(
@@ -626,8 +618,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 mesh_name = None
                 mesh = None
                 mesh_coords, mesh_dim = [], None
-                if PARSE_UGRID_ON_LOAD:
-                    mesh_name = getattr(cf_var, "mesh", None)
+                mesh_name = getattr(cf_var, "mesh", None)
                 if mesh_name is not None:
                     try:
                         mesh = meshes[mesh_name]

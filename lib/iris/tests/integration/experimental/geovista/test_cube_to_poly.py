@@ -8,7 +8,6 @@ import numpy as np
 
 from iris import load_cube
 from iris.experimental.geovista import cube_to_polydata
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.tests import get_data_path
 
 
@@ -57,8 +56,7 @@ def test_integration_mesh():
         ]
     )
 
-    with PARSE_UGRID_ON_LOAD.context():
-        cube = load_cube(file_path, "conv_rain")
+    cube = load_cube(file_path, "conv_rain")
 
     polydata = cube_to_polydata(cube[0, :])
     # This is a known good output, we have plotted the result and checked it.
