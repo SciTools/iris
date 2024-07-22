@@ -786,14 +786,12 @@ class MeshXY(Mesh):
 
             from iris import load_cube, sample_data_path
             from iris.experimental.ugrid import (
-                PARSE_UGRID_ON_LOAD,
                 MeshXY,
                 MeshCoord,
             )
 
             file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-            with PARSE_UGRID_ON_LOAD.context():
-                cube_w_mesh = load_cube(file_path)
+            cube_w_mesh = load_cube(file_path)
 
         Examples
         --------

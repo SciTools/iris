@@ -19,7 +19,6 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, Saver, _thread_safe_nc, save
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube
@@ -246,8 +245,7 @@ class Test_HdfSaveBug(tests.IrisTest):
             save(cubes, filepath)
 
             # Load them back for roundtrip testing.
-            with PARSE_UGRID_ON_LOAD.context():
-                new_cubes = iris.load(str(filepath))
+            new_cubes = iris.load(str(filepath))
 
             # There should definitely still be the same number of cubes.
             self.assertEqual(len(new_cubes), len(cubes))

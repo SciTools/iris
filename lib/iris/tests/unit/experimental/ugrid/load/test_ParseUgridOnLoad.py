@@ -4,42 +4,27 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.experimental.ugrid.load.ParseUgridOnLoad` class.
 
-todo: remove this module when experimental.ugrid is folded into standard behaviour.
+TODO: remove this module when ParseUGridOnLoad itself is removed.
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
 
+from iris._deprecation import IrisDeprecation
 from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, ParseUGridOnLoad
 
 
-class TestClass(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.cls = ParseUGridOnLoad()
-
-    def test_default(self):
-        self.assertFalse(self.cls)
-
-    def test_context(self):
-        self.assertFalse(self.cls)
-        with self.cls.context():
-            self.assertTrue(self.cls)
-        self.assertFalse(self.cls)
+def test_creation():
+    # I.E. "does not fail".
+    _ = ParseUGridOnLoad()
 
 
-class TestConstant(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.constant = PARSE_UGRID_ON_LOAD
+def test_context():
+    ugridswitch = ParseUGridOnLoad()
+    with pytest.warns(IrisDeprecation, match="PARSE_UGRID_ON_LOAD has been deprecated"):
+        with ugridswitch.context():
+            pass
 
-    def test_default(self):
-        self.assertFalse(self.constant)
 
-    def test_context(self):
-        self.assertFalse(self.constant)
-        with self.constant.context():
-            self.assertTrue(self.constant)
-        self.assertFalse(self.constant)
+def test_constant():
+    assert isinstance(PARSE_UGRID_ON_LOAD, ParseUGridOnLoad)

@@ -14,7 +14,6 @@ import shutil
 import tempfile
 
 import iris
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
 import iris.fileformats.netcdf
 from iris.tests.stock.netcdf import _add_standard_data, ncgen_from_cdl
 
@@ -48,8 +47,7 @@ class TestBasicSave(tests.IrisTest):
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)
             # Load as Iris data
-            with PARSE_UGRID_ON_LOAD.context():
-                cubes = iris.load(target_ncfile_path)
+            cubes = iris.load(target_ncfile_path)
             # Re-save, to check the save behaviour.
             resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
             iris.save(cubes, resave_ncfile_path)
@@ -69,8 +67,7 @@ class TestBasicSave(tests.IrisTest):
             # Fill in blank data-variables.
             _add_standard_data(target_ncfile_path)
             # Load the original as Iris data
-            with PARSE_UGRID_ON_LOAD.context():
-                orig_cubes = iris.load(target_ncfile_path)
+            orig_cubes = iris.load(target_ncfile_path)
 
             if "ex4" in ex_name:
                 # Discard the extra formula terms component cubes
@@ -80,8 +77,7 @@ class TestBasicSave(tests.IrisTest):
             # Save-and-load-back to compare the Iris saved result.
             resave_ncfile_path = str(self.temp_dir / f"{ex_name}_resaved.nc")
             iris.save(orig_cubes, resave_ncfile_path)
-            with PARSE_UGRID_ON_LOAD.context():
-                savedloaded_cubes = iris.load(resave_ncfile_path)
+            savedloaded_cubes = iris.load(resave_ncfile_path)
 
             # This should match the original exactly
             # ..EXCEPT for our inability to compare meshes.
