@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`."""
+"""Unit tests for the :meth:`iris.experimental.ugrid.mesh.MeshXY.from_coords`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -12,7 +12,7 @@ import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.experimental.ugrid import logger
-from iris.experimental.ugrid.mesh import Connectivity, Mesh
+from iris.experimental.ugrid.mesh import Connectivity, MeshXY
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 
@@ -39,7 +39,7 @@ class Test1Dim(tests.IrisTest):
         )
 
     def create(self):
-        return Mesh.from_coords(self.lon, self.lat)
+        return MeshXY.from_coords(self.lon, self.lat)
 
     def test_dimensionality(self):
         mesh = self.create()
@@ -207,7 +207,7 @@ class TestInvalidBounds(tests.IrisTest):
         lon = AuxCoord(points=[0.5, 1.5, 2.5])
         lat = AuxCoord(points=[0, 1, 2])
         with self.assertRaisesRegex(ValueError, "bounds missing from"):
-            _ = Mesh.from_coords(lon, lat)
+            _ = MeshXY.from_coords(lon, lat)
 
     def test_1_bound(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0], [1], [2]])
@@ -215,7 +215,7 @@ class TestInvalidBounds(tests.IrisTest):
         with self.assertRaisesRegex(
             ValueError, r"Expected coordinate bounds.shape \(n, >=2\)"
         ):
-            _ = Mesh.from_coords(lon, lat)
+            _ = MeshXY.from_coords(lon, lat)
 
 
 class TestInvalidPoints(tests.IrisTest):
@@ -225,4 +225,4 @@ class TestInvalidPoints(tests.IrisTest):
         cube = simple_2d_w_multidim_coords()[:3, :3]
         coord_1, coord_2 = cube.coords()
         with self.assertRaisesRegex(ValueError, "Expected coordinate ndim == 1"):
-            _ = Mesh.from_coords(coord_1, coord_2)
+            _ = MeshXY.from_coords(coord_1, coord_2)

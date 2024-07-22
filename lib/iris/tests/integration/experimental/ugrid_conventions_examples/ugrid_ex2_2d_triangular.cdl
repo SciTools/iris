@@ -8,7 +8,7 @@ Two = 2 ;
 Three = 3 ;
 
 variables:
-// Mesh topology
+// MeshXY topology
 integer Mesh2 ;
 Mesh2:cf_role = "mesh_topology" ;
 Mesh2:long_name = "Topology data of 2D unstructured mesh" ;
@@ -50,7 +50,7 @@ Mesh2_edge_face_links:start_index = 1 ;
 Mesh2_edge_face_links:_FillValue = -999 ;
 Mesh2_edge_face_links:comment = "missing neighbor faces are indicated using _FillValue" ;
 
-// Mesh node coordinates
+// MeshXY node coordinates
 double Mesh2_node_x(nMesh2_node) ;
 Mesh2_node_x:standard_name = "longitude" ;
 Mesh2_node_x:long_name = "Longitude of 2D mesh nodes." ;

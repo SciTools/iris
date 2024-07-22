@@ -31,7 +31,7 @@ def recombine_submeshes(
         Describes the mesh and mesh-location onto which the all the
         ``submesh-cubes``' data are mapped, and acts as a template for the
         result.
-        Must have a :class:`~iris.experimental.ugrid.mesh.Mesh`.
+        Must have a :class:`~iris.experimental.ugrid.mesh.MeshXY`.
 
     submesh_cubes : iterable of Cube, or Cube
         Cubes, each with data on a _subset_ of the ``mesh_cube`` datapoints

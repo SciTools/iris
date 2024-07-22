@@ -2459,17 +2459,17 @@ class Cube(CFVariableMixin):
         return result  # type: ignore[return-value]
 
     @property
-    def mesh(self) -> iris.experimental.ugrid.Mesh | None:
-        r"""Return the unstructured :class:`~iris.experimental.ugrid.Mesh` associated with the cube.
+    def mesh(self) -> iris.experimental.ugrid.MeshXY | None:
+        r"""Return the unstructured :class:`~iris.experimental.ugrid.MeshXY` associated with the cube.
 
-        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        Return the unstructured :class:`~iris.experimental.ugrid.MeshXY`
         associated with the cube, if the cube has any
         :class:`~iris.experimental.ugrid.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
-        :class:`iris.experimental.ugrid.Mesh` or None
+        :class:`iris.experimental.ugrid.mesh.MeshXY` or None
             The mesh of the cube
             :class:`~iris.experimental.ugrid.MeshCoord`'s,
             or ``None``.

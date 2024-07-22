@@ -885,7 +885,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
                 "[...]+bounds  shape(3,)>"
             ),
             "MeshCoord :  longitude / (unknown)",
-            "    mesh: <Mesh: 'test_mesh'>",
+            "    mesh: <MeshXY: 'test_mesh'>",
             "    location: 'face'",
             "    points: [3100, 3101, 3102]",
             "    bounds: [",

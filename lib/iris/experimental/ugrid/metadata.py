@@ -139,7 +139,7 @@ class ConnectivityMetadata(BaseMetadata):
 
 
 class MeshMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.experimental.ugrid.mesh.Mesh`."""
+    """Metadata container for a :class:`~iris.experimental.ugrid.mesh.MeshXY`."""
 
     # The node_dimension", "edge_dimension" and "face_dimension" members are
     # stateful only; they not participate in lenient/strict equivalence.
@@ -262,8 +262,8 @@ class MeshCoordMetadata(BaseMetadata):
 
     _members = ("location", "axis")
     # NOTE: in future, we may add 'mesh' as part of this metadata,
-    # as the Mesh seems part of the 'identity' of a MeshCoord.
-    # For now we omit it, particularly as we don't yet implement Mesh.__eq__.
+    # as the MeshXY seems part of the 'identity' of a MeshCoord.
+    # For now we omit it, particularly as we don't yet implement MeshXY.__eq__.
     #
     # Thus, for now, the MeshCoord class will need to handle 'mesh' explicitly
     # in identity / comparison, but in future that may be simplified.
