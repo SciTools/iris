@@ -582,12 +582,12 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # TODO: complete iris.ugrid replacement
     # into standard behaviour.
     # Deferred import to avoid circular imports.
+    from iris.io import run_callback
     from iris.ugrid.cf import CFUGridReader
     from iris.ugrid.load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )
-    from iris.io import run_callback
 
     # Create a low-level data-var filter from the original load constraints, if they are suitable.
     var_callback = _translate_constraints_to_var_callback(constraints)
