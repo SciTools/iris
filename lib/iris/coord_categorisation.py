@@ -58,8 +58,7 @@ def add_categorised_coord(
         calling ``category_function``.
     """
     # Interpret coord, if given as a name
-    if isinstance(from_coord, str):
-        from_coord = cube.coord(from_coord)
+    coord = cube.coord(from_coord) if isinstance(from_coord, str) else from_coord
 
     if len(cube.coords(name)) > 0:
         msg = 'A coordinate "%s" already exists in the cube.' % name
@@ -67,17 +66,15 @@ def add_categorised_coord(
 
     # Translate the coordinate points to cftime datetimes if requested.
     if category_function_expects_date:
-        points = from_coord.units.num2date(
-            from_coord.points, only_use_cftime_datetimes=True
-        )
+        points = coord.units.num2date(coord.points, only_use_cftime_datetimes=True)
     else:
-        points = from_coord.points
+        points = coord.points
 
     # Construct new coordinate by mapping values, using numpy.vectorize to
     # support multi-dimensional coords.
     # Test whether the result contains strings. If it does we must manually
     # force the dtype because of a numpy bug (see numpy #3270 on GitHub).
-    result = category_function(from_coord, points.ravel()[0])
+    result = category_function(coord, points.ravel()[0])
     if isinstance(result, str):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
 
@@ -88,14 +85,14 @@ def add_categorised_coord(
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(
-        vectorised_fn(from_coord, points),
+        vectorised_fn(coord, points),
         units=units,
-        attributes=from_coord.attributes.copy(),
+        attributes=coord.attributes.copy(),
     )
     new_coord.rename(name)
 
     # Add into the cube
-    cube.add_aux_coord(new_coord, cube.coord_dims(from_coord))
+    cube.add_aux_coord(new_coord, cube.coord_dims(coord))
 
 
 # ======================================
