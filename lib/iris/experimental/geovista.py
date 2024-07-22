@@ -8,7 +8,7 @@ from geovista import Transform
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 
 from iris.exceptions import CoordinateNotFoundError
-from iris.experimental.ugrid import Mesh
+from iris.experimental.ugrid import MeshXY
 
 
 def _get_coord(cube, axis):
@@ -231,7 +231,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
     The parameters of :func:`extract_unstructured_region` have been designed with
     flexibility and reuse in mind. This is demonstrated below.
 
-    >>> from geovista import BBox
+    >>> from geovista.geodesic import BBox
     >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
     >>> print(cube_w_mesh.shape)
     (72, 96)
@@ -322,7 +322,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
 
         if recreate_mesh:
             coords_on_mesh_dim = region_cube.coords(dimensions=mesh_dim)
-            new_mesh = Mesh.from_coords(
+            new_mesh = MeshXY.from_coords(
                 *[c for c in coords_on_mesh_dim if c.has_bounds()]
             )
 

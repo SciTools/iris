@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Extension to Iris' NetCDF saving to allow :class:`~iris.experimental.ugrid.mesh.Mesh` saving in UGRID format.
+"""Extension to Iris' NetCDF saving to allow :class:`~iris.experimental.ugrid.mesh.MeshXY` saving in UGRID format.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
@@ -19,7 +19,7 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
 
     Parameters
     ----------
-    mesh : :class:`iris.experimental.ugrid.Mesh` or iterable
+    mesh : :class:`iris.experimental.ugrid.MeshXY` or iterable
         Mesh(es) to save.
     filename : str
         Name of the netCDF file to create.
