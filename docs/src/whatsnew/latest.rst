@@ -107,6 +107,9 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster for cubes
    that have coordinate factories. (:pull:`6038`)
 
+#. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster if more
+   than two cubes are concatenated. (:pull:`5926`)
+
 🔥 Deprecations
 ===============
 
