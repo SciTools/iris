@@ -6,7 +6,7 @@ nMesh1_edge = 4 ; // nEdges
 Two = 2;
 
 variables:
-// Mesh topology
+// MeshXY topology
 integer Mesh1 ;
 Mesh1:cf_role = "mesh_topology" ;
 Mesh1:long_name = "Topology data of 1D network" ;
@@ -19,7 +19,7 @@ Mesh1_edge_nodes:cf_role = "edge_node_connectivity" ;
 Mesh1_edge_nodes:long_name = "Maps every edge/link to the two nodes that it connects." ;
 Mesh1_edge_nodes:start_index = 1 ;
 
-// Mesh node coordinates
+// MeshXY node coordinates
 double Mesh1_node_x(nMesh1_node) ;
 Mesh1_node_x:standard_name = "longitude" ;
 Mesh1_node_x:long_name = "Longitude of 1D network nodes." ;
