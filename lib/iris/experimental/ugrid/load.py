@@ -66,7 +66,7 @@ class ParseUGridOnLoad(threading.local):
             https://ugrid-conventions.github.io/ugrid-conventions/
 
         """
-        self._state = False
+        self._state = True
 
     def __bool__(self):
         return self._state
@@ -94,7 +94,7 @@ class ParseUGridOnLoad(threading.local):
             self._state = True
             yield
         finally:
-            self._state = False
+            self._state = True
 
 
 #: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.experimental.ugrid.load.ParseUGridOnLoad`.
