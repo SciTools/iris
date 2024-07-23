@@ -353,10 +353,8 @@ Load
 
 .. note:: UGRID loading support is limited to the NetCDF file format.
 
-While Iris' UGRID support remains :mod:`~iris.experimental`, parsing UGRID when
-loading a file remains **optional**. To load UGRID data from a file into the
-Iris mesh data model, use the
-:const:`iris.ugrid.PARSE_UGRID_ON_LOAD` context manager:
+Iris mesh support detects + parses any UGRID information when loading files, to
+produce cubes with a non-empty ".mesh" property.
 
 .. dropdown:: Code
     :icon: code
@@ -364,10 +362,8 @@ Iris mesh data model, use the
     .. doctest:: ugrid_operations
 
         >>> from iris import load
-        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     loaded_cubelist = load(cubelist_path)
+        >>> loaded_cubelist = load(cubelist_path)
 
         # Sort CubeList to ensure consistent result.
         >>> loaded_cubelist.sort(key=lambda cube: cube.name())
@@ -386,9 +382,8 @@ etcetera:
 
         >>> from iris import Constraint, load_cube
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     ground_cubelist = load(cubelist_path, Constraint(height=0))
-        ...     face_cube = load_cube(cubelist_path, "face_data")
+        >>> ground_cubelist = load(cubelist_path, Constraint(height=0))
+        >>> face_cube = load_cube(cubelist_path, "face_data")
 
         # Sort CubeList to ensure consistent result.
         >>> ground_cubelist.sort(key=lambda cube: cube.name())
@@ -430,8 +425,7 @@ creating any associated :class:`~iris.cube.Cube`\s:
 
         >>> from iris.ugrid import load_mesh
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     loaded_mesh = load_mesh(cubelist_path)
+        >>> loaded_mesh = load_mesh(cubelist_path)
 
         >>> print(loaded_mesh)
         MeshXY : 'my_mesh'
@@ -493,10 +487,8 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
 
         >>> from iris import load_cube, sample_data_path
         >>> from iris.experimental.geovista import cube_to_polydata
-        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
         >>> print(sample_mesh_cube)
         synthetic / (1)                     (-- : 96)
             Mesh coordinates:
@@ -595,10 +587,8 @@ below:
         >>> from geovista.geodesic import BBox
         >>> from iris import load_cube, sample_data_path
         >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
-        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
         >>> print(sample_mesh_cube)
         synthetic / (1)                     (-- : 96)
             Mesh coordinates:
@@ -667,7 +657,6 @@ with the
 
         >>> from esmf_regrid.experimental.unstructured_scheme import MeshToGridESMFRegridder
         >>> from iris import load, load_cube
-        >>> from iris.ugrid import PARSE_UGRID_ON_LOAD
 
         # You could also download these files from github.com/SciTools/iris-test-data.
         >>> from iris.tests import get_data_path
@@ -679,8 +668,7 @@ with the
         ... )
 
         # Load a list of cubes defined on the same Mesh.
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     mesh_cubes = load(mesh_file)
+        >>> mesh_cubes = load(mesh_file)
 
         # Extract a specific cube.
         >>> mesh_cube1 = mesh_cubes.extract_cube("sea_surface_temperature")
