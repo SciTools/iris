@@ -11,7 +11,7 @@ TODO: remove this module when ParseUGridOnLoad itself is removed.
 import pytest
 
 from iris._deprecation import IrisDeprecation
-from iris.ugrid.load import PARSE_UGRID_ON_LOAD, ParseUGridOnLoad
+from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, ParseUGridOnLoad
 
 
 def test_creation():
