@@ -9,7 +9,6 @@ import pytest
 import iris
 from iris.coord_systems import GeogCS
 from iris.tests.stock.netcdf import ncgen_from_cdl
-from iris.ugrid.load import PARSE_UGRID_ON_LOAD
 
 TEST_CDL = """
 netcdf mesh_test {
@@ -80,8 +79,7 @@ def test_default_mesh_cs(tmp_path, cs_axes):
     do_x = "x" in cs_axes
     do_y = "y" in cs_axes
     make_file(nc_path, node_x_crs=do_x, node_y_crs=do_y)
-    with PARSE_UGRID_ON_LOAD.context():
-        cube = iris.load_cube(nc_path, "node_data")
+    cube = iris.load_cube(nc_path, "node_data")
     meshco_x, meshco_y = [cube.coord(mesh_coords=True, axis=ax) for ax in ("x", "y")]
     # NOTE: at present, none of these load with a coordinate system,
     #  because we don't support the extended grid-mapping syntax.
@@ -95,8 +93,7 @@ def test_assigned_mesh_cs(tmp_path):
     # the corresponding meshcoord reports the same cs.
     nc_path = tmp_path / "test_temp.nc"
     make_file(nc_path)
-    with PARSE_UGRID_ON_LOAD.context():
-        cube = iris.load_cube(nc_path, "node_data")
+    cube = iris.load_cube(nc_path, "node_data")
     nodeco_x = cube.mesh.coord(location="node", axis="x")
     meshco_x, meshco_y = [cube.coord(axis=ax) for ax in ("x", "y")]
     assert nodeco_x.coord_system is None
@@ -116,8 +113,7 @@ def test_meshcoord_coordsys_copy(tmp_path):
     # Check that copying a meshcoord with a coord system works properly.
     nc_path = tmp_path / "test_temp.nc"
     make_file(nc_path)
-    with PARSE_UGRID_ON_LOAD.context():
-        cube = iris.load_cube(nc_path, "node_data")
+    cube = iris.load_cube(nc_path, "node_data")
     node_coord = cube.mesh.coord(location="node", axis="x")
     assigned_cs = GeogCS(1.0)
     node_coord.coord_system = assigned_cs
