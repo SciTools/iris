@@ -5,19 +5,7 @@
 
 """Infra-structure for unstructured mesh support.
 
-.. deprecated:: 1.10
-
-    :data:`PARSE_UGRID_ON_LOAD` is due to be removed at next major release.
-    Please remove all uses of this, which are no longer needed :
-    UGRID loading is now **always** active for files containing a UGRID mesh.
-
 Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
-
-.. note::
-
-    For the docstring of :const:`PARSE_UGRID_ON_LOAD`: see the original
-    definition at :const:`iris.ugrid.load.PARSE_UGRID_ON_LOAD`.
-
 """
 
 from ..config import get_logger
