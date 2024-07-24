@@ -20,6 +20,8 @@ from cf_units import Unit
 from dask import array as da
 import numpy as np
 
+from iris.common.metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
+
 from .. import _lazy_data as _lazy
 from ..common import CFVariableMixin, metadata_filter, metadata_manager_factory
 from ..common.metadata import BaseMetadata
@@ -28,7 +30,6 @@ from ..coords import AuxCoord, _DimensionalMetadata
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import array_equal, clip_string, guess_coord_axis
 from ..warnings import IrisVagueMetadataWarning
-from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -1367,7 +1368,7 @@ class MeshXY(Mesh):
             * a connectivity or metadata instance equal to that of
               the desired objects e.g.,
               :class:`~iris.ugrid.mesh.Connectivity` or
-              :class:`~iris.ugrid.metadata.ConnectivityMetadata`.
+              :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
             :class:`~iris.ugrid.mesh.Connectivity`. If ``None``,
@@ -1389,15 +1390,15 @@ class MeshXY(Mesh):
             :class:`~iris.ugrid.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
         contains_edge : bool, optional
             Contains the ``edge`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
         contains_face : bool, optional
             Contains the ``face`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         Returns
@@ -1463,7 +1464,7 @@ class MeshXY(Mesh):
             * a connectivity or metadata instance equal to that of
               the desired object e.g.,
               :class:`~iris.ugrid.mesh.Connectivity` or
-              :class:`~iris.ugrid.metadata.ConnectivityMetadata`.
+              :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
             :class:`~iris.ugrid.mesh.Connectivity`. If ``None``,
@@ -1485,15 +1486,15 @@ class MeshXY(Mesh):
             :class:`~iris.ugrid.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
         contains_edge : bool, optional
             Contains the ``edge`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
         contains_face : bool, optional
             Contains the ``face`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched.
 
         Returns
@@ -1698,7 +1699,7 @@ class MeshXY(Mesh):
             * a connectivity or metadata instance equal to that of
               the desired objects e.g.,
               :class:`~iris.ugrid.mesh.Connectivity` or
-              :class:`~iris.ugrid.metadata.ConnectivityMetadata`.
+              :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
             :class:`~iris.ugrid.mesh.Connectivity`. If ``None``,
@@ -1720,15 +1721,15 @@ class MeshXY(Mesh):
             :class:`~iris.ugrid.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
         contains_edge : bool, optional
             Contains the ``edge`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
         contains_face : bool, optional
             Contains the ``face`` element as part of the
-            :attr:`~iris.ugrid.metadata.ConnectivityMetadata.cf_role`
+            :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
             in the list of objects to be matched for potential removal.
 
         Returns

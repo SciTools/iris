@@ -10,9 +10,10 @@ import iris.tests as tests  # isort:skip
 
 import numpy as np
 
+from iris.common.metadata import MeshMetadata
 from iris.coords import AuxCoord
 from iris.exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
-from iris.ugrid import mesh, metadata
+from iris.ugrid import mesh
 from iris.ugrid.mesh import logger
 
 
@@ -83,7 +84,7 @@ class TestProperties1D(TestMeshCommon):
     def test__metadata_manager(self):
         self.assertEqual(
             self.mesh._metadata_manager.cls.__name__,
-            metadata.MeshMetadata.__name__,
+            MeshMetadata.__name__,
         )
 
     def test___getstate__(self):

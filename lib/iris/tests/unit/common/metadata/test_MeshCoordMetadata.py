@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.ugrid.metadata.MeshCoordMetadata`."""
+"""Unit tests for the :class:`iris.common.metadata.MeshCoordMetadata`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -13,8 +13,7 @@ import unittest.mock as mock
 from unittest.mock import sentinel
 
 from iris.common.lenient import _LENIENT, _qualname
-from iris.common.metadata import BaseMetadata
-from iris.ugrid.metadata import MeshCoordMetadata
+from iris.common.metadata import BaseMetadata, MeshCoordMetadata
 
 
 class Test__identity(tests.IrisTest):
