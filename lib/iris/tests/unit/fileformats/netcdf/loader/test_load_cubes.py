@@ -23,7 +23,7 @@ import numpy as np
 from iris.coords import AncillaryVariable, CellMeasure
 from iris.fileformats.netcdf import logger
 from iris.fileformats.netcdf.loader import load_cubes
-from iris.mesh.mesh import MeshCoord
+from iris.mesh import MeshCoord
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 

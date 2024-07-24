@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.mesh.mesh.Connectivity` class."""
+"""Unit tests for the :class:`iris.mesh.Connectivity` class."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -16,7 +16,7 @@ from numpy import ma
 from packaging import version
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
-from iris.mesh.mesh import Connectivity
+from iris.mesh import Connectivity
 
 
 class TestStandard(tests.IrisTest):

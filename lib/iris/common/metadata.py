@@ -1335,7 +1335,7 @@ class DimCoordMetadata(CoordMetadata):
 
 
 class ConnectivityMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.mesh.mesh.Connectivity`."""
+    """Metadata container for a :class:`~iris.mesh.Connectivity`."""
 
     # The "location_axis" member is stateful only, and does not participate in
     # lenient/strict equivalence.
@@ -1452,7 +1452,7 @@ class ConnectivityMetadata(BaseMetadata):
 
 
 class MeshMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.mesh.mesh.MeshXY`."""
+    """Metadata container for a :class:`~iris.mesh.MeshXY`."""
 
     # The node_dimension", "edge_dimension" and "face_dimension" members are
     # stateful only; they not participate in lenient/strict equivalence.

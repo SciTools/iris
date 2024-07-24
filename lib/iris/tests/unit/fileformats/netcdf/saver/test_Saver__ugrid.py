@@ -195,7 +195,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
     Parameters
     ----------
-    mesh : :class:`iris.mesh.mesh.MeshXY` or None, optional
+    mesh : :class:`iris.mesh.MeshXY` or None, optional
         If None, use 'default_mesh()'
     location : str, optional, default="face"
         Which mesh element to map the cube to.

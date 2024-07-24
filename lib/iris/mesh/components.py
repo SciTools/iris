@@ -72,9 +72,9 @@ MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 # MeshXY connectivity manager namedtuples.
 #
 
-#: Namedtuple for 1D mesh :class:`~iris.mesh.mesh.Connectivity` instances.
+#: Namedtuple for 1D mesh :class:`~iris.mesh.Connectivity` instances.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
-#: Namedtuple for 2D mesh :class:`~iris.mesh.mesh.Connectivity` instances.
+#: Namedtuple for 2D mesh :class:`~iris.mesh.Connectivity` instances.
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
     [
@@ -1135,7 +1135,7 @@ class MeshXY(Mesh):
 
     @property
     def all_connectivities(self):
-        """All the :class:`~iris.mesh.mesh.Connectivity` instances of the :class:`MeshXY`."""
+        """All the :class:`~iris.mesh.Connectivity` instances of the :class:`MeshXY`."""
         return self._connectivity_manager.all_members
 
     @property
@@ -1145,10 +1145,10 @@ class MeshXY(Mesh):
 
     @property
     def boundary_node_connectivity(self):
-        """The *optional* UGRID ``boundary_node_connectivity`` :class:`~iris.mesh.mesh.Connectivity`.
+        """The *optional* UGRID ``boundary_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``boundary_node_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`.
 
         """
@@ -1174,10 +1174,10 @@ class MeshXY(Mesh):
 
     @property
     def edge_face_connectivity(self):
-        """The *optional* UGRID ``edge_face_connectivity`` :class:`~iris.mesh.mesh.Connectivity`.
+        """The *optional* UGRID ``edge_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``edge_face_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`.
 
         """
@@ -1185,10 +1185,10 @@ class MeshXY(Mesh):
 
     @property
     def edge_node_connectivity(self):
-        """The UGRID ``edge_node_connectivity`` :class:`~iris.mesh.mesh.Connectivity`.
+        """The UGRID ``edge_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The UGRID ``edge_node_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`, which is **required** for :attr:`MeshXY.topology_dimension`
         of ``1``, and *optionally required* for
         :attr:`MeshXY.topology_dimension` ``>=2``.
@@ -1225,10 +1225,10 @@ class MeshXY(Mesh):
 
     @property
     def face_edge_connectivity(self):
-        """The *optional* UGRID ``face_edge_connectivity``:class:`~iris.mesh.mesh.Connectivity`.
+        """The *optional* UGRID ``face_edge_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_edge_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`.
 
         """
@@ -1237,10 +1237,10 @@ class MeshXY(Mesh):
 
     @property
     def face_face_connectivity(self):
-        """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.mesh.mesh.Connectivity`.
+        """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_face_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`.
 
         """
@@ -1248,10 +1248,10 @@ class MeshXY(Mesh):
 
     @property
     def face_node_connectivity(self):
-        """Return ``face_node_connectivity``:class:`~iris.mesh.mesh.Connectivity`.
+        """Return ``face_node_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The UGRID ``face_node_connectivity``
-        :class:`~iris.mesh.mesh.Connectivity` of the
+        :class:`~iris.mesh.Connectivity` of the
         :class:`MeshXY`, which is **required** for :attr:`MeshXY.topology_dimension`
         of ``2``, and *optionally required* for :attr:`MeshXY.topology_dimension`
         of ``3``.
@@ -1278,13 +1278,13 @@ class MeshXY(Mesh):
         self._metadata_manager.node_dimension = node_dimension
 
     def add_connectivities(self, *connectivities):
-        """Add one or more :class:`~iris.mesh.mesh.Connectivity` instances to the :class:`MeshXY`.
+        """Add one or more :class:`~iris.mesh.Connectivity` instances to the :class:`MeshXY`.
 
         Parameters
         ----------
         *connectivities : iterable of object
             A collection of one or more
-            :class:`~iris.mesh.mesh.Connectivity` instances to
+            :class:`~iris.mesh.Connectivity` instances to
             add to the :class:`MeshXY`.
 
         """
@@ -1343,9 +1343,9 @@ class MeshXY(Mesh):
         contains_edge=None,
         contains_face=None,
     ):
-        """Return all :class:`~iris.mesh.mesh.Connectivity`.
+        """Return all :class:`~iris.mesh.Connectivity`.
 
-        Return all :class:`~iris.mesh.mesh.Connectivity`
+        Return all :class:`~iris.mesh.Connectivity`
         instances from the :class:`MeshXY` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1367,27 +1367,27 @@ class MeshXY(Mesh):
 
             * a connectivity or metadata instance equal to that of
               the desired objects e.g.,
-              :class:`~iris.mesh.mesh.Connectivity` or
+              :class:`~iris.mesh.Connectivity` or
               :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``standard_name``.
         long_name : str, optional
             An unconstrained description of the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``long_name``.
         var_name : str, optional
             The NetCDF variable name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``var_name``.
         attributes : dict, optional
             A dictionary of attributes desired on the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``attributes``.
         cf_role : str, optional
             The UGRID ``cf_role`` of the desired
-            :class:`~iris.mesh.mesh.Connectivity`.
+            :class:`~iris.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
             :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
@@ -1403,8 +1403,8 @@ class MeshXY(Mesh):
 
         Returns
         -------
-        list of :class:`~iris.mesh.mesh.Connectivity`
-            A list of :class:`~iris.mesh.mesh.Connectivity`
+        list of :class:`~iris.mesh.Connectivity`
+            A list of :class:`~iris.mesh.Connectivity`
             instances from the :class:`MeshXY` that matched the given criteria.
 
         """
@@ -1433,9 +1433,9 @@ class MeshXY(Mesh):
         contains_edge=None,
         contains_face=None,
     ):
-        """Return a single :class:`~iris.mesh.mesh.Connectivity`.
+        """Return a single :class:`~iris.mesh.Connectivity`.
 
-        Return a single :class:`~iris.mesh.mesh.Connectivity`
+        Return a single :class:`~iris.mesh.Connectivity`
         from the :class:`MeshXY` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1444,7 +1444,7 @@ class MeshXY(Mesh):
         .. note::
 
             If the given criteria do not return **precisely one**
-            :class:`~iris.mesh.mesh.Connectivity`, then a
+            :class:`~iris.mesh.Connectivity`, then a
             :class:`~iris.exceptions.ConnectivityNotFoundError` is raised.
 
         .. seealso::
@@ -1463,27 +1463,27 @@ class MeshXY(Mesh):
 
             * a connectivity or metadata instance equal to that of
               the desired object e.g.,
-              :class:`~iris.mesh.mesh.Connectivity` or
+              :class:`~iris.mesh.Connectivity` or
               :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``standard_name``.
         long_name : str, optional
             An unconstrained description of the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``long_name``.
         var_name : str, optional
             The NetCDF variable name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``var_name``.
         attributes : dict, optional
             A dictionary of attributes desired on the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``attributes``.
         cf_role : str, optional
             The UGRID ``cf_role`` of the desired
-            :class:`~iris.mesh.mesh.Connectivity`.
+            :class:`~iris.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
             :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
@@ -1499,8 +1499,8 @@ class MeshXY(Mesh):
 
         Returns
         -------
-        :class:`~iris.mesh.mesh.Connectivity`
-            The :class:`~iris.mesh.mesh.Connectivity` from the
+        :class:`~iris.mesh.Connectivity`
+            The :class:`~iris.mesh.Connectivity` from the
             :class:`MeshXY` that matched the given criteria.
 
         """
@@ -1678,9 +1678,9 @@ class MeshXY(Mesh):
         contains_edge=None,
         contains_face=None,
     ):
-        """Remove one or more :class:`~iris.mesh.mesh.Connectivity`.
+        """Remove one or more :class:`~iris.mesh.Connectivity`.
 
-        Remove one or more :class:`~iris.mesh.mesh.Connectivity`
+        Remove one or more :class:`~iris.mesh.Connectivity`
         from the :class:`MeshXY` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1698,27 +1698,27 @@ class MeshXY(Mesh):
 
             * a connectivity or metadata instance equal to that of
               the desired objects e.g.,
-              :class:`~iris.mesh.mesh.Connectivity` or
+              :class:`~iris.mesh.Connectivity` or
               :class:`~iris.common.metadata.ConnectivityMetadata`.
         standard_name : str, optional
             The CF standard name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``standard_name``.
         long_name : str, optional
             An unconstrained description of the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``long_name``.
         var_name : str, optional
             The NetCDF variable name of the desired
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``var_name``.
         attributes : dict, optional
             A dictionary of attributes desired on the
-            :class:`~iris.mesh.mesh.Connectivity`. If ``None``,
+            :class:`~iris.mesh.Connectivity`. If ``None``,
             does not check for ``attributes``.
         cf_role : str, optional
             The UGRID ``cf_role`` of the desired
-            :class:`~iris.mesh.mesh.Connectivity`.
+            :class:`~iris.mesh.Connectivity`.
         contains_node : bool, optional
             Contains the ``node`` element as part of the
             :attr:`~iris.common.metadata.ConnectivityMetadata.cf_role`
@@ -1734,8 +1734,8 @@ class MeshXY(Mesh):
 
         Returns
         -------
-        list of :class:`~iris.mesh.mesh.Connectivity`
-            A list of :class:`~iris.mesh.mesh.Connectivity`
+        list of :class:`~iris.mesh.Connectivity`
+            A list of :class:`~iris.mesh.Connectivity`
             instances removed from the :class:`MeshXY` that matched the given
             criteria.
 
@@ -1853,9 +1853,9 @@ class MeshXY(Mesh):
     #     # return the lazy AuxCoord(...), AuxCoord(...)
 
     def to_MeshCoord(self, location, axis):
-        """Generate a :class:`~iris.mesh.mesh.MeshCoord`.
+        """Generate a :class:`~iris.mesh.MeshCoord`.
 
-        Generate a :class:`~iris.mesh.mesh.MeshCoord` that
+        Generate a :class:`~iris.mesh.MeshCoord` that
         references the current :class:`MeshXY`, and passing through the
         ``location`` and ``axis`` arguments.
 
@@ -1867,10 +1867,10 @@ class MeshXY(Mesh):
         ----------
         location : str
             The ``location`` argument for
-            :class:`~iris.mesh.mesh.MeshCoord` instantiation.
+            :class:`~iris.mesh.MeshCoord` instantiation.
         axis : str
             The ``axis`` argument for
-            :class:`~iris.mesh.mesh.MeshCoord` instantiation.
+            :class:`~iris.mesh.MeshCoord` instantiation.
 
         Returns
         -------

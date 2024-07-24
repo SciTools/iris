@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.mesh.mesh.MeshCoord`."""
+"""Unit tests for the :class:`iris.mesh.MeshCoord`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -21,7 +21,7 @@ from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.common.metadata import BaseMetadata, CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
-from iris.mesh.mesh import Connectivity, MeshCoord, MeshXY
+from iris.mesh import Connectivity, MeshCoord, MeshXY
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 from iris.warnings import IrisVagueMetadataWarning

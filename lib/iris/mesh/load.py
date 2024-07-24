@@ -3,10 +3,10 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-r"""Allow the construction of :class:`~iris.mesh.mesh.MeshXY`.
+r"""Allow the construction of :class:`~iris.mesh.MeshXY`.
 
 Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.mesh.mesh.MeshXY` from UGRID data in the file.
+:class:`~iris.mesh.MeshXY` from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
 
@@ -34,7 +34,7 @@ from .cf import (
     CFUGridMeshVariable,
     CFUGridReader,
 )
-from .mesh import Connectivity, MeshXY
+from .components import Connectivity, MeshXY
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -70,10 +70,10 @@ def _meshes_from_cf(cf_reader):
 
 
 def load_mesh(uris, var_name=None):
-    """Load a single :class:`~iris.mesh.mesh.MeshXY` object from one or more NetCDF files.
+    """Load a single :class:`~iris.mesh.MeshXY` object from one or more NetCDF files.
 
     Raises an error if more/less than one
-    :class:`~iris.mesh.mesh.MeshXY` is found.
+    :class:`~iris.mesh.MeshXY` is found.
 
     Parameters
     ----------
@@ -81,12 +81,12 @@ def load_mesh(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
         must support OpenDAP.
     var_name : str, optional
-        Only return a :class:`~iris.mesh.mesh.MeshXY` if its
+        Only return a :class:`~iris.mesh.MeshXY` if its
         var_name matches this value.
 
     Returns
     -------
-    :class:`iris.mesh.mesh.MeshXY`
+    :class:`iris.mesh.MeshXY`
 
     """
     meshes_result = load_meshes(uris, var_name)
@@ -99,7 +99,7 @@ def load_mesh(uris, var_name=None):
 
 
 def load_meshes(uris, var_name=None):
-    r"""Load :class:`~iris.mesh.mesh.MeshXY` objects from one or more NetCDF files.
+    r"""Load :class:`~iris.mesh.MeshXY` objects from one or more NetCDF files.
 
     Parameters
     ----------
@@ -107,7 +107,7 @@ def load_meshes(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
         must support OpenDAP.
     var_name : str, optional
-        Only return :class:`~iris.mesh.mesh.MeshXY` that have
+        Only return :class:`~iris.mesh.MeshXY` that have
         var_names matching this value.
 
     Returns
@@ -115,7 +115,7 @@ def load_meshes(uris, var_name=None):
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
         ``uris`` to a list of the
-        :class:`~iris.mesh.mesh.MeshXY` returned from each.
+        :class:`~iris.mesh.MeshXY` returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once iris.mesh is folded
@@ -233,9 +233,9 @@ def _build_aux_coord(coord_var, file_path):
 
 
 def _build_connectivity(connectivity_var, file_path, element_dims):
-    """Construct a :class:`~iris.mesh.mesh.Connectivity`.
+    """Construct a :class:`~iris.mesh.Connectivity`.
 
-    Construct a :class:`~iris.mesh.mesh.Connectivity` from a
+    Construct a :class:`~iris.mesh.Connectivity` from a
     given :class:`~iris.mesh.cf.CFUGridConnectivityVariable`,
     and identify the name of its first dimension.
 
@@ -277,9 +277,9 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
 
 
 def _build_mesh(cf, mesh_var, file_path):
-    """Construct a :class:`~iris.mesh.mesh.MeshXY`.
+    """Construct a :class:`~iris.mesh.MeshXY`.
 
-    Construct a :class:`~iris.mesh.mesh.MeshXY` from a given
+    Construct a :class:`~iris.mesh.MeshXY` from a given
     :class:`~iris.mesh.cf.CFUGridMeshVariable`.
 
     TODO: integrate with standard loading API post-pyke.
@@ -412,10 +412,10 @@ def _build_mesh(cf, mesh_var, file_path):
 
 
 def _build_mesh_coords(mesh, cf_var):
-    """Construct a tuple of :class:`~iris.mesh.mesh.MeshCoord`.
+    """Construct a tuple of :class:`~iris.mesh.MeshCoord`.
 
-    Construct a tuple of :class:`~iris.mesh.mesh.MeshCoord` using
-    from a given :class:`~iris.mesh.mesh.MeshXY`
+    Construct a tuple of :class:`~iris.mesh.MeshCoord` using
+    from a given :class:`~iris.mesh.MeshXY`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
     TODO: integrate with standard loading API post-pyke.

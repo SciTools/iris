@@ -32,17 +32,17 @@ from contextlib import contextmanager
 import threading
 
 from .._deprecation import warn_deprecated
+from ..mesh import Connectivity as _Connectivity
+from ..mesh import MeshCoord as _MeshCoord
+from ..mesh import MeshXY as _MeshXY
 from ..mesh import save_mesh
 from ..mesh.load import load_mesh, load_meshes
-from ..mesh.mesh import Connectivity as _Connectivity
-from ..mesh.mesh import MeshCoord as _MeshCoord
-from ..mesh.mesh import MeshXY as _MeshXY
 from ..mesh.utils import recombine_submeshes
 
 
 # NOTE: publishing the original Mesh, MeshCoord and Connectivity here causes a Sphinx
 # Sphinx warning, E.G.:
-#   "WARNING: duplicate object description of iris.mesh.mesh.Mesh, other instance
+#   "WARNING: duplicate object description of iris.mesh.Mesh, other instance
 #       in generated/api/iris.experimental.mesh, use :no-index: for one of them"
 # For some reason, this only happens for the classes, and not the functions.
 #

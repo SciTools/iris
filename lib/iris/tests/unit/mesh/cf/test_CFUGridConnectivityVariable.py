@@ -20,8 +20,8 @@ import warnings
 import numpy as np
 import pytest
 
+from iris.mesh import Connectivity
 from iris.mesh.cf import CFUGridConnectivityVariable
-from iris.mesh.mesh import Connectivity
 from iris.tests.unit.mesh.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )

@@ -71,7 +71,7 @@ class _PreparedItem:
     axis: Any = None
 
     def create_coord(self, metadata):
-        from iris.mesh.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(self.container, MeshCoord):
             # Make a MeshCoord, for which we have mesh/location/axis.
@@ -741,7 +741,7 @@ class Resolve:
         if container is None:
             container = type(coord)
 
-        from iris.mesh.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(container, MeshCoord):
             # Build a prepared-item to make a MeshCoord.

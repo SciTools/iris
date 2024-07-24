@@ -13,7 +13,7 @@ import warnings
 
 from ..fileformats import cf
 from ..warnings import IrisCfLabelVarWarning, IrisCfMissingVarWarning
-from .mesh import Connectivity
+from .components import Connectivity
 
 
 class CFUGridConnectivityVariable(cf.CFVariable):
@@ -32,7 +32,7 @@ class CFUGridConnectivityVariable(cf.CFVariable):
     that specifies for every volume its shape.
 
     Identified by a CF-netCDF variable attribute equal to any one of the values
-    in :attr:`~iris.mesh.mesh.Connectivity.UGRID_CF_ROLES`.
+    in :attr:`~iris.mesh.Connectivity.UGRID_CF_ROLES`.
 
     .. seealso::
 

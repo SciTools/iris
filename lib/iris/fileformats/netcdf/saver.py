@@ -271,7 +271,7 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-# NOTE : this matches :class:`iris.mesh.mesh.MeshXY.ELEMENTS`,
+# NOTE : this matches :class:`iris.mesh.MeshXY.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
@@ -941,7 +941,7 @@ class Saver:
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
-        from iris.mesh.mesh import (
+        from iris.mesh.components import (
             MeshEdgeCoords,
             MeshFaceCoords,
             MeshNodeCoords,
@@ -1524,7 +1524,7 @@ class Saver:
                     # element-coordinate of the mesh.
                     # Name it for it's first dim, i.e. mesh-dim of its location.
 
-                    from iris.mesh.mesh import Connectivity
+                    from iris.mesh import Connectivity
 
                     # At present, a location-coord cannot be nameless, as the
                     # MeshXY code relies on guess_coord_axis.
@@ -1544,7 +1544,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.mesh.mesh.MeshXY`
+        mesh : :class:`iris.mesh.MeshXY`
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -1570,7 +1570,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.mesh.mesh.MeshXY`
+        mesh : :class:`iris.mesh.MeshXY`
             The Mesh to be saved to CF-netCDF file.
 
         Returns
