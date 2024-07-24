@@ -296,6 +296,12 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
         name_start_inds.append(m.start())
 
+    # No matches? Must be malformed cell_method string; warn and return
+    if not name_start_inds:
+        msg = f"Failed to parse cell method string: {nc_cell_methods}"
+        warnings.warn(msg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2)
+        return []
+
     # Remove those that fall inside brackets
     bracket_depth = 0
     for ind, cha in enumerate(nc_cell_methods):
