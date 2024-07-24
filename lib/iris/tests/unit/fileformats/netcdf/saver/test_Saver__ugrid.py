@@ -23,8 +23,7 @@ from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import _thread_safe_nc
-from iris.mesh.mesh import Connectivity, MeshXY
-from iris.mesh.save import save_mesh
+from iris.mesh import Connectivity, MeshXY, save_mesh
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")

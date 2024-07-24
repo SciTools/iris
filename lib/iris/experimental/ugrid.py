@@ -32,11 +32,11 @@ from contextlib import contextmanager
 import threading
 
 from .._deprecation import warn_deprecated
+from ..mesh import save_mesh
 from ..mesh.load import load_mesh, load_meshes
 from ..mesh.mesh import Connectivity as _Connectivity
 from ..mesh.mesh import MeshCoord as _MeshCoord
 from ..mesh.mesh import MeshXY as _MeshXY
-from ..mesh.save import save_mesh
 from ..mesh.utils import recombine_submeshes
 
 
@@ -49,7 +49,7 @@ from ..mesh.utils import recombine_submeshes
 # This is a fatal problem, i.e. breaks the build since we are building with -W.
 # We couldn't fix this with "autodoc_suppress_warnings", so the solution for now is to
 # wrap the classes.  Which is really ugly.
-# TODO: remove this when we remove iris.experimental.ugrid
+# TODO: remove this when we remove iris.experimental.mesh
 class MeshXY(_MeshXY):
     pass
 

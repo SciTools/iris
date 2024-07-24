@@ -8,10 +8,11 @@
 Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 """
 
+from iris.fileformats.netcdf.saver import save_mesh
+
 from ..config import get_logger
 from .load import load_mesh, load_meshes
 from .mesh import Connectivity, MeshCoord, MeshXY
-from .save import save_mesh
 from .utils import recombine_submeshes
 
 __all__ = [
