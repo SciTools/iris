@@ -202,10 +202,10 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
-_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s?)+")
 _CM_PARSE = re.compile(
     r"""
-                           (?P<name>([\w_]+\s*?:\s+)+)
+                           (?P<name>([\w_]+\s*?:\s?)+)
                            (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
