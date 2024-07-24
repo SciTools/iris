@@ -2,11 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.ugrid.cf.CFUGridGroup` class.
+"""Unit tests for the :class:`iris.mesh.cf.CFUGridGroup` class.
 
-todo: fold these tests into cf tests when iris.ugrid is folded into
+todo: fold these tests into cf tests when iris.mesh is folded into
  standard behaviour.
-TODO: complete iris.ugrid replacement
+TODO: complete iris.mesh replacement
 
 """
 
@@ -17,7 +17,7 @@ import iris.tests as tests  # isort:skip
 from unittest.mock import MagicMock
 
 from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
-from iris.ugrid.cf import (
+from iris.mesh.cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridGroup,

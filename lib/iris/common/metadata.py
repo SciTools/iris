@@ -1335,7 +1335,7 @@ class DimCoordMetadata(CoordMetadata):
 
 
 class ConnectivityMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.ugrid.mesh.Connectivity`."""
+    """Metadata container for a :class:`~iris.mesh.mesh.Connectivity`."""
 
     # The "location_axis" member is stateful only, and does not participate in
     # lenient/strict equivalence.
@@ -1452,7 +1452,7 @@ class ConnectivityMetadata(BaseMetadata):
 
 
 class MeshMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.ugrid.mesh.MeshXY`."""
+    """Metadata container for a :class:`~iris.mesh.mesh.MeshXY`."""
 
     # The node_dimension", "edge_dimension" and "face_dimension" members are
     # stateful only; they not participate in lenient/strict equivalence.
@@ -1953,8 +1953,8 @@ def metadata_manager_factory(cls, **kwargs):
 
 #: Convenience collection of lenient metadata combine services.
 # TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
-# here (currently in iris.ugrid).
-# TODO: complete iris.ugrid replacement
+# here (currently in iris.mesh).
+# TODO: complete iris.mesh replacement
 SERVICES_COMBINE = [
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,

@@ -2,11 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.ugrid.cf.CFUGridGroup` class.
+"""Unit tests for the :class:`iris.mesh.cf.CFUGridGroup` class.
 
-todo: fold these tests into cf tests when iris.ugrid is folded into
+todo: fold these tests into cf tests when iris.mesh is folded into
  standard behaviour.
-TODO: complete iris.ugrid replacement
+TODO: complete iris.mesh replacement
 
 """
 
@@ -17,14 +17,14 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.fileformats.cf import CFCoordinateVariable, CFDataVariable
-from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
-from iris.ugrid.cf import (
+from iris.mesh.cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridGroup,
     CFUGridMeshVariable,
     CFUGridReader,
 )
+from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 
 
 def netcdf_ugrid_variable(
@@ -91,7 +91,7 @@ class Test_build_cf_groups(tests.IrisTest):
     def setUp(self):
         # Restrict the CFUGridReader functionality to only performing
         # translations and building first level cf-groups for variables.
-        self.patch("iris.ugrid.cf.CFUGridReader._reset")
+        self.patch("iris.mesh.cf.CFUGridReader._reset")
         self.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,

@@ -5,7 +5,7 @@
 
 """Legacy import location for mesh support.
 
-See :mod:`iris.ugrid` for the new, correct import location.
+See :mod:`iris.mesh` for the new, correct import location.
 
 Notes
 -----
@@ -17,8 +17,8 @@ N.B. it does **not** need to wait for a major release, since the former API was
 experimental.
 
 .. deprecated:: 3.10
-    All the former :mod:`iris.experimental.ugrid` modules have been relocated to
-    :mod:`iris.ugrid` and its submodules.  Please re-write code to import from the new
+    All the former :mod:`iris.experimental.mesh` modules have been relocated to
+    :mod:`iris.mesh` and its submodules.  Please re-write code to import from the new
     module path.
     This import path alios is provided for backwards compatibility, but will be removed
     in a future release : N.B. removing this does **not** need to wait for a major
@@ -32,18 +32,18 @@ from contextlib import contextmanager
 import threading
 
 from .._deprecation import warn_deprecated
-from ..ugrid.load import load_mesh, load_meshes
-from ..ugrid.mesh import Connectivity as _Connectivity
-from ..ugrid.mesh import MeshCoord as _MeshCoord
-from ..ugrid.mesh import MeshXY as _MeshXY
-from ..ugrid.save import save_mesh
-from ..ugrid.utils import recombine_submeshes
+from ..mesh.load import load_mesh, load_meshes
+from ..mesh.mesh import Connectivity as _Connectivity
+from ..mesh.mesh import MeshCoord as _MeshCoord
+from ..mesh.mesh import MeshXY as _MeshXY
+from ..mesh.save import save_mesh
+from ..mesh.utils import recombine_submeshes
 
 
 # NOTE: publishing the original Mesh, MeshCoord and Connectivity here causes a Sphinx
 # Sphinx warning, E.G.:
-#   "WARNING: duplicate object description of iris.ugrid.mesh.Mesh, other instance
-#       in generated/api/iris.experimental.ugrid, use :no-index: for one of them"
+#   "WARNING: duplicate object description of iris.mesh.mesh.Mesh, other instance
+#       in generated/api/iris.experimental.mesh, use :no-index: for one of them"
 # For some reason, this only happens for the classes, and not the functions.
 #
 # This is a fatal problem, i.e. breaks the build since we are building with -W.
@@ -70,7 +70,7 @@ class ParseUGridOnLoad(threading.local):
         version of Iris NetCDF loading. Object is thread-safe.
 
         Use via the run-time switch
-        :const:`~iris.ugrid.load.PARSE_UGRID_ON_LOAD`.
+        :const:`~iris.mesh.load.PARSE_UGRID_ON_LOAD`.
         Use :meth:`context` to temporarily activate.
 
         Notes
@@ -93,7 +93,7 @@ class ParseUGridOnLoad(threading.local):
         attached to the resultant cube(s) accordingly.
 
         Use via the run-time switch
-        :const:`~iris.ugrid.load.PARSE_UGRID_ON_LOAD`.
+        :const:`~iris.mesh.load.PARSE_UGRID_ON_LOAD`.
 
         For example::
 
@@ -114,7 +114,7 @@ class ParseUGridOnLoad(threading.local):
 
         .. code-block:: python
 
-            with iris.experimental.ugrid.PARSE_UGRID_ON_LOAD.context():
+            with iris.experimental.mesh.PARSE_UGRID_ON_LOAD.context():
                 mesh_cubes = iris.load(path)
 
         with:
@@ -125,7 +125,7 @@ class ParseUGridOnLoad(threading.local):
 
         """
         wmsg = (
-            "iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD has been deprecated "
+            "iris.experimental.mesh.load.PARSE_UGRID_ON_LOAD has been deprecated "
             "and will be removed. Please remove all uses : these are no longer needed, "
             "as UGRID loading is now applied to any file containing a mesh."
         )
@@ -133,7 +133,7 @@ class ParseUGridOnLoad(threading.local):
         yield
 
 
-#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.ugrid.load.ParseUGridOnLoad`.
+#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.mesh.load.ParseUGridOnLoad`.
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 
@@ -149,7 +149,7 @@ __all__ = [
 ]
 
 warn_deprecated(
-    "All the former :mod:`iris.experimental.ugrid` modules have been relocated to "
-    "module 'iris.ugrid' and its submodules. "
+    "All the former :mod:`iris.experimental.mesh` modules have been relocated to "
+    "module 'iris.mesh' and its submodules. "
     "Please re-write code to import from the new module path."
 )

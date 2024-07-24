@@ -10,7 +10,7 @@ from dask import array as da
 import numpy as np
 
 from iris import load, load_cube, save
-from iris.ugrid.utils import recombine_submeshes
+from iris.mesh.utils import recombine_submeshes
 
 from .. import TrackAddedMemoryAllocation, on_demand_benchmark
 from ..generate_data.ugrid import BENCHMARK_DATA, make_cube_like_2d_cubesphere

@@ -4,9 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for NetCDF-UGRID file loading.
 
-todo: fold these tests into netcdf tests when iris.ugrid is folded into
+todo: fold these tests into netcdf tests when iris.mesh is folded into
  standard behaviour.
-TODO: complete iris.ugrid replacement
+TODO: complete iris.mesh replacement
 
 """
 
@@ -19,12 +19,12 @@ from collections.abc import Iterable
 import pytest
 
 from iris import Constraint, load
+from iris.mesh.load import load_mesh, load_meshes
+from iris.mesh.mesh import MeshXY
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
 from iris.tests.unit.tests.stock.test_netcdf import XIOSFileMixin
-from iris.ugrid.load import load_mesh, load_meshes
-from iris.ugrid.mesh import MeshXY
 from iris.warnings import IrisCfWarning
 
 
@@ -59,7 +59,7 @@ class TestBasic(tests.IrisTest):
         )
         self.assertEqual(1, len(cube_list))
         cube = cube_list[0]
-        self.assertCML(cube, ["ugrid", assert_filename])
+        self.assertCML(cube, ["mesh", assert_filename])
 
     def test_2D_1t_face_half_levels(self):
         self.common_test(
@@ -126,7 +126,7 @@ class TestMultiplePhenomena(tests.IrisTest):
                 ["NetCDF", "unstructured_grid", "lfric_surface_mean.nc"]
             ),
         )
-        self.assertCML(cube_list, ("ugrid", "surface_mean.cml"))
+        self.assertCML(cube_list, ("mesh", "surface_mean.cml"))
 
 
 class TestTolerantLoading(XIOSFileMixin):

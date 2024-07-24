@@ -5,7 +5,7 @@
 """Benchmarks stages of operation.
 
 Benchmarks stages of operation of the function
-:func:`iris.ugrid.utils.recombine_submeshes`.
+:func:`iris.mesh.utils.recombine_submeshes`.
 
 """
 
@@ -15,7 +15,7 @@ import dask.array as da
 import numpy as np
 
 from iris import load, load_cube, save
-from iris.ugrid.utils import recombine_submeshes
+from iris.mesh.utils import recombine_submeshes
 
 from ... import TrackAddedMemoryAllocation
 from ...generate_data.ugrid import make_cube_like_2d_cubesphere

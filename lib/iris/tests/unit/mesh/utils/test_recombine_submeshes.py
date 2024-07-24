@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for :func:`iris.ugrid.utils.recombine_submeshes`."""
+"""Unit tests for :func:`iris.mesh.utils.recombine_submeshes`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -13,8 +13,8 @@ import numpy as np
 
 from iris.coords import AuxCoord
 from iris.cube import CubeList
+from iris.mesh.utils import recombine_submeshes
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
-from iris.ugrid.utils import recombine_submeshes
 
 
 def common_test_setup(self, shape_3d=(0, 2), data_chunks=None):

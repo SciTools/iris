@@ -2,11 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.ugrid.cf.CFUGridConnectivityVariable` class.
+"""Unit tests for the :class:`iris.mesh.cf.CFUGridConnectivityVariable` class.
 
-todo: fold these tests into cf tests when iris.ugrid is folded into
+todo: fold these tests into cf tests when iris.mesh is folded into
  standard behaviour.
-TODO: complete iris.ugrid replacement
+TODO: complete iris.mesh replacement
 
 """
 
@@ -20,11 +20,11 @@ import warnings
 import numpy as np
 import pytest
 
-from iris.tests.unit.ugrid.cf.test_CFUGridReader import (
+from iris.mesh.cf import CFUGridConnectivityVariable
+from iris.mesh.mesh import Connectivity
+from iris.tests.unit.mesh.cf.test_CFUGridReader import (
     netcdf_ugrid_variable,
 )
-from iris.ugrid.cf import CFUGridConnectivityVariable
-from iris.ugrid.mesh import Connectivity
 import iris.warnings
 
 

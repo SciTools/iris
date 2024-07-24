@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :func:`iris.ugrid.load.load_meshes` function."""
+"""Unit tests for the :func:`iris.mesh.load.load_meshes` function."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -13,8 +13,8 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
+from iris.mesh.load import load_meshes, logger
 from iris.tests.stock.netcdf import ncgen_from_cdl
-from iris.ugrid.load import load_meshes, logger
 
 
 def setUpModule():

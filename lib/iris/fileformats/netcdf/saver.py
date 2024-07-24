@@ -271,7 +271,7 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-# NOTE : this matches :class:`iris.ugrid.mesh.MeshXY.ELEMENTS`,
+# NOTE : this matches :class:`iris.mesh.mesh.MeshXY.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
@@ -766,7 +766,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.ugrid.MeshXY`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
@@ -941,7 +941,7 @@ class Saver:
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
-        from iris.ugrid.mesh import (
+        from iris.mesh.mesh import (
             MeshEdgeCoords,
             MeshFaceCoords,
             MeshNodeCoords,
@@ -1120,7 +1120,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.ugrid.MeshXY`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
@@ -1482,7 +1482,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.ugrid.MeshXY`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         coord : :class:`iris.coords._DimensionalMetadata`
             An instance of a coordinate (or similar), for which a CF-netCDF
@@ -1524,7 +1524,7 @@ class Saver:
                     # element-coordinate of the mesh.
                     # Name it for it's first dim, i.e. mesh-dim of its location.
 
-                    from iris.ugrid.mesh import Connectivity
+                    from iris.mesh.mesh import Connectivity
 
                     # At present, a location-coord cannot be nameless, as the
                     # MeshXY code relies on guess_coord_axis.
@@ -1544,7 +1544,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.ugrid.mesh.MeshXY`
+        mesh : :class:`iris.mesh.mesh.MeshXY`
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -1570,7 +1570,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.ugrid.mesh.MeshXY`
+        mesh : :class:`iris.mesh.mesh.MeshXY`
             The Mesh to be saved to CF-netCDF file.
 
         Returns
@@ -1660,7 +1660,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.ugrid.MeshXY`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         cube_dim_names : list of str
             The name of each dimension of the cube.

@@ -15,7 +15,7 @@ from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from iris import ugrid
+from iris import mesh as ugrid
 from iris.analysis import cartography
 import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS

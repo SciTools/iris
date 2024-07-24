@@ -8,7 +8,7 @@ import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.ugrid.mesh import Connectivity, MeshCoord, MeshXY
+from iris.mesh.mesh import Connectivity, MeshCoord, MeshXY
 
 # Default creation controls for creating a test MeshXY.
 # Note: we're not creating any kind of sensible 'normal' mesh here, the numbers

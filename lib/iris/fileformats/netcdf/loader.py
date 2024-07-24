@@ -579,11 +579,12 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
+    # TODO: complete iris.mesh replacement
     # into standard behaviour.
     # Deferred import to avoid circular imports.
     from iris.io import run_callback
-    from iris.ugrid.cf import CFUGridReader
-    from iris.ugrid.load import (
+    from iris.mesh.cf import CFUGridReader
+    from iris.mesh.load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )
@@ -683,8 +684,8 @@ class ChunkControl(threading.local):
         :class:`~iris.coords.AncillaryVariable` etc.
         This can be overridden, if required, by variable-specific settings.
 
-        For this purpose, :class:`~iris.ugrid.mesh.MeshCoord` and
-        :class:`~iris.ugrid.mesh.Connectivity` are not
+        For this purpose, :class:`~iris.mesh.mesh.MeshCoord` and
+        :class:`~iris.mesh.mesh.Connectivity` are not
         :class:`~iris.cube.Cube` components, and chunk control on a
         :class:`~iris.cube.Cube` data-variable will not affect them.
 

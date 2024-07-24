@@ -14,7 +14,7 @@ from pathlib import Path
 
 import iris
 from iris import cube
-from iris.ugrid import load_mesh
+from iris.mesh import load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 
@@ -90,8 +90,8 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     """Sample mesh wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
 
     def _external(*args, **kwargs):
+        from iris.mesh import save_mesh
         from iris.tests.stock.mesh import sample_mesh
-        from iris.ugrid import save_mesh
 
         save_path_ = kwargs.pop("save_path")
         # Always saving, so laziness is irrelevant. Use lazy to save time.
@@ -117,7 +117,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """Sample meshcoord wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
     Parameters deviate from the original as cannot pass a
-    :class:`iris.ugrid.Mesh to the separate Python instance - must
+    :class:`iris.mesh.Mesh to the separate Python instance - must
     instead generate the Mesh as well.
 
     MeshCoords cannot be saved to file, so the _external method saves the
@@ -126,8 +126,8 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """
 
     def _external(sample_mesh_kwargs_, save_path_):
+        from iris.mesh import save_mesh
         from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
-        from iris.ugrid import save_mesh
 
         if sample_mesh_kwargs_:
             input_mesh = sample_mesh(**sample_mesh_kwargs_)

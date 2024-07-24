@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :meth:`iris.ugrid.mesh.MeshXY.from_coords`."""
+"""Unit tests for the :meth:`iris.mesh.mesh.MeshXY.from_coords`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -11,9 +11,9 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 from iris.coords import AuxCoord, DimCoord
+from iris.mesh import logger
+from iris.mesh.mesh import Connectivity, MeshXY
 from iris.tests.stock import simple_2d_w_multidim_coords
-from iris.ugrid import logger
-from iris.ugrid.mesh import Connectivity, MeshXY
 
 
 class Test1Dim(tests.IrisTest):
