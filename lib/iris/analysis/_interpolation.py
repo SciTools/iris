@@ -315,10 +315,10 @@ class RectilinearInterpolator:
         interp_shape :
             The shape of the interpolated array in its first 'N' dimensions
             (len(interp_shape) should be N).
-        method: str
-            Interpolation method (see :class:`iris.analysis._interpolation.RectilinearInterpolator`)
-        extrapolation_mode: str
-            Extrapolation mode (see :class:`iris.analysis._interpolation.RectilinearInterpolator`)
+        method : str
+            Interpolation method (see :class:`iris.analysis._interpolation.RectilinearInterpolator`).
+        extrapolation_mode : str
+            Extrapolation mode (see :class:`iris.analysis._interpolation.RectilinearInterpolator`).
 
         Returns
         -------
@@ -571,7 +571,7 @@ class RectilinearInterpolator:
             # Transpose data in preparation for interpolation.
             data = np.transpose(data, interp_order)
 
-        # Interpolate the data, meging the chunks in the interpolated
+        # Interpolate the data, merging the chunks in the interpolated
         # dimensions.
         dims_merge_chunks = [dmap[d] for d in di]
         result = map_complete_blocks(
