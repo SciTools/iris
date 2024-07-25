@@ -584,7 +584,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # Deferred import to avoid circular imports.
     from iris.io import run_callback
     from iris.mesh.cf import CFUGridReader
-    from iris.mesh.load import (
+
+    from .ugrid_load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )

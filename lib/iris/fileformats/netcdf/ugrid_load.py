@@ -8,8 +8,6 @@ r"""Allow the construction of :class:`~iris.mesh.MeshXY`.
 Extensions to Iris' NetCDF loading to allow the construction of
 :class:`~iris.mesh.MeshXY` from UGRID data in the file.
 
-Eventual destination: :mod:`iris.fileformats.netcdf`.
-
 .. seealso::
 
     The UGRID Conventions,
@@ -21,20 +19,20 @@ from itertools import groupby
 from pathlib import Path
 import warnings
 
-from ..config import get_logger
-from ..coords import AuxCoord
-from ..fileformats._nc_load_rules.helpers import get_attr_units, get_names
-from ..fileformats.netcdf import loader as nc_loader
-from ..io import decode_uri, expand_filespecs
-from ..util import guess_coord_axis
-from ..warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
-from .cf import (
+from iris.config import get_logger
+from iris.coords import AuxCoord
+from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
+from iris.fileformats.netcdf import loader as nc_loader
+from iris.io import decode_uri, expand_filespecs
+from iris.mesh import Connectivity, MeshXY
+from iris.mesh.cf import (
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridMeshVariable,
     CFUGridReader,
 )
-from .components import Connectivity, MeshXY
+from iris.util import guess_coord_axis
+from iris.warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -124,7 +122,7 @@ def load_meshes(uris, var_name=None):
     # No constraints or callbacks supported - these assume they are operating
     #  on a Cube.
 
-    from ..fileformats import FORMAT_AGENT
+    from iris.fileformats import FORMAT_AGENT
 
     if isinstance(uris, str):
         uris = [uris]

@@ -13,7 +13,8 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
-from iris.mesh.load import load_meshes, logger
+from iris.fileformats.netcdf.ugrid_load import logger
+from iris.mesh import load_meshes
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 

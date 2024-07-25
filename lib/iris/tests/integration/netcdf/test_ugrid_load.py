@@ -2,13 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Integration tests for NetCDF-UGRID file loading.
-
-todo: fold these tests into netcdf tests when iris.mesh is folded into
- standard behaviour.
-TODO: complete iris.mesh replacement
-
-"""
+"""Integration tests for NetCDF-UGRID file loading."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -19,8 +13,7 @@ from collections.abc import Iterable
 import pytest
 
 from iris import Constraint, load
-from iris.mesh import MeshXY
-from iris.mesh.load import load_mesh, load_meshes
+from iris.mesh import MeshXY, load_mesh, load_meshes
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )
