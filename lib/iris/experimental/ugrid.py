@@ -19,8 +19,10 @@ experimental.
 .. deprecated:: 3.10
     All the former :mod:`iris.experimental.mesh` modules have been relocated to
     :mod:`iris.mesh` and its submodules.  Please re-write code to import from the new
-    module path.
-    This import path alios is provided for backwards compatibility, but will be removed
+    module path, and replace any 'iris.experimental.ugrid.Mesh' with
+    'iris.mesh.MeshXY'.
+
+    This import path alias is provided for backwards compatibility, but will be removed
     in a future release : N.B. removing this does **not** need to wait for a major
     release, since the former API was experimental.
 
@@ -48,7 +50,7 @@ from ..mesh import load_mesh, load_meshes, recombine_submeshes, save_mesh
 # We couldn't fix this with "autodoc_suppress_warnings", so the solution for now is to
 # wrap the classes.  Which is really ugly.
 # TODO: remove this when we remove iris.experimental.mesh
-class MeshXY(_MeshXY):
+class Mesh(_MeshXY):
     pass
 
 
@@ -137,8 +139,8 @@ PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
 
 __all__ = [
     "Connectivity",
+    "Mesh",
     "MeshCoord",
-    "MeshXY",
     "PARSE_UGRID_ON_LOAD",
     "load_mesh",
     "load_meshes",
@@ -149,5 +151,6 @@ __all__ = [
 warn_deprecated(
     "All the former :mod:`iris.experimental.mesh` modules have been relocated to "
     "module 'iris.mesh' and its submodules. "
-    "Please re-write code to import from the new module path."
+    "Please re-write code to import from the new module path, and replace any "
+    "'iris.experimental.ugrid.Mesh' with 'iris.mesh.MeshXY'."
 )
