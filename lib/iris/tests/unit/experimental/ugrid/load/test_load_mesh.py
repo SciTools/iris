@@ -8,7 +8,7 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh
+from iris.experimental.ugrid.load import load_mesh
 
 
 class Tests(tests.IrisTest):
@@ -22,14 +22,12 @@ class Tests(tests.IrisTest):
 
     def test_calls_load_meshes(self):
         args = [("file_1", "file_2"), "my_var_name"]
-        with PARSE_UGRID_ON_LOAD.context():
-            _ = load_mesh(args)
+        _ = load_mesh(args)
         assert self.load_meshes_mock.call_count == 1
         assert self.load_meshes_mock.call_args == ((args, None),)
 
     def test_returns_mesh(self):
-        with PARSE_UGRID_ON_LOAD.context():
-            mesh = load_mesh([])
+        mesh = load_mesh([])
         self.assertEqual(mesh, "mesh")
 
     def test_single_mesh(self):
@@ -37,8 +35,7 @@ class Tests(tests.IrisTest):
         def common(ret_val):
             self.load_meshes_mock.return_value = ret_val
             with self.assertRaisesRegex(ValueError, "Expecting 1 mesh.*"):
-                with PARSE_UGRID_ON_LOAD.context():
-                    _ = load_mesh([])
+                _ = load_mesh([])
 
         # Too many.
         common({"file": ["mesh1", "mesh2"]})

@@ -34,9 +34,11 @@ your
 [Conda package cache](https://conda.io/projects/conda/en/latest/user-guide/configuration/use-condarc.html#specify-pkg-directories),
 if it is not already. You can achieve this by either:
 
-- Temporarily reconfiguring `delegated_env_commands` and `delegated_env_parent` 
+- Temporarily reconfiguring `ENV_PARENT` in `delegated_env_commands` 
   in [asv.conf.json](asv.conf.json) to reference a location on the same file
   system as the Conda package cache.
+- Using an alternative Conda package cache location during the benchmark run,
+  e.g. via the `$CONDA_PKGS_DIRS` environment variable.
 - Moving your Iris repo to the same file system as the Conda package cache.
 
 ### Environment variables
@@ -63,6 +65,15 @@ plan accordingly.
 decorated with `@on_demand_benchmark` are included in the ASV run. Usually
 coupled with the ASV `--bench` argument to only run the benchmark(s) of
 interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
+* `ASV_COMMIT_ENVS` - optional - instruct the 
+[delegated environment management](#benchmark-environments) to create a
+dedicated environment for each commit being benchmarked when set (to any 
+value). This means that benchmarking commits with different environment 
+requirements will not be delayed by repeated environment setup - especially 
+relevant given the [benchmark runner](bm_runner.py)'s use of
+[--interleave-rounds](https://asv.readthedocs.io/en/stable/commands.html?highlight=interleave-rounds#asv-run),
+or any time you know you will repeatedly benchmark the same commit. **NOTE:**
+Iris environments are large so this option can consume a lot of disk space.
 
 ## Writing benchmarks
 

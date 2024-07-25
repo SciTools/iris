@@ -11,12 +11,11 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
 import threading
-from typing import Union
 import warnings
 
 import numpy as np
@@ -584,7 +583,6 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # Deferred import to avoid circular imports.
     from iris.experimental.ugrid.cf import CFUGridReader
     from iris.experimental.ugrid.load import (
-        PARSE_UGRID_ON_LOAD,
         _build_mesh_coords,
         _meshes_from_cf,
     )
@@ -601,15 +599,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     for file_source in file_sources:
         # Ingest the file.  At present may be a filepath or an open netCDF4.Dataset.
-        meshes = {}
-        if PARSE_UGRID_ON_LOAD:
-            cf_reader_class = CFUGridReader
-        else:
-            cf_reader_class = iris.fileformats.cf.CFReader
-
-        with cf_reader_class(file_source) as cf:
-            if PARSE_UGRID_ON_LOAD:
-                meshes = _meshes_from_cf(cf)
+        with CFUGridReader(file_source) as cf:
+            meshes = _meshes_from_cf(cf)
 
             # Process each CF data variable.
             data_variables = list(cf.cf_group.data_variables.values()) + list(
@@ -627,8 +618,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 mesh_name = None
                 mesh = None
                 mesh_coords, mesh_dim = [], None
-                if PARSE_UGRID_ON_LOAD:
-                    mesh_name = getattr(cf_var, "mesh", None)
+                mesh_name = getattr(cf_var, "mesh", None)
                 if mesh_name is not None:
                     try:
                         mesh = meshes[mesh_name]
@@ -705,9 +695,9 @@ class ChunkControl(threading.local):
     @contextmanager
     def set(
         self,
-        var_names: Union[str, Iterable[str]] = None,
+        var_names: str | Iterable[str] | None = None,
         **dimension_chunksizes: Mapping[str, int],
-    ) -> None:
+    ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
@@ -758,7 +748,7 @@ class ChunkControl(threading.local):
                 # A specific name match should override a '*' setting, but
                 # that is implemented elsewhere.
                 if not isinstance(var_name, str):
-                    msg = (
+                    msg = (  # type: ignore[unreachable]
                         "'var_names' should be an iterable of strings, "
                         f"not {var_names!r}."
                     )
@@ -778,7 +768,7 @@ class ChunkControl(threading.local):
             self.mode = old_mode
 
     @contextmanager
-    def from_file(self) -> None:
+    def from_file(self) -> Iterator[None]:
         r"""Ensure the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
@@ -801,7 +791,7 @@ class ChunkControl(threading.local):
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
     @contextmanager
-    def as_dask(self) -> None:
+    def as_dask(self) -> Iterator[None]:
         """Rely on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes

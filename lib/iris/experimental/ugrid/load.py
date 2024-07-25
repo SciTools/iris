@@ -3,12 +3,17 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.Mesh`.
+r"""Allow the construction of :class:`~iris.experimental.ugrid.mesh.MeshXY`.
 
 Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.experimental.ugrid.mesh.Mesh` from UGRID data in the file.
+:class:`~iris.experimental.ugrid.mesh.MeshXY` from UGRID data in the file.
 
 Eventual destination: :mod:`iris.fileformats.netcdf`.
+
+.. seealso::
+
+    The UGRID Conventions,
+    https://ugrid-conventions.github.io/ugrid-conventions/
 
 """
 
@@ -18,6 +23,7 @@ from pathlib import Path
 import threading
 import warnings
 
+from ..._deprecation import warn_deprecated
 from ...config import get_logger
 from ...coords import AuxCoord
 from ...fileformats._nc_load_rules.helpers import get_attr_units, get_names
@@ -31,7 +37,7 @@ from .cf import (
     CFUGridMeshVariable,
     CFUGridReader,
 )
-from .mesh import Connectivity, Mesh
+from .mesh import Connectivity, MeshXY
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -60,20 +66,20 @@ class ParseUGridOnLoad(threading.local):
         :const:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
         Use :meth:`context` to temporarily activate.
 
-        .. seealso::
-
-            The UGRID Conventions,
-            https://ugrid-conventions.github.io/ugrid-conventions/
+        Notes
+        -----
+            .. deprecated:: 1.10
+        Do not use -- due to be removed at next major release :
+        UGRID loading is now **always** active for files containing a UGRID mesh.
 
         """
-        self._state = False
 
     def __bool__(self):
-        return self._state
+        return True
 
     @contextmanager
     def context(self):
-        """Temporarily activate experimental UGRID-aware NetCDF loading.
+        """Activate UGRID-aware NetCDF loading.
 
         Use the standard Iris loading API while within the context manager. If
         the loaded file(s) include any UGRID content, this will be parsed and
@@ -89,12 +95,35 @@ class ParseUGridOnLoad(threading.local):
                                          constraint=my_constraint,
                                          callback=my_callback)
 
+        Notes
+        -----
+            .. deprecated:: 1.10
+        Do not use -- due to be removed at next major release :
+        UGRID loading is now **always** active for files containing a UGRID mesh.
+
+        Examples
+        --------
+        Replace usage, for example:
+
+        .. code-block:: python
+
+            with iris.experimental.ugrid.PARSE_UGRID_ON_LOAD.context():
+                mesh_cubes = iris.load(path)
+
+        with:
+
+        .. code-block:: python
+
+            mesh_cubes = iris.load(path)
+
         """
-        try:
-            self._state = True
-            yield
-        finally:
-            self._state = False
+        wmsg = (
+            "iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD has been deprecated "
+            "and will be removed. Please remove all uses : these are no longer needed, "
+            "as UGRID loading is now applied to any file containing a mesh."
+        )
+        warn_deprecated(wmsg)
+        yield
 
 
 #: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.experimental.ugrid.load.ParseUGridOnLoad`.
@@ -119,10 +148,10 @@ def _meshes_from_cf(cf_reader):
 
 
 def load_mesh(uris, var_name=None):
-    """Load a single :class:`~iris.experimental.ugrid.mesh.Mesh` object from one or more NetCDF files.
+    """Load single :class:`~iris.experimental.ugrid.mesh.MeshXY` object from 1/more NetCDF files.
 
     Raises an error if more/less than one
-    :class:`~iris.experimental.ugrid.mesh.Mesh` is found.
+    :class:`~iris.experimental.ugrid.mesh.MeshXY` is found.
 
     Parameters
     ----------
@@ -130,12 +159,12 @@ def load_mesh(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
         must support OpenDAP.
     var_name : str, optional
-        Only return a :class:`~iris.experimental.ugrid.mesh.Mesh` if its
+        Only return a :class:`~iris.experimental.ugrid.mesh.MeshXY` if its
         var_name matches this value.
 
     Returns
     -------
-    :class:`iris.experimental.ugrid.mesh.Mesh`
+    :class:`iris.experimental.ugrid.mesh.MeshXY`
 
     """
     meshes_result = load_meshes(uris, var_name)
@@ -148,7 +177,7 @@ def load_mesh(uris, var_name=None):
 
 
 def load_meshes(uris, var_name=None):
-    r"""Load :class:`~iris.experimental.ugrid.mesh.Mesh` objects from one or more NetCDF files.
+    r"""Load :class:`~iris.experimental.ugrid.mesh.MeshXY` objects from one or more NetCDF files.
 
     Parameters
     ----------
@@ -156,7 +185,7 @@ def load_meshes(uris, var_name=None):
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
         must support OpenDAP.
     var_name : str, optional
-        Only return :class:`~iris.experimental.ugrid.mesh.Mesh` that have
+        Only return :class:`~iris.experimental.ugrid.mesh.MeshXY` that have
         var_names matching this value.
 
     Returns
@@ -164,7 +193,7 @@ def load_meshes(uris, var_name=None):
     dict
         A dictionary mapping each mesh-containing file path/URL in the input
         ``uris`` to a list of the
-        :class:`~iris.experimental.ugrid.mesh.Mesh` returned from each.
+        :class:`~iris.experimental.ugrid.mesh.MeshXY` returned from each.
 
     """
     # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
@@ -173,15 +202,6 @@ def load_meshes(uris, var_name=None):
     #  on a Cube.
 
     from ...fileformats import FORMAT_AGENT
-
-    if not PARSE_UGRID_ON_LOAD:
-        # Explicit behaviour, consistent with netcdf.load_cubes(), rather than
-        #  an invisible assumption.
-        message = (
-            f"PARSE_UGRID_ON_LOAD is {bool(PARSE_UGRID_ON_LOAD)}. Must be "
-            f"True to enable mesh loading."
-        )
-        raise ValueError(message)
 
     if isinstance(uris, str):
         uris = [uris]
@@ -334,9 +354,9 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
 
 
 def _build_mesh(cf, mesh_var, file_path):
-    """Construct a :class:`~iris.experimental.ugrid.mesh.Mesh`.
+    """Construct a :class:`~iris.experimental.ugrid.mesh.MeshXY`.
 
-    Construct a :class:`~iris.experimental.ugrid.mesh.Mesh` from a given
+    Construct a :class:`~iris.experimental.ugrid.mesh.MeshXY` from a given
     :class:`~iris.experimental.ugrid.cf.CFUGridMeshVariable`.
 
     TODO: integrate with standard loading API post-pyke.
@@ -374,7 +394,7 @@ def _build_mesh(cf, mesh_var, file_path):
 
     if not hasattr(mesh_var, "topology_dimension"):
         msg = (
-            f"Mesh variable {mesh_var.cf_name} has no 'topology_dimension'"
+            f"MeshXY variable {mesh_var.cf_name} has no 'topology_dimension'"
             f" : *Assuming* topology_dimension={topology_dimension}"
             ", consistent with the attached connectivities."
         )
@@ -444,7 +464,7 @@ def _build_mesh(cf, mesh_var, file_path):
 
     standard_name, long_name, var_name = get_names(mesh_var, None, attributes)
 
-    mesh = Mesh(
+    mesh = MeshXY(
         topology_dimension=topology_dimension,
         node_coords_and_axes=node_coord_args,
         connectivities=connectivity_args,
@@ -472,7 +492,7 @@ def _build_mesh_coords(mesh, cf_var):
     """Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
     Construct a tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord` using
-    from a given :class:`~iris.experimental.ugrid.mesh.Mesh`
+    from a given :class:`~iris.experimental.ugrid.mesh.MeshXY`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
     TODO: integrate with standard loading API post-pyke.
@@ -485,9 +505,27 @@ def _build_mesh_coords(mesh, cf_var):
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    mesh_dim_name = element_dimensions[cf_var.location]
-    # (Only expecting 1 mesh dimension per cf_var).
-    mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+    location = getattr(cf_var, "location", "<empty>")
+    if location is None or location not in element_dimensions:
+        # We should probably issue warnings and recover, but that is too much
+        # work.  Raising a more intelligible error is easy to do though.
+        msg = (
+            f"mesh data variable {cf_var.name!r} has an invalid "
+            f"location={location!r}."
+        )
+        raise ValueError(msg)
+    mesh_dim_name = element_dimensions.get(location)
+    if mesh_dim_name is None:
+        msg = f"mesh {mesh.name!r} has no {location} dimension."
+        raise ValueError(msg)
+    if mesh_dim_name in cf_var.dimensions:
+        mesh_dim = cf_var.dimensions.index(mesh_dim_name)
+    else:
+        msg = (
+            f"mesh data variable {cf_var.name!r} does not have the "
+            f"{location} mesh dimension {mesh_dim_name!r}, in its dimensions."
+        )
+        raise ValueError(msg)
 
     mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
     return mesh_coords, mesh_dim

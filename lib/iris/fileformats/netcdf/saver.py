@@ -271,7 +271,7 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
+# NOTE : this matches :class:`iris.experimental.ugrid.mesh.MeshXY.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
@@ -290,6 +290,7 @@ class VariableEmulator(typing.Protocol):
     """
 
     _data_array: np.typing.ArrayLike
+    shape: tuple[int, ...]
 
 
 CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
@@ -765,7 +766,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
@@ -941,10 +942,10 @@ class Saver:
             Names associated with the dimensions of the cube.
         """
         from iris.experimental.ugrid.mesh import (
-            Mesh,
             MeshEdgeCoords,
             MeshFaceCoords,
             MeshNodeCoords,
+            MeshXY,
         )
 
         # Exclude any mesh coords, which are bundled in with the aux-coords.
@@ -953,8 +954,8 @@ class Saver:
         ]
 
         # Include any relevant mesh location coordinates.
-        mesh: Mesh = getattr(cube, "mesh")
-        mesh_location: str = getattr(cube, "location")
+        mesh: MeshXY | None = getattr(cube, "mesh")
+        mesh_location: str | None = getattr(cube, "location")
         if mesh and mesh_location:
             location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
                 mesh, f"{mesh_location}_coords"
@@ -1119,7 +1120,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
@@ -1203,7 +1204,7 @@ class Saver:
                 if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
                     # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(include_nodes=True, axis="x")
+                    dim_coords = mesh.coords(location="node", axis="x")
                 else:
                     # For face/edge, use the relevant "optionally required"
                     # connectivity variable.
@@ -1216,13 +1217,6 @@ class Saver:
                     assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
-                    if dim_name is not None:
-                        # For mesh-identifying coords, we require the *same*
-                        # coord, not an identical one (i.e. "is" not "==")
-                        stored_coord = self._dim_names_and_coords.coord(dim_name)
-                        if dim_element is not stored_coord:
-                            # This is *not* a proper match after all.
-                            dim_name = None
                     if dim_name is None:
                         # No existing dim matches this, so assign a new name
                         if location == "node":
@@ -1234,7 +1228,7 @@ class Saver:
                         # Name it for the relevant mesh dimension
                         location_dim_attr = f"{location}_dimension"
                         dim_name = getattr(mesh, location_dim_attr)
-                        # NOTE: This cannot currently be empty, as a Mesh
+                        # NOTE: This cannot currently be empty, as a MeshXY
                         # "invents" dimension names which were not given.
                         assert dim_name is not None
                         # Ensure it is a valid variable name.
@@ -1488,7 +1482,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or  :class:`iris.experimental.ugrid.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         coord : :class:`iris.coords._DimensionalMetadata`
             An instance of a coordinate (or similar), for which a CF-netCDF
@@ -1533,7 +1527,7 @@ class Saver:
                     from iris.experimental.ugrid.mesh import Connectivity
 
                     # At present, a location-coord cannot be nameless, as the
-                    # Mesh code relies on guess_coord_axis.
+                    # MeshXY code relies on guess_coord_axis.
                     assert isinstance(coord, Connectivity)
                     location = coord.cf_role.split("_")[0]
                     location_dim_attr = f"{location}_dimension"
@@ -1550,7 +1544,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.experimental.ugrid.mesh.Mesh`
+        mesh : :class:`iris.experimental.ugrid.mesh.MeshXY`
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -1576,7 +1570,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.experimental.ugrid.mesh.Mesh`
+        mesh : :class:`iris.experimental.ugrid.mesh.MeshXY`
             The Mesh to be saved to CF-netCDF file.
 
         Returns
@@ -1666,7 +1660,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         cube_dim_names : list of str
             The name of each dimension of the cube.
@@ -2334,7 +2328,7 @@ class Saver:
                     data: np.typing.ArrayLike,
                     cf_var: CFVariable,
                 ) -> None:
-                    cf_var[:] = data
+                    cf_var[:] = data  # type: ignore[index]
 
             # Store the data.
             store(data, cf_var)

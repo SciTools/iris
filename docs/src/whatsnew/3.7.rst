@@ -70,7 +70,7 @@ v3.7.1 (04 Mar 2024)
    (:pull:`5382`)
 
 #. `@trexfeathers`_ included mesh location coordinates
-   (e.g. :attr:`~iris.experimental.ugrid.Mesh.face_coords`) in
+   (e.g. :attr:`~iris.experimental.ugrid.MeshXY.face_coords`) in
    the data variable's ``coordinates`` attribute when saving to NetCDF.
    (:issue:`5206`, :pull:`5389`)
 

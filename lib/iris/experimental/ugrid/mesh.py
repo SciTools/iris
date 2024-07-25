@@ -12,7 +12,9 @@ Eventual destination: dedicated module in :mod:`iris` root.
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
+from contextlib import contextmanager
 from typing import Iterable
+import warnings
 
 from cf_units import Unit
 from dask import array as da
@@ -25,6 +27,7 @@ from ...config import get_logger
 from ...coords import AuxCoord, _DimensionalMetadata
 from ...exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ...util import array_equal, clip_string, guess_coord_axis
+from ...warnings import IrisVagueMetadataWarning
 from .metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
 # Configure the logger.
@@ -36,7 +39,7 @@ NP_PRINTOPTIONS_THRESHOLD = 10
 NP_PRINTOPTIONS_EDGEITEMS = 2
 
 #
-# Mesh dimension names namedtuples.
+# MeshXY dimension names namedtuples.
 #
 
 #: Namedtuple for 1D mesh topology NetCDF variable dimension names.
@@ -47,7 +50,7 @@ Mesh2DNames = namedtuple(
 )
 
 #
-# Mesh coordinate manager namedtuples.
+# MeshXY coordinate manager namedtuples.
 #
 
 #: Namedtuple for 1D mesh :class:`~iris.coords.AuxCoord` coordinates.
@@ -65,7 +68,7 @@ MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
 MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
 
 #
-# Mesh connectivity manager namedtuples.
+# MeshXY connectivity manager namedtuples.
 #
 
 #: Namedtuple for 1D mesh :class:`~iris.experimental.ugrid.mesh.Connectivity` instances.
@@ -576,20 +579,60 @@ class Connectivity(_DimensionalMetadata):
         return element
 
 
-class Mesh(CFVariableMixin):
+class Mesh(CFVariableMixin, ABC):
     """A container representing the UGRID ``cf_role`` ``mesh_topology``.
 
-    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
+    Warnings
+    --------
+    This class is not yet implemented. It is a placeholder for a future
+    implementation of the UGRID mesh with the minimum possible assumptions. For
+    instance: it is in theory possible for mesh node coordinates to be ANY
+    combination of ANY coordinate type, e.g. spherical coordinates or an S2
+    coordinate; the current :class:`MeshXY` subclass is based on the assumption
+    of an X and a Y coordinate (e.g. longitude and latitude).
+
+    .. todo::
+        If SciTools/iris#5994 is agreed upon: implement this class.
+          - Move whatever is appropriate from :class:`MeshXY` into this class,
+            leaving behind only those elements specific to the assumption of
+            X and Y node coordinates.
+          - Remove the docstring warning, the NotImplementedError, and the uses
+            of ABC/abstractmethod.
+          - Add a cross-reference in the docstring for :class:`MeshXY`.
+          - Search the Iris codebase for uses of :class:`MeshXY` and work out
+            if/how they can be refactored to work with the more flexible
+            :class:`Mesh`.
+
+    """
+
+    @abstractmethod
+    def __init__(self):
+        message = (
+            f"The {self.__class__.__name__} class is not yet implemented. "
+            "Use the MeshXY class instead."
+        )
+        raise NotImplementedError(message)
+
+
+class MeshXY(Mesh):
+    """A container representing the UGRID ``cf_role`` ``mesh_topology``.
+
+    A container representing the UGRID [1]_ ``cf_role`` ``mesh_topology``, supporting
     1D network, 2D triangular, and 2D flexible mesh topologies.
 
-    .. note::
+    Based on the assumption of 2 :attr:`node_coords` - one associated with the
+    X-axis (e.g. longitude) and 1 with the Y-axis (e.g. latitude). UGRID
+    describing alternative node coordinates (e.g. spherical) cannot be
+    represented.
 
-        The 3D layered and fully 3D unstructured mesh topologies are not supported
-        at this time.
+    Notes
+    -----
+    The 3D layered and fully 3D unstructured mesh topologies are not supported
+    at this time.
 
-    .. seealso::
-
-        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    References
+    ----------
+    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
 
     """
 
@@ -617,7 +660,7 @@ class Mesh(CFVariableMixin):
         edge_dimension=None,
         face_dimension=None,
     ):
-        """Mesh initialise.
+        """MeshXY initialise.
 
         .. note::
 
@@ -694,38 +737,38 @@ class Mesh(CFVariableMixin):
 
     @classmethod
     def from_coords(cls, *coords):
-        r"""Construct a :class:`Mesh` by derivation from one or more :class:`~iris.coords.Coord`.
+        r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
 
-        The :attr:`~Mesh.topology_dimension`, :class:`~iris.coords.Coord`
+        The :attr:`~MeshXY.topology_dimension`, :class:`~iris.coords.Coord`
         membership and :class:`Connectivity` membership are all determined
         based on the shape of the first :attr:`~iris.coords.Coord.bounds`:
 
         * ``None`` or ``(n, <2)``:
             Not supported
         * ``(n, 2)``:
-            :attr:`~Mesh.topology_dimension` = ``1``.
-            :attr:`~Mesh.node_coords` and :attr:`~Mesh.edge_node_connectivity`
+            :attr:`~MeshXY.topology_dimension` = ``1``.
+            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.edge_node_connectivity`
             constructed from :attr:`~iris.coords.Coord.bounds`.
-            :attr:`~Mesh.edge_coords` constructed from
+            :attr:`~MeshXY.edge_coords` constructed from
             :attr:`~iris.coords.Coord.points`.
         * ``(n, >=3)``:
-            :attr:`~Mesh.topology_dimension` = ``2``.
-            :attr:`~Mesh.node_coords` and :attr:`~Mesh.face_node_connectivity`
+            :attr:`~MeshXY.topology_dimension` = ``2``.
+            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.face_node_connectivity`
             constructed from :attr:`~iris.coords.Coord.bounds`.
-            :attr:`~Mesh.face_coords` constructed from
+            :attr:`~MeshXY.face_coords` constructed from
             :attr:`~iris.coords.Coord.points`.
 
         Parameters
         ----------
         *coords : Iterable of :class:`~iris.coords.Coord`
-            Coordinates to pass into the :class:`Mesh`.
+            Coordinates to pass into the :class:`MeshXY`.
             All :attr:`~iris.coords.Coord.points` must have the same shapes;
             all :attr:`~iris.coords.Coord.bounds` must have the same shapes,
             and must not be ``None``.
 
         Returns
         -------
-        :class:`Mesh`
+        :class:`MeshXY`
 
         Notes
         -----
@@ -734,7 +777,7 @@ class Mesh(CFVariableMixin):
             computational intensity.
 
         .. note::
-            :class:`Mesh` currently requires ``X`` and ``Y``
+            :class:`MeshXY` currently requires ``X`` and ``Y``
             :class:`~iris.coords.Coord` specifically.
             :meth:`iris.util.guess_coord_axis` is therefore attempted, else the
             first two :class:`~iris.coords.Coord` are taken.
@@ -743,14 +786,12 @@ class Mesh(CFVariableMixin):
 
             from iris import load_cube, sample_data_path
             from iris.experimental.ugrid import (
-                PARSE_UGRID_ON_LOAD,
-                Mesh,
+                MeshXY,
                 MeshCoord,
             )
 
             file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-            with PARSE_UGRID_ON_LOAD.context():
-                cube_w_mesh = load_cube(file_path)
+            cube_w_mesh = load_cube(file_path)
 
         Examples
         --------
@@ -778,7 +819,7 @@ class Mesh(CFVariableMixin):
             latitude: AuxCoord
             longitude: AuxCoord
 
-            >>> new_mesh = Mesh.from_coords(*orig_coords)
+            >>> new_mesh = MeshXY.from_coords(*orig_coords)
             >>> new_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
 
             # Replace the AuxCoords with MeshCoords.
@@ -897,7 +938,7 @@ class Mesh(CFVariableMixin):
     def __eq__(self, other):
         result = NotImplemented
 
-        if isinstance(other, Mesh):
+        if isinstance(other, MeshXY):
             result = self.metadata == other.metadata
             if result:
                 result = self.all_coords == other.all_coords
@@ -925,12 +966,12 @@ class Mesh(CFVariableMixin):
         return result
 
     def summary(self, shorten=False):
-        """Return a string representation of the Mesh.
+        """Return a string representation of the MeshXY.
 
         Parameters
         ----------
         shorten : bool, default=False
-            If True, produce a oneline string form of the form <Mesh: ...>.
+            If True, produce a oneline string form of the form <MeshXY: ...>.
             If False, produce a multi-line detailed print output.
 
         Returns
@@ -960,11 +1001,11 @@ class Mesh(CFVariableMixin):
             mesh_name = None
         if mesh_name:
             # Use a more human-readable form
-            mesh_string = f"<Mesh: '{mesh_name}'>"
+            mesh_string = f"<MeshXY: '{mesh_name}'>"
         else:
             # Mimic the generic object.__str__ style.
             mesh_id = id(self)
-            mesh_string = f"<Mesh object at {hex(mesh_id)}>"
+            mesh_string = f"<MeshXY object at {hex(mesh_id)}>"
 
         return mesh_string
 
@@ -978,7 +1019,7 @@ class Mesh(CFVariableMixin):
             indent = indent_str * i_indent
             lines.append(f"{indent}{text}")
 
-        line(f"Mesh : '{self.name()}'")
+        line(f"MeshXY : '{self.name()}'")
         line(f"topology_dimension: {self.topology_dimension}", 1)
         for element in ("node", "edge", "face"):
             if element == "node":
@@ -999,8 +1040,7 @@ class Mesh(CFVariableMixin):
                     main_conn_string = main_conn.summary(shorten=True, linewidth=0)
                     line(f"{main_conn_name}: {main_conn_string}", 2)
                 # Print coords
-                include_key = f"include_{element}s"
-                coords = self.coords(**{include_key: True})
+                coords = self.coords(location=element)
                 if coords:
                     line(f"{element} coordinates", 2)
                     for coord in coords:
@@ -1094,12 +1134,12 @@ class Mesh(CFVariableMixin):
 
     @property
     def all_connectivities(self):
-        """All the :class:`~iris.experimental.ugrid.mesh.Connectivity` instances of the :class:`Mesh`."""
+        """All the :class:`~iris.experimental.ugrid.mesh.Connectivity` instances of the :class:`MeshXY`."""
         return self._connectivity_manager.all_members
 
     @property
     def all_coords(self):
-        """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`."""
+        """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.all_members
 
     @property
@@ -1108,14 +1148,14 @@ class Mesh(CFVariableMixin):
 
         The *optional* UGRID ``boundary_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`.
+        :class:`MeshXY`.
 
         """
         return self._connectivity_manager.boundary_node
 
     @property
     def edge_coords(self):
-        """The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`."""
+        """The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.edge_coords
 
     @property
@@ -1137,7 +1177,7 @@ class Mesh(CFVariableMixin):
 
         The *optional* UGRID ``edge_face_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`.
+        :class:`MeshXY`.
 
         """
         return self._connectivity_manager.edge_face
@@ -1148,16 +1188,16 @@ class Mesh(CFVariableMixin):
 
         The UGRID ``edge_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
+        :class:`MeshXY`, which is **required** for :attr:`MeshXY.topology_dimension`
         of ``1``, and *optionally required* for
-        :attr:`Mesh.topology_dimension` ``>=2``.
+        :attr:`MeshXY.topology_dimension` ``>=2``.
 
         """
         return self._connectivity_manager.edge_node
 
     @property
     def face_coords(self):
-        """The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`."""
+        """The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.face_coords
 
     @property
@@ -1188,7 +1228,7 @@ class Mesh(CFVariableMixin):
 
         The *optional* UGRID ``face_edge_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`.
+        :class:`MeshXY`.
 
         """
         # optional
@@ -1200,7 +1240,7 @@ class Mesh(CFVariableMixin):
 
         The *optional* UGRID ``face_face_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`.
+        :class:`MeshXY`.
 
         """
         return self._connectivity_manager.face_face
@@ -1211,8 +1251,8 @@ class Mesh(CFVariableMixin):
 
         The UGRID ``face_node_connectivity``
         :class:`~iris.experimental.ugrid.mesh.Connectivity` of the
-        :class:`Mesh`, which is **required** for :attr:`Mesh.topology_dimension`
-        of ``2``, and *optionally required* for :attr:`Mesh.topology_dimension`
+        :class:`MeshXY`, which is **required** for :attr:`MeshXY.topology_dimension`
+        of ``2``, and *optionally required* for :attr:`MeshXY.topology_dimension`
         of ``3``.
 
         """
@@ -1220,7 +1260,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def node_coords(self):
-        """The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`Mesh`."""
+        """The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.node_coords
 
     @property
@@ -1237,14 +1277,14 @@ class Mesh(CFVariableMixin):
         self._metadata_manager.node_dimension = node_dimension
 
     def add_connectivities(self, *connectivities):
-        """Add one or more :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to the :class:`Mesh`.
+        """Add one or more :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to the :class:`MeshXY`.
 
         Parameters
         ----------
         *connectivities : iterable of object
             A collection of one or more
             :class:`~iris.experimental.ugrid.mesh.Connectivity` instances to
-            add to the :class:`Mesh`.
+            add to the :class:`MeshXY`.
 
         """
         self._connectivity_manager.add(*connectivities)
@@ -1258,7 +1298,7 @@ class Mesh(CFVariableMixin):
         face_x=None,
         face_y=None,
     ):
-        """Add one or more :class:`~iris.coords.AuxCoord` coordinates to the :class:`Mesh`.
+        """Add one or more :class:`~iris.coords.AuxCoord` coordinates to the :class:`MeshXY`.
 
         Parameters
         ----------
@@ -1305,14 +1345,14 @@ class Mesh(CFVariableMixin):
         """Return all :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         Return all :class:`~iris.experimental.ugrid.mesh.Connectivity`
-        instances from the :class:`Mesh` that match the provided criteria.
+        instances from the :class:`MeshXY` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
 
         .. seealso::
 
-            :meth:`Mesh.connectivity` for matching exactly one connectivity.
+            :meth:`MeshXY.connectivity` for matching exactly one connectivity.
 
         Parameters
         ----------
@@ -1364,7 +1404,7 @@ class Mesh(CFVariableMixin):
         -------
         list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
             A list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
-            instances from the :class:`Mesh` that matched the given criteria.
+            instances from the :class:`MeshXY` that matched the given criteria.
 
         """
         result = self._connectivity_manager.filters(
@@ -1395,7 +1435,7 @@ class Mesh(CFVariableMixin):
         """Return a single :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         Return a single :class:`~iris.experimental.ugrid.mesh.Connectivity`
-        from the :class:`Mesh` that matches the provided criteria.
+        from the :class:`MeshXY` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1408,7 +1448,7 @@ class Mesh(CFVariableMixin):
 
         .. seealso::
 
-            :meth:`Mesh.connectivities` for matching zero or more connectivities.
+            :meth:`MeshXY.connectivities` for matching zero or more connectivities.
 
         Parameters
         ----------
@@ -1460,7 +1500,7 @@ class Mesh(CFVariableMixin):
         -------
         :class:`~iris.experimental.ugrid.mesh.Connectivity`
             The :class:`~iris.experimental.ugrid.mesh.Connectivity` from the
-            :class:`Mesh` that matched the given criteria.
+            :class:`MeshXY` that matched the given criteria.
 
         """
         result = self._connectivity_manager.filter(
@@ -1484,14 +1524,12 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         """Return a single :class:`~iris.coords.AuxCoord` coordinate.
 
         Return a single :class:`~iris.coords.AuxCoord` coordinate from the
-        :class:`Mesh` that matches the provided criteria.
+        :class:`MeshXY` that matches the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1503,7 +1541,7 @@ class Mesh(CFVariableMixin):
 
         .. seealso::
 
-            :meth:`Mesh.coords` for matching zero or more coordinates.
+            :meth:`MeshXY.coords` for matching zero or more coordinates.
 
         Parameters
         ----------
@@ -1534,17 +1572,13 @@ class Mesh(CFVariableMixin):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
         :class:`~iris.coords.AuxCoord`
-            The :class:`~iris.coords.AuxCoord` coordinate from the :class:`Mesh`
+            The :class:`~iris.coords.AuxCoord` coordinate from the :class:`MeshXY`
             that matched the given criteria.
 
         """
@@ -1555,9 +1589,7 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())[0]
 
@@ -1569,13 +1601,11 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
-        """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh`.
+        """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`.
 
-        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`Mesh` that
+        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY` that
         match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1583,7 +1613,7 @@ class Mesh(CFVariableMixin):
 
         .. seealso::
 
-            :meth:`Mesh.coord` for matching exactly one coordinate.
+            :meth:`MeshXY.coord` for matching exactly one coordinate.
 
         Parameters
         ----------
@@ -1614,18 +1644,14 @@ class Mesh(CFVariableMixin):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
         list of :class:`~iris.coords.AuxCoord`
             A list of :class:`~iris.coords.AuxCoord` coordinates from the
-            :class:`Mesh` that matched the given criteria.
+            :class:`MeshXY` that matched the given criteria.
 
         """
         result = self._coord_manager.filters(
@@ -1635,9 +1661,7 @@ class Mesh(CFVariableMixin):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
         return list(result.values())
 
@@ -1656,7 +1680,7 @@ class Mesh(CFVariableMixin):
         """Remove one or more :class:`~iris.experimental.ugrid.mesh.Connectivity`.
 
         Remove one or more :class:`~iris.experimental.ugrid.mesh.Connectivity`
-        from the :class:`Mesh` that match the provided criteria.
+        from the :class:`MeshXY` that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1711,7 +1735,7 @@ class Mesh(CFVariableMixin):
         -------
         list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
             A list of :class:`~iris.experimental.ugrid.mesh.Connectivity`
-            instances removed from the :class:`Mesh` that matched the given
+            instances removed from the :class:`MeshXY` that matched the given
             criteria.
 
         """
@@ -1735,13 +1759,11 @@ class Mesh(CFVariableMixin):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
-        """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`.
+        """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`MeshXY`.
 
-        Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`Mesh`
+        Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`MeshXY`
         that match the provided criteria.
 
         Criteria can be either specific properties or other objects with
@@ -1776,42 +1798,30 @@ class Mesh(CFVariableMixin):
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        include_node : bool, optional
-            Include all ``node`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_edge : bool, optional
-            Include all ``edge`` coordinates in the list of objects to be matched
-            for potential removal.
-        include_face : bool, optional
-            Include all ``face`` coordinates in the list of objects to be matched
-            for potential removal.
+        location : str, optional
+            The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
         Returns
         -------
         list of :class:`~iris.coords.AuxCoord`
             A list of :class:`~iris.coords.AuxCoord` coordinates removed from
-            the :class:`Mesh` that matched the given criteria.
+            the :class:`MeshXY` that matched the given criteria.
 
         """
-        # Filter out absent arguments - only expecting face coords sometimes,
-        # same will be true of volumes in future.
-        kwargs = {
-            "item": item,
-            "standard_name": standard_name,
-            "long_name": long_name,
-            "var_name": var_name,
-            "attributes": attributes,
-            "axis": axis,
-            "include_nodes": include_nodes,
-            "include_edges": include_edges,
-            "include_faces": include_faces,
-        }
-        kwargs = {k: v for k, v in kwargs.items() if v}
+        result = self._coord_manager.remove(
+            item=item,
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            attributes=attributes,
+            axis=axis,
+            location=location,
+        )
 
-        return self._coord_manager.remove(**kwargs)
+        return result
 
     def xml_element(self, doc):
-        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`Mesh`.
+        """Create the :class:`xml.dom.minidom.Element` that describes this :class:`MeshXY`.
 
         Parameters
         ----------
@@ -1822,7 +1832,7 @@ class Mesh(CFVariableMixin):
         -------
         :class:`xml.dom.minidom.Element`
             The :class:`xml.dom.minidom.Element` that will describe this
-            :class:`Mesh`, and the dictionary of attributes that require
+            :class:`MeshXY`, and the dictionary of attributes that require
             to be added to this element.
 
         """
@@ -1845,7 +1855,7 @@ class Mesh(CFVariableMixin):
         """Generate a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
         Generate a :class:`~iris.experimental.ugrid.mesh.MeshCoord` that
-        references the current :class:`Mesh`, and passing through the
+        references the current :class:`MeshXY`, and passing through the
         ``location`` and ``axis`` arguments.
 
         .. seealso::
@@ -1865,7 +1875,7 @@ class Mesh(CFVariableMixin):
         -------
         :class:`~iris.experimental.ugrid.mesh.MeshCoord`
             A :class:`~iris.experimental.ugrid.mesh.MeshCoord` referencing the
-            current :class:`Mesh`.
+            current :class:`MeshXY`.
 
         """
         return MeshCoord(mesh=self, location=location, axis=axis)
@@ -1875,7 +1885,7 @@ class Mesh(CFVariableMixin):
 
         Generate a tuple of
         :class:`~iris.experimental.ugrid.mesh.MeshCoord`, each referencing
-        the current :class:`Mesh`, one for each :attr:`AXES` value, passing
+        the current :class:`MeshXY`, one for each :attr:`AXES` value, passing
         through the ``location`` argument.
 
         .. seealso::
@@ -1891,7 +1901,7 @@ class Mesh(CFVariableMixin):
         -------
         tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`
             Tuple of :class:`~iris.experimental.ugrid.mesh.MeshCoord`
-            referencing the current :class:`Mesh`. One for each value in
+            referencing the current :class:`MeshXY`. One for each value in
             :attr:`AXES`, using the value for the ``axis`` argument.
 
         """
@@ -1928,7 +1938,7 @@ class Mesh(CFVariableMixin):
 
         The default value of ``None`` will not be assigned to clear the
         associated ``node``, ``edge`` or ``face``. Instead use
-        :meth:`Mesh.dimension_names_reset`.
+        :meth:`MeshXY.dimension_names_reset`.
 
         Parameters
         ----------
@@ -1947,7 +1957,7 @@ class Mesh(CFVariableMixin):
 
     @property
     def cf_role(self):
-        """The UGRID ``cf_role`` attribute of the :class:`Mesh`."""
+        """The UGRID ``cf_role`` attribute of the :class:`MeshXY`."""
         return "mesh_topology"
 
     @property
@@ -1956,7 +1966,7 @@ class Mesh(CFVariableMixin):
 
         The UGRID ``topology_dimension`` attribute represents the highest
         dimensionality of all the geometric elements (node, edge, face) represented
-        within the :class:`Mesh`.
+        within the :class:`MeshXY`.
 
         """
         return self._metadata_manager.topology_dimension
@@ -1974,7 +1984,7 @@ class _Mesh1DCoordinateManager:
         "node_x",
         "node_y",
     )
-    OPTIONAL = (
+    OPTIONAL: tuple[str, ...] = (
         "edge_x",
         "edge_y",
     )
@@ -2200,21 +2210,21 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         # TBD: support coord_systems?
 
-        # Preserve original argument before modifying.
-        face_requested = include_faces
-
-        # Rationalise the tri-state behaviour.
-        args = [include_nodes, include_edges, include_faces]
-        state = not any(set(filter(lambda arg: arg is not None, args)))
-        include_nodes, include_edges, include_faces = map(
-            lambda arg: arg if arg is not None else state, args
-        )
+        # Determine locations to include.
+        if location is not None:
+            if location not in ["node", "edge", "face"]:
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                )
+            include_nodes = location == "node"
+            include_edges = location == "edge"
+            include_faces = location == "face"
+        else:
+            include_nodes = include_edges = include_faces = True
 
         def populated_coords(coords_tuple):
             return list(filter(None, list(coords_tuple)))
@@ -2227,7 +2237,7 @@ class _Mesh1DCoordinateManager:
         if hasattr(self, "face_coords"):
             if include_faces:
                 members += populated_coords(self.face_coords)
-        elif face_requested:
+        elif location == "face":
             dmsg = "Ignoring request to filter non-existent 'face_coords'"
             logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
@@ -2254,8 +2264,7 @@ class _Mesh1DCoordinateManager:
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2264,8 +2273,7 @@ class _Mesh1DCoordinateManager:
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
+            location=location,
         )
 
 
@@ -2340,9 +2348,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         var_name=None,
         attributes=None,
         axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
+        location=None,
     ):
         return self._remove(
             item=item,
@@ -2351,9 +2357,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
             var_name=var_name,
             attributes=attributes,
             axis=axis,
-            include_nodes=include_nodes,
-            include_edges=include_edges,
-            include_faces=include_faces,
+            location=location,
         )
 
 
@@ -2647,15 +2651,15 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
 class MeshCoord(AuxCoord):
     """Geographic coordinate values of data on an unstructured mesh.
 
-    A MeshCoord references a `~iris.experimental.ugrid.mesh.Mesh`.
-    When contained in a `~iris.cube.Cube` it connects the cube to the Mesh.
+    A MeshCoord references a `~iris.experimental.ugrid.mesh.MeshXY`.
+    When contained in a `~iris.cube.Cube` it connects the cube to the MeshXY.
     It records (a) which 1-D cube dimension represents the unstructured mesh,
     and (b) which  mesh 'location' the cube data is mapped to -- i.e. is it
     data on 'face's, 'edge's or 'node's.
 
     A MeshCoord also specifies its 'axis' : 'x' or 'y'.  Its values are then,
     accordingly, longitudes or latitudes.  The values are taken from the
-    appropriate coordinates and connectivities in the Mesh, determined by its
+    appropriate coordinates and connectivities in the MeshXY, determined by its
     'location' and 'axis'.
 
     Any cube with data on a mesh will have a MeshCoord for each axis,
@@ -2665,9 +2669,9 @@ class MeshCoord(AuxCoord):
     which depends on location.
     For 'node', the ``.points`` contains node locations.
     For 'edge', the ``.bounds`` contains edge endpoints, and the ``.points`` contain
-    edge locations (typically centres), if the Mesh contains them (optional).
+    edge locations (typically centres), if the MeshXY contains them (optional).
     For 'face', the ``.bounds`` contain the face corners, and the ``.points`` contain the
-    face locations (typically centres), if the Mesh contains them (optional).
+    face locations (typically centres), if the MeshXY contains them (optional).
 
     .. note::
         As described above, it is possible for a MeshCoord to have bounds but
@@ -2690,10 +2694,10 @@ class MeshCoord(AuxCoord):
         self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
 
         # Validate and record the class-specific constructor args.
-        if not isinstance(mesh, Mesh):
+        if not isinstance(mesh, MeshXY):
             msg = (
                 "'mesh' must be an "
-                f"{Mesh.__module__}.{Mesh.__name__}, "
+                f"{MeshXY.__module__}.{MeshXY.__name__}, "
                 f"got {mesh}."
             )
             raise TypeError(msg)
@@ -2701,20 +2705,20 @@ class MeshCoord(AuxCoord):
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
 
-        if location not in Mesh.ELEMENTS:
+        if location not in MeshXY.ELEMENTS:
             msg = (
-                f"'location' of {location} is not a valid Mesh location', "
-                f"must be one of {Mesh.ELEMENTS}."
+                f"'location' of {location} is not a valid MeshXY location', "
+                f"must be one of {MeshXY.ELEMENTS}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
         self._metadata_manager.location = location
 
-        if axis not in Mesh.AXES:
-            # The valid axes are defined by the Mesh class.
+        if axis not in MeshXY.AXES:
+            # The valid axes are defined by the MeshXY class.
             msg = (
-                f"'axis' of {axis} is not a valid Mesh axis', "
-                f"must be one of {Mesh.AXES}."
+                f"'axis' of {axis} is not a valid MeshXY axis', "
+                f"must be one of {MeshXY.AXES}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
@@ -2728,20 +2732,19 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_coord = self.mesh.coord(location="node", axis=self.axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
         use_metadict = node_metadict.copy()
         if location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            kwargs = {f"include_{location}s": True, "axis": axis}
-            location_coord = self.mesh.coord(**kwargs)
+            location_coord = self.mesh.coord(location=location, axis=axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
             unit_unknown = Unit(None)
 
-            # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
+            # N.B. at present, coords in a MeshXY are stored+accessed by 'axis', which
             # means they must have a standard_name.  So ...
             # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
             #     identity.
@@ -2781,6 +2784,11 @@ class MeshCoord(AuxCoord):
                     )
                     raise ValueError(msg)
 
+        # Don't use 'coord_system' as a constructor arg, since for
+        # MeshCoords it is deduced from the mesh.
+        # (Otherwise a non-None coord_system breaks the 'copy' operation)
+        use_metadict.pop("coord_system")
+
         # Call parent constructor to handle the common constructor args.
         super().__init__(points, bounds=bounds, **use_metadict)
 
@@ -2806,8 +2814,24 @@ class MeshCoord(AuxCoord):
 
     @property
     def coord_system(self):
-        """The coordinate-system of a MeshCoord is always 'None'."""
-        return None
+        """The coordinate-system of a MeshCoord.
+
+        It comes from the `related` location coordinate in the mesh.
+        """
+        # This matches where the coord metadata is drawn from.
+        # See : https://github.com/SciTools/iris/issues/4860
+        try:
+            # NOTE: at present, a MeshCoord *always* references the relevant location
+            # coordinate in the mesh, from which its points are taken.
+            # However this might change in future ..
+            # see : https://github.com/SciTools/iris/discussions/4438#bounds-no-points
+            location_coord = self.mesh.coord(location=self.location, axis=self.axis)
+            coord_system = location_coord.coord_system
+        except CoordinateNotFoundError:
+            # No such coord : possible in UGRID, but probably not Iris (at present).
+            coord_system = None
+
+        return coord_system
 
     @coord_system.setter
     def coord_system(self, value):
@@ -2839,6 +2863,47 @@ class MeshCoord(AuxCoord):
         # Translate "self[:,]" as "self.copy()".
         return self.copy()
 
+    def collapsed(self, dims_to_collapse=None):
+        """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
+
+        Replaces the points & bounds with a simple bounded region.
+
+        The coordinate that is collapsed is a :class:`~iris.coords.AuxCoord`
+        copy of this :class:`MeshCoord`, since a :class:`MeshCoord`
+        does not have its own points/bounds - they are derived from the
+        associated :class:`MeshXY`. See :meth:`iris.coords.AuxCoord.collapsed`.
+        """
+
+        @contextmanager
+        def temp_suppress_warning():
+            """Add IrisVagueMetadataWarning filter then removes it after yielding.
+
+            A workaround to mimic catch_warnings(), given python/cpython#73858.
+            """
+            warnings.filterwarnings("ignore", category=IrisVagueMetadataWarning)
+            added_warning = warnings.filters[0]
+
+            yield
+
+            # (warnings.filters is usually mutable but this is not guaranteed).
+            new_filters = list(warnings.filters)
+            new_filters.remove(added_warning)
+            warnings.filters = new_filters
+
+        aux_coord = AuxCoord.from_coord(self)
+
+        # Reuse existing AuxCoord collapse logic, but with a custom
+        #  mesh-specific warning.
+        message = (
+            "Collapsing a mesh coordinate - cannot check for contiguity."
+            f"Metadata may not be fully descriptive for '{self.name()}'."
+        )
+        warnings.warn(message, category=IrisVagueMetadataWarning)
+        with temp_suppress_warning():
+            collapsed_coord = aux_coord.collapsed(dims_to_collapse)
+
+        return collapsed_coord
+
     def copy(self, points=None, bounds=None):
         """Make a copy of the MeshCoord.
 
@@ -2867,9 +2932,9 @@ class MeshCoord(AuxCoord):
     def __deepcopy__(self, memo):
         """Make this equivalent to "shallow" copy.
 
-        Returns a new MeshCoord based on the same Mesh.
+        Returns a new MeshCoord based on the same MeshXY.
 
-        Required to prevent cube copying from copying the Mesh, which would
+        Required to prevent cube copying from copying the MeshXY, which would
         prevent "cube.copy() == cube" :  see notes for :meth:`copy`.
 
         """
@@ -2955,31 +3020,28 @@ class MeshCoord(AuxCoord):
         """Build lazy points and bounds arrays.
 
         Build lazy points and bounds arrays, providing dynamic access via the
-        Mesh, according to the location and axis.
+        MeshXY, according to the location and axis.
 
         Returns
         -------
         array or None
             Tuple of (points, bounds).
             Lazy arrays which calculate the correct points and bounds from the
-            Mesh data, based on the location and axis.
-            The Mesh coordinates accessed are not identified on construction,
-            but discovered from the Mesh at the time of calculation, so that
-            the result is always based on current content in the Mesh.
+            MeshXY data, based on the location and axis.
+            The MeshXY coordinates accessed are not identified on construction,
+            but discovered from the MeshXY at the time of calculation, so that
+            the result is always based on current content in the MeshXY.
 
         """
         mesh, location, axis = self.mesh, self.location, self.axis
-        node_coord = self.mesh.coord(include_nodes=True, axis=axis)
+        node_coord = mesh.coord(location="node", axis=axis)
 
         if location == "node":
             points_coord = node_coord
             bounds_connectivity = None
-        elif location == "edge":
-            points_coord = self.mesh.coord(include_edges=True, axis=axis)
-            bounds_connectivity = mesh.edge_node_connectivity
-        elif location == "face":
-            points_coord = self.mesh.coord(include_faces=True, axis=axis)
-            bounds_connectivity = mesh.face_node_connectivity
+        else:
+            points_coord = mesh.coord(location=location, axis=axis)
+            bounds_connectivity = getattr(mesh, f"{location}_node_connectivity")
 
         # The points output is the points of the relevant element-type coord.
         points = points_coord.core_points()

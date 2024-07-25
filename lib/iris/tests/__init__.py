@@ -29,7 +29,6 @@ import re
 import shutil
 import subprocess
 import sys
-from typing import AnyStr
 import unittest
 from unittest import mock
 import warnings
@@ -92,7 +91,7 @@ if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")
     fname = "/var/tmp/all_iris_test_resource_paths.txt"
     print("saving list of files used by tests to %s" % fname)
-    _EXPORT_DATAPATHS_FILE = open(fname, "w")
+    _EXPORT_DATAPATHS_FILE: io.TextIOWrapper | None = open(fname, "w")
 else:
     _EXPORT_DATAPATHS_FILE = None
 
@@ -193,10 +192,35 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
     )
 
 
+def assert_cml(cubes, reference_filename=None, checksum=True):
+    """Test that the CML for the given cubes matches the contents of
+    the reference file.
+
+    If the environment variable IRIS_TEST_CREATE_MISSING is
+    non-empty, the reference file is created if it doesn't exist.
+
+    Parameters
+    ----------
+    cubes :
+        Either a Cube or a sequence of Cubes.
+    reference_filename : optional, default=None
+        The relative path (relative to the test results directory).
+        If omitted, the result is generated from the calling
+        method's name, class, and module using
+        :meth:`iris.tests.IrisTest.result_path`.
+    checksum : bool, optional
+        When True, causes the CML to include a checksum for each
+        Cube's data. Defaults to True.
+
+    """
+    test = IrisTest()
+    test.assertCML(cubes, reference_filename, checksum)
+
+
 class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
 
-    _assertion_counts = collections.defaultdict(int)
+    _assertion_counts: collections.defaultdict[str, int] = collections.defaultdict(int)
 
     def _assert_str_same(
         self,
@@ -1053,7 +1077,7 @@ def no_warnings(func):
     return wrapped
 
 
-def env_bin_path(exe_name: AnyStr = None):
+def env_bin_path(exe_name: str | None = None) -> Path | None:
     """Return a Path object for (an executable in) the environment bin directory.
 
     Parameters

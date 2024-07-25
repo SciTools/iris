@@ -8,7 +8,7 @@ from geovista import Transform
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 
 from iris.exceptions import CoordinateNotFoundError
-from iris.experimental.ugrid import Mesh
+from iris.experimental.ugrid import MeshXY
 
 
 def _get_coord(cube, axis):
@@ -59,12 +59,10 @@ def cube_to_polydata(cube, **kwargs):
     .. testsetup::
 
         from iris import load_cube, sample_data_path
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         cube = load_cube(sample_data_path("air_temp.pp"))
         cube_w_time = load_cube(sample_data_path("A1B_north_america.nc"))
-        with PARSE_UGRID_ON_LOAD.context():
-            cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
 
     >>> from iris.experimental.geovista import cube_to_polydata
 
@@ -212,11 +210,9 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
         from iris import load_cube, sample_data_path
         from iris.coords import AuxCoord
         from iris.cube import CubeList
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-        with PARSE_UGRID_ON_LOAD.context():
-            cube_w_mesh = load_cube(file_path)
+        cube_w_mesh = load_cube(file_path)
 
         level_cubes = CubeList()
         for height_level in range(72):
@@ -231,7 +227,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
     The parameters of :func:`extract_unstructured_region` have been designed with
     flexibility and reuse in mind. This is demonstrated below.
 
-    >>> from geovista import BBox
+    >>> from geovista.geodesic import BBox
     >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
     >>> print(cube_w_mesh.shape)
     (72, 96)
@@ -322,7 +318,7 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
 
         if recreate_mesh:
             coords_on_mesh_dim = region_cube.coords(dimensions=mesh_dim)
-            new_mesh = Mesh.from_coords(
+            new_mesh = MeshXY.from_coords(
                 *[c for c in coords_on_mesh_dim if c.has_bounds()]
             )
 

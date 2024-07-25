@@ -30,7 +30,20 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@ESadek-MO`_ updated the error messages in :meth:`iris.cube.CubeList.concatenate`
+   to better explain the error. (:pull:`6005`)
+
+#. `@trexfeathers`_ added the
+   :meth:`~iris.experimental.ugrid.mesh.MeshCoord.collapsed` method to
+   :class:`~iris.experimental.ugrid.mesh.MeshCoord`, enabling collapsing of
+   the :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.mesh_dim` (see
+   :ref:`cube-statistics-collapsing`). (:issue:`5377`, :pull:`6003`)
+
+#. `@pp-mo`_ made a MeshCoord inherit a coordinate system from its location coord,
+   as it does its metadata.  N.B. mesh location coords can not however load a
+   coordinate system from netcdf at present, as this needs the 'extended'
+   grid-mappping syntax -- see : :issue:`3388`.
+   (:issue:`5562`, :pull:`6016`)
 
 
 🐛 Bugs Fixed
@@ -43,6 +56,14 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window`.  (:issue:`5777`, :pull:`5825`)
 
 
+#. `@pp-mo`_ corrected the use of mesh dimensions when saving with multiple
+   meshes.  (:issue:`5908`, :pull:`6004`)
+
+#. `@trexfeathers`_ fixed the datum :class:`python:FutureWarning` to only be raised if
+   the ``datum_support`` :class:`~iris.Future` flag is disabled AND a datum is
+   present on the loaded NetCDF grid mapping. (:issue:`5749`, :pull:`6050`)
+
+
 💣 Incompatible Changes
 =======================
 
@@ -50,6 +71,22 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.pp.as_fields` and
    :func:`~iris.fileformats.pp.save_pairs_from_cube` because it had no effect.
    (:pull:`5783`)
+
+#. `@stephenworsley`_ made masked arrays on Iris objects now compare as equal
+   precisely when all unmasked points are equal and when the masks are identical.
+   This is due to changes in :func:`~iris.util.array_equal` which previously
+   ignored masks entirely. (:pull:`4457`)
+
+#. `@trexfeathers`_ renamed the ``Mesh`` class to
+   :class:`~iris.experimental.ugrid.mesh.MeshXY`, in preparation for a future
+   more flexible parent class (:class:`~iris.experimental.ugrid.mesh.Mesh`).
+   (:issue:`6052` :pull:`6056`)
+
+#. `@stephenworsley`_ replaced the ``include_nodes``, ``include_edges`` and
+   ``include_faces`` arguments with a single ``location`` argument in the
+   :class:`~iris.experimental.ugrid.Mesh` methods
+   :meth:`~iris.experimental.ugrid.Mesh.coord`, :meth:`~iris.experimental.ugrid.Mesh.coords`
+   and :meth:`~iris.experimental.ugrid.Mesh.remove_coords`. (:pull:`6055`)
 
 
 🚀 Performance Enhancements
@@ -64,6 +101,12 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ made :meth:`iris.cube.Cube.rolling_window` work with lazy
    data. (:pull:`5795`)
 
+#. `@bouweandela`_ updated :meth:`iris.cube.CubeList.concatenate` so it keeps
+   ancillary variables and cell measures lazy. (:pull:`6010`)
+
+#. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster for cubes
+   that have coordinate factories. (:pull:`6038`)
+
 🔥 Deprecations
 ===============
 
@@ -76,6 +119,17 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ removed the pin for ``sphinx <=5.3``, so the latest should
    now be used, currently being v7.2.6.
    (:pull:`5901`)
+
+#. `@trexfeathers`_ updated the :mod:`iris.experimental.geovista`
+   documentation's use of :class:`geovista.geodesic.BBox`
+   to be compatible with GeoVista v0.5, as well as previous versions.
+   (:pull:`6064`)
+
+#. `@pp-mo`_ temporarily pinned matplotlib to ">=3.5, !=3.9.1", to avoid current CI
+   test failures on plot results, apparently due to a matplotlib bug.
+   See : https://github.com/matplotlib/matplotlib/issues/28567
+   (:pull:`6065`)
+
 
 
 📚 Documentation
@@ -126,6 +180,17 @@ This document explains the changes made to Iris for this release
 
 #. `@rcomer`_ made some :meth:`~iris.cube.Cube.slices_over` tests go faster (:pull:`5973`)
 
+#. `@bouweandela`_ enabled mypy checks for type hints.
+   The entire team would like to thank Bouwe for putting in the hard
+   work on an unglamorous but highly valuable contribution. (:pull:`5956`)
+
+#. `@trexfeathers`_ re-wrote the delegated ASV environment plugin to reduce
+   complexity, remove unnecessary slow operations, apply the least-surprise
+   principle, be more robust against failures, and improve the ability to
+   benchmark historic commits (especially older Python versions).
+   (:pull:`5963`)
+
+#. `@bouweandela`_ made some tests for :func:`~iris.iterate.izip` faster. (:pull:`6041`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

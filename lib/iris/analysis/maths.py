@@ -558,7 +558,7 @@ def exponentiate(cube, exponent, in_place=False):
     )
     if cube.has_lazy_data():
 
-        def power(data):
+        def power(data, out=None):
             return operator.pow(data, exponent)
 
     else:

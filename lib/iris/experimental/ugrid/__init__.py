@@ -5,6 +5,12 @@
 
 """Infra-structure for unstructured mesh support.
 
+.. deprecated:: 1.10
+
+    :data:`PARSE_UGRID_ON_LOAD` is due to be removed at next major release.
+    Please remove all uses of this, which are no longer needed :
+    UGRID loading is now **always** active for files containing a UGRID mesh.
+
 Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 
 .. note::
@@ -16,14 +22,14 @@ Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-
 
 from ...config import get_logger
 from .load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
-from .mesh import Connectivity, Mesh, MeshCoord
+from .mesh import Connectivity, MeshCoord, MeshXY
 from .save import save_mesh
 from .utils import recombine_submeshes
 
 __all__ = [
     "Connectivity",
-    "Mesh",
     "MeshCoord",
+    "MeshXY",
     "PARSE_UGRID_ON_LOAD",
     "load_mesh",
     "load_meshes",

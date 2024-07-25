@@ -230,9 +230,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
 
 def _can_draw_map(coords):
-    std_names = [
-        c and c.standard_name for c in coords if isinstance(c, iris.coords.Coord)
-    ]
+    std_names = [c.standard_name for c in coords if isinstance(c, iris.coords.Coord)]
     valid_std_names = [
         ["latitude", "longitude"],
         ["grid_latitude", "grid_longitude"],

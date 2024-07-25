@@ -41,7 +41,6 @@ import iris.warnings
 
 if TYPE_CHECKING:
     from numpy.ma import MaskedArray
-    from numpy.typing import ArrayLike
 
     from iris.fileformats.cf import CFBoundaryVariable
 
@@ -523,7 +522,7 @@ def _get_ellipsoid(cf_grid_var):
     if datum == "unknown":
         datum = None
 
-    if not iris.FUTURE.datum_support:
+    if datum is not None and not iris.FUTURE.datum_support:
         wmsg = (
             "Ignoring a datum in netCDF load for consistency with existing "
             "behaviour. In a future version of Iris, this datum will be "
@@ -1037,7 +1036,9 @@ def reorder_bounds_data(bounds_data, cf_bounds_var, cf_coord_var):
 
 ################################################################################
 def _normalise_bounds_units(
-    points_units: str, cf_bounds_var: CFBoundaryVariable, bounds_data: ArrayLike
+    points_units: str | None,
+    cf_bounds_var: CFBoundaryVariable,
+    bounds_data: MaskedArray,
 ) -> Optional[MaskedArray]:
     """Ensure bounds have units compatible with points.
 
@@ -1064,26 +1065,27 @@ def _normalise_bounds_units(
 
     """
     bounds_units = get_attr_units(cf_bounds_var, {})
+    result: MaskedArray | None = bounds_data
 
     if bounds_units != UNKNOWN_UNIT_STRING:
-        points_units = cf_units.Unit(points_units)
-        bounds_units = cf_units.Unit(bounds_units)
+        p_units = cf_units.Unit(points_units)
+        b_units = cf_units.Unit(bounds_units)
 
-        if bounds_units != points_units:
-            if bounds_units.is_convertible(points_units):
-                bounds_data = bounds_units.convert(bounds_data, points_units)
+        if b_units != p_units:
+            if b_units.is_convertible(p_units):
+                result = b_units.convert(bounds_data, p_units)
             else:
                 wmsg = (
                     f"Ignoring bounds on NetCDF variable {cf_bounds_var.cf_name!r}. "
-                    f"Expected units compatible with {points_units.origin!r}, got "
-                    f"{bounds_units.origin!r}."
+                    f"Expected units compatible with {p_units.origin!r}, got "
+                    f"{b_units.origin!r}."
                 )
                 warnings.warn(
                     wmsg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2
                 )
-                bounds_data = None
+                result = None
 
-    return bounds_data
+    return result
 
 
 ################################################################################
