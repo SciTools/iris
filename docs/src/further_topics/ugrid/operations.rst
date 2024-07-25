@@ -347,7 +347,7 @@ associated :class:`~iris.cube.Cube`\s:
 
 Load
 ----
-.. |tagline: load| replace:: |different| - UGRID parsing is opt-in
+.. |tagline: load| replace:: |unchanged|
 
 .. rubric:: |tagline: load|
 
@@ -838,9 +838,9 @@ one.
 
 :class:`~iris.cube.Cube`\s that include
 :class:`~iris.mesh.MeshCoord`\s can still be merged/concatenated
-on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, since such
-:class:`~iris.cube.Cube`\s will by definition share the same
-:class:`~iris.mesh.MeshXY`.
+on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, but only if their
+:class:`~iris.cube.Cube.mesh`\es are *equal* (in practice, identical, even to
+matching ``var_name``\s).
 
 .. seealso::
 
