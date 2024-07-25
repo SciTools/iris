@@ -837,7 +837,7 @@ def realistic_4d_w_everything(w_mesh=False):
         new_instance = dim_metadata.__class__(flat_values, **kwargs)
         return new_instance
 
-    def remove_duplicate_nodes(mesh: iris.ugrid.MeshXY):
+    def remove_duplicate_nodes(mesh: ugrid.MeshXY):
         """Remove duplicate nodes from a mesh.
 
         MeshXY.from_coords() does not do this due to complications like lazy
