@@ -26,6 +26,8 @@ experimental.
 
 """
 
+from __future__ import annotations
+
 from .._deprecation import warn_deprecated
 from ..ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from ..ugrid.mesh import Connectivity as _Connectivity
