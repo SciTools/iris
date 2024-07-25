@@ -29,8 +29,8 @@ experimental.
 from .._deprecation import warn_deprecated
 from ..ugrid.load import PARSE_UGRID_ON_LOAD, load_mesh, load_meshes
 from ..ugrid.mesh import Connectivity as _Connectivity
-from ..ugrid.mesh import Mesh as _Mesh
 from ..ugrid.mesh import MeshCoord as _MeshCoord
+from ..ugrid.mesh import MeshXY as _MeshXY
 from ..ugrid.save import save_mesh
 from ..ugrid.utils import recombine_submeshes
 
@@ -45,7 +45,7 @@ from ..ugrid.utils import recombine_submeshes
 # We couldn't fix this with "autodoc_suppress_warnings", so the solution for now is to
 # wrap the classes.  Which is really ugly.
 # TODO: remove this when we remove iris.experimental.ugrid
-class Mesh(_Mesh):
+class MeshXY(_MeshXY):
     pass
 
 
@@ -59,8 +59,8 @@ class Connectivity(_Connectivity):
 
 __all__ = [
     "Connectivity",
-    "Mesh",
     "MeshCoord",
+    "MeshXY",
     "PARSE_UGRID_ON_LOAD",
     "load_mesh",
     "load_meshes",

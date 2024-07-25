@@ -15,6 +15,7 @@ from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
+from iris import ugrid
 from iris.analysis import cartography
 import iris.aux_factory
 from iris.coord_systems import GeogCS, RotatedGeogCS
@@ -22,7 +23,6 @@ import iris.coords
 import iris.coords as icoords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
-from iris.experimental import ugrid
 from iris.util import mask_cube
 
 from ._stock_2d_latlons import (  # noqa
@@ -837,7 +837,7 @@ def realistic_4d_w_everything(w_mesh=False):
         new_instance = dim_metadata.__class__(flat_values, **kwargs)
         return new_instance
 
-    def remove_duplicate_nodes(mesh: iris.ugrid.MeshXY):
+    def remove_duplicate_nodes(mesh: ugrid.MeshXY):
         """Remove duplicate nodes from a mesh.
 
         MeshXY.from_coords() does not do this due to complications like lazy
