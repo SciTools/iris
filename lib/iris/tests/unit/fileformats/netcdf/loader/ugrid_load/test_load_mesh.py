@@ -8,7 +8,7 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from iris.mesh import load_mesh
+from iris.fileformats.netcdf.ugrid_load import load_mesh
 
 
 class Tests(tests.IrisTest):

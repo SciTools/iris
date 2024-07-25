@@ -13,7 +13,8 @@ from collections.abc import Iterable
 import pytest
 
 from iris import Constraint, load
-from iris.mesh import MeshXY, load_mesh, load_meshes
+from iris.fileformats.netcdf.ugrid_load import load_mesh, load_meshes
+from iris.mesh import MeshXY
 from iris.tests.stock.netcdf import (
     _file_from_cdl_template as create_file_from_cdl_template,
 )

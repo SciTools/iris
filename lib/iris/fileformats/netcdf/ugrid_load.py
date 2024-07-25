@@ -22,14 +22,14 @@ import warnings
 from iris.config import get_logger
 from iris.coords import AuxCoord
 from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
-from iris.fileformats.netcdf import loader as nc_loader
-from iris.io import decode_uri, expand_filespecs
-from iris.mesh.cf import (
+from iris.fileformats.cf import (
+    CFReader,
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridMeshVariable,
-    CFUGridReader,
 )
+from iris.fileformats.netcdf import loader as nc_loader
+from iris.io import decode_uri, expand_filespecs
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
 from iris.warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
@@ -158,7 +158,7 @@ def load_meshes(uris, var_name=None):
 
     result = {}
     for source in valid_sources:
-        with CFUGridReader(source) as cf_reader:
+        with CFReader(source) as cf_reader:
             meshes_dict = _meshes_from_cf(cf_reader)
         meshes = list(meshes_dict.values())
         if var_name is not None:

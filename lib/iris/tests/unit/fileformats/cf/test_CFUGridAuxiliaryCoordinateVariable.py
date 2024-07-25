@@ -20,16 +20,14 @@ import warnings
 import numpy as np
 import pytest
 
-from iris.mesh.cf import CFUGridAuxiliaryCoordinateVariable
-from iris.tests.unit.mesh.cf.test_CFUGridReader import (
-    netcdf_ugrid_variable,
-)
+from iris.fileformats.cf import CFUGridAuxiliaryCoordinateVariable
+from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 import iris.warnings
 
 
 def named_variable(name):
     # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_ugrid_variable(name, "", int)
+    return netcdf_variable(name, "", int)
 
 
 class TestIdentify(tests.IrisTest):
@@ -130,7 +128,7 @@ class TestIdentify(tests.IrisTest):
         ref_source = named_variable("ref_source")
         setattr(ref_source, self.cf_identities[0], subject_name)
         vars_all = {
-            subject_name: netcdf_ugrid_variable(subject_name, "", np.bytes_),
+            subject_name: netcdf_variable(subject_name, "", np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
@@ -221,7 +219,7 @@ class TestIdentify(tests.IrisTest):
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_ugrid_variable(subject_name, "", np.bytes_)
+        vars_all[subject_name] = netcdf_variable(subject_name, "", np.bytes_)
         with pytest.warns(iris.warnings.IrisCfLabelVarWarning, match=warn_regex):
             operation(warn=True)
         with pytest.warns() as record:

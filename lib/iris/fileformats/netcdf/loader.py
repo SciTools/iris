@@ -582,8 +582,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # TODO: complete iris.mesh replacement
     # into standard behaviour.
     # Deferred import to avoid circular imports.
+    from iris.fileformats.cf import CFReader
     from iris.io import run_callback
-    from iris.mesh.cf import CFUGridReader
 
     from .ugrid_load import (
         _build_mesh_coords,
@@ -601,7 +601,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     for file_source in file_sources:
         # Ingest the file.  At present may be a filepath or an open netCDF4.Dataset.
-        with CFUGridReader(file_source) as cf:
+        with CFReader(file_source) as cf:
             meshes = _meshes_from_cf(cf)
 
             # Process each CF data variable.
