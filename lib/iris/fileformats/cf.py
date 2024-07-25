@@ -1056,7 +1056,8 @@ class CFReader:
         CFMeasureVariable,
     )
 
-    # TODO: remove once iris.experimental.ugrid.CFUGridReader is folded in.
+    # TODO: remove once iris.ugrid.CFUGridReader is folded in.
+    # TODO: complete iris.ugrid replacement
     CFGroup = CFGroup
 
     def __init__(self, file_source, warn=False, monotonic=False):
@@ -1174,7 +1175,8 @@ class CFReader:
 
         def _build(cf_variable):
             # TODO: isinstance(cf_variable, UGridMeshVariable)
-            #  UGridMeshVariable currently in experimental.ugrid - circular import.
+            #  UGridMeshVariable currently in iris.ugrid - circular import.
+            # TODO: complete iris.ugrid replacement
             is_mesh_var = cf_variable.cf_identity == "mesh"
             ugrid_coord_names = []
             ugrid_coords = getattr(self.cf_group, "ugrid_coords", None)

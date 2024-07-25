@@ -22,10 +22,10 @@ import numpy as np
 from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
-from iris.experimental.ugrid.mesh import Connectivity, MeshXY
-from iris.experimental.ugrid.save import save_mesh
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests.stock import realistic_4d
+from iris.ugrid.mesh import Connectivity, MeshXY
+from iris.ugrid.save import save_mesh
 
 XY_LOCS = ("x", "y")
 XY_NAMES = ("longitude", "latitude")
@@ -196,7 +196,7 @@ def make_cube(mesh=None, location="face", **kwargs):
 
     Parameters
     ----------
-    mesh : :class:`iris.experimental.ugrid.mesh.MeshXY` or None, optional
+    mesh : :class:`iris.ugrid.mesh.MeshXY` or None, optional
         If None, use 'default_mesh()'
     location : str, optional, default="face"
         Which mesh element to map the cube to.

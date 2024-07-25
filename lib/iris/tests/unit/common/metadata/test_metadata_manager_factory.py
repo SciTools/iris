@@ -21,7 +21,7 @@ from iris.common.metadata import (
     CubeMetadata,
     metadata_manager_factory,
 )
-from iris.experimental.ugrid.metadata import ConnectivityMetadata
+from iris.ugrid.metadata import ConnectivityMetadata
 
 BASES = [
     AncillaryVariableMetadata,

@@ -21,10 +21,10 @@ from cf_units import as_unit
 import numpy as np
 
 from iris.coords import AncillaryVariable, CellMeasure
-from iris.experimental.ugrid.mesh import MeshCoord
 from iris.fileformats.netcdf import logger
 from iris.fileformats.netcdf.loader import load_cubes
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.ugrid.mesh import MeshCoord
 
 
 def setUpModule():
