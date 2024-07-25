@@ -5,8 +5,8 @@
 
 r"""Allow the construction of :class:`~iris.mesh.MeshXY`.
 
-Extensions to Iris' NetCDF loading to allow the construction of
-:class:`~iris.mesh.MeshXY` from UGRID data in the file.
+Extension functions for Iris NetCDF loading, to construct
+:class:`~iris.mesh.MeshXY` from UGRID data in files.
 
 .. seealso::
 
@@ -21,18 +21,15 @@ import warnings
 
 from iris.config import get_logger
 from iris.coords import AuxCoord
-from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
-from iris.fileformats.cf import (
-    CFReader,
-    CFUGridAuxiliaryCoordinateVariable,
-    CFUGridConnectivityVariable,
-    CFUGridMeshVariable,
-)
-from iris.fileformats.netcdf import loader as nc_loader
 from iris.io import decode_uri, expand_filespecs
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
 from iris.warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
+
+# NOTE: all imports from iris.fileformats.netcdf must be deferred, to avoid circular
+# imports.
+# This is needed so that load_mesh/load_meshes can be included in the iris.mesh API.
+
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -116,13 +113,12 @@ def load_meshes(uris, var_name=None):
         :class:`~iris.mesh.MeshXY` returned from each.
 
     """
-    # TODO: rationalise UGRID/mesh handling once iris.mesh is folded
-    #  into standard behaviour.
-    # TODO: complete iris.mesh replacement
-    # No constraints or callbacks supported - these assume they are operating
+    # NOTE: no constraints or callbacks supported - these assume they are operating
     #  on a Cube.
-
+    # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats import FORMAT_AGENT
+    from iris.fileformats.cf import CFReader
+    import iris.fileformats.netcdf.loader as nc_loader
 
     if isinstance(uris, str):
         uris = [uris]
@@ -169,12 +165,6 @@ def load_meshes(uris, var_name=None):
     return result
 
 
-############
-# Object construction.
-# Helper functions, supporting netcdf.load_cubes ONLY, expected to
-# altered/moved when pyke is removed.
-
-
 def _build_aux_coord(coord_var, file_path):
     """Construct a :class:`~iris.coords.AuxCoord`.
 
@@ -182,10 +172,12 @@ def _build_aux_coord(coord_var, file_path):
     :class:`~iris.mesh.cf.CFUGridAuxiliaryCoordinateVariable`,
     and guess its mesh axis.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
-    # TODO: integrate with standard saving API when no longer 'experimental'.
+    # NOTE: dynamic imports avoid circularity : see note with module imports
+    from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
+    from iris.fileformats.cf import CFUGridAuxiliaryCoordinateVariable
+    from iris.fileformats.netcdf import loader as nc_loader
+
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
@@ -237,10 +229,12 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     given :class:`~iris.mesh.cf.CFUGridConnectivityVariable`,
     and identify the name of its first dimension.
 
-    todo: integrate with standard loading API post-pyke.
-
     """
-    # TODO: integrate with standard saving API when no longer 'experimental'.
+    # NOTE: dynamic imports avoid circularity : see note with module imports
+    from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
+    from iris.fileformats.cf import CFUGridConnectivityVariable
+    from iris.fileformats.netcdf import loader as nc_loader
+
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
@@ -280,10 +274,12 @@ def _build_mesh(cf, mesh_var, file_path):
     Construct a :class:`~iris.mesh.MeshXY` from a given
     :class:`~iris.mesh.cf.CFUGridMeshVariable`.
 
-    TODO: integrate with standard loading API post-pyke.
-
     """
-    # TODO: integrate with standard saving API when no longer 'experimental'.
+    # NOTE: dynamic imports avoid circularity : see note with module imports
+    from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
+    from iris.fileformats.cf import CFUGridMeshVariable
+    from iris.fileformats.netcdf import loader as nc_loader
+
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
@@ -416,10 +412,7 @@ def _build_mesh_coords(mesh, cf_var):
     from a given :class:`~iris.mesh.MeshXY`
     and :class:`~iris.fileformats.cf.CFVariable`.
 
-    TODO: integrate with standard loading API post-pyke.
-
     """
-    # TODO: integrate with standard saving API when no longer 'experimental'.
     # Identify the cube's mesh dimension, for attaching MeshCoords.
     element_dimensions = {
         "node": mesh.node_dimension,
