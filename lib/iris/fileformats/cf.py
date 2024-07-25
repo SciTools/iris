@@ -1299,8 +1299,6 @@ class CFReader:
         CFUGridMeshVariable,
     )
 
-    # TODO: remove once iris.mesh.CFUGridReader is folded in.
-    # TODO: complete iris.mesh replacement
     CFGroup = CFGroup
 
     def __init__(self, file_source, warn=False, monotonic=False):
@@ -1417,10 +1415,7 @@ class CFReader:
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
-            # TODO: isinstance(cf_variable, UGridMeshVariable)
-            #  UGridMeshVariable currently in iris.mesh - circular import.
-            # TODO: complete iris.mesh replacement
-            is_mesh_var = cf_variable.cf_identity == "mesh"
+            is_mesh_var = isinstance(cf_variable, CFUGridMeshVariable)
             ugrid_coord_names = []
             ugrid_coords = getattr(self.cf_group, "ugrid_coords", None)
             if ugrid_coords is not None:

@@ -578,9 +578,6 @@ def load_cubes(file_sources, callback=None, constraints=None):
     Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
-    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
-    # TODO: complete iris.mesh replacement
-    # into standard behaviour.
     # Deferred import to avoid circular imports.
     from iris.fileformats.cf import CFReader
     from iris.io import run_callback

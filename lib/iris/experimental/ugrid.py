@@ -49,7 +49,6 @@ from ..mesh import load_mesh, load_meshes, recombine_submeshes, save_mesh
 # This is a fatal problem, i.e. breaks the build since we are building with -W.
 # We couldn't fix this with "autodoc_suppress_warnings", so the solution for now is to
 # wrap the classes.  Which is really ugly.
-# TODO: remove this when we remove iris.experimental.mesh
 class Mesh(_MeshXY):
     pass
 

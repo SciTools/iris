@@ -2,13 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.mesh.cf.CFUGridMeshVariable` class.
-
-todo: fold these tests into cf tests when mesh is folded into
- standard behaviour.
-TODO: complete iris.mesh replacement
-
-"""
+"""Unit tests for :class:`iris.fileformats.cf.CFUGridMeshVariable`."""
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.

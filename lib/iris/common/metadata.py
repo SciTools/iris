@@ -1952,10 +1952,7 @@ def metadata_manager_factory(cls, **kwargs):
 
 
 #: Convenience collection of lenient metadata combine services.
-# TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
-# here (currently in iris.mesh).
-# TODO: complete iris.mesh replacement
-SERVICES_COMBINE = [
+SERVICES_COMBINE = (
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
@@ -1965,11 +1962,11 @@ SERVICES_COMBINE = [
     DimCoordMetadata.combine,
     MeshCoordMetadata.combine,
     MeshMetadata.combine,
-]
+)
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE = [
+SERVICES_DIFFERENCE = (
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
@@ -1979,11 +1976,11 @@ SERVICES_DIFFERENCE = [
     DimCoordMetadata.difference,
     MeshCoordMetadata.difference,
     MeshMetadata.difference,
-]
+)
 
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL = [
+SERVICES_EQUAL = (
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,
     BaseMetadata.__eq__,
@@ -2002,7 +1999,7 @@ SERVICES_EQUAL = [
     MeshCoordMetadata.equal,
     MeshMetadata.__eq__,
     MeshMetadata.equal,
-]
+)
 
 #: Convenience collection of lenient metadata services.
 SERVICES = SERVICES_COMBINE + SERVICES_DIFFERENCE + SERVICES_EQUAL
