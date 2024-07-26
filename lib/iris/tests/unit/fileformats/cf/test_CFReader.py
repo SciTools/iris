@@ -12,7 +12,15 @@ from unittest import mock
 
 import numpy as np
 
-from iris.fileformats.cf import CFReader
+from iris.fileformats.cf import (
+    CFCoordinateVariable,
+    CFDataVariable,
+    CFGroup,
+    CFReader,
+    CFUGridAuxiliaryCoordinateVariable,
+    CFUGridConnectivityVariable,
+    CFUGridMeshVariable,
+)
 
 
 def netcdf_variable(
@@ -35,6 +43,12 @@ def netcdf_variable(
         ndim = len(dimensions)
     else:
         dimensions = []
+
+    ugrid_identities = (
+        CFUGridAuxiliaryCoordinateVariable.cf_identities
+        + CFUGridConnectivityVariable.cf_identities
+        + [CFUGridMeshVariable.cf_identity]
+    )
     ncvar = mock.Mock(
         name=name,
         dimensions=dimensions,
@@ -49,6 +63,7 @@ def netcdf_variable(
         grid_mapping=grid_mapping,
         cell_measures=cell_measures,
         standard_name=standard_name,
+        **{name: None for name in ugrid_identities},
     )
     return ncvar
 
@@ -348,6 +363,85 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             for name in promoted:
                 self.assertIs(cf_group[name].cf_data, getattr(self, name))
             self.assertEqual(warn.call_count, 2)
+
+
+class Test_build_cf_groups__ugrid(tests.IrisTest):
+    @classmethod
+    def setUpClass(cls):
+        # Replicating syntax from test_CFReader.Test_build_cf_groups__formula_terms.
+        cls.mesh = netcdf_variable("mesh", "", int)
+        cls.node_x = netcdf_variable("node_x", "node", float)
+        cls.node_y = netcdf_variable("node_y", "node", float)
+        cls.face_x = netcdf_variable("face_x", "face", float)
+        cls.face_y = netcdf_variable("face_y", "face", float)
+        cls.face_nodes = netcdf_variable("face_nodes", "face vertex", int)
+        cls.levels = netcdf_variable("levels", "levels", int)
+        cls.data = netcdf_variable(
+            "data", "levels face", float, coordinates="face_x face_y"
+        )
+
+        # Add necessary attributes for mesh recognition.
+        cls.mesh.cf_role = "mesh_topology"
+        cls.mesh.node_coordinates = "node_x node_y"
+        cls.mesh.face_coordinates = "face_x face_y"
+        cls.mesh.face_node_connectivity = "face_nodes"
+        cls.face_nodes.cf_role = "face_node_connectivity"
+        cls.data.mesh = "mesh"
+
+        cls.variables = dict(
+            mesh=cls.mesh,
+            node_x=cls.node_x,
+            node_y=cls.node_y,
+            face_x=cls.face_x,
+            face_y=cls.face_y,
+            face_nodes=cls.face_nodes,
+            levels=cls.levels,
+            data=cls.data,
+        )
+        ncattrs = mock.Mock(return_value=[])
+        cls.dataset = mock.Mock(
+            file_format="NetCDF4", variables=cls.variables, ncattrs=ncattrs
+        )
+
+    def setUp(self):
+        # Restrict the CFReader functionality to only performing
+        # translations and building first level cf-groups for variables.
+        self.patch("iris.fileformats.cf.CFReader._reset")
+        self.patch(
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            return_value=self.dataset,
+        )
+        cf_reader = CFReader("dummy")
+        self.cf_group = cf_reader.cf_group
+
+    def test_inherited(self):
+        for expected_var, collection in (
+            [CFCoordinateVariable("levels", self.levels), "coordinates"],
+            [CFDataVariable("data", self.data), "data_variables"],
+        ):
+            expected = {expected_var.cf_name: expected_var}
+            self.assertDictEqual(expected, getattr(self.cf_group, collection))
+
+    def test_connectivities(self):
+        expected_var = CFUGridConnectivityVariable("face_nodes", self.face_nodes)
+        expected = {expected_var.cf_name: expected_var}
+        self.assertDictEqual(expected, self.cf_group.connectivities)
+
+    def test_mesh(self):
+        expected_var = CFUGridMeshVariable("mesh", self.mesh)
+        expected = {expected_var.cf_name: expected_var}
+        self.assertDictEqual(expected, self.cf_group.meshes)
+
+    def test_ugrid_coords(self):
+        names = [f"{loc}_{ax}" for loc in ("node", "face") for ax in ("x", "y")]
+        expected = {
+            name: CFUGridAuxiliaryCoordinateVariable(name, getattr(self, name))
+            for name in names
+        }
+        self.assertDictEqual(expected, self.cf_group.ugrid_coords)
+
+    def test_is_cf_ugrid_group(self):
+        self.assertIsInstance(self.cf_group, CFGroup)
 
 
 if __name__ == "__main__":

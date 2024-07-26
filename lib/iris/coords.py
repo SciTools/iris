@@ -804,6 +804,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             :class:`_DimensionalMetadata`.
 
         """
+        # deferred import to avoid possible circularity
+        from iris.mesh import Connectivity
+
         # Create the XML element as the camelCaseEquivalent of the
         # class name.
         element_name = type(self).__name__
@@ -843,10 +846,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
-        # TODO: replace with isinstance(self, Connectivity) once Connectivity
-        # is re-integrated here (currently in iris.ugrid).
-        # TODO: complete iris.ugrid replacement
-        elif hasattr(self, "indices"):
+        elif isinstance(self, Connectivity):
             values_term = "indices"
         else:
             values_term = "data"
