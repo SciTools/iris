@@ -1113,7 +1113,6 @@ class CFReader:
         result = False
         for _, variable in self._dataset.variables.items():
             cfr = getattr(variable, "cf_role", None)
-            print(cfr)
             if cfr == "mesh_topology":
                 result = True
                 break
