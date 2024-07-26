@@ -1367,10 +1367,10 @@ class CFReader:
 
         self._check_monotonic = monotonic
 
-        self.with_ugrid = True
-        if not self.has_meshes():
-            self.trim()
-            self.with_ugrid = False
+        self._with_ugrid = True
+        if not self._has_meshes():
+            self._trim()
+            self._with_ugrid = False
 
         self._translate()
         self._build_cf_groups()
@@ -1389,16 +1389,15 @@ class CFReader:
         # When used as a context-manager, **always** close the file on exit.
         self._close()
 
-    def has_meshes(self):
+    def _has_meshes(self):
         result = False
         for _, variable in self._dataset.variables.items():
-            cfr = getattr(variable, "cf_role", None)
-            if cfr == "mesh_topology":
+            if hasattr(variable, "mesh"):
                 result = True
                 break
         return result
 
-    def trim(self):
+    def _trim(self):
         self._variable_types = (
             CFAncillaryDataVariable,
             CFAuxiliaryCoordinateVariable,
