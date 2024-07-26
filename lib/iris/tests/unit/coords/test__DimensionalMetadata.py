@@ -21,7 +21,7 @@ from iris.coords import (
     DimCoord,
     _DimensionalMetadata,
 )
-from iris.experimental.ugrid.mesh import Connectivity
+from iris.mesh import Connectivity
 from iris.tests.stock import climatology_3d as cube_with_climatology
 from iris.tests.stock.mesh import sample_meshcoord
 

@@ -8,7 +8,7 @@ from geovista import Transform
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 
 from iris.exceptions import CoordinateNotFoundError
-from iris.experimental.ugrid import MeshXY
+from iris.mesh import MeshXY
 
 
 def _get_coord(cube, axis):
@@ -52,7 +52,7 @@ def cube_to_polydata(cube, **kwargs):
         If a :class:`~iris.cube.Cube` with too many dimensions is passed. Only
         the horizontal data can be represented, meaning a 2D Cube, or 1D Cube
         if the horizontal space is described by
-        :class:`~iris.experimental.ugrid.MeshCoord`\ s.
+        :class:`~iris.mesh.MeshCoord`\ s.
 
     Examples
     --------

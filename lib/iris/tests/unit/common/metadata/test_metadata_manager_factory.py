@@ -17,11 +17,11 @@ from iris.common.metadata import (
     AncillaryVariableMetadata,
     BaseMetadata,
     CellMeasureMetadata,
+    ConnectivityMetadata,
     CoordMetadata,
     CubeMetadata,
     metadata_manager_factory,
 )
-from iris.experimental.ugrid.metadata import ConnectivityMetadata
 
 BASES = [
     AncillaryVariableMetadata,

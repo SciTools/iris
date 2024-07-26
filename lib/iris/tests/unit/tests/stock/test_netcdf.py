@@ -8,11 +8,11 @@ import shutil
 import tempfile
 
 from iris import load_cube
-from iris.experimental.ugrid.mesh import MeshCoord, MeshXY
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests
+import iris.tests as tests  # isort:skip
+from iris.mesh import MeshCoord, MeshXY
 from iris.tests.stock import netcdf
 
 
