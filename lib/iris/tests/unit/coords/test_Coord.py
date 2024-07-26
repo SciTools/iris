@@ -265,7 +265,6 @@ class Test_Guess_Bounds_Monthly(tests.IrisTest):
                 [datetime(1990, 5, 1), datetime(1990, 6, 1)],
             ]
         )
-        expected = units.date2num(expected)
         points = expected.mean(axis=1)
         coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
         with pytest.raises(
