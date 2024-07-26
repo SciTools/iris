@@ -1275,42 +1275,6 @@ class CFGroup(MutableMapping):
         return "<%s of %s>" % (self.__class__.__name__, ", ".join(result))
 
 
-class CFUGridGroup(CFGroup):
-    """Represents a collection of CF Metadata Conventions variables and netCDF global attributes.
-
-    Represents a collection of 'NetCDF Climate and Forecast (CF) Metadata
-    Conventions' variables and netCDF global attributes.
-
-    Specialisation of :class:`~iris.fileformats.cf.CFGroup` that includes extra
-    collections for CF-UGRID-specific variable types.
-
-    """
-
-    @property
-    def connectivities(self):
-        """Collection of CF-UGRID connectivity variables."""
-        return self._cf_getter(CFUGridConnectivityVariable)
-
-    @property
-    def ugrid_coords(self):
-        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
-        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
-
-    @property
-    def meshes(self):
-        """Collection of CF-UGRID mesh variables."""
-        return self._cf_getter(CFUGridMeshVariable)
-
-    @property
-    def non_data_variable_names(self):
-        """:class:`set` of names of the CF-netCDF/CF-UGRID variables that are not the data pay-load."""
-        extra_variables = (self.connectivities, self.ugrid_coords, self.meshes)
-        extra_result = set()
-        for variable in extra_variables:
-            extra_result |= set(variable)
-        return super().non_data_variable_names | extra_result
-
-
 ################################################################################
 class CFReader:
     """Allows the contents of a netCDF file to be interpreted.
@@ -1335,7 +1299,7 @@ class CFReader:
         CFUGridMeshVariable,
     )
 
-    CFGroup = CFUGridGroup
+    CFGroup = CFGroup
 
     def __init__(self, file_source, warn=False, monotonic=False):
         # Ensure safe operation for destructor, should init fail.
@@ -1369,7 +1333,7 @@ class CFReader:
 
         self._with_ugrid = True
         if not self._has_meshes():
-            self._trim()
+            self._trim_ugrid_variable_types()
             self._with_ugrid = False
 
         self._translate()
@@ -1397,7 +1361,7 @@ class CFReader:
                 break
         return result
 
-    def _trim(self):
+    def _trim_ugrid_variable_types(self):
         self._variable_types = (
             CFAncillaryDataVariable,
             CFAuxiliaryCoordinateVariable,
@@ -1407,7 +1371,6 @@ class CFReader:
             CFLabelVariable,
             CFMeasureVariable,
         )
-        self.CFGroup = CFGroup
 
     @property
     def filename(self):
