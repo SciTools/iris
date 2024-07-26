@@ -2240,6 +2240,10 @@ class Coord(_DimensionalMetadata):
             )
 
         if monthly or yearly:
+            if monthly and yearly:
+                raise ValueError(
+                    "Cannot guess monthly and yearly bounds simultaneously."
+                )
             dates = self.units.num2date(self.points)
             lower_bounds = []
             upper_bounds = []
@@ -2265,8 +2269,6 @@ class Coord(_DimensionalMetadata):
                         )
                     lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
                     upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
-                bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
-                contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
             elif yearly:
                 for date in dates:
                     year = date.year
@@ -2279,8 +2281,8 @@ class Coord(_DimensionalMetadata):
                         )
                     lower_bounds.append(date.__class__(date.year, 1, 1, 0, 0))
                     upper_bounds.append(date.__class__(date.year + 1, 1, 1, 0, 0))
-                bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
-                contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
+            bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
+            contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
             if not contiguous:
                 raise ValueError("Cannot guess bounds for a non-contiguous coordinate.")
 

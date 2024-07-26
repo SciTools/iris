@@ -238,6 +238,23 @@ class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
         self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
 
 
+def test_guess_bounds_monthly_and_yearly():
+    units = cf_units.Unit("days since epoch", calendar="gregorian")
+    points = units.date2num(
+        [
+            datetime(1990, 1, 1),
+            datetime(1990, 2, 1),
+            datetime(1990, 3, 1),
+        ]
+    )
+    coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+    with pytest.raises(
+        ValueError,
+        match="Cannot guess monthly and yearly bounds simultaneously.",
+    ):
+        coord.guess_bounds(monthly=True, yearly=True)
+
+
 class Test_Guess_Bounds_Monthly(tests.IrisTest):
     def test_monthly_multiple_points_in_month(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
