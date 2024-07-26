@@ -2812,8 +2812,6 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
 
     """
-    # TODO: integrate with standard saving API when no longer 'experimental'.
-
     if isinstance(mesh, typing.Iterable):
         meshes = mesh
     else:

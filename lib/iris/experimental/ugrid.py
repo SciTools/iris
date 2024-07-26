@@ -24,7 +24,7 @@ experimental.
 
     This import path alias is provided for backwards compatibility, but will be removed
     in a future release : N.B. removing this does **not** need to wait for a major
-    release, since the former API was experimental.
+    release, since the API is experimental.
 
 """
 

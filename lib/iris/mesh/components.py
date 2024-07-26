@@ -1343,10 +1343,10 @@ class MeshXY(Mesh):
         contains_edge=None,
         contains_face=None,
     ):
-        """Return all :class:`~iris.mesh.Connectivity`.
+        r"""Return all :class:`~iris.mesh.Connectivity`\s.
 
         Return all :class:`~iris.mesh.Connectivity`
-        instances from the :class:`MeshXY` that match the provided criteria.
+        instances from the :class:`~iris.mesh.MeshXY` which match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1606,8 +1606,8 @@ class MeshXY(Mesh):
     ):
         """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`.
 
-        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY` that
-        match the provided criteria.
+        Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`
+        which match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1681,7 +1681,7 @@ class MeshXY(Mesh):
         """Remove one or more :class:`~iris.mesh.Connectivity`.
 
         Remove one or more :class:`~iris.mesh.Connectivity`
-        from the :class:`MeshXY` that match the provided criteria.
+        from the :class:`MeshXY` which match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.
@@ -1765,7 +1765,7 @@ class MeshXY(Mesh):
         """Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`MeshXY`.
 
         Remove one or more :class:`~iris.coords.AuxCoord` from the :class:`MeshXY`
-        that match the provided criteria.
+        which match the provided criteria.
 
         Criteria can be either specific properties or other objects with
         metadata to be matched.

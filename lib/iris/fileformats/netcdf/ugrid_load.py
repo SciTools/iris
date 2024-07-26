@@ -169,7 +169,7 @@ def _build_aux_coord(coord_var, file_path):
     """Construct a :class:`~iris.coords.AuxCoord`.
 
     Construct a :class:`~iris.coords.AuxCoord` from a given
-    :class:`~iris.mesh.cf.CFUGridAuxiliaryCoordinateVariable`,
+    :class:`~iris.fileformats.cf.CFUGridAuxiliaryCoordinateVariable`,
     and guess its mesh axis.
 
     """
@@ -226,7 +226,7 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     """Construct a :class:`~iris.mesh.Connectivity`.
 
     Construct a :class:`~iris.mesh.Connectivity` from a
-    given :class:`~iris.mesh.cf.CFUGridConnectivityVariable`,
+    given :class:`~iris.fileformats.cf.CFUGridConnectivityVariable`,
     and identify the name of its first dimension.
 
     """
@@ -272,7 +272,7 @@ def _build_mesh(cf, mesh_var, file_path):
     """Construct a :class:`~iris.mesh.MeshXY`.
 
     Construct a :class:`~iris.mesh.MeshXY` from a given
-    :class:`~iris.mesh.cf.CFUGridMeshVariable`.
+    :class:`~iris.fileformats.cf.CFUGridMeshVariable`.
 
     """
     # NOTE: dynamic imports avoid circularity : see note with module imports

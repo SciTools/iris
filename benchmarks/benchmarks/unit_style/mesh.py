@@ -2,13 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Benchmark tests for the experimental.mesh module."""
+"""Benchmark tests for the iris.mesh module."""
 
 from copy import deepcopy
 
 import numpy as np
 
-from iris.experimental import ugrid
+from iris import mesh
 
 from .. import disable_repeat_between_setup
 from ..generate_data.stock import sample_mesh
@@ -53,7 +53,7 @@ class Connectivity(UGridCommon):
         super().setup(n_faces)
 
     def create(self):
-        return ugrid.Connectivity(indices=self.array, cf_role="face_node_connectivity")
+        return mesh.Connectivity(indices=self.array, cf_role="face_node_connectivity")
 
     def time_indices(self, n_faces):
         _ = self.object.indices
@@ -123,7 +123,7 @@ class MeshXY(UGridCommon):
         self.eq_object = deepcopy(self.object)
 
     def create(self):
-        return ugrid.MeshXY(**self.mesh_kwargs)
+        return mesh.MeshXY(**self.mesh_kwargs)
 
     def time_add_connectivities(self, n_faces):
         self.object.add_connectivities(self.face_node)
@@ -170,7 +170,7 @@ class MeshCoord(UGridCommon):
         super().setup(n_faces)
 
     def create(self):
-        return ugrid.MeshCoord(mesh=self.mesh, location="face", axis="x")
+        return mesh.MeshCoord(mesh=self.mesh, location="face", axis="x")
 
     def time_points(self, n_faces):
         _ = self.object.points
