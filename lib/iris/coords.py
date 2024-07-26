@@ -2202,6 +2202,9 @@ class Coord(_DimensionalMetadata):
         bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
+        monthly : bool, default=False
+            If True, the coordinate is assumed to be monthly and bounds are
+            guessed based on the month and year of each point.
 
         Returns
         -------
@@ -2248,7 +2251,6 @@ class Coord(_DimensionalMetadata):
                     lyear = uyear = date.year
                     lmonth = date.month
                     umonth = date.month + 1
-                # if monthly:
                 if f"{date.month} + {date.year}" not in months_and_years:
                     months_and_years.append(f"{date.month} + {date.year}")
                 else:
@@ -2307,6 +2309,8 @@ class Coord(_DimensionalMetadata):
             The desired position of the bounds relative to the position
             of the points.
         monthly : bool, default=False
+            If True, the coordinate is assumed to be monthly and bounds are
+            guessed based on the month and year of each point.
 
         Notes
         -----
