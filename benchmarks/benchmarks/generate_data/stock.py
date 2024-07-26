@@ -14,7 +14,7 @@ from pathlib import Path
 
 import iris
 from iris import cube
-from iris.mesh import load_mesh
+from iris.experimental.ugrid import load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 
@@ -90,7 +90,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     """Sample mesh wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
 
     def _external(*args, **kwargs):
-        from iris.mesh import save_mesh
+        from iris.experimental.ugrid import save_mesh
         from iris.tests.stock.mesh import sample_mesh
 
         save_path_ = kwargs.pop("save_path")
@@ -126,7 +126,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """
 
     def _external(sample_mesh_kwargs_, save_path_):
-        from iris.mesh import save_mesh
+        from iris.experimental.ugrid import save_mesh
         from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 
         if sample_mesh_kwargs_:
