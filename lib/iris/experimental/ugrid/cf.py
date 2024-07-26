@@ -290,3 +290,7 @@ class CFUGridReader(cf.CFReader):
     )
 
     CFGroup = CFUGridGroup
+
+    def trim(self):
+        self._variable_types = cf.CFReader._variable_types
+        self.CFGroup = cf.CFGroup

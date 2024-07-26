@@ -1089,6 +1089,9 @@ class CFReader:
 
         self._check_monotonic = monotonic
 
+        if not self.has_meshes():
+            self.trim()
+
         self._translate()
         self._build_cf_groups()
         self._reset()
@@ -1105,6 +1108,18 @@ class CFReader:
     def __exit__(self, exc_type, exc_value, traceback):
         # When used as a context-manager, **always** close the file on exit.
         self._close()
+
+    def has_meshes(self):
+        result = False
+        for _, variable in self._dataset.variables.items():
+            cfr = getattr(variable, "cf_role", None)
+            print(cfr)
+            if cfr == "mesh_topology":
+                result = True
+                break
+        return result
+    def trim(self):
+        pass
 
     @property
     def filename(self):
