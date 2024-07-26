@@ -2224,7 +2224,7 @@ class Coord(_DimensionalMetadata):
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
-        if self.shape[0] < 2:
+        if not monthly and self.shape[0] < 2:
             raise ValueError("Cannot guess bounds for a coordinate of length 1.")
 
         if self.has_bounds():
@@ -2232,28 +2232,6 @@ class Coord(_DimensionalMetadata):
                 "Coord already has bounds. Remove the bounds "
                 "before guessing new ones."
             )
-
-        if getattr(self, "circular", False):
-            points = np.empty(self.shape[0] + 2)
-            points[1:-1] = self.points
-            direction = 1 if self.points[-1] > self.points[0] else -1
-            points[0] = self.points[-1] - (self.units.modulus * direction)
-            points[-1] = self.points[0] + (self.units.modulus * direction)
-            diffs = np.diff(points)
-        else:
-            diffs = np.diff(self.points)
-            diffs = np.insert(diffs, 0, diffs[0])
-            diffs = np.append(diffs, diffs[-1])
-
-        min_bounds = self.points - diffs[:-1] * bound_position
-        max_bounds = self.points + diffs[1:] * (1 - bound_position)
-
-        bounds = np.array([min_bounds, max_bounds]).transpose()
-
-        if self.name() in ("latitude", "grid_latitude") and self.units == "degree":
-            points = self.points
-            if (points >= -90).all() and (points <= 90).all():
-                np.clip(bounds, -90, 90, out=bounds)
 
         if monthly:
             dates = self.units.num2date(self.points)
@@ -2278,14 +2256,36 @@ class Coord(_DimensionalMetadata):
                         "Cannot guess bounds for a coordinate with multiple "
                         "points in a month."
                     )
-
                 lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
                 upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
             bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
             contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
             if not contiguous:
                 raise ValueError("Cannot guess bounds for a non-contiguous coordinate.")
-            self.bounds = bounds
+
+        # if not monthly
+        else:
+            if getattr(self, "circular", False):
+                points = np.empty(self.shape[0] + 2)
+                points[1:-1] = self.points
+                direction = 1 if self.points[-1] > self.points[0] else -1
+                points[0] = self.points[-1] - (self.units.modulus * direction)
+                points[-1] = self.points[0] + (self.units.modulus * direction)
+                diffs = np.diff(points)
+            else:
+                diffs = np.diff(self.points)
+                diffs = np.insert(diffs, 0, diffs[0])
+                diffs = np.append(diffs, diffs[-1])
+
+            min_bounds = self.points - diffs[:-1] * bound_position
+            max_bounds = self.points + diffs[1:] * (1 - bound_position)
+
+            bounds = np.array([min_bounds, max_bounds]).transpose()
+
+            if self.name() in ("latitude", "grid_latitude") and self.units == "degree":
+                points = self.points
+                if (points >= -90).all() and (points <= 90).all():
+                    np.clip(bounds, -90, 90, out=bounds)
 
         return bounds
 
