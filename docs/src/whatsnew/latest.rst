@@ -45,6 +45,9 @@ This document explains the changes made to Iris for this release
    grid-mappping syntax -- see : :issue:`3388`.
    (:issue:`5562`, :pull:`6016`)
 
+#. `@HGWright`_ added the `monthly` and `yearly` options to the
+   :meth:`~iris.coords.guess_bounds` method. (:issue:`4864`, :pull:`6090`)
+
 
 🐛 Bugs Fixed
 =============

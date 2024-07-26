@@ -2350,6 +2350,12 @@ class Coord(_DimensionalMetadata):
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
 
+        .. note::
+
+            Monthly and Yearly work differently from the standard case. They
+            can work for single points but cannot be used together.
+
+
         """
         self.bounds = self._guess_bounds(bound_position, monthly, yearly)
 

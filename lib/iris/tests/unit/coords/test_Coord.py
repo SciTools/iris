@@ -255,7 +255,7 @@ def test_guess_bounds_monthly_and_yearly():
         coord.guess_bounds(monthly=True, yearly=True)
 
 
-class Test_Guess_Bounds_Monthly(tests.IrisTest):
+class Test_Guess_Bounds_Monthly:
     def test_monthly_multiple_points_in_month(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
         points = units.date2num(
@@ -309,7 +309,7 @@ class Test_Guess_Bounds_Monthly(tests.IrisTest):
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
         expected_dates = units.num2date(expected)
-        self.assertArrayEqual(dates, expected_dates)
+        np.testing.assert_array_equal(dates, expected_dates)
 
     def test_monthly_multiple_years(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
@@ -323,7 +323,7 @@ class Test_Guess_Bounds_Monthly(tests.IrisTest):
         coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
-        self.assertArrayEqual(dates, expected)
+        np.testing.assert_array_equal(dates, expected)
 
     def test_monthly_single_point(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
@@ -335,10 +335,10 @@ class Test_Guess_Bounds_Monthly(tests.IrisTest):
         coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
-        self.assertArrayEqual(dates, expected)
+        np.testing.assert_array_equal(dates, expected)
 
 
-class Test_Guess_Bounds_Yearly(tests.IrisTest):
+class Test_Guess_Bounds_Yearly:
     def test_yearly_multiple_points_in_year(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
         points = units.date2num(
@@ -392,7 +392,7 @@ class Test_Guess_Bounds_Yearly(tests.IrisTest):
         coord.guess_bounds(yearly=True)
         dates = units.num2date(coord.bounds)
         expected_dates = units.num2date(expected)
-        self.assertArrayEqual(dates, expected_dates)
+        np.testing.assert_array_equal(dates, expected_dates)
 
 
 class Test_cell(tests.IrisTest):
