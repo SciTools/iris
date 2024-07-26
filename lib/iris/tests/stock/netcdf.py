@@ -116,7 +116,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             var[:] = data
         else:
             # Fill with a plain value.  But avoid zeros, so we can simulate
-            # valid ugrid connectivities even when start_index=1.
+            # valid mesh connectivities even when start_index=1.
             with dask.config.set({"array.chunk-size": "2048MiB"}):
                 data = da.ones(shape, dtype=var.dtype)  # Do not use zero
             da.store(data, var)

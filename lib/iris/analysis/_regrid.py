@@ -997,8 +997,7 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
     src_dims : tuple of int
         The dimensions of the X and Y coordinate within the source Cube.
     tgt_coords : tuple of :class:`iris.coords.Coord
-        Either two 1D :class:`iris.coords.DimCoord`, two 1D
-        :class:`iris.experimental.ugrid.DimCoord` or two n-D
+        Either two 1D :class:`iris.coords.DimCoord`, or two n-D
         :class:`iris.coords.AuxCoord` representing the new grid's
         X and Y coordinates.
     num_tgt_dims : int

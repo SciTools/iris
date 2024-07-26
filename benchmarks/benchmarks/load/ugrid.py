@@ -5,8 +5,7 @@
 """Mesh data loading benchmark tests."""
 
 from iris import load_cube as iris_load_cube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-from iris.experimental.ugrid import load_mesh as iris_load_mesh
+from iris.mesh import load_mesh as iris_load_mesh
 
 from ..generate_data.stock import create_file__xios_2d_face_half_levels
 
@@ -18,13 +17,11 @@ def synthetic_data(**kwargs):
 
 
 def load_cube(*args, **kwargs):
-    with PARSE_UGRID_ON_LOAD.context():
-        return iris_load_cube(*args, **kwargs)
+    return iris_load_cube(*args, **kwargs)
 
 
 def load_mesh(*args, **kwargs):
-    with PARSE_UGRID_ON_LOAD.context():
-        return iris_load_mesh(*args, **kwargs)
+    return iris_load_mesh(*args, **kwargs)
 
 
 class BasicLoading:

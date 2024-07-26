@@ -91,6 +91,13 @@ This document explains the changes made to Iris for this release
    :meth:`~iris.experimental.ugrid.Mesh.coord`, :meth:`~iris.experimental.ugrid.Mesh.coords`
    and :meth:`~iris.experimental.ugrid.Mesh.remove_coords`. (:pull:`6055`)
 
+#. `@pp-mo`_ moved all the mesh API from the :mod:`iris.experimental.ugrid` module to
+   to :mod:`iris.mesh`, making this public supported API.  Note that the
+   :class:`iris.experimental.ugrid.Mesh` class is renamed as :class:`iris.mesh.MeshXY`,
+   to allow for possible future mesh types with different properties to exist as
+   subclasses of a common generic :class:`~iris.mesh.components.Mesh` class.
+   (:issue:`6057`, :pull:`6061`, :pull:`6077`)
+
 
 🚀 Performance Enhancements
 ===========================
