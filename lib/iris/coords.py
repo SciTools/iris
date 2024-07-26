@@ -2194,7 +2194,7 @@ class Coord(_DimensionalMetadata):
             coord = self.copy(points=points, bounds=bounds)
         return coord
 
-    def _guess_bounds(self, bound_position=0.5, monthly=False):
+    def _guess_bounds(self, bound_position=0.5, monthly=False, yearly=False):
         """Return bounds for this coordinate based on its points.
 
         Parameters
@@ -2203,8 +2203,11 @@ class Coord(_DimensionalMetadata):
             The desired position of the bounds relative to the position
             of the points.
         monthly : bool, default=False
-            If True, the coordinate is assumed to be monthly and bounds are
-            guessed based on the month and year of each point.
+            If True, the coordinate must be monthly and bounds are set to the
+            start and ends of each month.
+        yearly : bool, default=False
+            If True, the coordinate must be yearly and bounds are set to the
+            start and ends of each year.
 
         Returns
         -------
@@ -2236,36 +2239,52 @@ class Coord(_DimensionalMetadata):
                 "before guessing new ones."
             )
 
-        if monthly:
+        if monthly or yearly:
             dates = self.units.num2date(self.points)
             lower_bounds = []
             upper_bounds = []
             months_and_years = []
-            for date in dates:
-                if date.month == 12:
-                    lyear = date.year
-                    uyear = date.year + 1
-                    lmonth = 12
-                    umonth = 1
-                else:
-                    lyear = uyear = date.year
-                    lmonth = date.month
-                    umonth = date.month + 1
-                if f"{date.month} + {date.year}" not in months_and_years:
-                    months_and_years.append(f"{date.month} + {date.year}")
-                else:
-                    raise ValueError(
-                        "Cannot guess bounds for a coordinate with multiple "
-                        "points in a month."
-                    )
-                lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
-                upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
-            bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
-            contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
+            if monthly:
+                for date in dates:
+                    if date.month == 12:
+                        lyear = date.year
+                        uyear = date.year + 1
+                        lmonth = 12
+                        umonth = 1
+                    else:
+                        lyear = uyear = date.year
+                        lmonth = date.month
+                        umonth = date.month + 1
+                    date_pair = (date.year, date.month)
+                    if date_pair not in months_and_years:
+                        months_and_years.append(date_pair)
+                    else:
+                        raise ValueError(
+                            "Cannot guess monthly bounds for a coordinate with multiple "
+                            "points in a month."
+                        )
+                    lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
+                    upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
+                bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
+                contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
+            elif yearly:
+                for date in dates:
+                    year = date.year
+                    if year not in months_and_years:
+                        months_and_years.append(year)
+                    else:
+                        raise ValueError(
+                            "Cannot guess yearly bounds for a coordinate with multiple "
+                            "points in a year."
+                        )
+                    lower_bounds.append(date.__class__(date.year, 1, 1, 0, 0))
+                    upper_bounds.append(date.__class__(date.year + 1, 1, 1, 0, 0))
+                bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
+                contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
             if not contiguous:
                 raise ValueError("Cannot guess bounds for a non-contiguous coordinate.")
 
-        # if not monthly
+        # if not monthly or yearly
         else:
             if getattr(self, "circular", False):
                 points = np.empty(self.shape[0] + 2)
@@ -2291,7 +2310,7 @@ class Coord(_DimensionalMetadata):
 
         return bounds
 
-    def guess_bounds(self, bound_position=0.5, monthly=False):
+    def guess_bounds(self, bound_position=0.5, monthly=False, yearly=False):
         """Add contiguous bounds to a coordinate, calculated from its points.
 
         Puts a cell boundary at the specified fraction between each point and
@@ -2309,8 +2328,12 @@ class Coord(_DimensionalMetadata):
             The desired position of the bounds relative to the position
             of the points.
         monthly : bool, default=False
-            If True, the coordinate is assumed to be monthly and bounds are
-            guessed based on the month and year of each point.
+            If True, the coordinate must be monthly and bounds are set to the
+            start and ends of each month.
+        yearly : bool, default=False
+            If True, the coordinate must be yearly and bounds are set to the
+            start and ends of each year.
+
 
         Notes
         -----
@@ -2326,7 +2349,7 @@ class Coord(_DimensionalMetadata):
             suitable values directly to the bounds property, instead.
 
         """
-        self.bounds = self._guess_bounds(bound_position, monthly)
+        self.bounds = self._guess_bounds(bound_position, monthly, yearly)
 
     def intersect(self, other, return_indices=False):
         """Return a new coordinate from the intersection of two coordinates.
