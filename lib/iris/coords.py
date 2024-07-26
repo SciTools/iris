@@ -2194,7 +2194,7 @@ class Coord(_DimensionalMetadata):
             coord = self.copy(points=points, bounds=bounds)
         return coord
 
-    def _guess_bounds(self, bound_position=0.5):
+    def _guess_bounds(self, bound_position=0.5, monthly=False):
         """Return bounds for this coordinate based on its points.
 
         Parameters
@@ -2255,9 +2255,41 @@ class Coord(_DimensionalMetadata):
             if (points >= -90).all() and (points <= 90).all():
                 np.clip(bounds, -90, 90, out=bounds)
 
+        if monthly:
+            dates = self.units.num2date(self.points)
+            lower_bounds = []
+            upper_bounds = []
+            months_and_years = []
+            for date in dates:
+                if date.month == 12:
+                    lyear = date.year
+                    uyear = date.year + 1
+                    lmonth = 12
+                    umonth = 1
+                else:
+                    lyear = uyear = date.year
+                    lmonth = date.month
+                    umonth = date.month + 1
+                # if monthly:
+                if f"{date.month} + {date.year}" not in months_and_years:
+                    months_and_years.append(f"{date.month} + {date.year}")
+                else:
+                    raise ValueError(
+                        "Cannot guess bounds for a coordinate with multiple "
+                        "points in a month."
+                    )
+
+                lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
+                upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
+            bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
+            contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
+            if not contiguous:
+                raise ValueError("Cannot guess bounds for a non-contiguous coordinate.")
+            self.bounds = bounds
+
         return bounds
 
-    def guess_bounds(self, bound_position=0.5):
+    def guess_bounds(self, bound_position=0.5, monthly=False):
         """Add contiguous bounds to a coordinate, calculated from its points.
 
         Puts a cell boundary at the specified fraction between each point and
@@ -2274,6 +2306,7 @@ class Coord(_DimensionalMetadata):
         bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
+        monthly : bool, default=False
 
         Notes
         -----
@@ -2289,7 +2322,7 @@ class Coord(_DimensionalMetadata):
             suitable values directly to the bounds property, instead.
 
         """
-        self.bounds = self._guess_bounds(bound_position)
+        self.bounds = self._guess_bounds(bound_position, monthly)
 
     def intersect(self, other, return_indices=False):
         """Return a new coordinate from the intersection of two coordinates.

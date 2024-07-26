@@ -9,9 +9,11 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+from datetime import datetime
 from unittest import mock
 import warnings
 
+import cf_units
 import dask.array as da
 import numpy as np
 import pytest
@@ -234,6 +236,36 @@ class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
         lat = DimCoord([-80, 0, 70], units="degree", long_name="other_latitude")
         lat.guess_bounds()
         self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+
+
+class Test_Guess_Bounds_Monthly:
+    def test_monthly_multiple_points_in_month(self):
+        coord = DimCoord(
+            np.arange(1, 3),
+            units="days since 2000-01-01",
+            standard_name="latitude",
+        )
+        with pytest.raises(
+            ValueError,
+            match="Cannot guess bounds for a coordinate with multiple points "
+            "in a month.",
+        ):
+            coord.guess_bounds(monthly=True)
+
+    def test_monthly_non_contiguous(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+            [datetime(1990, 2, 1), datetime(1990, 5, 1)],
+            [datetime(1990, 5, 1), datetime(1990, 7, 1)],
+        ]
+        expected = units.date2num(expected)
+        points = expected.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError, match="Cannot guess bounds for a non-contiguous coordinate."
+        ):
+            coord.guess_bounds(monthly=True)
 
 
 class Test_cell(tests.IrisTest):
