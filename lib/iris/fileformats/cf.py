@@ -1392,7 +1392,7 @@ class CFReader:
     def _has_meshes(self):
         result = False
         for _, variable in self._dataset.variables.items():
-            if hasattr(variable, "mesh"):
+            if hasattr(variable, "mesh") or hasattr(variable, "node_coordinates"):
                 result = True
                 break
         return result
