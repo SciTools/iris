@@ -126,7 +126,7 @@ class Test(tests.IrisTest):
         cell_method_strings = [
             # "time: maximum (interval: 1 hr comment: first bit "
             # "time: mean (interval: 1 day comment: second bit)",
-            'time',
+            "time",
             "time: (interval: 1 hr comment: first bit) "
             "time: mean (interval: 1 day comment: second bit)",
             "time: maximum (interval: 1 hr comment: first bit) "
