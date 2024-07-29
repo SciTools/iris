@@ -19,6 +19,7 @@ class Test(tests.IrisTest):
     def test_simple(self):
         cell_method_strings = [
             "time: mean",
+            "time:mean",
             "time : mean",
         ]
         expected = (CellMethod(method="mean", coords="time"),)
@@ -125,6 +126,7 @@ class Test(tests.IrisTest):
         cell_method_strings = [
             # "time: maximum (interval: 1 hr comment: first bit "
             # "time: mean (interval: 1 day comment: second bit)",
+            'time',
             "time: (interval: 1 hr comment: first bit) "
             "time: mean (interval: 1 day comment: second bit)",
             "time: maximum (interval: 1 hr comment: first bit) "
