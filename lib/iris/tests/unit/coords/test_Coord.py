@@ -9,9 +9,11 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+from datetime import datetime
 from unittest import mock
 import warnings
 
+import cf_units
 import dask.array as da
 import numpy as np
 import pytest
@@ -234,6 +236,163 @@ class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
         lat = DimCoord([-80, 0, 70], units="degree", long_name="other_latitude")
         lat.guess_bounds()
         self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+
+
+def test_guess_bounds_monthly_and_yearly():
+    units = cf_units.Unit("days since epoch", calendar="gregorian")
+    points = units.date2num(
+        [
+            datetime(1990, 1, 1),
+            datetime(1990, 2, 1),
+            datetime(1990, 3, 1),
+        ]
+    )
+    coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+    with pytest.raises(
+        ValueError,
+        match="Cannot guess monthly and yearly bounds simultaneously.",
+    ):
+        coord.guess_bounds(monthly=True, yearly=True)
+
+
+class Test_Guess_Bounds_Monthly:
+    def test_monthly_multiple_points_in_month(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        points = units.date2num(
+            [
+                datetime(1990, 1, 3),
+                datetime(1990, 1, 28),
+                datetime(1990, 2, 13),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError,
+            match="Cannot guess monthly bounds for a coordinate with multiple points "
+            "in a month.",
+        ):
+            coord.guess_bounds(monthly=True)
+
+    def test_monthly_non_contiguous(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+                [datetime(1990, 2, 1), datetime(1990, 3, 1)],
+                [datetime(1990, 5, 1), datetime(1990, 6, 1)],
+            ]
+        )
+        points = expected.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError, match="Cannot guess bounds for a non-contiguous coordinate."
+        ):
+            coord.guess_bounds(monthly=True)
+
+    def test_monthly_end_of_month(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+                [datetime(1990, 2, 1), datetime(1990, 3, 1)],
+                [datetime(1990, 3, 1), datetime(1990, 4, 1)],
+            ]
+        )
+        points = units.date2num(
+            [
+                datetime(1990, 1, 31),
+                datetime(1990, 2, 28),
+                datetime(1990, 3, 31),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        expected_dates = units.num2date(expected)
+        np.testing.assert_array_equal(dates, expected_dates)
+
+    def test_monthly_multiple_years(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 10, 1), datetime(1990, 11, 1)],
+            [datetime(1990, 11, 1), datetime(1990, 12, 1)],
+            [datetime(1990, 12, 1), datetime(1991, 1, 1)],
+        ]
+        expected_points = units.date2num(expected)
+        points = expected_points.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        np.testing.assert_array_equal(dates, expected)
+
+    def test_monthly_single_point(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+        ]
+        expected_points = units.date2num(expected)
+        points = expected_points.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        np.testing.assert_array_equal(dates, expected)
+
+
+class Test_Guess_Bounds_Yearly:
+    def test_yearly_multiple_points_in_year(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        points = units.date2num(
+            [
+                datetime(1990, 1, 1),
+                datetime(1990, 2, 1),
+                datetime(1991, 1, 1),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError,
+            match="Cannot guess yearly bounds for a coordinate with multiple points "
+            "in a year.",
+        ):
+            coord.guess_bounds(yearly=True)
+
+    def test_yearly_non_contiguous(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 1, 1)],
+                [datetime(1991, 1, 1), datetime(1991, 1, 1)],
+                [datetime(1994, 1, 1), datetime(1994, 1, 1)],
+            ]
+        )
+        points = expected.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError, match="Cannot guess bounds for a non-contiguous coordinate."
+        ):
+            coord.guess_bounds(yearly=True)
+
+    def test_yearly_end_of_year(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1991, 1, 1)],
+                [datetime(1991, 1, 1), datetime(1992, 1, 1)],
+                [datetime(1992, 1, 1), datetime(1993, 1, 1)],
+            ]
+        )
+        points = units.date2num(
+            [
+                datetime(1990, 12, 31),
+                datetime(1991, 12, 31),
+                datetime(1992, 12, 31),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(yearly=True)
+        dates = units.num2date(coord.bounds)
+        expected_dates = units.num2date(expected)
+        np.testing.assert_array_equal(dates, expected_dates)
 
 
 class Test_cell(tests.IrisTest):
