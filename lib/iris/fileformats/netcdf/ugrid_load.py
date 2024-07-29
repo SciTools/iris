@@ -56,13 +56,13 @@ def _meshes_from_cf(cf_reader):
     # Mesh instances are shared between file phenomena.
     # TODO: more sophisticated Mesh sharing between files.
     # TODO: access external Mesh cache?
-    if not cf_reader._with_ugrid:
-        return {}
-    mesh_vars = cf_reader.cf_group.meshes
-    meshes = {
-        name: _build_mesh(cf_reader, var, cf_reader.filename)
-        for name, var in mesh_vars.items()
-    }
+    meshes = {}
+    if cf_reader._with_ugrid:
+        mesh_vars = cf_reader.cf_group.meshes
+        meshes = {
+            name: _build_mesh(cf_reader, var, cf_reader.filename)
+            for name, var in mesh_vars.items()
+        }
     return meshes
 
 
