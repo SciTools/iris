@@ -48,6 +48,9 @@ This document explains the changes made to Iris for this release
 #. `@HGWright`_ added the `monthly` and `yearly` options to the
    :meth:`~iris.coords.guess_bounds` method. (:issue:`4864`, :pull:`6090`)
 
+#. `@HGWright`_ updated to the latest CF Standard Names Table v85
+   (30 July 2024). (:pull:`6100`)
+
 
 🐛 Bugs Fixed
 =============
