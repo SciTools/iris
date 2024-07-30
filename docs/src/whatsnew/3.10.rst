@@ -43,6 +43,8 @@ This document explains the changes made to Iris for this release
    Future changes will honour Semantic Versioning - i.e. breaking changes will only be in major releases,
    and ideally will be previewed via :class:`iris.Future` flags.
 
+#. Note that Iris is currently pinned to NumPy ``<2``, we hope to unpin this in the next minor release (Iris v3.11).
+
 
 ✨ Features
 ===========
@@ -163,6 +165,8 @@ None!
    test failures on plot results, apparently due to a matplotlib bug.
    See : https://github.com/matplotlib/matplotlib/issues/28567
    (:pull:`6065`)
+
+#. Note that Iris is currently pinned to NumPy ``<2``, we hope to unpin this in the next minor release (Iris v3.11).
 
 
 
