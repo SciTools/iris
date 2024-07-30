@@ -1331,6 +1331,11 @@ class CFReader:
 
         self._check_monotonic = monotonic
 
+        self._with_ugrid = True
+        if not self._has_meshes():
+            self._trim_ugrid_variable_types()
+            self._with_ugrid = False
+
         self._translate()
         self._build_cf_groups()
         self._reset()
@@ -1347,6 +1352,25 @@ class CFReader:
     def __exit__(self, exc_type, exc_value, traceback):
         # When used as a context-manager, **always** close the file on exit.
         self._close()
+
+    def _has_meshes(self):
+        result = False
+        for variable in self._dataset.variables.values():
+            if hasattr(variable, "mesh") or hasattr(variable, "node_coordinates"):
+                result = True
+                break
+        return result
+
+    def _trim_ugrid_variable_types(self):
+        self._variable_types = (
+            CFAncillaryDataVariable,
+            CFAuxiliaryCoordinateVariable,
+            CFBoundaryVariable,
+            CFClimatologyVariable,
+            CFGridMappingVariable,
+            CFLabelVariable,
+            CFMeasureVariable,
+        )
 
     @property
     def filename(self):
