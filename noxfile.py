@@ -11,26 +11,29 @@ from pathlib import Path
 import nox
 from nox.logger import logger
 
-#: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
+"""Default to reusing any pre-existing nox environments."""
 
-#: Python versions we can run sessions under
+# Python versions we can run sessions under"""
 _PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
+
+# Python versions latest"""
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
-#: One specific python version for docs builds
 _PY_VERSION_DOCSBUILD = _PY_VERSION_LATEST
+"""One specific python version for docs builds"""
 
-#: Cirrus-CI environment variable hook.
 PY_VER = os.environ.get("PY_VER", _PY_VERSIONS_ALL)
+"""Cirrus-CI environment variable hook."""
 
-#: Default cartopy cache directory.
 CARTOPY_CACHE_DIR = os.environ.get("HOME") / Path(".local/share/cartopy")
+"""Default cartopy cache directory."""
 
 # https://github.com/numpy/numpy/pull/19478
 # https://github.com/matplotlib/matplotlib/pull/22099
-#: Common session environment variables.
+
 ENV = dict(NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX")
+"""Common session environment variables."""
 
 
 def session_lockfile(session: nox.sessions.Session) -> Path:

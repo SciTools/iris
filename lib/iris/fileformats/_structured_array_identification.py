@@ -301,13 +301,13 @@ class GroupStructure:
 
     def __init__(self, length, component_structure, array_order="c"):
         """Group_component_to_array - a dictionary. See also TODO."""
-        #: The size common to all of the original arrays and used to determine
-        #: possible shape configurations.
         self.length = length
+        """The size common to all of the original arrays.
+           Used to determine possible shape configurations."""
 
-        #: A dictionary mapping component name to ArrayStructure instance
-        #: (or None if no such structure exists for that component).
         self._cmpt_structure = component_structure
+        """A dictionary mapping component name to ArrayStructure instance
+          (or None if no such structure exists for that component)."""
 
         array_order = array_order.lower()
         if array_order not in ["c", "f"]:

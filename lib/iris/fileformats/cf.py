@@ -48,8 +48,6 @@ _CF_PARSE = re.compile(
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
-#: Supported dimensionless vertical coordinate reference surface/phemomenon
-#: formula terms. Ref: [CF] Appendix D.
 reference_terms = dict(
     atmosphere_sigma_coordinate=["ps"],
     atmosphere_hybrid_sigma_pressure_coordinate=["ps"],
@@ -61,6 +59,8 @@ reference_terms = dict(
     ocean_s_coordinate_g1=["eta", "depth"],
     ocean_s_coordinate_g2=["eta", "depth"],
 )
+"""Supported dimensionless vertical coordinate reference surface/phemomenon formula terms.
+   Ref: [CF] Appendix D."""
 
 
 # NetCDF returns a different type for strings depending on Python version.
@@ -72,9 +72,8 @@ def _is_str_dtype(var):
 class CFVariable(metaclass=ABCMeta):
     """Abstract base class wrapper for a CF-netCDF variable."""
 
-    #: Name of the netCDF variable attribute that identifies this
-    #: CF-netCDF variable.
     cf_identity: ClassVar[str | None] = None
+    """Name of the netCDF variable attribute that identifies this CF-netCDF variable."""
 
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.
@@ -82,17 +81,17 @@ class CFVariable(metaclass=ABCMeta):
         # quite a bit faster.
         self._nc_attrs = data.ncattrs()
 
-        #: NetCDF variable name.
         self.cf_name = name
+        """NetCDF variable name."""
 
-        #: NetCDF4 Variable data instance.
         self.cf_data = data
+        """NetCDF4 Variable data instance."""
 
-        #: Collection of CF-netCDF variables associated with this variable.
         self.cf_group = None
+        """Collection of CF-netCDF variables associated with this variable."""
 
-        #: CF-netCDF formula terms that his variable participates in.
         self.cf_terms_by_root = {}
+        """CF-netCDF formula terms that his variable participates in."""
 
         self.cf_attrs_reset()
 
@@ -853,8 +852,9 @@ class CFMeasureVariable(CFVariable):
 
     def __init__(self, name, data, measure):
         CFVariable.__init__(self, name, data)
-        #: Associated cell measure of the cell variable
+
         self.cf_measure = measure
+        """Associated cell measure of the cell variable."""
 
     @classmethod
     def identify(cls, variables, ignore=None, target=None, warn=True):
@@ -1121,12 +1121,14 @@ class CFGroup(MutableMapping):
     """
 
     def __init__(self):
-        #: Collection of CF-netCDF variables
         self._cf_variables = {}
-        #: Collection of netCDF global attributes
+        """Collection of CF-netCDF variables."""
+
         self.global_attributes = {}
-        #: Collection of CF-netCDF variables promoted to a CFDataVariable.
+        """Collection of netCDF global attributes."""
+
         self.promoted = {}
+        """Collection of CF-netCDF variables promoted to a CFDataVariable."""
 
     def _cf_getter(self, cls):
         # Generate dictionary with dictionary comprehension.
@@ -1315,8 +1317,8 @@ class CFReader:
             self._dataset = file_source
             self._filename = self._dataset.filepath()
 
-        #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
+        """Collection of CF-netCDF variables associated with this netCDF file."""
 
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [

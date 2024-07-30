@@ -45,8 +45,6 @@ class Test__regrid__linear(tests.IrisTest):
         target_y = np.linspace(0.5, 51, 3)
         self.target_x, self.target_y = np.meshgrid(target_x, target_y)
 
-        #: Expected values, which not quite the analytical value, but
-        #: representative of the bilinear interpolation scheme.
         self.expected = np.array(
             [
                 [
@@ -71,6 +69,8 @@ class Test__regrid__linear(tests.IrisTest):
                 ]
             ]
         )
+        """Expected values, which not quite the analytical value, but
+           representative of the bilinear interpolation scheme."""
 
         self.x_dim = 2
         self.y_dim = 1

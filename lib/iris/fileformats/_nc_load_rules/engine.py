@@ -29,7 +29,8 @@ class FactEntity:
     which is a list of tuples of strings
     (each of which is a 'fact' of the named class).
 
-    To support the debug code :
+    To support the debug code::
+
         kb_facts = engine.get_kb(_PYKE_FACT_BASE)
         for key in kb_facts.entity_lists.keys():
             for arg in kb_facts.entity_lists[key].case_specific_facts:

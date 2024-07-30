@@ -37,13 +37,10 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         if not hasattr(self, "_metadata_manager"):
             self._metadata_manager = metadata_manager_factory(CoordMetadata)
 
-        #: Descriptive name of the coordinate made by the factory
         self.long_name = None
-
-        #: netCDF variable name for the coordinate made by the factory
         self.var_name = None
-
         self.coord_system = None
+
         # See the climatological property getter.
         self._metadata_manager.climatological = False
 

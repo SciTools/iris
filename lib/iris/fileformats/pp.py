@@ -62,9 +62,6 @@ PP_WORD_DEPTH = 4
 NUM_LONG_HEADERS = 45
 NUM_FLOAT_HEADERS = 19
 
-# The header definition for header release 2.
-#: A list of (header_name, position_in_header(tuple of)) pairs for
-#: header release 2 - using the one-based UM/FORTRAN indexing convention.
 UM_HEADER_2 = [
     ("lbyr", (1,)),
     ("lbmon", (2,)),
@@ -119,10 +116,9 @@ UM_HEADER_2 = [
     ("bmdi", (63,)),
     ("bmks", (64,)),
 ]
+"""A list of (header_name, position_in_header(tuple of)) pairs for header release 2.
+   Using the one-based UM/FORTRAN indexing convention."""
 
-# The header definition for header release 3.
-#: A list of (header_name, position_in_header(tuple of)) pairs for
-#: header release 3 - using the one-based UM/FORTRAN indexing convention.
 UM_HEADER_3 = [
     ("lbyr", (1,)),
     ("lbmon", (2,)),
@@ -177,6 +173,8 @@ UM_HEADER_3 = [
     ("bmdi", (63,)),
     ("bmks", (64,)),
 ]
+"""A list of (header_name, position_in_header(tuple of)) pairs for header release 3.
+   Using the one-based UM/FORTRAN indexing convention."""
 
 # A map from header-release-number to header definition
 UM_HEADERS = {2: UM_HEADER_2, 3: UM_HEADER_3}
@@ -184,7 +182,6 @@ UM_HEADERS = {2: UM_HEADER_2, 3: UM_HEADER_3}
 # Offset value to convert from UM_HEADER positions to PP_HEADER offsets.
 UM_TO_PP_HEADER_OFFSET = 1
 
-#: A dictionary mapping IB values to their names.
 EXTRA_DATA = {
     1: "x",
     2: "y",
@@ -201,10 +198,8 @@ EXTRA_DATA = {
     14: "y_lower_bound",
     15: "y_upper_bound",
 }
+"""A dictionary mapping IB values to their names."""
 
-
-#: Maps lbuser[0] to numpy data type. "default" will be interpreted if
-#: no match is found, providing a warning in such a case.
 LBUSER_DTYPE_LOOKUP = {
     1: np.dtype(">f4"),
     2: np.dtype(">i4"),
@@ -214,6 +209,9 @@ LBUSER_DTYPE_LOOKUP = {
     -3: np.dtype(">i4"),
     "default": np.dtype(">f4"),
 }
+"""Maps lbuser[0] to numpy data type.
+   "default" will be interpreted if no match is found, providing a warning in
+   such a case."""
 
 
 class _WarnComboLoadingMask(
@@ -404,9 +402,10 @@ class SplittableInt:
 
         # define the name lookup first (as this is the way __setattr__ is
         # plumbed)
-        #: A dictionary mapping special attribute names on this object
-        #: to the slices/indices required to access them.
         self._name_lookup = name_mapping_dict or {}
+        """A dictionary mapping special attribute names on this object
+           to the slices/indices required to access them."""
+
         self._value = value
 
         self._calculate_str_value_from_value()

@@ -73,11 +73,13 @@ def adjust_for_split_attribute_dictionaries(operation):
 
     The wrapped function of attribute-dictionaries is currently always one of "equals",
     "combine" or "difference", with signatures like :
+
         equals(left: dict, right: dict) -> bool
         combine(left: dict, right: dict) -> dict
         difference(left: dict, right: dict) -> None | (dict, dict)
 
     The results of the wrapped operation are either :
+
     * for "equals" (or "__eq__") :  a boolean
     * for "combine" :  a (converted) attributes-dictionary
     * for "difference" :  a list of (None or "pair"), where a pair contains two

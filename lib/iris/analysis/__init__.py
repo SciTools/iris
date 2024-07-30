@@ -486,15 +486,17 @@ class _Aggregator:
             Passed through to :data:`call_func`, :data:`lazy_func`, and
             :data:`units_func`.
         """
-        #: Cube cell method string.
         self.cell_method = cell_method
-        #: Data aggregation function.
+        """Cube cell method string."""
+
         self.call_func = call_func
-        #: Unit conversion function.
+        """Data aggregation function."""
+
         self.units_func = units_func
-        #: Lazy aggregation function, may be None to indicate that a lazy
-        #: operation is not available.
+        """Unit conversion function."""
+
         self.lazy_func = lazy_func
+        """Lazy aggregation function, may be None to indicate that a lazy operation is not available."""
 
         self._kwargs = kwargs
 
@@ -948,8 +950,8 @@ class WeightedPercentileAggregator(PercentileAggregator):
         self._name = "weighted_percentile"
         self._args = ["percent", "weights"]
 
-        #: A list of keywords associated with weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
+        """A list of keywords associated with weighted behaviour."""
 
     def post_process(
         self, collapsed_cube, data_result, coords, **kwargs
@@ -1086,8 +1088,8 @@ class WeightedAggregator(Aggregator):
             **kwargs,
         )
 
-        #: A list of keywords that trigger weighted behaviour.
         self._weighting_keywords = ["returned", "weights"]
+        """A list of keywords that trigger weighted behaviour."""
 
     def uses_weighting(self, **kwargs):
         """Determine whether this aggregator uses weighting.
@@ -2309,8 +2311,9 @@ class _Groupby:
             preserving the time of year.
 
         """
-        #: Group-by and shared coordinates that have been grouped.
         self.coords: list[iris.coords.Coord] = []
+        """Group-by and shared coordinates that have been grouped."""
+
         self._groupby_coords: list[iris.coords.Coord] = []
         self._shared_coords: list[tuple[iris.coords.Coord, int]] = []
         self._groupby_indices: list[tuple[int, ...]] = []

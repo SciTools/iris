@@ -23,10 +23,12 @@ class ConcreteReferenceTarget:
     """Everything you need to make a real Cube for a named reference."""
 
     def __init__(self, name, transform=None):
-        #: The name used to connect references with references.
         self.name = name
-        #: An optional transformation to apply to the cubes.
+        """The name used to connect references with references."""
+
         self.transform = transform
+        """An optional transformation to apply to the cubes."""
+
         self._src_cubes = iris.cube.CubeList()
         self._final_cube = None
 

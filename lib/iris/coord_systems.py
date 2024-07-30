@@ -248,19 +248,19 @@ class GeogCS(CoordSystem):
         else:
             raise ValueError("Insufficient ellipsoid specification")
 
-        #: Major radius of the ellipsoid in metres.
         self._semi_major_axis = float(semi_major_axis)
+        """Major radius of the ellipsoid in metres."""
 
-        #: Minor radius of the ellipsoid in metres.
         self._semi_minor_axis = float(semi_minor_axis)
+        """Minor radius of the ellipsoid in metres."""
 
-        #: :math:`1/f` where :math:`f = (a-b)/a`.
         self._inverse_flattening = float(inverse_flattening)
+        """:math:`1/f` where :math:`f = (a-b)/a`."""
 
         self._datum = None
 
-        #: Describes 'zero' on the ellipsoid in degrees.
         self.longitude_of_prime_meridian = _arg_default(longitude_of_prime_meridian, 0)
+        """Describes 'zero' on the ellipsoid in degrees."""
 
     def _pretty_attrs(self):
         attrs = [("semi_major_axis", self.semi_major_axis)]
@@ -479,8 +479,8 @@ class GeogCS(CoordSystem):
         crs._semi_minor_axis = None
         crs._inverse_flattening = None
 
-        #: Describes 'zero' on the ellipsoid in degrees.
         crs.longitude_of_prime_meridian = _arg_default(longitude_of_prime_meridian, 0)
+        """Describes 'zero' on the ellipsoid in degrees."""
 
         crs._datum = datum
 
@@ -522,17 +522,17 @@ class RotatedGeogCS(CoordSystem):
                                        ellipsoid=GeogCS(6400000, 6300000))
 
         """
-        #: The true latitude of the rotated pole in degrees.
         self.grid_north_pole_latitude = float(grid_north_pole_latitude)
+        """The true latitude of the rotated pole in degrees."""
 
-        #: The true longitude of the rotated pole in degrees.
         self.grid_north_pole_longitude = float(grid_north_pole_longitude)
+        """The true longitude of the rotated pole in degrees."""
 
-        #: Longitude of true north pole in rotated grid in degrees.
         self.north_pole_grid_longitude = _arg_default(north_pole_grid_longitude, 0)
+        """Longitude of true north pole in rotated grid in degrees."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def _pretty_attrs(self):
         attrs = [
@@ -635,25 +635,25 @@ class TransverseMercator(CoordSystem):
                                       ellipsoid=airy1830)
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_central_meridian = float(longitude_of_central_meridian)
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Scale factor at the centre longitude.
         self.scale_factor_at_central_meridian = _arg_default(
             scale_factor_at_central_meridian, 1.0
         )
+        """Scale factor at the centre longitude."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -736,20 +736,20 @@ class Orthographic(CoordSystem):
             If given, defines the ellipsoid.
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = float(longitude_of_projection_origin)
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -817,24 +817,24 @@ class VerticalPerspective(CoordSystem):
             If given, defines the ellipsoid.
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = float(longitude_of_projection_origin)
+        """True longitude of planar origin in degrees."""
 
-        #: Altitude of satellite in metres.
         self.perspective_point_height = float(perspective_point_height)
+        """Altitude of satellite in metres."""
         # TODO: test if may be cast to float for proj.4
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -903,33 +903,35 @@ class Geostationary(CoordSystem):
             If given, defines the ellipsoid.
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
+        """True latitude of planar origin in degrees."""
+
         if self.latitude_of_projection_origin != 0.0:
             raise ValueError(
                 "Non-zero latitude of projection currently not supported by Cartopy."
             )
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = float(longitude_of_projection_origin)
+        """True longitude of planar origin in degrees."""
 
-        #: Altitude of satellite in metres.
         self.perspective_point_height = float(perspective_point_height)
+        """Altitude of satellite in metres."""
         # TODO: test if may be cast to float for proj.4
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: The sweep angle axis (string 'x' or 'y').
         self.sweep_angle_axis = sweep_angle_axis
+        """The sweep angle axis (string 'x' or 'y')."""
+
         if self.sweep_angle_axis not in ("x", "y"):
             raise ValueError('Invalid sweep_angle_axis - must be "x" or "y"')
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -1004,24 +1006,26 @@ class Stereographic(CoordSystem):
         scale_factor_at_projection_origin
 
         """
-        #: True latitude of planar origin in degrees.
         self.central_lat = float(central_lat)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.central_lon = float(central_lon)
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Latitude of true scale.
         self.true_scale_lat = _arg_default(true_scale_lat, None, cast_as=_float_or_None)
-        #: Scale factor at projection origin.
+        """Latitude of true scale."""
+
         self.scale_factor_at_projection_origin = _arg_default(
             scale_factor_at_projection_origin, None, cast_as=_float_or_None
         )
+        """Scale factor at projection origin."""
+
         # N.B. the way we use these parameters, we need them to default to None,
         # and *not* to 0.0.
 
@@ -1034,8 +1038,8 @@ class Stereographic(CoordSystem):
                 '"scale_factor_at_projection_origin" and "true_scale_latitude". '
             )
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def _repr_attributes(self):
         if self.scale_factor_at_projection_origin is None:
@@ -1168,25 +1172,25 @@ class LambertConformal(CoordSystem):
             secant_latitudes=(33, 45)
 
         """
-        #: True latitude of planar origin in degrees.
         self.central_lat = _arg_default(central_lat, 39.0)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.central_lon = _arg_default(central_lon, -96.0)
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: The standard parallels of the cone (tuple of 1 or 2 floats).
         self.secant_latitudes = _arg_default(
             secant_latitudes, (33, 45), cast_as=_1or2_parallels
         )
+        """tuple: The standard parallels of the cone (tuple of 1 or 2 floats)."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -1269,17 +1273,19 @@ class Mercator(CoordSystem):
         ``scale_factor_at_projection_origin`` should be included.
 
         """
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = _arg_default(
             longitude_of_projection_origin, 0
         )
+        """True longitude of planar origin in degrees."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
         # Initialise to None, then set based on arguments
-        #: The latitude where the scale is 1.
+
         self.standard_parallel = None
+        """The latitude where the scale is 1."""
+
         # The scale factor at the origin of the projection
         self.scale_factor_at_projection_origin = None
         if scale_factor_at_projection_origin is None:
@@ -1296,11 +1302,11 @@ class Mercator(CoordSystem):
                     '"standard_parallel".'
                 )
 
-        #: X offset from the planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from the planar origin in metres."""
 
-        #: Y offset from the planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from the planar origin in metres."""
 
     def __repr__(self):
         res = (
@@ -1360,24 +1366,24 @@ class LambertAzimuthalEqualArea(CoordSystem):
             If given, defines the ellipsoid.
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
             latitude_of_projection_origin, 0
         )
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = _arg_default(
             longitude_of_projection_origin, 0
         )
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -1441,29 +1447,29 @@ class AlbersEqualArea(CoordSystem):
             If given, defines the ellipsoid.
 
         """
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = _arg_default(
             latitude_of_projection_origin, 0
         )
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar central meridian in degrees.
         self.longitude_of_central_meridian = _arg_default(
             longitude_of_central_meridian, 0
         )
+        """True longitude of planar central meridian in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: The one or two latitudes of correct scale (tuple of 1 or 2 floats).
         self.standard_parallels = _arg_default(
             standard_parallels, (20, 50), cast_as=_1or2_parallels
         )
+        """The one or two latitudes of correct scale (tuple of 1 or 2 floats)."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (
@@ -1553,28 +1559,28 @@ class ObliqueMercator(CoordSystem):
         ObliqueMercator(azimuth_of_central_line=90.0, latitude_of_projection_origin=-22.0, longitude_of_projection_origin=-59.0, false_easting=-25000.0, false_northing=-25000.0, scale_factor_at_projection_origin=1.0, ellipsoid=GeogCS(6371229.0))
 
         """
-        #: Azimuth of centerline clockwise from north.
         self.azimuth_of_central_line = float(azimuth_of_central_line)
+        """Azimuth of centerline clockwise from north."""
 
-        #: True latitude of planar origin in degrees.
         self.latitude_of_projection_origin = float(latitude_of_projection_origin)
+        """True latitude of planar origin in degrees."""
 
-        #: True longitude of planar origin in degrees.
         self.longitude_of_projection_origin = float(longitude_of_projection_origin)
+        """True longitude of planar origin in degrees."""
 
-        #: X offset from planar origin in metres.
         self.false_easting = _arg_default(false_easting, 0)
+        """X offset from planar origin in metres."""
 
-        #: Y offset from planar origin in metres.
         self.false_northing = _arg_default(false_northing, 0)
+        """Y offset from planar origin in metres."""
 
-        #: Scale factor at the central meridian.
         self.scale_factor_at_projection_origin = _arg_default(
             scale_factor_at_projection_origin, 1.0
         )
+        """Scale factor at the central meridian."""
 
-        #: Ellipsoid definition (:class:`GeogCS` or None).
         self.ellipsoid = ellipsoid
+        """Ellipsoid definition (:class:`GeogCS` or None)."""
 
     def __repr__(self):
         return (

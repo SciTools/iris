@@ -22,7 +22,6 @@
 import datetime
 from importlib.metadata import version as get_version
 from inspect import getsource
-import ntpath
 import os
 from pathlib import Path
 import re
@@ -32,10 +31,32 @@ from tempfile import gettempdir
 from urllib.parse import quote
 import warnings
 
+from sphinx.util import logging
+from sphinx.util.console import colorize
 
-# function to write  useful output to stdout, prefixing the source.
-def autolog(message):
-    print("[{}] {}".format(ntpath.basename(__file__), message))
+
+def autolog(message: str, section: str | None = None, color: str | None = None) -> None:
+    """Log the diagnostics `message` with optional `section` prefix.
+
+    Parameters
+    ----------
+    message : str
+        The diagnostics message.
+    section : str, optional
+        The prefix text for the diagnostics message.
+    color : str, optional
+        The color of the `section` prefix text.
+
+    """
+    if color is None:
+        color = "brown"
+
+    section = colorize(color, colorize("bold", f"[{section}] ")) if section else ""
+    msg = f'{colorize(color, section)}{colorize("darkblue", f"{message}")}'
+    logger.info(msg)
+
+
+logger = logging.getLogger("sphinx-iris")
 
 
 # -- Check for dev make options to build quicker
@@ -63,13 +84,16 @@ rtd_version_type = os.environ.get("READTHEDOCS_VERSION_TYPE")
 # rtd_version = "my_branch"   # useful for testing
 
 if on_rtd:
-    autolog("Build running on READTHEDOCS server")
+    autolog("Build running on READTHEDOCS server", section="ReadTheDocs")
 
     # list all the READTHEDOCS environment variables that may be of use
-    autolog("Listing all environment variables on the READTHEDOCS server...")
+    autolog(
+        "Listing all environment variables on the READTHEDOCS server...",
+        section="ReadTheDocs",
+    )
 
     for item, value in os.environ.items():
-        autolog("[READTHEDOCS] {} = {}".format(item, value))
+        autolog("{} = {}".format(item, value), section="ReadTheDocs")
 
 # -- Path setup --------------------------------------------------------------
 
@@ -101,8 +125,8 @@ author = "Iris Developers"
 # |version|, also used in various other places throughout the built documents.
 version = get_version("scitools-iris")
 release = version
-autolog(f"Iris Version = {version}")
-autolog(f"Iris Release = {release}")
+autolog(f"Iris Version = {version}", section="General", color="blue")
+autolog(f"Iris Release = {release}", section="General", color="blue")
 
 # -- General configuration ---------------------------------------------------
 
@@ -148,14 +172,13 @@ rst_epilog = f"""
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
     "sphinx.ext.todo",
     "sphinx.ext.duration",
     "sphinx.ext.coverage",
     "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary",
     "sphinx.ext.doctest",
     "sphinx.ext.extlinks",
-    "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx_copybutton",
     "sphinx.ext.napoleon",
@@ -166,10 +189,10 @@ extensions = [
 ]
 
 if skip_api == "1":
-    autolog("Skipping the API docs generation (SKIP_API=1)")
+    autolog("Skipping the API docs generation (SKIP_API=1)", section="General")
 else:
-    extensions.extend(["sphinxcontrib.apidoc"])
-    extensions.extend(["api_rst_formatting"])
+    # build will break if this is not one of the first extensions loaded.
+    extensions.insert(0, "autoapi.extension")
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -195,6 +218,19 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
+todo_include_todos = True
+
+# # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
+autodoc_typehints = "description"
+# autosummary_generate = True
+# autosummary_imported_members = True
+# autopackage_name = ["iris"]
+# autoclass_content = "both"
+# modindex_common_prefix = ["iris"]
+
+# -- autoapi extensions -------------------------------------------------------
+# See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
+#     https://github.com/readthedocs/sphinx-autoapi
 todo_include_todos = False
 todo_emit_warnings = False
 
@@ -220,24 +256,41 @@ modindex_common_prefix = ["iris"]
 
 # -- apidoc extension ---------------------------------------------------------
 # See https://github.com/sphinx-contrib/apidoc
-source_code_root = (Path(__file__).parents[2]).absolute()
-module_dir = source_code_root / "lib"
-apidoc_module_dir = str(module_dir)
-apidoc_output_dir = str(Path(__file__).parent / "generated/api")
-apidoc_toc_file = False
 
-apidoc_excluded_paths = [
-    str(module_dir / "iris/tests"),
-    str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
-]
+if skip_api != "1":
+    source_code_root = (Path(__file__).parents[2]).absolute()
+    module_dir = source_code_root / "lib"
 
-apidoc_module_first = True
-apidoc_separate_modules = True
-apidoc_extra_args = []
+    autoapi_dirs = [module_dir]
+    autoapi_root = "generated/api"
+    autoapi_ignore = [
+        str(module_dir / "iris/tests/*"),
+        str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
+    ]
+    autoapi_member_order = "alphabetical"
+    autoapi_options = [
+        "members",
+        "inherited-members",
+        "undoc-members",
+        # 'private-members',
+        # "special-members",
+        "show-inheritance",
+        # "show-inheritance-diagram",
+        "show-module-summary",
+        "imported-members",
+    ]
 
-autolog(f"[sphinx-apidoc] source_code_root = {source_code_root}")
-autolog(f"[sphinx-apidoc] apidoc_excluded_paths = {apidoc_excluded_paths}")
-autolog(f"[sphinx-apidoc] apidoc_output_dir = {apidoc_output_dir}")
+    autoapi_python_class_content = "both"
+    autoapi_keep_files = True
+    autoapi_add_toctree_entry = False
+
+    # https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html#suppressing-warnings
+    suppress_warnings = ["autoapi.python_import_resolution"]
+
+    autolog(f"[autoapi] source_code_root = {source_code_root}", section="AutoAPI")
+    autolog(f"[autoapi] autoapi_dirs     = {autoapi_dirs}", section="AutoAPI")
+    autolog(f"[autoapi] autoapi_ignore   = {autoapi_ignore}", section="AutoAPI")
+    autolog(f"[autoapi] autoapi_root     = {autoapi_root}", section="AutoAPI")
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -307,7 +360,7 @@ html_theme_options = {
     "footer_end": ["custom_footer"],
     "navigation_depth": 3,
     "navigation_with_keys": False,
-    "show_toc_level": 2,
+    "show_toc_level": 3,
     "show_prev_next": True,
     "navbar_align": "content",
     # removes the search box from the top bar

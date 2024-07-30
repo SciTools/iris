@@ -739,8 +739,6 @@ def curl(i_cube, j_cube, k_cube=None):
     return result
 
 
-#: Acceptable X-Y-Z standard name combinations that
-#:  :func:`curl` can use (via :func:`spatial_vectors_with_phenom_name`).
 DIRECTIONAL_NAMES: tuple[tuple[str, str, str], ...] = (
     ("u", "v", "w"),
     ("x", "y", "z"),
@@ -749,6 +747,8 @@ DIRECTIONAL_NAMES: tuple[tuple[str, str, str], ...] = (
     ("easterly", "northerly", "vertical"),
     ("easterly", "northerly", "radial"),
 )
+"""Acceptable X-Y-Z standard name combinations that :func:`curl` can use
+   (via :func:`spatial_vectors_with_phenom_name`)."""
 
 
 def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):

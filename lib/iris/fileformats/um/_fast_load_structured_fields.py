@@ -294,7 +294,7 @@ def group_structured_fields(
     * the same for all fields,
     * completely irrelevant, or
     * used by a vectorised rule function (such as
-      :func:`iris.fileformats.pp_load_rules._convert_time_coords`).
+      :func:`iris.fileformats.pp_load_rules._convert_time_coords`.
 
     The function sorts and collates on phenomenon-relevant metadata only,
     defined as the field components: 'lbuser[3]' (stash), 'lbproc' (statistic),
