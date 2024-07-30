@@ -97,7 +97,7 @@ if on_rtd:
 
 # -- Path setup --------------------------------------------------------------
 
-# If extensions (or modules to document with autodoc) are in another directory,
+# If extensions (or modules to document with api) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
@@ -220,39 +220,17 @@ copybutton_line_continuation_character = "\\"
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
 todo_include_todos = True
 
-# # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
+# -- autodoc options ---------------------------------------------------------
+# See https://sphinx-autoapi.readthedocs.io/en/latest/how_to.html#how-to-include-type-annotations-as-types-in-rendered-docstrings
+#     https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
 autodoc_typehints = "description"
-# autosummary_generate = True
-# autosummary_imported_members = True
-# autopackage_name = ["iris"]
-# autoclass_content = "both"
-# modindex_common_prefix = ["iris"]
+autodoc_typehints_description_target = "documented"
 
 # -- autoapi extensions -------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 #     https://github.com/readthedocs/sphinx-autoapi
 todo_include_todos = False
 todo_emit_warnings = False
-
-# sphinx.ext.autodoc configuration --------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
-autodoc_default_options = {
-    "members": True,
-    "member-order": "alphabetical",
-    "undoc-members": True,
-    "private-members": False,
-    "special-members": False,
-    "inherited-members": True,
-    "show-inheritance": True,
-}
-
-# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
-autodoc_typehints = "none"
-autosummary_generate = True
-autosummary_imported_members = True
-autopackage_name = ["iris"]
-autoclass_content = "both"
-modindex_common_prefix = ["iris"]
 
 # -- apidoc extension ---------------------------------------------------------
 # See https://github.com/sphinx-contrib/apidoc
