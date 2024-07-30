@@ -1,21 +1,35 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.10 (30 Jul 2024 [release candidate])
+***************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.10 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
-   * N/A
+   * Breaking Change: We have moved all of the mesh API from :mod:`iris.experimental.ugrid` to
+     :mod:`iris.mesh`. This is no longer experimental making this public supported API.
+
+   * We have made a suite of mesh improvements, there is a separate entry below for each of these changes .
+
+   * We have made :meth:`~iris.coords.guess_bounds` capable of setting bounds to the start and end of months and years.
+
+   * We have significantly reduced warning noise during NetCDF loading. The datum :class:`python:FutureWarning`
+     will now only be raised if the
+     ``datum_support`` :class:`~iris.Future` flag is disabled AND a datum is
+     present on the loaded NetCDF grid mapping.
+
+   * Checkout the performance enhancements section for an array of improvements to the performance of Iris.
+     Special thanks to the `ESMValTool`_ devs for these contributions.
+
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -24,7 +38,12 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Breaking Change: We have moved all of the mesh API from :mod:`iris.experimental.ugrid` to
+   :mod:`iris.mesh`. This is no longer experimental making this public supported API.
+   Future changes will honour Semantic Versioning - i.e. breaking changes will only be in major releases,
+   and ideally will be previewed via :class:`iris.Future` flags.
+
+#. Note that Iris is currently pinned to NumPy ``<2``, we hope to unpin this in the next minor release (Iris v3.11).
 
 
 ✨ Features
@@ -127,7 +146,7 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+None!
 
 
 🔗 Dependencies
@@ -147,12 +166,15 @@ This document explains the changes made to Iris for this release
    See : https://github.com/matplotlib/matplotlib/issues/28567
    (:pull:`6065`)
 
+#. Note that Iris is currently pinned to NumPy ``<2``, we hope to unpin this in the next minor release (Iris v3.11).
+
 
 
 📚 Documentation
 ================
 
-#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
+#. `@hsteptoe`_ added more detailed examples to :class:`~iris.cube.Cube` functions
+   :func:`~iris.cube.Cube.slices` and :func:`~iris.cube.Cube.slices_over`. (:pull:`5735`)
 
 
 💼 Internal
@@ -220,3 +242,4 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _airspeed-velocity/asv#1397: https://github.com/airspeed-velocity/asv/pull/1397
+.. _ESMValTool: https://github.com/ESMValGroup/ESMValTool
