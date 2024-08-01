@@ -25,7 +25,7 @@ A FESOM mesh encoded in a NetCDF file includes:
 
 To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
-:class:`~iris.experimental.ugrid.mesh.MeshXY`.
+:class:`~iris.ugrid.mesh.MeshXY`.
 
 .. dropdown:: Code
     :icon: code
@@ -33,7 +33,7 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.experimental.ugrid import MeshXY
+        >>> from iris.ugrid import MeshXY
 
 
         >>> temperature_cube = iris.load_cube("my_file.nc", "sea_surface_temperature")
@@ -113,7 +113,7 @@ An SMC grid encoded in a NetCDF file includes:
 
 From this information we can derive face corner coordinates, which will be used
 as the **nodes** when creating the Iris
-:class:`~iris.experimental.ugrid.mesh.MeshXY`.
+:class:`~iris.ugrid.mesh.MeshXY`.
 
 
 .. dropdown:: Code
@@ -122,7 +122,7 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.experimental.ugrid import MeshXY
+        >>> from iris.ugrid import MeshXY
         >>> import numpy as np
 
 
@@ -265,7 +265,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
         >>> import iris
         >>> from iris.coords import AuxCoord, CellMeasure
         >>> from iris.cube import Cube
-        >>> from iris.experimental.ugrid.mesh import MeshXY, Connectivity
+        >>> from iris.ugrid.mesh import MeshXY, Connectivity
 
 
         >>> filepath = iris.sample_data_path('orca2_votemper.nc')

@@ -8,7 +8,7 @@ from geovista import Transform
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 
 from iris.exceptions import CoordinateNotFoundError
-from iris.experimental.ugrid import MeshXY
+from iris.mesh import MeshXY
 
 
 def _get_coord(cube, axis):
@@ -52,19 +52,17 @@ def cube_to_polydata(cube, **kwargs):
         If a :class:`~iris.cube.Cube` with too many dimensions is passed. Only
         the horizontal data can be represented, meaning a 2D Cube, or 1D Cube
         if the horizontal space is described by
-        :class:`~iris.experimental.ugrid.MeshCoord`\ s.
+        :class:`~iris.mesh.MeshCoord`\ s.
 
     Examples
     --------
     .. testsetup::
 
         from iris import load_cube, sample_data_path
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         cube = load_cube(sample_data_path("air_temp.pp"))
         cube_w_time = load_cube(sample_data_path("A1B_north_america.nc"))
-        with PARSE_UGRID_ON_LOAD.context():
-            cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
 
     >>> from iris.experimental.geovista import cube_to_polydata
 
@@ -212,11 +210,9 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
         from iris import load_cube, sample_data_path
         from iris.coords import AuxCoord
         from iris.cube import CubeList
-        from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-        with PARSE_UGRID_ON_LOAD.context():
-            cube_w_mesh = load_cube(file_path)
+        cube_w_mesh = load_cube(file_path)
 
         level_cubes = CubeList()
         for height_level in range(72):
