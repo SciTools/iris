@@ -28,6 +28,8 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
+    "MeshCoordMetadata",
+    "MeshMetadata",
     "SERVICES",
     "SERVICES_COMBINE",
     "SERVICES_DIFFERENCE",

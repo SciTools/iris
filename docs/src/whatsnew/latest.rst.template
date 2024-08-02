@@ -23,7 +23,7 @@ This document explains the changes made to Iris for this release
 
 NOTE: section BELOW is a template for bugfix patches
 ====================================================
-    (Please remove this section when creating an initial 'latest.rst'
+    (Please remove this section when creating an initial 'latest.rst')
 
 |iris_version| |build_date|
 ===========================
