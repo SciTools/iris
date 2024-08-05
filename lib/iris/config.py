@@ -163,7 +163,7 @@ TEST_DATA_DIR = _get_test_data_dir()
    The test data directory supports the subset of Iris unit tests that require data.
    Directory contents accessed via :func:`iris.tests.get_data_path`."""
 
-PALETTE_PATH: str = get_dir_option(
+PALETTE_PATH = get_dir_option(
     _RESOURCE_SECTION, "palette_path", os.path.join(CONFIG_PATH, "palette")
 )
 """The full path to the Iris palette configuration directory."""
