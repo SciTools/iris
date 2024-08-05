@@ -8,21 +8,6 @@ The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
 defined by :mod:`configparser`.
 
-----------
-
-.. py:data:: iris.config.TEST_DATA_DIR
-
-    Local directory where test data exists.  Defaults to "test_data"
-    sub-directory of the Iris package install directory. The test data
-    directory supports the subset of Iris unit tests that require data.
-    Directory contents accessed via :func:`iris.tests.get_data_path`.
-
-.. py:data:: iris.config.PALETTE_PATH
-
-    The full path to the Iris palette configuration directory
-
-----------
-
 """
 
 import configparser
@@ -104,7 +89,6 @@ def get_logger(name, datefmt=None, fmt=None, level=None, propagate=None, handler
     return logger
 
 
-# Returns simple string options
 def get_option(section, option, default=None):
     """Return the option value for the given section.
 
@@ -118,7 +102,6 @@ def get_option(section, option, default=None):
     return value
 
 
-# Returns directory path options
 def get_dir_option(section, option, default=None):
     """Return the directory path from the given option and section.
 
@@ -144,11 +127,27 @@ def get_dir_option(section, option, default=None):
     return path
 
 
-# Figure out the full path to the "iris" package.
-ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+def _get_test_data_dir():
+    """Return the test data directory and overriding if approproiate."""
+    override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
 
-# The full path to the configuration directory of the active Iris instance.
+    if override and os.path.isdir(os.path.expanduser(override)):
+        test_data_dir = os.path.abspath(override)
+    else:
+        test_data_dir = get_dir_option(
+            _RESOURCE_SECTION,
+            "test_data_dir",
+            default=os.path.join(os.path.dirname(__file__), "test_data"),
+        )
+
+    return test_data_dir
+
+
+ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+"""The full path to the "iris" package."""
+
 CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
+"""The full path to the configuration directory of the active Iris instance."""
 
 # Load the optional "site.cfg" file if it exists.
 config = configparser.ConfigParser()
@@ -158,24 +157,17 @@ config.read([os.path.join(CONFIG_PATH, "site.cfg")])
 # Resource options
 _RESOURCE_SECTION = "Resources"
 
+TEST_DATA_DIR = _get_test_data_dir()
+"""Local directory where test data exists.
+   Defaults to "test_data" sub-directory of the Iris package install directory.
+   The test data directory supports the subset of Iris unit tests that require data.
+   Directory contents accessed via :func:`iris.tests.get_data_path`."""
 
-TEST_DATA_DIR = get_dir_option(
-    _RESOURCE_SECTION,
-    "test_data_dir",
-    default=os.path.join(os.path.dirname(__file__), "test_data"),
-)
-
-# Override the data repository if the appropriate environment variable
-# has been set.
-override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
-if override:
-    TEST_DATA_DIR = None
-    if os.path.isdir(os.path.expanduser(override)):
-        TEST_DATA_DIR = os.path.abspath(override)
-
-PALETTE_PATH = get_dir_option(
+PALETTE_PATH: str = get_dir_option(
     _RESOURCE_SECTION, "palette_path", os.path.join(CONFIG_PATH, "palette")
 )
+"""The full path to the Iris palette configuration directory."""
+
 
 # Runtime options
 
