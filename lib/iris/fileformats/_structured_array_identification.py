@@ -307,7 +307,7 @@ class GroupStructure:
 
         self._cmpt_structure = component_structure
         """A dictionary mapping component name to ArrayStructure instance
-          (or None if no such structure exists for that component)."""
+           (or None if no such structure exists for that component)."""
 
         array_order = array_order.lower()
         if array_order not in ["c", "f"]:
