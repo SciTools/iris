@@ -218,7 +218,8 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
 # -- autodoc options ---------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/how_to.html#how-to-include-type-annotations-as-types-in-rendered-docstrings
@@ -229,11 +230,6 @@ autodoc_typehints_description_target = "documented"
 # -- autoapi extensions -------------------------------------------------------
 # See https://sphinx-autoapi.readthedocs.io/en/latest/reference/config.html
 #     https://github.com/readthedocs/sphinx-autoapi
-todo_include_todos = False
-todo_emit_warnings = False
-
-# -- apidoc extension ---------------------------------------------------------
-# See https://github.com/sphinx-contrib/apidoc
 
 if skip_api != "1":
     source_code_root = (Path(__file__).parents[2]).absolute()
