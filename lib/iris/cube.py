@@ -622,6 +622,7 @@ class CubeList(list):
         .. testsetup::
 
             import iris
+            import iris.coords
             import numpy as np
             xco = iris.coords.DimCoord([11, 12, 13, 14], long_name='x_vals')
             yco1 = iris.coords.DimCoord([4, 5], long_name='y_vals')
