@@ -45,6 +45,7 @@ def izip(*cubes, **kwargs):
 
     Examples
     --------
+        >>> import iris.iterate
         >>> e_content, e_density = iris.load_cubes(
         ...     iris.sample_data_path('space_weather.nc'),
         ...     ['total electron content', 'electron density'])
