@@ -33,7 +33,6 @@ def add_categorised_coord(
     from_coord: iris.coords.Coord | str,
     category_function: Callable,
     units: str = "1",
-    category_function_expects_date: bool = False,
 ) -> None:
     """Add a new coordinate to a cube, by categorising an existing one.
 
