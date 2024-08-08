@@ -48,9 +48,6 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
-
-
 #. `@bouweandela`_ made the time coordinate categorisation functions in
    :mod:`iris.coord_categorisation` faster. (:pull:`5999`)
 
