@@ -51,7 +51,7 @@ def add_categorised_coord(
     category_function : callable
         Function(coordinate, value), returning a category value for a coordinate
         point-value. If ``value`` has a type hint :obj:`cftime.datetime`, the
-        coordinate points are translated to :obj:`cftime.datetime`s before
+        coordinate points are translated to :obj:`cftime.datetime` s before
         calling ``category_function``.
     units : str, default="1"
         Units of the category value, typically 'no_unit' or '1'.
@@ -434,8 +434,6 @@ def add_season_membership(cube, coord, season, name="season_membership"):
     months = _months_in_season(season)
 
     def _season_membership(_, value: cftime.datetime) -> bool:
-        if value.month in months:
-            return True
-        return False
+        return value.month in months
 
     add_categorised_coord(cube, name, coord, _season_membership)
