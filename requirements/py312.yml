@@ -50,7 +50,7 @@ dependencies:
 # Documentation dependencies.
   - sphinx
   - sphinxcontrib-apidoc
-  - sphinx-autoapi >=3.0.0
+  - sphinx-autoapi >=3.2.0
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
