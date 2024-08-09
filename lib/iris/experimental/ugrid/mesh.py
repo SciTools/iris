@@ -2001,16 +2001,24 @@ class _MeshIndexManager:
     def _calculate_node_indices(self):
         if self.location == "node":
             return self.indices
-        elif self.location == "edge":
-            connectivity = self.mesh.edge_node_connectivity[self.indices]
-            node_set = list(set(connectivity.indices.compressed()))
+        elif self.location in ["edge", "face"]:
+            (connectivity,) = [
+                c
+                for c in self.mesh.all_connectivities
+                if c.location == self.location and c.connected == "node"
+            ]
+            conn_indices = connectivity.indices_by_location()[self.indices]
+            node_set = list(set(conn_indices.compressed()))
             node_set.sort()
             return node_set
-        elif self.location == "face":
-            connectivity = self.mesh.face_node_connectivity[self.indices]
-            node_set = list(set(connectivity.indices.compressed()))
-            node_set.sort()
-            return node_set
+        else:
+            # TODO: should this be validated earlier?
+            #  Maybe even with an Enum?
+            message = (
+                f"Expected location to be one of `node`, `edge` or `face`, "
+                f"got `{self.location}`"
+            )
+            raise NotImplementedError(message)
 
     def _calculate_edge_indices(self):
         if self.location != "edge":
