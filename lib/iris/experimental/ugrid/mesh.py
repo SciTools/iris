@@ -2000,7 +2000,7 @@ class _MeshIndexManager:
 
     def _calculate_node_indices(self):
         if self.location == "node":
-            return self.indices
+            result = self.indices
         elif self.location in ["edge", "face"]:
             (connectivity,) = [
                 c
@@ -2010,8 +2010,9 @@ class _MeshIndexManager:
             conn_indices = connectivity.indices_by_location()[self.indices]
             node_set = list(set(conn_indices.compressed()))
             node_set.sort()
-            return node_set
+            result = node_set
         else:
+            result = None
             # TODO: should this be validated earlier?
             #  Maybe even with an Enum?
             message = (
@@ -2020,15 +2021,21 @@ class _MeshIndexManager:
             )
             raise NotImplementedError(message)
 
+        return result
+
     def _calculate_edge_indices(self):
-        if self.location != "edge":
-            return None
-        return self.indices
+        if self.location == "edge":
+            result = self.indices
+        else:
+            result = None
+        return result
 
     def _calculate_face_indices(self):
-        if self.location != "face":
-            return None
-        return self.indices
+        if self.location == "face":
+            result = self.indices
+        else:
+            result = None
+        return result
 
 
 class _MeshIndexCoordinateManager(_MeshIndexManager):
