@@ -1968,21 +1968,7 @@ class MeshIndexSet(Mesh):
         self.location = location
         self.indices = indices
 
-        self._metadata_manager = metadata_manager_factory(MeshMetadata)
-
-        # topology_dimension is read-only, so assign directly to the metadata manager
-        self._metadata_manager.topology_dimension = mesh.topology_dimension
-
-        self.node_dimension = mesh.node_dimension
-        self.edge_dimension = mesh.edge_dimension
-        self.face_dimension = mesh.face_dimension
-
-        # assign the metadata to the metadata manager
-        self.standard_name = mesh.standard_name
-        self.long_name = mesh.long_name
-        self.var_name = mesh.var_name
-        self.units = mesh.units
-        self.attributes = mesh.attributes
+        self._metadata_manager = MeshMetadata.from_metadata(mesh.metadata)
 
         self._coord_manager = _MeshIndexCoordinateManager(mesh, location, indices)
         self._connectivity_manager = _MeshIndexConnectivityManager(
