@@ -758,7 +758,7 @@ class IrisRelease(Progress):
         message = (
             "Announce the release via https://twitter.com/scitools_iris, "
             "and any "
-            "other appropriate message boards (e.g. Yammer).\n"
+            "other appropriate message boards (e.g. Viva Engage).\n"
             "Any content used for the announcement should be stored in the "
             "SciTools/twitter-scitools-iris GitHub repo.\n"
         )
