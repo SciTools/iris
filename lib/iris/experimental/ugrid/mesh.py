@@ -2053,7 +2053,8 @@ class MeshIndexSet(Mesh):
                     and c.connected == "node"
                 )
             ]
-            conn_indices = connectivity.indices_by_location()[self.indices]
+            # Doesn't matter if connectivity is transposed or not in this case.
+            conn_indices = connectivity.indices[self.indices]
             node_set = list(set(conn_indices.compressed()))
             node_set.sort()
             result = node_set
