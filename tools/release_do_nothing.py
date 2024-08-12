@@ -15,8 +15,14 @@ from pathlib import Path
 import re
 import typing
 
-# pip install git+https://github.com/SciTools-incubator/nothing.git
-from nothing import Progress
+try:
+    from nothing import Progress
+except ImportError:
+    message = (
+        "This script requires the `nothing` package to be installed:\n"
+        "pip install git+https://github.com/SciTools-incubator/nothing.git"
+    )
+    raise ImportError(message)
 
 
 class IrisRelease(Progress):
