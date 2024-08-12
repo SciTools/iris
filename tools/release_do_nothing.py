@@ -386,11 +386,14 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
         message = (
-            "Craft an appropriate release description in the main text box.\n"
-            "Be sure to mention the What's New entry, conda-forge and PyPI - "
-            "you will need to return later to make these into links.\n"
-            "Be careful to change the appropriate words if copying from a "
-            "previous release description."
+            "Populate the main text box.\n"
+            "- Usual approach: copy from the last similar release, and "
+            "THOROUGHLY check for all references to the old release - change "
+            "these.\n"
+            "- Alternatively: craft a new release description from scratch. "
+            "Be sure to mention the What's New entry, conda-forge and PyPI; "
+            "note that you will need to return later to make these into "
+            "links.\n"
         )
         self.wait_for_done(message)
 
@@ -705,8 +708,9 @@ class IrisRelease(Progress):
 
         message = (
             "Update the release page in GitHub discussions, with the above "
-            "links "
-            "and anything else appropriate.\n"
+            "links and anything else appropriate.\n"
+            "The simplest way is to copy appropriate content from a previous "
+            "release, then edit it to match the current release.\n"
             "https://github.com/SciTools/iris/discussions"
         )
         self.wait_for_done(message)
