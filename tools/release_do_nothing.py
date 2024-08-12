@@ -537,7 +537,11 @@ class IrisRelease(Progress):
 
         message = (
             "Confirm that pip install works as expected:\n"
-            f"pip install scitools-iris=={self.strings.release};"
+            "conda create -y -n tmp_iris pip cf-units;\n"
+            "conda activate tmp_iris;\n"
+            f"pip install scitools-iris=={self.strings.release};\n"
+            'python -c "import iris; print(iris.__version__)";\n'
+            "conda remove -n tmp_iris --all;\n"
         )
         self.wait_for_done(message)
 
@@ -689,6 +693,9 @@ class IrisRelease(Progress):
             "Confirm that conda (or mamba) install works as expected:\n"
             f"conda create -n tmp_iris{channel_command}iris="
             f"{self.strings.release};\n"
+            "conda activate tmp_iris;\n"
+            'python -c "import iris; print(iris.__version__)";\n'
+            "conda deactivate;\n"
             f"conda remove -n tmp_iris --all;"
         )
         self.wait_for_done(message)
