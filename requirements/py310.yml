@@ -58,4 +58,4 @@ dependencies:
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051
-  - graphviz >=6.0.0
+  - graphviz >=6.0.0, <=11.0
