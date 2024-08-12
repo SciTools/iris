@@ -618,7 +618,9 @@ class IrisRelease(Progress):
                     "Follow the latest conda-forge guidance for creating a new "
                     "release candidate branch from the `main` branch:\n"
                     "https://conda-forge.org/docs/maintainer/knowledge_base.html#pre-release-builds\n\n"
-                    "Config file(s) should point to the `rc_iris` label.\n"
+                    "DEVIATION FROM GUIDANCE: config file(s) should point to "
+                    "the `rc_iris` label (this is not the name that "
+                    "conda-forge suggest).\n"
                 )
                 rc_branch = self.get_input(message, "Input the name of your new branch")
 
