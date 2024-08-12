@@ -335,7 +335,9 @@ class IrisRelease(Progress):
 
         message = (
             "Commit and push all the What's New changes.\n"
-            f'git commit -am "Whats new updates for {self.git_tag} .";\n'
+            f"git add {self.whats_news.release.absolute()};\n"
+            f"git add {self.whats_news.index.absolute()};\n"
+            f'git commit -m "Whats new updates for {self.git_tag} .";\n'
             f"git push -u origin {working_branch};"
         )
         self.wait_for_done(message)
@@ -623,7 +625,8 @@ class IrisRelease(Progress):
             "No other file normally needs changing in iris-feedstock, "
             "so push up "
             "the changes to prepare for a Pull Request:\n"
-            f'git commit -am "Recipe updates for {self.git_tag} .";\n'
+            f"git add recipe/meta.yaml;\n"
+            f'git commit -m "Recipe updates for {self.git_tag} .";\n'
             f"git push -u origin {self.git_tag};"
         )
         self.wait_for_done(message)
@@ -753,7 +756,8 @@ class IrisRelease(Progress):
 
             message = (
                 "Commit and push all the What's New changes.\n"
-                'git commit -am "Restore latest Whats New files.";\n'
+                f"git add {self.whats_news.index.absolute()};\n"
+                'git commit -m "Restore latest Whats New files.";\n'
                 f"git push -u origin {working_branch};"
             )
             self.wait_for_done(message)
