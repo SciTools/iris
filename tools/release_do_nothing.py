@@ -571,8 +571,8 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                "Find the release candidate branch - "
-                "`rc`/`release-candidate`/similar.\n"
+                "Find the release candidate branch - typical names:\n"
+                "`rc` / `release-candidate` / similar .\n"
             )
             rc_branch = self.get_input(
                 message,
