@@ -448,8 +448,9 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
         message = (
-            "Keep the latest 2 branch doc builds active - those formatted "
-            "0.0.x - deactivate older ones."
+            "Keep only the latest 2 branch doc builds active - "
+            f"'{self.strings.branch}' and the previous one - deactivate older "
+            "ones."
         )
         self.wait_for_done(message)
 
