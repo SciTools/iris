@@ -697,7 +697,16 @@ class IrisRelease(Progress):
         if self.is_release_candidate:
             channel_command = " -c conda-forge/label/rc_iris "
         else:
-            channel_command = " "
+            channel_command = " -c conda-forge "
+        channel_command += "--override-channels "
+
+        message = (
+            "Confirm that the new release is available via conda CLI. This"
+            "may take several minutes. Use the following command:\n"
+            f"conda search{channel_command}iris;"
+        )
+        self.wait_for_done(message)
+
         message = (
             "Confirm that conda (or mamba) install works as expected:\n"
             f"conda create -n tmp_iris{channel_command}iris="
