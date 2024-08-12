@@ -18,7 +18,7 @@ import typing
 try:
     from nothing import Progress
 except ImportError:
-    message = (
+    install_message = (
         "This script requires the `nothing` package to be installed:\n"
         "pip install git+https://github.com/SciTools-incubator/nothing.git"
     )
@@ -168,14 +168,29 @@ class IrisRelease(Progress):
 
     def update_standard_names(self):
         if self.first_in_series:
+            working_branch = self.strings.branch + ".standard_names"
+            self._delete_local_branch(working_branch)
             message = (
-                "Update the file ``etc/cf-standard-name-table.xml`` to the "
-                "latest CF standard names, via a new Pull Request.\n"
-                "(This is used during build to automatically generate the "
-                "sourcefile ``lib/iris/std_names.py``).\n"
-                "Latest standard names:\n"
-                'wget "https://cfconventions.org/Data/cf-standard-names'
-                '/current/src/cf-standard-name-table.xml";'
+                "Checkout a local branch from the official ``main`` branch.\n"
+                "git fetch upstream;\n"
+                f"git checkout upstream/main -b {working_branch};"
+            )
+            self.wait_for_done(message)
+
+            url = "https://cfconventions.org/Data/cf-standard-names/current/src/cf-standard-name-table.xml"
+            file = Path(__file__).parents[1] / "etc" / "cf-standard-name-table.xml"
+            message = (
+                "Update the CF standard names table to the latest version:\n"
+                f'wget "{url}" -O {file};'
+                f"git add {file};"
+                "git commit -m 'Update CF standard names table.';"
+                f"git push -u origin {working_branch};"
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Follow the Pull Request process to get "
+                f"{working_branch} merged into upstream/main ."
             )
             self.wait_for_done(message)
 
