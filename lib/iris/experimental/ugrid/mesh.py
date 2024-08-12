@@ -12,6 +12,8 @@ Eventual destination: dedicated module in :mod:`iris` root.
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
+from contextlib import contextmanager
+from copy import copy
 from typing import Iterable
 
 from cf_units import Unit
@@ -603,9 +605,9 @@ class Mesh(CFVariableMixin):
 
     def __init__(
         self,
-        topology_dimension,
-        node_coords_and_axes,
-        connectivities,
+        topology_dimension=None,
+        node_coords_and_axes=None,
+        connectivities=None,
         edge_coords_and_axes=None,
         face_coords_and_axes=None,
         standard_name=None,
@@ -616,6 +618,7 @@ class Mesh(CFVariableMixin):
         node_dimension=None,
         edge_dimension=None,
         face_dimension=None,
+        _copy_mesh=None,
     ):
         """Mesh initialise.
 
@@ -631,66 +634,94 @@ class Mesh(CFVariableMixin):
         # TODO: support volumes.
         # TODO: support (coord, "z")
 
-        self._metadata_manager = metadata_manager_factory(MeshMetadata)
+        copy_mode = (
+            _copy_mesh is not None and getattr(_copy_mesh, "cf_role") == "mesh_topology"
+        )
 
-        # topology_dimension is read-only, so assign directly to the metadata manager
-        if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
-            emsg = f"Expected 'topology_dimension' in range {self.TOPOLOGY_DIMENSIONS!r}, got {topology_dimension!r}."
-            raise ValueError(emsg)
-        self._metadata_manager.topology_dimension = topology_dimension
-
-        self.node_dimension = node_dimension
-        self.edge_dimension = edge_dimension
-        self.face_dimension = face_dimension
-
-        # assign the metadata to the metadata manager
-        self.standard_name = standard_name
-        self.long_name = long_name
-        self.var_name = var_name
-        self.units = units
-        self.attributes = attributes
-
-        # based on the topology_dimension, create the appropriate coordinate manager
-        def normalise(element, axis):
-            result = str(axis).lower()
-            if result not in self.AXES:
-                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
-                raise ValueError(emsg)
-            return f"{element}_{result}"
-
-        if not isinstance(node_coords_and_axes, Iterable):
-            node_coords_and_axes = [node_coords_and_axes]
-
-        if not isinstance(connectivities, Iterable):
-            connectivities = [connectivities]
-
-        kwargs = {}
-        for coord, axis in node_coords_and_axes:
-            kwargs[normalise("node", axis)] = coord
-        if edge_coords_and_axes is not None:
-            for coord, axis in edge_coords_and_axes:
-                kwargs[normalise("edge", axis)] = coord
-        if face_coords_and_axes is not None:
-            for coord, axis in face_coords_and_axes:
-                kwargs[normalise("face", axis)] = coord
-
-        # check the UGRID minimum requirement for coordinates
-        if "node_x" not in kwargs:
-            emsg = "Require a node coordinate that is x-axis like to be provided."
-            raise ValueError(emsg)
-        if "node_y" not in kwargs:
-            emsg = "Require a node coordinate that is y-axis like to be provided."
-            raise ValueError(emsg)
-
-        if self.topology_dimension == 1:
-            self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh1DConnectivityManager(*connectivities)
-        elif self.topology_dimension == 2:
-            self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh2DConnectivityManager(*connectivities)
+        if copy_mode:
+            self._metadata_manager = _copy_mesh.metadata
+            self._coord_man = _copy_mesh._coord_manager
+            self._connectivity_man = _copy_mesh._connectivity_manager
         else:
-            emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
-            raise NotImplementedError(emsg)
+            mandatory = [topology_dimension, node_coords_and_axes, connectivities]
+            if any([m is None for m in mandatory]):
+                message = (
+                    "1 or more of mandatory arguments missing: "
+                    "topology_dimension, node_coords_and_axes, connectivities."
+                )
+                raise ValueError(message)
+
+            self._metadata_manager = metadata_manager_factory(MeshMetadata)
+
+            # topology_dimension is read-only, so assign directly to the metadata manager
+            if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
+                emsg = (
+                    f"Expected 'topology_dimension' in range "
+                    f"{self.TOPOLOGY_DIMENSIONS!r}, got "
+                    f"{topology_dimension!r}."
+                )
+                raise ValueError(emsg)
+            self._metadata_manager.topology_dimension = topology_dimension
+
+            self.node_dimension = node_dimension
+            self.edge_dimension = edge_dimension
+            self.face_dimension = face_dimension
+
+            # assign the metadata to the metadata manager
+            self.standard_name = standard_name
+            self.long_name = long_name
+            self.var_name = var_name
+            self.units = units
+            self.attributes = attributes
+
+            # based on the topology_dimension, create the appropriate coordinate manager
+            def normalise(element, axis):
+                result = str(axis).lower()
+                if result not in self.AXES:
+                    emsg = (
+                        f"Invalid axis specified for {element} coordinate "
+                        f"{coord.name()!r}, got {axis!r}."
+                    )
+                    raise ValueError(emsg)
+                return f"{element}_{result}"
+
+            if not isinstance(node_coords_and_axes, Iterable):
+                node_coords_and_axes = [node_coords_and_axes]
+
+            if not isinstance(connectivities, Iterable):
+                connectivities = [connectivities]
+
+            kwargs = {}
+            for coord, axis in node_coords_and_axes:
+                kwargs[normalise("node", axis)] = coord
+            if edge_coords_and_axes is not None:
+                for coord, axis in edge_coords_and_axes:
+                    kwargs[normalise("edge", axis)] = coord
+            if face_coords_and_axes is not None:
+                for coord, axis in face_coords_and_axes:
+                    kwargs[normalise("face", axis)] = coord
+
+            # check the UGRID minimum requirement for coordinates
+            if "node_x" not in kwargs:
+                emsg = (
+                    "Require a node coordinate that is x-axis like to be " "provided."
+                )
+                raise ValueError(emsg)
+            if "node_y" not in kwargs:
+                emsg = (
+                    "Require a node coordinate that is y-axis like to be " "provided."
+                )
+                raise ValueError(emsg)
+
+            if self.topology_dimension == 1:
+                self._coord_man = _Mesh1DCoordinateManager(**kwargs)
+                self._connectivity_man = _Mesh1DConnectivityManager(*connectivities)
+            elif self.topology_dimension == 2:
+                self._coord_man = _Mesh2DCoordinateManager(**kwargs)
+                self._connectivity_man = _Mesh2DConnectivityManager(*connectivities)
+            else:
+                emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
+                raise NotImplementedError(emsg)
 
     @classmethod
     def from_coords(cls, *coords):
@@ -1091,6 +1122,16 @@ class Mesh(CFVariableMixin):
             raise NotImplementedError(message)
 
         return result
+
+    @property
+    def _connectivity_manager(self):
+        # Delivered as a property to help with overriding.
+        return self._connectivity_man
+
+    @property
+    def _coord_manager(self):
+        # Delivered as a property to help with overriding.
+        return self._coord_man
 
     @property
     def all_connectivities(self):
@@ -1963,17 +2004,33 @@ class Mesh(CFVariableMixin):
 
 
 class MeshIndexSet(Mesh):
+    class _IndexedMembers(dict):
+        def _readonly(self, *args, **kwargs):
+            message = (
+                "Modification of MeshIndexSet is forbidden - this is only "
+                f"a view onto an original Mesh: id={self.mesh_id}."
+            )
+            raise RuntimeError(message)
+
+        __setitem__ = _readonly
+        __delitem__ = _readonly
+        pop = _readonly
+        popitem = _readonly
+        clear = _readonly
+        update = _readonly
+        setdefault = _readonly
+
+        mesh_id: int
+
+        def __init__(self, seq, **kwargs):
+            self.mesh_id = kwargs.pop("mesh_id")
+            super().__init__(seq, **kwargs)
+
     def __init__(self, mesh, location, indices):
+        super().__init__(_copy_mesh=mesh)
         self.super_mesh = mesh
         self.location = location
         self.indices = indices
-
-        self._metadata_manager = MeshMetadata.from_metadata(mesh.metadata)
-
-        self._coord_manager = _MeshIndexCoordinateManager(mesh, location, indices)
-        self._connectivity_manager = _MeshIndexConnectivityManager(
-            mesh, location, indices
-        )
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -1983,29 +2040,18 @@ class MeshIndexSet(Mesh):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) != id(other)
 
-
-class _MeshIndexManager:
-    def __init__(self, mesh, location, indices):
-        self.mesh = mesh
-        self.location = location
-        self.indices = indices
-
-        self.face_indices = self._calculate_face_indices()
-        self.edge_indices = self._calculate_edge_indices()
-        self.node_indices = self._calculate_node_indices()
-        self.node_index_dict = {
-            old_index: new_index
-            for new_index, old_index in enumerate(self.node_indices)
-        }
-
     def _calculate_node_indices(self):
         if self.location == "node":
             result = self.indices
         elif self.location in ["edge", "face"]:
             (connectivity,) = [
                 c
-                for c in self.mesh.all_connectivities
-                if c.location == self.location and c.connected == "node"
+                for c in self.super_mesh.all_connectivities
+                if (
+                    c is not None
+                    and c.location == self.location
+                    and c.connected == "node"
+                )
             ]
             conn_indices = connectivity.indices_by_location()[self.indices]
             node_set = list(set(conn_indices.compressed()))
@@ -2037,216 +2083,32 @@ class _MeshIndexManager:
             result = None
         return result
 
-
-class _MeshIndexCoordinateManager(_MeshIndexManager):
-    REQUIRED = (
-        "node_x",
-        "node_y",
-    )
-    OPTIONAL = (
-        "edge_x",
-        "edge_y",
-        "face_x",
-        "face_y",
-    )
-
-    def __init__(self, mesh, location, indices):
-        super().__init__(mesh, location, indices)
-        self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members = {}
-        self._members = {member: getattr(self, member) for member in self.ALL}
-
-    def __eq__(self, other):
-        # TBD: this is a minimalist implementation and requires to be revisited
-        return id(self) == id(other)
-
-    def __ne__(self, other):
-        # TBD: this is a minimalist implementation and requires to be revisited
-        return id(self) != id(other)
-
     @property
-    def node_x(self):
-        if "node_x" in self._members:
-            return self._members["node_x"]
-        else:
-            return self.mesh._coord_manager.node_x[self.node_indices]
-
-    @property
-    def node_y(self):
-        if "node_y" in self._members:
-            return self._members["node_y"]
-        else:
-            return self.mesh._coord_manager.node_y[self.node_indices]
-
-    @property
-    def edge_x(self):
-        if "edge_x" in self._members:
-            return self._members["edge_x"]
-        else:
-            return self.mesh._coord_manager.edge_x[self.edge_indices]
-
-    @property
-    def edge_y(self):
-        if "edge_y" in self._members:
-            return self._members["edge_y"]
-        else:
-            return self.mesh._coord_manager.edge_y[self.edge_indices]
-
-    @property
-    def face_x(self):
-        if "face_x" in self._members:
-            return self._members["face_x"]
-        else:
-            return self.mesh._coord_manager.face_x[self.face_indices]
-
-    @property
-    def face_y(self):
-        if "face_y" in self._members:
-            return self._members["face_y"]
-        else:
-            return self.mesh._coord_manager.face_y[self.face_indices]
-
-    @property
-    def node_coords(self):
-        return MeshNodeCoords(node_x=self.node_x, node_y=self.node_y)
-
-    @property
-    def edge_coords(self):
-        return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
-
-    @property
-    def face_coords(self):
-        return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
-
-    def filters(
-        self,
-        item=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        attributes=None,
-        axis=None,
-        include_nodes=None,
-        include_edges=None,
-        include_faces=None,
-    ):
-        # TBD: support coord_systems?
-
-        # Preserve original argument before modifying.
-        face_requested = include_faces
-
-        # Rationalise the tri-state behaviour.
-        args = [include_nodes, include_edges, include_faces]
-        state = not any(set(filter(lambda arg: arg is not None, args)))
-        include_nodes, include_edges, include_faces = map(
-            lambda arg: arg if arg is not None else state, args
-        )
-
-        def populated_coords(coords_tuple):
-            return list(filter(None, list(coords_tuple)))
-
-        members = []
-        if include_nodes:
-            members += populated_coords(self.node_coords)
-        if include_edges:
-            members += populated_coords(self.edge_coords)
-        if hasattr(self, "face_coords"):
-            if include_faces:
-                members += populated_coords(self.face_coords)
-        elif face_requested:
-            dmsg = "Ignoring request to filter non-existent 'face_coords'"
-            logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
-
-        result = metadata_filter(
-            members,
-            item=item,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            attributes=attributes,
-            axis=axis,
-        )
-
-        # Use the results to filter the _members dict for returning.
-        result_ids = [id(r) for r in result]
-        result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
-        return result_dict
-
-    def filter(self, **kwargs):
-        # TODO: rationalise commonality with MeshConnectivityManager.filter and Cube.coord.
-        result = self.filters(**kwargs)
-
-        if len(result) > 1:
-            names = ", ".join(f"{member}={coord!r}" for member, coord in result.items())
-            emsg = (
-                f"Expected to find exactly 1 coordinate, but found {len(result)}. "
-                f"They were: {names}."
-            )
-            raise CoordinateNotFoundError(emsg)
-
-        if len(result) == 0:
-            item = kwargs["item"]
-            if item is not None:
-                if not isinstance(item, str):
-                    item = item.name()
-            name = (
-                item
-                or kwargs["standard_name"]
-                or kwargs["long_name"]
-                or kwargs["var_name"]
-                or None
-            )
-            name = "" if name is None else f"{name!r} "
-            emsg = f"Expected to find exactly 1 {name}coordinate, but found none."
-            raise CoordinateNotFoundError(emsg)
+    def _coord_manager(self):
+        # Intended to be a 'view' on the original, and Meshes are mutable, so
+        #  must re-index every time it is accessed.
+        with self.super_mesh._coord_man.indexed(
+            self._calculate_node_indices(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+            mesh_id=id(self.super_mesh),
+        ) as indexed_coord_man:
+            result = copy(indexed_coord_man)
 
         return result
 
-
-class _MeshIndexConnectivityManager(_MeshIndexManager):
     @property
-    def edge_node(self):
-        if self.edge_indices is None:
-            return None
-        else:
-            connectivity = self.mesh.edge_node_connectivity[self.edge_indices]
-            connectivity_indices = np.vectorize(self.node_index_dict.get)(
-                connectivity.indices
-            )
-            connectivity = Connectivity(
-                connectivity_indices,
-                connectivity.cf_role,
-                standard_name=connectivity.standard_name,
-                long_name=connectivity.long_name,
-                var_name=connectivity.var_name,
-                units=connectivity.units,
-                attributes=connectivity.attributes,
-                start_index=connectivity.start_index,
-                location_axis=connectivity.location_axis,
-            )
-            return connectivity
-
-    @property
-    def face_node(self):
-        if self.face_indices is None:
-            return None
-        else:
-            connectivity = self.mesh.face_node_connectivity[self.face_indices]
-            connectivity_indices = np.vectorize(self.node_index_dict.get)(
-                connectivity.indices
-            )
-            connectivity = Connectivity(
-                connectivity_indices,
-                connectivity.cf_role,
-                standard_name=connectivity.standard_name,
-                long_name=connectivity.long_name,
-                var_name=connectivity.var_name,
-                units=connectivity.units,
-                attributes=connectivity.attributes,
-                start_index=connectivity.start_index,
-                location_axis=connectivity.location_axis,
-            )
-            return connectivity
+    def _connectivity_manager(self):
+        # Intended to be a 'view' on the original, and Meshes are mutable, so
+        #  must re-index every time it is accessed.
+        with self.super_mesh._connectivity_man.indexed(
+            self._calculate_node_indices(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+            mesh_id=id(self.super_mesh),
+        ) as indexed_connectivity_man:
+            result = copy(indexed_connectivity_man)
+        return result
 
 
 class _Mesh1DCoordinateManager:
@@ -2305,6 +2167,41 @@ class _Mesh1DCoordinateManager:
     def __str__(self):
         args = [f"{member}" for member, coord in self if coord is not None]
         return f"{self.__class__.__name__}({', '.join(args)})"
+
+    @contextmanager
+    def indexed(
+        self,
+        node_indices: np.typing.ArrayLike,
+        edge_indices: np.typing.ArrayLike,
+        face_indices: np.typing.ArrayLike,
+        mesh_id: int,
+    ):
+        # TODO: make members_indexed read-only.
+        members_original = copy(self._members)
+
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        members_indexed = {}
+        for key, coord in self._members.items():
+            indexing = None
+            indexed = None
+            if coord is not None:
+                indexing = indices_dict[key.split("_")[0]]
+            if indexing is not None:
+                indexed = coord[indexing]
+            members_indexed[key] = indexed
+
+        try:
+            self._members = MeshIndexSet._IndexedMembers(
+                members_indexed,
+                mesh_id=mesh_id,
+            )
+            yield self
+        finally:
+            self._members = members_original
 
     def _remove(self, **kwargs):
         result = {}
@@ -2833,6 +2730,48 @@ class _MeshConnectivityManagerBase(ABC):
         result_ids = [id(r) for r in result]
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
+
+    @contextmanager
+    def indexed(
+        self,
+        node_indices: np.typing.ArrayLike,
+        edge_indices: np.typing.ArrayLike,
+        face_indices: np.typing.ArrayLike,
+        mesh_id: int,
+    ):
+        # TODO: make members_indexed read-only.
+        members_original = copy(self._members)
+
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        node_index_mapping = {
+            old_index: new_index for new_index, old_index in enumerate(node_indices)
+        }
+        members_indexed = {}
+        for key, connectivity in self._members.items():
+            indexing = None
+            indexed = None
+            if connectivity is not None:
+                indexing = indices_dict[connectivity.location]
+            if indexing is not None:
+                new_values = connectivity.indices_by_location()[indexing]
+                new_values = np.vectorize(node_index_mapping.get)(new_values)
+                if connectivity.location_axis == 1:
+                    new_values = new_values.T
+                indexed = connectivity.copy(new_values)
+            members_indexed[key] = indexed
+
+        try:
+            self._members = MeshIndexSet._IndexedMembers(
+                members_indexed,
+                mesh_id=mesh_id,
+            )
+            yield self
+        finally:
+            self._members = members_original
 
     def remove(
         self,
