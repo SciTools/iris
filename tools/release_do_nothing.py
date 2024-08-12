@@ -294,6 +294,7 @@ class IrisRelease(Progress):
             )
             if self.is_release_candidate:
                 whatsnew_title += " [release candidate]"
+            whatsnew_title += ")"
             # TODO: automate
             message = (
                 f"In {self.whats_news.release.name}: set the page title to:\n"
