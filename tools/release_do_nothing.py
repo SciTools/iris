@@ -799,14 +799,23 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                "Recreate the following files, which are present in "
-                "``main``, but "
-                f"are currently deleted from {working_branch}:\n"
-                f"{self.whats_news.latest.absolute()}\n"
-                f"{self.whats_news.template.absolute()}\n"
-                "THEN:\n"
+                "Recreate the What's New template from ``main``:\n"
+                f"git checkout upstream/main {self.whats_news.template.absolute()};\n"
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Recreate the What's New latest from the template:\n"
+                f"cp {self.whats_news.template.absolute()} "
+                f"{self.whats_news.latest.absolute()};\n"
                 f"git add {self.whats_news.latest.absolute()};\n"
-                f"git add {self.whats_news.template.absolute()};\n"
+            )
+            self.wait_for_done(message)
+
+            message = (
+                f"Follow any guidance in {self.whats_news.latest.name} to "
+                "complete the recreation-from-template.\n"
+                "E.g. removing the bugfix section."
             )
             self.wait_for_done(message)
 
