@@ -322,7 +322,11 @@ class IrisRelease(Progress):
 
             message = (
                 f"Review {self.whats_news.release.name} to ensure it is a good "
-                f"reflection of what is new in {self.strings.series}."
+                f"reflection of what is new in {self.strings.series}.\n"
+                "I.e. all significant work you are aware of should be "
+                "present, such as a major dependency pin, a big new feature, "
+                "a known performance change. You can not be expected to know "
+                "about every single small change."
             )
             self.wait_for_done(message)
 
@@ -631,8 +635,9 @@ class IrisRelease(Progress):
             "- Requirements: align the packages and pins with those in the "
             "Iris repo\n"
             "- Maintainers: update with any changes to the dev team\n"
-            "- MAKE SURE everything else is correct - plenty of other things "
-            "might need one-off changes.\n"
+            "- Skim read the entire file to see if anything else is out of"
+            "date, e.g. is the licence info still correct? Ask the lead "
+            "Iris developers if unsure.\n"
         )
         self.wait_for_done(message)
 
