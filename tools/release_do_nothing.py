@@ -734,11 +734,23 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
         message = (
-            "Update the release page in GitHub discussions, with the above "
+            "What is the URL for the GitHub discussions page of this "
+            "release?\n"
+            "https://github.com/SciTools/iris/discussions\n"
+        )
+        discussion_url = self.get_input(message, "Input the URL")
+
+        message = (
+            f"Update {discussion_url}, with the above "
             "links and anything else appropriate.\n"
             "The simplest way is to copy appropriate content from a previous "
-            "release, then edit it to match the current release.\n"
-            "https://github.com/SciTools/iris/discussions"
+            "release, then edit it to match the current release."
+        )
+        self.wait_for_done(message)
+
+        message = (
+            f"Comment on {discussion_url} to notify anyone watching that "
+            f"{self.strings.tag} has been released."
         )
         self.wait_for_done(message)
 
