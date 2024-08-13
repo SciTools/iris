@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.10 (30 Jul 2024 [release candidate])
-***************************************
+v3.10 (13 Aug 2024)
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
