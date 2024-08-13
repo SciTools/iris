@@ -35,7 +35,7 @@ def cube_to_polydata(cube, **kwargs):
     ----------
     cube : :class:`~iris.cube.Cube`
         The Cube containing the spatial information and data for creating the
-        class:`~pyvista.PolyData`.
+        :class:`~pyvista.PolyData`.
 
     **kwargs : dict, optional
         Additional keyword arguments to be passed to the relevant
