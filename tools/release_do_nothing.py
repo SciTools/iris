@@ -543,6 +543,7 @@ class IrisRelease(Progress):
             "conda activate tmp_iris;\n"
             f"pip install scitools-iris=={self.strings.release};\n"
             'python -c "import iris; print(iris.__version__)";\n'
+            "conda deactivate;\n"
             "conda remove -n tmp_iris --all;\n"
         )
         self.wait_for_done(message)
