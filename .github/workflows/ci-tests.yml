@@ -50,7 +50,7 @@ jobs:
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.22"
+      IRIS_TEST_DATA_VERSION: "2.25"
       ENV_NAME: "ci-tests"
 
     steps:
