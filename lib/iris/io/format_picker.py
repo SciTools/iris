@@ -84,6 +84,12 @@ class FormatAgent:
             ["%s" % format_spec for format_spec in self._format_specs]
         )
 
+    def __eq__(self, other):
+        return self._format_specs == other._format_specs
+
+    def copy(self):
+        return FormatAgent(self._format_specs.copy())
+
     def get_spec(self, basename, buffer_obj):
         """Pick the first FormatSpecification.
 
