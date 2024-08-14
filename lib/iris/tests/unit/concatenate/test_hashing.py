@@ -43,7 +43,7 @@ from iris import _concatenate
         (np.array(["a"]), da.array(["a"]), True),
         (np.array(["a"]), np.array([1]), False),
         (da.asarray([1, 1], chunks=1), da.asarray(["a", "b"], chunks=1), False),
-        (np.array(["a"]), np.array([int.from_bytes(b"a")], dtype=np.int32), False),
+        (np.array(["a"]), np.array(["a"]).view(dtype=np.int32), False),
     ],
 )
 def test_compute_hashes(a, b, eq):
