@@ -707,9 +707,13 @@ class IrisRelease(Progress):
         channel_command += "--override-channels "
 
         message = (
-            "Confirm that the new release is available via conda CLI. This"
-            "may take several minutes. Use the following command:\n"
-            f"conda search{channel_command}iris;"
+            "The new release will now undergo testing and validation in the "
+            "cf-staging channel. Once this is complete, the release will be "
+            "available in the standard conda-forge channel. This can "
+            "sometimes take minutes, or up to an hour.\n"
+            "Confirm that the new release is available for use from "
+            "conda-forge by running the following command:\n"
+            f"conda search{channel_command}iris=={self.strings.release};"
         )
         self.wait_for_done(message)
 
