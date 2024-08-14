@@ -513,12 +513,14 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
         def validate(sha256_string: str) -> str:
+            valid = True
             try:
-                sha_len = int(sha256_string, 16).bit_length() + 1
+                _ = int(sha256_string, 16)
             except ValueError:
-                sha_len = 0
+                valid = False
+            valid = valid & len(sha256_string) == 64
 
-            if sha_len != 256:
+            if not valid:
                 self.report_problem("Invalid SHA256 hash. Please try again ...")
             else:
                 return sha256_string
