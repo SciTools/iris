@@ -19,6 +19,7 @@ from typing import Iterable
 from cf_units import Unit
 from dask import array as da
 import numpy as np
+from numpy.typing import ArrayLike
 
 from ... import _lazy_data as _lazy
 from ...common import CFVariableMixin, metadata_filter, metadata_manager_factory
@@ -605,9 +606,9 @@ class Mesh(CFVariableMixin):
 
     def __init__(
         self,
-        topology_dimension=None,
-        node_coords_and_axes=None,
-        connectivities=None,
+        topology_dimension,
+        node_coords_and_axes,
+        connectivities,
         edge_coords_and_axes=None,
         face_coords_and_axes=None,
         standard_name=None,
@@ -618,7 +619,6 @@ class Mesh(CFVariableMixin):
         node_dimension=None,
         edge_dimension=None,
         face_dimension=None,
-        _copy_mesh=None,
     ):
         """Mesh initialise.
 
@@ -634,94 +634,66 @@ class Mesh(CFVariableMixin):
         # TODO: support volumes.
         # TODO: support (coord, "z")
 
-        copy_mode = (
-            _copy_mesh is not None and getattr(_copy_mesh, "cf_role") == "mesh_topology"
-        )
+        self._metadata_manager = metadata_manager_factory(MeshMetadata)
 
-        if copy_mode:
-            self._metadata_manager = _copy_mesh.metadata
-            self._coord_man = _copy_mesh._coord_manager
-            self._connectivity_man = _copy_mesh._connectivity_manager
+        # topology_dimension is read-only, so assign directly to the metadata manager
+        if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
+            emsg = f"Expected 'topology_dimension' in range {self.TOPOLOGY_DIMENSIONS!r}, got {topology_dimension!r}."
+            raise ValueError(emsg)
+        self._metadata_manager.topology_dimension = topology_dimension
+
+        self.node_dimension = node_dimension
+        self.edge_dimension = edge_dimension
+        self.face_dimension = face_dimension
+
+        # assign the metadata to the metadata manager
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.var_name = var_name
+        self.units = units
+        self.attributes = attributes
+
+        # based on the topology_dimension, create the appropriate coordinate manager
+        def normalise(element, axis):
+            result = str(axis).lower()
+            if result not in self.AXES:
+                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
+                raise ValueError(emsg)
+            return f"{element}_{result}"
+
+        if not isinstance(node_coords_and_axes, Iterable):
+            node_coords_and_axes = [node_coords_and_axes]
+
+        if not isinstance(connectivities, Iterable):
+            connectivities = [connectivities]
+
+        kwargs = {}
+        for coord, axis in node_coords_and_axes:
+            kwargs[normalise("node", axis)] = coord
+        if edge_coords_and_axes is not None:
+            for coord, axis in edge_coords_and_axes:
+                kwargs[normalise("edge", axis)] = coord
+        if face_coords_and_axes is not None:
+            for coord, axis in face_coords_and_axes:
+                kwargs[normalise("face", axis)] = coord
+
+        # check the UGRID minimum requirement for coordinates
+        if "node_x" not in kwargs:
+            emsg = "Require a node coordinate that is x-axis like to be provided."
+            raise ValueError(emsg)
+        if "node_y" not in kwargs:
+            emsg = "Require a node coordinate that is y-axis like to be provided."
+            raise ValueError(emsg)
+
+        if self.topology_dimension == 1:
+            self._coord_man = _Mesh1DCoordinateManager(**kwargs)
+            self._connectivity_man = _Mesh1DConnectivityManager(*connectivities)
+        elif self.topology_dimension == 2:
+            self._coord_man = _Mesh2DCoordinateManager(**kwargs)
+            self._connectivity_man = _Mesh2DConnectivityManager(*connectivities)
         else:
-            mandatory = [topology_dimension, node_coords_and_axes, connectivities]
-            if any([m is None for m in mandatory]):
-                message = (
-                    "1 or more of mandatory arguments missing: "
-                    "topology_dimension, node_coords_and_axes, connectivities."
-                )
-                raise ValueError(message)
-
-            self._metadata_manager = metadata_manager_factory(MeshMetadata)
-
-            # topology_dimension is read-only, so assign directly to the metadata manager
-            if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
-                emsg = (
-                    f"Expected 'topology_dimension' in range "
-                    f"{self.TOPOLOGY_DIMENSIONS!r}, got "
-                    f"{topology_dimension!r}."
-                )
-                raise ValueError(emsg)
-            self._metadata_manager.topology_dimension = topology_dimension
-
-            self.node_dimension = node_dimension
-            self.edge_dimension = edge_dimension
-            self.face_dimension = face_dimension
-
-            # assign the metadata to the metadata manager
-            self.standard_name = standard_name
-            self.long_name = long_name
-            self.var_name = var_name
-            self.units = units
-            self.attributes = attributes
-
-            # based on the topology_dimension, create the appropriate coordinate manager
-            def normalise(element, axis):
-                result = str(axis).lower()
-                if result not in self.AXES:
-                    emsg = (
-                        f"Invalid axis specified for {element} coordinate "
-                        f"{coord.name()!r}, got {axis!r}."
-                    )
-                    raise ValueError(emsg)
-                return f"{element}_{result}"
-
-            if not isinstance(node_coords_and_axes, Iterable):
-                node_coords_and_axes = [node_coords_and_axes]
-
-            if not isinstance(connectivities, Iterable):
-                connectivities = [connectivities]
-
-            kwargs = {}
-            for coord, axis in node_coords_and_axes:
-                kwargs[normalise("node", axis)] = coord
-            if edge_coords_and_axes is not None:
-                for coord, axis in edge_coords_and_axes:
-                    kwargs[normalise("edge", axis)] = coord
-            if face_coords_and_axes is not None:
-                for coord, axis in face_coords_and_axes:
-                    kwargs[normalise("face", axis)] = coord
-
-            # check the UGRID minimum requirement for coordinates
-            if "node_x" not in kwargs:
-                emsg = (
-                    "Require a node coordinate that is x-axis like to be " "provided."
-                )
-                raise ValueError(emsg)
-            if "node_y" not in kwargs:
-                emsg = (
-                    "Require a node coordinate that is y-axis like to be " "provided."
-                )
-                raise ValueError(emsg)
-
-            if self.topology_dimension == 1:
-                self._coord_man = _Mesh1DCoordinateManager(**kwargs)
-                self._connectivity_man = _Mesh1DConnectivityManager(*connectivities)
-            elif self.topology_dimension == 2:
-                self._coord_man = _Mesh2DCoordinateManager(**kwargs)
-                self._connectivity_man = _Mesh2DConnectivityManager(*connectivities)
-            else:
-                emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
-                raise NotImplementedError(emsg)
+            emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
+            raise NotImplementedError(emsg)
 
     @classmethod
     def from_coords(cls, *coords):
@@ -1091,8 +1063,8 @@ class Mesh(CFVariableMixin):
     def __setstate__(self, state):
         metadata_manager, coord_manager, connectivity_manager = state
         self._metadata_manager = metadata_manager
-        self._coord_manager = coord_manager
-        self._connectivity_manager = connectivity_manager
+        self._coord_man = coord_manager
+        self._connectivity_man = connectivity_manager
 
     def _set_dimension_names(self, node, edge, face, reset=False):
         args = (node, edge, face)
@@ -2004,6 +1976,10 @@ class Mesh(CFVariableMixin):
 
 
 class MeshIndexSet(Mesh):
+    super_mesh: Mesh = None
+    location: str = None
+    indices: ArrayLike = None
+
     class _IndexedMembers(dict):
         def _readonly(self, *args, **kwargs):
             message = (
@@ -2026,11 +2002,26 @@ class MeshIndexSet(Mesh):
             self.mesh_id = kwargs.pop("mesh_id")
             super().__init__(seq, **kwargs)
 
-    def __init__(self, mesh, location, indices):
-        super().__init__(_copy_mesh=mesh)
-        self.super_mesh = mesh
-        self.location = location
-        self.indices = indices
+    @classmethod
+    def from_mesh(cls, mesh, location, indices):
+        instance = copy(mesh)
+        instance.__class__ = cls
+        instance.super_mesh = mesh
+        instance.location = location
+        instance.indices = indices
+        return instance
+
+    def _validate(self) -> None:
+        # Instances are expected to be created via the from_mesh() method.
+        #  If __init__() is used instead, the class will not be fully set up.
+        #  Actually disabling __init__() is considered an anti-pattern.
+        if any(v is None for v in [self.super_mesh, self.location, self.indices]):
+            message = (
+                "MeshIndexSet instance not fully set up. Note that "
+                "MeshIndexSet is designed to be created via the from_mesh() "
+                "method, not via __init__()."
+            )
+            raise RuntimeError(message)
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2041,6 +2032,7 @@ class MeshIndexSet(Mesh):
         return id(self) != id(other)
 
     def _calculate_node_indices(self):
+        self._validate()
         if self.location == "node":
             result = self.indices
         elif self.location in ["edge", "face"]:
@@ -2071,6 +2063,7 @@ class MeshIndexSet(Mesh):
         return result
 
     def _calculate_edge_indices(self):
+        self._validate()
         if self.location == "edge":
             result = self.indices
         else:
@@ -2078,6 +2071,7 @@ class MeshIndexSet(Mesh):
         return result
 
     def _calculate_face_indices(self):
+        self._validate()
         if self.location == "face":
             result = self.indices
         else:
