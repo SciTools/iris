@@ -679,7 +679,7 @@ class IrisRelease(Progress):
         message = (
             "After the PR is merged, wait for the CI to complete, after which "
             "the new version of Iris will be on conda-forge's servers.\n"
-            "https://github.com/conda-forge/iris-feedstock/actions"
+            "https://dev.azure.com/conda-forge/feedstock-builds/_build?definitionId=464"
         )
         self.wait_for_done(message)
 
