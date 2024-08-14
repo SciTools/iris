@@ -10,9 +10,6 @@ datasets.
 
 from iris import load_cube
 
-# TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-
 from ..generate_data.ugrid import make_cubesphere_testfile
 
 
@@ -38,5 +35,4 @@ class FileMixin:
         )
 
     def load_cube(self):
-        with PARSE_UGRID_ON_LOAD.context():
-            return load_cube(str(self.file_path))
+        return load_cube(str(self.file_path))
