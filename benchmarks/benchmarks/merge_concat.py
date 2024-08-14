@@ -4,9 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Benchmarks relating to :meth:`iris.cube.CubeList.merge` and ``concatenate``."""
 
+import warnings
+
 import numpy as np
 
 from iris.cube import CubeList
+from iris.warnings import IrisVagueMetadataWarning
 
 from . import TrackAddedMemoryAllocation
 from .generate_data.stock import realistic_4d_w_everything
@@ -44,8 +47,13 @@ class Concatenate:
 
     cube_list: CubeList
 
-    def setup(self):
-        source_cube = realistic_4d_w_everything(lazy=True)
+    params = [[False, True]]
+    param_names = ["Lazy operations"]
+
+    def setup(self, lazy_run: bool):
+        warnings.filterwarnings("ignore", message="Ignoring a datum")
+        warnings.filterwarnings("ignore", category=IrisVagueMetadataWarning)
+        source_cube = realistic_4d_w_everything(lazy=lazy_run)
         self.cube_list = CubeList([source_cube])
         for _ in range(24):
             next_cube = self.cube_list[-1].copy()
@@ -55,9 +63,9 @@ class Concatenate:
             )
             self.cube_list.append(next_cube)
 
-    def time_concatenate(self):
+    def time_concatenate(self, _):
         _ = self.cube_list.concatenate_cube()
 
     @TrackAddedMemoryAllocation.decorator_repeating()
-    def track_mem_merge(self):
+    def track_mem_merge(self, _):
         _ = self.cube_list.concatenate_cube()

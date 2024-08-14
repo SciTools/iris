@@ -26,11 +26,28 @@ from iris import _concatenate
             da.ma.masked_array([1, 2], mask=[0, 1]),
             True,
         ),
+        (
+            da.ma.masked_array([1, 2], mask=[0, 1]),
+            da.ma.masked_array([1, 3], mask=[0, 1]),
+            True,
+        ),
+        (
+            np.ma.array([1, 2], mask=[0, 1]),
+            np.ma.array([1, 3], mask=[0, 1], fill_value=10),
+            True,
+        ),
         (np.array(["a", "b"]), np.array(["a", "b"]), True),
         (np.array(["a"]), np.array(["b"]), False),
+        (da.asarray(["a", "b"], chunks=1), da.asarray(["a", "b"], chunks=1), True),
+        (da.array(["a"]), da.array(["b"]), False),
+        (np.array(["a"]), da.array(["a"]), True),
+        (np.array(["a"]), np.array([1]), False),
+        (da.asarray([1, 1], chunks=1), da.asarray(["a", "b"], chunks=1), False),
+        (np.array(["a"]), np.array(int.from_bytes(b"a"), dtype=np.int32), False),
     ],
 )
 def test_compute_hashes(a, b, eq):
+    print(a, b)
     hashes = _concatenate._compute_hashes([a, b])
     assert eq == (hashes[_concatenate.array_id(a)] == hashes[_concatenate.array_id(b)])
 
@@ -38,11 +55,13 @@ def test_compute_hashes(a, b, eq):
 def test_arrayhash_equal_incompatible_chunks_raises():
     hash1 = _concatenate._ArrayHash(1, chunks=(1, 1))
     hash2 = _concatenate._ArrayHash(1, chunks=(2,))
-    with pytest.raises(ValueError):
+    msg = r"Unable to compare arrays with different chunks.*"
+    with pytest.raises(ValueError, match=msg):
         hash1 == hash2
 
 
 def test_arrayhash_equal_incompatible_type_raises():
     hash = _concatenate._ArrayHash(1, chunks=(1, 1))
-    with pytest.raises(TypeError):
+    msg = r"Unable to compare .*"
+    with pytest.raises(TypeError, match=msg):
         hash == object()

@@ -14,10 +14,11 @@ import dask
 import dask.array as da
 from dask.base import tokenize
 import numpy as np
-from xxhash import xxh3_64_digest
+from xxhash import xxh3_64
 
 from iris._lazy_data import concatenate as concatenate_arrays
 import iris.coords
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.exceptions
 from iris.util import array_equal, guess_coord_axis
@@ -288,19 +289,93 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     __slots__ = ()
 
 
-def _arrayhash(x: np.ndarray) -> np.ndarray:
-    """Compute a hash from a numpy array."""
-    return np.frombuffer(xxh3_64_digest(x.tobytes()), dtype=np.int64)
+def _hash_ndarray(a: np.ndarray) -> np.ndarray:
+    """Compute a hash from a numpy array.
+
+    Calculates a 64-bit non-cryptographic hash of the provided array, using
+    the fast ``xxhash`` hashing algorithm.
+
+    Parameters
+    ----------
+    a :
+        The array to hash.
+
+    Returns
+    -------
+    numpy.ndarray :
+        An array of shape (1,) containing the hash value.
+
+    """
+    # Fill masked arrays with the default fill_value so different values under
+    # the mask and the value of the fill_value attribute do not affect the hash.
+    if isinstance(a, np.ma.MaskedArray):
+        a = np.ma.masked_array(
+            a.filled(np.ma.default_fill_value(a.dtype)),
+            mask=a.mask,
+            shrink=False,
+        )
+    # Hash the bytes representing the array data.
+    hash = xxh3_64(a.data.tobytes())
+    # Include the array dtype as it is not preserved by `ndarray.tobytes()`.
+    hash.update(str(a.dtype).encode("utf-8"))
+    return np.frombuffer(hash.digest(), dtype=np.int64)
 
 
-def _chunk(x: np.ndarray, axis: int, keepdims: bool) -> np.ndarray:
-    """Compute a hash from a numpy array and keep the array dimensions."""
-    return _arrayhash(x).reshape((1,) * x.ndim)
+def _hash_chunk(
+    x_chunk: np.ndarray,
+    axis: tuple[int] | None,
+    keepdims: bool,
+) -> np.ndarray:
+    """Compute a hash from a numpy array.
+
+    This function can be applied to each chunk or intermediate chunk in
+    :func:`~dask.array.reduction`. It preserves the number of input dimensions
+    to facilitate combining intermediate results into intermediate chunks.
+
+    Parameters
+    ----------
+    x_chunk :
+        The array to hash.
+    axis :
+        Unused but required by :func:`~dask.array.reduction`.
+    keepdims :
+        Unused but required by :func:`~dask.array.reduction`.
+
+    Returns
+    -------
+    numpy.ndarray :
+        An array containing the hash value.
+
+    """
+    return _hash_ndarray(x_chunk).reshape((1,) * x_chunk.ndim)
 
 
-def _aggregate(x: np.ndarray, axis: int, keepdims: bool) -> np.int64:
-    """Compute a hash from a numpy array."""
-    return _arrayhash(x)[0]
+def _hash_aggregate(
+    x_chunk: np.ndarray,
+    axis: tuple[int] | None,
+    keepdims: bool,
+) -> np.int64:
+    """Compute a hash from a numpy array.
+
+    This function can be applied as the final step in :func:`~dask.array.reduction`.
+
+    Parameters
+    ----------
+    x_chunk :
+        The array to hash.
+    axis :
+        Unused but required by :func:`~dask.array.reduction`.
+    keepdims :
+        Unused but required by :func:`~dask.array.reduction`.
+
+    Returns
+    -------
+    np.int64 :
+        The hash value.
+
+    """
+    (result,) = _hash_ndarray(x_chunk)
+    return result
 
 
 def _hash_array(a: da.Array | np.ndarray) -> np.int64:
@@ -323,16 +398,28 @@ def _hash_array(a: da.Array | np.ndarray) -> np.int64:
 
     """
     if isinstance(a, da.Array):
-        return da.reduction(
+        # Use :func:`~dask.array.reduction` to compute a hash from a Dask array.
+        #
+        # A hash of each input chunk will be computed by the `chunk` function
+        # and those hashes will be combined into one or more intermediate chunks.
+        # If there are multiple intermediate chunks, a hash for each intermediate
+        # chunk will be computed by the `combine` function and the
+        # results will be combined into a new layer of intermediate chunks. This
+        # will be repeated until only a single intermediate chunk remains.
+        # Finally, a single hash value will be computed from the last
+        # intermediate chunk by the `aggregate` function.
+        result = da.reduction(
             a,
-            chunk=_chunk,
-            combine=_chunk,
-            aggregate=_aggregate,
+            chunk=_hash_chunk,
+            combine=_hash_chunk,
+            aggregate=_hash_aggregate,
             keepdims=False,
             meta=np.empty(tuple(), dtype=np.int64),
             dtype=np.int64,
         )
-    return _aggregate(a, 0, False)
+    else:
+        result = _hash_aggregate(a, None, False)
+    return result
 
 
 class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
@@ -364,12 +451,32 @@ def array_id(array: np.ndarray | da.Array) -> str:
     if isinstance(array, np.ma.MaskedArray):
         # Tokenizing a masked array is much slower than separately tokenizing
         # the data and mask.
-        return tokenize((tokenize(array.data), tokenize(array.mask)))
-    return tokenize(array)
+        result = tokenize((tokenize(array.data), tokenize(array.mask)))
+    else:
+        result = tokenize(array)
+    return result
 
 
 def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _ArrayHash]:
-    """Compute hashes for the arrays that will be compared."""
+    """Compute hashes for the arrays that will be compared.
+
+    Two arrays are considered equal if each unmasked element compares equal
+    and the masks are equal. However, hashes depend on chunking and dtype.
+    Therefore, arrays with the same shape are rechunked so they have the same
+    chunks and arrays with numerical dtypes are cast up to the same dtype before
+    computing the hashes.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays to hash.
+
+    Returns
+    -------
+    dict[str, _ArrayHash] :
+        An dictionary of hashes.
+
+    """
 
     def is_numerical(dtype):
         return np.issubdtype(dtype, np.bool_) or np.issubdtype(dtype, np.number)
@@ -395,8 +502,11 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
         if any(isinstance(a, da.Array) for a in same_dtype_arrays):
             # Unify chunks as the hash depends on the chunks.
             indices = tuple(range(group[0].ndim))[::-1]
+            # Because all arrays in a group have the same shape, `indices`
+            # are the same for all of them. Providing `indices` as a tuple
+            # instead of letters is easier to do programmatically.
             argpairs = [(a, indices) for a in same_dtype_arrays]
-            rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))[1]
+            __, rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))
         else:
             rechunked_arrays = same_dtype_arrays
         for array, rechunked in zip(group, rechunked_arrays):
@@ -405,7 +515,7 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
                 rechunked.chunks if isinstance(rechunked, da.Array) else tuple(),
             )
 
-    hashes = dask.compute(hashes)[0]
+    (hashes,) = dask.compute(hashes)
     return {k: _ArrayHash(*v) for k, v in hashes.items()}
 
 
@@ -1062,17 +1172,21 @@ class _ProtoCube:
             elif not match:
                 mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
 
-        def get_hash(array):
+        def get_hash(array: np.ndarray | da.Array) -> np.int64:
             return hashes[array_id(array)]
 
-        def get_hashes(coord):
+        def get_hashes(
+            coord: DimCoord | AuxCoord | AncillaryVariable | CellMeasure,
+        ) -> tuple[np.int64] | tuple[np.int64, np.int64]:
             result = []
-            if hasattr(coord, "core_points"):
+            if isinstance(coord, (DimCoord, AuxCoord)):
                 result.append(get_hash(coord.core_points()))
                 if coord.has_bounds():
                     result.append(get_hash(coord.core_bounds()))
-            else:
+            elif isinstance(coord, (AncillaryVariable, CellMeasure)):
                 result.append(get_hash(coord.core_data()))
+            else:
+                raise TypeError(f"Wrong `coord` type: {coord}")
             return tuple(result)
 
         # Mapping from `_CubeSignature` attributes to human readable names.
@@ -1083,7 +1197,8 @@ class _ProtoCube:
             "derived_coords_and_dims": "Derived coordinates",
         }
 
-        def check_coord_match(coord_type):
+        def check_coord_match(coord_type: str) -> tuple[bool, str]:
+            result = (True, "")
             for coord_a, coord_b in zip(
                 getattr(self._cube_signature, coord_type),
                 getattr(cube_signature, coord_type),
@@ -1093,18 +1208,17 @@ class _ProtoCube:
                     candidate_axis not in coord_a.dims
                     or candidate_axis not in coord_b.dims
                 ):
-                    if not (
-                        coord_a.dims == coord_b.dims
-                        and get_hashes(coord_a.coord) == get_hashes(coord_b.coord)
-                    ):
+                    if not get_hashes(coord_a.coord) == get_hashes(coord_b.coord):
                         mismatch_error_msg = (
                             f"{coord_type_names[coord_type]} are unequal for phenomenon"
                             f" `{self._cube.name()}`:\n"
                             f"a: {coord_a}\n"
                             f"b: {coord_b}"
                         )
-                        return False, mismatch_error_msg
-            return True, ""
+                        result = (False, mismatch_error_msg)
+                        break
+
+            return result
 
         # Check for compatible AuxCoords.
         if match and check_aux_coords:
