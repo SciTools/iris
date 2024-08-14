@@ -753,7 +753,7 @@ class IrisRelease(Progress):
 
         message = (
             f"Comment on {discussion_url} to notify anyone watching that "
-            f"{self.strings.tag} has been released."
+            f"{self.git_tag} has been released."
         )
         self.wait_for_done(message)
 
