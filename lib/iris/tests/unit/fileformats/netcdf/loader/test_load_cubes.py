@@ -21,10 +21,9 @@ from cf_units import as_unit
 import numpy as np
 
 from iris.coords import AncillaryVariable, CellMeasure
-from iris.experimental.ugrid.load import PARSE_UGRID_ON_LOAD
-from iris.experimental.ugrid.mesh import MeshCoord
 from iris.fileformats.netcdf import logger
 from iris.fileformats.netcdf.loader import load_cubes
+from iris.mesh import MeshCoord
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -262,13 +261,7 @@ class TestsMesh(tests.IrisTest):
                 }
             """
         cls.nc_path = cdl_to_nc(cls.ref_cdl)
-        with PARSE_UGRID_ON_LOAD.context():
-            cls.mesh_cubes = list(load_cubes(cls.nc_path))
-
-    def test_mesh_handled(self):
-        cubes_no_ugrid = list(load_cubes(self.nc_path))
-        self.assertEqual(4, len(cubes_no_ugrid))
-        self.assertEqual(2, len(self.mesh_cubes))
+        cls.mesh_cubes = list(load_cubes(cls.nc_path))
 
     def test_standard_dims(self):
         for cube in self.mesh_cubes:
@@ -303,7 +296,6 @@ class TestsMesh(tests.IrisTest):
         # No error when mesh handling not activated.
         _ = list(load_cubes(nc_path))
 
-        with PARSE_UGRID_ON_LOAD.context():
-            log_regex = r"File does not contain mesh.*"
-            with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
-                _ = list(load_cubes(nc_path))
+        log_regex = r"File does not contain mesh.*"
+        with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
+            _ = list(load_cubes(nc_path))

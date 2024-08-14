@@ -8,7 +8,6 @@ from geovista.geodesic import BBox
 
 from iris import load_cube
 from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 from iris.tests import get_data_path
 
 
@@ -21,8 +20,7 @@ def test_face_region_extraction():
         ]
     )
 
-    with PARSE_UGRID_ON_LOAD.context():
-        global_cube = load_cube(file_path, "conv_rain")
+    global_cube = load_cube(file_path, "conv_rain")
     polydata = cube_to_polydata(global_cube[0, :])
     region = BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45])
 

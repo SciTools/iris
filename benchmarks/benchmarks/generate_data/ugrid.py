@@ -5,7 +5,6 @@
 """Scripts for generating supporting data for UGRID-related benchmarking."""
 
 from iris import load_cube as iris_loadcube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 from .stock import (
@@ -85,8 +84,7 @@ def make_cube_like_2d_cubesphere(n_cube: int, with_mesh: bool):
         )
 
     # File now *should* definitely exist: content is simply the desired cube.
-    with PARSE_UGRID_ON_LOAD.context():
-        cube = iris_loadcube(str(filepath))
+    cube = iris_loadcube(str(filepath))
 
     # Ensure correct laziness.
     _ = cube.data
@@ -155,9 +153,8 @@ def make_cube_like_umfield(xy_dims):
     )
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(_external, xy_dims, str(save_path))
-    with PARSE_UGRID_ON_LOAD.context():
-        with load_realised():
-            cube = iris_loadcube(str(save_path))
+    with load_realised():
+        cube = iris_loadcube(str(save_path))
 
     return cube
 
