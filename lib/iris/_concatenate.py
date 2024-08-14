@@ -510,10 +510,11 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
         else:
             rechunked_arrays = same_dtype_arrays
         for array, rechunked in zip(group, rechunked_arrays):
-            hashes[array_id(array)] = (
-                _hash_array(rechunked),
-                rechunked.chunks if isinstance(rechunked, da.Array) else tuple(),
-            )
+            if isinstance(rechunked, da.Array):
+                chunks = rechunked.chunks
+            else:
+                chunks = tuple((i,) for i in array.shape)
+            hashes[array_id(array)] = (_hash_array(rechunked), chunks)
 
     (hashes,) = dask.compute(hashes)
     return {k: _ArrayHash(*v) for k, v in hashes.items()}
