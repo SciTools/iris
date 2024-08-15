@@ -88,6 +88,13 @@ class FormatAgent:
         return self._format_specs == other._format_specs
 
     def copy(self):
+        """Return a copy of the format agent.
+
+        Returns
+        -------
+        FormatAgent
+            A copy of the format agent.
+        """
         return FormatAgent(self._format_specs.copy())
 
     def get_spec(self, basename, buffer_obj):
