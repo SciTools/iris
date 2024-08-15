@@ -5,14 +5,13 @@
 """Automatic concatenation of multiple cubes over one or more existing dimensions."""
 
 from collections import namedtuple
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 import itertools
-from typing import Any, Iterable
+from typing import Any
 import warnings
 
 import dask
 import dask.array as da
-from dask.base import tokenize
 import numpy as np
 from xxhash import xxh3_64
 
@@ -446,18 +445,17 @@ class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
         return self.value == other.value
 
 
-def array_id(array: np.ndarray | da.Array) -> str:
-    """Get a deterministic token representing `array`."""
-    if isinstance(array, np.ma.MaskedArray):
-        # Tokenizing a masked array is much slower than separately tokenizing
-        # the data and mask.
-        result = tokenize((tokenize(array.data), tokenize(array.mask)))
-    else:
-        result = tokenize(array)
-    return result
+def _array_id(
+    coord: DimCoord | AuxCoord | AncillaryVariable | CellMeasure,
+    bound: bool,
+) -> str:
+    """Get a unique key for looking up arrays associated with coordinates."""
+    return f"{id(coord)}{bound}"
 
 
-def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _ArrayHash]:
+def _compute_hashes(
+    arrays: Mapping[str, np.ndarray | da.Array],
+) -> dict[str, _ArrayHash]:
     """Compute hashes for the arrays that will be compared.
 
     Two arrays are considered equal if each unmasked element compares equal
@@ -469,7 +467,7 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
     Parameters
     ----------
     arrays :
-        The arrays to hash.
+        A mapping with key-array pairs.
 
     Returns
     -------
@@ -477,26 +475,26 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
         An dictionary of hashes.
 
     """
+    hashes = {}
 
     def is_numerical(dtype):
         return np.issubdtype(dtype, np.bool_) or np.issubdtype(dtype, np.number)
 
-    def group_key(a):
+    def group_key(item):
+        array_id, a = item
         if is_numerical(a.dtype):
             dtype = "numerical"
         else:
             dtype = str(a.dtype)
         return a.shape, dtype
 
-    hashes = {}
-
-    arrays = sorted(arrays, key=group_key)
-    for _, group_iter in itertools.groupby(arrays, key=group_key):
-        group = list(group_iter)
+    sorted_arrays = sorted(arrays.items(), key=group_key)
+    for _, group_iter in itertools.groupby(sorted_arrays, key=group_key):
+        array_ids, group = zip(*group_iter)
         # Unify dtype for numerical arrays, as the hash depends on it
         if is_numerical(group[0].dtype):
             dtype = np.result_type(*group)
-            same_dtype_arrays = [a.astype(dtype) for a in group]
+            same_dtype_arrays = tuple(a.astype(dtype) for a in group)
         else:
             same_dtype_arrays = group
         if any(isinstance(a, da.Array) for a in same_dtype_arrays):
@@ -509,12 +507,12 @@ def _compute_hashes(arrays: Iterable[np.ndarray | da.Array]) -> dict[str, _Array
             __, rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))
         else:
             rechunked_arrays = same_dtype_arrays
-        for array, rechunked in zip(group, rechunked_arrays):
+        for array_id, rechunked in zip(array_ids, rechunked_arrays):
             if isinstance(rechunked, da.Array):
                 chunks = rechunked.chunks
             else:
-                chunks = tuple((i,) for i in array.shape)
-            hashes[array_id(array)] = (_hash_array(rechunked), chunks)
+                chunks = tuple((i,) for i in rechunked.shape)
+            hashes[array_id] = (_hash_array(rechunked), chunks)
 
     (hashes,) = dask.compute(hashes)
     return {k: _ArrayHash(*v) for k, v in hashes.items()}
@@ -565,41 +563,48 @@ def concatenate(
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
 
     """
+    cube_signatures = [_CubeSignature(cube) for cube in cubes]
+
     proto_cubes: list[_ProtoCube] = []
     # Initialise the nominated axis (dimension) of concatenation
     # which requires to be negotiated.
     axis = None
 
     # Compute hashes for parallel array comparison.
-    arrays = []
-    for cube in cubes:
+    arrays = {}
+
+    def add_coords(cube_signature: _CubeSignature, coord_type: str) -> None:
+        for coord_and_dims in getattr(cube_signature, coord_type):
+            coord = coord_and_dims.coord
+            array_id = _array_id(coord, bound=False)
+            if isinstance(coord, (DimCoord, AuxCoord)):
+                arrays[array_id] = coord.core_points()
+                if coord.has_bounds():
+                    bound_array_id = _array_id(coord, bound=True)
+                    arrays[bound_array_id] = coord.core_bounds()
+            else:
+                arrays[array_id] = coord.core_data()
+
+    for cube_signature in cube_signatures:
         if check_aux_coords:
-            for coord in cube.aux_coords:
-                arrays.append(coord.core_points())
-                if coord.has_bounds():
-                    arrays.append(coord.core_bounds())
+            add_coords(cube_signature, "aux_coords_and_dims")
         if check_derived_coords:
-            for coord in cube.derived_coords:
-                arrays.append(coord.core_points())
-                if coord.has_bounds():
-                    arrays.append(coord.core_bounds())
+            add_coords(cube_signature, "derived_coords_and_dims")
         if check_cell_measures:
-            for var in cube.cell_measures():
-                arrays.append(var.core_data())
+            add_coords(cube_signature, "cell_measures_and_dims")
         if check_ancils:
-            for var in cube.ancillary_variables():
-                arrays.append(var.core_data())
+            add_coords(cube_signature, "ancillary_variables_and_dims")
 
     hashes = _compute_hashes(arrays)
 
     # Register each cube with its appropriate proto-cube.
-    for cube in cubes:
+    for cube_signature in cube_signatures:
         registered = False
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
             registered = proto_cube.register(
-                cube,
+                cube_signature,
                 hashes,
                 axis,
                 error_on_mismatch,
@@ -614,7 +619,7 @@ def concatenate(
 
         # Create a new proto-cube for an unregistered cube.
         if not registered:
-            proto_cubes.append(_ProtoCube(cube))
+            proto_cubes.append(_ProtoCube(cube_signature))
 
     # Construct a concatenated cube from each of the proto-cubes.
     concatenated_cubes = iris.cube.CubeList()
@@ -671,6 +676,7 @@ class _CubeSignature:
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
+        self.src_cube = cube
 
         #
         # Collate the dimension coordinate metadata.
@@ -978,21 +984,21 @@ class _CoordSignature:
 class _ProtoCube:
     """Framework for concatenating multiple source-cubes over one common dimension."""
 
-    def __init__(self, cube):
+    def __init__(self, cube_signature):
         """Create a new _ProtoCube from the given cube and record the cube as a source-cube.
 
         Parameters
         ----------
-        cube :
-            Source :class:`iris.cube.Cube` of the :class:`_ProtoCube`.
+        cube_signature :
+            Source :class:`_CubeSignature` of the :class:`_ProtoCube`.
 
         """
         # Cache the source-cube of this proto-cube.
-        self._cube = cube
+        self._cube = cube_signature.src_cube
 
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
-        self._cube_signature = _CubeSignature(cube)
+        self._cube_signature = cube_signature
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -1000,7 +1006,7 @@ class _ProtoCube:
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
-        self._add_skeleton(self._coord_signature, cube.lazy_data())
+        self._add_skeleton(self._coord_signature, self._cube.lazy_data())
 
         # The nominated axis of concatenation.
         self._axis = None
@@ -1088,8 +1094,8 @@ class _ProtoCube:
 
     def register(
         self,
-        cube: iris.cube.Cube,
-        hashes: dict[str, _ArrayHash],
+        cube_signature: _CubeSignature,
+        hashes: Mapping[str, _ArrayHash],
         axis: int | None = None,
         error_on_mismatch: bool = False,
         check_aux_coords: bool = False,
@@ -1104,9 +1110,12 @@ class _ProtoCube:
 
         Parameters
         ----------
-        cube : :class:`iris.cube.Cube`
-            The :class:`iris.cube.Cube` source-cube candidate for
+        cube_signature : :class:`_CubeSignature`
+            The :class:`_CubeSignature` of the source-cube candidate for
             concatenation.
+        hashes :
+            A mapping containing hash values for checking coordinate, ancillary
+            variable, and cell measure equality.
         axis : optional
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
@@ -1147,7 +1156,6 @@ class _ProtoCube:
             raise ValueError(msg)
 
         # Check for compatible cube signatures.
-        cube_signature = _CubeSignature(cube)
         match = self._cube_signature.match(cube_signature, error_on_mismatch)
         mismatch_error_msg = None
 
@@ -1173,21 +1181,14 @@ class _ProtoCube:
             elif not match:
                 mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
 
-        def get_hash(array: np.ndarray | da.Array) -> np.int64:
-            return hashes[array_id(array)]
-
         def get_hashes(
             coord: DimCoord | AuxCoord | AncillaryVariable | CellMeasure,
-        ) -> tuple[np.int64] | tuple[np.int64, np.int64]:
-            result = []
-            if isinstance(coord, (DimCoord, AuxCoord)):
-                result.append(get_hash(coord.core_points()))
-                if coord.has_bounds():
-                    result.append(get_hash(coord.core_bounds()))
-            elif isinstance(coord, (AncillaryVariable, CellMeasure)):
-                result.append(get_hash(coord.core_data()))
-            else:
-                raise TypeError(f"Wrong `coord` type: {coord}")
+        ) -> tuple[_ArrayHash, ...]:
+            array_id = _array_id(coord, bound=False)
+            result = [hashes[array_id]]
+            if isinstance(coord, (DimCoord, AuxCoord)) and coord.has_bounds():
+                bound_array_id = _array_id(coord, bound=True)
+                result.append(hashes[bound_array_id])
             return tuple(result)
 
         # Mapping from `_CubeSignature` attributes to human readable names.
@@ -1247,7 +1248,7 @@ class _ProtoCube:
 
         if match:
             # Register the cube as a source-cube for this proto-cube.
-            self._add_skeleton(coord_signature, cube.lazy_data())
+            self._add_skeleton(coord_signature, cube_signature.src_cube.lazy_data())
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
             # If the protocube dimension order is constant (indicating it was

@@ -48,8 +48,8 @@ from iris import _concatenate
 )
 def test_compute_hashes(a, b, eq):
     print(a, b)
-    hashes = _concatenate._compute_hashes([a, b])
-    assert eq == (hashes[_concatenate.array_id(a)] == hashes[_concatenate.array_id(b)])
+    hashes = _concatenate._compute_hashes({"a": a, "b": b})
+    assert eq == (hashes["a"] == hashes["b"])
 
 
 def test_arrayhash_equal_incompatible_chunks_raises():
