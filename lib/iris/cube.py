@@ -2892,8 +2892,7 @@ class Cube(CFVariableMixin):
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
             try:
                 new_coord = coord[coord_keys]
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
+            except iris.exceptions.MonotonicityError:
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
             cube.add_aux_coord(new_coord, new_coord_dims(coord))
@@ -2912,8 +2911,7 @@ class Cube(CFVariableMixin):
                     cube.add_aux_coord(new_coord, new_dims)
                 else:
                     cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
+            except iris.exceptions.MonotonicityError:
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
                 cube.add_aux_coord(new_coord, new_dims)
