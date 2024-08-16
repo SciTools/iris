@@ -13,12 +13,14 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
+from copy import copy, deepcopy
 from typing import Iterable
 import warnings
 
 from cf_units import Unit
 from dask import array as da
 import numpy as np
+from numpy.typing import ArrayLike
 
 from iris.common.metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
 
@@ -597,6 +599,7 @@ class Mesh(CFVariableMixin, ABC):
           - Move whatever is appropriate from :class:`MeshXY` into this class,
             leaving behind only those elements specific to the assumption of
             X and Y node coordinates.
+          - Set :class:`_MeshIndexSet` to subclass `Mesh` instead of `MeshXY`.
           - Remove the docstring warning, the NotImplementedError, and the uses
             of ABC/abstractmethod.
           - Add a cross-reference in the docstring for :class:`MeshXY`.
@@ -727,11 +730,11 @@ class MeshXY(Mesh):
             raise ValueError(emsg)
 
         if self.topology_dimension == 1:
-            self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh1DConnectivityManager(*connectivities)
+            self._coord_man = _Mesh1DCoordinateManager(**kwargs)
+            self._connectivity_man = _Mesh1DConnectivityManager(*connectivities)
         elif self.topology_dimension == 2:
-            self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh2DConnectivityManager(*connectivities)
+            self._coord_man = _Mesh2DCoordinateManager(**kwargs)
+            self._connectivity_man = _Mesh2DConnectivityManager(*connectivities)
         else:
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
@@ -956,8 +959,8 @@ class MeshXY(Mesh):
     def __getstate__(self):
         return (
             self._metadata_manager,
-            self._coord_manager,
-            self._connectivity_manager,
+            self._coord_man,
+            self._connectivity_man,
         )
 
     def __ne__(self, other):
@@ -1002,11 +1005,11 @@ class MeshXY(Mesh):
             mesh_name = None
         if mesh_name:
             # Use a more human-readable form
-            mesh_string = f"<MeshXY: '{mesh_name}'>"
+            mesh_string = f"<{self.__class__.__name__}: '{mesh_name}'>"
         else:
             # Mimic the generic object.__str__ style.
             mesh_id = id(self)
-            mesh_string = f"<MeshXY object at {hex(mesh_id)}>"
+            mesh_string = f"<{self.__class__.__name__} object at {hex(mesh_id)}>"
 
         return mesh_string
 
@@ -1020,7 +1023,7 @@ class MeshXY(Mesh):
             indent = indent_str * i_indent
             lines.append(f"{indent}{text}")
 
-        line(f"MeshXY : '{self.name()}'")
+        line(f"{self.__class__.__name__} : '{self.name()}'")
         line(f"topology_dimension: {self.topology_dimension}", 1)
         for element in ("node", "edge", "face"):
             if element == "node":
@@ -1101,8 +1104,8 @@ class MeshXY(Mesh):
     def __setstate__(self, state):
         metadata_manager, coord_manager, connectivity_manager = state
         self._metadata_manager = metadata_manager
-        self._coord_manager = coord_manager
-        self._connectivity_manager = connectivity_manager
+        self._coord_man = coord_manager
+        self._connectivity_man = connectivity_manager
 
     def _set_dimension_names(self, node, edge, face, reset=False):
         args = (node, edge, face)
@@ -1132,6 +1135,16 @@ class MeshXY(Mesh):
             raise NotImplementedError(message)
 
         return result
+
+    @property
+    def _connectivity_manager(self):
+        # Delivered as a property to enable more sophisticated overriding.
+        return self._connectivity_man
+
+    @property
+    def _coord_manager(self):
+        # Delivered as a property to enable more sophisticated overriding.
+        return self._coord_man
 
     @property
     def all_connectivities(self):
@@ -1956,6 +1969,13 @@ class MeshXY(Mesh):
         """
         return self._set_dimension_names(node, edge, face, reset=False)
 
+    def is_view_of(self, other):
+        # The Mesh parent class does not implement any operations for returning
+        #  alternative views of its content, so the only possible 'view' of
+        #  itself IS itself.
+        #  Subclasses may be more sophisticated in this regard.
+        return other is self
+
     @property
     def cf_role(self):
         """The UGRID ``cf_role`` attribute of the :class:`MeshXY`."""
@@ -1971,6 +1991,190 @@ class MeshXY(Mesh):
 
         """
         return self._metadata_manager.topology_dimension
+
+
+class _MeshIndexSet(MeshXY):
+    super_mesh: MeshXY = None
+    location: str = None
+    indices: ArrayLike = None
+
+    class _IndexedMembers(dict):
+        def _readonly(self, *args, **kwargs):
+            message = (
+                "Modification of _MeshIndexSet is forbidden - this is only "
+                f"a view onto an original MeshXY: id={self.mesh_id}."
+            )
+            raise RuntimeError(message)
+
+        __setitem__ = _readonly
+        __delitem__ = _readonly
+        pop = _readonly
+        popitem = _readonly
+        clear = _readonly
+        update = _readonly
+        setdefault = _readonly
+
+        mesh_id: int
+
+        def __init__(self, seq, **kwargs):
+            self.mesh_id = kwargs.pop("mesh_id")
+            super().__init__(seq, **kwargs)
+
+    def __getstate__(self):
+        self._validate()
+        state_inherited = super().__getstate__()
+        return (
+            self.super_mesh,
+            self.location,
+            self.indices,
+            state_inherited,
+        )
+
+    def __setstate__(self, state):
+        self.super_mesh, self.location, self.indices, state_inherited = state
+        super().__setstate__(state_inherited)
+        self._validate()
+
+    @classmethod
+    def from_mesh(cls, mesh: MeshXY, location: str, indices: ArrayLike):
+        if not hasattr(mesh, "topology_dimension"):
+            message = (
+                "_MeshIndexSet.from_mesh() requires a MeshXY instance, got: "
+                f"{type(mesh).__name__}"
+            )
+            raise ValueError(message)
+        else:
+            instance = copy(mesh)
+            instance.__class__ = cls
+            instance.super_mesh = mesh
+            instance.location = location
+            instance.indices = indices
+            return instance
+
+    def _validate(self) -> None:
+        # Instances are expected to be created via the from_mesh() method.
+        #  If __init__() is used instead, the class will not be fully set up.
+        #  Actually disabling __init__() is considered an anti-pattern.
+        if any(v is None for v in [self.super_mesh, self.location, self.indices]):
+            message = (
+                "_MeshIndexSet instance not fully set up. Note that "
+                "_MeshIndexSet is designed to be created via the from_mesh() "
+                "method, not via __init__()."
+            )
+            raise RuntimeError(message)
+
+        # The 3 managers are part of MeshXY.__getstate__(), so the copy() op
+        #  in from_mesh() should produce identical references.
+        if not all(
+            getattr(self, man) is getattr(self.super_mesh, man)
+            for man in ["_metadata_manager", "_coord_man", "_connectivity_man"]
+        ):
+            message = (
+                f"_MeshIndexSet (id={id(self)}) is not a valid view of "
+                f"its original MeshXY (id={id(self.super_mesh)})."
+            )
+            raise RuntimeError(message)
+
+    def _calculate_node_indices(self):
+        self._validate()
+        if self.location == "node":
+            result = self.indices
+        elif self.location in ["edge", "face"]:
+            (connectivity,) = [
+                c
+                for c in self.super_mesh.all_connectivities
+                if (
+                    c is not None
+                    and c.location == self.location
+                    and c.connected == "node"
+                )
+            ]
+            # Doesn't matter if connectivity is transposed or not in this case.
+            conn_indices = connectivity.indices[self.indices]
+            node_set = list(set(conn_indices.compressed()))
+            node_set.sort()
+            result = node_set
+        else:
+            result = None
+            # TODO: should this be validated earlier?
+            #  Maybe even with an Enum?
+            message = (
+                f"Expected location to be one of `node`, `edge` or `face`, "
+                f"got `{self.location}`"
+            )
+            raise NotImplementedError(message)
+
+        return result
+
+    def _calculate_edge_indices(self):
+        self._validate()
+        if self.location == "edge":
+            result = self.indices
+        else:
+            result = None
+        return result
+
+    def _calculate_face_indices(self):
+        self._validate()
+        if self.location == "face":
+            result = self.indices
+        else:
+            result = None
+        return result
+
+    @property
+    def _coord_manager(self):
+        # Intended to be a 'view' on the original, and Meshes are mutable, so
+        #  must re-index every time it is accessed.
+        # TODO: only re-index when the managers have changed (also being
+        #  considered in iris#4757).
+        return self._coord_man.indexed(
+            self._calculate_node_indices(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+            mesh_id=id(self.super_mesh),
+        )
+
+    @property
+    def _connectivity_manager(self):
+        # Intended to be a 'view' on the original, and Meshes are mutable, so
+        #  must re-index every time it is accessed.
+        # TODO: only re-index when the managers have changed (also being
+        #  considered in iris#4757).
+        return self._connectivity_man.indexed(
+            self._calculate_node_indices(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+            mesh_id=id(self.super_mesh),
+        )
+
+    def is_view_of(self, other):
+        return other is self.super_mesh or other is self
+
+    def convert_to_mesh(self) -> None:
+        final_coords = self._coord_manager
+        final_coords.freeze_indexing()
+        final_coords = deepcopy(final_coords)
+
+        final_connectivities = self._connectivity_manager
+        final_connectivities.freeze_indexing()
+        final_connectivities = deepcopy(final_connectivities)
+
+        self._metadata_manager = deepcopy(self._metadata_manager)
+        self._coord_man = final_coords
+        self._connectivity_man = final_connectivities
+
+        self.__class__ = MeshXY
+        del self.super_mesh
+        del self.location
+        del self.indices
+
+    def as_mesh(self) -> MeshXY:
+        result = copy(self)
+        # Using `convert_to_mesh()` avoids modifying private attributes of
+        #  `result`.
+        result.convert_to_mesh()
+        return result
 
 
 class _Mesh1DCoordinateManager:
@@ -2256,6 +2460,49 @@ class _Mesh1DCoordinateManager:
         result_ids = [id(r) for r in result]
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
+
+    def index(
+        self,
+        node_indices: ArrayLike,
+        edge_indices: ArrayLike,
+        face_indices: ArrayLike,
+        mesh_id: int,
+    ) -> None:
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        members_indexed = {}
+        for key, coord in self._members.items():
+            indexing = None
+            indexed = None
+            if coord is not None:
+                indexing = indices_dict[key.split("_")[0]]
+            if indexing is not None:
+                indexed = coord[indexing]
+            members_indexed[key] = indexed
+
+        self._members = _MeshIndexSet._IndexedMembers(
+            members_indexed,
+            mesh_id=mesh_id,
+        )
+
+    def indexed(
+        self,
+        node_indices: ArrayLike,
+        edge_indices: ArrayLike,
+        face_indices: ArrayLike,
+        mesh_id: int,
+    ) -> "_Mesh1DCoordinateManager":
+        result = copy(self)
+        # Using `index()` avoids modifying private attributes of `result`.
+        result.index(node_indices, edge_indices, face_indices, mesh_id)
+        return result
+
+    def freeze_indexing(self) -> None:
+        if hasattr(self._members, "mesh_id"):
+            self._members = dict(self._members)
 
     def remove(
         self,
@@ -2551,6 +2798,56 @@ class _MeshConnectivityManagerBase(ABC):
         result_ids = [id(r) for r in result]
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
+
+    def index(
+        self,
+        node_indices: ArrayLike,
+        edge_indices: ArrayLike,
+        face_indices: ArrayLike,
+        mesh_id: int,
+    ) -> None:
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        node_index_mapping = {
+            old_index: new_index for new_index, old_index in enumerate(node_indices)
+        }
+        members_indexed = {}
+        for key, connectivity in self._members.items():
+            indexing = None
+            indexed = None
+            if connectivity is not None:
+                indexing = indices_dict[connectivity.location]
+            if indexing is not None:
+                new_values = connectivity.indices_by_location()[indexing]
+                new_values = np.vectorize(node_index_mapping.get)(new_values)
+                if connectivity.location_axis == 1:
+                    new_values = new_values.T
+                indexed = connectivity.copy(new_values)
+            members_indexed[key] = indexed
+
+        self._members = _MeshIndexSet._IndexedMembers(
+            members_indexed,
+            mesh_id=mesh_id,
+        )
+
+    def indexed(
+        self,
+        node_indices: ArrayLike,
+        edge_indices: ArrayLike,
+        face_indices: ArrayLike,
+        mesh_id: int,
+    ) -> "_MeshConnectivityManagerBase":
+        result = copy(self)
+        # Using `index()` avoids modifying private attributes of `result`.
+        result.index(node_indices, edge_indices, face_indices, mesh_id)
+        return result
+
+    def freeze_indexing(self) -> None:
+        if hasattr(self._members, "mesh_id"):
+            self._members = dict(self._members)
 
     def remove(
         self,
