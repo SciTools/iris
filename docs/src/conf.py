@@ -237,6 +237,7 @@ if skip_api != "1":
 
     autoapi_dirs = [module_dir]
     autoapi_root = "generated/api"
+    autoapi_template_dir = "_autoapi_templates"
     autoapi_ignore = [
         str(module_dir / "iris/tests/*"),
         str(module_dir / "iris/experimental/raster.*"),  # gdal conflicts
@@ -433,7 +434,7 @@ linkcheck_ignore = [
 ]
 
 # list of sources to exclude from the build.
-exclude_patterns = []
+exclude_patterns = ["_autoapi_templates"]
 
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
