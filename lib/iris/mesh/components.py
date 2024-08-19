@@ -1139,6 +1139,10 @@ class MeshXY(Mesh):
         return self._connectivity_manager.all_members
 
     @property
+    def timestamp(self):
+        return MAX(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
+
+    @property
     def all_coords(self):
         """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.all_members
@@ -2001,6 +2005,7 @@ class _Mesh1DCoordinateManager:
         # optional coordinates
         self.edge_x = edge_x
         self.edge_y = edge_y
+        self.timestamp = datetime.now()
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2031,6 +2036,7 @@ class _Mesh1DCoordinateManager:
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def _remove(self, **kwargs):
+        self.timestamp = datetime.now()
         result = {}
         members = self.filters(**kwargs)
 
@@ -2045,6 +2051,7 @@ class _Mesh1DCoordinateManager:
         return result
 
     def _setter(self, element, axis, coord, shape):
+        self.timestamp = datetime.now()
         axis = axis.lower()
         member = f"{element}_{axis}"
 
@@ -2138,6 +2145,7 @@ class _Mesh1DCoordinateManager:
         self._setter(element="node", axis="y", coord=coord, shape=self._node_shape)
 
     def _add(self, coords):
+        self.timestamp = datetime.now()
         member_x, member_y = coords._fields
 
         # deal with the special case where both members are changing
@@ -2377,6 +2385,7 @@ class _MeshConnectivityManagerBase(ABC):
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members = {member: None for member in self.ALL}
         self.add(*connectivities)
+        self.timestamp = datetime.now()
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2423,6 +2432,7 @@ class _MeshConnectivityManagerBase(ABC):
         # manager.
         # No warning is raised for duplicate cf_roles - user is trusted to
         # validate their outputs.
+        self.timestamp = datetime.now()
         add_dict = {}
         for connectivity in connectivities:
             if not isinstance(connectivity, Connectivity):
@@ -2564,6 +2574,7 @@ class _MeshConnectivityManagerBase(ABC):
         contains_edge=None,
         contains_face=None,
     ):
+        self.timestamp = datetime.now()
         removal_dict = self.filters(
             item=item,
             standard_name=standard_name,
@@ -2724,74 +2735,7 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
         self._metadata_manager.axis = axis
-
-        points, bounds = self._construct_access_arrays()
-        if points is None:
-            # TODO: we intend to support this in future, but it will require
-            #  extra work to refactor the parent classes.
-            msg = "Cannot yet create a MeshCoord without points."
-            raise ValueError(msg)
-
-        # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(location="node", axis=self.axis)
-        node_metadict = node_coord.metadata._asdict()
-        # Use node metadata, unless location is face/edge.
-        use_metadict = node_metadict.copy()
-        if location != "node":
-            # Location is either "edge" or "face" - get the relevant coord.
-            location_coord = self.mesh.coord(location=location, axis=axis)
-
-            # Take the MeshCoord metadata from the 'location' coord.
-            use_metadict = location_coord.metadata._asdict()
-            unit_unknown = Unit(None)
-
-            # N.B. at present, coords in a MeshXY are stored+accessed by 'axis', which
-            # means they must have a standard_name.  So ...
-            # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
-            #     identity.
-            # (b) we still want to check that location+node coords have the same
-            #     phenomenon (i.e. physical meaning identity + units), **but** ...
-            # (c) we will accept/ignore some differences : not just "var_name", but
-            #     also "long_name" *and* "attributes".  So it is *only* "standard_name"
-            #     and "units" that cause an error if they differ.
-            for key in ("standard_name", "units"):
-                bounds_value = use_metadict[key]
-                nodes_value = node_metadict[key]
-                if key == "units" and (
-                    bounds_value == unit_unknown or nodes_value == unit_unknown
-                ):
-                    # Allow "any" unit to match no-units (for now)
-                    continue
-                if bounds_value != nodes_value:
-
-                    def fix_repr(val):
-                        # Tidy values appearance by converting Unit to string, and
-                        # wrapping strings in '', but leaving other types as a
-                        # plain str() representation.
-                        if isinstance(val, Unit):
-                            val = str(val)
-                        if isinstance(val, str):
-                            val = repr(val)
-                        return val
-
-                    nodes_value, bounds_value = [
-                        fix_repr(val) for val in (nodes_value, bounds_value)
-                    ]
-                    msg = (
-                        f"Node coordinate {node_coord!r} disagrees with the "
-                        f"{location} coordinate {location_coord!r}, "
-                        f'in having a "{key}" value of {nodes_value} '
-                        f"instead of {bounds_value}."
-                    )
-                    raise ValueError(msg)
-
-        # Don't use 'coord_system' as a constructor arg, since for
-        # MeshCoords it is deduced from the mesh.
-        # (Otherwise a non-None coord_system breaks the 'copy' operation)
-        use_metadict.pop("coord_system")
-
-        # Call parent constructor to handle the common constructor args.
-        super().__init__(points, bounds=bounds, **use_metadict)
+        self._load_points_and_bounds()
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
@@ -2807,6 +2751,31 @@ class MeshCoord(AuxCoord):
     @property
     def axis(self):
         return self._metadata_manager.axis
+
+    @property
+    def points(self):
+        """The coordinate points values as a NumPy array."""
+        if self.timestamp < self._mesh.timestamp or self.timestamp is None:
+            self._load_points_and_bounds()
+        return self._values
+
+    @points.setter
+    def points(self, value):
+        if value:
+            msg = "Cannot set 'points' on a MeshCoord."
+            raise ValueError(msg)
+
+    @property
+    def bounds(self):
+        if self.timestamp < self._mesh.timestamp or self.timestamp is None:
+            self._load_points_and_bounds()
+        return self.bounds
+
+    @bounds.setter
+    def bounds(self, value):
+        if value:
+            msg = "Cannot set 'bounds' on a MeshCoord."
+            raise ValueError(msg)
 
     # Provide overrides to mimic the Coord-specific properties that are not
     # supported by MeshCoord, i.e. "coord_system" and "climatological".
@@ -3016,6 +2985,70 @@ class MeshCoord(AuxCoord):
             # Re-join lines to give the result
             result = "\n".join(lines)
         return result
+
+    def _load_points_and_bounds(self):
+        points, bounds = self._construct_access_arrays()
+        if points is None:
+            # TODO: we intend to support this in future, but it will require
+            #  extra work to refactor the parent classes.
+            msg = "Cannot yet create a MeshCoord without points."
+            raise ValueError(msg)
+
+        # Get the 'coord identity' metadata from the relevant node-coordinate.
+        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_metadict = node_coord.metadata._asdict()
+        # Use node metadata, unless location is face/edge.
+        use_metadict = node_metadict.copy()
+        if location != "node":
+            # Location is either "edge" or "face" - get the relevant coord.
+            kwargs = {f"include_{location}s": True, "axis": axis}
+            location_coord = self.mesh.coord(**kwargs)
+
+            # Take the MeshCoord metadata from the 'location' coord.
+            use_metadict = location_coord.metadata._asdict()
+            unit_unknown = Unit(None)
+
+            # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
+            # means they must have a standard_name.  So ...
+            # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
+            #     identity.
+            # (b) we still want to check that location+node coords have the same
+            #     phenomenon (i.e. physical meaning identity + units), **but** ...
+            # (c) we will accept/ignore some differences : not just "var_name", but
+            #     also "long_name" *and* "attributes".  So it is *only* "standard_name"
+            #     and "units" that cause an error if they differ.
+            for key in ("standard_name", "units"):
+                bounds_value = use_metadict[key]
+                nodes_value = node_metadict[key]
+                if key == "units" and (
+                        bounds_value == unit_unknown or nodes_value == unit_unknown
+                ):
+                    # Allow "any" unit to match no-units (for now)
+                    continue
+                if bounds_value != nodes_value:
+
+                    def fix_repr(val):
+                        # Tidy values appearance by converting Unit to string, and
+                        # wrapping strings in '', but leaving other types as a
+                        # plain str() representation.
+                        if isinstance(val, Unit):
+                            val = str(val)
+                        if isinstance(val, str):
+                            val = repr(val)
+                        return val
+
+                    nodes_value, bounds_value = [
+                        fix_repr(val) for val in (nodes_value, bounds_value)
+                    ]
+                    msg = (
+                        f"Node coordinate {node_coord!r} disagrees with the "
+                        f"{location} coordinate {location_coord!r}, "
+                        f'in having a "{key}" value of {nodes_value} '
+                        f"instead of {bounds_value}."
+                    )
+                    raise ValueError(msg)
+            super().__init__(points, bounds=bounds, **use_metadict)
+            self.timestamp = self._mesh.timestamp
 
     def _construct_access_arrays(self):
         """Build lazy points and bounds arrays.
