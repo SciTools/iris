@@ -2027,7 +2027,9 @@ class _MeshIndexSet(MeshXY):
     """
 
     # TODO: make the metadata manager a read-only view of the original Mesh.
+    #  Or maybe disconnect, since I/O will allow different long_names etc.
     # TODO: implement I/O (iris#6123).
+    # TODO: cf_role
 
     super_mesh: MeshXY | None = None
     """The :class:`MeshXY` instance that this is a view onto."""
@@ -3319,17 +3321,55 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
     def __getitem__(self, keys):
-        # Disallow any sub-indexing, permitting *only* "self[:,]".
-        # We *don't* intend here to support indexing as such : the exception is
-        # just sufficient to enable cube slicing, when it does not affect the
-        # mesh dimension.  This works because Cube.__getitem__ passes us keys
-        # "normalised" with iris.util._build_full_slice_given_keys.
-        if keys != (slice(None),):
-            msg = "Cannot index a MeshCoord."
-            raise ValueError(msg)
+        # TODO: validate keys as 1-dimensional?
+        # TODO: handle problems caused by asking for 1 index
+        #  E.g. coord[0:1] works fine, coord[0] causes errors difficult to
+        #   understand.
+        from ..experimental.mesh_coord_indexing import SETTING, Options
 
-        # Translate "self[:,]" as "self.copy()".
-        return self.copy()
+        def get_index_set():
+            return _MeshIndexSet.from_mesh(self.mesh, self.location, keys)
+
+        match SETTING.value:
+            case Options.AUX_COORD:
+                result = AuxCoord.from_coord(self)[keys]
+
+            case Options.NEW_MESH:
+                new_mesh = get_index_set().as_mesh()
+                result = self.__class__(
+                    mesh=new_mesh,
+                    location=self.location,
+                    axis=self.axis,
+                )
+
+            case Options.MESH_INDEX_SET:
+                index_set = get_index_set()
+                result = self.__class__(
+                    mesh=index_set,
+                    location=self.location,
+                    axis=self.axis,
+                )
+
+            case _:
+                message = (
+                    "Unsupported mesh_coord_indexing setting. Expected one of: "
+                    f"{Options.__members__}, got: {SETTING.value}."
+                )
+                raise NotImplementedError(message)
+
+        return result
+
+        # # Disallow any sub-indexing, permitting *only* "self[:,]".
+        # # We *don't* intend here to support indexing as such : the exception is
+        # # just sufficient to enable cube slicing, when it does not affect the
+        # # mesh dimension.  This works because Cube.__getitem__ passes us keys
+        # # "normalised" with iris.util._build_full_slice_given_keys.
+        # if keys != (slice(None),):
+        #     msg = "Cannot index a MeshCoord."
+        #     raise ValueError(msg)
+        #
+        # # Translate "self[:,]" as "self.copy()".
+        # return self.copy()
 
     def collapsed(self, dims_to_collapse=None):
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.

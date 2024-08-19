@@ -5,6 +5,7 @@
 
 """Classes for representing multi-dimensional data with metadata."""
 
+from __future__ import annotations
 from collections import OrderedDict
 import copy
 from copy import deepcopy
@@ -43,7 +44,6 @@ from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.mesh import MeshXY
 import iris.util
 import iris.warnings
 
@@ -2366,7 +2366,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def mesh(self) -> MeshXY:
+    def mesh(self) -> "iris.mesh.MeshXY":
         r"""Return the unstructured :class:`~iris.mesh.MeshXY` associated with the cube.
 
         Return the unstructured :class:`~iris.mesh.MeshXY`
