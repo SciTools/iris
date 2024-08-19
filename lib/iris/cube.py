@@ -15,6 +15,7 @@ from typing import (
     Container,
     Iterable,
     Iterator,
+    Literal,
     Mapping,
     MutableMapping,
     Optional,
@@ -42,6 +43,7 @@ from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
+from iris.mesh import MeshXY
 import iris.util
 import iris.warnings
 
@@ -2364,7 +2366,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def mesh(self):
+    def mesh(self) -> MeshXY:
         r"""Return the unstructured :class:`~iris.mesh.MeshXY` associated with the cube.
 
         Return the unstructured :class:`~iris.mesh.MeshXY`
@@ -2386,7 +2388,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def location(self):
+    def location(self) -> Literal["face", "edge", "node", None]:
         r"""Return the mesh "location" of the cube data.
 
         Return the mesh "location" of the cube data, if the cube has any

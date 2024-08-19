@@ -14,7 +14,7 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from copy import copy, deepcopy
-from typing import Iterable
+from typing import Iterable, Literal
 import warnings
 
 from cf_units import Unit
@@ -1969,7 +1969,18 @@ class MeshXY(Mesh):
         """
         return self._set_dimension_names(node, edge, face, reset=False)
 
-    def is_view_of(self, other):
+    def is_view_of(self, other: "MeshXY") -> bool:
+        """Whether this instance is either itself, or a view of the given :class:`MeshXY`.
+
+        Parameters
+        ----------
+        other : MeshXY
+            The :class:`MeshXY` to compare against.
+
+        Returns
+        -------
+        bool
+        """
         # The Mesh parent class does not implement any operations for returning
         #  alternative views of its content, so the only possible 'view' of
         #  itself IS itself.
@@ -1994,11 +2005,43 @@ class MeshXY(Mesh):
 
 
 class _MeshIndexSet(MeshXY):
-    super_mesh: MeshXY = None
-    location: str = None
-    indices: ArrayLike = None
+    """A container representing the UGRID ``cf_role``: ``location_index_set``.
+
+    A container representing the UGRID [1]_ ``cf_role``:
+    ``location_index_set``. Achieved by referencing an original :class:`MeshXY`
+    instance (:attr:`super_mesh`), together with a specific :attr:`location`
+    (``node``/``edge``/``face``) and a set of :attr:`indices`. This is strictly
+    a view onto the original :class:`MeshXY` - it does not store its own
+    coordinates or connectivities.
+
+    Instances should be created via the :meth:`from_mesh` class method, rather
+    than directly via ``__init__()``.
+
+    Warnings
+    --------
+    This class is not yet stable, hence being marked as private.
+
+    References
+    ----------
+    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    """
+
+    # TODO: make the metadata manager a read-only view of the original Mesh.
+    # TODO: implement I/O (iris#6123).
+
+    super_mesh: MeshXY | None = None
+    """The :class:`MeshXY` instance that this is a view onto."""
+
+    location: Literal["node", "edge", "face", None] = None
+    """The location on :attr:`super_mesh` that is being indexed."""
+
+    indices: ArrayLike | None = None
+    """Which elements of the :attr:`location` of :attr:`super_mesh` belong."""
 
     class _IndexedMembers(dict):
+        # Supports the read-only nature of _connectivity_manager and _coord_manager.
+        #  Replaces the `_members` attribute of the managers.
+
         def _readonly(self, *args, **kwargs):
             message = (
                 "Modification of _MeshIndexSet is forbidden - this is only "
@@ -2008,11 +2051,11 @@ class _MeshIndexSet(MeshXY):
 
         __setitem__ = _readonly
         __delitem__ = _readonly
-        pop = _readonly
+        pop = _readonly  # type: ignore[assignment]
         popitem = _readonly
         clear = _readonly
-        update = _readonly
-        setdefault = _readonly
+        update = _readonly  # type: ignore[assignment]
+        setdefault = _readonly  # type: ignore[assignment]
 
         mesh_id: int
 
@@ -2036,7 +2079,26 @@ class _MeshIndexSet(MeshXY):
         self._validate()
 
     @classmethod
-    def from_mesh(cls, mesh: MeshXY, location: str, indices: ArrayLike):
+    def from_mesh(
+        cls, mesh: MeshXY, location: Literal["node", "edge", "face"], indices: ArrayLike
+    ) -> "_MeshIndexSet":
+        """Create a new instance by indexing a :class:`MeshXY` instance.
+
+        Parameters
+        ----------
+        mesh : MeshXY
+            The :class:`MeshXY` to index. The created instance will be a view
+            onto `mesh`.
+        location : {"node", "edge", "face"}
+            The location on `mesh` that is being indexed.
+        indices : ArrayLike
+            Which elements of the `location` of `mesh` belong.
+
+        Returns
+        -------
+        _MeshIndexSet
+
+        """
         if not hasattr(mesh, "topology_dimension"):
             message = (
                 "_MeshIndexSet.from_mesh() requires a MeshXY instance, got: "
@@ -2044,8 +2106,9 @@ class _MeshIndexSet(MeshXY):
             )
             raise ValueError(message)
         else:
-            instance = copy(mesh)
-            instance.__class__ = cls
+            instance_copied = copy(mesh)
+            instance_copied.__class__ = cls
+            instance: _MeshIndexSet = instance_copied  # type: ignore[assignment]
             instance.super_mesh = mesh
             instance.location = location
             instance.indices = indices
@@ -2076,6 +2139,8 @@ class _MeshIndexSet(MeshXY):
             raise RuntimeError(message)
 
     def _calculate_node_indices(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the nodes of self.super_mesh.
         self._validate()
         if self.location == "node":
             result = self.indices
@@ -2107,6 +2172,8 @@ class _MeshIndexSet(MeshXY):
         return result
 
     def _calculate_edge_indices(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the edges of self.super_mesh.
         self._validate()
         if self.location == "edge":
             result = self.indices
@@ -2115,6 +2182,8 @@ class _MeshIndexSet(MeshXY):
         return result
 
     def _calculate_face_indices(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the faces of self.super_mesh.
         self._validate()
         if self.location == "face":
             result = self.indices
@@ -2148,28 +2217,53 @@ class _MeshIndexSet(MeshXY):
             mesh_id=id(self.super_mesh),
         )
 
-    def is_view_of(self, other):
+    def is_view_of(self, other: MeshXY) -> bool:
+        """Whether this instance is either itself, or a view of the given :class:`MeshXY`.
+
+        Parameters
+        ----------
+        other : MeshXY
+            The :class:`MeshXY` to compare against.
+
+        Returns
+        -------
+        bool
+        """
         return other is self.super_mesh or other is self
 
     def convert_to_mesh(self) -> None:
+        """Convert this instance **in-place** to be a :class:`MeshXY`.
+
+        This will no longer be a view onto another :class:`MeshXY`. All
+        connectivities and coordinates will be deep-copied.
+        """
         final_coords = self._coord_manager
-        final_coords.freeze_indexing()
+        final_coords.force_mutability()
         final_coords = deepcopy(final_coords)
 
         final_connectivities = self._connectivity_manager
-        final_connectivities.freeze_indexing()
+        final_connectivities.force_mutability()
         final_connectivities = deepcopy(final_connectivities)
 
         self._metadata_manager = deepcopy(self._metadata_manager)
         self._coord_man = final_coords
         self._connectivity_man = final_connectivities
 
-        self.__class__ = MeshXY
+        self.__class__ = MeshXY  # type: ignore[assignment]
         del self.super_mesh
         del self.location
         del self.indices
 
     def as_mesh(self) -> MeshXY:
+        """Return a :class:`MeshXY` representation of this instance.
+
+        The returned instance will no longer be a view onto another
+        :class:`MeshXY`. All connectivities and coordinates will be deep-copied.
+
+        Returns
+        -------
+        MeshXY
+        """
         result = copy(self)
         # Using `convert_to_mesh()` avoids modifying private attributes of
         #  `result`.
@@ -2302,7 +2396,7 @@ class _Mesh1DCoordinateManager:
         return Mesh1DCoords(**self._members)
 
     @property
-    def edge_coords(self):
+    def edge_coords(self) -> MeshEdgeCoords:
         return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
 
     @property
@@ -2322,7 +2416,7 @@ class _Mesh1DCoordinateManager:
         self._setter(element="edge", axis="y", coord=coord, shape=self._edge_shape)
 
     @property
-    def node_coords(self):
+    def node_coords(self) -> MeshNodeCoords:
         return MeshNodeCoords(node_x=self.node_x, node_y=self.node_y)
 
     @property
@@ -2468,6 +2562,21 @@ class _Mesh1DCoordinateManager:
         face_indices: ArrayLike,
         mesh_id: int,
     ) -> None:
+        """Permanently index the members of this coordinate manager **in-place**.
+
+        Members become read-only - this method is intended to support the creation
+        of indexed views of original meshes. See :meth:`force_mutability` for
+        undoing the read-only nature.
+
+        Parameters
+        ----------
+        node_indices, edge_indices, face_indices : ArrayLike
+            The indices to use when indexing member node, edge or face
+            coordinates respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+        """
         indices_dict = {
             "node": node_indices,
             "edge": edge_indices,
@@ -2495,12 +2604,35 @@ class _Mesh1DCoordinateManager:
         face_indices: ArrayLike,
         mesh_id: int,
     ) -> "_Mesh1DCoordinateManager":
+        """Return an indexed copy of this coordinate manager.
+
+        Members are read-only - this method is intended to support the creation
+        of indexed views of original meshes. See :meth:`force_mutability` for
+        undoing the read-only nature.
+
+        Parameters
+        ----------
+        node_indices, edge_indices, face_indices : ArrayLike
+            The indices to use when indexing member node, edge or face
+            coordinates respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+
+        Returns
+        -------
+        _Mesh1DCoordinateManager
+        """
         result = copy(self)
         # Using `index()` avoids modifying private attributes of `result`.
         result.index(node_indices, edge_indices, face_indices, mesh_id)
         return result
 
-    def freeze_indexing(self) -> None:
+    def force_mutability(self) -> None:
+        """Permanently allow modification of this instance's members **in-place**.
+
+        Intended to support the conversion of mesh views to be independent meshes.
+        """
         if hasattr(self._members, "mesh_id"):
             self._members = dict(self._members)
 
@@ -2557,7 +2689,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         return Mesh2DCoords(**self._members)
 
     @property
-    def face_coords(self):
+    def face_coords(self) -> MeshFaceCoords:
         return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
 
     @property
@@ -2806,6 +2938,21 @@ class _MeshConnectivityManagerBase(ABC):
         face_indices: ArrayLike,
         mesh_id: int,
     ) -> None:
+        """Permanently index the members of this connectivity manager **in-place**.
+
+        Members become read-only - this method is intended to support the creation
+        of indexed views of original meshes. See :meth:`force_mutability` for
+        undoing the read-only nature.
+
+        Parameters
+        ----------
+        node_indices, edge_indices, face_indices : ArrayLike
+            The indices to use when indexing member connectivities with node,
+            edge or face :attr:`~Connectivity.location` respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+        """
         indices_dict = {
             "node": node_indices,
             "edge": edge_indices,
@@ -2840,12 +2987,35 @@ class _MeshConnectivityManagerBase(ABC):
         face_indices: ArrayLike,
         mesh_id: int,
     ) -> "_MeshConnectivityManagerBase":
+        """Return an indexed copy of this connectivity manager.
+
+        Members are read-only - this method is intended to support the creation
+        of indexed views of original meshes. See :meth:`force_mutability` for
+        undoing the read-only nature.
+
+        Parameters
+        ----------
+        node_indices, edge_indices, face_indices : ArrayLike
+            The indices to use when indexing member connectivities with node,
+            edge or face :attr:`~Connectivity.location` respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+
+        Returns
+        -------
+        _MeshConnectivityManagerBase
+        """
         result = copy(self)
         # Using `index()` avoids modifying private attributes of `result`.
         result.index(node_indices, edge_indices, face_indices, mesh_id)
         return result
 
-    def freeze_indexing(self) -> None:
+    def force_mutability(self) -> None:
+        """Permanently allow modification of this instance's members **in-place**.
+
+        Intended to support the conversion of mesh views to be independent meshes.
+        """
         if hasattr(self._members, "mesh_id"):
             self._members = dict(self._members)
 
