@@ -13,6 +13,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
+from datetime import datetime
 from typing import Iterable
 import warnings
 
@@ -30,7 +31,6 @@ from ..coords import AuxCoord, _DimensionalMetadata
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import array_equal, clip_string, guess_coord_axis
 from ..warnings import IrisVagueMetadataWarning
-from datetime import datetime
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
