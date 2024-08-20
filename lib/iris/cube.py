@@ -6,6 +6,7 @@
 """Classes for representing multi-dimensional data with metadata."""
 
 from __future__ import annotations
+
 from collections import OrderedDict
 import copy
 from copy import deepcopy
