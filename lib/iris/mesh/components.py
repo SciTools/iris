@@ -1141,7 +1141,8 @@ class MeshXY(Mesh):
 
     @property
     def timestamp(self):
-        """The most recent time and date that the mesh was edited."""
+        """The most recent time and date that the mesh coordinates and or connecitivities
+        were edited."""
         return max(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
 
     @property
@@ -2742,6 +2743,11 @@ class MeshCoord(AuxCoord):
         # Held in metadata, readable as self.axis, but cannot set it.
         self._metadata_manager.axis = axis
         points, bounds, use_metadict = self._load_points_and_bounds()
+        # Don't use 'coord_system' as a constructor arg, since for
+        # MeshCoords it is deduced from the mesh.
+        # (Otherwise a non-None coord_system breaks the 'copy' operation)
+        use_metadict.pop("coord_system")
+
         super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
@@ -2774,7 +2780,7 @@ class MeshCoord(AuxCoord):
 
     @property
     def bounds(self):
-        if self.timestamp < self._mesh.timestamp or self.timestamp is None:
+        if self.timestamp < self.mesh.timestamp or self.timestamp is None:
             self.points, self.bounds, _ = self._load_points_and_bounds()
         return super().bounds
 
