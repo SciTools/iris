@@ -2741,7 +2741,7 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
         self._metadata_manager.axis = axis
-        points, bounds = self._load_points_and_bounds()
+        points, bounds, use_metadict = self._load_points_and_bounds()
         super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
@@ -2763,7 +2763,7 @@ class MeshCoord(AuxCoord):
     def points(self):
         """The coordinate points values as a NumPy array."""
         if self.timestamp < self.mesh.timestamp or self.timestamp is None:
-            self._values, _, _ = self._load_points_and_bounds()
+            self.points, self.bounds, _ = self._load_points_and_bounds()
         return super._values
 
     @points.setter
@@ -2775,7 +2775,7 @@ class MeshCoord(AuxCoord):
     @property
     def bounds(self):
         if self.timestamp < self._mesh.timestamp or self.timestamp is None:
-            _, self.bounds, _ = self._load_points_and_bounds()
+            self.points, self.bounds, _ = self._load_points_and_bounds()
         return super.bounds
 
     @bounds.setter
@@ -3008,7 +3008,7 @@ class MeshCoord(AuxCoord):
         use_metadict = node_metadict.copy()
         if self.location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            location_coord = self.mesh.coord(location=location, axis=self.axis)
+            location_coord = self.mesh.coord(location=self.location, axis=self.axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
