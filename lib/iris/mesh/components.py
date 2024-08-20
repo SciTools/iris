@@ -23,6 +23,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from iris.common.metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
+import iris.util
 
 from .. import _lazy_data as _lazy
 from ..common import CFVariableMixin, metadata_filter, metadata_manager_factory
@@ -1974,8 +1975,8 @@ class MeshXY(Mesh):
 
         Parameters
         ----------
-        other : MeshXY
-            The :class:`MeshXY` to compare against.
+        other : iris.mesh.components.MeshXY
+            The :class:`~MeshXY` to compare against.
 
         Returns
         -------
@@ -2158,9 +2159,12 @@ class _MeshIndexSet(MeshXY):
             ]
             # Doesn't matter if connectivity is transposed or not in this case.
             conn_indices = connectivity.indices[self.indices]
-            node_set = list(set(conn_indices.compressed()))
-            node_set.sort()
-            result = node_set
+            node_set = np.unique(conn_indices)
+            if iris.util.is_masked(node_set):
+                node_set_unmasked = node_set.compressed()
+            else:
+                node_set_unmasked = node_set
+            result = node_set_unmasked
         else:
             result = None
             # TODO: should this be validated earlier?
@@ -2974,6 +2978,8 @@ class _MeshConnectivityManagerBase(ABC):
                 new_values = np.vectorize(node_index_mapping.get)(new_values)
                 if connectivity.location_axis == 1:
                     new_values = new_values.T
+                if connectivity.start_index == 1:
+                    new_values = new_values + 1
                 indexed = connectivity.copy(new_values)
             members_indexed[key] = indexed
 
