@@ -3027,7 +3027,7 @@ class MeshCoord(AuxCoord):
                 bounds_value = use_metadict[key]
                 nodes_value = node_metadict[key]
                 if key == "units" and (
-                        bounds_value == unit_unknown or nodes_value == unit_unknown
+                    bounds_value == unit_unknown or nodes_value == unit_unknown
                 ):
                     # Allow "any" unit to match no-units (for now)
                     continue
