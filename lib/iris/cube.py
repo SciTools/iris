@@ -5,6 +5,8 @@
 
 """Classes for representing multi-dimensional data with metadata."""
 
+from __future__ import annotations
+
 from collections import OrderedDict
 import copy
 from copy import deepcopy
@@ -15,6 +17,7 @@ from typing import (
     Container,
     Iterable,
     Iterator,
+    Literal,
     Mapping,
     MutableMapping,
     Optional,
@@ -2364,7 +2367,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def mesh(self):
+    def mesh(self) -> "iris.mesh.MeshXY":
         r"""Return the unstructured :class:`~iris.mesh.MeshXY` associated with the cube.
 
         Return the unstructured :class:`~iris.mesh.MeshXY`
@@ -2386,7 +2389,7 @@ class Cube(CFVariableMixin):
         return result
 
     @property
-    def location(self):
+    def location(self) -> Literal["face", "edge", "node", None]:
         r"""Return the mesh "location" of the cube data.
 
         Return the mesh "location" of the cube data, if the cube has any
@@ -2890,8 +2893,7 @@ class Cube(CFVariableMixin):
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
             try:
                 new_coord = coord[coord_keys]
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
+            except iris.exceptions.MonotonicityError:
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
             cube.add_aux_coord(new_coord, new_coord_dims(coord))
@@ -2910,8 +2912,7 @@ class Cube(CFVariableMixin):
                     cube.add_aux_coord(new_coord, new_dims)
                 else:
                     cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
+            except iris.exceptions.MonotonicityError:
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
                 cube.add_aux_coord(new_coord, new_dims)
