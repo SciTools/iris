@@ -2120,6 +2120,7 @@ class _Mesh1DCoordinateManager:
     @property
     def all_members(self):
         return Mesh1DCoords(**self._members)
+
     # ELIASISCOOL
 
     @property
@@ -2837,7 +2838,6 @@ class MeshCoord(AuxCoord):
 
         return self._metadata_manager_temp
 
-
     # Provide overrides to mimic the Coord-specific properties that are not
     # supported by MeshCoord, i.e. "coord_system" and "climatological".
     # These mimic the Coord properties, but always return fixed 'null' values.
@@ -3084,7 +3084,7 @@ class MeshCoord(AuxCoord):
                 bounds_value = use_metadict[key]
                 nodes_value = node_metadict[key]
                 if key == "units" and (
-                        bounds_value == unit_unknown or nodes_value == unit_unknown
+                    bounds_value == unit_unknown or nodes_value == unit_unknown
                 ):
                     # Allow "any" unit to match no-units (for now)
                     continue
