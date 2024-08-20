@@ -30,6 +30,7 @@ from ..coords import AuxCoord, _DimensionalMetadata
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import array_equal, clip_string, guess_coord_axis
 from ..warnings import IrisVagueMetadataWarning
+from datetime import datetime
 
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
@@ -1140,7 +1141,8 @@ class MeshXY(Mesh):
 
     @property
     def timestamp(self):
-        return MAX(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
+        """The most recent time and date that the mesh was edited."""
+        return max(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
 
     @property
     def all_coords(self):
@@ -2005,6 +2007,8 @@ class _Mesh1DCoordinateManager:
         # optional coordinates
         self.edge_x = edge_x
         self.edge_y = edge_y
+        # makes a note of when the mesh coordinates were last edited, for use in
+        # ensuring MeshCoords are up to date
         self.timestamp = datetime.now()
 
     def __eq__(self, other):
@@ -2385,6 +2389,8 @@ class _MeshConnectivityManagerBase(ABC):
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members = {member: None for member in self.ALL}
         self.add(*connectivities)
+        # makes a note of when the mesh connectivities were last edited, for use in
+        # ensuring MeshCoords are up to date
         self.timestamp = datetime.now()
 
     def __eq__(self, other):
@@ -2735,7 +2741,8 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
         self._metadata_manager.axis = axis
-        self._load_points_and_bounds()
+        points, bounds = self._load_points_and_bounds()
+        super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
@@ -2755,25 +2762,25 @@ class MeshCoord(AuxCoord):
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
-        if self.timestamp < self._mesh.timestamp or self.timestamp is None:
-            self._load_points_and_bounds()
-        return self._values
+        if self.timestamp < self.mesh.timestamp or self.timestamp is None:
+            self._values, _, _ = self._load_points_and_bounds()
+        return super._values
 
     @points.setter
     def points(self, value):
-        if value:
+        if len(value) > 0:
             msg = "Cannot set 'points' on a MeshCoord."
             raise ValueError(msg)
 
     @property
     def bounds(self):
         if self.timestamp < self._mesh.timestamp or self.timestamp is None:
-            self._load_points_and_bounds()
-        return self.bounds
+            _, self.bounds, _ = self._load_points_and_bounds()
+        return super.bounds
 
     @bounds.setter
     def bounds(self, value):
-        if value:
+        if len(value) > 0 and self.bounds:
             msg = "Cannot set 'bounds' on a MeshCoord."
             raise ValueError(msg)
 
@@ -2995,20 +3002,19 @@ class MeshCoord(AuxCoord):
             raise ValueError(msg)
 
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(include_nodes=True, axis=self.axis)
+        node_coord = self.mesh.coord(location="node", axis=self.axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
         use_metadict = node_metadict.copy()
-        if location != "node":
+        if self.location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            kwargs = {f"include_{location}s": True, "axis": axis}
-            location_coord = self.mesh.coord(**kwargs)
+            location_coord = self.mesh.coord(location=location, axis=self.axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
             unit_unknown = Unit(None)
 
-            # N.B. at present, coords in a Mesh are stored+accessed by 'axis', which
+            # N.B. at present, coords in a MeshXY are stored+accessed by 'axis', which
             # means they must have a standard_name.  So ...
             # (a) the 'location' (face/edge) coord *always* has a usable phenomenon
             #     identity.
@@ -3042,13 +3048,13 @@ class MeshCoord(AuxCoord):
                     ]
                     msg = (
                         f"Node coordinate {node_coord!r} disagrees with the "
-                        f"{location} coordinate {location_coord!r}, "
+                        f"{self.location} coordinate {location_coord!r}, "
                         f'in having a "{key}" value of {nodes_value} '
                         f"instead of {bounds_value}."
                     )
                     raise ValueError(msg)
-            super().__init__(points, bounds=bounds, **use_metadict)
-            self.timestamp = self._mesh.timestamp
+            self.timestamp = self.mesh.timestamp
+            return points, bounds, use_metadict
 
     def _construct_access_arrays(self):
         """Build lazy points and bounds arrays.

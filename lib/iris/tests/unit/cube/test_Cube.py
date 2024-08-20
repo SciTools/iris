@@ -2058,6 +2058,10 @@ class Test_mesh(tests.IrisTest):
         result = self.cube.mesh
         self.assertIs(result, self.mesh)
 
+    def test_mesh_timestamp(self):
+        result = self.cube.mesh.timestamp
+
+
     def test_no_mesh(self):
         # Replace standard setUp cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
