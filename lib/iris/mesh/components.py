@@ -2764,7 +2764,7 @@ class MeshCoord(AuxCoord):
         """The coordinate points values as a NumPy array."""
         if self.timestamp < self.mesh.timestamp or self.timestamp is None:
             self.points, self.bounds, _ = self._load_points_and_bounds()
-        return super._values
+        return super().points
 
     @points.setter
     def points(self, value):
@@ -2776,7 +2776,7 @@ class MeshCoord(AuxCoord):
     def bounds(self):
         if self.timestamp < self._mesh.timestamp or self.timestamp is None:
             self.points, self.bounds, _ = self._load_points_and_bounds()
-        return super.bounds
+        return super().bounds
 
     @bounds.setter
     def bounds(self, value):
