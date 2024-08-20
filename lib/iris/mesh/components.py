@@ -1142,7 +1142,8 @@ class MeshXY(Mesh):
     @property
     def timestamp(self):
         """The most recent time and date that the mesh coordinates and or connecitivities
-        were edited."""
+        were edited.
+        """
         return max(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
 
     @property
