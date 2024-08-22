@@ -2807,7 +2807,7 @@ class MeshCoord(AuxCoord):
 
     @points.setter
     def points(self, value):
-        if len(value) != 0 or not(value is None):
+        if len(value) != 0 or not (value is None):
             msg = "Cannot set 'points' on a MeshCoord."
             raise ValueError(msg)
 
@@ -2821,7 +2821,7 @@ class MeshCoord(AuxCoord):
 
     @bounds.setter
     def bounds(self, value):
-        if len(value) != 0 or not(value is None) and self.bounds:
+        if len(value) != 0 or not (value is None) and self.bounds:
             msg = "Cannot set 'bounds' on a MeshCoord."
             raise ValueError(msg)
         else:
