@@ -65,6 +65,32 @@
       </coord>
     </coords>
     <cellMethods/>
+    <cellMeasures>
+      <cell-measure datadims="[1, 2]">
+        <cellMeasure data="[[ 350,  351,  352,  353,  354,  355,  356,  357,
+   358,  359,    0,    1,    2,    3,    4,    5,
+     6,    7,    8,    9,   10],
+ [ 710,  711,  712,  713,  714,  715,  716,  717,
+   718,  719,  360,  361,  362,  363,  364,  365,
+   366,  367,  368,  369,  370],
+ [1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077,
+  1078, 1079,  720,  721,  722,  723,  724,  725,
+   726,  727,  728,  729,  730]]" id="1f66f27e" measure="area" shape="(3, 21)" standard_name="cell_area" units="Unit('m2')" value_type="int64"/>
+      </cell-measure>
+    </cellMeasures>
+    <ancillaryVariables>
+      <ancillary-var datadims="[1, 2]">
+        <ancillaryVariable data="[[ 350,  351,  352,  353,  354,  355,  356,  357,
+   358,  359,    0,    1,    2,    3,    4,    5,
+     6,    7,    8,    9,   10],
+ [ 710,  711,  712,  713,  714,  715,  716,  717,
+   718,  719,  360,  361,  362,  363,  364,  365,
+   366,  367,  368,  369,  370],
+ [1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077,
+  1078, 1079,  720,  721,  722,  723,  724,  725,
+   726,  727,  728,  729,  730]]" id="fc39454e" shape="(3, 21)" standard_name="land_area_fraction" units="Unit('%')" value_type="int64"/>
+      </ancillary-var>
+    </ancillaryVariables>
     <data dtype="float32" shape="(4, 3, 21)" state="loaded"/>
   </cube>
 </cubes>
