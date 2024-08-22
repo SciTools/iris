@@ -17,14 +17,16 @@ import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops
 
+import iris.analysis.cartography
 from iris.warnings import IrisDefaultingWarning, IrisUserWarning
 
 
 def create_shapefile_mask(
-    geometry,
-    cube,
-    minimum_weight=0.0,
-):
+    geometry: shapely.Geometry,
+    cube: iris.cube.Cube,
+    minimum_weight: float = 0.0,
+    geometry_crs: cartopy.crs = None,
+) -> np.array:
     """Make a mask for a cube from a shape.
 
     Get the mask of the intersection between the
@@ -43,6 +45,11 @@ def create_shapefile_mask(
         to be unmasked.
         Requires geometry to be a Polygon or MultiPolygon
         Defaults to 0.0 (eg only test intersection).
+    geometry_crs : :class:`cartopy.crs`, optional
+        A :class:`~iris.coord_systems` object describing
+        the coord_system of the shapefile. Defaults to None,
+        in which case the geometry_crs is assumed to be the
+        same as the `cube`.
 
     Returns
     -------
@@ -50,6 +57,17 @@ def create_shapefile_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
 
+    Notes
+    -----
+    For best masking results, both the cube _and_ masking geometry should have a
+    coordinate reference system (CRS) defined. Masking results will be most reliable
+    when the cube and masking geometry have the same CRS.
+
+    If the cube has no coord_system, the default GeogCS is used where
+    the coordinate units are degrees. For any other coordinate units,
+    the cube **must** have a coord_system defined.
+
+    If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
     """
     from iris.cube import Cube, CubeList
 
@@ -116,7 +134,11 @@ def create_shapefile_mask(
     return mask_template
 
 
-def _transform_coord_system(geometry, cube, geometry_system=None):
+def _transform_coord_system(
+    geometry: shapely.Geometry, 
+    cube: iris.cube.Cube, 
+    geometry_crs: cartopy.crs = None
+) -> shapely.Geometry:
     """Project the shape onto another coordinate system.
 
     Parameters
@@ -125,10 +147,11 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
     cube : :class:`iris.cube.Cube`
         :class:`~iris.cube.Cube` with the coord_system to be projected to and
         a x coordinate.
-    geometry_system : :class:`iris.coord_systems`, optional
-        A :class:`~iris.coord_systems` object describing
+    geometry_crs : :class:`cartopy.crs`, optional
+        A :class:`cartopy.crs` object describing
         the coord_system of the shapefile. Defaults to None,
-        which is treated as GeogCS.
+        in which case the geometry_crs is assumed to be the
+        same as the `cube`.
 
     Returns
     -------
@@ -136,25 +159,40 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
         A transformed copy of the provided :class:`shapely.Geometry`.
 
     """
-    y_name, x_name = _cube_primary_xy_coord_names(cube)
-    import iris.analysis.cartography
+    _ , x_name = _cube_primary_xy_coord_names(cube)
 
-    DEFAULT_CS = iris.coord_systems.GeogCS(
-        iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-    )
-    target_system = cube.coord_system()
+    target_system = cube.coord_system().as_cartopy_projection()
     if not target_system:
+        # If no cube coord_system do our best to guess...
+        if (
+            cube.coord(axis="x").units == "degrees"
+            and cube.coord(axis="y").units == "degrees"
+        ):
+            # If units of degrees assume GeogCS
+            target_system = iris.coord_systems.GeogCS(
+                iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+            )
+            warnings.warn(
+                "Cube has no coord_system; using default GeogCS lat/lon.",
+                category=IrisDefaultingWarning,
+            )
+        else:
+            # For any other units, don't guess and raise an error
+            target_system = iris.coord_systems.GeogCS(
+                iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
+            )
+            raise ValueError("Cube has no coord_system; cannot guess coord_system!")
+
+    if not geometry_crs:
+        # If no geometry_crs assume it has the cube coord_system
+        geometry_crs = target_system
         warnings.warn(
-            "Cube has no coord_system; using default GeogCS lat/lon",
+            "No geometry coordinate reference system supplied; using cube coord_system instead.",
             category=IrisDefaultingWarning,
         )
-        target_system = DEFAULT_CS
-    if geometry_system is None:
-        geometry_system = DEFAULT_CS
-    target_proj = target_system.as_cartopy_projection()
-    source_proj = geometry_system.as_cartopy_projection()
 
     trans_geometry = target_proj.project_geometry(geometry, source_proj)
+
     # A GeogCS in iris can be either -180 to 180 or 0 to 360. If cube is 0-360, shift geom to match
     if (
         isinstance(target_system, iris.coord_systems.GeogCS)
@@ -165,16 +203,6 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
         trans_geometry = trans_geometry.difference(prime_meridian_line.buffer(0.00001))
         trans_geometry = shapely.transform(trans_geometry, _trans_func)
 
-    if (not isinstance(target_system, iris.coord_systems.GeogCS)) and cube.coord(
-        x_name
-    ).points[-1] > 180:
-        # this may lead to incorrect masking or not depending on projection type so warn user
-        warnings.warn(
-            """Cube has x-coordinates over 180E and a non-standard projection type.\n
-              This may lead to incorrect masking. \n
-             If the result is not as expected, you might want to transform the x coordinate points of your cube to -180-180 """,
-            category=IrisUserWarning,
-        )
     return trans_geometry
 
 
