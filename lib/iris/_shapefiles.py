@@ -135,9 +135,7 @@ def create_shapefile_mask(
 
 
 def _transform_coord_system(
-    geometry: shapely.Geometry,
-    cube: iris.cube.Cube,
-    geometry_crs: cartopy.crs = None
+    geometry: shapely.Geometry, cube: iris.cube.Cube, geometry_crs: cartopy.crs = None
 ) -> shapely.Geometry:
     """Project the shape onto another coordinate system.
 
@@ -159,7 +157,7 @@ def _transform_coord_system(
         A transformed copy of the provided :class:`shapely.Geometry`.
 
     """
-    _ , x_name = _cube_primary_xy_coord_names(cube)
+    _, x_name = _cube_primary_xy_coord_names(cube)
 
     target_system = cube.coord_system().as_cartopy_projection()
     if not target_system:
