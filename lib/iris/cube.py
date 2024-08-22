@@ -2089,7 +2089,7 @@ class Cube(CFVariableMixin):
             If ``None``, returns all coordinates.
         mesh_coords : optional
             Set to ``True`` to return only coordinates which are
-            :class:`~iris.experimental.ugrid.MeshCoord`\'s.
+            :class:`~iris.mesh.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
             If ``None``, returns all coordinates.
 
@@ -2116,7 +2116,7 @@ class Cube(CFVariableMixin):
         if mesh_coords is not None:
             # Select on mesh or non-mesh.
             mesh_coords = bool(mesh_coords)
-            # Use duck typing to avoid importing from iris.experimental.ugrid,
+            # Use duck typing to avoid importing from iris.mesh,
             # which could be a circular import.
             if mesh_coords:
                 # *only* MeshCoords
@@ -2246,7 +2246,7 @@ class Cube(CFVariableMixin):
             If ``None``, returns all coordinates.
         mesh_coords : optional
             Set to ``True`` to return only coordinates which are
-            :class:`~iris.experimental.ugrid.MeshCoord`\'s.
+            :class:`~iris.mesh.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
             If ``None``, returns all coordinates.
 
@@ -2366,18 +2366,18 @@ class Cube(CFVariableMixin):
 
     @property
     def mesh(self):
-        r"""Return the unstructured :class:`~iris.experimental.ugrid.Mesh` associated with the cube.
+        r"""Return the unstructured :class:`~iris.mesh.MeshXY` associated with the cube.
 
-        Return the unstructured :class:`~iris.experimental.ugrid.Mesh`
+        Return the unstructured :class:`~iris.mesh.MeshXY`
         associated with the cube, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`,
+        :class:`~iris.mesh.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
-        :class:`iris.experimental.ugrid.mesh.Mesh` or None
+        :class:`iris.mesh.MeshXY` or None
             The mesh of the cube
-            :class:`~iris.experimental.ugrid.MeshCoord`'s,
+            :class:`~iris.mesh.MeshCoord`'s,
             or ``None``.
 
         """
@@ -2391,14 +2391,14 @@ class Cube(CFVariableMixin):
         r"""Return the mesh "location" of the cube data.
 
         Return the mesh "location" of the cube data, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`,
+        :class:`~iris.mesh.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
         str or None
             The mesh location of the cube
-            :class:`~iris.experimental.ugrid.MeshCoords`
+            :class:`~iris.mesh.MeshCoords`
             (i.e. one of 'face' / 'edge' / 'node'), or ``None``.
 
         """
@@ -2411,14 +2411,14 @@ class Cube(CFVariableMixin):
         r"""Return the cube dimension of the mesh.
 
         Return the cube dimension of the mesh, if the cube has any
-        :class:`~iris.experimental.ugrid.MeshCoord`,
+        :class:`~iris.mesh.MeshCoord`,
         or ``None`` if it has none.
 
         Returns
         -------
         int or None
             The cube dimension which the cube
-            :class:`~iris.experimental.ugrid.MeshCoord` map to,
+            :class:`~iris.mesh.MeshCoord` map to,
             or ``None``.
 
         """
