@@ -2760,7 +2760,7 @@ class MeshCoord(AuxCoord):
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
-        self._metadata_manager.location = location
+        self._metadata_manager_temp.location = location
 
         if axis not in MeshXY.AXES:
             # The valid axes are defined by the MeshXY class.
@@ -2770,7 +2770,7 @@ class MeshCoord(AuxCoord):
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
-        self._metadata_manager.axis = axis
+        self._metadata_manager_temp.axis = axis
         points, bounds = self._load_points_and_bounds()
         use_metadict = self._load_metadata()
         # Don't use 'coord_system' as a constructor arg, since for
@@ -2806,7 +2806,7 @@ class MeshCoord(AuxCoord):
 
     @points.setter
     def points(self, value):
-        if len(value) > 0:
+        if len(value) != 0 or not(value is None):
             msg = "Cannot set 'points' on a MeshCoord."
             raise ValueError(msg)
 
@@ -2820,7 +2820,7 @@ class MeshCoord(AuxCoord):
 
     @bounds.setter
     def bounds(self, value):
-        if len(value) > 0 and self.bounds:
+        if len(value) != 0 or not(value is None) and self.bounds:
             msg = "Cannot set 'bounds' on a MeshCoord."
             raise ValueError(msg)
         else:
@@ -2830,11 +2830,13 @@ class MeshCoord(AuxCoord):
     def _metadata_manager(self):
         # An explanatory comment.
         use_metadict = self._load_metadata()
-        self._metadata_manager_temp.standard_name = something
-        # Etcetera for all standard coord metadata
-        # THIS INCLUDES DETERMINING THE CORRECT VALUE, AS IN
-        #  THE CURRENT BLOCK WITHIN _load_points_and_bounds
-
+        self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
+        self._metadata_manager_temp.long_name = use_metadict["long_name"]
+        self._metadata_manager_temp.var_name = use_metadict["var_name"]
+        self._metadata_manager_temp.units = use_metadict["units"]
+        self._metadata_manager_temp.attributes = use_metadict["attributes"]
+        self._metadata_manager_temp.coord_system = use_metadict["coord_system"]
+        self._metadata_manager_temp.climatological = use_metadict["climatological"]
         return self._metadata_manager_temp
 
 
@@ -3054,18 +3056,20 @@ class MeshCoord(AuxCoord):
             #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
-            self.timestamp = self.mesh.timestamp
-            return points, bounds
+        self.timestamp = self.mesh.timestamp
+        return points, bounds
 
     def _load_metadata(self):
+        axis = self._metadata_manager_temp.axis
+        location = self._metadata_manager_temp.location
         # Get the 'coord identity' metadata from the relevant node-coordinate.
-        node_coord = self.mesh.coord(location="node", axis=self.axis)
+        node_coord = self.mesh.coord(location="node", axis=axis)
         node_metadict = node_coord.metadata._asdict()
         # Use node metadata, unless location is face/edge.
         use_metadict = node_metadict.copy()
-        if self.location != "node":
+        if location != "node":
             # Location is either "edge" or "face" - get the relevant coord.
-            location_coord = self.mesh.coord(location=self.location, axis=self.axis)
+            location_coord = self.mesh.coord(location=location, axis=axis)
 
             # Take the MeshCoord metadata from the 'location' coord.
             use_metadict = location_coord.metadata._asdict()
@@ -3105,7 +3109,7 @@ class MeshCoord(AuxCoord):
                     ]
                     msg = (
                         f"Node coordinate {node_coord!r} disagrees with the "
-                        f"{self.location} coordinate {location_coord!r}, "
+                        f"{location} coordinate {location_coord!r}, "
                         f'in having a "{key}" value of {nodes_value} '
                         f"instead of {bounds_value}."
                     )
