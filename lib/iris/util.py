@@ -2166,7 +2166,6 @@ def mask_cube_from_shapefile(
 
     Notes
     -----
-
     To mask a cube from a shapefile, both must first be on the same coordinate system.
     Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
     The shapefile is projected to the coord system of the cube using cartopy, then each cell
