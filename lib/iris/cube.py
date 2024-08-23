@@ -3182,9 +3182,7 @@ class Cube(CFVariableMixin):
                         dim_within_coord = dims.index(dim)
                         data = np.concatenate(
                             [
-                                get_metadata(
-                                    chunk, src_metadata.name()
-                                ).core_data()
+                                get_metadata(chunk, src_metadata.name()).core_data()
                                 for chunk in chunks
                             ],
                             dim_within_coord,
