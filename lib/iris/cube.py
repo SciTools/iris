@@ -27,7 +27,6 @@ from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
 
-from iris import cube
 import iris._constraints
 from iris._data_manager import DataManager
 import iris._lazy_data as _lazy
@@ -3176,20 +3175,14 @@ class Cube(CFVariableMixin):
                     add_coord(result_coord, dims)
                     coord_mapping[id(src_coord)] = result_coord
 
-            def create_metadata(src_metadatas, add_metadata, metadata_type):
-                if metadata_type == "cell_measure":
-                    metadata_search_object = cube.Cube.cell_measure
-                elif metadata_type == "ancillary_var":
-                    metadata_search_object = cube.Cube.ancillary_variable
-                else:
-                    raise ValueError
+            def create_metadata(src_metadatas, add_metadata, get_metadata):
                 for src_metadata in src_metadatas:
                     dims = src_metadata.cube_dims(self)
                     if dim in dims:
                         dim_within_coord = dims.index(dim)
                         data = np.concatenate(
                             [
-                                metadata_search_object(
+                                get_metadata(
                                     chunk, src_metadata.name()
                                 ).core_data()
                                 for chunk in chunks
@@ -3204,12 +3197,12 @@ class Cube(CFVariableMixin):
             create_coords(self.dim_coords, result.add_dim_coord)
             create_coords(self.aux_coords, result.add_aux_coord)
             create_metadata(
-                self.cell_measures(), result.add_cell_measure, "cell_measure"
+                self.cell_measures(), result.add_cell_measure, Cube.cell_measure
             )
             create_metadata(
                 self.ancillary_variables(),
                 result.add_ancillary_variable,
-                "ancillary_var",
+                Cube.ancillary_variable,
             )
             for factory in self.aux_factories:
                 result.add_aux_factory(factory.updated(coord_mapping))
