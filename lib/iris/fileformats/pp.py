@@ -2322,7 +2322,12 @@ def as_fields(cube, field_coords=None, label_surface_fields=False):
         If None, the final two  dimensions are chosen for slicing.
 
     """
-    return (field for _, field in save_pairs_from_cube(cube, field_coords=field_coords, label_surface_fields=label_surface_fields))
+    return (
+        field
+        for _, field in save_pairs_from_cube(
+            cube, field_coords=field_coords, label_surface_fields=label_surface_fields
+        )
+    )
 
 
 def save_fields(fields, target, append: bool = False):
