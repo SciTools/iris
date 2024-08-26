@@ -100,8 +100,8 @@ class _CubeFilterCollection:
         constraints = iris._constraints.list_of_constraints(constraints)
         pairs = [_CubeFilter(constraint) for constraint in constraints]
         collection = _CubeFilterCollection(pairs)
-        for cube in cubes:
-            collection.add_cube(cube)
+        for c in cubes:
+            collection.add_cube(c)
         return collection
 
     def __init__(self, pairs):
@@ -140,8 +140,8 @@ class CubeList(list):
         # Do whatever a list does, to initialise ourself "as a list"
         super().__init__(*args, **kwargs)
         # Check that all items in the list are cubes.
-        for cube in self:
-            self._assert_is_cube(cube)
+        for c in self:
+            self._assert_is_cube(c)
 
     def __str__(self):
         """Run short :meth:`Cube.summary` on every cube."""
@@ -316,9 +316,9 @@ class CubeList(list):
         constraint_groups = dict(
             [(constraint, CubeList()) for constraint in constraints]
         )
-        for cube in cubes:
+        for c in cubes:
             for constraint, cube_list in constraint_groups.items():
-                sub_cube = constraint.extract(cube)
+                sub_cube = constraint.extract(c)
                 if sub_cube is not None:
                     cube_list.append(sub_cube)
 
@@ -402,8 +402,8 @@ class CubeList(list):
 
         # Register each of our cubes with a single ProtoCube.
         proto_cube = iris._merge.ProtoCube(self[0])
-        for cube in self[1:]:
-            proto_cube.register(cube, error_on_mismatch=True)
+        for c in self[1:]:
+            proto_cube.register(c, error_on_mismatch=True)
 
         # Extract the merged cube from the ProtoCube.
         (merged_cube,) = proto_cube.merge()
@@ -479,18 +479,18 @@ class CubeList(list):
         """
         # Register each of our cubes with its appropriate ProtoCube.
         proto_cubes_by_name = {}
-        for cube in self:
-            name = cube.standard_name
+        for c in self:
+            name = c.standard_name
             proto_cubes = proto_cubes_by_name.setdefault(name, [])
             proto_cube = None
 
             for target_proto_cube in proto_cubes:
-                if target_proto_cube.register(cube):
+                if target_proto_cube.register(c):
                     proto_cube = target_proto_cube
                     break
 
             if proto_cube is None:
-                proto_cube = iris._merge.ProtoCube(cube)
+                proto_cube = iris._merge.ProtoCube(c)
                 proto_cubes.append(proto_cube)
 
         # Emulate Python 2 behaviour.
@@ -3315,8 +3315,33 @@ class Cube(CFVariableMixin):
                     add_coord(result_coord, dims)
                     coord_mapping[id(src_coord)] = result_coord
 
+            def create_metadata(src_metadatas, add_metadata, get_metadata):
+                for src_metadata in src_metadatas:
+                    dims = src_metadata.cube_dims(self)
+                    if dim in dims:
+                        dim_within_coord = dims.index(dim)
+                        data = np.concatenate(
+                            [
+                                get_metadata(chunk, src_metadata.name()).core_data()
+                                for chunk in chunks
+                            ],
+                            dim_within_coord,
+                        )
+                        result_coord = src_metadata.copy(values=data)
+                    else:
+                        result_coord = src_metadata.copy()
+                    add_metadata(result_coord, dims)
+
             create_coords(self.dim_coords, result.add_dim_coord)
             create_coords(self.aux_coords, result.add_aux_coord)
+            create_metadata(
+                self.cell_measures(), result.add_cell_measure, Cube.cell_measure
+            )
+            create_metadata(
+                self.ancillary_variables(),
+                result.add_ancillary_variable,
+                Cube.ancillary_variable,
+            )
             for factory in self.aux_factories:
                 result.add_aux_factory(factory.updated(coord_mapping))
         return result
