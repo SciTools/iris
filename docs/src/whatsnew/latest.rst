@@ -49,7 +49,10 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@bouweandela`_ made the time coordinate categorisation functions in
-   :mod:`iris.coord_categorisation` faster. (:pull:`5999`)
+   :mod:`~iris.coord_categorisation` faster. Anyone using
+   :func:`~iris.coord_categorisation.add_categorised_coord`
+   with cftime :class:`~cftime.datetime` objects can benefit from the same
+   improvement by adding a type hint to their category funcion. (:pull:`5999`)
 
 🔥 Deprecations
 ===============
