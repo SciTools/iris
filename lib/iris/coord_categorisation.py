@@ -135,10 +135,10 @@ def add_month_fullname(cube, coord, name="month_fullname"):
 def add_month(cube, coord, name="month"):
     """Add a categorical month coordinate, values 'Jan'..'Dec'."""
 
-    def get_month_fullname(_, value: cftime.datetime) -> str:
+    def get_month_abbr(_, value: cftime.datetime) -> str:
         return calendar.month_abbr[value.month]
 
-    add_categorised_coord(cube, name, coord, get_month_fullname, units="no_unit")
+    add_categorised_coord(cube, name, coord, get_month_abbr, units="no_unit")
 
 
 def add_day_of_month(cube, coord, name="day_of_month"):
