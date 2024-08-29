@@ -62,6 +62,32 @@
       </coord>
     </coords>
     <cellMethods/>
+    <cellMeasures>
+      <cell-measure datadims="[1, 2]">
+        <cellMeasure data="[[170, 171, 172, 173, 174, 175, 176, 177, 178,
+  179, 180, 181, 182, 183, 184, 185, 186, 187,
+  188, 189, 190],
+ [530, 531, 532, 533, 534, 535, 536, 537, 538,
+  539, 540, 541, 542, 543, 544, 545, 546, 547,
+  548, 549, 550],
+ [890, 891, 892, 893, 894, 895, 896, 897, 898,
+  899, 900, 901, 902, 903, 904, 905, 906, 907,
+  908, 909, 910]]" id="1f66f27e" measure="area" shape="(3, 21)" standard_name="cell_area" units="Unit('m2')" value_type="int64"/>
+      </cell-measure>
+    </cellMeasures>
+    <ancillaryVariables>
+      <ancillary-var datadims="[1, 2]">
+        <ancillaryVariable data="[[170, 171, 172, 173, 174, 175, 176, 177, 178,
+  179, 180, 181, 182, 183, 184, 185, 186, 187,
+  188, 189, 190],
+ [530, 531, 532, 533, 534, 535, 536, 537, 538,
+  539, 540, 541, 542, 543, 544, 545, 546, 547,
+  548, 549, 550],
+ [890, 891, 892, 893, 894, 895, 896, 897, 898,
+  899, 900, 901, 902, 903, 904, 905, 906, 907,
+  908, 909, 910]]" id="fc39454e" shape="(3, 21)" standard_name="land_area_fraction" units="Unit('%')" value_type="int64"/>
+      </ancillary-var>
+    </ancillaryVariables>
     <data dtype="float32" shape="(4, 3, 21)" state="loaded"/>
   </cube>
 </cubes>

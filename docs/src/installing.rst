@@ -72,15 +72,8 @@ Once conda is installed, you can create a development environment for Iris
 using conda and then activate it.  The example commands below assume you are in
 the root directory of your local copy of Iris::
 
-  conda env create --force --file=requirements/iris.yml
+  conda env create --file=requirements/iris.yml
   conda activate iris-dev
-
-.. note::
-
-  The ``--force`` option, used when creating the environment, first removes
-  any previously existing ``iris-dev`` environment of the same name. This is
-  particularly useful when rebuilding your environment due to a change in
-  requirements.
 
 The ``requirements/iris.yml`` file defines the Iris development conda
 environment *name* and all the relevant *top level* `conda-forge` package
