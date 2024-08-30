@@ -2119,10 +2119,11 @@ class Coord(_DimensionalMetadata):
                 if axis is None:
                     return "|".join(str(i) for i in x.flatten())
 
-                # np.apply_along_axis does not work with str.join, so we
-                # need to loop through the array directly. First move (possibly
-                # multiple) axis of interest to trailing dim(s), then make a 2D
-                # array we can loop through.
+                # np.apply_along_axis combined with str.join will truncate strings in
+                # some cases (https://github.com/numpy/numpy/issues/8352), so we need to
+                # loop through the array directly. First move (possibly multiple) axis
+                # of interest to trailing dim(s), then make a 2D array we can loop
+                # through.
                 work_array = np.moveaxis(x, axis, range(-len(axis), 0))
                 out_shape = work_array.shape[: -len(axis)]
                 work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
