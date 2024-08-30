@@ -2107,8 +2107,7 @@ class Coord(_DimensionalMetadata):
         return Cell(point, bound)
 
     def collapsed(self, dims_to_collapse: Optional[Dims] = None) -> "Coord":
-        """
-        Returns a copy of this coordinate, which has been collapsed along the specified dimensions.
+        """Returns a copy of this coordinate, which has been collapsed along the specified dimensions.
 
         Replaces the points & bounds with a simple bounded region.
         """
