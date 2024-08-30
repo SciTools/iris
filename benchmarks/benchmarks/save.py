@@ -5,7 +5,7 @@
 """File saving benchmarks."""
 
 from iris import save
-from iris.experimental.ugrid import save_mesh
+from iris.mesh import save_mesh
 
 from .generate_data.ugrid import make_cube_like_2d_cubesphere
 

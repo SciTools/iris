@@ -522,7 +522,7 @@ def _get_ellipsoid(cf_grid_var):
     if datum == "unknown":
         datum = None
 
-    if not iris.FUTURE.datum_support:
+    if datum is not None and not iris.FUTURE.datum_support:
         wmsg = (
             "Ignoring a datum in netCDF load for consistency with existing "
             "behaviour. In a future version of Iris, this datum will be "
