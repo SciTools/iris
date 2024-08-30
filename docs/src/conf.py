@@ -246,6 +246,7 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cftime": ("https://unidata.github.io/cftime/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
     "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
