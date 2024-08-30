@@ -16,6 +16,7 @@ import warnings
 import cf_units
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 import pytest
 
 import iris
@@ -700,6 +701,112 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
         self.assertArrayAlmostEqual(collapsed_coord.points, da.array([2.0]))
         self.assertArrayAlmostEqual(collapsed_coord.bounds, da.array([[0.0, 4.0]]))
+
+    def test_string_masked(self):
+        points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
+        coord = AuxCoord(points)
+
+        collapsed_coord = coord.collapsed(0)
+
+        expected = "foo|--|bing"
+        self.assertEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(0)
+        expected = [
+            "0.0|40.0|80.0",
+            "10.0|50.0|90.0",
+            "20.0|60.0|100.0",
+            "30.0|70.0|110.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(1)
+        expected = [
+            "0.0|10.0|20.0|30.0",
+            "40.0|50.0|60.0|70.0",
+            "80.0|90.0|100.0|110.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_both(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed()
+        expected = ["0.0|10.0|20.0|30.0|40.0|50.0|60.0|70.0|80.0|90.0|100.0|110.0"]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed(0)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|38.0|78.0",
+            "8.0|48.0|88.0",
+            "18.0|58.0|98.0",
+            "28.0|68.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|42.0|82.0",
+            "12.0|52.0|92.0",
+            "22.0|62.0|102.0",
+            "32.0|72.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
+    def test_string_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed(1)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|8.0|18.0|28.0",
+            "38.0|48.0|58.0|68.0",
+            "78.0|88.0|98.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|12.0|22.0|32.0",
+            "42.0|52.0|62.0|72.0",
+            "82.0|92.0|102.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
+    def test_string_nd_bounds_both(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed()
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = ["-2.0|8.0|18.0|28.0|38.0|48.0|58.0|68.0|78.0|88.0|98.0|108.0"]
+        expected_upper = [
+            "2.0|12.0|22.0|32.0|42.0|52.0|62.0|72.0|82.0|92.0|102.0|112.0"
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
 
 
 class Test_is_compatible(tests.IrisTest):

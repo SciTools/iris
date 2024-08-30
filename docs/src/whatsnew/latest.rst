@@ -38,6 +38,9 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
+   fixing :issue:`3653`. (:pull:`5955`)
+
 
 💣 Incompatible Changes
 =======================
