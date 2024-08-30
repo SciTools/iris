@@ -75,7 +75,9 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ improved the new ``tracemalloc`` benchmarking (introduced
+   in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
+   as timing benchmarks. (:pull:`5981`)
 
 
 .. comment
