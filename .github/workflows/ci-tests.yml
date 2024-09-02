@@ -57,6 +57,10 @@ jobs:
       - name: "checkout"
         uses: actions/checkout@v4
 
+      - name: "print env"
+        run:
+          echo env | grep proj
+
       - name: "environment configure"
         env:
           # Maximum cache period (in weeks) before forcing a cache refresh.
@@ -127,12 +131,15 @@ jobs:
           echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
-          print(env | grep proj)
           mkdir -p $(dirname ${MPL_RC})
           echo ${MPL_RC}
           echo "backend : agg" >> ${MPL_RC}
           echo "image.cmap : viridis" >> ${MPL_RC}
           cat ${MPL_RC}
+
+      - name: "print env"
+        run:
+          echo env | grep proj
 
       - name: "iris ${{ matrix.session }}"
         env:
