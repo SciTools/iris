@@ -127,6 +127,7 @@ jobs:
           echo "test_data_dir = ${HOME}/iris-test-data/test_data" >> ${SITE_CFG}
           echo "doc_dir = ${GITHUB_WORKSPACE}/docs" >> ${SITE_CFG}
           cat ${SITE_CFG}
+          print(env | grep proj)
           mkdir -p $(dirname ${MPL_RC})
           echo ${MPL_RC}
           echo "backend : agg" >> ${MPL_RC}
