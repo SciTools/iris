@@ -15,6 +15,8 @@ from iris import _concatenate
     "a,b,eq",
     [
         (np.arange(2), da.arange(2), True),
+        (np.arange(2), np.arange(2).reshape((1, 2)), False),
+        (da.arange(2), da.arange(2).reshape((1, 2)), False),
         (np.array([1], dtype=np.float32), np.array([1], dtype=bool), True),
         (np.array([np.nan, 1.0]), np.array([np.nan, 1.0]), True),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 1]), True),
@@ -53,8 +55,8 @@ def test_compute_hashes(a, b, eq):
 
 
 def test_arrayhash_equal_incompatible_chunks_raises():
-    hash1 = _concatenate._ArrayHash(1, chunks=(1, 1))
-    hash2 = _concatenate._ArrayHash(1, chunks=(2,))
+    hash1 = _concatenate._ArrayHash(1, chunks=((1, 1),))
+    hash2 = _concatenate._ArrayHash(1, chunks=((2,),))
     msg = r"Unable to compare arrays with different chunks.*"
     with pytest.raises(ValueError, match=msg):
         hash1 == hash2

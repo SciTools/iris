@@ -437,6 +437,13 @@ class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, self.__class__):
             raise TypeError(f"Unable to compare {repr(self)} to {repr(other)}")
+
+        def shape(chunks):
+            return tuple(sum(c) for c in chunks)
+
+        if shape(self.chunks) != shape(other.chunks):
+            return False
+
         if self.chunks != other.chunks:
             raise ValueError(
                 "Unable to compare arrays with different chunks: "
@@ -499,7 +506,7 @@ def _compute_hashes(
             same_dtype_arrays = group
         if any(isinstance(a, da.Array) for a in same_dtype_arrays):
             # Unify chunks as the hash depends on the chunks.
-            indices = tuple(range(group[0].ndim))[::-1]
+            indices = tuple(range(group[0].ndim))
             # Because all arrays in a group have the same shape, `indices`
             # are the same for all of them. Providing `indices` as a tuple
             # instead of letters is easier to do programmatically.
