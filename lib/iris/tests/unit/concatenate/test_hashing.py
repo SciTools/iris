@@ -49,7 +49,6 @@ from iris import _concatenate
     ],
 )
 def test_compute_hashes(a, b, eq):
-    print(a, b)
     hashes = _concatenate._compute_hashes({"a": a, "b": b})
     assert eq == (hashes["a"] == hashes["b"])
 
