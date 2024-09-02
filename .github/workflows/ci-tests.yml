@@ -59,7 +59,7 @@ jobs:
 
       - name: "print env"
         run:
-          echo env | grep proj
+          echo env
 
       - name: "environment configure"
         env:
