@@ -17,13 +17,23 @@ All the functions provided here add a new coordinate to a cube.
 
 import calendar
 import collections
+import inspect
+from typing import Callable
 
+import cftime
 import numpy as np
 
 import iris.coords
+import iris.cube
 
 
-def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
+def add_categorised_coord(
+    cube: iris.cube.Cube,
+    name: str,
+    from_coord: iris.coords.Coord | str,
+    category_function: Callable,
+    units: str = "1",
+) -> None:
     """Add a new coordinate to a cube, by categorising an existing one.
 
     Make a new :class:`iris.coords.AuxCoord` from mapped values, and add
@@ -32,31 +42,38 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     Parameters
     ----------
     cube : :class:`iris.cube.Cube`
-        The cube containing 'from_coord'.  The new coord will be added into it.
+        The cube containing 'from_coord'. The new coord will be added into it.
     name : str
         Name of the created coordinate.
     from_coord : :class:`iris.coords.Coord` or str
         Coordinate in 'cube', or the name of one.
     category_function : callable
-        Function(coordinate, value), returning a category value for a
-        coordinate point-value.
+        Function(coordinate, value), returning a category value for a coordinate
+        point-value. If ``value`` has a type hint :obj:`cftime.datetime`, the
+        coordinate points are translated to :obj:`cftime.datetime` s before
+        calling ``category_function``.
     units : str, default="1"
         Units of the category value, typically 'no_unit' or '1'.
-
     """
     # Interpret coord, if given as a name
-    if isinstance(from_coord, str):
-        from_coord = cube.coord(from_coord)
+    coord = cube.coord(from_coord) if isinstance(from_coord, str) else from_coord
 
     if len(cube.coords(name)) > 0:
         msg = 'A coordinate "%s" already exists in the cube.' % name
         raise ValueError(msg)
 
+    # Translate the coordinate points to cftime datetimes if requested.
+    value_param = list(inspect.signature(category_function).parameters.values())[1]
+    if issubclass(value_param.annotation, cftime.datetime):
+        points = coord.units.num2date(coord.points, only_use_cftime_datetimes=True)
+    else:
+        points = coord.points
+
     # Construct new coordinate by mapping values, using numpy.vectorize to
     # support multi-dimensional coords.
     # Test whether the result contains strings. If it does we must manually
     # force the dtype because of a numpy bug (see numpy #3270 on GitHub).
-    result = category_function(from_coord, from_coord.points.ravel()[0])
+    result = category_function(coord, points.ravel()[0])
     if isinstance(result, str):
         str_vectorised_fn = np.vectorize(category_function, otypes=[object])
 
@@ -67,14 +84,14 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
     else:
         vectorised_fn = np.vectorize(category_function)
     new_coord = iris.coords.AuxCoord(
-        vectorised_fn(from_coord, from_coord.points),
+        vectorised_fn(coord, points),
         units=units,
-        attributes=from_coord.attributes.copy(),
+        attributes=coord.attributes.copy(),
     )
     new_coord.rename(name)
 
     # Add into the cube
-    cube.add_aux_coord(new_coord, cube.coord_dims(from_coord))
+    cube.add_aux_coord(new_coord, cube.coord_dims(coord))
 
 
 # ======================================
@@ -84,78 +101,62 @@ def add_categorised_coord(cube, name, from_coord, category_function, units="1"):
 # coordinates only
 #
 
-
-# Private "helper" function
-def _pt_date(coord, time):
-    """Return the datetime of a time-coordinate point.
-
-    Parameters
-    ----------
-    coord : Coord
-        Coordinate (must be Time-type).
-    time : float
-        Value of a coordinate point.
-
-    Returns
-    -------
-    cftime.datetime
-
-    """
-    # NOTE: All of the currently defined categorisation functions are
-    # calendar operations on Time coordinates.
-    return coord.units.num2date(time, only_use_cftime_datetimes=True)
-
-
 # --------------------------------------------
 # Time categorisations : calendar date components
 
 
 def add_year(cube, coord, name="year"):
     """Add a categorical calendar-year coordinate."""
-    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).year)
+
+    def get_year(_, value: cftime.datetime) -> int:
+        return value.year
+
+    add_categorised_coord(cube, name, coord, get_year)
 
 
 def add_month_number(cube, coord, name="month_number"):
     """Add a categorical month coordinate, values 1..12."""
-    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).month)
+
+    def get_month_number(_, value: cftime.datetime) -> int:
+        return value.month
+
+    add_categorised_coord(cube, name, coord, get_month_number)
 
 
 def add_month_fullname(cube, coord, name="month_fullname"):
     """Add a categorical month coordinate, values 'January'..'December'."""
-    add_categorised_coord(
-        cube,
-        name,
-        coord,
-        lambda coord, x: calendar.month_name[_pt_date(coord, x).month],
-        units="no_unit",
-    )
+
+    def get_month_fullname(_, value: cftime.datetime) -> str:
+        return calendar.month_name[value.month]
+
+    add_categorised_coord(cube, name, coord, get_month_fullname, units="no_unit")
 
 
 def add_month(cube, coord, name="month"):
     """Add a categorical month coordinate, values 'Jan'..'Dec'."""
-    add_categorised_coord(
-        cube,
-        name,
-        coord,
-        lambda coord, x: calendar.month_abbr[_pt_date(coord, x).month],
-        units="no_unit",
-    )
+
+    def get_month_abbr(_, value: cftime.datetime) -> str:
+        return calendar.month_abbr[value.month]
+
+    add_categorised_coord(cube, name, coord, get_month_abbr, units="no_unit")
 
 
 def add_day_of_month(cube, coord, name="day_of_month"):
     """Add a categorical day-of-month coordinate, values 1..31."""
-    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).day)
+
+    def get_day_of_month(_, value: cftime.datetime) -> int:
+        return value.day
+
+    add_categorised_coord(cube, name, coord, get_day_of_month)
 
 
 def add_day_of_year(cube, coord, name="day_of_year"):
     """Add a categorical day-of-year coordinate, values 1..365 (1..366 in leap years)."""
-    # Note: cftime.datetime objects return a normal tuple from timetuple(),
-    # unlike datetime.datetime objects that return a namedtuple.
-    # Index the time tuple (element 7 is day of year) instead of using named
-    # element tm_yday.
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).timetuple()[7]
-    )
+
+    def get_day_of_year(_, value: cftime.datetime) -> int:
+        return value.timetuple().tm_yday
+
+    add_categorised_coord(cube, name, coord, get_day_of_year)
 
 
 # --------------------------------------------
@@ -164,31 +165,29 @@ def add_day_of_year(cube, coord, name="day_of_year"):
 
 def add_weekday_number(cube, coord, name="weekday_number"):
     """Add a categorical weekday coordinate, values 0..6  [0=Monday]."""
-    add_categorised_coord(
-        cube, name, coord, lambda coord, x: _pt_date(coord, x).dayofwk
-    )
+
+    def get_weekday_number(_, value: cftime.datetime) -> int:
+        return value.dayofwk
+
+    add_categorised_coord(cube, name, coord, get_weekday_number)
 
 
 def add_weekday_fullname(cube, coord, name="weekday_fullname"):
     """Add a categorical weekday coordinate, values 'Monday'..'Sunday'."""
-    add_categorised_coord(
-        cube,
-        name,
-        coord,
-        lambda coord, x: calendar.day_name[_pt_date(coord, x).dayofwk],
-        units="no_unit",
-    )
+
+    def get_weekday_fullname(_, value: cftime.datetime) -> str:
+        return calendar.day_name[value.dayofwk]
+
+    add_categorised_coord(cube, name, coord, get_weekday_fullname, units="no_unit")
 
 
 def add_weekday(cube, coord, name="weekday"):
     """Add a categorical weekday coordinate, values 'Mon'..'Sun'."""
-    add_categorised_coord(
-        cube,
-        name,
-        coord,
-        lambda coord, x: calendar.day_abbr[_pt_date(coord, x).dayofwk],
-        units="no_unit",
-    )
+
+    def get_weekday(_, value: cftime.datetime) -> str:
+        return calendar.day_abbr[value.dayofwk]
+
+    add_categorised_coord(cube, name, coord, get_weekday, units="no_unit")
 
 
 # --------------------------------------------
@@ -197,7 +196,11 @@ def add_weekday(cube, coord, name="weekday"):
 
 def add_hour(cube, coord, name="hour"):
     """Add a categorical hour coordinate, values 0..23."""
-    add_categorised_coord(cube, name, coord, lambda coord, x: _pt_date(coord, x).hour)
+
+    def get_hour(_, value: cftime.datetime) -> int:
+        return value.hour
+
+    add_categorised_coord(cube, name, coord, get_hour)
 
 
 # ----------------------------------------------
@@ -319,9 +322,8 @@ def add_season(cube, coord, name="season", seasons=("djf", "mam", "jja", "son"))
     month_season_numbers = _month_season_numbers(seasons)
 
     # Define a categorisation function.
-    def _season(coord, value):
-        dt = _pt_date(coord, value)
-        return seasons[month_season_numbers[dt.month]]
+    def _season(_, value: cftime.datetime) -> str:
+        return seasons[month_season_numbers[value.month]]
 
     # Apply the categorisation.
     add_categorised_coord(cube, name, coord, _season, units="no_unit")
@@ -357,9 +359,8 @@ def add_season_number(
     month_season_numbers = _month_season_numbers(seasons)
 
     # Define a categorisation function.
-    def _season_number(coord, value):
-        dt = _pt_date(coord, value)
-        return month_season_numbers[dt.month]
+    def _season_number(_, value: cftime.datetime) -> int:
+        return month_season_numbers[value.month]
 
     # Apply the categorisation.
     add_categorised_coord(cube, name, coord, _season_number)
@@ -401,10 +402,9 @@ def add_season_year(
     )
 
     # Define a categorisation function.
-    def _season_year(coord, value):
-        dt = _pt_date(coord, value)
-        year = dt.year
-        year += month_year_adjusts[dt.month]
+    def _season_year(_, value: cftime.datetime) -> int:
+        year = value.year
+        year += month_year_adjusts[value.month]
         return year
 
     # Apply the categorisation.
@@ -432,10 +432,7 @@ def add_season_membership(cube, coord, season, name="season_membership"):
     """
     months = _months_in_season(season)
 
-    def _season_membership(coord, value):
-        dt = _pt_date(coord, value)
-        if dt.month in months:
-            return True
-        return False
+    def _season_membership(_, value: cftime.datetime) -> bool:
+        return value.month in months
 
     add_categorised_coord(cube, name, coord, _season_membership)

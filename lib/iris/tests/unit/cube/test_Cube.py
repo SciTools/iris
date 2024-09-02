@@ -1207,6 +1207,22 @@ def create_cube(lon_min, lon_max, bounds=False):
         ),
         2,
     )
+    cube.add_cell_measure(
+        iris.coords.CellMeasure(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "cell_area",
+            units="m2",
+        ),
+        data_dims=[1, 2],
+    )
+    cube.add_ancillary_variable(
+        iris.coords.AncillaryVariable(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "land_area_fraction",
+            units="%",
+        ),
+        data_dims=[1, 2],
+    )
     if bounds:
         cube.coord("longitude").guess_bounds()
     cube.add_aux_coord(
