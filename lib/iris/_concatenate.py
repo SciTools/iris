@@ -441,15 +441,16 @@ class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
         def shape(chunks):
             return tuple(sum(c) for c in chunks)
 
-        if shape(self.chunks) != shape(other.chunks):
-            return False
-
-        if self.chunks != other.chunks:
-            raise ValueError(
-                "Unable to compare arrays with different chunks: "
-                f"{self.chunks} != {other.chunks}"
-            )
-        return self.value == other.value
+        if shape(self.chunks) == shape(other.chunks):
+            if self.chunks != other.chunks:
+                raise ValueError(
+                    "Unable to compare arrays with different chunks: "
+                    f"{self.chunks} != {other.chunks}"
+                )
+            result = self.value == other.value
+        else:
+            result = False
+        return result
 
 
 def _array_id(
