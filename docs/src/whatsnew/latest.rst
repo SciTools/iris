@@ -58,7 +58,16 @@ This document explains the changes made to Iris for this release
    improvement by adding a type hint to their category funcion. (:pull:`5999`)
 
 #. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster if more
-   than two cubes are concatenated. (:pull:`5926`)
+   than two cubes are concatenated with equality checks on the values of
+   auxiliary coordinates, derived coordinates, cell measures, or ancillary
+   variables enabled.
+   In some cases, this may lead to higher memory use. This can be remedied by
+   reducing the number of Dask workers.
+   In rare cases, the new implementation could potentially be slower. This
+   may happen when there are very many or large auxiliary coordinates, derived
+   coordinates, cell measures, or ancillary variables to be checked that span
+   the concatenation axis. This issue can be avoided by disabling the
+   problematic check. (:pull:`5926`)
 
 🔥 Deprecations
 ===============
