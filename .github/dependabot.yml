@@ -8,8 +8,11 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      # Check for updates to GitHub Actions every weekday
-      interval: "daily"
+      # Check later in the week - the upstream dependabot check in `workflows` runs deliberately early in the week.
+      #  Therefore allowing time for the `workflows` update to be merged-and-released first.
+      interval: "weekly"
+      day: "thursday"
+      time: "01:00"
+      timezone: "Europe/London"
     labels:
-      - "New: Pull Request"
       - "Bot"
