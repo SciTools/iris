@@ -38,6 +38,11 @@ from iris import _concatenate
             np.ma.array([1, 3], mask=[0, 1], fill_value=10),
             True,
         ),
+        (
+            np.ma.masked_array([1], mask=[True]),
+            np.array([np.ma.default_fill_value(np.dtype("int64"))]),
+            False,
+        ),
         (np.array(["a", "b"]), np.array(["a", "b"]), True),
         (np.array(["a"]), np.array(["b"]), False),
         (da.asarray(["a", "b"], chunks=1), da.asarray(["a", "b"], chunks=1), True),

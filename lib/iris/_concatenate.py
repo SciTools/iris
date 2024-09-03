@@ -305,18 +305,19 @@ def _hash_ndarray(a: np.ndarray) -> np.ndarray:
         An array of shape (1,) containing the hash value.
 
     """
-    # Fill masked arrays with the default fill_value so different values under
-    # the mask and the value of the fill_value attribute do not affect the hash.
-    if isinstance(a, np.ma.MaskedArray):
-        a = np.ma.masked_array(
-            a.filled(np.ma.default_fill_value(a.dtype)),
-            mask=a.mask,
-            shrink=False,
-        )
-    # Hash the bytes representing the array data.
-    hash = xxh3_64(a.data.tobytes())
     # Include the array dtype as it is not preserved by `ndarray.tobytes()`.
-    hash.update(str(a.dtype).encode("utf-8"))
+    hash = xxh3_64(f"dtype={a.dtype}".encode("utf-8"))
+
+    # Hash the bytes representing the array data.
+    hash.update(b"data=")
+    if isinstance(a, np.ma.MaskedArray):
+        # Hash only the unmasked data
+        hash.update(a.compressed().tobytes())
+        # Hash the mask
+        hash.update(b"mask=")
+        hash.update(a.mask.tobytes())
+    else:
+        hash.update(a.tobytes())
     return np.frombuffer(hash.digest(), dtype=np.int64)
 
 
