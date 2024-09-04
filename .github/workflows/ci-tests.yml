@@ -99,7 +99,7 @@ jobs:
           cache_build: 2
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
-          install_packages: "cartopy nox pip"
+          install_packages: "cartopy=0.23.0 nox pip"
 
       - name: "conda info"
         run: |
