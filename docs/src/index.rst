@@ -82,7 +82,7 @@ For more information see :ref:`why_iris`.
         Browse full Iris functionality by module.
 
         +++
-        .. button-ref:: generated/api/iris
+        .. button-ref:: generated/api/iris/index
             :ref-type: doc
             :color: primary
             :outline:
@@ -200,7 +200,7 @@ The legacy support resources:
    :maxdepth: 1
    :hidden:
 
-   Iris API <generated/api/iris>
+   Iris API <generated/api/iris/index>
 
 
 .. todolist::

@@ -28,10 +28,12 @@ except ImportError:
 class Test(tests.IrisTest):
     def setUp(self):
         cube = stock.simple_3d()[:, :1, :1]
-        #: The data from which to get the levels.
         self.src_levels = cube.copy()
-        #: The data to interpolate.
+        """The data from which to get the levels."""
+
         self.cube = cube.copy()
+        """The data to interpolate."""
+
         self.cube.rename("foobar")
         self.cube *= 10
         self.coord = self.src_levels.coord("wibble")

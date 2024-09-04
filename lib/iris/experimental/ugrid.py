@@ -132,8 +132,9 @@ class ParseUGridOnLoad(threading.local):
         yield
 
 
-#: Run-time switch for experimental UGRID-aware NetCDF loading. See :class:`~iris.mesh.load.ParseUGridOnLoad`.
 PARSE_UGRID_ON_LOAD = ParseUGridOnLoad()
+"""Run-time switch for experimental UGRID-aware NetCDF loading.
+   See :class:`~iris.mesh.load.ParseUGridOnLoad`."""
 
 
 __all__ = [

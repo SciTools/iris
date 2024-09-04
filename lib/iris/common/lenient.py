@@ -17,14 +17,14 @@ __all__ = [
 ]
 
 
-#: Default _Lenient services global activation state.
 _LENIENT_ENABLE_DEFAULT = True
+"""Default _Lenient services global activation state."""
 
-#: Default Lenient maths feature state.
 _LENIENT_MATHS_DEFAULT = True
+"""Default Lenient maths feature state."""
 
-#: Protected _Lenient internal non-client, non-service keys.
 _LENIENT_PROTECTED = ("active", "enable")
+"""Protected _Lenient internal non-client, non-service keys."""
 
 
 def _lenient_client(*dargs, services=None):
@@ -654,8 +654,8 @@ class _Lenient(threading.local):
             raise ValueError(emsg)
 
 
-#: (Private) Instance that manages all Iris run-time lenient client and service options.
 _LENIENT = _Lenient()
+"""(Private) Instance that manages all Iris run-time lenient client and service options."""
 
-#: (Public) Instance that manages all Iris run-time lenient features.
 LENIENT = Lenient()
+"""(Public) Instance that manages all Iris run-time lenient features."""

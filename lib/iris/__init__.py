@@ -243,16 +243,14 @@ class Future(threading.local):
             self.__dict__.update(current_state)
 
 
-#: Object containing all the Iris run-time options.
 FUTURE = Future()
+"""Object containing all the Iris run-time options."""
 
-
-# Initialise the site configuration dictionary.
-#: Iris site configuration dictionary.
 site_configuration: dict[
     Literal["cf_profile", "cf_patch", "cf_patch_conventions"],
     Callable | Literal[False] | None,
 ] = {}
+"""Initialise the site configuration dictionary."""
 
 try:
     from iris.site_config import update as _update

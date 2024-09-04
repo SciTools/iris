@@ -93,18 +93,15 @@ _LBUSER_DTYPE_LOOKUP = {
     "default": ">f{word_depth}",
 }
 
-#: Codes used in STASH_GRID which indicate the x coordinate is on the
-#: edge of the cell.
 X_COORD_U_GRID = (11, 18, 27)
+"""Codes used in STASH_GRID which indicate the x coordinate is on the edge of the cell."""
 
-#: Codes used in STASH_GRID which indicate the y coordinate is on the
-#: edge of the cell.
 Y_COORD_V_GRID = (11, 19, 28)
+"""Codes used in STASH_GRID which indicate the y coordinate is on the edge of the cell."""
 
-#: Grid codes found in the STASH master which are currently known to be
-#: handled correctly. A warning is issued if a grid is found which is not
-#: handled.
 HANDLED_GRIDS = (1, 2, 3, 4, 5, 21, 26, 29) + X_COORD_U_GRID + Y_COORD_V_GRID
+"""Grid codes found in the STASH master which are currently known to be handled correctly.
+   A warning is issued if a grid is found which is not handled."""
 
 # REAL constants header names as described by UM documentation paper F3.
 # NB. These are zero-based indices as opposed to the one-based indices
@@ -313,8 +310,9 @@ class FFHeader:
         FFHeader object.
 
         """
-        #: File name of the FieldsFile.
         self.ff_filename = filename
+        """File name of the FieldsFile."""
+
         self._word_depth = word_depth
 
         # Read the FF header data

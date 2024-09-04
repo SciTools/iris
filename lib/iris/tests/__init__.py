@@ -84,8 +84,8 @@ try:
 except ImportError:
     STRATIFY_AVAILABLE = False
 
-#: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+"""Basepath for test results."""
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")

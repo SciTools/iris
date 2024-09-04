@@ -76,3 +76,11 @@ repos:
       - id: numpydoc-validation
         exclude: "^lib/iris/tests/|docs/gallery_code/"
         types: [file, python]
+
+-   repo: local
+    hooks:
+    -   id: check-attribute-comment
+        name: use triple quote docstring proceding attribute
+        types: [python]
+        entry: '#:'
+        language: pygrep

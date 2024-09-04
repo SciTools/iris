@@ -59,8 +59,8 @@ from . import logger
 # We could use an __all__, but we don't want to maintain one here
 logger
 
-# Standard CML spatio-temporal axis names.
 SPATIO_TEMPORAL_AXES = ["t", "z", "y", "x"]
+"""Standard CML spatio-temporal axis names."""
 
 # The CF-meaningful attributes which may appear on a data variable.
 _CF_ATTRS = [
@@ -109,6 +109,8 @@ _UKMO_DATA_ATTRS = ["STASH", "um_stash_source", "ukmo__process_flags"]
 #  for the deprecation of Rotated Mercator in coord_systems.py and
 #  _nc_load_rules/helpers.py .
 CF_CONVENTIONS_VERSION = "CF-1.7"
+"""CF Conventions Version."""
+
 
 _FactoryDefn = collections.namedtuple(
     "_FactoryDefn", ("primary", "std_name", "formula_terms_format")
@@ -271,9 +273,9 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-# NOTE : this matches :class:`iris.mesh.MeshXY.ELEMENTS`,
-# but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
+"""This matches :class:`iris.experimental.ugrid.mesh.MeshXY.ELEMENTS`
+   but in the preferred order for coord/connectivity variables in the file."""
 
 
 class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
@@ -353,28 +355,37 @@ class Saver:
             raise ValueError("Unknown netCDF file format, got %r" % netcdf_format)
 
         # All persistent variables
-        #: CF name mapping with iris coordinates
+
         self._name_coord_map = CFNameCoordMap()
-        #: Map of dimensions to characteristic coordinates with which they are identified
+        """CF name mapping with iris coordinates."""
+
         self._dim_names_and_coords = CFNameCoordMap()
-        #: List of grid mappings added to the file
+        """Map of dimensions to characteristic coordinates with which they are identified."""
+
         self._coord_systems = []
-        #: A dictionary, listing dimension names and corresponding length
+        """List of grid mappings added to the file."""
+
         self._existing_dim = {}
-        #: A map from meshes to their actual file dimensions (names).
-        # NB: might not match those of the mesh, if they were 'incremented'.
+        """A dictionary, listing dimension names and corresponding length."""
+
         self._mesh_dims = {}
-        #: A dictionary, mapping formula terms to owner cf variable name
+        """A map from meshes to their actual file dimensions (names).
+           NB: might not match those of the mesh, if they were 'incremented'."""
+
         self._formula_terms_cache = {}
-        #: Target filepath
+        """dictionary, mapping formula terms to owner cf variable name."""
+
         self.filepath = None  # this line just for the API page -- value is set later
-        #: Whether to complete delayed saves on exit.
+        """Target filepath."""
+
         self.compute = compute
-        # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
-        #: A per-file write lock to prevent dask attempting overlapping writes.
+        """Whether to complete delayed saves on exit."""
+
         self.file_write_lock = (
             None  # this line just for the API page -- value is set later
         )
+        """The file-write-lock *type* actually depends on the dask scheduler type.
+           A per-file write lock to prevent dask attempting overlapping writes."""
 
         # A list of delayed writes for lazy saving
         # a list of couples (source, target).

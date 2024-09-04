@@ -1,3 +1,4 @@
+.. include:: ../../common_links.inc
 .. _docstrings:
 
 ==========
@@ -7,7 +8,7 @@ Docstrings
 Every public object in the Iris package should have an appropriate docstring.
 This is important as the docstrings are used by developers to understand
 the code and may be read directly in the source or via the
-:doc:`../../generated/api/iris`.
+:doc:`Iris API </generated/api/iris/index>`.
 
 .. note::
    As of April 2022 we are looking to adopt `numpydoc`_ strings as standard.

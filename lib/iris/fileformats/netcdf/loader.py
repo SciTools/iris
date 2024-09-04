@@ -41,14 +41,14 @@ import iris.io
 import iris.util
 import iris.warnings
 
-# Show actions activation statistics.
 DEBUG = False
+"""Show actions activation statistics."""
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
 # An expected part of the public loader API, but includes thread safety
-#  concerns so is housed in _thread_safe_nc.
+# concerns so is housed in _thread_safe_nc.
 NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
@@ -814,6 +814,6 @@ class ChunkControl(threading.local):
 # introducing an additional context in which any cube-specific settings are
 # 'promoted' into being global ones.
 
-#: The global :class:`ChunkControl` object providing user-control of Dask chunking
-#: when Iris loads NetCDF files.
 CHUNK_CONTROL: ChunkControl = ChunkControl()
+"""The global :class:`ChunkControl` object.
+   Providing user-control of Dask chunking when Iris loads NetCDF files."""

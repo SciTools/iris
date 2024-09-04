@@ -11,13 +11,13 @@ import iris
 from iris._deprecation import warn_deprecated
 import iris.util
 
-wmsg = (
+_wmsg = (
     "iris.fileformats.dot has been deprecated and will be removed in a "
     "future release. If you make use of this functionality, please contact "
     "the Iris Developers to discuss how to retain it (which may involve "
     "reversing the deprecation)."
 )
-warn_deprecated(wmsg)
+warn_deprecated(_wmsg)
 
 _GRAPH_INDENT = " " * 4
 _SUBGRAPH_INDENT = " " * 8
@@ -48,8 +48,8 @@ def _dot_path():
     return path
 
 
-#: Whether the 'dot' program is present (required for "dotpng" output).
 DOT_AVAILABLE = _dot_path() is not None
+"""Whether the 'dot' program is present (required for "dotpng" output)."""
 
 
 def save(cube, target):

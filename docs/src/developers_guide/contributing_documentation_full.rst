@@ -43,16 +43,17 @@ achieved via::
 
     make html-noplot
 
-Another option is to skip the :doc:`../generated/api/iris` documentation creation.  This can be
-useful as it reduces the time to build the documentation, however you may have
-some build warnings as there maybe references to the API documentation.
-This can be achieved via::
+Another option is to skip the :doc:`Iris API </generated/api/iris/index>` documentation
+creation.  This can be useful as it reduces the time to build the documentation,
+however you may have some build warnings as there maybe references to the API
+documentation.  This can be achieved via::
 
     make html-noapi
 
 You can combine both the above and skip the
-:ref:`contributing.documentation.gallery` and :doc:`../generated/api/iris`
-documentation completely.  This can be achieved via::
+:ref:`contributing.documentation.gallery` and
+:doc:`Iris API </generated/api/iris/index>` documentation completely.  This can
+be achieved via::
 
     make html-quick
 

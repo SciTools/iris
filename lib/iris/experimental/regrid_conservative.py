@@ -24,17 +24,17 @@ from iris.analysis._interpolation import get_xy_dim_coords
 from iris.analysis._regrid import RectilinearRegridder, _create_cube
 from iris.util import _meshgrid
 
-wmsg = (
+_wmsg = (
     "The 'iris.experimental.regrid_conservative' package is deprecated since "
     "version 3.2, and will be removed in a future release.  Please use "
     "iris-emsf-regrid instead. "
     "See https://github.com/SciTools-incubator/iris-esmf-regrid."
 )
-warn_deprecated(wmsg)
+warn_deprecated(_wmsg)
 
 
-#: A static Cartopy Geodetic() instance for transforming to true-lat-lons.
 _CRS_TRUELATLON = ccrs.Geodetic()
+"""A static Cartopy Geodetic() instance for transforming to true-lat-lons."""
 
 
 def _convert_latlons(crs, x_array, y_array):

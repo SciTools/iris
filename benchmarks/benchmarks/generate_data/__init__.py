@@ -26,11 +26,12 @@ from warnings import warn
 from iris._lazy_data import as_concrete_data
 from iris.fileformats import netcdf
 
-#: Python executable used by :func:`run_function_elsewhere`, set via env
-#:  variable of same name. Must be path of Python within an environment that
-#:  includes Iris (including dependencies and test modules) and Mule.
 try:
     DATA_GEN_PYTHON = environ["DATA_GEN_PYTHON"]
+    """Python executable used by :func:`run_function_elsewhere`, set via env variable of same name.
+       Must be path of Python within an environment that
+       includes Iris (including dependencies and test modules) and Mule."""
+
     _ = check_output([DATA_GEN_PYTHON, "-c", "a = True"])
 except KeyError:
     error = "Env variable DATA_GEN_PYTHON not defined."

@@ -41,14 +41,14 @@ import iris.cube
 from iris.util import _meshgrid
 from iris.warnings import IrisImpossibleUpdateWarning
 
-wmsg = (
+_wmsg = (
     "The 'iris.experimental.regrid' package is deprecated since version 3.2, "
     "and will be removed in a future release.  The PointInCell class has now "
     "moved into iris.analysis.  All its other content will be withdrawn.  "
     "If you still use any of this, please contact the Iris Developers to "
     "discuss how to replace it or to retain it (reverse the deprecation)."
 )
-warn_deprecated(wmsg)
+warn_deprecated(_wmsg)
 
 
 def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
@@ -105,14 +105,14 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
             result = src_cube.regrid(grid_cube, AreaWeighted())
 
     """
-    wmsg = (
+    _wmsg = (
         "The function "
         "'iris.experimental.regrid."
         "regrid_area_weighted_rectilinear_src_and_grid' "
         "has been deprecated, and will be removed in a future release.  "
         "Please consult the docstring for details."
     )
-    warn_deprecated(wmsg)
+    warn_deprecated(_wmsg)
 
     regrid_info = _regrid_area_weighted_rectilinear_src_and_grid__prepare(
         src_cube, grid_cube

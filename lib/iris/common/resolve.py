@@ -264,62 +264,72 @@ class Resolve:
             True
 
         """
-        #: The ``lhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
         self.lhs_cube = None  # set in __call__
-        #: The ``rhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`.
+        """The ``lhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`."""
+
         self.rhs_cube = None  # set in __call__
+        """The ``rhs`` operand to be resolved into the resultant :class:`~iris.cube.Cube`."""
 
-        #: The transposed/reshaped (if required) ``lhs`` :class:`~iris.cube.Cube`, which
-        #: can be broadcast with the ``rhs`` :class:`~iris.cube.Cube`.
         self.lhs_cube_resolved = None
-        #: The transposed/reshaped (if required) ``rhs`` :class:`~iris.cube.Cube`, which
-        #: can be broadcast with the ``lhs`` :class:`~iris.cube.Cube`.
+        """The transposed/reshaped (if required)
+           ``lhs`` :class:`~iris.cube.Cube`, which
+           can be broadcast with the ``rhs`` :class:`~iris.cube.Cube`."""
+
         self.rhs_cube_resolved = None
+        """The transposed/reshaped (if required)
+           ``rhs`` :class:`~iris.cube.Cube`, which can be broadcast with the
+           ``lhs`` :class:`~iris.cube.Cube`."""
 
-        #: Categorised dim, aux and scalar coordinate items for ``lhs`` :class:`~iris.cube.Cube`.
         self.lhs_cube_category = None  # set in _metadata_resolve
-        #: Categorised dim, aux and scalar coordinate items for ``rhs`` :class:`~iris.cube.Cube`.
+        """Categorised dim, aux and scalar coordinate items for ``lhs`` :class:`~iris.cube.Cube`."""
+
         self.rhs_cube_category = None  # set in _metadata_resolve
+        """Categorised dim, aux and scalar coordinate items for ``rhs`` :class:`~iris.cube.Cube`."""
 
-        #: Categorised dim, aux and scalar coordinate items **local** to the
-        #: ``lhs`` :class:`~iris.cube.Cube` only.
         self.lhs_cube_category_local = None  # set in _metadata_resolve
-        #: Categorised dim, aux and scalar coordinate items **local** to the
-        #: ``rhs`` :class:`~iris.cube.Cube` only.
+        """Categorised dim, aux and scalar coordinate items **local** to the ``lhs`` :class:`~iris.cube.Cube` only."""
+
         self.rhs_cube_category_local = None  # set in _metadata_resolve
-        #: Categorised dim, aux and scalar coordinate items **common** to both
-        #: the ``lhs`` :class:`~iris.cube.Cube` and the ``rhs`` :class:`~iris.cube.Cube`.
+        """Categorised dim, aux and scalar coordinate items **local** to the ``rhs`` :class:`~iris.cube.Cube` only."""
+
         self.category_common = None  # set in _metadata_resolve
+        """Categorised dim, aux and scalar coordinate items
+           **common** to both the ``lhs`` :class:`~iris.cube.Cube` and
+           the ``rhs`` :class:`~iris.cube.Cube`."""
 
-        #: Analysis of dim coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`.
         self.lhs_cube_dim_coverage = None  # set in _metadata_coverage
-        #: Analysis of aux and scalar coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`.
+        """Analysis of dim coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`."""
+
         self.lhs_cube_aux_coverage = None  # set in _metadata_coverage
-        #: Analysis of dim coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`.
+        """Analysis of aux and scalar coordinates spanning the ``lhs`` :class:`~iris.cube.Cube`."""
+
         self.rhs_cube_dim_coverage = None  # set in _metadata_coverage
-        #: Analysis of aux and scalar coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`.
+        """Analysis of dim coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`."""
+
         self.rhs_cube_aux_coverage = None  # set in _metadata_coverage
+        """Analysis of aux and scalar coordinates spanning the ``rhs`` :class:`~iris.cube.Cube`."""
 
-        #: Map **common** metadata from the ``rhs`` :class:`~iris.cube.Cube` to
-        #: the ``lhs`` :class:`~iris.cube.Cube` if ``lhs-rank`` >= ``rhs-rank``,
-        #: otherwise map **common** metadata from the ``lhs`` :class:`~iris.cube.Cube`
-        #: to the ``rhs`` :class:`~iris.cube.Cube`.
         self.map_rhs_to_lhs = None  # set in __call__
+        """Map **common** metadata from the ``rhs`` :class:`~iris.cube.Cube` to the ``lhs`` :class:`~iris.cube.Cube`
+           if ``lhs-rank`` >= ``rhs-rank``, otherwise map **common** metadata from
+           the ``lhs`` :class:`~iris.cube.Cube` to the
+           ``rhs`` :class:`~iris.cube.Cube`."""
 
-        #: Mapping of the dimensions between **common** metadata for the :class:`~iris.cube.Cube`
-        #: operands, where the direction of the mapping is governed by
-        #: :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`.
         self.mapping = None  # set in _metadata_mapping
+        """Mapping of the dimensions between **common** metadata.
+           For the :class:`~iris.cube.Cube` operands, where the direction of the
+           mapping is governed by
+           :attr:`~iris.common.resolve.Resolve.map_rhs_to_lhs`."""
 
-        #: Cache containing a list of dim, aux and scalar coordinates prepared
-        #: and ready for creating and attaching to the resultant resolved
-        #: :class:`~iris.cube.Cube`.
         self.prepared_category = None  # set in _metadata_prepare
+        """Cache containing a list of dim, aux and scalar coordinates.
+           Prepared and ready for creating and attaching to the resultant resolved
+           :class:`~iris.cube.Cube`."""
 
-        #: Cache containing a list of aux factories prepared and ready for
-        #: creating and attaching to the resultant resolved
-        #: :class:`~iris.cube.Cube`.
         self.prepared_factories = None  # set in _metadata_prepare
+        """Cache containing a list of aux factories.
+           Prepared and ready for creating and attaching to the resultant resolved
+           :class:`~iris.cube.Cube`."""
 
         # The shape of the resultant resolved cube.
         self._broadcast_shape = None  # set in _as_compatible_cubes

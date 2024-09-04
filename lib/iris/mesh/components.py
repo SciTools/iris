@@ -34,47 +34,53 @@ from ..warnings import IrisVagueMetadataWarning
 # Configure the logger.
 logger = get_logger(__name__, propagate=True, handler=False)
 
-#: Numpy "threshold" printoptions default argument.
 NP_PRINTOPTIONS_THRESHOLD = 10
-#: Numpy "edgeitems" printoptions default argument.
+"""Numpy "threshold" printoptions default argument."""
+
 NP_PRINTOPTIONS_EDGEITEMS = 2
+"""Numpy "edgeitems" printoptions default argument."""
 
 #
 # MeshXY dimension names namedtuples.
 #
 
-#: Namedtuple for 1D mesh topology NetCDF variable dimension names.
 Mesh1DNames = namedtuple("Mesh1DNames", ["node_dimension", "edge_dimension"])
-#: Namedtuple for 2D mesh topology NetCDF variable dimension names.
+"""Namedtuple for 1D mesh topology NetCDF variable dimension names."""
+
 Mesh2DNames = namedtuple(
     "Mesh2DNames", ["node_dimension", "edge_dimension", "face_dimension"]
 )
+"""Namedtuple for 2D mesh topology NetCDF variable dimension names."""
 
 #
 # MeshXY coordinate manager namedtuples.
 #
 
-#: Namedtuple for 1D mesh :class:`~iris.coords.AuxCoord` coordinates.
 Mesh1DCoords = namedtuple("Mesh1DCoords", ["node_x", "node_y", "edge_x", "edge_y"])
-#: Namedtuple for 2D mesh :class:`~iris.coords.AuxCoord` coordinates.
+"""Namedtuple for 1D mesh :class:`~iris.coords.AuxCoord` coordinates."""
+
 Mesh2DCoords = namedtuple(
     "Mesh2DCoords",
     ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"],
 )
-#: Namedtuple for ``node`` :class:`~iris.coords.AuxCoord` coordinates.
+"""Namedtuple for 2D mesh :class:`~iris.coords.AuxCoord` coordinates."""
+
 MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
-#: Namedtuple for ``edge`` :class:`~iris.coords.AuxCoord` coordinates.
+"""Namedtuple for ``node`` :class:`~iris.coords.AuxCoord` coordinates."""
+
 MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
-#: Namedtuple for ``face`` :class:`~iris.coords.AuxCoord` coordinates.
+"""Namedtuple for ``edge`` :class:`~iris.coords.AuxCoord` coordinates."""
+
 MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
+"""Namedtuple for ``face`` :class:`~iris.coords.AuxCoord` coordinates."""
 
 #
 # MeshXY connectivity manager namedtuples.
 #
 
-#: Namedtuple for 1D mesh :class:`~iris.mesh.Connectivity` instances.
 Mesh1DConnectivities = namedtuple("Mesh1DConnectivities", ["edge_node"])
-#: Namedtuple for 2D mesh :class:`~iris.mesh.Connectivity` instances.
+"""Namedtuple for 1D mesh :class:`~iris.mesh.Connectivity` instances."""
+
 Mesh2DConnectivities = namedtuple(
     "Mesh2DConnectivities",
     [
@@ -86,6 +92,7 @@ Mesh2DConnectivities = namedtuple(
         "boundary_node",
     ],
 )
+"""Namedtuple for 2D mesh :class:`~iris.mesh.Connectivity` instances."""
 
 
 class Connectivity(_DimensionalMetadata):
@@ -638,12 +645,14 @@ class MeshXY(Mesh):
     """
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
-    #: The supported mesh axes.
     AXES = ("x", "y")
-    #: Valid range of values for ``topology_dimension``.
+    """The supported mesh axes."""
+
     TOPOLOGY_DIMENSIONS = (1, 2)
-    #: Valid mesh elements.
+    """Valid range of values for ``topology_dimension``."""
+
     ELEMENTS = ("edge", "node", "face")
+    """Valid mesh elements."""
 
     def __init__(
         self,

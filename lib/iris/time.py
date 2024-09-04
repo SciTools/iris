@@ -40,11 +40,11 @@ class PartialDateTime:
         "microsecond",
     )
 
-    #: A dummy value provided as a workaround to allow comparisons with
-    #: :class:`datetime.datetime`.
-    #: See https://bugs.python.org/issue8005.
-    #: NB. It doesn't even matter what this value is.
     timetuple = None
+    """A dummy value provided as a workaround.
+       allow comparisons with :class:`datetime.datetime`.
+       See https://bugs.python.org/issue8005.
+       NB. It doesn't even matter what this value is."""
 
     def __init__(
         self,
