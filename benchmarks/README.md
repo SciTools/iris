@@ -118,6 +118,12 @@ repeats _between_ `setup()` calls using the `repeat` attribute.
 `warmup_time = 0` is also advisable since ASV performs independent re-runs to
 estimate run-time, and these will still be subject to the original problem.
 
+### Custom benchmarks
+
+Iris benchmarking implements custom benchmark types, such as a `tracemalloc`
+benchmark to measure memory growth. See [custom_bms/](./custom_bms) for more
+detail.
+
 ### Scaling / non-Scaling Performance Differences
 
 **(We no longer advocate the below for benchmarks run during CI, given the

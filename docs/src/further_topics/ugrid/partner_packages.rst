@@ -58,7 +58,7 @@ PyVista is described as "VTK for humans" - VTK is a very powerful toolkit for
 working with meshes, and PyVista brings that power into the Python ecosystem.
 GeoVista in turn makes it easy to use PyVista specifically for cartographic
 work, designed from the start with the Iris
-:class:`~iris.experimental.ugrid.MeshXY` in mind.
+:class:`~iris.mesh.MeshXY` in mind.
 
 Applications
 ------------

@@ -10,10 +10,9 @@ from dask import array as da
 import numpy as np
 
 from iris import load, load_cube, save
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-from iris.experimental.ugrid.utils import recombine_submeshes
+from iris.mesh.utils import recombine_submeshes
 
-from .. import TrackAddedMemoryAllocation, on_demand_benchmark
+from .. import on_demand_benchmark
 from ..generate_data.ugrid import BENCHMARK_DATA, make_cube_like_2d_cubesphere
 
 
@@ -102,13 +101,12 @@ class Mixin:
 
         """
         # Load source cubes (full-mesh and regions)
-        with PARSE_UGRID_ON_LOAD.context():
-            self.full_mesh_cube = load_cube(
-                self._parametrised_cache_filename(n_cubesphere, "meshcube")
-            )
-            self.region_cubes = load(
-                self._parametrised_cache_filename(n_cubesphere, "regioncubes")
-            )
+        self.full_mesh_cube = load_cube(
+            self._parametrised_cache_filename(n_cubesphere, "meshcube")
+        )
+        self.region_cubes = load(
+            self._parametrised_cache_filename(n_cubesphere, "regioncubes")
+        )
 
         # Remove all var-names from loaded cubes, which can otherwise cause
         # problems.  Also implement 'imaginary' data.
@@ -177,8 +175,7 @@ class CreateCube(Mixin):
     def time_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_create_combined_cube(self, n_cubesphere):
+    def tracemalloc_create_combined_cube(self, n_cubesphere):
         self.recombine()
 
 
@@ -189,8 +186,7 @@ class ComputeRealData(Mixin):
     def time_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_compute_data(self, n_cubesphere):
+    def tracemalloc_compute_data(self, n_cubesphere):
         _ = self.recombined_cube.data
 
 
@@ -208,8 +204,7 @@ class SaveData(Mixin):
         # Save to disk, which must compute data + stream it to file.
         self.save_recombined_cube()
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_save(self, n_cubesphere):
+    def tracemalloc_save(self, n_cubesphere):
         self.save_recombined_cube()
 
     def track_filesize_saved(self, n_cubesphere):
@@ -235,6 +230,5 @@ class FileStreamedCalc(Mixin):
         # Save to disk, which must compute data + stream it to file.
         self.save_recombined_cube()
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_stream_file2file(self, n_cubesphere):
+    def tracemalloc_stream_file2file(self, n_cubesphere):
         self.save_recombined_cube()
