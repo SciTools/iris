@@ -181,6 +181,9 @@ def tests(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
+    session.run("echo", '"NOX TEST ENV DUMP == START "', external=True)
+    session.run("env", external=True)
+    session.run("echo", '".. == END NOX TEST ENV DUMP."', external=True)
     run_args = [
         "pytest",
         "-n",
