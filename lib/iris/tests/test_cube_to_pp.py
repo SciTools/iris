@@ -371,7 +371,10 @@ class TestPPSaveRules(tests.IrisTest, tests.PPTest):
             self.assertEqual(field.blev, blev)
 
     def test_surface_field(self):
-        def setup_cube(cube):
+        def setup_cube(coord=None):
+            cube = stock.lat_lon_cube()
+            if coord:
+                cube.add_aux_coord(coord)
             temp_pp_path = iris.util.create_temp_filename(".pp")
             iris.fileformats.pp.save(
                 cube, target=temp_pp_path, label_surface_fields=True
@@ -380,16 +383,14 @@ class TestPPSaveRules(tests.IrisTest, tests.PPTest):
             return cube
 
         # check surface fields are correctly applied
-        cube = setup_cube(stock.lat_lon_cube())
+        cube = setup_cube()
         for field in cube:
             self.assertEqual(field.lbvc, 129)
             self.assertEqual(field.lblev, 9999)
 
         # check surface fields aren't incorrectly applied
-        cube = stock.lat_lon_cube()
         v_coord = iris.coords.DimCoord(standard_name="depth", units="m", points=[-5])
-        cube.add_aux_coord(v_coord)
-        cube = setup_cube(cube)
+        cube = setup_cube(v_coord)
         for field in cube:
             self.assertNotEqual(field.lbvc, 129)
             self.assertNotEqual(field.lblev, 9999)
