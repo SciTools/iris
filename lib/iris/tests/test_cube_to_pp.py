@@ -373,7 +373,9 @@ class TestPPSaveRules(tests.IrisTest, tests.PPTest):
     def test_surface_field(self):
         def setup_cube(cube):
             temp_pp_path = iris.util.create_temp_filename(".pp")
-            iris.fileformats.pp.save(cube, target=temp_pp_path, label_surface_fields=True)
+            iris.fileformats.pp.save(
+                cube, target=temp_pp_path, label_surface_fields=True
+            )
             cube = iris.fileformats.pp.load(temp_pp_path)
             return cube
 
@@ -385,9 +387,7 @@ class TestPPSaveRules(tests.IrisTest, tests.PPTest):
 
         # check surface fields aren't incorrectly applied
         cube = stock.lat_lon_cube()
-        v_coord = iris.coords.DimCoord(
-            standard_name="depth", units="m", points=[-5]
-        )
+        v_coord = iris.coords.DimCoord(standard_name="depth", units="m", points=[-5])
         cube.add_aux_coord(v_coord)
         cube = setup_cube(cube)
         for field in cube:
