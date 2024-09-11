@@ -32,7 +32,7 @@ This document explains the changes made to Iris for this release
 
 #. `@jrackham-mo`_ added :meth:`~iris.io.format_picker.FormatAgent.copy` and
    equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
-   in :issue:`6108`.
+   in :issue:`6108`, actioned in :pull:`6119`.
 
 
 🐛 Bugs Fixed
