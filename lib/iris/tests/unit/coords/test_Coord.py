@@ -9,11 +9,14 @@
 import iris.tests as tests  # isort:skip
 
 import collections
+from datetime import datetime
 from unittest import mock
 import warnings
 
+import cf_units
 import dask.array as da
 import numpy as np
+import numpy.ma as ma
 import pytest
 
 import iris
@@ -234,6 +237,163 @@ class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
         lat = DimCoord([-80, 0, 70], units="degree", long_name="other_latitude")
         lat.guess_bounds()
         self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+
+
+def test_guess_bounds_monthly_and_yearly():
+    units = cf_units.Unit("days since epoch", calendar="gregorian")
+    points = units.date2num(
+        [
+            datetime(1990, 1, 1),
+            datetime(1990, 2, 1),
+            datetime(1990, 3, 1),
+        ]
+    )
+    coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+    with pytest.raises(
+        ValueError,
+        match="Cannot guess monthly and yearly bounds simultaneously.",
+    ):
+        coord.guess_bounds(monthly=True, yearly=True)
+
+
+class Test_Guess_Bounds_Monthly:
+    def test_monthly_multiple_points_in_month(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        points = units.date2num(
+            [
+                datetime(1990, 1, 3),
+                datetime(1990, 1, 28),
+                datetime(1990, 2, 13),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError,
+            match="Cannot guess monthly bounds for a coordinate with multiple points "
+            "in a month.",
+        ):
+            coord.guess_bounds(monthly=True)
+
+    def test_monthly_non_contiguous(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+                [datetime(1990, 2, 1), datetime(1990, 3, 1)],
+                [datetime(1990, 5, 1), datetime(1990, 6, 1)],
+            ]
+        )
+        points = expected.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError, match="Cannot guess bounds for a non-contiguous coordinate."
+        ):
+            coord.guess_bounds(monthly=True)
+
+    def test_monthly_end_of_month(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+                [datetime(1990, 2, 1), datetime(1990, 3, 1)],
+                [datetime(1990, 3, 1), datetime(1990, 4, 1)],
+            ]
+        )
+        points = units.date2num(
+            [
+                datetime(1990, 1, 31),
+                datetime(1990, 2, 28),
+                datetime(1990, 3, 31),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        expected_dates = units.num2date(expected)
+        np.testing.assert_array_equal(dates, expected_dates)
+
+    def test_monthly_multiple_years(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 10, 1), datetime(1990, 11, 1)],
+            [datetime(1990, 11, 1), datetime(1990, 12, 1)],
+            [datetime(1990, 12, 1), datetime(1991, 1, 1)],
+        ]
+        expected_points = units.date2num(expected)
+        points = expected_points.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        np.testing.assert_array_equal(dates, expected)
+
+    def test_monthly_single_point(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 1, 1), datetime(1990, 2, 1)],
+        ]
+        expected_points = units.date2num(expected)
+        points = expected_points.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(monthly=True)
+        dates = units.num2date(coord.bounds)
+        np.testing.assert_array_equal(dates, expected)
+
+
+class Test_Guess_Bounds_Yearly:
+    def test_yearly_multiple_points_in_year(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        points = units.date2num(
+            [
+                datetime(1990, 1, 1),
+                datetime(1990, 2, 1),
+                datetime(1991, 1, 1),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError,
+            match="Cannot guess yearly bounds for a coordinate with multiple points "
+            "in a year.",
+        ):
+            coord.guess_bounds(yearly=True)
+
+    def test_yearly_non_contiguous(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1990, 1, 1)],
+                [datetime(1991, 1, 1), datetime(1991, 1, 1)],
+                [datetime(1994, 1, 1), datetime(1994, 1, 1)],
+            ]
+        )
+        points = expected.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        with pytest.raises(
+            ValueError, match="Cannot guess bounds for a non-contiguous coordinate."
+        ):
+            coord.guess_bounds(yearly=True)
+
+    def test_yearly_end_of_year(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = units.date2num(
+            [
+                [datetime(1990, 1, 1), datetime(1991, 1, 1)],
+                [datetime(1991, 1, 1), datetime(1992, 1, 1)],
+                [datetime(1992, 1, 1), datetime(1993, 1, 1)],
+            ]
+        )
+        points = units.date2num(
+            [
+                datetime(1990, 12, 31),
+                datetime(1991, 12, 31),
+                datetime(1992, 12, 31),
+            ]
+        )
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(yearly=True)
+        dates = units.num2date(coord.bounds)
+        expected_dates = units.num2date(expected)
+        np.testing.assert_array_equal(dates, expected_dates)
 
 
 class Test_cell(tests.IrisTest):
@@ -541,6 +701,112 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
 
         self.assertArrayAlmostEqual(collapsed_coord.points, da.array([2.0]))
         self.assertArrayAlmostEqual(collapsed_coord.bounds, da.array([[0.0, 4.0]]))
+
+    def test_string_masked(self):
+        points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
+        coord = AuxCoord(points)
+
+        collapsed_coord = coord.collapsed(0)
+
+        expected = "foo|--|bing"
+        self.assertEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(0)
+        expected = [
+            "0.0|40.0|80.0",
+            "10.0|50.0|90.0",
+            "20.0|60.0|100.0",
+            "30.0|70.0|110.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed(1)
+        expected = [
+            "0.0|10.0|20.0|30.0",
+            "40.0|50.0|60.0|70.0",
+            "80.0|90.0|100.0|110.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_both(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str))
+
+        collapsed_coord = coord.collapsed()
+        expected = ["0.0|10.0|20.0|30.0|40.0|50.0|60.0|70.0|80.0|90.0|100.0|110.0"]
+
+        self.assertArrayEqual(collapsed_coord.points, expected)
+
+    def test_string_nd_bounds_first(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed(0)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|38.0|78.0",
+            "8.0|48.0|88.0",
+            "18.0|58.0|98.0",
+            "28.0|68.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|42.0|82.0",
+            "12.0|52.0|92.0",
+            "22.0|62.0|102.0",
+            "32.0|72.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
+    def test_string_nd_bounds_second(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed(1)
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = [
+            "-2.0|8.0|18.0|28.0",
+            "38.0|48.0|58.0|68.0",
+            "78.0|88.0|98.0|108.0",
+        ]
+
+        expected_upper = [
+            "2.0|12.0|22.0|32.0",
+            "42.0|52.0|62.0|72.0",
+            "82.0|92.0|102.0|112.0",
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+
+    def test_string_nd_bounds_both(self):
+        self.setupTestArrays((3, 4))
+        coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
+
+        collapsed_coord = coord.collapsed()
+
+        # Points handling is as for non bounded case.  So just check bounds.
+        expected_lower = ["-2.0|8.0|18.0|28.0|38.0|48.0|58.0|68.0|78.0|88.0|98.0|108.0"]
+        expected_upper = [
+            "2.0|12.0|22.0|32.0|42.0|52.0|62.0|72.0|82.0|92.0|102.0|112.0"
+        ]
+
+        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
+        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
 
 
 class Test_is_compatible(tests.IrisTest):

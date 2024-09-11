@@ -298,7 +298,7 @@ How Iris Represents This
 .. seealso::
 
         Remember this is a prose summary. Precise documentation is at:
-        :mod:`iris.experimental.ugrid`.
+        :mod:`iris.mesh`.
 
 .. note::
 
@@ -310,7 +310,7 @@ The Basics
 The Iris :class:`~iris.cube.Cube` has several new members:
 
 * | :attr:`~iris.cube.Cube.mesh`
-  | The :class:`iris.experimental.ugrid.MeshXY` that describes the
+  | The :class:`iris.mesh.MeshXY` that describes the
     :class:`~iris.cube.Cube`\'s horizontal geography.
 * | :attr:`~iris.cube.Cube.location`
   | ``node``/``edge``/``face`` - the mesh element type with which this
@@ -320,10 +320,10 @@ The Iris :class:`~iris.cube.Cube` has several new members:
     indexes over the horizontal :attr:`~iris.cube.Cube.data` positions.
 
 These members will all be ``None`` for a :class:`~iris.cube.Cube` with no
-associated :class:`~iris.experimental.ugrid.MeshXY`.
+associated :class:`~iris.mesh.MeshXY`.
 
 This :class:`~iris.cube.Cube`\'s unstructured dimension has multiple attached
-:class:`iris.experimental.ugrid.MeshCoord`\s (one for each axis e.g.
+:class:`iris.mesh.MeshCoord`\s (one for each axis e.g.
 ``x``/``y``), which can be used to infer the points and bounds of any index on
 the :class:`~iris.cube.Cube`\'s unstructured dimension.
 
@@ -333,7 +333,7 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
 
         from iris.coords import AuxCoord, DimCoord
         from iris.cube import Cube
-        from iris.experimental.ugrid import Connectivity, MeshXY
+        from iris.mesh import Connectivity, MeshXY
 
         node_x = AuxCoord(
                      points=[0.0, 5.0, 0.0, 5.0, 8.0],
@@ -422,38 +422,38 @@ The Detail
 ----------
 How UGRID information is stored
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* | :class:`iris.experimental.ugrid.MeshXY`
+* | :class:`iris.mesh.MeshXY`
   | Contains all information about the mesh.
   | Includes:
 
-  * | :attr:`~iris.experimental.ugrid.MeshXY.topology_dimension`
+  * | :attr:`~iris.mesh.MeshXY.topology_dimension`
     | The maximum dimensionality of shape (1D=edge, 2D=face) supported
-      by this :class:`~iris.experimental.ugrid.MeshXY`. Determines which
-      :class:`~iris.experimental.ugrid.Connectivity`\s are required/optional
+      by this :class:`~iris.mesh.MeshXY`. Determines which
+      :class:`~iris.mesh.Connectivity`\s are required/optional
       (see below).
 
   * 1-3 collections of :class:`iris.coords.AuxCoord`\s:
 
-    * | **Required**: :attr:`~iris.experimental.ugrid.MeshXY.node_coords`
+    * | **Required**: :attr:`~iris.mesh.MeshXY.node_coords`
       | The nodes that are the basis for the mesh.
-    * | Optional: :attr:`~iris.experimental.ugrid.MeshXY.edge_coords`,
-        :attr:`~iris.experimental.ugrid.MeshXY.face_coords`
+    * | Optional: :attr:`~iris.mesh.Mesh.edge_coords`,
+        :attr:`~iris.mesh.MeshXY.face_coords`
       | For indicating the 'centres' of the edges/faces.
-      | **NOTE:** generating a :class:`~iris.experimental.ugrid.MeshCoord` from
-        a :class:`~iris.experimental.ugrid.MeshXY` currently (``Jan 2022``)
+      | **NOTE:** generating a :class:`~iris.mesh.MeshCoord` from
+        a :class:`~iris.mesh.MeshXY` currently (``Jan 2022``)
         requires centre coordinates for the given ``location``; to be rectified
         in future.
 
-  * 1 or more :class:`iris.experimental.ugrid.Connectivity`\s:
+  * 1 or more :class:`iris.mesh.Connectivity`\s:
 
     * | **Required for 1D (edge) elements**:
-        :attr:`~iris.experimental.ugrid.MeshXY.edge_node_connectivity`
+        :attr:`~iris.mesh.MeshXY.edge_node_connectivity`
       | Define the edges by connecting nodes.
     * | **Required for 2D (face) elements**:
-        :attr:`~iris.experimental.ugrid.MeshXY.face_node_connectivity`
+        :attr:`~iris.mesh.MeshXY.face_node_connectivity`
       | Define the faces by connecting nodes.
     * Optional: any other connectivity type. See
-      :attr:`iris.experimental.ugrid.mesh.Connectivity.UGRID_CF_ROLES` for the
+      :attr:`iris.mesh.Connectivity.UGRID_CF_ROLES` for the
       full list of types.
 
 .. doctest:: ugrid_summaries
@@ -480,30 +480,30 @@ How UGRID information is stored
                     <AuxCoord: latitude / (degrees_north)  [...]  shape(2,)>
             long_name: 'my_mesh'
 
-* | :class:`iris.experimental.ugrid.MeshCoord`
+* | :class:`iris.mesh.MeshCoord`
   | Described in detail in `MeshCoords`_.
   | Stores the following information:
 
-  * | :attr:`~iris.experimental.ugrid.MeshCoord.mesh`
-    | The :class:`~iris.experimental.ugrid.MeshXY` associated with this
-      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+  * | :attr:`~iris.mesh.MeshCoord.mesh`
+    | The :class:`~iris.mesh.MeshXY` associated with this
+      :class:`~iris.mesh.MeshCoord`. This determines the
       :attr:`~iris.cube.Cube.mesh` attribute of any :class:`~iris.cube.Cube`
-      this :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      this :class:`~iris.mesh.MeshCoord` is attached to (see
       `The Basics`_)
 
-  * | :attr:`~iris.experimental.ugrid.MeshCoord.location`
+  * | :attr:`~iris.mesh.MeshCoord.location`
     | ``node``/``edge``/``face`` - the element detailed by this
-      :class:`~iris.experimental.ugrid.MeshCoord`. This determines the
+      :class:`~iris.mesh.MeshCoord`. This determines the
       :attr:`~iris.cube.Cube.location` attribute of any
       :class:`~iris.cube.Cube` this
-      :class:`~iris.experimental.ugrid.MeshCoord` is attached to (see
+      :class:`~iris.mesh.MeshCoord` is attached to (see
       `The Basics`_).
 
 .. _ugrid MeshCoords:
 
 MeshCoords
 ~~~~~~~~~~
-Links a :class:`~iris.cube.Cube` to a :class:`~iris.experimental.ugrid.MeshXY` by
+Links a :class:`~iris.cube.Cube` to a :class:`~iris.mesh.MeshXY` by
 attaching to the :class:`~iris.cube.Cube`\'s unstructured dimension, in the
 same way that all :class:`~iris.coords.Coord`\s attach to
 :class:`~iris.cube.Cube` dimensions. This allows a single
@@ -511,23 +511,23 @@ same way that all :class:`~iris.coords.Coord`\s attach to
 dimensions (e.g. horizontal mesh plus vertical levels and a time series),
 using the same logic for every dimension.
 
-:class:`~iris.experimental.ugrid.MeshCoord`\s are instantiated using a given
-:class:`~iris.experimental.ugrid.MeshXY`, ``location``
+:class:`~iris.mesh.MeshCoord`\s are instantiated using a given
+:class:`~iris.mesh.MeshXY`, ``location``
 ("node"/"edge"/"face") and ``axis``. The process interprets the
-:class:`~iris.experimental.ugrid.MeshXY`\'s
-:attr:`~iris.experimental.ugrid.MeshXY.node_coords` and if appropriate the
-:attr:`~iris.experimental.ugrid.MeshXY.edge_node_connectivity`/
-:attr:`~iris.experimental.ugrid.MeshXY.face_node_connectivity` and
-:attr:`~iris.experimental.ugrid.MeshXY.edge_coords`/
-:attr:`~iris.experimental.ugrid.MeshXY.face_coords`
+:class:`~iris.mesh.MeshXY`\'s
+:attr:`~iris.mesh.MeshXY.node_coords` and if appropriate the
+:attr:`~iris.mesh.MeshXY.edge_node_connectivity`/
+:attr:`~iris.mesh.MeshXY.face_node_connectivity` and
+:attr:`~iris.mesh.MeshXY.edge_coords`/
+:attr:`~iris.mesh.MeshXY.face_coords`
 to produce a :class:`~iris.coords.Coord`
 :attr:`~iris.coords.Coord.points` and :attr:`~iris.coords.Coord.bounds`
-representation of all the :class:`~iris.experimental.ugrid.MeshXY`\'s
+representation of all the :class:`~iris.mesh.MeshXY`\'s
 nodes/edges/faces for the given axis.
 
-The method :meth:`iris.experimental.ugrid.MeshXY.to_MeshCoords` is available to
-create a :class:`~iris.experimental.ugrid.MeshCoord` for
-every axis represented by that :class:`~iris.experimental.ugrid.MeshXY`,
+The method :meth:`iris.mesh.MeshXY.to_MeshCoords` is available to
+create a :class:`~iris.mesh.MeshCoord` for
+every axis represented by that :class:`~iris.mesh.MeshXY`,
 given only the ``location`` argument
 
 .. doctest:: ugrid_summaries
