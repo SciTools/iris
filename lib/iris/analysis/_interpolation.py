@@ -571,9 +571,9 @@ class RectilinearInterpolator:
             # Transpose data in preparation for interpolation.
             data = np.transpose(data, interp_order)
 
-        # Interpolate the data, merging the chunks in the interpolated
-        # dimensions.
-        dims_merge_chunks = [dmap[d] for d in di]
+        # Interpolate the data, ensuring the interpolated dimensions
+        # are not chunked.
+        dims_not_chunked = [dmap[d] for d in di]
         result = map_complete_blocks(
             data,
             self._interpolate,
