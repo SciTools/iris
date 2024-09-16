@@ -247,6 +247,7 @@ templates_path = ["_templates"]
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
     "cf_units": ("https://cf-units.readthedocs.io/en/stable/", None),
+    "cftime": ("https://unidata.github.io/cftime/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
     "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
     "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
