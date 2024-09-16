@@ -86,8 +86,7 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
-
+#. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
 
 💼 Internal
 ===========

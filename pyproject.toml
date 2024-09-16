@@ -149,7 +149,8 @@ omit = [
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "if __name__ == .__main__.:"
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.codespell]
@@ -164,14 +165,14 @@ ignore = [
 
 [tool.mypy]
 # See https://mypy.readthedocs.io/en/stable/config_file.html
-ignore_missing_imports = true
-warn_unused_configs = true
-warn_unreachable = true
 enable_error_code = ["ignore-without-code", "truthy-bool"]
 exclude = [
     'noxfile\.py',
     'docs/src/conf\.py'
 ]
+ignore_missing_imports = true
+warn_unreachable = true
+warn_unused_configs = true
 
 [tool.numpydoc_validation]
 checks = [
