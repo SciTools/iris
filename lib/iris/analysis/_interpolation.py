@@ -13,7 +13,6 @@ from numpy.lib.stride_tricks import as_strided
 import numpy.ma as ma
 
 from iris._lazy_data import map_complete_blocks
-from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 from iris.coords import AuxCoord, DimCoord
 import iris.util
 
@@ -327,6 +326,8 @@ class RectilinearInterpolator:
             where "extra_shape" is the remaining non-interpolated dimensions of
             the data array (i.e. 'data.shape[N:]').
         """
+        from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+
         dtype = _interpolated_dtype(data.dtype, method)
         if data.dtype != dtype:
             # Perform dtype promotion.
