@@ -8,10 +8,12 @@ from collections import namedtuple
 from itertools import product
 import operator
 
+import dask.array
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 import numpy.ma as ma
 
+from iris._lazy_data import is_lazy_data, is_masked_data
 from iris.coords import AuxCoord, DimCoord
 import iris.util
 
@@ -200,13 +202,8 @@ class RectilinearInterpolator:
               set to NaN.
 
         """
-        # Trigger any deferred loading of the source cube's data and snapshot
-        # its state to ensure that the interpolator is impervious to external
-        # changes to the original source cube. The data is loaded to prevent
-        # the snapshot having lazy data, avoiding the potential for the
-        # same data to be loaded again and again.
-        if src_cube.has_lazy_data():
-            src_cube.data
+        # Snapshot the cube state to ensure that the interpolator is impervious
+        # to external changes to the original source cube.
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
@@ -315,6 +312,7 @@ class RectilinearInterpolator:
             data = data.astype(dtype)
 
         mode = EXTRAPOLATION_MODES[self._mode]
+        _data = _get_data(data)
         if self._interpolator is None:
             # Cache the interpolator instance.
             # NB. The constructor of the _RegularGridInterpolator class does
@@ -322,13 +320,13 @@ class RectilinearInterpolator:
             # so we set it afterwards instead. Sneaky. ;-)
             self._interpolator = _RegularGridInterpolator(
                 self._src_points,
-                data,
+                _data,
                 method=self.method,
                 bounds_error=mode.bounds_error,
                 fill_value=None,
             )
         else:
-            self._interpolator.values = data
+            self._interpolator.values = _data
 
         # We may be re-using a cached interpolator, so ensure the fill
         # value is set appropriately for extrapolating data values.
@@ -341,17 +339,16 @@ class RectilinearInterpolator:
             # interpolation points.
             result = result.astype(data.dtype)
 
-        if np.ma.isMaskedArray(data) or mode.force_mask:
-            # NB. np.ma.getmaskarray returns an array of `False` if
+        if _is_masked_array(data) or mode.force_mask:
+            # NB. getmaskarray returns an array of `False` if
             # `data` is not a masked array.
-            src_mask = np.ma.getmaskarray(data)
+            src_mask = _get_mask_array(data)
             # Switch the extrapolation to work with mask values.
             self._interpolator.fill_value = mode.mask_fill_value
             self._interpolator.values = src_mask
             mask_fraction = self._interpolator(interp_points)
             new_mask = mask_fraction > 0
-            if ma.isMaskedArray(data) or np.any(new_mask):
-                result = np.ma.MaskedArray(result, new_mask)
+            result = iris.util._mask_array(result, new_mask)
 
         return result
 
@@ -592,7 +589,7 @@ class RectilinearInterpolator:
 
         sample_points = _canonical_sample_points(self._src_coords, sample_points)
 
-        data = self._src_cube.data
+        data = self._src_cube.core_data()
         # Interpolate the cube payload.
         interpolated_data = self._points(sample_points, data)
 
@@ -668,3 +665,30 @@ class RectilinearInterpolator:
             new_cube = new_cube[tuple(dim_slices)]
 
         return new_cube
+
+
+def _is_masked_array(array):
+    """Equivalent to func:`numpy.ma.isMaskedArray`, but works for both lazy AND realised arrays."""
+    if is_lazy_data(array):
+        is_masked_array = is_masked_data(array)
+    else:
+        is_masked_array = np.ma.isMaskedArray(array)
+    return is_masked_array
+
+
+def _get_data(array):
+    """Equivalent to :func:`np.ma.getdata`, but works for both lazy AND realised arrays."""
+    if is_lazy_data(array):
+        result = dask.array.ma.getdata(array)
+    else:
+        result = np.ma.getdata(array)
+    return result
+
+
+def _get_mask_array(array):
+    """Equivalent to func:`numpy.ma.getmaskarray`, but works for both lazy AND realised arrays."""
+    if is_lazy_data(array):
+        result = dask.array.ma.getmaskarray(array)
+    else:
+        result = np.ma.getmaskarray(array)
+    return result
