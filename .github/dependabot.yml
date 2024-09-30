@@ -6,7 +6,9 @@ version: 2
 updates:
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
+      - "/.github/workflows/composite/*"
     schedule:
       # Check later in the week - the upstream dependabot check in `workflows` runs deliberately early in the week.
       #  Therefore allowing time for the `workflows` update to be merged-and-released first.
