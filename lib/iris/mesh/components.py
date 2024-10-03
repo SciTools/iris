@@ -14,7 +14,7 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Iterable
+from typing import Iterable, Literal
 import warnings
 
 from cf_units import Unit
