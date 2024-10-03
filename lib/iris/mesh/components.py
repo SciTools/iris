@@ -2739,6 +2739,7 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
+        self._read_only_points_and_bounds = True
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
 
@@ -2778,8 +2779,8 @@ class MeshCoord(AuxCoord):
         # MeshCoords it is deduced from the mesh.
         # (Otherwise a non-None coord_system breaks the 'copy' operation)
         use_metadict.pop("coord_system")
-
-        super().__init__(points, bounds=bounds, **use_metadict)
+        with self._writable_points_and_bounds():
+            super().__init__(points, bounds=bounds, **use_metadict)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
@@ -2796,6 +2797,19 @@ class MeshCoord(AuxCoord):
     def axis(self):
         return self._metadata_manager.axis
 
+    @contextmanager
+    def _writable_points_and_bounds(self):
+        """
+        Context manager to allow bounds and points to be set during __init__.
+        `points` currently doesn't encounter any issues without this manager, but
+        is included here for future proofing.
+        """
+        try:
+            self._read_only_points_and_bounds = False
+            yield
+        finally:
+            self._read_only_points_and_bounds = True
+
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
@@ -2807,9 +2821,10 @@ class MeshCoord(AuxCoord):
 
     @points.setter
     def points(self, value):
-        if len(value) != 0 or not(value is None):
-            msg = "Cannot set 'points' on a MeshCoord."
-            raise ValueError(msg)
+        if self._read_only_points_and_bounds:
+            if len(value) != 0 or not(value is None):
+                msg = "Cannot set 'points' on a MeshCoord."
+                raise ValueError(msg)
 
     @property
     def bounds(self):
@@ -2821,11 +2836,12 @@ class MeshCoord(AuxCoord):
 
     @bounds.setter
     def bounds(self, value):
-        if len(value) != 0 or not(value is None) and self.bounds:
-            msg = "Cannot set 'bounds' on a MeshCoord."
-            raise ValueError(msg)
-        else:
-            super(MeshCoord, self.__class__).bounds.fset(self, value)
+        if self._read_only_points_and_bounds:
+            if len(value) != 0: #or not(value is None) and self.bounds:
+                msg = "Cannot set 'bounds' on a MeshCoord."
+                raise ValueError(msg)
+            else:
+                super(MeshCoord, self.__class__).bounds.fset(self, value)
 
     @property
     def _metadata_manager(self):
