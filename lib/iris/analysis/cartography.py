@@ -1128,7 +1128,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     Returns
     -------
-    (u', v') tuple of :class:`iris.cube.Cube`
+    tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.

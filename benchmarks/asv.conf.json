@@ -53,9 +53,12 @@
     "command_comment": [
         "We know that the Nox command takes care of installation in each",
         "environment, and in the case of Iris no specialised uninstall or",
-        "build commands are needed to get it working."
+        "build commands are needed to get it working.",
+
+        "We do however need to install the custom benchmarks for them to be",
+        "usable."
     ],
     "install_command": [],
     "uninstall_command": [],
-    "build_command": []
+    "build_command": ["python {conf_dir}/custom_bms/install.py"]
 }

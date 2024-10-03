@@ -4,13 +4,20 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Automatic concatenation of multiple cubes over one or more existing dimensions."""
 
-from collections import defaultdict, namedtuple
+from collections import namedtuple
+from collections.abc import Mapping, Sequence
+import itertools
+from typing import Any
 import warnings
 
+import dask
+import dask.array as da
 import numpy as np
+from xxhash import xxh3_64
 
 from iris._lazy_data import concatenate as concatenate_arrays
 import iris.coords
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
 import iris.exceptions
 from iris.util import array_equal, guess_coord_axis
@@ -281,14 +288,253 @@ class _CoordExtent(namedtuple("CoordExtent", ["points", "bounds"])):
     __slots__ = ()
 
 
+def _hash_ndarray(a: np.ndarray) -> np.ndarray:
+    """Compute a hash from a numpy array.
+
+    Calculates a 64-bit non-cryptographic hash of the provided array, using
+    the fast ``xxhash`` hashing algorithm.
+
+    Parameters
+    ----------
+    a :
+        The array to hash.
+
+    Returns
+    -------
+    numpy.ndarray :
+        An array of shape (1,) containing the hash value.
+
+    """
+    # Include the array dtype as it is not preserved by `ndarray.tobytes()`.
+    hash = xxh3_64(f"dtype={a.dtype}".encode("utf-8"))
+
+    # Hash the bytes representing the array data.
+    hash.update(b"data=")
+    if isinstance(a, np.ma.MaskedArray):
+        # Hash only the unmasked data
+        hash.update(a.compressed().tobytes())
+        # Hash the mask
+        hash.update(b"mask=")
+        hash.update(a.mask.tobytes())
+    else:
+        hash.update(a.tobytes())
+    return np.frombuffer(hash.digest(), dtype=np.int64)
+
+
+def _hash_chunk(
+    x_chunk: np.ndarray,
+    axis: tuple[int] | None,
+    keepdims: bool,
+) -> np.ndarray:
+    """Compute a hash from a numpy array.
+
+    This function can be applied to each chunk or intermediate chunk in
+    :func:`~dask.array.reduction`. It preserves the number of input dimensions
+    to facilitate combining intermediate results into intermediate chunks.
+
+    Parameters
+    ----------
+    x_chunk :
+        The array to hash.
+    axis :
+        Unused but required by :func:`~dask.array.reduction`.
+    keepdims :
+        Unused but required by :func:`~dask.array.reduction`.
+
+    Returns
+    -------
+    numpy.ndarray :
+        An array containing the hash value.
+
+    """
+    return _hash_ndarray(x_chunk).reshape((1,) * x_chunk.ndim)
+
+
+def _hash_aggregate(
+    x_chunk: np.ndarray,
+    axis: tuple[int] | None,
+    keepdims: bool,
+) -> np.int64:
+    """Compute a hash from a numpy array.
+
+    This function can be applied as the final step in :func:`~dask.array.reduction`.
+
+    Parameters
+    ----------
+    x_chunk :
+        The array to hash.
+    axis :
+        Unused but required by :func:`~dask.array.reduction`.
+    keepdims :
+        Unused but required by :func:`~dask.array.reduction`.
+
+    Returns
+    -------
+    np.int64 :
+        The hash value.
+
+    """
+    (result,) = _hash_ndarray(x_chunk)
+    return result
+
+
+def _hash_array(a: da.Array | np.ndarray) -> np.int64:
+    """Calculate a hash representation of the provided array.
+
+    Calculates a 64-bit non-cryptographic hash of the provided array, using
+    the fast ``xxhash`` hashing algorithm.
+
+    Note that the computed hash depends on how the array is chunked.
+
+    Parameters
+    ----------
+    a :
+        The array that requires to have its hexdigest calculated.
+
+    Returns
+    -------
+    np.int64
+        The array's hash.
+
+    """
+    if isinstance(a, da.Array):
+        # Use :func:`~dask.array.reduction` to compute a hash from a Dask array.
+        #
+        # A hash of each input chunk will be computed by the `chunk` function
+        # and those hashes will be combined into one or more intermediate chunks.
+        # If there are multiple intermediate chunks, a hash for each intermediate
+        # chunk will be computed by the `combine` function and the
+        # results will be combined into a new layer of intermediate chunks. This
+        # will be repeated until only a single intermediate chunk remains.
+        # Finally, a single hash value will be computed from the last
+        # intermediate chunk by the `aggregate` function.
+        result = da.reduction(
+            a,
+            chunk=_hash_chunk,
+            combine=_hash_chunk,
+            aggregate=_hash_aggregate,
+            keepdims=False,
+            meta=np.empty(tuple(), dtype=np.int64),
+            dtype=np.int64,
+        )
+    else:
+        result = _hash_aggregate(a, None, False)
+    return result
+
+
+class _ArrayHash(namedtuple("ArrayHash", ["value", "chunks"])):
+    """Container for a hash value and the chunks used when computing it.
+
+    Parameters
+    ----------
+    value : :class:`np.int64`
+        The hash value.
+    chunks : tuple
+        The chunks the array had when the hash was computed.
+    """
+
+    __slots__ = ()
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, self.__class__):
+            raise TypeError(f"Unable to compare {repr(self)} to {repr(other)}")
+
+        def shape(chunks):
+            return tuple(sum(c) for c in chunks)
+
+        if shape(self.chunks) == shape(other.chunks):
+            if self.chunks != other.chunks:
+                raise ValueError(
+                    "Unable to compare arrays with different chunks: "
+                    f"{self.chunks} != {other.chunks}"
+                )
+            result = self.value == other.value
+        else:
+            result = False
+        return result
+
+
+def _array_id(
+    coord: DimCoord | AuxCoord | AncillaryVariable | CellMeasure,
+    bound: bool,
+) -> str:
+    """Get a unique key for looking up arrays associated with coordinates."""
+    return f"{id(coord)}{bound}"
+
+
+def _compute_hashes(
+    arrays: Mapping[str, np.ndarray | da.Array],
+) -> dict[str, _ArrayHash]:
+    """Compute hashes for the arrays that will be compared.
+
+    Two arrays are considered equal if each unmasked element compares equal
+    and the masks are equal. However, hashes depend on chunking and dtype.
+    Therefore, arrays with the same shape are rechunked so they have the same
+    chunks and arrays with numerical dtypes are cast up to the same dtype before
+    computing the hashes.
+
+    Parameters
+    ----------
+    arrays :
+        A mapping with key-array pairs.
+
+    Returns
+    -------
+    dict[str, _ArrayHash] :
+        An dictionary of hashes.
+
+    """
+    hashes = {}
+
+    def is_numerical(dtype):
+        return np.issubdtype(dtype, np.bool_) or np.issubdtype(dtype, np.number)
+
+    def group_key(item):
+        array_id, a = item
+        if is_numerical(a.dtype):
+            dtype = "numerical"
+        else:
+            dtype = str(a.dtype)
+        return a.shape, dtype
+
+    sorted_arrays = sorted(arrays.items(), key=group_key)
+    for _, group_iter in itertools.groupby(sorted_arrays, key=group_key):
+        array_ids, group = zip(*group_iter)
+        # Unify dtype for numerical arrays, as the hash depends on it
+        if is_numerical(group[0].dtype):
+            dtype = np.result_type(*group)
+            same_dtype_arrays = tuple(a.astype(dtype) for a in group)
+        else:
+            same_dtype_arrays = group
+        if any(isinstance(a, da.Array) for a in same_dtype_arrays):
+            # Unify chunks as the hash depends on the chunks.
+            indices = tuple(range(group[0].ndim))
+            # Because all arrays in a group have the same shape, `indices`
+            # are the same for all of them. Providing `indices` as a tuple
+            # instead of letters is easier to do programmatically.
+            argpairs = [(a, indices) for a in same_dtype_arrays]
+            __, rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))
+        else:
+            rechunked_arrays = same_dtype_arrays
+        for array_id, rechunked in zip(array_ids, rechunked_arrays):
+            if isinstance(rechunked, da.Array):
+                chunks = rechunked.chunks
+            else:
+                chunks = tuple((i,) for i in rechunked.shape)
+            hashes[array_id] = (_hash_array(rechunked), chunks)
+
+    (hashes,) = dask.compute(hashes)
+    return {k: _ArrayHash(*v) for k, v in hashes.items()}
+
+
 def concatenate(
-    cubes,
-    error_on_mismatch=False,
-    check_aux_coords=True,
-    check_cell_measures=True,
-    check_ancils=True,
-    check_derived_coords=True,
-):
+    cubes: Sequence[iris.cube.Cube],
+    error_on_mismatch: bool = False,
+    check_aux_coords: bool = True,
+    check_cell_measures: bool = True,
+    check_ancils: bool = True,
+    check_derived_coords: bool = True,
+) -> iris.cube.CubeList:
     """Concatenate the provided cubes over common existing dimensions.
 
     Parameters
@@ -326,21 +572,49 @@ def concatenate(
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
 
     """
-    proto_cubes_by_name = defaultdict(list)
+    cube_signatures = [_CubeSignature(cube) for cube in cubes]
+
+    proto_cubes: list[_ProtoCube] = []
     # Initialise the nominated axis (dimension) of concatenation
     # which requires to be negotiated.
     axis = None
 
+    # Compute hashes for parallel array comparison.
+    arrays = {}
+
+    def add_coords(cube_signature: _CubeSignature, coord_type: str) -> None:
+        for coord_and_dims in getattr(cube_signature, coord_type):
+            coord = coord_and_dims.coord
+            array_id = _array_id(coord, bound=False)
+            if isinstance(coord, (DimCoord, AuxCoord)):
+                arrays[array_id] = coord.core_points()
+                if coord.has_bounds():
+                    bound_array_id = _array_id(coord, bound=True)
+                    arrays[bound_array_id] = coord.core_bounds()
+            else:
+                arrays[array_id] = coord.core_data()
+
+    for cube_signature in cube_signatures:
+        if check_aux_coords:
+            add_coords(cube_signature, "aux_coords_and_dims")
+        if check_derived_coords:
+            add_coords(cube_signature, "derived_coords_and_dims")
+        if check_cell_measures:
+            add_coords(cube_signature, "cell_measures_and_dims")
+        if check_ancils:
+            add_coords(cube_signature, "ancillary_variables_and_dims")
+
+    hashes = _compute_hashes(arrays)
+
     # Register each cube with its appropriate proto-cube.
-    for cube in cubes:
-        name = cube.standard_name or cube.long_name
-        proto_cubes = proto_cubes_by_name[name]
+    for cube_signature in cube_signatures:
         registered = False
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
             registered = proto_cube.register(
-                cube,
+                cube_signature,
+                hashes,
                 axis,
                 error_on_mismatch,
                 check_aux_coords,
@@ -354,19 +628,17 @@ def concatenate(
 
         # Create a new proto-cube for an unregistered cube.
         if not registered:
-            proto_cubes.append(_ProtoCube(cube))
+            proto_cubes.append(_ProtoCube(cube_signature))
 
     # Construct a concatenated cube from each of the proto-cubes.
     concatenated_cubes = iris.cube.CubeList()
 
     # Emulate Python 2 behaviour.
-    def _none_sort(item):
-        return (item is not None, item)
+    def _none_sort(proto_cube):
+        return (proto_cube.name is not None, proto_cube.name)
 
-    for name in sorted(proto_cubes_by_name, key=_none_sort):
-        for proto_cube in proto_cubes_by_name[name]:
-            # Construct the concatenated cube.
-            concatenated_cubes.append(proto_cube.concatenate())
+    for proto_cube in sorted(proto_cubes, key=_none_sort):
+        concatenated_cubes.append(proto_cube.concatenate())
 
     # Perform concatenation until we've reached an equilibrium.
     count = len(concatenated_cubes)
@@ -384,7 +656,7 @@ class _CubeSignature:
 
     """
 
-    def __init__(self, cube):
+    def __init__(self, cube: iris.cube.Cube) -> None:
         """Represent the cube metadata and associated coordinate metadata.
 
         Parameters
@@ -413,14 +685,14 @@ class _CubeSignature:
 
         self.defn = cube.metadata
         self.data_type = cube.dtype
+        self.src_cube = cube
 
         #
         # Collate the dimension coordinate metadata.
         #
-        for ind, coord in enumerate(self.dim_coords):
-            dims = cube.coord_dims(coord)
-            metadata = _CoordMetaData(coord, dims)
-            self.dim_metadata.append(metadata)
+        for dim_coord in self.dim_coords:
+            dims = cube.coord_dims(dim_coord)
+            self.dim_metadata.append(_CoordMetaData(dim_coord, dims))
             self.dim_mapping.append(dims[0])
 
         #
@@ -437,32 +709,26 @@ class _CubeSignature:
                 cube.coord_dims(coord),
             )
 
-        for coord in sorted(cube.aux_coords, key=key_func):
-            dims = cube.coord_dims(coord)
+        for aux_coord in sorted(cube.aux_coords, key=key_func):
+            dims = cube.coord_dims(aux_coord)
             if dims:
-                metadata = _CoordMetaData(coord, dims)
-                self.aux_metadata.append(metadata)
-                coord_and_dims = _CoordAndDims(coord, tuple(dims))
-                self.aux_coords_and_dims.append(coord_and_dims)
+                self.aux_metadata.append(_CoordMetaData(aux_coord, dims))
+                self.aux_coords_and_dims.append(_CoordAndDims(aux_coord, tuple(dims)))
             else:
-                self.scalar_coords.append(coord)
+                self.scalar_coords.append(aux_coord)
 
         def meta_key_func(dm):
             return (dm.metadata, dm.cube_dims(cube))
 
         for cm in sorted(cube.cell_measures(), key=meta_key_func):
             dims = cube.cell_measure_dims(cm)
-            metadata = _OtherMetaData(cm, dims)
-            self.cm_metadata.append(metadata)
-            cm_and_dims = _CoordAndDims(cm, tuple(dims))
-            self.cell_measures_and_dims.append(cm_and_dims)
+            self.cm_metadata.append(_OtherMetaData(cm, dims))
+            self.cell_measures_and_dims.append(_CoordAndDims(cm, tuple(dims)))
 
         for av in sorted(cube.ancillary_variables(), key=meta_key_func):
             dims = cube.ancillary_variable_dims(av)
-            metadata = _OtherMetaData(av, dims)
-            self.av_metadata.append(metadata)
-            av_and_dims = _CoordAndDims(av, tuple(dims))
-            self.ancillary_variables_and_dims.append(av_and_dims)
+            self.av_metadata.append(_OtherMetaData(av, dims))
+            self.ancillary_variables_and_dims.append(_CoordAndDims(av, tuple(dims)))
 
         def name_key_func(factory):
             return factory.name()
@@ -470,10 +736,10 @@ class _CubeSignature:
         for factory in sorted(cube.aux_factories, key=name_key_func):
             coord = factory.make_coord(cube.coord_dims)
             dims = factory.derived_dims(cube.coord_dims)
-            metadata = _CoordMetaData(coord, dims)
-            self.derived_metadata.append(metadata)
-            coord_and_dims = _DerivedCoordAndDims(coord, tuple(dims), factory)
-            self.derived_coords_and_dims.append(coord_and_dims)
+            self.derived_metadata.append(_CoordMetaData(coord, dims))
+            self.derived_coords_and_dims.append(
+                _DerivedCoordAndDims(coord, tuple(dims), factory)
+            )
 
     def _coordinate_differences(self, other, attr, reason="metadata"):
         """Determine the names of the coordinates that differ.
@@ -607,7 +873,7 @@ class _CubeSignature:
 class _CoordSignature:
     """Template for identifying a specific type of :class:`iris.cube.Cube` based on its coordinates."""
 
-    def __init__(self, cube_signature):
+    def __init__(self, cube_signature: _CubeSignature) -> None:
         """Represent the coordinate metadata.
 
         Represent the coordinate metadata required to identify suitable
@@ -626,7 +892,7 @@ class _CoordSignature:
         self.derived_coords_and_dims = cube_signature.derived_coords_and_dims
         self.dim_coords = cube_signature.dim_coords
         self.dim_mapping = cube_signature.dim_mapping
-        self.dim_extents = []
+        self.dim_extents: list[_CoordExtent] = []
         self.dim_order = [
             metadata.kwargs["order"] for metadata in cube_signature.dim_metadata
         ]
@@ -635,7 +901,10 @@ class _CoordSignature:
         self._calculate_extents()
 
     @staticmethod
-    def _cmp(coord, other):
+    def _cmp(
+        coord: iris.coords.DimCoord,
+        other: iris.coords.DimCoord,
+    ) -> tuple[bool, bool]:
         """Compare the coordinates for concatenation compatibility.
 
         Returns
@@ -646,22 +915,17 @@ class _CoordSignature:
 
         """
         # A candidate axis must have non-identical coordinate points.
-        candidate_axis = not array_equal(coord.core_points(), other.core_points())
+        candidate_axis = not array_equal(coord.points, other.points)
 
-        if candidate_axis:
-            # Ensure both have equal availability of bounds.
-            result = (coord.core_bounds() is None) == (other.core_bounds() is None)
-        else:
-            if coord.core_bounds() is not None and other.core_bounds() is not None:
-                # Ensure equality of bounds.
-                result = array_equal(coord.core_bounds(), other.core_bounds())
-            else:
-                # Ensure both have equal availability of bounds.
-                result = coord.core_bounds() is None and other.core_bounds() is None
+        # Ensure both have equal availability of bounds.
+        result = coord.has_bounds() == other.has_bounds()
+        if result and not candidate_axis:
+            # Ensure equality of bounds.
+            result = array_equal(coord.bounds, other.bounds)
 
         return result, candidate_axis
 
-    def candidate_axis(self, other):
+    def candidate_axis(self, other: "_CoordSignature") -> int | None:
         """Determine the candidate axis of concatenation with the given coordinate signature.
 
         If a candidate axis is found, then the coordinate
@@ -693,13 +957,13 @@ class _CoordSignature:
         # Only permit one degree of dimensional freedom when
         # determining the candidate axis of concatenation.
         if result and len(candidate_axes) == 1:
-            result = candidate_axes[0]
+            axis = candidate_axes[0]
         else:
-            result = None
+            axis = None
 
-        return result
+        return axis
 
-    def _calculate_extents(self):
+    def _calculate_extents(self) -> None:
         """Calculate the extent over each dimension coordinates points and bounds."""
         self.dim_extents = []
         for coord, order in zip(self.dim_coords, self.dim_order):
@@ -729,21 +993,21 @@ class _CoordSignature:
 class _ProtoCube:
     """Framework for concatenating multiple source-cubes over one common dimension."""
 
-    def __init__(self, cube):
+    def __init__(self, cube_signature):
         """Create a new _ProtoCube from the given cube and record the cube as a source-cube.
 
         Parameters
         ----------
-        cube :
-            Source :class:`iris.cube.Cube` of the :class:`_ProtoCube`.
+        cube_signature :
+            Source :class:`_CubeSignature` of the :class:`_ProtoCube`.
 
         """
         # Cache the source-cube of this proto-cube.
-        self._cube = cube
+        self._cube = cube_signature.src_cube
 
         # The cube signature is a combination of cube and coordinate
         # metadata that defines this proto-cube.
-        self._cube_signature = _CubeSignature(cube)
+        self._cube_signature = cube_signature
 
         # The coordinate signature allows suitable non-overlapping
         # source-cubes to be identified.
@@ -751,7 +1015,7 @@ class _ProtoCube:
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
-        self._add_skeleton(self._coord_signature, cube.lazy_data())
+        self._add_skeleton(self._coord_signature, self._cube.lazy_data())
 
         # The nominated axis of concatenation.
         self._axis = None
@@ -760,6 +1024,12 @@ class _ProtoCube:
     def axis(self):
         """Return the nominated dimension of concatenation."""
         return self._axis
+
+    @property
+    def name(self) -> str | None:
+        """Return the standard_name or long name."""
+        metadata = self._cube_signature.defn
+        return metadata.standard_name or metadata.long_name
 
     def concatenate(self):
         """Concatenate all the source-cubes registered with the :class:`_ProtoCube`.
@@ -833,14 +1103,15 @@ class _ProtoCube:
 
     def register(
         self,
-        cube,
-        axis=None,
-        error_on_mismatch=False,
-        check_aux_coords=False,
-        check_cell_measures=False,
-        check_ancils=False,
-        check_derived_coords=False,
-    ):
+        cube_signature: _CubeSignature,
+        hashes: Mapping[str, _ArrayHash],
+        axis: int | None = None,
+        error_on_mismatch: bool = False,
+        check_aux_coords: bool = False,
+        check_cell_measures: bool = False,
+        check_ancils: bool = False,
+        check_derived_coords: bool = False,
+    ) -> bool:
         """Determine if  the given source-cube is suitable for concatenation.
 
         Determine if  the given source-cube is suitable for concatenation
@@ -848,9 +1119,12 @@ class _ProtoCube:
 
         Parameters
         ----------
-        cube : :class:`iris.cube.Cube`
-            The :class:`iris.cube.Cube` source-cube candidate for
+        cube_signature : :class:`_CubeSignature`
+            The :class:`_CubeSignature` of the source-cube candidate for
             concatenation.
+        hashes :
+            A mapping containing hash values for checking coordinate, ancillary
+            variable, and cell measure equality.
         axis : optional
             Seed the dimension of concatenation for the :class:`_ProtoCube`
             rather than rely on negotiation with source-cubes.
@@ -891,7 +1165,6 @@ class _ProtoCube:
             raise ValueError(msg)
 
         # Check for compatible cube signatures.
-        cube_signature = _CubeSignature(cube)
         match = self._cube_signature.match(cube_signature, error_on_mismatch)
         mismatch_error_msg = None
 
@@ -917,97 +1190,76 @@ class _ProtoCube:
             elif not match:
                 mismatch_error_msg = f"Found cubes with overlap on concatenate axis {candidate_axis}, skipping concatenation for these cubes"
 
-        # Check for compatible AuxCoords.
-        if match:
-            if check_aux_coords:
-                for coord_a, coord_b in zip(
-                    self._cube_signature.aux_coords_and_dims,
-                    cube_signature.aux_coords_and_dims,
+        def get_hashes(
+            coord: DimCoord | AuxCoord | AncillaryVariable | CellMeasure,
+        ) -> tuple[_ArrayHash, ...]:
+            array_id = _array_id(coord, bound=False)
+            result = [hashes[array_id]]
+            if isinstance(coord, (DimCoord, AuxCoord)) and coord.has_bounds():
+                bound_array_id = _array_id(coord, bound=True)
+                result.append(hashes[bound_array_id])
+            return tuple(result)
+
+        # Mapping from `_CubeSignature` attributes to human readable names.
+        coord_type_names = {
+            "aux_coords_and_dims": "Auxiliary coordinates",
+            "cell_measures_and_dims": "Cell measures",
+            "ancillary_variables_and_dims": "Ancillary variables",
+            "derived_coords_and_dims": "Derived coordinates",
+        }
+
+        def check_coord_match(coord_type: str) -> tuple[bool, str]:
+            result = (True, "")
+            for coord_a, coord_b in zip(
+                getattr(self._cube_signature, coord_type),
+                getattr(cube_signature, coord_type),
+            ):
+                # Coordinates that span the candidate axis can differ
+                if (
+                    candidate_axis not in coord_a.dims
+                    or candidate_axis not in coord_b.dims
                 ):
-                    # AuxCoords that span the candidate axis can differ
-                    if (
-                        candidate_axis not in coord_a.dims
-                        or candidate_axis not in coord_b.dims
-                    ):
-                        if not coord_a == coord_b:
-                            mismatch_error_msg = (
-                                "Auxiliary coordinates are unequal for phenomenon"
-                                f" `{self._cube.name()}`:\n"
-                                f"a: {coord_a}\n"
-                                f"b: {coord_b}"
-                            )
-                            match = False
+                    if not get_hashes(coord_a.coord) == get_hashes(coord_b.coord):
+                        mismatch_error_msg = (
+                            f"{coord_type_names[coord_type]} are unequal for phenomenon"
+                            f" `{self._cube.name()}`:\n"
+                            f"a: {coord_a}\n"
+                            f"b: {coord_b}"
+                        )
+                        result = (False, mismatch_error_msg)
+                        break
+
+            return result
+
+        # Check for compatible AuxCoords.
+        if match and check_aux_coords:
+            match, msg = check_coord_match("aux_coords_and_dims")
+            if not match:
+                mismatch_error_msg = msg
 
         # Check for compatible CellMeasures.
-        if match:
-            if check_cell_measures:
-                for coord_a, coord_b in zip(
-                    self._cube_signature.cell_measures_and_dims,
-                    cube_signature.cell_measures_and_dims,
-                ):
-                    # CellMeasures that span the candidate axis can differ
-                    if (
-                        candidate_axis not in coord_a.dims
-                        or candidate_axis not in coord_b.dims
-                    ):
-                        if not coord_a == coord_b:
-                            mismatch_error_msg = (
-                                "Cell measures are unequal for phenomenon"
-                                f" `{self._cube.name()}`:\n"
-                                f"a: {coord_a}\n"
-                                f"b: {coord_b}"
-                            )
-                            match = False
+        if match and check_cell_measures:
+            match, msg = check_coord_match("cell_measures_and_dims")
+            if not match:
+                mismatch_error_msg = msg
 
         # Check for compatible AncillaryVariables.
-        if match:
-            if check_ancils:
-                for coord_a, coord_b in zip(
-                    self._cube_signature.ancillary_variables_and_dims,
-                    cube_signature.ancillary_variables_and_dims,
-                ):
-                    # AncillaryVariables that span the candidate axis can differ
-                    if (
-                        candidate_axis not in coord_a.dims
-                        or candidate_axis not in coord_b.dims
-                    ):
-                        if not coord_a == coord_b:
-                            mismatch_error_msg = (
-                                "Ancillary variables are unequal for phenomenon"
-                                f" `{self._cube.name()}`:\n"
-                                f"a: {coord_a}\n"
-                                f"b: {coord_b}"
-                            )
-                            match = False
+        if match and check_ancils:
+            match, msg = check_coord_match("ancillary_variables_and_dims")
+            if not match:
+                mismatch_error_msg = msg
 
         # Check for compatible derived coordinates.
-        if match:
-            if check_derived_coords:
-                for coord_a, coord_b in zip(
-                    self._cube_signature.derived_coords_and_dims,
-                    cube_signature.derived_coords_and_dims,
-                ):
-                    # Derived coords that span the candidate axis can differ
-                    if (
-                        candidate_axis not in coord_a.dims
-                        or candidate_axis not in coord_b.dims
-                    ):
-                        if not coord_a == coord_b:
-                            mismatch_error_msg = (
-                                "Derived coordinates are unequal for phenomenon"
-                                f" `{self._cube.name()}`:\n"
-                                f"a: {coord_a}\n"
-                                f"b: {coord_b}"
-                            )
-                            match = False
+        if match and check_derived_coords:
+            match, msg = check_coord_match("derived_coords_and_dims")
+            if not match:
+                mismatch_error_msg = msg
 
         if match:
             # Register the cube as a source-cube for this proto-cube.
-            self._add_skeleton(coord_signature, cube.lazy_data())
+            self._add_skeleton(coord_signature, cube_signature.src_cube.lazy_data())
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
-
-        if match:
             # If the protocube dimension order is constant (indicating it was
             # created from a cube with a length 1 dimension coordinate) but
             # a subsequently registered cube has a non-constant dimension

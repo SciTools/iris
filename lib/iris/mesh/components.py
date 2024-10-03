@@ -2697,6 +2697,9 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
         return self._members["face_node_connectivity"]
 
 
+Location = Literal["edge", "node", "face"]
+
+
 class MeshCoord(AuxCoord):
     """Geographic coordinate values of data on an unstructured mesh.
 
@@ -2735,9 +2738,9 @@ class MeshCoord(AuxCoord):
 
     def __init__(
         self,
-        mesh,
-        location,
-        axis,
+        mesh: MeshXY,
+        location: Location,
+        axis: Literal["x", "y"],
     ):
         self._read_only_points_and_bounds = True
         # Setup the metadata.
@@ -2745,7 +2748,7 @@ class MeshCoord(AuxCoord):
 
         # Validate and record the class-specific constructor args.
         if not isinstance(mesh, MeshXY):
-            msg = (
+            msg = (  # type: ignore[unreachable]
                 "'mesh' must be an "
                 f"{MeshXY.__module__}.{MeshXY.__name__}, "
                 f"got {mesh}."
@@ -2790,7 +2793,7 @@ class MeshCoord(AuxCoord):
         return self._mesh
 
     @property
-    def location(self):
+    def location(self) -> Location:
         return self._metadata_manager.location
 
     @property
