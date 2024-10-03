@@ -1022,7 +1022,7 @@ class TestRoundtrip(MixinAttrsTesting):
         expected_result = [expect_global, expect_var]
         if do_split and origin_style == "input_global":
             # The result is simply the "other way around"
-            expected_result = expected_result.reverse()
+            expected_result.reverse()
         self.check_roundtrip_results(expected_result)
 
     @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
