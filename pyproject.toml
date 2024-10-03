@@ -165,6 +165,8 @@ ignore = [
 
 [tool.mypy]
 # See https://mypy.readthedocs.io/en/stable/config_file.html
+# TODO: remove when MyPy fixed (see https://github.com/python/mypy/issues/17166)
+disable_error_code = ["call-arg"]
 enable_error_code = ["ignore-without-code", "truthy-bool"]
 exclude = [
     'noxfile\.py',
@@ -211,7 +213,7 @@ checks = [
     "PR01",  # Parameters ... not documented
     "PR02",  # Unknown parameters {....}
     "PR04",  # Parameter "...." has no type
-    "PR07",  # Parameter "...." has no description   
+    "PR07",  # Parameter "...." has no description
     "RT01",  # No Returns section found
     "RT03",  # Return value has no description
 ]
