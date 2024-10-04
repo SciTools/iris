@@ -2799,8 +2799,7 @@ class MeshCoord(AuxCoord):
 
     @contextmanager
     def _writable_points_and_bounds(self):
-        """
-        Context manager to allow bounds and points to be set during __init__.
+        """Context manager to allow bounds and points to be set during __init__.
         `points` currently doesn't encounter any issues without this manager, but
         is included here for future proofing.
         """
@@ -2822,7 +2821,7 @@ class MeshCoord(AuxCoord):
     @points.setter
     def points(self, value):
         if self._read_only_points_and_bounds:
-            if len(value) != 0 or not(value is None):
+            if len(value) != 0 or not (value is None):
                 msg = "Cannot set 'points' on a MeshCoord."
                 raise ValueError(msg)
 
@@ -2837,7 +2836,7 @@ class MeshCoord(AuxCoord):
     @bounds.setter
     def bounds(self, value):
         if self._read_only_points_and_bounds:
-            if len(value) != 0: #or not(value is None) and self.bounds:
+            if len(value) != 0:  # or not(value is None) and self.bounds:
                 msg = "Cannot set 'bounds' on a MeshCoord."
                 raise ValueError(msg)
             else:
