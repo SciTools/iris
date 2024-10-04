@@ -140,7 +140,7 @@ class Mixin__nc_load_actions:
         if self.debug_info:
             print("\nCube:")
             print(cube)
-            print("")
+            print()
         return cube
 
     def _make_testcase_cdl(self, **kwargs):
