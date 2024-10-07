@@ -1207,6 +1207,22 @@ def create_cube(lon_min, lon_max, bounds=False):
         ),
         2,
     )
+    cube.add_cell_measure(
+        iris.coords.CellMeasure(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "cell_area",
+            units="m2",
+        ),
+        data_dims=[1, 2],
+    )
+    cube.add_ancillary_variable(
+        iris.coords.AncillaryVariable(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "land_area_fraction",
+            units="%",
+        ),
+        data_dims=[1, 2],
+    )
     if bounds:
         cube.coord("longitude").guess_bounds()
     cube.add_aux_coord(
@@ -2210,7 +2226,7 @@ class Test__init__mesh(tests.IrisTest):
         meshco_y = sample_meshcoord(axis="y")  # Own (different) mesh
         meshco_y.mesh.long_name = "new_name"
         n_faces = meshco_x.shape[0]
-        with self.assertRaisesRegex(ValueError, "Mesh.* does not match"):
+        with self.assertRaisesRegex(ValueError, "MeshXY.* does not match"):
             Cube(
                 np.zeros(n_faces),
                 aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],

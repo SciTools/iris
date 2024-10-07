@@ -14,7 +14,7 @@ from pathlib import Path
 
 import iris
 from iris import cube
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, load_mesh
+from iris.mesh import load_mesh
 
 from . import BENCHMARK_DATA, REUSE_DATA, load_realised, run_function_elsewhere
 
@@ -90,7 +90,7 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     """Sample mesh wrapper for :meth:iris.tests.stock.mesh.sample_mesh`."""
 
     def _external(*args, **kwargs):
-        from iris.experimental.ugrid import save_mesh
+        from iris.mesh import save_mesh
         from iris.tests.stock.mesh import sample_mesh
 
         save_path_ = kwargs.pop("save_path")
@@ -104,13 +104,12 @@ def sample_mesh(n_nodes=None, n_faces=None, n_edges=None, lazy_values=False):
     save_path = (BENCHMARK_DATA / f"sample_mesh_{args_hash}").with_suffix(".nc")
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(_external, *arg_list, save_path=str(save_path))
-    with PARSE_UGRID_ON_LOAD.context():
-        if not lazy_values:
-            # Realise everything.
-            with load_realised():
-                mesh = load_mesh(str(save_path))
-        else:
+    if not lazy_values:
+        # Realise everything.
+        with load_realised():
             mesh = load_mesh(str(save_path))
+    else:
+        mesh = load_mesh(str(save_path))
     return mesh
 
 
@@ -118,7 +117,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """Sample meshcoord wrapper for :meth:`iris.tests.stock.mesh.sample_meshcoord`.
 
     Parameters deviate from the original as cannot pass a
-    :class:`iris.experimental.ugrid.Mesh to the separate Python instance - must
+    :class:`iris.mesh.Mesh to the separate Python instance - must
     instead generate the Mesh as well.
 
     MeshCoords cannot be saved to file, so the _external method saves the
@@ -127,7 +126,7 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
     """
 
     def _external(sample_mesh_kwargs_, save_path_):
-        from iris.experimental.ugrid import save_mesh
+        from iris.mesh import save_mesh
         from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 
         if sample_mesh_kwargs_:
@@ -147,9 +146,8 @@ def sample_meshcoord(sample_mesh_kwargs=None, location="face", axis="x"):
             sample_mesh_kwargs_=sample_mesh_kwargs,
             save_path_=str(save_path),
         )
-    with PARSE_UGRID_ON_LOAD.context():
-        with load_realised():
-            source_mesh = load_mesh(str(save_path))
+    with load_realised():
+        source_mesh = load_mesh(str(save_path))
     # Regenerate MeshCoord from its Mesh, which we saved.
     return source_mesh.to_MeshCoord(location=location, axis=axis)
 
@@ -180,7 +178,6 @@ def realistic_4d_w_everything(w_mesh=False, lazy=False) -> iris.cube.Cube:
     )
     if not REUSE_DATA or not save_path.is_file():
         _ = run_function_elsewhere(_external, w_mesh_=w_mesh, save_path_=str(save_path))
-    with PARSE_UGRID_ON_LOAD.context():
-        context = nullcontext() if lazy else load_realised()
-        with context:
-            return iris.load_cube(save_path, "air_potential_temperature")
+    context = nullcontext() if lazy else load_realised()
+    with context:
+        return iris.load_cube(save_path, "air_potential_temperature")

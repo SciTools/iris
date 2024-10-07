@@ -804,6 +804,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             :class:`_DimensionalMetadata`.
 
         """
+        # deferred import to avoid possible circularity
+        from iris.mesh import Connectivity
+
         # Create the XML element as the camelCaseEquivalent of the
         # class name.
         element_name = type(self).__name__
@@ -843,9 +846,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # otherwise.
         if isinstance(self, Coord):
             values_term = "points"
-        # TODO: replace with isinstance(self, Connectivity) once Connectivity
-        # is re-integrated here (currently in experimental.ugrid).
-        elif hasattr(self, "indices"):
+        elif isinstance(self, Connectivity):
             values_term = "indices"
         else:
             values_term = "data"
@@ -2114,22 +2115,39 @@ class Coord(_DimensionalMetadata):
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            def serialize(x):
-                return "|".join([str(i) for i in x.flatten()])
+            def serialize(x, axis):
+                if axis is None:
+                    return "|".join(str(i) for i in x.flatten())
+
+                # np.apply_along_axis combined with str.join will truncate strings in
+                # some cases (https://github.com/numpy/numpy/issues/8352), so we need to
+                # loop through the array directly. First move (possibly multiple) axis
+                # of interest to trailing dim(s), then make a 2D array we can loop
+                # through.
+                work_array = np.moveaxis(x, axis, range(-len(axis), 0))
+                out_shape = work_array.shape[: -len(axis)]
+                work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
+
+                joined = []
+                for arr_slice in work_array:
+                    joined.append(serialize(arr_slice, None))
+
+                return np.array(joined).reshape(out_shape)
 
             bounds = None
             if self.has_bounds():
-                shape = self._bounds_dm.shape[1:]
-                bounds = []
-                for index in np.ndindex(shape):
-                    index_slice = (slice(None),) + tuple(index)
-                    bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype("U{}".format(max(map(len, bounds))))
-                bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
-            points = serialize(self.points)
-            dtype = np.dtype("U{}".format(len(points)))
+                # Express dims_to_collapse as non-negative integers.
+                if dims_to_collapse is None:
+                    dims_to_collapse = range(self.ndim)
+                else:
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse
+                    )
+                bounds = serialize(self.bounds, dims_to_collapse)
+
+            points = serialize(self.points, dims_to_collapse)
             # Create the new collapsed coordinate.
-            coord = self.copy(points=np.array(points, dtype=dtype), bounds=bounds)
+            coord = self.copy(points=np.array(points), bounds=bounds)
         else:
             # Collapse the coordinate by calculating the bounded extremes.
             if self.ndim > 1:
@@ -2194,7 +2212,7 @@ class Coord(_DimensionalMetadata):
             coord = self.copy(points=points, bounds=bounds)
         return coord
 
-    def _guess_bounds(self, bound_position=0.5):
+    def _guess_bounds(self, bound_position=0.5, monthly=False, yearly=False):
         """Return bounds for this coordinate based on its points.
 
         Parameters
@@ -2202,6 +2220,12 @@ class Coord(_DimensionalMetadata):
         bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
+        monthly : bool, default=False
+            If True, the coordinate must be monthly and bounds are set to the
+            start and ends of each month.
+        yearly : bool, default=False
+            If True, the coordinate must be yearly and bounds are set to the
+            start and ends of each year.
 
         Returns
         -------
@@ -2224,7 +2248,7 @@ class Coord(_DimensionalMetadata):
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
-        if self.shape[0] < 2:
+        if not monthly and self.shape[0] < 2:
             raise ValueError("Cannot guess bounds for a coordinate of length 1.")
 
         if self.has_bounds():
@@ -2233,31 +2257,80 @@ class Coord(_DimensionalMetadata):
                 "before guessing new ones."
             )
 
-        if getattr(self, "circular", False):
-            points = np.empty(self.shape[0] + 2)
-            points[1:-1] = self.points
-            direction = 1 if self.points[-1] > self.points[0] else -1
-            points[0] = self.points[-1] - (self.units.modulus * direction)
-            points[-1] = self.points[0] + (self.units.modulus * direction)
-            diffs = np.diff(points)
+        if monthly or yearly:
+            if monthly and yearly:
+                raise ValueError(
+                    "Cannot guess monthly and yearly bounds simultaneously."
+                )
+            dates = self.units.num2date(self.points)
+            lower_bounds = []
+            upper_bounds = []
+            months_and_years = []
+            if monthly:
+                for date in dates:
+                    if date.month == 12:
+                        lyear = date.year
+                        uyear = date.year + 1
+                        lmonth = 12
+                        umonth = 1
+                    else:
+                        lyear = uyear = date.year
+                        lmonth = date.month
+                        umonth = date.month + 1
+                    date_pair = (date.year, date.month)
+                    if date_pair not in months_and_years:
+                        months_and_years.append(date_pair)
+                    else:
+                        raise ValueError(
+                            "Cannot guess monthly bounds for a coordinate with multiple "
+                            "points in a month."
+                        )
+                    lower_bounds.append(date.__class__(lyear, lmonth, 1, 0, 0))
+                    upper_bounds.append(date.__class__(uyear, umonth, 1, 0, 0))
+            elif yearly:
+                for date in dates:
+                    year = date.year
+                    if year not in months_and_years:
+                        months_and_years.append(year)
+                    else:
+                        raise ValueError(
+                            "Cannot guess yearly bounds for a coordinate with multiple "
+                            "points in a year."
+                        )
+                    lower_bounds.append(date.__class__(date.year, 1, 1, 0, 0))
+                    upper_bounds.append(date.__class__(date.year + 1, 1, 1, 0, 0))
+            bounds = self.units.date2num(np.array([lower_bounds, upper_bounds]).T)
+            contiguous = np.ma.allclose(bounds[1:, 0], bounds[:-1, 1])
+            if not contiguous:
+                raise ValueError("Cannot guess bounds for a non-contiguous coordinate.")
+
+        # if not monthly or yearly
         else:
-            diffs = np.diff(self.points)
-            diffs = np.insert(diffs, 0, diffs[0])
-            diffs = np.append(diffs, diffs[-1])
+            if getattr(self, "circular", False):
+                points = np.empty(self.shape[0] + 2)
+                points[1:-1] = self.points
+                direction = 1 if self.points[-1] > self.points[0] else -1
+                points[0] = self.points[-1] - (self.units.modulus * direction)
+                points[-1] = self.points[0] + (self.units.modulus * direction)
+                diffs = np.diff(points)
+            else:
+                diffs = np.diff(self.points)
+                diffs = np.insert(diffs, 0, diffs[0])
+                diffs = np.append(diffs, diffs[-1])
 
-        min_bounds = self.points - diffs[:-1] * bound_position
-        max_bounds = self.points + diffs[1:] * (1 - bound_position)
+            min_bounds = self.points - diffs[:-1] * bound_position
+            max_bounds = self.points + diffs[1:] * (1 - bound_position)
 
-        bounds = np.array([min_bounds, max_bounds]).transpose()
+            bounds = np.array([min_bounds, max_bounds]).transpose()
 
-        if self.name() in ("latitude", "grid_latitude") and self.units == "degree":
-            points = self.points
-            if (points >= -90).all() and (points <= 90).all():
-                np.clip(bounds, -90, 90, out=bounds)
+            if self.name() in ("latitude", "grid_latitude") and self.units == "degree":
+                points = self.points
+                if (points >= -90).all() and (points <= 90).all():
+                    np.clip(bounds, -90, 90, out=bounds)
 
         return bounds
 
-    def guess_bounds(self, bound_position=0.5):
+    def guess_bounds(self, bound_position=0.5, monthly=False, yearly=False):
         """Add contiguous bounds to a coordinate, calculated from its points.
 
         Puts a cell boundary at the specified fraction between each point and
@@ -2274,6 +2347,13 @@ class Coord(_DimensionalMetadata):
         bound_position : float, default=0.5
             The desired position of the bounds relative to the position
             of the points.
+        monthly : bool, default=False
+            If True, the coordinate must be monthly and bounds are set to the
+            start and ends of each month.
+        yearly : bool, default=False
+            If True, the coordinate must be yearly and bounds are set to the
+            start and ends of each year.
+
 
         Notes
         -----
@@ -2288,8 +2368,14 @@ class Coord(_DimensionalMetadata):
             produce unexpected results :  In such cases you should assign
             suitable values directly to the bounds property, instead.
 
+        .. note::
+
+            Monthly and Yearly work differently from the standard case. They
+            can work for single points but cannot be used together.
+
+
         """
-        self.bounds = self._guess_bounds(bound_position)
+        self.bounds = self._guess_bounds(bound_position, monthly, yearly)
 
     def intersect(self, other, return_indices=False):
         """Return a new coordinate from the intersection of two coordinates.

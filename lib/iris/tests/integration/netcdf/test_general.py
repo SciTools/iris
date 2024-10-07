@@ -488,37 +488,38 @@ class TestDatasetAndPathSaves(tests.IrisTest):
 
 @tests.skip_data
 class TestWarningRepeats(tests.IrisTest):
-    def test_datum_once(self):
-        """Tests for warnings being duplicated.
+    def test_warning_repeats(self):
+        """Confirm Iris load does not break Python duplicate warning handling."""
+        # units.nc is designed for testing Iris' 'ignoring invalid units'
+        #  warning; it contains two variables with invalid units, producing two
+        #  unique warnings (due to two different messages).
+        file_path = tests.get_data_path(("NetCDF", "testing", "units.nc"))
 
-        Notes
-        -----
-        This test relies on `iris.load` throwing a warning. This warning might
-        be removed in the future, in which case `assert len(record) == 2 should`
-        be change to `assert len(record) == 1`.
-
-        toa_brightness_temperature.nc has an AuxCoord with lazy data, and triggers a
-        specific part of dask which contains a `catch_warnings()` call which
-        causes warnings to be repeated, and so has been removed from the
-        `fnames` list until a solution is found for such a file.
-
-        """
-        #
-        fnames = [
-            "false_east_north_merc.nc",
-            "non_unit_scale_factor_merc.nc",
-            # toa_brightness_temperature.nc,
-        ]
-        fpaths = [
-            tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
-        ]
+        def _raise_warning() -> None:
+            # Contain in function so warning always has identical line number.
+            warnings.warn("Dummy warning", category=iris.warnings.IrisUserWarning)
 
         with warnings.catch_warnings(record=True) as record:
             warnings.simplefilter("default")
-            for fpath in fpaths:
-                iris.load(fpath)
-                warnings.warn("Dummy warning", category=iris.warnings.IrisUserWarning)
-        assert len(record) == 2
+
+            # Warn before Iris has been invoked.
+            _raise_warning()
+            assert len(record) == 1
+
+            # This Iris call should raise 2 warnings and should NOT affect
+            #  Python's duplicate warning handling.
+            _ = iris.load(file_path)
+            assert len(record) == 3
+            # Raise a duplicate warning.
+            _raise_warning()
+            assert len(record) == 3
+
+            # Repeated identical calls should only raise duplicate warnings
+            #  and therefore not affect the record.
+            for i in range(2):
+                _ = iris.load(file_path)
+                _raise_warning()
+            assert len(record) == 3
 
 
 if __name__ == "__main__":

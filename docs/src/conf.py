@@ -211,7 +211,7 @@ autodoc_default_options = {
 }
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
-autodoc_typehints = "none"
+autodoc_typehints = "description"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
@@ -246,16 +246,17 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cf_units": ("https://cf-units.readthedocs.io/en/stable/", None),
+    "cftime": ("https://unidata.github.io/cftime/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
     "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "dask": ("https://docs.dask.org/en/stable/", None),
-    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
