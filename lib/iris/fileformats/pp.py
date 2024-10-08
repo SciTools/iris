@@ -1178,7 +1178,7 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">i%d" % PP_WORD_DEPTH))
         b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField
