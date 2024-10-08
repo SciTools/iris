@@ -38,11 +38,11 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
-
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
+#. `@bouweandela`_ made further updates to the ``chunktype`` of Dask arrays,
+   so it corresponds better with the array content. (:pull:`5989`)
 
 💣 Incompatible Changes
 =======================
