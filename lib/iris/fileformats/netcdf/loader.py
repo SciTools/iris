@@ -215,6 +215,28 @@ def _get_cf_var_data(cf_var, filename):
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
         result = cf_var._data_array
     else:
+        #####################
+        # ChrisB TODO: 
+        # Ideally, we want to check the type of the netCDF variable; if it is a
+        # `netCDF4.VLType`
+        # The caveat on this that variable length string (str) data is still stored
+        # as a normal `netCDF4.Variable`
+        #
+        # The problem is that we cannot get to the underlying netCDF4 type from
+        # the Iris CFVar* classes.
+        #
+        # The lazy load also needs updating as it fails with the `str` type
+        # when decoding the dtype.
+        #
+        # psedo code:
+        #   if not (isinstance(cf_var.'nc variable tpye', netCDF4.VLType) or
+        #       cf_var.dtype is str) or
+        #       cf_var.size * cf_var.dtype.itemsize <_LAZYVAR_MIN_BYTES:
+        #     <load the data>
+        #   else:
+        #     <lazy load>
+        #####################
+
         # Determine size of array; however can't do this for variable length (VLEN)
         # arrays as the size of the array can only be known by reading the data.
         print(f'[CB] {cf_var}: type: {type(cf_var)}')
