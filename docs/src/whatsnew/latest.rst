@@ -34,6 +34,10 @@ This document explains the changes made to Iris for this release
    equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
    in :issue:`6108`, actioned in :pull:`6119`.
 
+#. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
+   based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
+   :issue:`4039` (:pull:`6167`).
+
 
 🐛 Bugs Fixed
 =============
@@ -100,8 +104,9 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@fnattino: https://github.com/fnattino
 .. _@jrackham-mo: https://github.com/jrackham-mo
-
+.. _@stefsmeets: https://github.com/stefsmeets
 
 .. comment
     Whatsnew resources in alphabetical order:
