@@ -48,14 +48,15 @@ def _title(cube_or_coord, with_units):
     return title
 
 
-def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
+def _label(cube, mode, result=None, ndims=2, coords=None, axes=None, colorbar=True):
     """Put labels on the current plot using the given cube."""
     if axes is None:
         axes = plt.gca()
 
     axes.set_title(_title(cube, with_units=False))
 
-    if result is not None:
+    # optional colorbar
+    if colorbar and result is not None:
         draw_edges = mode == iris.coords.POINT_MODE
         bar = plt.colorbar(
             result, ax=axes, orientation="horizontal", drawedges=draw_edges
@@ -89,12 +90,12 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None):
         raise ValueError(msg)
 
 
-def _label_with_bounds(cube, result=None, ndims=2, coords=None, axes=None):
-    _label(cube, iris.coords.BOUND_MODE, result, ndims, coords, axes)
+def _label_with_bounds(cube, result=None, ndims=2, coords=None, axes=None, colorbar=True):
+    _label(cube, iris.coords.BOUND_MODE, result, ndims, coords, axes, colorbar)
 
 
-def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None):
-    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, axes)
+def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None, colorbar=True):
+    _label(cube, iris.coords.POINT_MODE, result, ndims, coords, axes, colorbar)
 
 
 def _get_titles(u_object, v_object):
@@ -181,6 +182,11 @@ def contourf(cube, *args, **kwargs):
 
         contour(cube, V)
 
+    Keywords
+    --------
+    colorbar : bool, default=True
+        If True, an appropriate colorbar will be added to the plot.
+
     See :func:`iris.plot.contourf` for details of valid keyword arguments.
 
     Notes
@@ -190,8 +196,9 @@ def contourf(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
+    colorbar = kwargs.pop("colorbar")
     result = iplt.contourf(cube, *args, **kwargs)
-    _label_with_points(cube, result, coords=coords, axes=axes)
+    _label_with_points(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
 
 
@@ -229,6 +236,11 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 def pcolor(cube, *args, **kwargs):
     """Draw a labelled pseudocolor plot based on the given Cube.
 
+    Keywords
+    --------
+    colorbar : bool, default=True
+        If True, an appropriate colorbar will be added to the plot.
+
     See :func:`iris.plot.pcolor` for details of valid keyword arguments.
 
     Notes
@@ -238,13 +250,19 @@ def pcolor(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
+    colorbar = kwargs.pop("colorbar")
     result = iplt.pcolor(cube, *args, **kwargs)
-    _label_with_bounds(cube, result, coords=coords, axes=axes)
+    _label_with_bounds(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
 
 
 def pcolormesh(cube, *args, **kwargs):
     """Draw a labelled pseudocolour plot based on the given Cube.
+
+    Keywords
+    --------
+    colorbar : bool, default=True
+        If True, an appropriate colorbar will be added to the plot.
 
     See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
 
@@ -256,8 +274,9 @@ def pcolormesh(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
+    colorbar = kwargs.pop("colorbar")
     result = iplt.pcolormesh(cube, *args, **kwargs)
-    _label_with_bounds(cube, result, coords=coords, axes=axes)
+    _label_with_bounds(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
 
 
