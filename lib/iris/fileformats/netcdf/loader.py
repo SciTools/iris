@@ -215,8 +215,15 @@ def _get_cf_var_data(cf_var, filename):
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
         result = cf_var._data_array
     else:
-        total_bytes = cf_var.size * cf_var.dtype.itemsize
-        if total_bytes < _LAZYVAR_MIN_BYTES:
+        # Determine size of array; however can't do this for variable length (VLEN)
+        # arrays as the size of the array can only be known by reading the data.
+        print(f'[CB] {cf_var}: type: {type(cf_var)}')
+        print(f'[CB] has itemsize? {hasattr(cf_var.dtype, 'itemsize')}')
+        if cf_var.dtype is str or \
+            cf_var.size * cf_var.dtype.itemsize <_LAZYVAR_MIN_BYTES:
+        
+#        total_bytes = cf_var.size * cf_var.dtype.itemsize
+#        if total_bytes < _LAZYVAR_MIN_BYTES:
             # Don't make a lazy array, as it will cost more memory AND more time to access.
             # Instead fetch the data immediately, as a real array, and return that.
             result = cf_var[:]
