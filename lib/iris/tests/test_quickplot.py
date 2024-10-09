@@ -175,8 +175,11 @@ class TestLabels(tests.GraphicsTest):
         self.check_graphic()
 
     def test_contourf_no_colorbar(self):
-        qplt.contourf(self._small(), colorbar=False,
-            coords=["model_level_number", "grid_longitude"])
+        qplt.contourf(
+            self._small(),
+            colorbar=False,
+            coords=["model_level_number", "grid_longitude"],
+        )
         self.check_graphic()
 
     def test_pcolor(self):
