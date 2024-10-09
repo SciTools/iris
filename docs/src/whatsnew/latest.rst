@@ -24,6 +24,10 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
+.. todo::
+    warn people about changes in NumPy 2. Better data type handling means
+    some of their Cubes will have different types to before.
+
 #. N/A
 
 
