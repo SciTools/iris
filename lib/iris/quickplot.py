@@ -90,11 +90,15 @@ def _label(cube, mode, result=None, ndims=2, coords=None, axes=None, colorbar=Tr
         raise ValueError(msg)
 
 
-def _label_with_bounds(cube, result=None, ndims=2, coords=None, axes=None, colorbar=True):
+def _label_with_bounds(
+    cube, result=None, ndims=2, coords=None, axes=None, colorbar=True
+):
     _label(cube, iris.coords.BOUND_MODE, result, ndims, coords, axes, colorbar)
 
 
-def _label_with_points(cube, result=None, ndims=2, coords=None, axes=None, colorbar=True):
+def _label_with_points(
+    cube, result=None, ndims=2, coords=None, axes=None, colorbar=True
+):
     _label(cube, iris.coords.POINT_MODE, result, ndims, coords, axes, colorbar)
 
 
