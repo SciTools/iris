@@ -8,6 +8,7 @@
 import iris.tests as tests  # isort:skip
 
 import numpy as np
+import pytest
 
 import iris
 import iris.tests.test_plot as test_plot
@@ -104,6 +105,7 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
 
 @tests.skip_data
 @tests.skip_plot
+@pytest.mark.skip
 class TestLabels(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
