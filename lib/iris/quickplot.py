@@ -196,7 +196,7 @@ def contourf(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
-    colorbar = kwargs.pop("colorbar")
+    colorbar = kwargs.pop("colorbar", True)
     result = iplt.contourf(cube, *args, **kwargs)
     _label_with_points(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
@@ -250,7 +250,7 @@ def pcolor(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
-    colorbar = kwargs.pop("colorbar")
+    colorbar = kwargs.pop("colorbar", True)
     result = iplt.pcolor(cube, *args, **kwargs)
     _label_with_bounds(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
@@ -274,7 +274,7 @@ def pcolormesh(cube, *args, **kwargs):
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
-    colorbar = kwargs.pop("colorbar")
+    colorbar = kwargs.pop("colorbar", True)
     result = iplt.pcolormesh(cube, *args, **kwargs)
     _label_with_bounds(cube, result, coords=coords, axes=axes, colorbar=colorbar)
     return result
