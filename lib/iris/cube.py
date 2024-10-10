@@ -113,7 +113,7 @@ class _CubeFilterCollection:
             pair.add(cube)
 
     def cubes(self):
-        """Return all the cubes in this collection concatenated into a single :class:`CubeList`."""
+        """Return all the cubes in this collection in a single :class:`CubeList`."""
         result = CubeList()
         for pair in self.pairs:
             result.extend(pair.cubes)
