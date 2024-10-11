@@ -1,4 +1,4 @@
-cartopy!=0.23
+cartopy>=0.21,!=0.23
 cf-units>=3.1
 cftime>=1.5.0
 dask[array]>=2022.9.0,!=2024.8.0
