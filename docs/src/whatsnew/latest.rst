@@ -38,8 +38,6 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
-
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
@@ -80,7 +78,9 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ introduced a ``!=0.23`` Cartopy pin, to avoid
+   a previous bug of titles clashing with axis labels.
+   (`cartopy#2390`_, :pull:`6171`)
 
 
 📚 Documentation
@@ -105,3 +105,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
