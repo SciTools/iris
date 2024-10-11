@@ -80,7 +80,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ introduced a ``!=0.23`` Cartopy pin, to avoid
    a previous bug of titles clashing with axis labels.
-   (`cartopy#2390`_, :pull:`5980`)
+   (`cartopy#2390`_, :pull:`6171`)
 
 
 📚 Documentation
