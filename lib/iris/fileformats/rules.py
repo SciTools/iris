@@ -5,6 +5,7 @@
 """Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
+import threading
 import warnings
 
 import cf_units
@@ -143,7 +144,11 @@ class _ReferenceError(Exception):
 
 
 def _dereference_args(factory, reference_targets, regrid_cache, cube):
-    """Convert all the arguments for a factory into concrete coordinates."""
+    """Convert all the arguments for a factory into concrete coordinates.
+
+    Note: where multiple reference fields define an additional dimension, this routine
+    returns a modified 'cube', with the necessary additional dimensions.
+    """
     args = []
     for arg in factory.args:
         if isinstance(arg, Reference):
@@ -178,6 +183,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
             # If it wasn't a Reference, then arg is a dictionary
             # of keyword arguments for cube.coord(...).
             args.append(cube.coord(**arg))
+
     return args, cube
 
 
@@ -224,18 +230,24 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # single, distinct dimension.
         # PP-MOD: first promote any scalar coords when needed as dims
         for target_coord in target_dimcoords:
-            if not target_cube.coord_dims(target_coord):
+            from iris import LOAD_POLICY
+
+            if (
+                not target_cube.coord_dims(target_coord)
+                and LOAD_POLICY.support_multiple_references
+            ):
                 # The chosen coord is not a dimcoord in the target (yet)
                 # Make it one with 'new_axis'
                 from iris.util import new_axis
 
+                _MULTIREF_DETECTION.found_multiple_refs = True
                 # Include the other coords on that dim in the src : this means the
                 # src merge identifies which belong on that dim
                 # (e.g. 'forecast_period' along with 'time')
                 (src_dim,) = src_cube.coord_dims(target_coord)  # should have 1 dim
                 promote_other_coords = [
                     target_cube.coord(src_coord)
-                    for src_coord in src_cube.coords(dimensions=src_dim)
+                    for src_coord in src_cube.coords(contains_dimension=src_dim)
                     if src_coord.name() != target_coord.name()
                 ]
                 target_cube = new_axis(
@@ -364,7 +376,33 @@ def _resolve_factory_references(
             aux_factory = factory.factory_class(*args)
             cube.add_aux_factory(aux_factory)
 
+    # In the case of multiple references which vary on a new dimension
+    # (such as time-dependent orography or surface-pressure), the cube may get replaced
+    # by one with a new dimension.
+    # In that case we must update the factory so its dependencies are coords of the
+    # new cube.
+    cube_coord_ids = [
+        id(coord) for coord, _ in cube._dim_coords_and_dims + cube._aux_coords_and_dims
+    ]
+    for factory in cube.aux_factories:
+        for name, dep in list(factory.dependencies.items()):
+            if id(dep) not in cube_coord_ids:
+                factory.update(dep, cube.coord(dep))
+
     return cube
+
+
+class MultipleReferenceFieldDetector(threading.local):
+    def __init__(self):
+        self.found_multiple_refs = False
+
+
+# A single global object (per thread) to record whether multiple reference fields
+# (e.g. time-dependent orography, or surface pressure fields) have been detected during
+# the latest load operation.
+# This is used purely to implement the iris.LOAD_POLICY.multiref_triggers_concatenate
+# functionality.
+_MULTIREF_DETECTION = MultipleReferenceFieldDetector()
 
 
 def _load_pairs_from_fields_and_filenames(
@@ -376,6 +414,7 @@ def _load_pairs_from_fields_and_filenames(
     # needs a filename associated with each field to support the load callback.
     concrete_reference_targets = {}
     results_needing_reference = []
+
     for field, filename in fields_and_filenames:
         # Convert the field to a Cube, passing down the 'converter' function.
         cube, factories, references = _make_cube(field, converter)

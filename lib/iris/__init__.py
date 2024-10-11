@@ -292,8 +292,17 @@ def _generate_cubes(uris, callback, constraints):
 
 def _load_collection(uris, constraints=None, callback=None):
     from iris.cube import _CubeFilterCollection
+    from iris.fileformats.rules import _MULTIREF_DETECTION
 
     try:
+        # This routine is called once per iris load operation.
+        # Control of the "multiple refs" handling is implicit in this routine
+        # NOTE: detection of multiple reference fields, and it's enabling of post-load
+        # concatenation, is triggered **per-load, not per-cube**
+        # This behaves unexpectefly for "iris.load_cubes" : a post-concatenation is
+        # triggered for all cubes or none, not per-cube (i.e. per constraint).
+        _MULTIREF_DETECTION.found_multiple_refs = False
+
         cubes = _generate_cubes(uris, callback, constraints)
         result = _CubeFilterCollection.from_cubes(cubes, constraints)
     except EOFError as e:
@@ -303,7 +312,118 @@ def _load_collection(uris, constraints=None, callback=None):
     return result
 
 
-def load(uris, constraints=None, callback=None):
+class LoadPolicy(threading.local):
+    """Object defining a general loading strategy."""
+
+    _allkeys = (
+        "support_multiple_references",
+        "multiref_triggers_concatenate",
+        "use_concatenate",
+        "use_merge",
+        "cat_before_merge",
+        "repeat_until_done",
+    )
+
+    def __init__(
+        self,
+        support_multiple_references: bool = False,
+        multiref_triggers_concatenate: bool = False,
+        use_concatenate: bool = False,
+        use_merge: bool = True,
+        cat_before_merge: bool = False,
+        repeat_until_done: bool = False,
+    ):
+        """Container for loading controls."""
+        self.support_multiple_references = support_multiple_references
+        self.multiref_triggers_concatenate = multiref_triggers_concatenate
+        self.use_concatenate = use_concatenate
+        self.use_merge = use_merge
+        self.cat_before_merge = cat_before_merge
+        self.repeat_until_done = repeat_until_done
+
+    def __repr__(self):
+        msg = (
+            "LoadPolicy("
+            f"support_multiple_references={self.support_multiple_references}, "
+            f"multiref_triggers_concatenate={self.multiref_triggers_concatenate}, "
+            f"use_concatenate={self.use_concatenate}, "
+            f"use_merge={self.use_merge}, "
+            f"cat_before_merge={self.cat_before_merge}, "
+            f"repeat_until_done={self.repeat_until_done}"
+            ")"
+        )
+        return msg
+
+    def copy(self):
+        return LoadPolicy(**{key: getattr(self, key) for key in self._allkeys})
+
+    @contextlib.contextmanager
+    def context(self, policy=None, **kwargs):
+        """Return context manager for temporary options.
+
+        Modifies the given parameters within a context, for the active thread.
+        """
+        # Save the current statr
+        current_state = self.__dict__.copy()
+
+        # Update the state from given policy object and/or method keywords
+        for name in self._allkeys:
+            value = getattr(self, name)
+            if policy and hasattr(policy, name):
+                value = getattr(policy, name)
+            if name in kwargs:
+                value = kwargs[name]
+            setattr(self, name, value)
+
+        try:
+            # Execute the context
+            yield
+        finally:
+            # Return the state
+            self.__dict__.clear()
+            self.__dict__.update(current_state)
+
+
+LOAD_POLICY = LoadPolicy()
+LOAD_POLICY_LEGACY = LoadPolicy()
+LOAD_POLICY_RECOMMENDED = LoadPolicy(
+    support_multiple_references=True, multiref_triggers_concatenate=True
+)
+LOAD_POLICY_COMPREHENSIVE = LoadPolicy(
+    support_multiple_references=True, use_concatenate=True, repeat_until_done=True
+)
+
+
+def _current_effective_policy():
+    policy = LOAD_POLICY
+    if not policy.use_concatenate and policy.multiref_triggers_concatenate:
+        from iris.fileformats.rules import _MULTIREF_DETECTION
+
+        if _MULTIREF_DETECTION.found_multiple_refs:
+            policy = policy.copy()
+            policy.use_concatenate = True
+    return policy
+
+
+def _apply_loading_policy(cubes, policy=None):
+    if not policy:
+        policy = _current_effective_policy()
+    while True:
+        n_original_cubes = len(cubes)
+        if policy.use_concatenate and policy.cat_before_merge:
+            cubes = cubes.concatenate()
+        if policy.use_merge:
+            cubes = cubes.merge()
+        if policy.use_concatenate and not policy.cat_before_merge:
+            cubes = cubes.concatenate()
+        n_new_cubes = len(cubes)
+        if not policy.repeat_until_done or n_new_cubes >= n_original_cubes:
+            break
+
+    return cubes
+
+
+def load(uris, constraints=None, callback=None, policy=None):
     """Load any number of Cubes for each constraint.
 
     For a full description of the arguments, please see the module
@@ -327,7 +447,9 @@ def load(uris, constraints=None, callback=None):
         were random.
 
     """
-    return _load_collection(uris, constraints, callback).merged().cubes()
+    cubes = _load_collection(uris, constraints, callback).cubes()
+    cubes = _apply_loading_policy(cubes)
+    return cubes
 
 
 def load_cube(uris, constraint=None, callback=None):
