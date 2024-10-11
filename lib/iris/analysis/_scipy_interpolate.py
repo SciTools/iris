@@ -1,7 +1,10 @@
 import itertools
 
+import dask.array
 import numpy as np
-from scipy.sparse import csr_matrix
+from sparse import GCXS
+
+from iris._lazy_data import is_lazy_data
 
 # ============================================================================
 # |                        Copyright SciPy                                   |
@@ -218,7 +221,7 @@ class _RegularGridInterpolator:
             n_result_values = len(indices[0])
             n_non_zero = n_result_values * n_src_values_per_result_value
             weights = np.ones(n_non_zero, dtype=norm_distances[0].dtype)
-            col_indices = np.empty(n_non_zero)
+            col_indices = np.empty(n_non_zero, dtype=int)
             row_ptrs = np.arange(
                 0,
                 n_non_zero + n_src_values_per_result_value,
@@ -238,11 +241,13 @@ class _RegularGridInterpolator:
                     weights[i::n_src_values_per_result_value] *= cw
 
             n_src_values = np.prod(list(map(len, self.grid)))
-            sparse_matrix = csr_matrix(
+            sparse_matrix = GCXS(
                 (weights, col_indices, row_ptrs),
+                compressed_axes=[0],
                 shape=(n_result_values, n_src_values),
             )
-
+            if is_lazy_data(self.values):
+                sparse_matrix = dask.array.from_array(sparse_matrix)
             prepared = (xi_shape, method, sparse_matrix, None, out_of_bounds)
 
         return prepared
@@ -289,10 +294,10 @@ class _RegularGridInterpolator:
     def _evaluate_linear_sparse(self, sparse_matrix):
         ndim = len(self.grid)
         if ndim == self.values.ndim:
-            result = sparse_matrix * self.values.reshape(-1)
+            result = sparse_matrix @ self.values.reshape(-1)
         else:
             shape = (sparse_matrix.shape[1], -1)
-            result = sparse_matrix * self.values.reshape(shape)
+            result = sparse_matrix @ self.values.reshape(shape)
 
         return result
 
@@ -300,7 +305,12 @@ class _RegularGridInterpolator:
         idx_res = []
         for i, yi in zip(indices, norm_distances):
             idx_res.append(np.where(yi <= 0.5, i, i + 1))
-        return self.values[tuple(idx_res)]
+        if is_lazy_data(self.values):
+            # dask arrays do not (yet) support fancy indexing
+            indexer = self.values.vindex
+        else:
+            indexer = self.values
+        return indexer[tuple(idx_res)]
 
     def _find_indices(self, xi):
         # find relevant edges between which xi are situated
