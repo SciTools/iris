@@ -61,7 +61,7 @@ class _GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
 
 
 cartopy_version = Version(cartopy.__version__)
-if cartopy_version.major == "0" and cartopy_version.minor == "23":
+if cartopy_version.major == 0 and cartopy_version.minor == 23:
     cartopy.mpl.geoaxes.GeoAxes = _GeoAxesPatched
 
 
