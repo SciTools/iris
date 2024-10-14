@@ -64,6 +64,8 @@ class _CubeFilter:
     """A constraint, paired with a list of cubes matching that constraint."""
 
     def __init__(self, constraint, cubes=None):
+        from iris.cube import CubeList
+
         self.constraint = constraint
         if cubes is None:
             cubes = CubeList()
@@ -78,7 +80,7 @@ class _CubeFilter:
         if sub_cube is not None:
             self.cubes.append(sub_cube)
 
-    def merged(self, unique=False):
+    def combined(self, unique=False):
         """Return a new :class:`_CubeFilter` by merging the list of cubes.
 
         Parameters
@@ -88,7 +90,12 @@ class _CubeFilter:
             duplicate cubes are detected.
 
         """
-        return _CubeFilter(self.constraint, self.cubes.merge(unique))
+        from iris import _combine_with_loading_policy
+
+        return _CubeFilter(
+            self.constraint,
+            _combine_with_loading_policy(self.cubes, merge_require_unique=unique),
+        )
 
 
 class _CubeFilterCollection:
@@ -114,12 +121,14 @@ class _CubeFilterCollection:
 
     def cubes(self):
         """Return all the cubes in this collection in a single :class:`CubeList`."""
+        from iris.cube import CubeList
+
         result = CubeList()
         for pair in self.pairs:
             result.extend(pair.cubes)
         return result
 
-    def merged(self, unique=False):
+    def combined(self, unique=False):
         """Return a new :class:`_CubeFilterCollection` by merging all the cube lists of this collection.
 
         Parameters
@@ -129,7 +138,7 @@ class _CubeFilterCollection:
             duplicate cubes are detected.
 
         """
-        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
+        return _CubeFilterCollection([pair.combined(unique) for pair in self.pairs])
 
 
 class CubeList(list):

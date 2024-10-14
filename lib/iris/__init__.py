@@ -405,7 +405,7 @@ def _current_effective_policy():
     return policy
 
 
-def _apply_loading_policy(cubes, policy=None):
+def _combine_with_loading_policy(cubes, policy=None, merge_require_unique=False):
     if not policy:
         policy = _current_effective_policy()
     while True:
@@ -413,7 +413,7 @@ def _apply_loading_policy(cubes, policy=None):
         if policy.use_concatenate and policy.cat_before_merge:
             cubes = cubes.concatenate()
         if policy.use_merge:
-            cubes = cubes.merge()
+            cubes = cubes.merge(unique=merge_require_unique)
         if policy.use_concatenate and not policy.cat_before_merge:
             cubes = cubes.concatenate()
         n_new_cubes = len(cubes)
@@ -447,8 +447,7 @@ def load(uris, constraints=None, callback=None, policy=None):
         were random.
 
     """
-    cubes = _load_collection(uris, constraints, callback).cubes()
-    cubes = _apply_loading_policy(cubes)
+    cubes = _load_collection(uris, constraints, callback).combined().cubes()
     return cubes
 
 
@@ -477,9 +476,11 @@ def load_cube(uris, constraint=None, callback=None):
     if len(constraints) != 1:
         raise ValueError("only a single constraint is allowed")
 
-    cubes = _load_collection(uris, constraints, callback).cubes()
+    cubes = _load_collection(uris, constraints, callback).combined(unique=False).cubes()
 
     try:
+        # NOTE: this call currently retained to preserve the legacy exceptions
+        # TODO: replace with simple testing to duplicate the relevant error cases
         cube = cubes.merge_cube()
     except iris.exceptions.MergeError as e:
         raise iris.exceptions.ConstraintMismatchError(str(e))
@@ -514,7 +515,7 @@ def load_cubes(uris, constraints=None, callback=None):
 
     """
     # Merge the incoming cubes
-    collection = _load_collection(uris, constraints, callback).merged()
+    collection = _load_collection(uris, constraints, callback).combined()
 
     # Make sure we have exactly one merged cube per constraint
     bad_pairs = [pair for pair in collection.pairs if len(pair) != 1]
