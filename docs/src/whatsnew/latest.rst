@@ -78,9 +78,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@trexfeathers`_ introduced a ``!=0.23`` Cartopy pin, to avoid
-   a previous bug of titles clashing with axis labels.
-   (`cartopy#2390`_, :pull:`6171`)
+#. N/A
 
 
 📚 Documentation
@@ -94,6 +92,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ improved the new ``tracemalloc`` benchmarking (introduced
    in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
    as timing benchmarks. (:pull:`5981`)
+
+#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
+   :pull:`6172`)
 
 
 .. comment

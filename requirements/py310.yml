@@ -11,7 +11,7 @@ dependencies:
   - setuptools-scm >=7
 
 # Core dependencies.
-  - cartopy >=0.21,!=0.23
+  - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
   - dask-core >=2022.9.0,!=2024.8.0
