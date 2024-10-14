@@ -386,7 +386,7 @@ def _resolve_factory_references(
     ]
     for factory in cube.aux_factories:
         for name, dep in list(factory.dependencies.items()):
-            if id(dep) not in cube_coord_ids:
+            if dep and id(dep) not in cube_coord_ids:
                 factory.update(dep, cube.coord(dep))
 
     return cube
