@@ -39,7 +39,7 @@
     <cellMethods/>
     <data checksum="0x35e68db7" dtype="float32" shape="(3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="tile surftemp" units="degC">
+  <cube dtype="float64" long_name="tile surftemp" units="degC">
     <attributes>
       <attribute name="field_code" value="301"/>
       <attribute name="institution" value="Met Office"/>
@@ -81,9 +81,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x173b47c6" dtype="float32" mask_checksum="0xdb37b9b9" shape="(10, 3, 3)"/>
+    <data checksum="0xff5ef1a9" dtype="float64" mask_checksum="0xdb37b9b9" shape="(10, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="tile screen temp" units="degC">
+  <cube dtype="float64" long_name="tile screen temp" units="degC">
     <attributes>
       <attribute name="field_code" value="302"/>
       <attribute name="institution" value="Met Office"/>
@@ -125,6 +125,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x173b47c6" dtype="float32" mask_checksum="0xdb37b9b9" shape="(10, 3, 3)"/>
+    <data checksum="0xff5ef1a9" dtype="float64" mask_checksum="0xdb37b9b9" shape="(10, 3, 3)"/>
   </cube>
 </cubes>

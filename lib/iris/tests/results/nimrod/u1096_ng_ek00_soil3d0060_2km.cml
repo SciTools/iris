@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <cubes xmlns="urn:x-iris:cubeml-0.2">
-  <cube dtype="float32" long_name="3dsoilmoisture" units="mm">
+  <cube dtype="float64" long_name="3dsoilmoisture" units="mm">
     <attributes>
       <attribute name="field_code" value="191"/>
       <attribute name="institution" value="Met Office"/>
@@ -44,9 +44,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x700a059c" dtype="float32" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
+    <data checksum="0xebf26a52" dtype="float64" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="3dsoiltemp" units="degC">
+  <cube dtype="float64" long_name="3dsoiltemp" units="degC">
     <attributes>
       <attribute name="field_code" value="190"/>
       <attribute name="institution" value="Met Office"/>
@@ -90,9 +90,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x700a059c" dtype="float32" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
+    <data checksum="0xebf26a52" dtype="float64" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="unfrozensoilwater" units="1">
+  <cube dtype="float64" long_name="unfrozensoilwater" units="1">
     <attributes>
       <attribute name="field_code" value="192"/>
       <attribute name="institution" value="Met Office"/>
@@ -136,9 +136,9 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x700a059c" dtype="float32" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
+    <data checksum="0xebf26a52" dtype="float64" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
   </cube>
-  <cube dtype="float32" long_name="frozensoilwater" units="1">
+  <cube dtype="float64" long_name="frozensoilwater" units="1">
     <attributes>
       <attribute name="field_code" value="193"/>
       <attribute name="institution" value="Met Office"/>
@@ -182,6 +182,6 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0x700a059c" dtype="float32" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
+    <data checksum="0xebf26a52" dtype="float64" mask_checksum="0x59137a2c" shape="(4, 3, 3)"/>
   </cube>
 </cubes>
