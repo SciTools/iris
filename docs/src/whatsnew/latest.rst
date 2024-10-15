@@ -49,8 +49,6 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
-
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
@@ -106,6 +104,9 @@ This document explains the changes made to Iris for this release
    in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
    as timing benchmarks. (:pull:`5981`)
 
+#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
+   :pull:`6172`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -116,3 +117,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390

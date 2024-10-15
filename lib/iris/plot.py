@@ -12,6 +12,7 @@ import collections
 import datetime
 import warnings
 
+import cartopy
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
 import cartopy.mpl.geoaxes
@@ -25,6 +26,7 @@ import matplotlib.ticker as mpl_ticker
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
+from packaging.version import Version
 
 import iris.analysis.cartography as cartography
 import iris.coord_systems
@@ -44,8 +46,9 @@ PlotDefn = collections.namedtuple("PlotDefn", ("coords", "transpose"))
 
 
 class _GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
-    # TODO: see cartopy#2390
-    #  Remove this once the bug is addressed in a Cartopy release.
+    # Workaround for a bug where titles collide with axis labels (cartopy#2390)
+    # Bug is only present in Cartopy v0.23, so this will only be invoked for
+    #  that version.
     def _draw_preprocess(self, renderer):
         super()._draw_preprocess(renderer)
 
@@ -57,7 +60,9 @@ class _GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
                 artist._draw_gridliner(renderer=renderer)
 
 
-cartopy.mpl.geoaxes.GeoAxes = _GeoAxesPatched
+cartopy_version = Version(cartopy.__version__)
+if cartopy_version.major == 0 and cartopy_version.minor == 23:
+    cartopy.mpl.geoaxes.GeoAxes = _GeoAxesPatched
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
