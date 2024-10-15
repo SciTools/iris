@@ -328,6 +328,56 @@ class LoadPolicy(threading.local):
 
         from iris import LOAD_POLICY
 
+    Notes
+    -----
+    The individual configurable options are :
+
+    * ``support_multiple_references`` = True / False
+        When enabled, the presence of multiple aux-factory reference cubes, which merge
+        to define a extra dimension, will add that dimension to the loaded cubes.
+        This is essential for correct support of time-dependent hybrid coordinates (i.e.
+        aux factories) when loading from fields-based data (e.g. PP or GRIB).
+        For example (notably) time-dependent orography in UM data on hybrid-heights.
+
+        In addition, when such multiple references are detected, an extra concatenate
+        step is added to the 'merge_concat_sequence' (see below), if none is already
+        configured there.
+
+    * ``merge_concat_sequence`` = "m" / "c" / "cm" / "mc"
+        Specifies whether to merge, or concatenate, or both in either order.
+        This is the :func:`~iris.combine_cubes` operation to loaded data.
+
+    * ``repeat_until_unchanged`` = True / False
+        When enabled, the configured "combine" operation will be repeated until the
+        result is stable (no more cubes are combined).
+
+    Several common sets of options are provided in :data:`~iris.LOAD_POLICY.SETTINGS` :
+
+    *  ``"legacy"``
+        Produces results identical to Iris versions < 3.11, i.e. before the varying
+        hybrid references were supported.
+
+    * ``"default"``
+        As "legacy" except that ``support_multiple_references=True``.  This differs
+        from "legacy" only when multiple mergeable reference fields are encountered,
+        in which case incoming cubes are extended into the extra dimension, and a
+        concatenate step is added
+
+    * ``"recommended"``
+        Enables multiple reference handling, and applies a merge step followed by
+        a concatenate step.
+
+    * ``"comprehensive"``
+        Like "recommended", but will also *repeat* the merge+concatenate steps until no
+        further change is produced.
+
+        .. note ::
+
+            The 'comprehensive' makes the maximum effort to reduce the number of cubes
+            to a minimum.  However, it still cannot combine cubes with a mixture of
+            matching dimension and scalar coordinates.  This may be supported at some
+            later date, but for now is not possible without specific user intervention.
+
     Examples
     --------
     >>> LOAD_POLICY.set("legacy")
@@ -485,10 +535,11 @@ class LoadPolicy(threading.local):
             self.set(saved_settings)
 
 
+#: Object containing file loading options.
+LOAD_POLICY = LoadPolicy("legacy")
 # The unique (singleton) policy object
 # N.B. FOR NOW, our starting point is "legacy" rather than "default"
 # TODO: resolve tests as needed, to pass with "default".
-LOAD_POLICY = LoadPolicy("legacy")
 
 
 def combine_cubes(cubes, options=None, merge_require_unique=False):
