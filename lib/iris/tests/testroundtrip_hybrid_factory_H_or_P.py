@@ -192,12 +192,14 @@ def check_create():
 
 def test_roundtrip():
     print("Check with Iris from : ", iris.__file__)
-    from iris import (
-        LOAD_POLICY,
-        LOAD_POLICY_RECOMMENDED,
-        # LOAD_POLICY_LEGACY,
-        # LOAD_POLICY_COMPREHENSIVE
-    )
+    from iris import LOAD_POLICY
 
-    with LOAD_POLICY.context(LOAD_POLICY_RECOMMENDED):
+    # print(LOAD_POLICY)
+    # LOAD_POLICY.repeat_until_unchanged = 4
+    with LOAD_POLICY.context("default"):
+        # print(LOAD_POLICY)
+        # print("merge/concat = ", LOAD_POLICY.merge_concat_sequence)
         check_create()
+
+    # print(LOAD_POLICY)
+    # print("now legacy mode ? ", LOAD_POLICY.settings() == LOAD_POLICY.SETTINGS["legacy"])
