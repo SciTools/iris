@@ -122,6 +122,8 @@ class Resolve:
         import iris
         import numpy as np
         from iris.common import Resolve
+        # See https://github.com/dask/dask/issues/11433
+        np.set_printoptions(legacy="1.25")
         cube1 = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
         cube2 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
         cube2.transpose()

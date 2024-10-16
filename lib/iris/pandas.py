@@ -308,7 +308,7 @@ def as_cubes(
     Pandas uses ``NaN`` rather than masking data. Converted
     :class:`~iris.cube.Cube` can be masked in downstream user code :
 
-    >>> my_series = Series([300, np.NaN, 302], name="air_temperature")
+    >>> my_series = Series([300, np.nan, 302], name="air_temperature")
     >>> converted_cube = as_cubes(my_series)[0]
     >>> print(converted_cube.data)
     [300.  nan 302.]
