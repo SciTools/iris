@@ -173,7 +173,7 @@ def as_cube(
     # 1.6 doesn't. Since we don't care about preserving the order we can
     # just force it back to C-order.)
     order = "C" if copy else "A"
-    data = np.array(pandas_array, copy=copy, order=order)
+    data = np.array(pandas_array.values, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
     _add_iris_coord(cube, "index", pandas_array.index, 0, calendars.get(0, None))
     if pandas_array.ndim == 2:
