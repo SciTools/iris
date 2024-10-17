@@ -80,6 +80,10 @@ This document explains the changes made to Iris for this release
    the concatenation axis. This issue can be avoided by disabling the
    problematic check. (:pull:`5926`)
 
+#. `@fnattino`_ enabled lazy cube interpolation using the linear and
+   nearest-neighbour interpolators (:class:`iris.analysis.Linear` and
+   :class:`iris.analysis.Nearest`). (:pull:`6084`)
+
 🔥 Deprecations
 ===============
 
@@ -112,6 +116,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@fnattino: https://github.com/fnattino
 .. _@jrackham-mo: https://github.com/jrackham-mo
 
 
