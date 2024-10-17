@@ -392,11 +392,18 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
     tgt_shape = (len(grid_y.points), len(grid_x.points))
 
+    # Specify the output dtype
+    if np.issubdtype(src_cube.dtype, np.integer):
+        out_dtype = np.float64
+    else:
+        out_dtype = src_cube.dtype
+
     new_data = map_complete_blocks(
         src_cube,
-        _regrid_along_dims,
-        (src_y_dim, src_x_dim),
-        meshgrid_x.shape,
+        func=_regrid_along_dims,
+        dims=(src_y_dim, src_x_dim),
+        out_sizes=meshgrid_x.shape,
+        dtype=out_dtype,
         x_dim=src_x_dim,
         y_dim=src_y_dim,
         weights=weights,

@@ -537,11 +537,12 @@ def lazy_elementwise(lazy_array, elementwise_op):
     # call may cast to float, or not, depending on unit equality : Thus, it's
     # much safer to get udunits to decide that for us.
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
+    meta = da.utils.meta_from_array(lazy_array).astype(dtype)
 
-    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
+    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype, meta=meta)
 
 
-def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
+def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
@@ -557,6 +558,8 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         Dimensions that cannot be chunked.
     out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
+    dtype :
+        Output dtype.
     *args : tuple
         Additional arguments to pass to `func`.
     **kwargs : dict
@@ -596,8 +599,11 @@ def map_complete_blocks(src, func, dims, out_sizes, *args, **kwargs):
         for dim, size in zip(dims, out_sizes):
             out_chunks[dim] = size
 
+        # Assume operation preserves mask.
+        meta = da.utils.meta_from_array(data).astype(dtype)
+
         result = data.map_blocks(
-            func, *args, chunks=out_chunks, dtype=src.dtype, **kwargs
+            func, *args, chunks=out_chunks, meta=meta, dtype=dtype, **kwargs
         )
 
     return result
