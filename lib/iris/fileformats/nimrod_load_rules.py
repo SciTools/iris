@@ -126,10 +126,11 @@ def units(cube, field):
         "n/a": "1",
     }
 
+    dtype_original = cube.dtype
     field_units = remove_unprintable_chars(field.units)
     if field_units == "m/2-25k":
         # Handle strange visibility units
-        cube.data = (cube.data.astype(np.float32) + 25000.0) * 2
+        cube.data = (cube.data + 25000.0) * 2
         field_units = "m"
     if "*" in field_units:
         # Split into unit string and integer
@@ -137,31 +138,29 @@ def units(cube, field):
         if "^" in unit_list[1]:
             # Split out magnitude
             unit_sublist = unit_list[1].split("^")
-            cube.data = cube.data.astype(np.float32) / float(unit_sublist[0]) ** float(
-                unit_sublist[1]
-            )
+            cube.data = cube.data / float(unit_sublist[0]) ** float(unit_sublist[1])
         else:
-            cube.data = cube.data.astype(np.float32) / float(unit_list[1])
+            cube.data = cube.data / float(unit_list[1])
         field_units = unit_list[0]
     if "ug/m3E1" in field_units:
         # Split into unit string and integer
         unit_list = field_units.split("E")
-        cube.data = cube.data.astype(np.float32) / 10.0
+        cube.data = cube.data / 10.0
         field_units = unit_list[0]
     if field_units == "%":
         # Convert any percentages into fraction
         field_units = "1"
-        cube.data = cube.data.astype(np.float32) / 100.0
+        cube.data = cube.data / 100.0
     if field_units == "oktas":
         field_units = "1"
-        cube.data = cube.data.astype(np.float32) / 8.0
+        cube.data = cube.data / 8.0
     if field_units == "dBZ":
         # cf_units doesn't recognise decibels (dBZ), but does know BZ
         field_units = "BZ"
-        cube.data = cube.data.astype(np.float32) / 10.0
+        cube.data = cube.data / 10.0
     if field_units == "g/Kg":
         field_units = "kg/kg"
-        cube.data = cube.data.astype(np.float32) / 1000.0
+        cube.data = cube.data / 1000.0
     if not field_units:
         if field.field_code == 8:
             # Relative Humidity data are unitless, but not "unknown"
@@ -175,6 +174,14 @@ def units(cube, field):
         # Deal with the case where the units are of the form '/unit' eg
         # '/second' in the Nimrod file. This converts to the form unit^-1
         field_units = field_units[1:] + "^-1"
+
+    if cube.dtype != dtype_original:
+        # Original development logic: if any arithmetic takes place, ensure
+        #  the data type is float32 (starts as an int). Unknown why.
+        #  Automatic casting is returning inconsistent types when masks are
+        #  involved, so the new logic is to do the casting as the final step.
+        cube.data = cube.data.astype(np.float32)
+
     try:
         cube.units = field_units
     except ValueError:

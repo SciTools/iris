@@ -11,6 +11,7 @@ import operator
 import os
 import re
 import struct
+from typing import Any
 import warnings
 
 import cf_units
@@ -950,6 +951,21 @@ class PPField(metaclass=ABCMeta):
 
     def __repr__(self):
         """Return a string representation of the PP field."""
+
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lbuser`` is a tuple of NumPy scalars.
+
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         # Define an ordering on the basic header names
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
@@ -975,9 +991,8 @@ class PPField(metaclass=ABCMeta):
             ),
         )
 
-        return (
-            "PP Field" + "".join(["\n   %s: %s" % (k, v) for k, v in attributes]) + "\n"
-        )
+        contents = "".join([f"\n   {k}: {_str_tuple(v)}" for k, v in attributes])
+        return f"PP Field{contents}\n"
 
     @property
     def stash(self):
@@ -1178,7 +1193,7 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">i%d" % PP_WORD_DEPTH))
         b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField

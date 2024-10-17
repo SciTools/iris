@@ -47,6 +47,8 @@ class FullHeader:
 
 def string_repr(text, quote_strings=False, clip_strings=False):
     """Produce a one-line printable form of a text string."""
+    # Convert any np.str_ instances to plain strings.
+    text = str(text)
     force_quoted = re.findall("[\n\t]", text) or quote_strings
     if force_quoted:
         # Replace the string with its repr (including quotes).

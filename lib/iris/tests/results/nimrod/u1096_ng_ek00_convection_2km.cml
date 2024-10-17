@@ -212,7 +212,7 @@
       </coord>
     </coords>
     <cellMethods/>
-    <data checksum="0xac92962f" dtype="float32" shape="(3, 3)"/>
+    <data checksum="0x35c755ff" dtype="float32" shape="(3, 3)"/>
   </cube>
   <cube dtype="int16" long_name="Davies parameter" units="unknown">
     <attributes>
