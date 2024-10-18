@@ -10,8 +10,8 @@ from collections.abc import Mapping
 from functools import wraps
 from typing import Any
 
-import numpy as np
 import cf_units
+import numpy as np
 
 import iris.std_names
 
@@ -108,12 +108,12 @@ class LimitedAttributeDict(dict):
                 match = np.array_equal(value, other[key])
                 # [CB] # match = value == other[key]
 
-# [CB] I don't think this try block is need now (was there for when numpy ==
-# operator would return a scalar bool if the arrays were not the same shape)
-#                try:
-#                    match = bool(match)
-#                except ValueError:
-#                    match = match.all()
+                # [CB] I don't think this try block is need now (was there for when numpy ==
+                # operator would return a scalar bool if the arrays were not the same shape)
+                #                try:
+                #                    match = bool(match)
+                #                except ValueError:
+                #                    match = match.all()
                 if not match:
                     break
         return match

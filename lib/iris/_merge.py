@@ -397,7 +397,7 @@ class _CubeSignature(
                     ##     or
                     ##       not np.all( attrs_1[key] == attrs_2[key] )
                     ##
-                    #if np.all(attrs_1[key] != attrs_2[key])
+                    # if np.all(attrs_1[key] != attrs_2[key])
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
