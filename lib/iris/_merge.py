@@ -388,7 +388,16 @@ class _CubeSignature(
                 diff_attrs = [
                     repr(key[1])
                     for key in attrs_1
-                    if np.all(attrs_1[key] != attrs_2[key])
+                    if not np.array_equal(attrs_1[key], attrs_2[key])
+                    ## CB: Is the original line below really what was intended?
+                    ##     It only evaluates to true if ALL the values are different
+                    ##     in an array.
+                    ##     Surely it should be either:
+                    ##       np.any( attrs_1[key] != attrs_2[key] )
+                    ##     or
+                    ##       not np.all( attrs_1[key] == attrs_2[key] )
+                    ##
+                    #if np.all(attrs_1[key] != attrs_2[key])
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(

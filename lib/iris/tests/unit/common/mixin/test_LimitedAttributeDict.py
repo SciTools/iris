@@ -42,6 +42,9 @@ class Test(tests.IrisTest):
         right = LimitedAttributeDict(**values)
         self.assertEqual(left, right)
         self.assertEqual(left, values)
+
+        # ChrisB: I am not sure the follow test is really valid. It is comparing
+        # a one-element numpy array with a scalar. Is that what we want?
         values = dict(one=np.arange(1), two=np.arange(1), three=np.arange(1))
         left = LimitedAttributeDict(dict(one=0, two=0, three=0))
         right = LimitedAttributeDict(**values)
