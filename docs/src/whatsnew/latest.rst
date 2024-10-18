@@ -54,7 +54,7 @@ This document explains the changes made to Iris for this release
 
 #. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
    attribute. Also made cell_method string parsing more lenient w.r.t.
-   whitespace. (:pull:`6181`)
+   whitespace. (:pull:`6083`)
 
 💣 Incompatible Changes
 =======================
