@@ -391,8 +391,8 @@ class LoadPolicy(threading.local):
     LoadPolicy(support_multiple_references=True, merge_concat_sequence='cm', repeat_until_unchanged=False)
     >>> with LOAD_POLICY.context("comprehensive"):
     ...    print(LOAD_POLICY)
-    ... print(LOAD_POLICY)
     LoadPolicy(support_multiple_references=True, merge_concat_sequence='mc', repeat_until_unchanged=True)
+    >>> print(LOAD_POLICY)
     LoadPolicy(support_multiple_references=True, merge_concat_sequence='cm', repeat_until_unchanged=False)
 
     """
