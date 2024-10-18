@@ -106,14 +106,6 @@ class LimitedAttributeDict(dict):
         if match:
             for key, value in self.items():
                 match = np.array_equal(value, other[key])
-                # [CB] # match = value == other[key]
-
-                # [CB] I don't think this try block is need now (was there for when numpy ==
-                # operator would return a scalar bool if the arrays were not the same shape)
-                #                try:
-                #                    match = bool(match)
-                #                except ValueError:
-                #                    match = match.all()
                 if not match:
                     break
         return match
