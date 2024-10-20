@@ -580,7 +580,7 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
             cubes = cubes.concatenate()
 
         # Repeat if requested, and this step reduced the number of cubes
-        if not options["repeat_until_unchanged"] or len(cubes) < n_original_cubes:
+        if not options["repeat_until_unchanged"] or len(cubes) >= n_original_cubes:
             break
 
     return cubes
