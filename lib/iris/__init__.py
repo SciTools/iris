@@ -361,7 +361,7 @@ class LoadPolicy(threading.local):
         As "legacy" except that ``support_multiple_references=True``.  This differs
         from "legacy" only when multiple mergeable reference fields are encountered,
         in which case incoming cubes are extended into the extra dimension, and a
-        concatenate step is added
+        concatenate step is added.
 
     * ``"recommended"``
         Enables multiple reference handling, and applies a merge step followed by
@@ -373,10 +373,12 @@ class LoadPolicy(threading.local):
 
         .. note ::
 
-            The 'comprehensive' makes the maximum effort to reduce the number of cubes
-            to a minimum.  However, it still cannot combine cubes with a mixture of
-            matching dimension and scalar coordinates.  This may be supported at some
-            later date, but for now is not possible without specific user intervention.
+            The 'comprehensive' policy makes a maximum effort to reduce the number of
+            cubes to a minimum.  However, it still cannot combine cubes with a mixture
+            of matching dimension and scalar coordinates.  This may be supported at
+            some later date, but for now is not possible without specific user actions.
+
+            TODO: reference the newer advice on "new_axis" usage.
 
     Examples
     --------
@@ -460,7 +462,7 @@ class LoadPolicy(threading.local):
             :data:`~iris.LoadPolicy.SETTINGS` standard option sets,
             e.g. "legacy" or "comprehensive".
         * kwargs : dict
-            Individual options options, from :data:`~iris.LoadPolicy.OPTION_KEYS`.
+            Individual option settings, from :data:`~iris.LoadPolicy.OPTION_KEYS`.
 
         Note
         ----
@@ -491,7 +493,7 @@ class LoadPolicy(threading.local):
             setattr(self, key, value)
 
     def settings(self):
-        """Return a options dict containing the current state."""
+        """Return an options dict containing the current settings."""
         return {key: getattr(self, key) for key in self.OPTION_KEYS}
 
     def __repr__(self):
@@ -579,7 +581,7 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
             # concat if it comes last
             cubes = cubes.concatenate()
 
-        # Repeat if requested, and this step reduced the number of cubes
+        # Repeat if requested, *and* this step reduced the number of cubes
         if not options["repeat_until_unchanged"] or len(cubes) >= n_original_cubes:
             break
 
