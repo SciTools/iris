@@ -9,8 +9,8 @@ Sometimes it is not possible to appropriately combine a CubeList using merge and
 it is possible to achieve much more control over cube combination by using the :func:`~iris.util.new_axis` utility.
 Consider the following set of cubes:
 
-    >>> file_1 = iris.sample_data_path("time_varying_hybrid_height", "*_001.pp")
-    >>> file_2 = iris.sample_data_path("time_varying_hybrid_height", "*_002.pp")
+    >>> file_1 = iris.sample_data_path("time_varying_hybrid_height", "*_2160-12.pp")
+    >>> file_2 = iris.sample_data_path("time_varying_hybrid_height", "*_2161-01.pp")
     >>> cubes = iris.load([file_1, file_2], "x_wind")
     >>> print(cubes[0])
     x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
@@ -57,8 +57,9 @@ Consider the following set of cubes:
             source                      'Data from Met Office Unified Model'
             um_version                  '12.1'
 
-These two cubes vary along the time dimension, however, we are not able to combine them with :meth:`~iris.cube.Cube.merge`
-due to the fact that their ``surface_altitude`` coordinate also varies over time.
+These two cubes have different time points (i.e. scalar time value).  So we would normally be able to merge them,
+creating a time dimension.  However, in this case we can not combine them with :meth:`~iris.cube.Cube.merge`
+due to the fact that their ``surface_altitude`` coordinate also varies over time:
 
     >>> cubes.merge_cube()
     Traceback (most recent call last):
@@ -73,15 +74,16 @@ concatenating those cubes together. We can attempt this as follows:
 
     >>> from iris.util import new_axis
     >>> from iris.cube import CubeList
-    >>> test_cubes = CubeList([new_axis(cube, scalar_coord="time", expand_extras=["surface_altitude"]) for cube in cubes])
-    >>> test_cubes.concatenate_cube()
+    >>> processed_cubes = CubeList([new_axis(cube, scalar_coord="time", expand_extras=["surface_altitude"]) for cube in cubes])
+    >>> processed_cubes.concatenate_cube()
     Traceback (most recent call last):
     ...
     iris.exceptions.ConcatenateError: failed to concatenate into a single cube.
       Scalar coordinates values or metadata differ: forecast_period != forecast_period
 
-This error alerts to us that the ``forecast_period`` coordinate is also varying over time. To get concatenation to work,
-we will have to expand the dimension of this coordinate also by passing it to the ``expand_extras`` keyword.
+This error alerts us to the fact that the ``forecast_period`` coordinate is also varying over time. To get concatenation
+to work, we will have to expand the dimensions of this coordinate to include "time", by passing it also to the
+``expand_extras`` keyword.
 
     >>> processed_cubes = CubeList(
     ... [new_axis(cube, scalar_coord="time", expand_extras=["surface_altitude", "forecast_period"]) for cube in cubes]
@@ -110,15 +112,17 @@ we will have to expand the dimension of this coordinate also by passing it to th
             source                      'Data from Met Office Unified Model'
             um_version                  '12.1'
 
-Note that since the derived coordinate ``altitude`` derives from ``surface_altitude``, in the combined cube, both of
-these coordinates vary along the time dimension.
+.. note::
+    Since the derived coordinate ``altitude`` derives from ``surface_altitude``, adding ``time`` to the dimensions of
+    ``surface_altitude`` also means it is added to the dimensions of ``altitude``. So in the combined cube, both of
+    these coordinates vary along the ``time`` dimension.
 
 Controlling over multiple dimensions
 ------------------------------------
 
 We now consider a more complex case. Instead of loading 2 files across different time steps we now load 15 such files.
-Each of these files covers a month's time step, however, the ``surface_altitude`` coordinate changes every year. The
-files span 3 years so there are 3 different "surface_altitude" coordinates.
+Each of these files covers a month's time step, however, the ``surface_altitude`` coordinate changes only once per year.
+The files span 3 years so there are 3 different ``surface_altitude`` coordinates.
 
     >>> filename = iris.sample_data_path('time_varying_hybrid_height', '*.pp')
     >>> cubes = iris.load(filename, constraints="x_wind")
@@ -131,8 +135,9 @@ When :func:`iris.load` attempts to merge these cubes, it creates a cube for ever
 Note that since there is only one time point associated with the last cube, the "time" coordinate has not been promoted
 to a dimension. The ``surface_altitude`` in each of the above cubes is 2D, however, since some of these coordinates
 already have a time dimension, it is not possible to use :func:`~iris.util.new_axis` as above to promote
-``surface_altitude`` as we have done above. In order to fully control the merge process we instead use
-:func:`iris.load_raw`:
+``surface_altitude`` as we have done above.
+
+In order to fully control the merge process we instead use :func:`iris.load_raw`:
 
     >>> raw_cubes = iris.load_raw(filename, constraints="x_wind")
     >>> print(raw_cubes)
@@ -143,9 +148,9 @@ already have a time dimension, it is not possible to use :func:`~iris.util.new_a
     74: x_wind / (m s-1)                    (latitude: 144; longitude: 192)
 
 The raw cubes also separate cubes along the ``model_level_number`` dimension. In this instance, we will need to
-merge/concatenate along two different dimensions. Specifically, we can merge along the ``model_level_number`` dimension
-since ``surface_altitude`` does  not vary along this dimension, and we can concatenate along the ``time`` dimension as
-before. We expand the ``time`` dimension first, as before:
+merge/concatenate along two different dimensions. Specifically, we can merge by promoting the ``model_level_number`` to
+a dimension, since ``surface_altitude`` does  not vary along this dimension, and we can concatenate along the ``time``
+dimension as before. We expand the ``time`` dimension first, as before:
 
     >>> processed_raw_cubes = CubeList(
     ... [new_axis(cube, scalar_coord="time", expand_extras=["surface_altitude", "forecast_period"]) for cube in raw_cubes]
@@ -157,8 +162,9 @@ before. We expand the ``time`` dimension first, as before:
     73: x_wind / (m s-1)                    (time: 1; latitude: 144; longitude: 192)
     74: x_wind / (m s-1)                    (time: 1; latitude: 144; longitude: 192)
 
-Then we merge along the ``model_level_number`` dimension. Note that merging these cubes does not affect the ``time``
-dimension since merging only applies along scalar coordinates, not dimension coordinates of length 1.
+Then we merge, promoting the different ``model_level_number`` scalar coordinates to a dimension coordinate.
+Note, however, that merging these cubes does _not_ affect the ``time`` dimension, since merging only
+applies to scalar coordinates, not dimension coordinates of length 1.
 
     >>> merged_cubes = processed_raw_cubes.merge()
     >>> print(merged_cubes)
@@ -168,7 +174,7 @@ dimension since merging only applies along scalar coordinates, not dimension coo
     13: x_wind / (m s-1)                    (model_level_number: 5; time: 1; latitude: 144; longitude: 192)
     14: x_wind / (m s-1)                    (model_level_number: 5; time: 1; latitude: 144; longitude: 192)
 
-Once merged, we can now concatenate these cubes together:
+Once merged, we can now concatenate all these cubes into a single result cube, which is what we wanted:
 
     >>> result = merged_cubes.concatenate_cube()
     >>> print(result)
