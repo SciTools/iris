@@ -564,6 +564,10 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
     -------
     list of :class:`~iris.cube.Cube`
 
+    .. Note::
+        The ``support_multiple_references`` keyword/property has no effect on the
+        :func:`combine_cubes` operation : it only takes effect during a load operation.
+
     """
     if not options:
         options = LOAD_POLICY.settings()
