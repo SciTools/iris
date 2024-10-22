@@ -1,8 +1,8 @@
 .. _controlling_merge:
 
-=================
-Controlling Merge
-=================
+=================================
+Controlling Merge and Concatenate
+=================================
 
 
 Sometimes it is not possible to appropriately combine a CubeList using merge and concatenate on their own. In such cases
