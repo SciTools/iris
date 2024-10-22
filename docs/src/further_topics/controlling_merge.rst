@@ -163,7 +163,7 @@ dimension as before. We expand the ``time`` dimension first, as before:
     74: x_wind / (m s-1)                    (time: 1; latitude: 144; longitude: 192)
 
 Then we merge, promoting the different ``model_level_number`` scalar coordinates to a dimension coordinate.
-Note, however, that merging these cubes does _not_ affect the ``time`` dimension, since merging only
+Note, however, that merging these cubes does *not* affect the ``time`` dimension, since merging only
 applies to scalar coordinates, not dimension coordinates of length 1.
 
     >>> merged_cubes = processed_raw_cubes.merge()
