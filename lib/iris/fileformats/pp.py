@@ -2177,6 +2177,10 @@ def save(cube, target, append=False, field_coords=None, label_surface_fields=Fal
         coordinates of the resulting fields.
         If None, the final two  dimensions are chosen
         for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        This would set LBVC to 129 and LBLEV to 9999.
+        Default is False.
 
     Notes
     -----
@@ -2320,6 +2324,10 @@ def as_fields(cube, field_coords=None, label_surface_fields=False):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        This would set LBVC to 129 and LBLEV to 9999.
+        Default is False.
 
     """
     return (

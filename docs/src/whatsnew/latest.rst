@@ -41,8 +41,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
-#. `@ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` to set
-   `pp.lbelv` of surface fields to 9999. (:issue:`3280`, :pull:`5734`)
+#. `@ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` and
+   :mod:`iris.fileformats.pp`to include the `label_surface_fields` flag across
+   relevant functions, most notably :func:`iris.fileformats.pp.save`.
+   This allows the user to choose whether or not surface fields are recognised
+   and handled appropriately. (:issue:`3280`, :pull:`5734`)
 
 
 💣 Incompatible Changes
@@ -87,7 +90,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@ESadek-MO`_ has updated :ref:`_um_files_loading` to include a short description
+   of the new `label_surface_fields` functionality. (:pull:`5734`)
 
 
 💼 Internal
