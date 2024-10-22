@@ -174,8 +174,20 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(cube, coords=["grid_longitude", "model_level_number"])
         self.check_graphic()
 
+    def test_contourf_no_colorbar(self):
+        qplt.contourf(
+            self._small(),
+            colorbar=False,
+            coords=["model_level_number", "grid_longitude"],
+        )
+        self.check_graphic()
+
     def test_pcolor(self):
         qplt.pcolor(self._small())
+        self.check_graphic()
+
+    def test_pcolor_no_colorbar(self):
+        qplt.pcolor(self._small(), colorbar=False)
         self.check_graphic()
 
     def test_pcolormesh(self):
@@ -191,6 +203,10 @@ class TestLabels(tests.GraphicsTest):
         pcube.coords("level_height")[0].units = "centimeters"
         qplt.pcolormesh(pcube)
 
+        self.check_graphic()
+
+    def test_pcolormesh_no_colorbar(self):
+        qplt.pcolormesh(self._small(), colorbar=False)
         self.check_graphic()
 
     def test_map(self):

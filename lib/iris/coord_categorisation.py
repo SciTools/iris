@@ -30,7 +30,7 @@ import iris.cube
 def add_categorised_coord(
     cube: iris.cube.Cube,
     name: str,
-    from_coord: iris.coords.Coord | str,
+    from_coord: iris.coords.DimCoord | iris.coords.AuxCoord | str,
     category_function: Callable,
     units: str = "1",
 ) -> None:
@@ -41,18 +41,18 @@ def add_categorised_coord(
 
     Parameters
     ----------
-    cube : :class:`iris.cube.Cube`
+    cube :
         The cube containing 'from_coord'. The new coord will be added into it.
-    name : str
+    name :
         Name of the created coordinate.
-    from_coord : :class:`iris.coords.Coord` or str
+    from_coord :
         Coordinate in 'cube', or the name of one.
-    category_function : callable
+    category_function :
         Function(coordinate, value), returning a category value for a coordinate
         point-value. If ``value`` has a type hint :obj:`cftime.datetime`, the
         coordinate points are translated to :obj:`cftime.datetime` s before
         calling ``category_function``.
-    units : str, default="1"
+    units :
         Units of the category value, typically 'no_unit' or '1'.
     """
     # Interpret coord, if given as a name

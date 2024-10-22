@@ -30,16 +30,20 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@jrackham-mo`_ added :meth:`~iris.io.format_picker.FormatAgent.copy` and
+   equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
+   in :issue:`6108`, actioned in :pull:`6119`.
 
+#. `@ukmo-ccbunney`_ added ``colorbar`` keyword to allow optional creation of
+   the colorbar in the following quickplot methods:
 
-🐛 Bugs Fixed
-=============
+   * :meth:`iris.quickplot.contourf`
 
-#. N/A
+   * :meth:`iris.quickplot.pcolor`
 
-#. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
-   fixing :issue:`3653`. (:pull:`5955`)
+   * :meth:`iris.quickplot.pcolormesh`
+
+   Requested in :issue:`5970`, actioned in :pull:`6169`.
 
 #. `@ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` and
    :mod:`iris.fileformats.pp`to include the `label_surface_fields` flag across
@@ -47,6 +51,15 @@ This document explains the changes made to Iris for this release
    This allows the user to choose whether or not surface fields are recognised
    and handled appropriately. (:issue:`3280`, :pull:`5734`)
 
+🐛 Bugs Fixed
+=============
+
+#. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
+   fixing :issue:`3653`. (:pull:`5955`)
+
+#. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
+   attribute. Also made cell_method string parsing more lenient w.r.t.
+   whitespace. (:pull:`6083`)
 
 💣 Incompatible Changes
 =======================
@@ -90,6 +103,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
+#. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
+
 #. `@ESadek-MO`_ has updated :ref:`_um_files_loading` to include a short description
    of the new `label_surface_fields` functionality. (:pull:`5734`)
 
@@ -101,13 +116,18 @@ This document explains the changes made to Iris for this release
    in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
    as timing benchmarks. (:pull:`5981`)
 
+#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
+   :pull:`6172`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@jrackham-mo: https://github.com/jrackham-mo
 
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
