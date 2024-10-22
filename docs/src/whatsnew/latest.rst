@@ -34,15 +34,27 @@ This document explains the changes made to Iris for this release
    equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
    in :issue:`6108`, actioned in :pull:`6119`.
 
+#. `@ukmo-ccbunney`_ added ``colorbar`` keyword to allow optional creation of
+   the colorbar in the following quickplot methods:
+
+   * :meth:`iris.quickplot.contourf`
+
+   * :meth:`iris.quickplot.pcolor`
+
+   * :meth:`iris.quickplot.pcolormesh`
+
+   Requested in :issue:`5970`, actioned in :pull:`6169`.
+
 
 🐛 Bugs Fixed
 =============
 
-#. N/A
-
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
+#. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
+   attribute. Also made cell_method string parsing more lenient w.r.t.
+   whitespace. (:pull:`6083`)
 
 💣 Incompatible Changes
 =======================
@@ -95,6 +107,9 @@ This document explains the changes made to Iris for this release
    in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
    as timing benchmarks. (:pull:`5981`)
 
+#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
+   :pull:`6172`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -105,3 +120,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
