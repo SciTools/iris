@@ -171,14 +171,23 @@ class TestLoadFunctions:
         check_result(input_cubes, loadfunc_name, result, expected_results)
 
     def test_nonmergeable_part_extra(self, loadfunc_name):
-        cube_all = cu(t=(0, 1), z=(0, 1))
         c1, c2, c3, c4 = [cu(t=i_t, z=i_z) for i_t in (0, 1) for i_z in (0, 1)]
         c5 = cu(t=5)
         input_cubes = [c1, c2, c5, c4, c3]  # scramble order, just to test
+
+        cx = cu(t=range(5))
+        cx.remove_coord("time")  # we now have an unnamed dimension
+        cx.remove_coord("height")  # we now have an unnamed dimension
+        cx.add_aux_coord(
+            AuxCoord([0.0, 1, 0, 1, 0], standard_name="height", units="m"), 0
+        )
+        cx.add_aux_coord(
+            AuxCoord([0.0, 0, 5, 1, 1], standard_name="time", units=_time_unit), 0
+        )
         expected_results = {
-            "load": [cube_all, c5],
-            "load_cube": "ConstraintMismatchError.*failed to merge into a single cube",
-            "load_cubes": "ConstraintMismatchError.*-> 2 cubes",
+            "load": [cx],
+            "load_cube": cx,
+            "load_cubes": [cx],
         }
         result = run_testcase(input_cubes, loadfunc_name)
         check_result(input_cubes, loadfunc_name, result, expected_results)
