@@ -23,6 +23,11 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
 
+try:
+    import iris_grib
+except ImportError:
+    iris_grib = None
+
 # General test dimensions = (timepoints, levels, lats, lons)
 NT, NZ, NY, NX = (3, 4, 5, 6)
 
@@ -214,7 +219,12 @@ def check_expected(result_cubes, file_extension, time_dependence, zcoord_type):
     assert np.array_equal(ref_data, result_ref_cube.data)
 
 
-@pytest.fixture(params=["pp", "grib2", "nc"])
+_file_formats = ["pp", "nc"]
+if iris_grib:
+    _file_formats += ["grib2"]
+
+
+@pytest.fixture(params=_file_formats)
 def file_extension(request):
     return request.param
 
