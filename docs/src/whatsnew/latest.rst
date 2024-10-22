@@ -105,7 +105,7 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
 
-#. `@ESadek-MO`_ has updated :ref:`_um_files_loading` to include a short description
+#. `@ESadek-MO`_ has updated :ref:`um_files_loading` to include a short description
    of the new `label_surface_fields` functionality. (:pull:`5734`)
 
 
