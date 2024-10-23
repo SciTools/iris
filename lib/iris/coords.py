@@ -2431,9 +2431,9 @@ class Coord(_DimensionalMetadata):
 
         >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
         >>> cube.coord('latitude').nearest_neighbour_index(0)
-        np.int64(9)
+        9
         >>> cube.coord('longitude').nearest_neighbour_index(10)
-        np.int64(12)
+        12
 
         .. note:: If the coordinate contains bounds, these will be used to
             determine the nearest neighbour instead of the point values.
