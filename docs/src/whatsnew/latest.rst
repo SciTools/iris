@@ -56,6 +56,9 @@ This document explains the changes made to Iris for this release
    attribute. Also made cell_method string parsing more lenient w.r.t.
    whitespace. (:pull:`6083`)
 
+#. `@ukmo-ccbunney`_ fixed comparison of cubes with array type attributes;
+   fixes :issue:`6027` (:pull:`6181`)
+
 💣 Incompatible Changes
 =======================
 
