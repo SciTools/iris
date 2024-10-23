@@ -378,7 +378,9 @@ class LoadPolicy(threading.local):
             of matching dimension and scalar coordinates.  This may be supported at
             some later date, but for now is not possible without specific user actions.
 
-            TODO: reference the newer advice on "new_axis" usage.
+    .. Note ::
+
+        See also : :ref:`controlling_merge`.
 
     Examples
     --------
@@ -519,11 +521,20 @@ class LoadPolicy(threading.local):
 
             import iris
             from iris import LOAD_POLICY, sample_data_path
-            path = sample_data_path("hybrid_height.nc")
 
-        >>> with LOAD_POLICY.context("comprehensive"):
+        >>> path = sample_data_path("time_varying_hybrid_height", "*.pp")
+        >>> with LOAD_POLICY.context("legacy"):
         ...     cubes = iris.load(path)
+        >>> print(cubes)
+        0: surface_altitude / (m)              (time: 15; latitude: 144; longitude: 192)
+        1: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
+        2: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
+        3: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
 
+        >>> with LOAD_POLICY.context("recommended"):
+        ...     cube = iris.load_cube(path, "x_wind")
+        >>> cube
+        <iris 'Cube' of x_wind / (m s-1) (model_level_number: 5; time: 15; latitude: 144; longitude: 192)>
         """
         # Save the current state
         saved_settings = self.settings()

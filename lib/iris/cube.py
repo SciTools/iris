@@ -64,8 +64,6 @@ class _CubeFilter:
     """A constraint, paired with a list of cubes matching that constraint."""
 
     def __init__(self, constraint, cubes=None):
-        from iris.cube import CubeList
-
         self.constraint = constraint
         if cubes is None:
             cubes = CubeList()
