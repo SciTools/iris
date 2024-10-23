@@ -34,6 +34,17 @@ This document explains the changes made to Iris for this release
    equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
    in :issue:`6108`, actioned in :pull:`6119`.
 
+#. `@ukmo-ccbunney`_ added ``colorbar`` keyword to allow optional creation of
+   the colorbar in the following quickplot methods:
+
+   * :meth:`iris.quickplot.contourf`
+
+   * :meth:`iris.quickplot.pcolor`
+
+   * :meth:`iris.quickplot.pcolormesh`
+
+   Requested in :issue:`5970`, actioned in :pull:`6169`.
+
 
 🐛 Bugs Fixed
 =============
@@ -41,6 +52,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
+#. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
+   attribute. Also made cell_method string parsing more lenient w.r.t.
+   whitespace. (:pull:`6083`)
 
 💣 Incompatible Changes
 =======================
