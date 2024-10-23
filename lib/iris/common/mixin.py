@@ -105,7 +105,9 @@ class LimitedAttributeDict(dict):
         match = set(self.keys()) == set(other.keys())
         if match:
             for key, value in self.items():
-                match = np.array_equal(value, other[key])
+                match = np.array_equal(
+                    np.array(value, ndmin=1), np.array(other[key], ndmin=1)
+                )
                 if not match:
                     break
         return match

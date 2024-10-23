@@ -388,7 +388,9 @@ class _CubeSignature(
                 diff_attrs = [
                     repr(key[1])
                     for key in attrs_1
-                    if not np.array_equal(attrs_1[key], attrs_2[key])
+                    if not np.array_equal(
+                        np.array(attrs_1[key], ndmin=1), np.array(attrs_2[key], ndmin=1)
+                    )
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
