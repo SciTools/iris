@@ -18,7 +18,7 @@ variables:
 		depth:units = "m" ;
 		depth:standard_name = "depth" ;
 		depth:positive = "down" ;
-	double latitude(latitude) ;
+	float latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
 		latitude:standard_name = "latitude" ;
