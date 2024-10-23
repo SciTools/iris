@@ -50,7 +50,8 @@ jobs:
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.26"
+      # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
+      IRIS_TEST_DATA_VERSION: "2.28"
       ENV_NAME: "ci-tests"
 
     steps:
