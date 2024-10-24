@@ -200,5 +200,9 @@ Once merged, we can now concatenate all these cubes into a single result cube, w
             source                      'Data from Met Office Unified Model'
             um_version                  '12.1'
 
-.. todo::
-    Mention the work done in #6168
+See Also
+--------
+* :func:`iris.combine_cubes` can perform similar operations automatically
+* :data:`iris.LOAD_POLICY` controls the application of :func:`~iris.combine_cubes`
+  during the load operations, i.e. :func:`~iris.load`, :func:`~iris.load_cube` and
+  :func:`~iris.load_cubes`.
