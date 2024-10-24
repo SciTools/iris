@@ -4,6 +4,21 @@
 Controlling Merge and Concatenate
 =================================
 
+Preliminaries
+-------------
+
+The following code would have been necessary with loading behaviour prior to version 3.11.0 . For the sake of
+demonstration, we will revert back to this legacy loading behaviour as follows:
+
+    >>> iris.LOAD_POLICY.set("legacy")
+
+.. note::
+    The default settings for :data:`iris.LOAD_POLICY` effectively implements some version of the following demonstration
+    automatically upon loading. It may still be worth being aware of how to handle this manually if an even finer degree
+    of control is required.
+
+How to Merge Cubes When Coordinates Differ
+------------------------------------------
 
 Sometimes it is not possible to appropriately combine a CubeList using merge and concatenate on their own. In such cases
 it is possible to achieve much more control over cube combination by using the :func:`~iris.util.new_axis` utility.
@@ -202,7 +217,6 @@ Once merged, we can now concatenate all these cubes into a single result cube, w
 
 See Also
 --------
-* :func:`iris.combine_cubes` can perform similar operations automatically
-* :data:`iris.LOAD_POLICY` controls the application of :func:`~iris.combine_cubes`
-  during the load operations, i.e. :func:`~iris.load`, :func:`~iris.load_cube` and
+* :data:`iris.LOAD_POLICY` can be controlled to apply similar operations
+  within the load functions, i.e. :func:`~iris.load`, :func:`~iris.load_cube` and
   :func:`~iris.load_cubes`.
