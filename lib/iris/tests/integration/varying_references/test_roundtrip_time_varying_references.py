@@ -22,6 +22,7 @@ from iris.coord_systems import GeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.pp import EARTH_RADIUS, STASH
+from iris.util import new_axis
 
 try:
     import iris_grib
@@ -239,7 +240,7 @@ def zcoord_type(request):
     return request.param
 
 
-@pytest.fixture(params=["default_policy", "recommended_policy", "legacy_policy"])
+@pytest.fixture(params=[f"{name}_policy" for name in LOAD_POLICY.SETTINGS])
 def load_policy(request):
     return request.param
 
@@ -274,3 +275,67 @@ def test_roundtrip(file_extension, time_dependence, zcoord_type, load_policy, tm
         time_dependence=time_dependence,
         zcoord_type=zcoord_type,
     )
+
+
+def test_split_netcdf_roundtrip(zcoord_type, load_policy, tmp_path):
+    # NetCDF special test : split the data into 2D slices (like "fields"),
+    # and save each to a different file.
+    policy_name = load_policy.split("_")[0]
+    reference_surface_name = {
+        "pressure": "surface_air_pressure",
+        "height": "surface_altitude",
+    }[zcoord_type]
+
+    data = make_hybrid_z_testdata(
+        hybrid_zcoord_type=zcoord_type,
+        include_reference_as_cube=False,
+        make_reference_time_dependent=True,
+    )
+
+    # There is just 1 cube
+    (data,) = data  # just 1 cube for netcdf, no separate reference cube
+    # split it into 2D YX "field" cubes
+    field_cubes = list(data.slices(("latitude", "longitude")))
+    # Reinstate a length-1 "time" dimension in each cube.
+    field_cubes = [
+        new_axis(field_cube, "time", expand_extras=[reference_surface_name])
+        for field_cube in field_cubes
+    ]
+    # Save to 1 file per 'field_cube'
+    result_paths = [
+        tmp_path / f"field_{i_field:02d}.nc" for i_field in range(len(field_cubes))
+    ]
+    for field_cube, path in zip(field_cubes, result_paths):
+        iris.save(field_cube, path)
+
+    # load back with the chosen policy.
+    with LOAD_POLICY.context(policy_name):
+        readback = iris.load(result_paths)
+
+    n_cubes = len(readback)
+    n_datacubes = len(readback.extract("air_temperature"))
+    if policy_name == "legacy":
+        assert (n_cubes, n_datacubes) == (15, 3)
+    elif policy_name == "default":
+        assert (n_cubes, n_datacubes) == (15, 3)
+    elif policy_name == "recommended":
+        assert (n_cubes, n_datacubes) == (5, 1)
+    elif policy_name == "comprehensive":
+        assert (n_cubes, n_datacubes) == (5, 1)
+    else:
+        raise ValueError(f"unknown policy {policy_name!r}")
+
+    if n_datacubes == 1:
+        check_expected(
+            CubeList(
+                [
+                    readback.extract_cube("air_temperature"),
+                    # include only 1 of N (identical) reference cubes
+                    # (all this would be easier if we could rely on load-cube ordering!)
+                    readback.extract(reference_surface_name)[0],
+                ]
+            ),
+            file_extension=file_extension,
+            time_dependence=time_dependence,
+            zcoord_type=zcoord_type,
+        )
