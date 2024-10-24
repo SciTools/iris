@@ -628,7 +628,7 @@ def _combine_load_cubes(cubes, merge_require_unique=False):
     return _combine_cubes(cubes, options, merge_require_unique=merge_require_unique)
 
 
-def load(uris, constraints=None, callback=None, policy=None):
+def load(uris, constraints=None, callback=None):
     """Load any number of Cubes for each constraint.
 
     For a full description of the arguments, please see the module
