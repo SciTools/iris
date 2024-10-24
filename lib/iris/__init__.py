@@ -317,11 +317,21 @@ def _load_collection(uris, constraints=None, callback=None):
 class LoadPolicy(threading.local):
     """A container for loading strategy options.
 
-    Controls merge/concatenate usage, and the handling of cases where multiple reference
-    fields merge to define an additional dimension (e.g. a time-varying orography).
+    Controls merge/concatenate usage during loading.
+
+    Also controls the detection and handling of cases where a hybrid coordinate
+    uses multiple reference fields : for example, a UM file which contains a series of
+    fields describing time-varying orography.
 
     Options can be set directly, or via :meth:`~iris.LoadPolicy.set`, or changed for
     the scope of a code block with :meth:`~iris.LoadPolicy.context`.
+
+    .. note ::
+
+        The default behaviour will "fix" loading for cases like the one just described.
+        However this is not strictly backwards-compatible.  If this causes problems,
+        you can force identical loading behaviour to earlier Iris versions with
+        ``LOAD_POLICY.set("legacy")`` or equivalent.
 
     .. testsetup::
 
@@ -546,7 +556,7 @@ class LoadPolicy(threading.local):
             self.set(saved_settings)
 
 
-#: Object containing file loading options.
+#: A control object containing the current file loading options.
 LOAD_POLICY = LoadPolicy("legacy")
 # The unique (singleton) policy object
 # N.B. FOR NOW, our starting point is "legacy" rather than "default"
