@@ -1425,7 +1425,41 @@ class CFReader:
                         self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
                             cf_name, cf_var.cf_data
                         )
-                    self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+
+                if cf_root not in self.cf_group.bounds:
+                    # Check if cf_root has a bounds attribute.
+                    if cf_root in self.cf_group.coordinates:
+                        # Need to generalise this for if it's a dim or aux coord.
+                        bounds_name = getattr(
+                            self.cf_group.coordinates[cf_root], "bounds", None
+                        )
+                        if bounds_name is not None:
+                            form_terms = getattr(
+                                self.cf_group.coordinates[cf_root], "formula_terms"
+                            )
+                            form_terms = form_terms.replace(":", "")
+                            form_terms = form_terms.split(" ")
+                            example_dict = {"a": "A", "b": "B", "ps": "PS", "p0": "P0"}
+                            for cf_vari in formula_terms.values():
+                                for (
+                                    cf_roots,
+                                    cf_terms,
+                                ) in cf_vari.cf_terms_by_root.items():
+                                    if cf_terms == cf_term:
+                                        if (
+                                            cf_roots in self.cf_group.bounds
+                                            and cf_roots == bounds_name
+                                        ):
+                                            if cf_terms in form_terms:
+                                                to_attach_to = example_dict[cf_terms]
+                                                attach_from = cf_vari.cf_name
+                                                if (
+                                                    to_attach_to.lower()
+                                                    != attach_from.lower()
+                                                ):
+                                                    cf_var.bounds = cf_vari
+                                                    print(cf_vari.bounds)
 
         # Determine the CF data variables.
         data_variable_names = (
@@ -1553,18 +1587,23 @@ class CFReader:
         # may be promoted to a CFDataVariable and restrict promotion to only
         # those formula terms that are reference surface/phenomenon.
         for cf_var in self.cf_group.formula_terms.values():
-            for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-                cf_root_var = self.cf_group[cf_root]
-                name = cf_root_var.standard_name or cf_root_var.long_name
-                terms = reference_terms.get(name, [])
-                if isinstance(terms, str) or not isinstance(terms, Iterable):
-                    terms = [terms]
-                cf_var_name = cf_var.cf_name
-                if cf_term in terms and cf_var_name not in self.cf_group.promoted:
-                    data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
-                    self.cf_group.promoted[cf_var_name] = data_var
-                    _build(data_var)
-                    break
+            if self.cf_group[cf_var.cf_name] is CFBoundaryVariable:
+                continue
+            else:
+                for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+                    cf_root_var = self.cf_group[cf_root]
+                    if not hasattr(cf_root_var, "standard_name"):
+                        continue
+                    name = cf_root_var.standard_name or cf_root_var.long_name
+                    terms = reference_terms.get(name, [])
+                    if isinstance(terms, str) or not isinstance(terms, Iterable):
+                        terms = [terms]
+                    cf_var_name = cf_var.cf_name
+                    if cf_term in terms and cf_var_name not in self.cf_group.promoted:
+                        data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
+                        self.cf_group.promoted[cf_var_name] = data_var
+                        _build(data_var)
+                        break
         # Promote any ignored variables.
         promoted = set()
         not_promoted = ignored.difference(promoted)
