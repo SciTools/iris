@@ -523,17 +523,16 @@ class LoadPolicy(threading.local):
 
         >>> path = sample_data_path("time_varying_hybrid_height", "*.pp")
         >>> with LOAD_POLICY.context("legacy"):
-        ...     cubes = iris.load(path)
+        ...     cubes = iris.load(path, "x_wind")
         >>> print(cubes)
-        0: surface_altitude / (m)              (time: 15; latitude: 144; longitude: 192)
-        1: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
-        2: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
-        3: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
-
+        0: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
+        1: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
+        2: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
+        >>>
         >>> with LOAD_POLICY.context("recommended"):
-        ...     cube = iris.load_cube(path, "x_wind")
-        >>> cube
-        <iris 'Cube' of x_wind / (m s-1) (model_level_number: 5; time: 15; latitude: 144; longitude: 192)>
+        ...     cubes = iris.load(path, "x_wind")
+        >>> cubes
+        0: x_wind / (m s-1)                    (model_level_number: 5; time: 15; latitude: 144; longitude: 192)
         """
         # Save the current state
         saved_settings = self.settings()
