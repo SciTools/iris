@@ -21,6 +21,8 @@ from iris import _concatenate
         (np.array([np.nan, 1.0]), np.array([np.nan, 1.0]), True),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 1]), True),
         (np.ma.array([1, 2], mask=[0, 1]), np.ma.array([1, 2], mask=[0, 0]), False),
+        (np.ma.array([1, 2], mask=[1, 1]), np.ma.array([1, 2], mask=[1, 1]), True),
+        (np.ma.array([1, 2], mask=[0, 0]), np.ma.array([1, 2], mask=[0, 0]), True),
         (da.arange(6).reshape((2, 3)), da.arange(6, chunks=1).reshape((2, 3)), True),
         (da.arange(20, chunks=1), da.arange(20, chunks=2), True),
         (
@@ -31,6 +33,21 @@ from iris import _concatenate
         (
             da.ma.masked_array([1, 2], mask=[0, 1]),
             da.ma.masked_array([1, 3], mask=[0, 1]),
+            True,
+        ),
+        (
+            np.arange(2),
+            da.ma.masked_array(np.arange(2), mask=[0, 0]),
+            True,
+        ),
+        (
+            np.arange(2),
+            da.ma.masked_array(np.arange(2), mask=[0, 1]),
+            False,
+        ),
+        (
+            da.ma.masked_array(np.arange(10), mask=np.zeros(10)),
+            da.ma.masked_array(np.arange(10), mask=np.ma.nomask),
             True,
         ),
         (
