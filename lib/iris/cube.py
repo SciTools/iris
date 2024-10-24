@@ -78,8 +78,10 @@ class _CubeFilter:
         if sub_cube is not None:
             self.cubes.append(sub_cube)
 
-    def merged(self, unique=False):
-        """Return a new :class:`_CubeFilter` by merging the list of cubes.
+    def combined(self, unique=False):
+        """Return a new :class:`_CubeFilter` by combining the list of cubes.
+
+        Combines the list of cubes with :func:`~iris._combine_load_cubes`.
 
         Parameters
         ----------
@@ -88,7 +90,12 @@ class _CubeFilter:
             duplicate cubes are detected.
 
         """
-        return _CubeFilter(self.constraint, self.cubes.merge(unique))
+        from iris import _combine_load_cubes
+
+        return _CubeFilter(
+            self.constraint,
+            _combine_load_cubes(self.cubes, merge_require_unique=unique),
+        )
 
 
 class _CubeFilterCollection:
@@ -113,14 +120,18 @@ class _CubeFilterCollection:
             pair.add(cube)
 
     def cubes(self):
-        """Return all the cubes in this collection concatenated into a single :class:`CubeList`."""
+        """Return all the cubes in this collection in a single :class:`CubeList`."""
+        from iris.cube import CubeList
+
         result = CubeList()
         for pair in self.pairs:
             result.extend(pair.cubes)
         return result
 
-    def merged(self, unique=False):
-        """Return a new :class:`_CubeFilterCollection` by merging all the cube lists of this collection.
+    def combined(self, unique=False):
+        """Return a new :class:`_CubeFilterCollection` by combining all the cube lists of this collection.
+
+        Combines each list of cubes using :func:`~iris._combine_load_cubes`.
 
         Parameters
         ----------
@@ -129,7 +140,7 @@ class _CubeFilterCollection:
             duplicate cubes are detected.
 
         """
-        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
+        return _CubeFilterCollection([pair.combined(unique) for pair in self.pairs])
 
 
 class CubeList(list):
