@@ -2,7 +2,6 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-import pytest
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -817,7 +816,6 @@ class LambdaStr:
 
 @tests.skip_data
 @tests.skip_plot
-@pytest.mark.skip
 class TestPlotCoordinatesGiven(tests.GraphicsTest):
     def setUp(self):
         super().setUp()
