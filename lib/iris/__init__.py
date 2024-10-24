@@ -557,10 +557,7 @@ class LoadPolicy(threading.local):
 
 
 #: A control object containing the current file loading options.
-LOAD_POLICY = LoadPolicy("legacy")
-# The unique (singleton) policy object
-# N.B. FOR NOW, our starting point is "legacy" rather than "default"
-# TODO: resolve tests as needed, to pass with "default".
+LOAD_POLICY = LoadPolicy()
 
 
 def _combine_cubes(cubes, options, merge_require_unique):
