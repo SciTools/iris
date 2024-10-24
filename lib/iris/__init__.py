@@ -541,7 +541,7 @@ class LoadPolicy(threading.local):
         >>>
         >>> with LOAD_POLICY.context("recommended"):
         ...     cubes = iris.load(path, "x_wind")
-        >>> cubes
+        >>> print(cubes)
         0: x_wind / (m s-1)                    (model_level_number: 5; time: 15; latitude: 144; longitude: 192)
         """
         # Save the current state
