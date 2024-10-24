@@ -124,7 +124,6 @@ __all__ = [
     "LOAD_POLICY",
     "LoadPolicy",
     "NameConstraint",
-    "combine_cubes",
     "load",
     "load_cube",
     "load_cubes",
@@ -345,7 +344,7 @@ class LoadPolicy(threading.local):
 
     * ``merge_concat_sequence`` = "m" / "c" / "cm" / "mc"
         Specifies whether to merge, or concatenate, or both in either order.
-        This is the :func:`~iris.combine_cubes` operation to loaded data.
+        This is the "combine" operation which is applied to loaded data.
 
     * ``repeat_until_unchanged`` = True / False
         When enabled, the configured "combine" operation will be repeated until the
@@ -555,7 +554,7 @@ LOAD_POLICY = LoadPolicy("legacy")
 # TODO: resolve tests as needed, to pass with "default".
 
 
-def combine_cubes(cubes, options=None, merge_require_unique=False):
+def _combine_cubes(cubes, options, merge_require_unique):
     """Combine cubes as for load, according to "loading policy" options.
 
     Applies :meth:`~iris.cube.CubeList.merge`/:meth:`~iris.cube.CubeList.concatenate`
@@ -565,7 +564,7 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
     ----------
     cubes : list of :class:`~iris.cube.Cube`
         A list of cubes to combine.
-    options : dict or str
+    options : dict
         Settings, as described for :meth:`iris.LOAD_POLICY.set`.
         Defaults to current :meth:`iris.LOAD_POLICY.settings`.
     merge_require_unique : bool
@@ -573,15 +572,24 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
 
     Returns
     -------
-    list of :class:`~iris.cube.Cube`
+    :class:`~iris.cube.CubeList`
 
     .. Note::
         The ``support_multiple_references`` keyword/property has no effect on the
-        :func:`combine_cubes` operation : it only takes effect during a load operation.
+        :func:`_combine_cubes` operation : it only takes effect during a load operation.
+
+    Notes
+    -----
+    TODO: make this public API in future.
+    At that point, change the API to support (options=None, **kwargs) + add testing of
+    those modes (notably arg type = None / str / dict).
 
     """
-    if not options:
-        options = LOAD_POLICY.settings()
+    from iris.cube import CubeList
+
+    if not isinstance(cubes, CubeList):
+        cubes = CubeList(cubes)
+
     while True:
         n_original_cubes = len(cubes)
         sequence = options["merge_concat_sequence"]
@@ -604,7 +612,7 @@ def combine_cubes(cubes, options=None, merge_require_unique=False):
 
 
 def _combine_load_cubes(cubes, merge_require_unique=False):
-    # A special version to call combine_cubes while also implementing the
+    # A special version to call _combine_cubes while also implementing the
     # _MULTIREF_DETECTION behaviour
     options = LOAD_POLICY.settings()
     if (
@@ -617,7 +625,7 @@ def _combine_load_cubes(cubes, merge_require_unique=False):
         if _MULTIREF_DETECTION.found_multiple_refs:
             options["merge_concat_sequence"] += "c"
 
-    return combine_cubes(cubes, options, merge_require_unique=merge_require_unique)
+    return _combine_cubes(cubes, options, merge_require_unique=merge_require_unique)
 
 
 def load(uris, constraints=None, callback=None, policy=None):
