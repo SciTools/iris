@@ -867,7 +867,7 @@ def _binary_op_common(
         if iris._lazy_data.is_lazy_data(other):
             rhs = other
         else:
-            rhs = np.asanyarray(other)
+            rhs = np.asanyarray(other, dtype=new_dtype)
 
     def unary_func(lhs):
         data = operation_function(lhs, rhs)

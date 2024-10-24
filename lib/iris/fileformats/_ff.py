@@ -5,6 +5,7 @@
 """Provides UK Met Office Fields File (FF) format specific capabilities."""
 
 import os
+from typing import Any
 import warnings
 
 import numpy as np
@@ -370,9 +371,22 @@ class FFHeader:
                     setattr(self, elem, res)
 
     def __str__(self):
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lookup_table`` is a tuple of NumPy scalars.
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         attributes = []
         for name, _ in FF_HEADER:
-            attributes.append("    {}: {}".format(name, getattr(self, name)))
+            attributes.append(f"    {name}: {_str_tuple(getattr(self, name))}")
         return "FF Header:\n" + "\n".join(attributes)
 
     def __repr__(self):
