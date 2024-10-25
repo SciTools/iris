@@ -147,6 +147,7 @@ class Test_translate__formula_terms:
         mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
+<<<<<<< HEAD
         )
 
     def test_create_formula_terms(self, mocker):
@@ -181,6 +182,48 @@ class Test_translate__formula_terms:
         assert set(group.keys()) == set(bounds)
         for name in bounds:
             assert group[name].cf_data == getattr(self, name)
+=======
+        ):
+            cf_group = CFReader("dummy").cf_group
+            self.assertEqual(len(cf_group), len(self.variables))
+            # Check there is a singular data variable.
+            group = cf_group.data_variables
+            self.assertEqual(len(group), 1)
+            self.assertEqual(list(group.keys()), ["temp"])
+            self.assertIs(group["temp"].cf_data, self.temp)
+            # Check there are three coordinates.
+            group = cf_group.coordinates
+            self.assertEqual(len(group), 3)
+            coordinates = ["height", "lat", "lon"]
+            self.assertEqual(set(group.keys()), set(coordinates))
+            for name in coordinates:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+            # Check there are three auxiliary coordinates.
+            group = cf_group.auxiliary_coordinates
+            self.assertEqual(len(group), 3)
+            aux_coordinates = ["delta", "sigma", "orography"]
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
+            for name in aux_coordinates:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+            # Check there are three bounds.
+            group = cf_group.bounds
+            self.assertEqual(len(group), 3)
+            bounds = ["height_bnds", "delta_bnds", "sigma_bnds"]
+            self.assertEqual(set(group.keys()), set(bounds))
+            for name in bounds:
+                self.assertEqual(group[name].cf_data, getattr(self, name))
+            # Check the formula terms contains all expected terms
+            formula_terms = cf_group.formula_terms
+            expected_keys = ["delta", "sigma", "orography", "delta_bnds", "sigma_bnds"]
+            expected_group = {
+                k: v
+                for k, v in dict(
+                    **cf_group.auxiliary_coordinates, **cf_group.bounds
+                ).items()
+                if k in expected_keys
+            }
+            self.assertEqual(set(expected_group.items()), set(formula_terms.items()))
+>>>>>>> b75621090 (fix tests and example)
 
 
 class Test_build_cf_groups__formula_terms:
@@ -243,6 +286,7 @@ class Test_build_cf_groups__formula_terms:
         mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
+<<<<<<< HEAD
         )
 
     def test_associate_formula_terms_with_data_variable(self, mocker):
@@ -283,6 +327,61 @@ class Test_build_cf_groups__formula_terms:
             assert len(aux_coord_group.bounds) == 1
             assert name_bnds in aux_coord_group.bounds
             assert aux_coord_group[name_bnds].cf_data is getattr(self, name_bnds)
+=======
+        ):
+            cf_group = CFReader("dummy").cf_group
+            self.assertEqual(len(cf_group), len(self.variables))
+            # Check the cf-group associated with the data variable.
+            temp_cf_group = cf_group["temp"].cf_group
+            # Check the data variable is associated with eight variables.
+            self.assertEqual(len(temp_cf_group), 8)
+            # Check there are three coordinates.
+            group = temp_cf_group.coordinates
+            self.assertEqual(len(group), 3)
+            coordinates = ["height", "lat", "lon"]
+            self.assertEqual(set(group.keys()), set(coordinates))
+            for name in coordinates:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+            # Check the height coordinate is bounded.
+            group = group["height"].cf_group
+            self.assertEqual(len(group.bounds), 1)
+            self.assertIn("height_bnds", group.bounds)
+            self.assertIs(group["height_bnds"].cf_data, self.height_bnds)
+            # Check there are five auxiliary coordinates.
+            group = temp_cf_group.auxiliary_coordinates
+            self.assertEqual(len(group), 5)
+            aux_coordinates = ["delta", "sigma", "orography", "x", "y"]
+            self.assertEqual(set(group.keys()), set(aux_coordinates))
+            formula_terms = cf_group.formula_terms
+            for name in aux_coordinates:
+                self.assertIs(group[name].cf_data, getattr(self, name))
+            # Check the terms by root.
+            for name, term in zip(aux_coordinates, ["a", "b", "orog"]):
+                self.assertEqual(
+                    formula_terms[name].cf_terms_by_root, dict(height=term)
+                )
+            # Check the bounded auxiliary coordinates.
+            for name, name_bnds in zip(
+                ["delta", "sigma"], ["delta_bnds", "sigma_bnds"]
+            ):
+                aux_coord_group = group[name].cf_group
+                self.assertEqual(len(aux_coord_group.bounds), 1)
+                self.assertIn(name_bnds, aux_coord_group.bounds)
+                self.assertIs(
+                    aux_coord_group[name_bnds].cf_data,
+                    getattr(self, name_bnds),
+                )
+            # Check the formula terms contains all expected terms
+            expected_keys = ["delta", "sigma", "orography", "delta_bnds", "sigma_bnds"]
+            expected_group = {
+                k: v
+                for k, v in dict(
+                    **cf_group.auxiliary_coordinates, **cf_group.bounds
+                ).items()
+                if k in expected_keys
+            }
+            self.assertEqual(set(expected_group.items()), set(formula_terms.items()))
+>>>>>>> b75621090 (fix tests and example)
 
     def test_promote_reference(self):
         cf_group = CFReader("dummy").cf_group

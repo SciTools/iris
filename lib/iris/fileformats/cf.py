@@ -16,7 +16,6 @@ References
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
-import contextlib
 import os
 import re
 from typing import ClassVar, Optional
@@ -1448,11 +1447,13 @@ class CFReader:
                             new_var.bounds = cf_var.bounds
                         new_var.add_formula_term(cf_root, cf_term)
                         self.cf_group[cf_name] = new_var
+                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         # Determine the CF data variables.
         data_variable_names = (
             set(netcdf_variable_names) - self.cf_group.non_data_variable_names
         )
+        print("name")
 
         for name in data_variable_names:
             self.cf_group[name] = CFDataVariable(name, variables[name])
