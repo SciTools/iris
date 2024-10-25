@@ -46,6 +46,10 @@ This document explains the changes made to Iris for this release
 
    Requested in :issue:`5970`, actioned in :pull:`6169`.
 
+#. `@pp-mo`_ and `@stephenworsley`_ added support for hybrid coordinates whose
+   references are split across multiple input fields, and :meth:`~iris.LOAD_POLICY` to
+   control it, as requested in :issue:`5369`, actioned in :pull:`6168`.
+
 
 🐛 Bugs Fixed
 =============
