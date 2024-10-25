@@ -111,7 +111,7 @@ This document explains the changes made to Iris for this release
    * `NumPy v2 changed scalar printing`_
 
 #. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
-   as per the `SPEC 0`_ schedule. (:pull:`****`)
+   as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
 📚 Documentation
 ================
