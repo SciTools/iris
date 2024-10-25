@@ -82,7 +82,7 @@ This document explains the changes made to Iris for this release
    may happen when there are very many or large auxiliary coordinates, derived
    coordinates, cell measures, or ancillary variables to be checked that span
    the concatenation axis. This issue can be avoided by disabling the
-   problematic check. (:pull:`5926`)
+   problematic check. (:pull:`5926` and :pull:`6187`)
 
 🔥 Deprecations
 ===============
