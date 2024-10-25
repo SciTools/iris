@@ -49,6 +49,9 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
         tests.GraphicsTest.setUp(self)
         filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         self.cube = test_plot.load_cube_once(filename, "air_potential_temperature")
+        if self.cube.coord_dims("time") != (0,):
+            # A quick fix for data which has changed since we support time-varying orography
+            self.cube.transpose((1, 0, 2, 3))
 
         self.draw_module = iris.quickplot
         self.contourf = test_plot.LambdaStr(
