@@ -42,11 +42,21 @@ class Test(tests.IrisTest):
         right = LimitedAttributeDict(**values)
         self.assertEqual(left, right)
         self.assertEqual(left, values)
+
         values = dict(one=np.arange(1), two=np.arange(1), three=np.arange(1))
         left = LimitedAttributeDict(dict(one=0, two=0, three=0))
         right = LimitedAttributeDict(**values)
         self.assertEqual(left, right)
         self.assertEqual(left, values)
+
+        # Test inequality:
+        values = dict(one=np.arange(1), two=np.arange(2), three=np.arange(3))
+        left = LimitedAttributeDict(**values)
+        right = LimitedAttributeDict(
+            one=np.arange(3), two=np.arange(2), three=np.arange(1)
+        )
+        self.assertNotEqual(left, right)
+        self.assertNotEqual(values, right)
 
     def test___setitem__(self):
         for key in self.forbidden_keys:
