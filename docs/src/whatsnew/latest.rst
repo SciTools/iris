@@ -24,7 +24,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Iris is now compliant with NumPy v2. This may affect your scripts.
+   :ref:`See the full What's New entry for more details <numpy2>`.
 
 
 ✨ Features
@@ -84,7 +85,7 @@ This document explains the changes made to Iris for this release
    may happen when there are very many or large auxiliary coordinates, derived
    coordinates, cell measures, or ancillary variables to be checked that span
    the concatenation axis. This issue can be avoided by disabling the
-   problematic check. (:pull:`5926`)
+   problematic check. (:pull:`5926` and :pull:`6187`)
 
 🔥 Deprecations
 ===============
@@ -95,7 +96,15 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+.. _numpy2:
+
+#. `@trexfeathers`_ adapted the Iris codebase to work with NumPy v2. The
+   `NumPy v2 full release notes`_ have the exhaustive details. Notable
+   changes that may affect your Iris scripts are below. (:pull:`6035`)
+
+   * `NumPy v2 changed data type promotion`_
+
+   * `NumPy v2 changed scalar printing`_
 
 
 📚 Documentation
@@ -125,3 +134,6 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
+.. _NumPy v2 changed data type promotion: https://numpy.org/doc/stable/numpy_2_0_migration_guide.html#changes-to-numpy-data-type-promotion
+.. _NumPy v2 changed scalar printing: https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
+.. _NumPy v2 full release notes: https://numpy.org/doc/stable/release/2.0.0-notes.html

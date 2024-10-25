@@ -319,7 +319,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
         res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(src, (4, 3, 2), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (4, 9, 6), 288.08865, 0.00826281)
+        self.assertArrayShapeStats(res, (4, 9, 6), 288.0886, 0.008271061)
         # Reshape src so that the coords are ordered [x, z, y],
         # the mean and std statistics should be the same
         data = np.moveaxis(src.data.copy(), 2, 0)
@@ -329,7 +329,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.add_dim_coord(lon, 0)
         res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(src, (2, 4, 3), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (6, 4, 9), 288.08865, 0.00826281)
+        self.assertArrayShapeStats(res, (6, 4, 9), 288.0886, 0.008271061)
         # Reshape src so that the coords are ordered [y, x, z],
         # the mean and std statistics should be the same
         data = np.moveaxis(src.data.copy(), 2, 0)
@@ -340,7 +340,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
         res = regrid_area_weighted(src, dest)
         self.assertArrayShapeStats(src, (3, 2, 4), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (9, 6, 4), 288.08865, 0.00826281)
+        self.assertArrayShapeStats(res, (9, 6, 4), 288.0886, 0.008271061)
 
     def test_regrid_lon_to_half_res(self):
         src = self.simple_cube

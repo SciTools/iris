@@ -310,7 +310,7 @@ def _hash_ndarray(a: np.ndarray) -> np.ndarray:
 
     # Hash the bytes representing the array data.
     hash.update(b"data=")
-    if isinstance(a, np.ma.MaskedArray):
+    if np.ma.is_masked(a):
         # Hash only the unmasked data
         hash.update(a.compressed().tobytes())
         # Hash the mask
