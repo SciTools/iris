@@ -18,7 +18,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
-from typing import ClassVar
+from typing import ClassVar, Optional
 import warnings
 
 import numpy as np
@@ -1448,6 +1448,35 @@ class CFReader:
             coordinate_names = list(self.cf_group.coordinates.keys())
             cf_group = self.CFGroup()
 
+            def _span_check(
+                var_name: str, via_formula_terms: Optional[str] = None
+            ) -> None:
+                """Sanity check dimensionality."""
+                var = self.cf_group[var_name]
+                # No span check is necessary if variable is attached to a mesh.
+                if is_mesh_var or var.spans(cf_variable):
+                    cf_group[var_name] = var
+                else:
+                    # Register the ignored variable.
+                    # N.B. 'ignored' variable from enclosing scope.
+                    ignored.add(var_name)
+
+                    text_formula = text_via = ""
+                    if via_formula_terms:
+                        text_formula = " formula terms"
+                        text_via = f" via variable {via_formula_terms}"
+
+                    message = (
+                        f"Ignoring{text_formula} variable {var_name} "
+                        f"referenced by variable {cf_variable.cf_name}"
+                        f"{text_via}: Dimensions {var.dimensions} do not span "
+                        f"{cf_variable.dimensions}"
+                    )
+                    warnings.warn(
+                        message,
+                        category=iris.warnings.IrisCfNonSpanningVarWarning,
+                    )
+
             # Build CF variable relationships.
             for variable_type in self._variable_types:
                 ignore = []
@@ -1466,28 +1495,8 @@ class CFReader:
                     warn=False,
                 )
                 # Sanity check dimensionality coverage.
-                for cf_name, cf_var in match.items():
-                    # No span check is necessary if variable is attached to a mesh.
-                    if is_mesh_var or cf_var.spans(cf_variable):
-                        cf_group[cf_name] = self.cf_group[cf_name]
-                    else:
-                        # Register the ignored variable.
-                        # N.B. 'ignored' variable from enclosing scope.
-                        ignored.add(cf_name)
-                        msg = (
-                            "Ignoring variable {!r} referenced "
-                            "by variable {!r}: Dimensions {!r} do not "
-                            "span {!r}".format(
-                                cf_name,
-                                cf_variable.cf_name,
-                                cf_var.dimensions,
-                                cf_variable.dimensions,
-                            )
-                        )
-                        warnings.warn(
-                            msg,
-                            category=iris.warnings.IrisCfNonSpanningVarWarning,
-                        )
+                for cf_name in match:
+                    _span_check(cf_name)
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -1514,29 +1523,7 @@ class CFReader:
                 for cf_var in self.cf_group.formula_terms.values():
                     for cf_root in cf_var.cf_terms_by_root:
                         if cf_root in cf_group and cf_var.cf_name not in cf_group:
-                            # Sanity check dimensionality.
-                            if cf_var.spans(cf_variable):
-                                cf_group[cf_var.cf_name] = cf_var
-                            else:
-                                # Register the ignored variable.
-                                # N.B. 'ignored' variable from enclosing scope.
-                                ignored.add(cf_var.cf_name)
-                                msg = (
-                                    "Ignoring formula terms variable {!r} "
-                                    "referenced by data variable {!r} via "
-                                    "variable {!r}: Dimensions {!r} do not "
-                                    "span {!r}".format(
-                                        cf_var.cf_name,
-                                        cf_variable.cf_name,
-                                        cf_root,
-                                        cf_var.dimensions,
-                                        cf_variable.dimensions,
-                                    )
-                                )
-                                warnings.warn(
-                                    msg,
-                                    category=iris.warnings.IrisCfNonSpanningVarWarning,
-                                )
+                            _span_check(cf_var.cf_name, cf_root)
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group
