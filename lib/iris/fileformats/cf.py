@@ -16,6 +16,7 @@ References
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
+import contextlib
 import os
 import re
 from typing import ClassVar
@@ -1418,72 +1419,43 @@ class CFReader:
 
         for cf_var in formula_terms.values():
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-
-
-                # Ignore formula terms owned by a bounds variable.
-                # if cf_root not in self.cf_group.bounds:
-                #     cf_name = cf_var.cf_name
-                #     if cf_var.cf_name not in self.cf_group:
-                #         self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
-                #             cf_name, cf_var.cf_data
-                #         )
-                #         self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
-
-                if cf_root not in self.cf_group.bounds:
-
-                    # Check if cf_root has a bounds attribute.
-                    if cf_root in self.cf_group.coordinates:
-                        # Need to generalise this for if it's a dim or aux coord.
-                        bounds_name = getattr(
-                            self.cf_group.coordinates[cf_root], "bounds", None
+                bounds_name = None
+                cf_root_coord = self.cf_group.coordinates.get(cf_root)
+                with contextlib.suppress(AttributeError):
+                    # Copes with cf_root_coord not existing, OR not having
+                    #  `bounds` attribute.
+                    bounds_name = cf_root_coord.bounds
+                if bounds_name is not None:
+                    # This will error if more or less than 1 variable is found.
+                    (bounds_var,) = [
+                        f
+                        for f in formula_terms.values()
+                        if f.cf_terms_by_root.get(bounds_name) == cf_term
+                    ]
+                    if bounds_var != cf_var:
+                        cf_var.bounds = bounds_var.cf_name
+                        new_var = CFBoundaryVariable(
+                            bounds_var.cf_name, bounds_var.cf_data
                         )
-                        if bounds_name is not None:
-                            form_terms = getattr(
-                                self.cf_group.coordinates[cf_root], "formula_terms"
-                            )
-                            form_terms = form_terms.replace(":", "")
-                            form_terms = form_terms.split(" ")
-                            example_dict = {"a": "A", "b": "B", "ps": "PS", "p0": "P0", "orog": "orography"}
-                            for cf_vari in formula_terms.values():
-                                for (
-                                    cf_roots,
-                                    cf_terms,
-                                ) in cf_vari.cf_terms_by_root.items():
-                                    if cf_terms == cf_term:
-                                        if (
-                                            cf_roots in self.cf_group.bounds
-                                            and cf_roots == bounds_name
-                                        ):
-                                            if cf_terms in form_terms:
-                                                to_attach_to = example_dict[cf_terms]
-                                                attach_from = cf_vari.cf_name
-                                                if (
-                                                    to_attach_to.lower()
-                                                    != attach_from.lower()
-                                                ):
-                                                    self.cf_group[cf_vari.cf_name] = CFBoundaryVariable(cf_vari.cf_name, cf_vari.cf_data)
-                                                    cf_var.bounds = cf_vari.cf_name
-                        
+                        new_var.add_formula_term(bounds_name, cf_term)
+                        self.cf_group[bounds_var.cf_name] = new_var
+
                 if cf_root not in self.cf_group.bounds:
                     cf_name = cf_var.cf_name
                     if cf_var.cf_name not in self.cf_group:
-                        new_var = CFAuxiliaryCoordinateVariable(
-                            cf_name, cf_var.cf_data
-                        )
+                        new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
                         if hasattr(cf_var, "bounds"):
                             new_var.bounds = cf_var.bounds
+                        new_var.add_formula_term(cf_root, cf_term)
                         self.cf_group[cf_name] = new_var
-                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         # Determine the CF data variables.
         data_variable_names = (
             set(netcdf_variable_names) - self.cf_group.non_data_variable_names
         )
-        print("name")
 
         for name in data_variable_names:
             self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
-            print("name")
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""

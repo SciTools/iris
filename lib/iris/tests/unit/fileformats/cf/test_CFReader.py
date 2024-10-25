@@ -174,9 +174,6 @@ class Test_translate__formula_terms(tests.IrisTest):
             self.assertEqual(set(group.keys()), set(aux_coordinates))
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
-            # Check all the auxiliary coordinates are formula terms.
-            formula_terms = cf_group.formula_terms
-            self.assertEqual(set(group.items()), set(formula_terms.items()))
             # Check there are three bounds.
             group = cf_group.bounds
             self.assertEqual(len(group), 3)
@@ -184,6 +181,17 @@ class Test_translate__formula_terms(tests.IrisTest):
             self.assertEqual(set(group.keys()), set(bounds))
             for name in bounds:
                 self.assertEqual(group[name].cf_data, getattr(self, name))
+            # Check the formula terms contains all expected terms
+            formula_terms = cf_group.formula_terms
+            expected_keys = ["delta", "sigma", "orography", "delta_bnds", "sigma_bnds"]
+            expected_group = {
+                k: v
+                for k, v in dict(
+                    **cf_group.auxiliary_coordinates, **cf_group.bounds
+                ).items()
+                if k in expected_keys
+            }
+            self.assertEqual(set(expected_group.items()), set(formula_terms.items()))
 
 
 class Test_build_cf_groups__formula_terms(tests.IrisTest):
@@ -273,11 +281,9 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
             self.assertEqual(len(group), 5)
             aux_coordinates = ["delta", "sigma", "orography", "x", "y"]
             self.assertEqual(set(group.keys()), set(aux_coordinates))
+            formula_terms = cf_group.formula_terms
             for name in aux_coordinates:
                 self.assertIs(group[name].cf_data, getattr(self, name))
-            # Check all the auxiliary coordinates are formula terms.
-            formula_terms = cf_group.formula_terms
-            self.assertTrue(set(formula_terms.items()).issubset(list(group.items())))
             # Check the terms by root.
             for name, term in zip(aux_coordinates, ["a", "b", "orog"]):
                 self.assertEqual(
@@ -294,6 +300,16 @@ class Test_build_cf_groups__formula_terms(tests.IrisTest):
                     aux_coord_group[name_bnds].cf_data,
                     getattr(self, name_bnds),
                 )
+            # Check the formula terms contains all expected terms
+            expected_keys = ["delta", "sigma", "orography", "delta_bnds", "sigma_bnds"]
+            expected_group = {
+                k: v
+                for k, v in dict(
+                    **cf_group.auxiliary_coordinates, **cf_group.bounds
+                ).items()
+                if k in expected_keys
+            }
+            self.assertEqual(set(expected_group.items()), set(formula_terms.items()))
 
     def test_promote_reference(self):
         with mock.patch(
