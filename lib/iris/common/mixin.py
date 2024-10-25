@@ -11,6 +11,7 @@ from functools import wraps
 from typing import Any
 
 import cf_units
+import numpy as np
 
 import iris.std_names
 
@@ -104,11 +105,9 @@ class LimitedAttributeDict(dict):
         match = set(self.keys()) == set(other.keys())
         if match:
             for key, value in self.items():
-                match = value == other[key]
-                try:
-                    match = bool(match)
-                except ValueError:
-                    match = match.all()
+                match = np.array_equal(
+                    np.array(value, ndmin=1), np.array(other[key], ndmin=1)
+                )
                 if not match:
                     break
         return match

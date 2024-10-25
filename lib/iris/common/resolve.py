@@ -2358,16 +2358,16 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            124652160.0
+            np.float32(124652160.0)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
-            0.0
+            np.float32(0.0)
             >>> result = resolver.cube(zeros, in_place=True)
             >>> result is cube1
             True
             >>> cube1.data.sum()
-            0.0
+            np.float32(0.0)
 
         """
         from iris.cube import Cube
