@@ -65,6 +65,8 @@ def netcdf_variable(
         standard_name=standard_name,
         **{name: None for name in ugrid_identities},
     )
+    if bounds is None:
+        del ncvar.bounds
     return ncvar
 
 
@@ -91,9 +93,9 @@ class Test_translate__global_attributes(tests.IrisTest):
 
 class Test_translate__formula_terms(tests.IrisTest):
     def setUp(self):
-        self.delta = netcdf_variable("delta", "height", np.float64, bounds="delta_bnds")
+        self.delta = netcdf_variable("delta", "height", np.float64)
         self.delta_bnds = netcdf_variable("delta_bnds", "height bnds", np.float64)
-        self.sigma = netcdf_variable("sigma", "height", np.float64, bounds="sigma_bnds")
+        self.sigma = netcdf_variable("sigma", "height", np.float64)
         self.sigma_bnds = netcdf_variable("sigma_bnds", "height bnds", np.float64)
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"
@@ -186,9 +188,9 @@ class Test_translate__formula_terms(tests.IrisTest):
 
 class Test_build_cf_groups__formula_terms(tests.IrisTest):
     def setUp(self):
-        self.delta = netcdf_variable("delta", "height", np.float64, bounds="delta_bnds")
+        self.delta = netcdf_variable("delta", "height", np.float64)
         self.delta_bnds = netcdf_variable("delta_bnds", "height bnds", np.float64)
-        self.sigma = netcdf_variable("sigma", "height", np.float64, bounds="sigma_bnds")
+        self.sigma = netcdf_variable("sigma", "height", np.float64)
         self.sigma_bnds = netcdf_variable("sigma_bnds", "height bnds", np.float64)
         self.orography = netcdf_variable("orography", "lat lon", np.float64)
         formula_terms = "a: delta b: sigma orog: orography"

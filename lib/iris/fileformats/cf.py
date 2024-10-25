@@ -1418,16 +1418,19 @@ class CFReader:
 
         for cf_var in formula_terms.values():
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+
+
                 # Ignore formula terms owned by a bounds variable.
-                if cf_root not in self.cf_group.bounds:
-                    cf_name = cf_var.cf_name
-                    if cf_var.cf_name not in self.cf_group:
-                        self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
-                            cf_name, cf_var.cf_data
-                        )
-                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+                # if cf_root not in self.cf_group.bounds:
+                #     cf_name = cf_var.cf_name
+                #     if cf_var.cf_name not in self.cf_group:
+                #         self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
+                #             cf_name, cf_var.cf_data
+                #         )
+                #         self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
                 if cf_root not in self.cf_group.bounds:
+
                     # Check if cf_root has a bounds attribute.
                     if cf_root in self.cf_group.coordinates:
                         # Need to generalise this for if it's a dim or aux coord.
@@ -1440,7 +1443,7 @@ class CFReader:
                             )
                             form_terms = form_terms.replace(":", "")
                             form_terms = form_terms.split(" ")
-                            example_dict = {"a": "A", "b": "B", "ps": "PS", "p0": "P0"}
+                            example_dict = {"a": "A", "b": "B", "ps": "PS", "p0": "P0", "orog": "orography"}
                             for cf_vari in formula_terms.values():
                                 for (
                                     cf_roots,
@@ -1458,16 +1461,29 @@ class CFReader:
                                                     to_attach_to.lower()
                                                     != attach_from.lower()
                                                 ):
-                                                    cf_var.bounds = cf_vari
-                                                    print(cf_vari.bounds)
+                                                    self.cf_group[cf_vari.cf_name] = CFBoundaryVariable(cf_vari.cf_name, cf_vari.cf_data)
+                                                    cf_var.bounds = cf_vari.cf_name
+                        
+                if cf_root not in self.cf_group.bounds:
+                    cf_name = cf_var.cf_name
+                    if cf_var.cf_name not in self.cf_group:
+                        new_var = CFAuxiliaryCoordinateVariable(
+                            cf_name, cf_var.cf_data
+                        )
+                        if hasattr(cf_var, "bounds"):
+                            new_var.bounds = cf_var.bounds
+                        self.cf_group[cf_name] = new_var
+                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         # Determine the CF data variables.
         data_variable_names = (
             set(netcdf_variable_names) - self.cf_group.non_data_variable_names
         )
+        print("name")
 
         for name in data_variable_names:
             self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
+            print("name")
 
     def _build_cf_groups(self):
         """Build the first order relationships between CF-netCDF variables."""
@@ -1522,6 +1538,13 @@ class CFReader:
                             msg,
                             category=iris.warnings.IrisCfNonSpanningVarWarning,
                         )
+
+            if hasattr(cf_variable, "bounds"):
+                if cf_variable.bounds not in cf_group:
+                    bounds_var = self.cf_group[cf_variable.bounds]
+                    # TODO: warning if fails spans
+                    if bounds_var.spans(cf_variable):
+                        cf_group[bounds_var.cf_name] = bounds_var
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
