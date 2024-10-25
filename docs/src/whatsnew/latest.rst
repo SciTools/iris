@@ -126,6 +126,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
    :pull:`6172`)
 
+#. `@trexfeathers`_ refactored spanning checks in :mod:`iris.fileformats.cf`
+   to reduce code duplication. (:pull:`6196`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
