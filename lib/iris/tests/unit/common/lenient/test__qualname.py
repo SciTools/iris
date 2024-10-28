@@ -36,7 +36,7 @@ class Test(tests.IrisTest):
         import iris
 
         result = _qualname(iris.load)
-        self.assertEqual(result, "iris.load")
+        self.assertEqual(result, "iris.io.loading.load")
 
     def test_callable_method_local(self):
         class MyClass:
