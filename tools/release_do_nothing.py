@@ -181,9 +181,9 @@ class IrisRelease(Progress):
             file = Path(__file__).parents[1] / "etc" / "cf-standard-name-table.xml"
             message = (
                 "Update the CF standard names table to the latest version:\n"
-                f'wget "{url}" -O {file};'
-                f"git add {file};"
-                "git commit -m 'Update CF standard names table.';"
+                f'wget "{url}" -O {file};\n'
+                f"git add {file};\n"
+                "git commit -m 'Update CF standard names table.';\n"
                 f"git push -u origin {working_branch};"
             )
             self.wait_for_done(message)
