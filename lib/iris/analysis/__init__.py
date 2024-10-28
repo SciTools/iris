@@ -1390,9 +1390,10 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     result = iris._lazy_data.map_complete_blocks(
         data,
-        _calc_percentile,
-        (-1,),
-        percent.shape,
+        func=_calc_percentile,
+        dims=(-1,),
+        out_sizes=percent.shape,
+        dtype=np.float64,
         percent=percent,
         fast_percentile_method=fast_percentile_method,
         **kwargs,

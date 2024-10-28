@@ -943,11 +943,18 @@ class RectilinearRegridder:
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
 
+        # Specify the output dtype
+        if self._method == "linear" and np.issubdtype(src.dtype, np.integer):
+            out_dtype = np.float64
+        else:
+            out_dtype = src.dtype
+
         data = map_complete_blocks(
             src,
-            self._regrid,
-            (y_dim, x_dim),
-            sample_grid_x.shape,
+            func=self._regrid,
+            dims=(y_dim, x_dim),
+            out_sizes=sample_grid_x.shape,
+            dtype=out_dtype,
             x_dim=x_dim,
             y_dim=y_dim,
             src_x_coord=src_x_coord,

@@ -62,6 +62,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
 
+#. `@bouweandela`_ made further updates to the ``chunktype`` of Dask arrays,
+   so it corresponds better with the array content. (:pull:`5989`)
+
 #. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
    attribute. Also made cell_method string parsing more lenient w.r.t.
    whitespace. (:pull:`6083`)
