@@ -12,8 +12,9 @@ i.e. different types + defaulting of the 'options' arg, and **kwargs support.
 
 import pytest
 
-from iris import LoadPolicy, _combine_cubes
-from iris.tests.unit.fileformats.test_load_functions import cu
+from iris import LoadPolicy
+from iris.io.loading import _combine_cubes
+from iris.tests.unit.io.loading.test_load_functions import cu
 
 
 @pytest.fixture(params=list(LoadPolicy.SETTINGS.keys()))

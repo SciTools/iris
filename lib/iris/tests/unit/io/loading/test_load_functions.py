@@ -71,7 +71,7 @@ def run_testcase(input_cubes, loadfunc_name, constraints=None):
             yield cube
 
     try:
-        with mock.patch("iris._generate_cubes", mock_generate_cubes):
+        with mock.patch("iris.io.loading._generate_cubes", mock_generate_cubes):
             result = loadfunc(input_cubes, constraints)
     except Exception as e:
         result = e

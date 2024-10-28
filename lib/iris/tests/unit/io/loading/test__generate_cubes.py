@@ -10,7 +10,7 @@ import iris.tests as tests  # isort:skip
 
 from pathlib import Path
 
-import iris
+from iris.io.loading import _generate_cubes
 
 
 class TestGenerateCubes(tests.IrisTest):
@@ -28,7 +28,7 @@ class TestGenerateCubes(tests.IrisTest):
 
         for gc_arg, du_arg in test_variants:
             decode_uri_mock.reset_mock()
-            list(iris._generate_cubes(gc_arg, None, None))
+            list(_generate_cubes(gc_arg, None, None))
             decode_uri_mock.assert_called_with(du_arg)
 
 
