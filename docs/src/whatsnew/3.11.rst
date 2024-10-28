@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.11 (28 Oct 2024) [release candidate]
+***************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.11 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
@@ -15,7 +15,25 @@ This document explains the changes made to Iris for this release
 
    The highlights for this major/minor release of Iris include:
 
-   * N/A
+   * Iris is now compliant with NumPy v2. See the notes below for how this might
+     affect your scripts.
+
+   * Loading now supports varying reference fields for hybrid vertical
+     coordinates, e.g. a time-varying orography.  This is controlled by the
+     :meth:`~iris.LOAD_POLICY` object : see :class:`~iris.LoadPolicy`.
+
+   * We now have type hints in :class:`~iris.cube.Cube`, and
+     :meth:`iris.cube.CubeList.concatenate` is in places almost an order of
+     magnitude faster!
+
+   * `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`.
+
+   * Checkout the significant performance enhancements section for a couple of
+     improvements to the performance of Iris.
+     Special thanks to `@bouweandela`_ for these contributions.
+
+   * We added ``colorbar`` keyword to allow optional creation of
+     the colorbar in three quickplot methods!
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
