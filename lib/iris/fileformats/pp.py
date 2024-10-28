@@ -2179,7 +2179,8 @@ def save(cube, target, append=False, field_coords=None, label_surface_fields=Fal
         for slicing.
     label_surface_fields : bool, default=False
         Whether you wish pp_save_rules to recognise surface fields or not.
-        This would set LBVC to 129 and LBLEV to 9999.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
         Default is False.
 
     Notes
@@ -2326,7 +2327,8 @@ def as_fields(cube, field_coords=None, label_surface_fields=False):
         If None, the final two  dimensions are chosen for slicing.
     label_surface_fields : bool, default=False
         Whether you wish pp_save_rules to recognise surface fields or not.
-        This would set LBVC to 129 and LBLEV to 9999.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
         Default is False.
 
     """

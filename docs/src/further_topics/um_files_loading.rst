@@ -318,8 +318,9 @@ the derived ``altitude``.
 **Surface Fields**
 
 In order for surface fields to be recognised when saving, you must include
-`label_surface_fields` flag to :func:`iris.fileformats.pp.save` or
-:func:`iris.save`. This will set LBLEV to 9999 and LBVC to 129.
+`label_surface_fields=True` to :func:`iris.fileformats.pp.save` or
+:func:`iris.save`. When surface fields are encountered with this flag set to True,
+LBLEV will be set to 9999 and LBVC to 129.
 
 .. _um_time_metadata:
 
