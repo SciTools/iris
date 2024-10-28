@@ -315,6 +315,12 @@ the derived ``altitude``.
     it produces basic coordinates 'model_level_number', 'sigma' and
     'level_pressure', and a manufactured 3D 'air_pressure' coordinate.
 
+**Surface Fields**
+
+In order for surface fields to be recognised when saving, you must include
+`label_surface_fields=True` to :func:`iris.fileformats.pp.save` or
+:func:`iris.save`. When surface fields are encountered with this flag set to True,
+LBLEV will be set to 9999 and LBVC to 129.
 
 .. _um_time_metadata:
 

@@ -663,7 +663,7 @@ def _lbproc_rules(cube, pp):
     return pp
 
 
-def _vertical_rules(cube, pp):
+def _vertical_rules(cube, pp, label_surface_fields=False):
     """Rule for setting vertical levels for the PP field.
 
     Parameters
@@ -772,6 +772,22 @@ def _vertical_rules(cube, pp):
         pp.blev = depth_coord.points[0]
         pp.brsvd[0] = depth_coord.bounds[0, 0]
         pp.brlev = depth_coord.bounds[0, 1]
+
+    # Surface field.
+    if (
+        height_coord is None
+        and depth_coord is None
+        and pressure_coord is None
+        and soil_mln_coord is None
+        and apt_coord is None
+        and air_pres_coord is None
+        and level_height_coord is None
+        and mln_coord is None
+        and sigma_coord is None
+        and label_surface_fields
+    ):
+        pp.lbvc = 129
+        pp.lblev = 9999
 
     # Single potential-temperature level.
     if (
@@ -883,7 +899,7 @@ def _all_other_rules(cube, pp):
     return pp
 
 
-def verify(cube, field):
+def verify(cube, field, label_surface_fields=False):
     # Rules functions.
     field = _basic_coord_system_rules(cube, field)
     field = _um_version_rules(cube, field)
@@ -893,7 +909,7 @@ def verify(cube, field):
     field = _grid_and_pole_rules(cube, field)
     field = _non_std_cross_section_rules(cube, field)
     field = _lbproc_rules(cube, field)
-    field = _vertical_rules(cube, field)
+    field = _vertical_rules(cube, field, label_surface_fields=label_surface_fields)
     field = _all_other_rules(cube, field)
 
     return field
