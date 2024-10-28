@@ -56,11 +56,17 @@ This document explains the changes made to Iris for this release
    This allows the user to choose whether or not surface fields are recognised
    and handled appropriately. (:issue:`3280`, :pull:`5734`)
 
+#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v86
+   (5 September 2024). (:pull:`6200`)
+
 🐛 Bugs Fixed
 =============
 
 #. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
    fixing :issue:`3653`. (:pull:`5955`)
+
+#. `@bouweandela`_ made further updates to the ``chunktype`` of Dask arrays,
+   so it corresponds better with the array content. (:pull:`5989`)
 
 #. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
    attribute. Also made cell_method string parsing more lenient w.r.t.
