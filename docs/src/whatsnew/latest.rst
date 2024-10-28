@@ -51,7 +51,7 @@ This document explains the changes made to Iris for this release
    control it, as requested in :issue:`5369`, actioned in :pull:`6168`.
 
 #. `@ESadek-MO`_ has updated :mod:`iris.fileformats.pp_save_rules` and
-   :mod:`iris.fileformats.pp`to include the `label_surface_fields` flag across
+   :mod:`iris.fileformats.pp` to include the `label_surface_fields` flag across
    relevant functions, most notably :func:`iris.fileformats.pp.save`.
    This allows the user to choose whether or not surface fields are recognised
    and handled appropriately. (:issue:`3280`, :pull:`5734`)
