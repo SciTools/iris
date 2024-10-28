@@ -1415,10 +1415,16 @@ def regular_points(zeroth, step, count):
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+
+    def make_steps(dtype: np.dtype):
+        start = np.add(zeroth, step, dtype=dtype)
+        steps = np.multiply(step, np.arange(count), dtype=dtype)
+        return np.add(start, steps, dtype=dtype)
+
+    points = make_steps(np.float32)
     _, regular = iris.util.points_step(points)
     if not regular:
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+        points = make_steps(np.float64)
     return points
 
 
