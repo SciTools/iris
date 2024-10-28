@@ -56,6 +56,9 @@ This document explains the changes made to Iris for this release
    This allows the user to choose whether or not surface fields are recognised
    and handled appropriately. (:issue:`3280`, :pull:`5734`)
 
+#. `@ESadek-MO`_ updated to the latest CF Standard Names Table v86
+   (5 September 2024). (:pull:`6200`)
+
 🐛 Bugs Fixed
 =============
 
