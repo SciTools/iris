@@ -22,7 +22,7 @@ except ImportError:
         "This script requires the `nothing` package to be installed:\n"
         "pip install git+https://github.com/SciTools-incubator/nothing.git"
     )
-    raise ImportError(message)
+    raise ImportError(install_message)
 
 
 class IrisRelease(Progress):
