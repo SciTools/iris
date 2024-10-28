@@ -310,7 +310,7 @@ def _hash_ndarray(a: np.ndarray) -> np.ndarray:
 
     # Hash the bytes representing the array data.
     hash.update(b"data=")
-    if isinstance(a, np.ma.MaskedArray):
+    if np.ma.is_masked(a):
         # Hash only the unmasked data
         hash.update(a.compressed().tobytes())
         # Hash the mask
@@ -690,9 +690,9 @@ class _CubeSignature:
         #
         # Collate the dimension coordinate metadata.
         #
-        for coord in self.dim_coords:
-            dims = cube.coord_dims(coord)
-            self.dim_metadata.append(_CoordMetaData(coord, dims))
+        for dim_coord in self.dim_coords:
+            dims = cube.coord_dims(dim_coord)
+            self.dim_metadata.append(_CoordMetaData(dim_coord, dims))
             self.dim_mapping.append(dims[0])
 
         #
@@ -709,13 +709,13 @@ class _CubeSignature:
                 cube.coord_dims(coord),
             )
 
-        for coord in sorted(cube.aux_coords, key=key_func):
-            dims = cube.coord_dims(coord)
+        for aux_coord in sorted(cube.aux_coords, key=key_func):
+            dims = cube.coord_dims(aux_coord)
             if dims:
-                self.aux_metadata.append(_CoordMetaData(coord, dims))
-                self.aux_coords_and_dims.append(_CoordAndDims(coord, tuple(dims)))
+                self.aux_metadata.append(_CoordMetaData(aux_coord, dims))
+                self.aux_coords_and_dims.append(_CoordAndDims(aux_coord, tuple(dims)))
             else:
-                self.scalar_coords.append(coord)
+                self.scalar_coords.append(aux_coord)
 
         def meta_key_func(dm):
             return (dm.metadata, dm.cube_dims(cube))

@@ -49,6 +49,9 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
         tests.GraphicsTest.setUp(self)
         filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         self.cube = test_plot.load_cube_once(filename, "air_potential_temperature")
+        if self.cube.coord_dims("time") != (0,):
+            # A quick fix for data which has changed since we support time-varying orography
+            self.cube.transpose((1, 0, 2, 3))
 
         self.draw_module = iris.quickplot
         self.contourf = test_plot.LambdaStr(
@@ -174,8 +177,20 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(cube, coords=["grid_longitude", "model_level_number"])
         self.check_graphic()
 
+    def test_contourf_no_colorbar(self):
+        qplt.contourf(
+            self._small(),
+            colorbar=False,
+            coords=["model_level_number", "grid_longitude"],
+        )
+        self.check_graphic()
+
     def test_pcolor(self):
         qplt.pcolor(self._small())
+        self.check_graphic()
+
+    def test_pcolor_no_colorbar(self):
+        qplt.pcolor(self._small(), colorbar=False)
         self.check_graphic()
 
     def test_pcolormesh(self):
@@ -191,6 +206,10 @@ class TestLabels(tests.GraphicsTest):
         pcube.coords("level_height")[0].units = "centimeters"
         qplt.pcolormesh(pcube)
 
+        self.check_graphic()
+
+    def test_pcolormesh_no_colorbar(self):
+        qplt.pcolormesh(self._small(), colorbar=False)
         self.check_graphic()
 
     def test_map(self):

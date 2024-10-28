@@ -24,13 +24,31 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. Iris is now compliant with NumPy v2. This may affect your scripts.
+   :ref:`See the full What's New entry for more details <numpy2>`.
 
 
 ✨ Features
 ===========
 
-#. N/A
+#. `@jrackham-mo`_ added :meth:`~iris.io.format_picker.FormatAgent.copy` and
+   equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
+   in :issue:`6108`, actioned in :pull:`6119`.
+
+#. `@ukmo-ccbunney`_ added ``colorbar`` keyword to allow optional creation of
+   the colorbar in the following quickplot methods:
+
+   * :meth:`iris.quickplot.contourf`
+
+   * :meth:`iris.quickplot.pcolor`
+
+   * :meth:`iris.quickplot.pcolormesh`
+
+   Requested in :issue:`5970`, actioned in :pull:`6169`.
+
+#. `@pp-mo`_ and `@stephenworsley`_ added support for hybrid coordinates whose
+   references are split across multiple input fields, and :meth:`~iris.LOAD_POLICY` to
+   control it, as requested in :issue:`5369`, actioned in :pull:`6168`.
 
 
 🐛 Bugs Fixed
@@ -41,6 +59,13 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ made further updates to the ``chunktype`` of Dask arrays,
    so it corresponds better with the array content. (:pull:`5989`)
+
+#. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
+   attribute. Also made cell_method string parsing more lenient w.r.t.
+   whitespace. (:pull:`6083`)
+
+#. `@ukmo-ccbunney`_ fixed comparison of cubes with array type attributes;
+   fixes :issue:`6027` (:pull:`6181`)
 
 💣 Incompatible Changes
 =======================
@@ -67,7 +92,7 @@ This document explains the changes made to Iris for this release
    may happen when there are very many or large auxiliary coordinates, derived
    coordinates, cell measures, or ancillary variables to be checked that span
    the concatenation axis. This issue can be avoided by disabling the
-   problematic check. (:pull:`5926`)
+   problematic check. (:pull:`5926` and :pull:`6187`)
 
 🔥 Deprecations
 ===============
@@ -78,14 +103,21 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+.. _numpy2:
+
+#. `@trexfeathers`_ adapted the Iris codebase to work with NumPy v2. The
+   `NumPy v2 full release notes`_ have the exhaustive details. Notable
+   changes that may affect your Iris scripts are below. (:pull:`6035`)
+
+   * `NumPy v2 changed data type promotion`_
+
+   * `NumPy v2 changed scalar printing`_
 
 
 📚 Documentation
 ================
 
-#. N/A
-
+#. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
 
 💼 Internal
 ===========
@@ -94,13 +126,24 @@ This document explains the changes made to Iris for this release
    in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
    as timing benchmarks. (:pull:`5981`)
 
+#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
+   :pull:`6172`)
+
+#. `@trexfeathers`_ refactored spanning checks in :mod:`iris.fileformats.cf`
+   to reduce code duplication. (:pull:`6196`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@jrackham-mo: https://github.com/jrackham-mo
 
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
+.. _NumPy v2 changed data type promotion: https://numpy.org/doc/stable/numpy_2_0_migration_guide.html#changes-to-numpy-data-type-promotion
+.. _NumPy v2 changed scalar printing: https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
+.. _NumPy v2 full release notes: https://numpy.org/doc/stable/release/2.0.0-notes.html

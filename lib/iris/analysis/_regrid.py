@@ -156,22 +156,30 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid
     #
 
     # Wrap modular values (e.g. longitudes) if required.
-    modulus = sx.units.modulus
+    _modulus = sx.units.modulus
+    # Convert to NumPy scalar to enable cast checking.
+    modulus = np.min_scalar_type(_modulus).type(_modulus)
+
+    def _cast_sx_points(sx_points_: np.ndarray):
+        """Ensure modulus arithmetic will not raise a TypeError."""
+        if not np.can_cast(modulus, sx_points_.dtype):
+            new_type = np.promote_types(sx_points_.dtype, modulus.dtype)
+            result = sx_points_.astype(new_type, casting="safe")
+        else:
+            result = sx_points_
+        return result
+
     if modulus is not None:
         # Match the source cube x coordinate range to the target grid
         # cube x coordinate range.
         min_sx, min_tx = np.min(sx.points), np.min(tx.points)
         if min_sx < 0 and min_tx >= 0:
             indices = np.where(sx_points < 0)
-            # Ensure += doesn't raise a TypeError
-            if not np.can_cast(modulus, sx_points.dtype):
-                sx_points = sx_points.astype(type(modulus), casting="safe")
+            sx_points = _cast_sx_points(sx_points)
             sx_points[indices] += modulus
         elif min_sx >= 0 and min_tx < 0:
             indices = np.where(sx_points > (modulus / 2))
-            # Ensure -= doesn't raise a TypeError
-            if not np.can_cast(modulus, sx_points.dtype):
-                sx_points = sx_points.astype(type(modulus), casting="safe")
+            sx_points = _cast_sx_points(sx_points)
             sx_points[indices] -= modulus
 
     # Create target grid cube x and y cell boundaries.
