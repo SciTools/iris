@@ -192,6 +192,8 @@ CF_VALUE_STD_NAME_GRID_LAT = "grid_latitude"
 CF_VALUE_STD_NAME_GRID_LON = "grid_longitude"
 CF_VALUE_STD_NAME_PROJ_X = "projection_x_coordinate"
 CF_VALUE_STD_NAME_PROJ_Y = "projection_y_coordinate"
+CF_VALUE_STD_NAME_PROJ_X_ANGULAR = "projection_x_angular_coordinate"
+CF_VALUE_STD_NAME_PROJ_Y_ANGULAR = "projection_y_angular_coordinate"
 
 
 ################################################################################
@@ -1488,6 +1490,16 @@ def is_projection_x_coordinate(engine, cf_name):
 
 
 ################################################################################
+def is_projection_x_angular_coordinate(engine, cf_name):
+    """Determine whether the CF coordinate variable is a projection_x_angular_coordinate variable."""
+    cf_var = engine.cf_var.cf_group[cf_name]
+    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
+        cf_var, CF_ATTR_LONG_NAME, None
+    )
+    return attr_name == CF_VALUE_STD_NAME_PROJ_X_ANGULAR
+
+
+################################################################################
 def is_projection_y_coordinate(engine, cf_name):
     """Determine whether the CF coordinate variable is a projection_y_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
@@ -1495,6 +1507,16 @@ def is_projection_y_coordinate(engine, cf_name):
         cf_var, CF_ATTR_LONG_NAME, None
     )
     return attr_name == CF_VALUE_STD_NAME_PROJ_Y
+
+
+################################################################################
+def is_projection_y_angular_coordinate(engine, cf_name):
+    """Determine whether the CF coordinate variable is a projection_y_angular_coordinate variable."""
+    cf_var = engine.cf_var.cf_group[cf_name]
+    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
+        cf_var, CF_ATTR_LONG_NAME, None
+    )
+    return attr_name == CF_VALUE_STD_NAME_PROJ_Y_ANGULAR
 
 
 ################################################################################
