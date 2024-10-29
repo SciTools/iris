@@ -704,7 +704,6 @@ class IrisRelease(Progress):
             channel_command = " -c conda-forge/label/rc_iris "
         else:
             channel_command = " -c conda-forge "
-        channel_command += "--override-channels "
 
         message = (
             "The new release will now undergo testing and validation in the "
