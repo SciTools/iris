@@ -7,7 +7,8 @@ Writing Tests
 *************
 
 .. note::
-    If you're converting UnitTest tests to PyTest, check out :ref:`converting_tests`.
+    If you're converting UnitTest tests to PyTest, check out
+    :ref:`contributing_pytest_conversions`.
 
 .. _developer_pytest_categories:
 
@@ -16,8 +17,8 @@ Test Categories
 
 There are two main categories of tests within Iris:
 
-- :ref:`testing.unit_test`
-- :ref:`testing.integration`
+- `unit tests`
+- `integration tests`
 
 Ideally, all code changes should be accompanied by one or more unit
 tests, and by zero or more integration tests.
@@ -31,14 +32,24 @@ For example:
 
     :literal:`"""Unit tests for the \`iris.experimental.raster.export_geotiff\` function."""`
 
-When testing a class all the tests must reside in the module:
+When testing a class, all the tests must reside in the module:
 
     :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<ClassName>.py`
+
+When testing a function, all the tests must reside in the module:
+
+    :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
 
 Some code changes may require tests which exercise several units in
 order to demonstrate an important consequence of their interaction which
 may not be apparent when considering the units in isolation. These tests must
 be placed in the ``lib/iris/tests/integration`` folder.
+
+With integration tests, folders and files must be created as required to help
+developers locate relevant tests. It is recommended they are named
+according to the capabilities under test, e.g.
+``metadata/test_pp_preservation.py``, and not named according to the
+module(s) under test.
 
 If in any doubt about what tests to add or how to write them please
 feel free to submit a pull-request in any state and ask for assistance.
@@ -49,7 +60,8 @@ PyTest Style Guide
 ==================
 
 .. note::
-    If you're converting UnitTest tests to PyTest, check out :ref:`converting_tests`.
+    If you're converting UnitTest tests to PyTest, check out
+    :ref:`_contributing_pytest_conversions`.
 
 This style guide should be approached pragmatically. Many of the guidelines laid out
 below will not be practical in every scenario, and as such should not be considered
@@ -95,12 +107,6 @@ All parameterisation benefits from
 `ids <https://docs.pytest.org/en/stable/example/parametrize.html#different-options-for-test-ids>`_,
 and so should be used where possible.
 
-`Classes <https://docs.pytest.org/en/stable/getting-started.html#group-multiple-tests-in-a-class>`_
----------------------------------------------------------------------------------------------------
-
-How and when to group tests within classes can be based on personal opinion,
-we do not deem consistency on this a vital concern.
-
 `Mocks <https://docs.pytest.org/en/stable/how-to/monkeypatch.html>`_
 --------------------------------------------------------------------
 
@@ -109,6 +115,12 @@ Any mocking should be done with ``pytest.mock``, and monkeypatching where suitab
 .. note::
     If you think we're missing anything important here, please consider creating an
     issue or discussion and share your ideas with the team!
+
+`Classes <https://docs.pytest.org/en/stable/getting-started.html#group-multiple-tests-in-a-class>`_
+---------------------------------------------------------------------------------------------------
+
+How and when to group tests within classes can be based on personal opinion,
+we do not deem consistency on this a vital concern.
 
 Naming Test Classes and Functions
 ---------------------------------
@@ -151,10 +163,6 @@ Within that file the tests might look something like:
         def test_coord_already_present(self):
             ...
 
-When testing a function all the tests must reside in the module:
-
-    :literal:`lib/iris/tests/unit/<fully/qualified/module>/test_<function_name>.py`
-
 Within this test module there may be test classes, for example:
 
 * ``Test``
@@ -187,13 +195,7 @@ Within that file the tests might look something like:
     def test_no_ellipsoid(self):
         ...
 
-Unlike unit tests, there is no fixed naming scheme for integration
-tests. But folders and files must be created as required to help
-developers locate relevant tests. It is recommended they are named
-according to the capabilities under test, e.g.
-``metadata/test_pp_preservation.py``, and not named according to the
-module(s) under test.
-
+There is no fixed naming scheme for integration tests.
 .. _pytesting_tools:
 
 Testing tools
@@ -243,9 +245,6 @@ information.
     command line argument, or setting the ``IRIS_TEST_CREATE_MISSING``
     environment variable to anything non-zero. This will create the files rather
     than erroring, allowing you to commit the updated results.
-
-Context managers
-=================
 
 Capturing exceptions and logging
 --------------------------------

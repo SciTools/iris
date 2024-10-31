@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-.. _converting_from_unittest:
+.. _contributing_pytest_conversions:
 
 *******************************************
 Converting From ``unittest`` to ``pytest``
@@ -32,6 +32,7 @@ Conversion Checklist
    simple ``assert ...`` statements.
 #. Check for references to ``setUp()``. Replace this with ``_setup()`` instead.
    Ensure that this is decorated with ``@pytest.fixture(autouse=True)``.
+
    .. codeblock:: python
 
       @pytest.fixture(autouse=True)
