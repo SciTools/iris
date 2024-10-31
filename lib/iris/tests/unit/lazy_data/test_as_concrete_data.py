@@ -57,7 +57,8 @@ class Test_as_concrete_data:
     def test_lazy_scalar_proxy(self):
         a = np.array(5)
         proxy = MyProxy(a)
-        lazy_array = as_lazy_data(proxy)
+        meta = np.empty((0,) * proxy.ndim, dtype=proxy.dtype)
+        lazy_array = as_lazy_data(proxy, meta=meta)
         assert is_lazy_data(lazy_array)
         result = as_concrete_data(lazy_array)
         assert not is_lazy_data(result)
@@ -66,7 +67,8 @@ class Test_as_concrete_data:
     def test_lazy_scalar_proxy_masked(self):
         a = np.ma.masked_array(5, True)
         proxy = MyProxy(a)
-        lazy_array = as_lazy_data(proxy)
+        meta = np.ma.array(np.empty((0,) * proxy.ndim, dtype=proxy.dtype), mask=True)
+        lazy_array = as_lazy_data(proxy, meta=meta)
         assert is_lazy_data(lazy_array)
         result = as_concrete_data(lazy_array)
         assert not is_lazy_data(result)

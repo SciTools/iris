@@ -6,6 +6,7 @@
 :func:`iris.fileformats.pp_load_rules._reshape_vector_args`.
 
 """
+
 import numpy as np
 import pytest
 

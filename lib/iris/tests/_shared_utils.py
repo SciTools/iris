@@ -19,7 +19,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
-from typing import AnyStr
+from typing import Optional
 import warnings
 import xml.dom.minidom
 import zlib
@@ -380,7 +380,7 @@ def assert_CDL(
 
     dimension_lines = slice(lines.index("dimensions:") + 1, lines.index("variables:"))
     lines[dimension_lines] = sorted(lines[dimension_lines], key=sort_key)
-    cdl = "\n".join(lines) + "\n"
+    cdl = "\n".join(lines) + "\n"  # type: ignore[assignment]
 
     _check_same(cdl, reference_path, type_comparison_name="CDL")
 
@@ -543,9 +543,7 @@ def assert_repr(request: pytest.FixtureRequest, obj, reference_filename):
 def _check_same(item, reference_path, type_comparison_name="CML"):
     if _check_reference_file(reference_path):
         with open(reference_path, "rb") as reference_fh:
-            reference = "".join(
-                part.decode("utf-8") for part in reference_fh.readlines()
-            )
+            reference = "".join(part.decode("utf-8") for part in reference_fh)
         _assert_str_same(reference, item, reference_path, type_comparison_name)
     else:
         _ensure_folder(reference_path)
@@ -966,7 +964,7 @@ def no_warnings(func):
     return wrapped
 
 
-def env_bin_path(exe_name: AnyStr = None):
+def env_bin_path(exe_name: Optional[str] = None):
     """Return a Path object for (an executable in) the environment bin directory.
 
     Parameters

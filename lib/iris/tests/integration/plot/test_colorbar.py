@@ -6,6 +6,7 @@
 :func:`matplotlib.pyplot.colorbar`.
 
 """
+
 import numpy as np
 import pytest
 

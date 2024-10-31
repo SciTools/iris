@@ -31,7 +31,7 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 _AuxCoverage = namedtuple(
-    "AuxCoverage",
+    "_AuxCoverage",
     [
         "cube",
         "common_items_aux",
@@ -45,18 +45,18 @@ _AuxCoverage = namedtuple(
 )
 
 _CategoryItems = namedtuple(
-    "CategoryItems",
+    "_CategoryItems",
     ["items_dim", "items_aux", "items_scalar"],
 )
 
 _DimCoverage = namedtuple(
-    "DimCoverage",
+    "_DimCoverage",
     ["cube", "metadata", "coords", "dims_common", "dims_local", "dims_free"],
 )
 
-_Item = namedtuple("Item", ["metadata", "coord", "dims"])
+_Item = namedtuple("_Item", ["metadata", "coord", "dims"])
 
-_PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
+_PreparedFactory = namedtuple("_PreparedFactory", ["container", "dependencies"])
 
 
 @dataclass
@@ -71,7 +71,7 @@ class _PreparedItem:
     axis: Any = None
 
     def create_coord(self, metadata):
-        from iris.experimental.ugrid.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(self.container, MeshCoord):
             # Make a MeshCoord, for which we have mesh/location/axis.
@@ -95,7 +95,7 @@ class _PreparedItem:
         return result
 
 
-_PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
+_PreparedMetadata = namedtuple("_PreparedMetadata", ["combined", "src", "tgt"])
 
 
 class Resolve:
@@ -741,7 +741,7 @@ class Resolve:
         if container is None:
             container = type(coord)
 
-        from iris.experimental.ugrid.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(container, MeshCoord):
             # Build a prepared-item to make a MeshCoord.
@@ -1639,7 +1639,7 @@ class Resolve:
             Boolean stating whether the ``metadata`` is from the ``src`` (``True``)
             or ``tgt`` :class:`~iris.cube.Cube`.
             Defaults to ``True``.
-        from_local: bool, default=False
+        from_local : bool, default=False
             Boolean controlling whether the ``metadata`` is used to search the
             ``category_local`` (``True``) or the :attr:`~iris.common.resolve.Resolve.prepared_category`.
             Defaults to ``False``.
@@ -2358,16 +2358,16 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            124652160.0
+            np.float32(124652160.0)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
-            0.0
+            np.float32(0.0)
             >>> result = resolver.cube(zeros, in_place=True)
             >>> result is cube1
             True
             >>> cube1.data.sum()
-            0.0
+            np.float32(0.0)
 
         """
         from iris.cube import Cube

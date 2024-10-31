@@ -20,6 +20,12 @@ the below table.
 
 .. raw:: html
 
+   <!-- Must import jquery before the datatables css and js files. -->
+   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
+   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+
+
    <table id="voted_issues_table" class="hover row-border order-column" style="width:100%">
       <thead>
          <tr>

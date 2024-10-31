@@ -49,6 +49,7 @@ use some other serialisable shared-lock solution in place of
 'distributed.Lock', which requires a distributed scheduler to function.
 
 """
+
 import threading
 
 import dask.array
@@ -126,14 +127,14 @@ def get_worker_lock(identity: str):
 
     """
     scheduler_type = get_dask_array_scheduler_type()
-    if scheduler_type in ("threads", "single-threaded"):
+    if scheduler_type == "distributed":
+        from dask.distributed import Lock as DistributedLock
+
+        lock: DistributedLock | threading.Lock = DistributedLock(identity)
+    elif scheduler_type in ("threads", "single-threaded"):
         # N.B. the "identity" string is never used in this case, as the same actual
         # lock object is used by all workers.
         lock = threading.Lock()
-    elif scheduler_type == "distributed":
-        from dask.distributed import Lock as DistributedLock
-
-        lock = DistributedLock(identity)
     else:
         msg = (
             "The configured dask array scheduler type is "

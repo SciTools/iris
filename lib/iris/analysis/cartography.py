@@ -347,11 +347,11 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     Parameters
     ----------
     radian_lat_bounds :
-        [n,2] array of latitude bounds (radians)
+        [n,2] array of latitude bounds (radians).
     radian_lon_bounds :
-        [n,2] array of longitude bounds (radians)
+        [n,2] array of longitude bounds (radians).
     radius_of_earth :
-        radius of the earth (currently assumed spherical)
+        Radius of the earth (currently assumed spherical).
 
     """
     # ensure pairs of bounds
@@ -376,7 +376,7 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     return np.abs(areas)
 
 
-def area_weights(cube, normalize=False):
+def area_weights(cube, normalize=False, compute=True, chunks=None):
     r"""Return an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
@@ -401,6 +401,13 @@ def area_weights(cube, normalize=False):
     normalize : bool, default=False
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
+    compute : bool, default=True
+        If False, return a lazy dask array. If True, return a numpy array.
+    chunks : tuple, optional
+        If compute is False and a value is provided, then the result will use
+        these chunks instead of the same chunks as the cube data. The values
+        provided here will only be used along dimensions that are not latitude
+        or longitude.
 
     Returns
     -------
@@ -476,7 +483,13 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
+    if compute:
+        lat_bounds = lat.bounds
+        lon_bounds = lon.bounds
+    else:
+        lat_bounds = lat.lazy_bounds()
+        lon_bounds = lon.lazy_bounds()
+    ll_weights = _quadrant_area(lat_bounds, lon_bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -491,7 +504,9 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(ll_weights, cube.shape, broadcast_dims)
+    broad_weights = iris.util.broadcast_to_shape(
+        ll_weights, cube.shape, broadcast_dims, chunks=chunks
+    )
 
     return broad_weights
 
@@ -894,10 +909,12 @@ def _transform_xy(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : array
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
@@ -916,10 +933,13 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Parameters
     ----------
-    crs1, crs2 : :class:`cartopy.crs.Projection`
-        The coordinate systems, "from" and "to".
+    crs1 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "from".
     x, y : array
         Point locations defined in 'crs1'.
+    crs2 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "to".
+
 
     Returns
     -------
@@ -1047,7 +1067,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     tgt_crs : `cartopy.crs.Projection`
         The target coordinate reference systems.
     ds : `DistanceDifferential`
-        Distance differentials for src_crs and tgt_crs at specified locations
+        Distance differentials for src_crs and tgt_crs at specified locations.
     dx2, dy2 : `PartialDifferential`
         Partial differentials from src_crs to tgt_crs.
 
@@ -1108,7 +1128,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     Returns
     -------
-    (u', v') tuple of :class:`iris.cube.Cube`
+    tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.

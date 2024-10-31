@@ -21,17 +21,14 @@ from iris.coords import (
     DimCoord,
     _DimensionalMetadata,
 )
-from iris.experimental.ugrid.mesh import Connectivity
+from iris.mesh import Connectivity
 from iris.tests.stock import climatology_3d as cube_with_climatology
 from iris.tests.stock.mesh import sample_meshcoord
 
 
 class Test___init____abstractmethod(tests.IrisTest):
     def test(self):
-        emsg = (
-            "Can't instantiate abstract class _DimensionalMetadata with "
-            "abstract methods __init__"
-        )
+        emsg = "Can't instantiate abstract class _DimensionalMetadata"
         with self.assertRaisesRegex(TypeError, emsg):
             _ = _DimensionalMetadata(0)
 
@@ -888,7 +885,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
                 "[...]+bounds  shape(3,)>"
             ),
             "MeshCoord :  longitude / (unknown)",
-            "    mesh: <Mesh: 'test_mesh'>",
+            "    mesh: <MeshXY: 'test_mesh'>",
             "    location: 'face'",
             "    points: [3100, 3101, 3102]",
             "    bounds: [",

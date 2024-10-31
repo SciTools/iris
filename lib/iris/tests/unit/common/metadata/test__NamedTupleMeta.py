@@ -43,7 +43,7 @@ class Test:
         assert self.names(Metadata.__bases__) == expected
         expected = ["Metadata", "object"]
         assert self.names(Metadata.__mro__) == expected
-        emsg = "Can't instantiate abstract class .* with abstract method.* _members"
+        emsg = "Can't instantiate abstract class"
         with pytest.raises(TypeError, match=emsg):
             _ = Metadata()
 

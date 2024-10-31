@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Miscellaneous utility functions."""
 
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
 import functools
@@ -12,6 +14,7 @@ import os
 import os.path
 import sys
 import tempfile
+from typing import Literal
 
 import cf_units
 from dask import array as da
@@ -26,7 +29,7 @@ from iris.common.lenient import _lenient_client
 import iris.exceptions
 
 
-def broadcast_to_shape(array, shape, dim_map):
+def broadcast_to_shape(array, shape, dim_map, chunks=None):
     """Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
@@ -47,6 +50,14 @@ def broadcast_to_shape(array, shape, dim_map):
         the index in *shape* which the dimension of *array* corresponds
         to, so the first element of *dim_map* gives the index of *shape*
         that corresponds to the first dimension of *array* etc.
+    chunks : :class:`tuple`, optional
+        If the source array is a :class:`dask.array.Array` and a value is
+        provided, then the result will use these chunks instead of the same
+        chunks as the source array. Setting chunks explicitly as part of
+        broadcast_to_shape is more efficient than rechunking afterwards. See
+        also :func:`dask.array.broadcast_to`. Note that the values provided
+        here will only be used along dimensions that are new on the result or
+        have size 1 on the source array.
 
     Examples
     --------
@@ -69,13 +80,25 @@ def broadcast_to_shape(array, shape, dim_map):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
+    if isinstance(array, da.Array):
+        if chunks is not None:
+            chunks = list(chunks)
+            for src_idx, tgt_idx in enumerate(dim_map):
+                # Only use the specified chunks along new dimensions or on
+                # dimensions that have size 1 in the source array.
+                if array.shape[src_idx] != 1:
+                    chunks[tgt_idx] = array.chunks[src_idx]
+        broadcast = functools.partial(da.broadcast_to, shape=shape, chunks=chunks)
+    else:
+        broadcast = functools.partial(np.broadcast_to, shape=shape)
+
     n_orig_dims = len(array.shape)
     n_new_dims = len(shape) - n_orig_dims
     array = array.reshape(array.shape + (1,) * n_new_dims)
 
     # Get dims in required order.
     array = np.moveaxis(array, range(n_orig_dims), dim_map)
-    new_array = np.broadcast_to(array, shape)
+    new_array = broadcast(array)
 
     if ma.isMA(array):
         # broadcast_to strips masks so we need to handle them explicitly.
@@ -83,13 +106,13 @@ def broadcast_to_shape(array, shape, dim_map):
         if mask is ma.nomask:
             new_mask = ma.nomask
         else:
-            new_mask = np.broadcast_to(mask, shape)
+            new_mask = broadcast(mask)
         new_array = ma.array(new_array, mask=new_mask)
 
     elif is_lazy_masked_data(array):
         # broadcast_to strips masks so we need to handle them explicitly.
         mask = da.ma.getmaskarray(array)
-        new_mask = da.broadcast_to(mask, shape)
+        new_mask = broadcast(mask)
         new_array = da.ma.masked_array(new_array, new_mask)
 
     return new_array
@@ -191,7 +214,8 @@ def describe_diff(cube_a, cube_b, output_file=None):
 
     See Also
     --------
-    :meth:`iris.cube.Cube.is_compatible()`
+    iris.cube.Cube.is_compatible :
+        Check if a Cube is compatible with another.
 
     """
     if output_file is None:
@@ -229,7 +253,10 @@ def describe_diff(cube_a, cube_b, output_file=None):
             )
 
 
-def guess_coord_axis(coord):
+Axis = Literal["X", "Y", "Z", "T"]
+
+
+def guess_coord_axis(coord) -> Axis | None:
     """Return a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
@@ -253,7 +280,7 @@ def guess_coord_axis(coord):
     :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
-    axis = None
+    axis: Axis | None = None
 
     if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
         return axis
@@ -281,19 +308,24 @@ def guess_coord_axis(coord):
     return axis
 
 
-def rolling_window(a, window=1, step=1, axis=-1):
+def rolling_window(
+    a: np.ndarray | da.Array,
+    window: int = 1,
+    step: int = 1,
+    axis: int = -1,
+) -> np.ndarray | da.Array:
     """Make an ndarray with a rolling window of the last dimension.
 
     Parameters
     ----------
     a : array_like
-        Array to add rolling window to
+        Array to add rolling window to.
     window : int, default=1
-        Size of rolling window
+        Size of rolling window.
     step : int, default=1
-        Size of step between rolling windows
+        Size of step between rolling windows.
     axis : int, default=-1
-        Axis to take the rolling window over
+        Axis to take the rolling window over.
 
     Returns
     -------
@@ -322,8 +354,6 @@ def rolling_window(a, window=1, step=1, axis=-1):
     See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
-    # NOTE: The implementation of this function originates from
-    # https://github.com/numpy/numpy/pull/31#issuecomment-1304851 04/08/2011
     if window < 1:
         raise ValueError("`window` must be at least 1.")
     if window > a.shape[axis]:
@@ -331,25 +361,26 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) // step
-    shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1 :]
-    strides = (
-        a.strides[:axis]
-        + (step * a.strides[axis], a.strides[axis])
-        + a.strides[axis + 1 :]
+    array_module = da if isinstance(a, da.Array) else np
+    steps = tuple(
+        slice(None, None, step) if i == axis else slice(None) for i in range(a.ndim)
     )
-    rw = np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-    if ma.isMaskedArray(a):
-        mask = ma.getmaskarray(a)
-        strides = (
-            mask.strides[:axis]
-            + (step * mask.strides[axis], mask.strides[axis])
-            + mask.strides[axis + 1 :]
+
+    def _rolling_window(array):
+        return array_module.moveaxis(
+            array_module.lib.stride_tricks.sliding_window_view(
+                array,
+                window_shape=window,
+                axis=axis,
+            )[steps],
+            -1,
+            axis + 1,
         )
-        rw = ma.array(
-            rw,
-            mask=np.lib.stride_tricks.as_strided(mask, shape=shape, strides=strides),
-        )
+
+    rw = _rolling_window(a)
+    if isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray):
+        mask = _rolling_window(array_module.ma.getmaskarray(a))
+        rw = array_module.ma.masked_array(rw, mask)
     return rw
 
 
@@ -359,7 +390,7 @@ def array_equal(array1, array2, withnans=False):
     Parameters
     ----------
     array1, array2 : arraylike
-        args to be compared, normalised if necessary with :func:`np.asarray`.
+        Args to be compared, normalised if necessary with :func:`np.asarray`.
     withnans : bool, default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
@@ -368,8 +399,9 @@ def array_equal(array1, array2, withnans=False):
 
     Notes
     -----
-    This provides much the same functionality as :func:`numpy.array_equal`, but
-    with additional support for arrays of strings and NaN-tolerant operation.
+    This provides similar functionality to :func:`numpy.array_equal`, but
+    will compare arrays as unequal when their masks differ and has
+    additional support for arrays of strings and NaN-tolerant operation.
 
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
@@ -379,17 +411,24 @@ def array_equal(array1, array2, withnans=False):
 
     def normalise_array(array):
         if not is_lazy_data(array):
-            array = np.asarray(array)
+            if not ma.isMaskedArray(array):
+                array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
     eq = array1.shape == array2.shape
     if eq:
+        array1_masked = ma.is_masked(array1)
+        eq = array1_masked == ma.is_masked(array2)
+    if eq and array1_masked:
+        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
+    if eq:
         eqs = array1 == array2
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
             eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = bool(np.all(eqs))
+        eq = np.all(eqs)
+        eq = bool(eq) or eq is ma.masked
 
     return eq
 
@@ -400,6 +439,11 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     Returns whether two numbers are almost equal, allowing for the finite
     precision of floating point numbers.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
+
     .. deprecated:: 3.2.0
 
        Instead use :func:`math.isclose`. For example, rather than calling
@@ -407,11 +451,6 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
        if the actual error equals the maximum, whereas :func:`util.approx_equal`
        will return False.
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -438,9 +477,9 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     Parameters
     ----------
     lh :
-        The left hand element of the inequality
+        The left hand element of the inequality.
     rh :
-        The right hand element of the inequality
+        The right hand element of the inequality.
     lh_inclusive : bool, default=True
         Affects the left hand comparison operator to use in the inequality.
         True for ``<=`` false for ``<``. Defaults to True.
@@ -581,7 +620,7 @@ def monotonic(array, strict=False, return_direction=False):
     Parameters
     ----------
     strict : bool, default=False
-        Flag to enable strict monotonic checking
+        Flag to enable strict monotonic checking.
     return_direction : bool, default=False
         Flag to change return behaviour to return
         (monotonic_status, direction). Direction will be 1 for positive
@@ -590,11 +629,9 @@ def monotonic(array, strict=False, return_direction=False):
 
     Returns
     -------
-    monotonic_status : bool
-        Whether the array was monotonic.
-
-        If the return_direction flag was given then the returned value
-        will be: ``(monotonic_status, direction)``
+    bool
+        Whether the array was monotonic.  If the return_direction flag was given
+        then the returned value will be: ``(monotonic_status, direction)``.
 
     Notes
     -----
@@ -783,9 +820,9 @@ def _slice_data_with_keys(data, keys):
     Parameters
     ----------
     data : array-like
-        array to index.
+        Array to index.
     keys : list
-        list of indexes, as received from a __getitem__ call.
+        List of indexes, as received from a __getitem__ call.
 
     Returns
     -------
@@ -801,7 +838,7 @@ def _slice_data_with_keys(data, keys):
     both 'real' (numpy) arrays and other array-likes index in the same way,
     instead of numpy arrays doing 'fancy indexing'.
 
-    .. Note::
+    .. note::
 
         Avoids copying the data, where possible.
 
@@ -1022,7 +1059,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     Parameters
     ----------
     the_str : str
-        The string to be clipped
+        The string to be clipped.
     clip_length : int, default=70
         The length in characters that the input string should be clipped
         to. Defaults to a preconfigured value if not specified.
@@ -1101,7 +1138,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     ----------
     src_cube : :class:`iris.cube.Cube`
         Source cube on which to generate a new axis.
-    scalar_coord : :class:`iris.coord.Coord` or 'string', optional
+    scalar_coord : :class:`iris.coord.Coord` or str, optional
         Scalar coordinate to promote to a dimension coordinate.
     expand_extras : iterable, optional
         Auxiliary coordinates, ancillary variables and cell measures which will
@@ -1378,10 +1415,16 @@ def regular_points(zeroth, step, count):
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+
+    def make_steps(dtype: np.dtype):
+        start = np.add(zeroth, step, dtype=dtype)
+        steps = np.multiply(step, np.arange(count), dtype=dtype)
+        return np.add(start, steps, dtype=dtype)
+
+    points = make_steps(np.float32)
     _, regular = iris.util.points_step(points)
     if not regular:
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+        points = make_steps(np.float64)
     return points
 
 
@@ -1531,7 +1574,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.AuxCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
@@ -1643,7 +1686,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
-    r"""Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+    r"""Demote a dimension coordinate  on the cube to an auxiliary coordinate.
 
     The DimCoord is demoted to an auxiliary coordinate on the cube.
     The dimension of the cube that was associated with the DimCoord becomes
@@ -1653,7 +1696,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.DimCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
@@ -1768,8 +1811,8 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
     Returns
     -------
-    result : `numpy.ndarray` of bool
-        true/false map of which cells in the cube XY grid have
+    numpy.ndarray
+        Boolean True/false map of which cells in the cube XY grid have
         discontiguities in the coordinate points array.
 
         This can be used as the input array for
@@ -1895,7 +1938,7 @@ def _mask_array(array, points_to_mask, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
-    """Masks any cells in the cube's data array.
+    """Mask any cells in the cube's data array.
 
     Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
@@ -2098,12 +2141,12 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 
     Parameters
     ----------
+    cube : :class:`~iris.cube.Cube` object
+        The `Cube` object to masked. Must be singular, rather than a `CubeList`.
     shape : Shapely.Geometry object
         A single `shape` of the area to remain unmasked on the `cube`.
         If it a line object of some kind then minimum_weight will be ignored,
-        because you cannot compare the area of a 1D line and 2D Cell
-    cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+        because you cannot compare the area of a 1D line and 2D Cell.
     minimum_weight : float , default=0.0
         A number between 0-1 describing what % of a cube cell area must
         the shape overlap to include it.
@@ -2114,12 +2157,12 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     Returns
     -------
     iris.Cube
-        A masked version of the input cube, if in_place is False
-
+        A masked version of the input cube, if in_place is False.
 
     See Also
     --------
     :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
 
     Notes
     -----
@@ -2141,7 +2184,6 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
     >>> masked_cube = mask_cube_from_shapefile(cube, shape)
 
-    ...
     """
     shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)

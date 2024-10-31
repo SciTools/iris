@@ -64,34 +64,34 @@ v3.2.1 (11 Mar 2022)
    :pull:`4053`, :pull:`4439`) and API (:pull:`4063`, :pull:`4064`), and
    supporting representation (:pull:`4033`, :pull:`4054`) of data on meshes.
    Most of this new API can be found in :mod:`iris.experimental.ugrid`. The key
-   objects introduced are :class:`iris.experimental.ugrid.mesh.Mesh`,
+   objects introduced are :class:`iris.experimental.ugrid.mesh.MeshXY`,
    :class:`iris.experimental.ugrid.mesh.MeshCoord` and
    :obj:`iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`.
-   A :class:`~iris.experimental.ugrid.mesh.Mesh` contains a full description of a UGRID
+   A :class:`~iris.experimental.ugrid.mesh.MeshXY` contains a full description of a UGRID
    type mesh. :class:`~iris.experimental.ugrid.mesh.MeshCoord`\ s are coordinates that
-   reference and represent a :class:`~iris.experimental.ugrid.mesh.Mesh` for use
+   reference and represent a :class:`~iris.experimental.ugrid.mesh.MeshXY` for use
    on a :class:`~iris.cube.Cube`. :class:`~iris.cube.Cube`\ s are also given the
    property :attr:`~iris.cube.Cube.mesh` which returns a
-   :class:`~iris.experimental.ugrid.mesh.Mesh` if one is attached to the
+   :class:`~iris.experimental.ugrid.mesh.MeshXY` if one is attached to the
    :class:`~iris.cube.Cube` via a :class:`~iris.experimental.ugrid.mesh.MeshCoord`.
 
 #. `@trexfeathers`_ added support for loading unstructured mesh data from netcdf data,
    for files using the `CF-UGRID`_ conventions.
    The context manager :obj:`~iris.experimental.ugrid.load.PARSE_UGRID_ON_LOAD`
    provides a way to load UGRID files so that :class:`~iris.cube.Cube`\ s can be
-   returned with a :class:`~iris.experimental.ugrid.mesh.Mesh` attached.
+   returned with a :class:`~iris.experimental.ugrid.mesh.MeshXY` attached.
    (:pull:`4058`).
 
 #. `@pp-mo`_ added support to save cubes with :ref:`meshes <ugrid>` to netcdf
    files, using the `CF-UGRID`_ conventions.
    The existing :meth:`iris.save` function now does this, when saving cubes with meshes.
    A routine :meth:`iris.experimental.ugrid.save.save_mesh` allows saving
-   :class:`~iris.experimental.ugrid.mesh.Mesh` objects to netcdf *without* any associated data
+   :class:`~iris.experimental.ugrid.mesh.MeshXY` objects to netcdf *without* any associated data
    (i.e. not attached to cubes).
    (:pull:`4318` and :pull:`4339`).
 
-#. `@trexfeathers`_ added :meth:`iris.experimental.ugrid.mesh.Mesh.from_coords`
-   for inferring a :class:`~iris.experimental.ugrid.mesh.Mesh` from an
+#. `@trexfeathers`_ added :meth:`iris.experimental.ugrid.mesh.MeshXY.from_coords`
+   for inferring a :class:`~iris.experimental.ugrid.mesh.MeshXY` from an
    appropriate collection of :class:`iris.coords.Coord`\ s.
 
 #. `@larsbarring`_ updated :func:`~iris.util.equalise_attributes` to return a list of dictionaries
@@ -130,7 +130,7 @@ v3.2.1 (11 Mar 2022)
    :class:`~iris.coords.Coord`, :class:`~iris.coords.CellMeasure`,
    :class:`~iris.coords.AncillaryVariable`,
    :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
-   :class:`~iris.experimental.ugrid.mesh.Mesh`.
+   :class:`~iris.experimental.ugrid.mesh.MeshXY`.
    These now all provide a more controllable ``summary()`` method, and
    more convenient and readable ``str()`` and ``repr()`` output in the style of
    the :class:`iris.cube.Cube`.

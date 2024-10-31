@@ -9,7 +9,7 @@ Iris includes specialised handling of mesh-located data (as opposed to
 grid-located data). Iris and its :ref:`partner packages <ugrid partners>` are
 designed to make working with mesh-located data as simple as possible, with new
 capabilities being added all the time. More detail is in this section and in
-the :mod:`iris.experimental.ugrid` API documentation.
+the :mod:`iris.mesh` API documentation.
 
 This mesh support is based on the `CF-UGRID Conventions`__; UGRID-conformant
 meshes + data can be loaded from a file into Iris' data model, and meshes +

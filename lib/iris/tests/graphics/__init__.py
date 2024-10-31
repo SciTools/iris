@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 import sys
 import threading
-from typing import Callable, Dict, Union
+from typing import Callable, Dict, Iterator, Union
 
 import filelock
 import pytest
@@ -126,7 +126,7 @@ def repos_equal(repo1: Dict[str, str], repo2: Dict[str, str]) -> bool:
     return True
 
 
-def get_phash(input: Path) -> str:
+def get_phash(input: Path | io.BytesIO) -> str:
     import imagehash
     from PIL import Image
 
@@ -141,7 +141,7 @@ def generate_repo_from_baselines(baseline_image_dir: Path) -> Dict[str, str]:
     return repo
 
 
-def fully_qualify(test_id: str, repo: str) -> Dict[str, str]:
+def fully_qualify(test_id: str, repo: dict[str, str]) -> str:
     # If the test_id isn't in the repo as it stands, look for it
     if test_id not in repo:
         test_id_candidates = [x for x in repo.keys() if x.endswith(test_id)]
@@ -285,7 +285,7 @@ def skip_plot(fn: Callable) -> Callable:
 
 
 @pytest.fixture
-def _check_graphic_caller(_unique_id) -> callable:
+def _check_graphic_caller(_unique_id) -> Iterator[Callable]:
     """Provide a function calling :func:`check_graphic` with safe configuration.
 
     Ensures a safe Matplotlib setup (and tears down afterwards), and generates

@@ -282,9 +282,9 @@ class _CoordConstraint:
         Parameters
         ----------
         coord_name : str
-            The name of the coordinate to constrain
+            The name of the coordinate to constrain.
         coord_thing :
-            The object to compare
+            The object to compare.
 
         """
         self.coord_name = coord_name
@@ -491,10 +491,10 @@ def list_of_constraints(constraints):
     return [as_constraint(constraint) for constraint in constraints]
 
 
-def as_constraint(thing):
-    """Casts an object into a cube constraint where possible.
+def as_constraint(thing: Constraint | str | None) -> Constraint:
+    """Cast an object into a cube constraint where possible.
 
-    Casts an object into a cube constraint where possible, otherwise
+    Cast an object into a cube constraint where possible, otherwise
     a TypeError will be raised.
 
     If the given object is already a valid constraint then the given object

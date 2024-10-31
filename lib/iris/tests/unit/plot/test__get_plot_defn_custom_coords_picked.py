@@ -5,6 +5,7 @@
 """Unit tests for the `iris.plot._get_plot_defn_custom_coords_picked`
 function.
 """
+
 import pytest
 
 from iris.coords import BOUND_MODE, POINT_MODE
