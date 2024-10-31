@@ -22,9 +22,6 @@ There are two main categories of tests within Iris:
 Ideally, all code changes should be accompanied by one or more unit
 tests, and by zero or more integration tests.
 
-But if in any doubt about what tests to add or how to write them please
-feel free to submit a pull-request in any state and ask for assistance.
-
 Code changes should be accompanied by enough unit tests to give a
 high degree of confidence that the change works as expected. In
 addition, the unit tests can help describe the intent behind a change.
@@ -40,9 +37,11 @@ When testing a class all the tests must reside in the module:
 
 Some code changes may require tests which exercise several units in
 order to demonstrate an important consequence of their interaction which
-may not be apparent when considering the units in isolation.
+may not be apparent when considering the units in isolation. These tests must
+be placed in the ``lib/iris/tests/integration`` folder.
 
-These tests must be placed in the ``lib/iris/tests/integration`` folder.
+If in any doubt about what tests to add or how to write them please
+feel free to submit a pull-request in any state and ask for assistance.
 
 .. _pytesting_style_guide:
 
@@ -111,16 +110,16 @@ Any mocking should be done with ``pytest.mock``, and monkeypatching where suitab
     If you think we're missing anything important here, please consider creating an
     issue or discussion and share your ideas with the team!
 
-Naming
-------
+Naming Test Classes and Functions
+---------------------------------
 
-Within this test module each tested method may have corresponding test classes,
+Within a test module each tested method may have corresponding test classes,
 for example:
 
 * ``Test_<name of public method>``
 * ``Test_<name of public method>__<aspect of method>``
 
-Within test classes, the test methods must be named according
+Within these test classes, the test methods must be named according
 to the aspect of the tested method which they address.
 
 **Examples**:
@@ -133,15 +132,14 @@ Within that file the tests might look something like:
 
 .. code-block:: python
 
-    # Tests for the Cube.xml() method.
-
-    def test_some_general_stuff(self):
+    # A single test for the Cube.xml() method.
+    def test_xml_some_general_stuff(self):
         ...
 
 
-    # Tests for the Cube.xml() method, focussing on the behaviour of
+    # A single test for the Cube.xml() method, focussing on the behaviour of
     # the checksums.
-    def test_checksum_ignores_masked_values(self):
+    def test_xml_checksum_ignores_masked_values(self):
         ...
 
 
@@ -152,12 +150,6 @@ Within that file the tests might look something like:
 
         def test_coord_already_present(self):
             ...
-
-
-.. _pytesting.functions:
-
-Functions
----------
 
 When testing a function all the tests must reside in the module:
 
