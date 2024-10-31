@@ -164,18 +164,11 @@ firm rules.
 At time of writing, some existing tests have already been written in PyTest,
 so might not be abiding by these guidelines.
 
-Directory
----------
-
-Where suitable, tests should be located within the relevant directories.
-In most circumstance, that means new tests should not be placed in the
-root test directory, but in the relevant sub-folders.
-
 `conftest.py <https://docs.pytest.org/en/7.1.x/reference/fixtures.html#conftest-py-sharing-fixtures-across-multiple-files>`_
 ----------------------------------------------------------------------------------------------------------------------------
 
 There should be a ``conftest.py`` file in the ``root/unit`` and ``root/integration``
-folders. Additional lower level conftests can be added if it is agreed there
+folders. Additional lower level ``conftest``s can be added if it is agreed there
 is a need.
 
 `Fixtures <https://docs.pytest.org/en/stable/how-to/fixtures.html#how-to-fixtures>`_
@@ -188,7 +181,7 @@ harder to follow, so compromises are acceptable. For example, setting up a test
 (``expected = "foo"``), or a single use setup, should *not* be a fixture.
 
 
-New fixtures should always be considered for conftest when added. If it is
+New fixtures should always be considered for ``conftest`` when added. If it is
 decided that they are not suitably reusable, they can be placed within the
 local test file.
 
@@ -225,9 +218,9 @@ Any mocking should be done with ``pytest.mock``, and monkeypatching where suitab
 
 .. _pytesting_tools:
 
-=============
+==============
 Testing tools
-=============
+==============
 
 .. note::
     :class:`iris.tests.IrisTest` has been deprecated, and replaced with
@@ -243,14 +236,14 @@ code). Most of these conveniences are accessed through the
 
     All functions listed on this page are defined within
     :mod:`iris.tests._shared_utils`. They can be accessed within a test using
-    ``_shared_utils.exampleFunction``.
+    ``_shared_utils.example_function``.
 
 Custom assertions
 -----------------
 
 :mod:`iris.tests._shared_utils` supports a variety of custom pytest-style
-assertions, such as :meth:`~iris.tests._shared_utils.assert_array_equal`, and
-:meth:`~iris.tests._shared_utils.assert_array_almost_equal`.
+assertions, such as :func:`~iris.tests._shared_utils.assert_array_equal`, and
+:func:`~iris.tests._shared_utils.assert_array_almost_equal`.
 
 .. _pycreate-missing:
 
@@ -259,10 +252,10 @@ Saving results
 
 Some tests compare the generated output to the expected result contained in a
 file. Custom assertions for this include
-:meth:`~iris.tests._shared_utils.assert_CML_approx_data`
-:meth:`~iris.tests._shared_utils.assert_CDL`
-:meth:`~iris.tests._shared_utils.assert_CML` and
-:meth:`~iris.tests._shared_utils.assert_text_file`. See docstrings for more
+:func:`~iris.tests._shared_utils.assert_CML_approx_data`
+:func:`~iris.tests._shared_utils.assert_CDL`
+:func:`~iris.tests._shared_utils.assert_CML` and
+:func:`~iris.tests._shared_utils.assert_text_file`. See docstrings for more
 information.
 
 .. note::
@@ -274,16 +267,17 @@ information.
     environment variable to anything non-zero. This will create the files rather
     than erroring, allowing you to commit the updated results.
 
+=================
 Context managers
-----------------
+=================
 
 Capturing exceptions and logging
 --------------------------------
 
 :mod:`~iris.tests._shared_utils` includes several context managers that can be used
 to make test code tidier and easier to read. These include
-:meth:`~iris.tests.IrisTest_nometa.assert_no_warnings_regexp` and
-:meth:`~iris.tests.IrisTest_nometa.assert_logs`.
+:meth:`~iris.tests._shared_utils.assert_no_warnings_regexp` and
+:meth:`~iris.tests._shared_utils.assert_logs`.
 
 Patching
 --------
