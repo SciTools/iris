@@ -1,4 +1,4 @@
-"""docstring routine example."""
+"""Docstring routine example."""
 
 
 def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
@@ -12,16 +12,16 @@ def sample_routine(arg1, arg2, kwarg1="foo", kwarg2=None):
         First argument description.
     arg2 : numpy.ndarray
         Second argument description.
-    kwarg1: str, optional
+    kwarg1 : str, optional
         The first keyword argument. This argument description
         can be multi-lined.
-    kwarg2 : bool, optional
+    **kwarg2 : bool, optional
         The second keyword argument.
 
     Returns
     -------
     numpy.ndarray
-        numpy.ndarray of arg1 * arg2
+        A numpy.ndarray of arg1 * arg2.
 
     """
     pass

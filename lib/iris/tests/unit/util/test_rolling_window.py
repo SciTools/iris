@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.rolling_window`."""
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -30,6 +31,12 @@ class Test_rolling_window:
             dtype=np.int32,
         )
         result = rolling_window(a, window=3, axis=1)
+        _shared_utils.assert_array_equal(result, expected_result)
+
+    def test_3d_lazy(self):
+        a = da.arange(2 * 3 * 4).reshape((2, 3, 4))
+        expected_result = np.arange(2 * 3 * 4).reshape((1, 2, 3, 4))
+        result = rolling_window(a, window=2, axis=0).compute()
         _shared_utils.assert_array_equal(result, expected_result)
 
     def test_1d_masked(self):

@@ -11,6 +11,9 @@ import iris.tests as tests  # isort:skip
 from os.path import join as path_join
 import shutil
 import tempfile
+import warnings
+
+import pytest
 
 import iris
 from iris.coords import DimCoord
@@ -135,15 +138,25 @@ data:
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertMultiLineEqual(expected, actual)
+        assert actual == expected
 
     def test_no_load_datum_wkt(self):
         nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
-        with self.assertWarnsRegex(FutureWarning, "iris.FUTURE.datum_support"):
+        with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertMultiLineEqual(actual, "unknown")
+        assert actual == "unknown"
+
+    def test_no_datum_no_warn(self):
+        new_cdl = self.datum_wkt_cdl.splitlines()
+        new_cdl = [line for line in new_cdl if "DATUM" not in line]
+        new_cdl = "\n".join(new_cdl)
+        nc_path = tlc.cdl_to_nc(new_cdl)
+        with warnings.catch_warnings():
+            # pytest's recommended way to assert for no warnings.
+            warnings.simplefilter("error", FutureWarning)
+            _ = iris.load_cube(nc_path)
 
     def test_load_datum_cf_var(self):
         expected = "OSGB 1936"
@@ -152,15 +165,15 @@ data:
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertMultiLineEqual(expected, actual)
+        assert actual == expected
 
     def test_no_load_datum_cf_var(self):
         nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
-        with self.assertWarnsRegex(FutureWarning, "iris.FUTURE.datum_support"):
+        with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertMultiLineEqual(actual, "unknown")
+        assert actual == "unknown"
 
     def test_save_datum(self):
         expected = "OSGB 1936"
@@ -199,7 +212,7 @@ data:
 
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
-        self.assertMultiLineEqual(expected, actual)
+        assert actual == expected
 
 
 class TestLoadMinimalGeostationary(tests.IrisTest):
@@ -270,9 +283,9 @@ data:
         cube = iris.load_cube(self.path_test_nc)
         # Check the coordinate system properties has the correct default properties.
         cs = cube.coord_system()
-        self.assertIsInstance(cs, iris.coord_systems.Geostationary)
-        self.assertEqual(cs.false_easting, 0.0)
-        self.assertEqual(cs.false_northing, 0.0)
+        assert isinstance(cs, iris.coord_systems.Geostationary)
+        assert cs.false_easting == 0.0
+        assert cs.false_northing == 0.0
 
 
 if __name__ == "__main__":

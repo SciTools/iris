@@ -44,6 +44,15 @@ class Test:
         assert left == right
         assert left == values
 
+        # Test inequality:
+        values = dict(one=np.arange(1), two=np.arange(2), three=np.arange(3))
+        left = LimitedAttributeDict(**values)
+        right = LimitedAttributeDict(
+            one=np.arange(3), two=np.arange(2), three=np.arange(1)
+        )
+        assert right != left
+        assert right != values
+
     def test___setitem__(self):
         for key in self.forbidden_keys:
             item = LimitedAttributeDict()

@@ -7,6 +7,7 @@
 See also: https://pandas.pydata.org/
 
 """
+
 import datetime
 from itertools import chain, combinations
 import warnings
@@ -87,7 +88,7 @@ def _add_iris_coord(cube, name, points, dim, calendar=None):
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_unique(pandas_series: pd.Series):
+def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
     """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
@@ -103,7 +104,7 @@ def _series_index_unique(pandas_series: pd.Series):
     levels_range = range(pandas_index.nlevels)
     if unique_number == 1:
         # Scalar - identical for all indices.
-        result = ()
+        result: tuple[int, ...] | None = ()
     else:
         result = None
         levels_combinations = chain(
@@ -124,16 +125,10 @@ def as_cube(
 ):
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
-    .. deprecated:: 3.3.0
-
-        This function is scheduled for removal in a future release, being
-        replaced by :func:`iris.pandas.as_cubes`, which offers richer
-        dimensional intelligence.
-
     Parameters
     ----------
     pandas_array : :class:`pandas.Series` or :class:`pandas.DataFrame`
-        The Pandas object to convert
+        The Pandas object to convert.
     copy : bool, default=True
         Whether to copy `pandas_array`, or to create array views where
         possible. Provided in case of memory limit concerns.
@@ -145,12 +140,20 @@ def as_cube(
     -----
     This function will copy your data by default.
 
-    Example usage::
+    Examples
+    --------
+    ::
 
         as_cube(series, calendars={0: cf_units.CALENDAR_360_DAY})
         as_cube(data_frame, calendars={1: cf_units.CALENDAR_STANDARD})
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
+
+    .. deprecated:: 3.3.0
+
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_cubes`, which offers richer
+        dimensional intelligence.
 
     """
     message = (
@@ -170,7 +173,7 @@ def as_cube(
     # 1.6 doesn't. Since we don't care about preserving the order we can
     # just force it back to C-order.)
     order = "C" if copy else "A"
-    data = np.array(pandas_array, copy=copy, order=order)
+    data = np.array(pandas_array.values, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
     _add_iris_coord(cube, "index", pandas_array.index, 0, calendars.get(0, None))
     if pandas_array.ndim == 2:
@@ -202,7 +205,7 @@ def as_cubes(
     Parameters
     ----------
     pandas_structure : :class:`pandas.Series` or :class:`pandas.DataFrame`
-        The Pandas object to convert
+        The Pandas object to convert.
     copy : bool, default=True
         Whether the Cube :attr:`~iris.cube.Cube.data` is a copy of the
         `pandas_structure` column, or a view of the same array. Arrays other than
@@ -305,7 +308,7 @@ def as_cubes(
     Pandas uses ``NaN`` rather than masking data. Converted
     :class:`~iris.cube.Cube` can be masked in downstream user code :
 
-    >>> my_series = Series([300, np.NaN, 302], name="air_temperature")
+    >>> my_series = Series([300, np.nan, 302], name="air_temperature")
     >>> converted_cube = as_cubes(my_series)[0]
     >>> print(converted_cube.data)
     [300.  nan 302.]
@@ -564,14 +567,9 @@ def _make_cell_measures_list(cube):
 def as_series(cube, copy=True):
     """Convert a 1D cube to a Pandas Series.
 
-    .. deprecated:: 3.4.0
-        This function is scheduled for removal in a future release, being
-        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
-        multi dimension handling.
-
     Parameters
     ----------
-    cube: :class:`Cube`
+    cube : :class:`Cube`
         The cube to convert to a Pandas Series.
     copy : bool, default=True
         Whether to make a copy of the data.
@@ -584,6 +582,12 @@ def as_series(cube, copy=True):
     make sure it is not masked and use copy=False.
 
     Since this function converts to/from a Pandas object, laziness will not be preserved.
+
+    .. deprecated:: 3.4.0
+
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.pandas.as_data_frame`, which offers improved
+        multi dimension handling.
 
     """
     message = (
@@ -644,7 +648,7 @@ def as_data_frame(
     -------
     :class:`~pandas.DataFrame`
         A :class:`~pandas.DataFrame` with :class:`~iris.cube.Cube` dimensions
-        forming a :class:`~pandas.MultiIndex`
+        forming a :class:`~pandas.MultiIndex`.
 
     Warnings
     --------
@@ -664,8 +668,6 @@ def as_data_frame(
        :class:`~pandas.DataFrame` column (the legacy behaviour preserves 2
        dimensions via rows and columns).
 
-       |
-
     #. Where the :class:`~iris.cube.Cube` contains masked values, these become
        :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
 
@@ -679,6 +681,8 @@ def as_data_frame(
     'inplace=True` to preserve memory object reference.
 
     :class:`~iris.cube.Cube` data `dtype` is preserved.
+
+    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     Examples
     --------
@@ -793,10 +797,6 @@ def as_data_frame(
     419902           NaN
     419903    298.995148
     Name: surface_temperature, Length: 419904, dtype: float32
-
-    Notes
-    -----
-    Since this function converts to/from a Pandas object, laziness will not be preserved.
 
     """
 

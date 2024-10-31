@@ -15,6 +15,7 @@ from iris.aux_factory import HybridHeightFactory
 import iris.coords
 import iris.cube
 from iris.exceptions import ConcatenateError
+import iris.warnings
 
 
 class TestEpoch:
@@ -49,9 +50,15 @@ class TestEpoch:
         assert result[0].shape == (10,)
 
 
-class TestMessages:
+class _MessagesMixin:
+
     @pytest.fixture()
-    def sample_cubes(self):
+    def placeholder(self):
+        # Shim to allow sample_cubes to have identical signature in both parent and subclasses
+        return []
+
+    @pytest.fixture()
+    def sample_cubes(self, placeholder):
         # Construct and return a pair of identical cubes
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
         cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
@@ -111,6 +118,19 @@ class TestMessages:
     def test_definition_difference_message(self, sample_cubes):
         sample_cubes[1].units = "1"
         exc_regexp = "Cube metadata differs for phenomenon:"
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+
+
+class TestMessages(_MessagesMixin):
+    def test_dim_coords_same_message(self, sample_cubes):
+        exc_regexp = "Cannot find an axis to concatenate over for phenomenon *"
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+
+    def test_definition_difference_message(self, sample_cubes):
+        sample_cubes[1].units = "1"
+        exc_regexp = "Cube metadata differs for phenomenon: *"
         with pytest.raises(ConcatenateError, match=exc_regexp):
             _ = concatenate(sample_cubes, True)
 
@@ -214,6 +234,52 @@ class TestMessages:
         exc_regexp = "Found cubes with overlap on concatenate axis"
         with pytest.raises(ConcatenateError, match=exc_regexp):
             _ = concatenate(sample_cubes, True)
+
+
+class TestNonMetadataMessages(_MessagesMixin):
+    parent_cubes = _MessagesMixin.sample_cubes
+
+    @pytest.fixture()
+    def sample_cubes(self, parent_cubes):
+        coord = parent_cubes[1].coord("time")
+        parent_cubes[1].replace_coord(coord.copy(points=coord.points + 2))
+        return parent_cubes
+
+    def test_aux_coords_diff_message(self, sample_cubes):
+        sample_cubes[1].coord("foo").points = [3, 4, 5]
+
+        exc_regexp = "Auxiliary coordinates are unequal for phenomenon * "
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+        with pytest.warns(iris.warnings.IrisUserWarning, match=exc_regexp):
+            _ = concatenate(sample_cubes, False)
+
+    def test_cell_measures_diff_message(self, sample_cubes):
+        sample_cubes[1].cell_measure("bar").data = [3, 4, 5]
+
+        exc_regexp = "Cell measures are unequal for phenomenon * "
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+        with pytest.warns(iris.warnings.IrisUserWarning, match=exc_regexp):
+            _ = concatenate(sample_cubes, False)
+
+    def test_ancillary_variable_diff_message(self, sample_cubes):
+        sample_cubes[1].ancillary_variable("baz").data = [3, 4, 5]
+
+        exc_regexp = "Ancillary variables are unequal for phenomenon * "
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+        with pytest.warns(iris.warnings.IrisUserWarning, match=exc_regexp):
+            _ = concatenate(sample_cubes, False)
+
+    def test_derived_coords_diff_message(self, sample_cubes):
+        sample_cubes[1].aux_factories[0].update(sample_cubes[1].coord("sigma"), None)
+
+        exc_regexp = "Derived coordinates are unequal for phenomenon * "
+        with pytest.raises(ConcatenateError, match=exc_regexp):
+            _ = concatenate(sample_cubes, True)
+        with pytest.warns(iris.warnings.IrisUserWarning, match=exc_regexp):
+            _ = concatenate(sample_cubes, False)
 
 
 class TestOrder:

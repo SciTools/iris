@@ -896,7 +896,7 @@ class Test_rolling_window:
         self.cell_measure = CellMeasure([0, 1, 2, 0, 1, 2], long_name="bar")
         self.multi_dim_cube.add_cell_measure(self.cell_measure, 1)
 
-        self.mock_agg = mock.Mock(spec=Aggregator)
+        self.mock_agg = mock.Mock(spec=Aggregator, lazy_func=None)
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
@@ -931,6 +931,21 @@ class Test_rolling_window:
             self.cube.data, mask=([True, False, False, False, True, False])
         )
         res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, window, mdtol=0)
+        expected_result = ma.array(
+            [-99.0, 1.5, 2.5, -99.0, -99.0],
+            mask=[True, False, False, True, True],
+            dtype=np.float64,
+        )
+        _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
+
+    def test_lazy(self):
+        window = 2
+        self.cube.data = da.ma.masked_array(
+            self.cube.data, mask=([True, False, False, False, True, False])
+        )
+        res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, window, mdtol=0)
+        assert self.cube.has_lazy_data()
+        assert res_cube.has_lazy_data()
         expected_result = ma.array(
             [-99.0, 1.5, 2.5, -99.0, -99.0],
             mask=[True, False, False, True, True],
@@ -1057,10 +1072,10 @@ class Test_slices_dim_order:
 class Test_slices_over:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.cube = stock.realistic_4d()
+        self.cube = stock.realistic_4d()[:, :7, :10, :10]
         # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = range(len(self.cube.coord("model_level_number").points))
-        self.exp_iter_2d = np.ndindex(6, 70, 1, 1)
+        self.exp_iter_2d = np.ndindex(6, 7, 1, 1)
         # Define maximum number of interactions for particularly long
         # (and so time-consuming) iterators.
         self.long_iterator_max = 5
@@ -1096,7 +1111,7 @@ class Test_slices_over:
             _ = self.cube.slices_over(self.cube.ndim + 1)
 
     def test_2d_slice_coord_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(
             [self.cube.coord("time"), self.cube.coord("model_level_number")]
@@ -1115,7 +1130,7 @@ class Test_slices_over:
             )
 
     def test_2d_slice_coord_name_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over(["time", "model_level_number"])
         for ct in range(self.long_iterator_max):
@@ -1130,7 +1145,7 @@ class Test_slices_over:
             _ = self.cube.slices_over(["time", "wibble"])
 
     def test_2d_slice_dimension_given(self):
-        # Slicing over these two dimensions returns 420 2D cubes, so only check
+        # Slicing over these two dimensions returns 42 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over([0, 1])
         for ct in range(self.long_iterator_max):
@@ -1156,11 +1171,11 @@ class Test_slices_over:
             _ = self.cube.slices_over([0, self.cube.ndim + 1])
 
     def test_multidim_slice_coord_given(self):
-        # Slicing over surface altitude returns 100x100 2D cubes, so only check
+        # Slicing over surface altitude returns 10x10 2D cubes, so only check
         # cubes up to `self.long_iterator_max` to keep test runtime sensible.
         res = self.cube.slices_over("surface_altitude")
         # Define special ndindex iterator for the different dims sliced over.
-        nditer = np.ndindex(1, 1, 100, 100)
+        nditer = np.ndindex(1, 1, 10, 10)
         for ct in range(self.long_iterator_max):
             indices = list(next(nditer))
             # Replace the dimensions not iterated over with spanning slices.
@@ -1212,6 +1227,22 @@ def create_cube(lon_min, lon_max, bounds=False):
             circular=circular,
         ),
         2,
+    )
+    cube.add_cell_measure(
+        iris.coords.CellMeasure(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "cell_area",
+            units="m2",
+        ),
+        data_dims=[1, 2],
+    )
+    cube.add_ancillary_variable(
+        iris.coords.AncillaryVariable(
+            np.arange(0, n_lons * 3).reshape(3, -1),
+            "land_area_fraction",
+            units="%",
+        ),
+        data_dims=[1, 2],
     )
     if bounds:
         cube.coord("longitude").guess_bounds()
@@ -2328,7 +2359,7 @@ class Test__init__mesh:
         meshco_y = sample_meshcoord(axis="y")  # Own (different) mesh
         meshco_y.mesh.long_name = "new_name"
         n_faces = meshco_x.shape[0]
-        with pytest.raises(ValueError, match="Mesh.* does not match"):
+        with pytest.raises(ValueError, match="MeshXY.* does not match"):
             Cube(
                 np.zeros(n_faces),
                 aux_coords_and_dims=[(meshco_x, 0), (meshco_y, 0)],

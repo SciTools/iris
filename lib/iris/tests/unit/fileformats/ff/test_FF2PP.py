@@ -85,13 +85,13 @@ class Test__extract_field__LBC_format(tests.IrisTest):
         ff2pp._ff_header.grid = mock.Mock(return_value=grid)
 
         open_func = "builtins.open"
-        with mock.patch(
-            "iris.fileformats._ff._parse_binary_stream", return_value=[0]
-        ), mock.patch(open_func), mock.patch(
-            "struct.unpack_from", return_value=[4]
-        ), mock.patch(
-            "iris.fileformats.pp.make_pp_field", side_effect=fields
-        ), mock.patch("iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)):
+        with (
+            mock.patch("iris.fileformats._ff._parse_binary_stream", return_value=[0]),
+            mock.patch(open_func),
+            mock.patch("struct.unpack_from", return_value=[4]),
+            mock.patch("iris.fileformats.pp.make_pp_field", side_effect=fields),
+            mock.patch("iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)),
+        ):
             yield ff2pp
 
     def _mock_lbc(self, **kwargs):

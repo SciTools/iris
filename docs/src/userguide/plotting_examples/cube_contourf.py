@@ -3,6 +3,7 @@
 Can use iris.plot.contour() or iris.quickplot.contour().
 
 """
+
 import matplotlib.pyplot as plt
 
 import iris

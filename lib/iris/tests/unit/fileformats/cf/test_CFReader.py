@@ -8,7 +8,15 @@ from unittest import mock
 import numpy as np
 import pytest
 
-from iris.fileformats.cf import CFReader
+from iris.fileformats.cf import (
+    CFCoordinateVariable,
+    CFDataVariable,
+    CFGroup,
+    CFReader,
+    CFUGridAuxiliaryCoordinateVariable,
+    CFUGridConnectivityVariable,
+    CFUGridMeshVariable,
+)
 
 
 def netcdf_variable(
@@ -31,6 +39,12 @@ def netcdf_variable(
         ndim = len(dimensions)
     else:
         dimensions = []
+
+    ugrid_identities = (
+        CFUGridAuxiliaryCoordinateVariable.cf_identities
+        + CFUGridConnectivityVariable.cf_identities
+        + [CFUGridMeshVariable.cf_identity]
+    )
     ncvar = mock.Mock(
         name=name,
         dimensions=dimensions,
@@ -45,6 +59,7 @@ def netcdf_variable(
         grid_mapping=grid_mapping,
         cell_measures=cell_measures,
         standard_name=standard_name,
+        **{name: None for name in ugrid_identities},
     )
     return ncvar
 
@@ -279,7 +294,7 @@ class Test_build_cf_groups__formula_terms:
         coordinates = ("lat", "lon")
         assert set(group.keys()) == set(coordinates)
         for name in coordinates:
-            assert group[name].cf_data is getattr(self, name)
+            assert group[name].cf_data == getattr(self, name)
 
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ["lat", "wibble"]
@@ -287,7 +302,7 @@ class Test_build_cf_groups__formula_terms:
             cf_group = CFReader("dummy").cf_group
             group = cf_group.promoted
             assert list(group.keys()) == ["orography"]
-            assert group["orography"].cf_data is self.orography
+            assert group["orography"].cf_data == self.orography
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
@@ -297,7 +312,7 @@ class Test_build_cf_groups__formula_terms:
             group = cf_group.promoted
             assert set(group.keys()) == set(promoted)
             for name in promoted:
-                assert group[name].cf_data is getattr(self, name)
+                assert group[name].cf_data == getattr(self, name)
 
     def test_promoted_auxiliary_ignore(self):
         self.wibble = netcdf_variable("wibble", "lat wibble", np.float64)
@@ -308,6 +323,87 @@ class Test_build_cf_groups__formula_terms:
             promoted = ["wibble", "orography"]
             assert set(cf_group.keys()) == set(promoted)
             for name in promoted:
-                assert cf_group[name].cf_data is getattr(self, name)
-        # we should have got 2 warnings
-        assert len(warns.list) == 2
+                assert cf_group[name].cf_data == getattr(self, name)
+                # we should have got 2 warnings
+            assert len(warns.list) == 2
+
+
+class Test_build_cf_groups__ugrid:
+    @pytest.fixture(autouse=True)
+    def _setup_class(self, mocker):
+        # Replicating syntax from test_CFReader.Test_build_cf_groups__formula_terms.
+        self.mesh = netcdf_variable("mesh", "", int)
+        self.node_x = netcdf_variable("node_x", "node", float)
+        self.node_y = netcdf_variable("node_y", "node", float)
+        self.face_x = netcdf_variable("face_x", "face", float)
+        self.face_y = netcdf_variable("face_y", "face", float)
+        self.face_nodes = netcdf_variable("face_nodes", "face vertex", int)
+        self.levels = netcdf_variable("levels", "levels", int)
+        self.data = netcdf_variable(
+            "data", "levels face", float, coordinates="face_x face_y"
+        )
+
+        # Add necessary attributes for mesh recognition.
+        self.mesh.cf_role = "mesh_topology"
+        self.mesh.node_coordinates = "node_x node_y"
+        self.mesh.face_coordinates = "face_x face_y"
+        self.mesh.face_node_connectivity = "face_nodes"
+        self.face_nodes.cf_role = "face_node_connectivity"
+        self.data.mesh = "mesh"
+
+        self.variables = dict(
+            mesh=self.mesh,
+            node_x=self.node_x,
+            node_y=self.node_y,
+            face_x=self.face_x,
+            face_y=self.face_y,
+            face_nodes=self.face_nodes,
+            levels=self.levels,
+            data=self.data,
+        )
+        ncattrs = mock.Mock(return_value=[])
+        self.dataset = mock.Mock(
+            file_format="NetCDF4", variables=self.variables, ncattrs=ncattrs
+        )
+
+    # @pytest.fixture(autouse=True)
+    # def _setup(self, mocker):
+        # Restrict the CFReader functionality to only performing
+        # translations and building first level cf-groups for variables.
+        mocker.patch("iris.fileformats.cf.CFReader._reset")
+        mocker.patch(
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            return_value=self.dataset,
+        )
+        cf_reader = CFReader("dummy")
+        self.cf_group = cf_reader.cf_group
+
+    def test_inherited(self):
+        for expected_var, collection in (
+            [CFCoordinateVariable("levels", self.levels), "coordinates"],
+            [CFDataVariable("data", self.data), "data_variables"],
+        ):
+            expected = {expected_var.cf_name: expected_var}
+            assert getattr(self.cf_group, collection) == expected
+
+    def test_connectivities(self):
+        expected_var = CFUGridConnectivityVariable("face_nodes", self.face_nodes)
+        expected = {expected_var.cf_name: expected_var}
+        assert self.cf_group.connectivities == expected
+
+    def test_mesh(self):
+        expected_var = CFUGridMeshVariable("mesh", self.mesh)
+        expected = {expected_var.cf_name: expected_var}
+        assert self.cf_group.meshes == expected
+
+    def test_ugrid_coords(self):
+        names = [f"{loc}_{ax}" for loc in ("node", "face") for ax in ("x", "y")]
+        expected = {
+            name: CFUGridAuxiliaryCoordinateVariable(name, getattr(self, name))
+            for name in names
+        }
+        assert self.cf_group.ugrid_coords == expected
+
+    def test_is_cf_ugrid_group(self):
+        assert isinstance(self.cf_group, CFGroup)
+

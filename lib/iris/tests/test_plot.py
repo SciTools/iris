@@ -736,7 +736,11 @@ class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
         filename = _shared_utils.get_data_path(
             ("PP", "COLPEX", "theta_and_orog_subset.pp")
         )
-        self.__class__.cube = iris.load_cube(filename, "air_potential_temperature")
+        cube = iris.load_cube(filename, "air_potential_temperature")
+        if cube.coord_dims("time") != (0,):
+            # A quick fix for data which has changed since we support time-varying orography
+            cube.transpose((1, 0, 2, 3))
+        self.__class__.cube = cube
 
     @pytest.fixture(autouse=True)
     def _setup(self):

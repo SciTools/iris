@@ -35,6 +35,7 @@
 .. _ruff: https://github.com/astral-sh/ruff
 .. _SciTools: https://github.com/SciTools
 .. _scitools-iris: https://pypi.org/project/scitools-iris/
+.. _Shapely: https://shapely.readthedocs.io/en/stable/index.html
 .. _sphinx: https://www.sphinx-doc.org/en/master/
 .. _sphinx-apidoc: https://github.com/sphinx-contrib/apidoc
 .. _test-iris-imagehash: https://github.com/SciTools/test-iris-imagehash
@@ -78,5 +79,6 @@
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
+.. _@ukmo-ccbunney: https://github.com/ukmo-ccbunney
 .. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus

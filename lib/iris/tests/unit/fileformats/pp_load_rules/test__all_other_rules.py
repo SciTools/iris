@@ -108,6 +108,9 @@ class TestCellMethods:
             x_bounds=None,
             _x_coord_name=lambda: "longitude",
             _y_coord_name=lambda: "latitude",
+            # Not under test but needed for the Mock to play nicely.
+            bzy=1,
+            bdy=1,
         )
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
         expected = [
@@ -128,6 +131,9 @@ class TestCellMethods:
             x_bounds=None,
             _x_coord_name=lambda: "grid_longitude",
             _y_coord_name=lambda: "grid_latitude",
+            # Not under test but needed for the Mock to play nicely.
+            bzy=1,
+            bdy=1,
         )
         res = _all_other_rules(field)[CELL_METHODS_INDEX]
         expected = [

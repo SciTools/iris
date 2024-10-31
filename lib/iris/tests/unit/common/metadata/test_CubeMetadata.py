@@ -4,6 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.common.metadata.CubeMetadata`."""
 
+# Import iris.tests first so that some things can be initialised before
+# importing anything else.
+from typing import Any, ClassVar
+
+from copy import deepcopy
+
 from copy import deepcopy
 
 import pytest
@@ -85,7 +91,7 @@ class Test:
         assert issubclass(self.cls, BaseMetadata)
 
 
-@pytest.fixture(params=CubeMetadata._fields)
+@pytest.fixture(params=CubeMetadata._fields)  # type: ignore[attr-defined]
 def fieldname(request):
     """Parametrize testing over all CubeMetadata field names."""
     return request.param
@@ -135,7 +141,7 @@ def order_reversed(request):
 # N.B. the *same* results should also apply when left+right are swapped, with a suitable
 # adjustment to the result value.  Likewise, results should be the same for either
 # global- or local-style attributes.
-_ALL_RESULTS = {
+_ALL_RESULTS: dict[str, dict[str, dict[str, Any]]] = {
     "equal": {
         "primaryAA": {"lenient": True, "strict": True},
         "primaryAX": {"lenient": True, "strict": False},
@@ -297,7 +303,7 @@ def check_splitattrs_testcase(
         CubeMetadata(
             **{
                 field: attrs if field == "attributes" else None
-                for field in CubeMetadata._fields
+                for field in CubeMetadata._fields  # type: ignore[attr-defined]
             }
         )
         for attrs in input_dicts
@@ -314,7 +320,7 @@ def check_splitattrs_testcase(
         # Adjust the result of a "reversed" operation to the 'normal' way round.
         # ( N.B. only "difference" results are affected by reversal. )
         if isinstance(result, CubeMetadata):
-            result = result._replace(attributes=result.attributes[::-1])
+            result = result._replace(attributes=result.attributes[::-1])  # type: ignore[attr-defined]
 
     # Extract, from the operation result, the value to be tested against "expected".
     result = extract_result_value(result, check_global_not_local)
@@ -325,7 +331,9 @@ def check_splitattrs_testcase(
     expected = _ALL_RESULTS[operation_name][primary_key][which]
     if operation_name == "equal" and expected:
         # Account for the equality cases made `False` by mismatched secondary values.
-        left, right = secondary_inputs
+        left, right = list(
+            secondary_inputs
+        )  # see https://github.com/python/mypy/issues/13823
         secondaries_same = left == right or (check_is_lenient and "X" in (left, right))
         if not secondaries_same:
             expected = False
@@ -342,7 +350,7 @@ class MixinSplitattrsMatrixTests:
     """
 
     # Define the operation name : set in each inheritor
-    operation_name = None
+    operation_name: ClassVar[str]
 
     def test_splitattrs_cases(
         self,

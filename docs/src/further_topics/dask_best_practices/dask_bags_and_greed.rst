@@ -7,7 +7,7 @@ Here is a journey that demonstrates:
 
 * How to apply dask.bags to an existing script
 * The equal importance of optimisation of non-parallel parts of a script
-* Protection against multiple softwares trying to manage parallelism
+* Protection against multiple software trying to manage parallelism
   simultaneously
 
 

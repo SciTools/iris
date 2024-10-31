@@ -11,6 +11,7 @@ import cf_units
 import dask.array as da
 import numpy as np
 
+from iris._lazy_data import concatenate
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.warnings import IrisIgnoringBoundsWarning
@@ -57,7 +58,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
     @property
     def climatological(self):
-        """Always returns False, as a factory itself can never have points/bounds.
+        """Return False, as a factory itself can never have points/bounds.
 
         Always returns False, as a factory itself can never have points/bounds
         and therefore can never be climatological by definition.
@@ -1076,7 +1077,7 @@ class OceanSigmaZFactory(AuxCoordFactory):
         result_rest_levs = zlev[z_slices_rest] * ones_full_result[z_slices_rest]
 
         # Combine nsigma and 'rest' levels for the final result.
-        result = da.concatenate([result_nsigma_levs, result_rest_levs], axis=z_dim)
+        result = concatenate([result_nsigma_levs, result_rest_levs], axis=z_dim)
         return result
 
     def make_coord(self, coord_dims_func):
@@ -1787,9 +1788,9 @@ class OceanSg2Factory(AuxCoordFactory):
 
     @property
     def dependencies(self):
-        """Returns a dicti mapping from constructor arg names to coordinates.
+        """Return a dicti mapping from constructor arg names to coordinates.
 
-        Returns a dictionary mapping from constructor argument names to
+        Return a dictionary mapping from constructor argument names to
         the corresponding coordinates.
 
         """

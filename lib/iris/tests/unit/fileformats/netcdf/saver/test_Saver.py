@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from types import ModuleType
+
 import iris.tests as tests  # isort:skip
 
 import collections
@@ -34,7 +36,6 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
-from iris.warnings import IrisMaskValueMatchWarning
 
 
 class Test_write(tests.IrisTest):
@@ -44,7 +45,7 @@ class Test_write(tests.IrisTest):
     # -------------------------------------------------------------------------
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def _transverse_mercator_cube(self, ellipsoid=None):
         data = self.array_lib.arange(12).reshape(3, 4)
@@ -398,7 +399,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -442,7 +443,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def test_valid_range_saved(self):
         cube = tests.stock.lat_lon_cube()
@@ -484,7 +485,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
 
 class Test_write_fill_value(tests.IrisTest):
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def _make_cube(self, dtype, masked_value=None, masked_index=None):
         data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
@@ -548,76 +549,6 @@ class Test_write_fill_value(tests.IrisTest):
             self.assertNotIn("_FillValue", var.ncattrs())
             self.assertTrue(var[index].mask)
 
-    def test_contains_fill_value_passed(self):
-        # Test that a warning is raised if the data contains the fill value.
-        cube = self._make_cube(">f4")
-        fill_value = 1
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_contains_fill_value_byte(self):
-        # Test that a warning is raised if the data contains the fill value
-        # when it is of a byte type.
-        cube = self._make_cube(">i1")
-        fill_value = 1
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_contains_default_fill_value(self):
-        # Test that a warning is raised if the data contains the default fill
-        # value if no fill_value argument is supplied.
-        cube = self._make_cube(">f4")
-        cube.data[0, 0] = _thread_safe_nc.default_fillvals["f4"]
-        with self.assertWarnsRegex(
-            IrisMaskValueMatchWarning,
-            "contains unmasked data points equal to the fill-value",
-        ):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_contains_default_fill_value_byte(self):
-        # Test that no warning is raised if the data contains the default fill
-        # value if no fill_value argument is supplied when the data is of a
-        # byte type.
-        cube = self._make_cube(">i1")
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_contains_masked_fill_value(self):
-        # Test that no warning is raised if the data contains the fill_value at
-        # a masked point.
-        fill_value = 1
-        cube = self._make_cube(">f4", masked_value=fill_value)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
-    def test_masked_byte_default_fill_value(self):
-        # Test that a warning is raised when saving masked byte data with no
-        # fill value supplied.
-        cube = self._make_cube(">i1", masked_value=1)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube):
-                pass
-
-    def test_masked_byte_fill_value_passed(self):
-        # Test that no warning is raised when saving masked byte data with a
-        # fill value supplied if the the data does not contain the fill_value.
-        fill_value = 100
-        cube = self._make_cube(">i1", masked_value=2)
-        with self.assertNoWarningsRegexp(r"\(fill\|mask\)"):
-            with self._netCDF_var(cube, fill_value=fill_value):
-                pass
-
 
 class Test_cf_valid_var_name(tests.IrisTest):
     def test_no_replacement(self):
@@ -642,7 +573,7 @@ class Test_cf_valid_var_name(tests.IrisTest):
 
 class _Common__check_attribute_compliance:
     # Attribute is substituted in test_Saver__lazy.
-    array_lib = np
+    array_lib: ModuleType = np
 
     def setUp(self):
         self.container = mock.Mock(name="container", attributes={})

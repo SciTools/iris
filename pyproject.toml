@@ -22,9 +22,9 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -50,7 +50,7 @@ keywords = [
 ]
 license = {text = "BSD-3-Clause"}
 name = "scitools-iris"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"
@@ -73,7 +73,6 @@ src = [
     "lib",
     "docs/src",
 ]
-target-version = "py39"
 
 [tool.ruff.format]
 preview = false
@@ -134,7 +133,7 @@ local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
-addopts = "-ra"
+addopts = "-ra --durations=25"
 required_plugins = "pytest-mock"
 testpaths = "lib/iris"
 
@@ -151,15 +150,76 @@ omit = [
 [tool.coverage.report]
 exclude_lines = [
     "pragma: no cover",
-    "if __name__ == .__main__.:"
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
 ]
 
 [tool.codespell]
-ignore-words-list = "alpha-numeric,degreee,discontiguities,lazyness,meaned,nin"
-skip = "_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin"
+skip = "./CODE_OF_CONDUCT.md,_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
 
 [tool.check-manifest]
 ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
+]
+
+[tool.mypy]
+# See https://mypy.readthedocs.io/en/stable/config_file.html
+# TODO: remove when MyPy fixed (see https://github.com/python/mypy/issues/17166)
+disable_error_code = ["call-arg"]
+enable_error_code = ["ignore-without-code", "truthy-bool"]
+exclude = [
+    'noxfile\.py',
+    'docs/src/conf\.py'
+]
+ignore_missing_imports = true
+warn_unreachable = true
+warn_unused_configs = true
+
+[tool.numpydoc_validation]
+checks = [
+    "all",  # Enable all numpydoc validation rules, apart from the following:
+
+    # -> Docstring text (summary) should start in the line immediately
+    #    after the opening quotes (not in the same line, or leaving a
+    #    blank line in between)
+    "GL01",  # Permit summary line on same line as docstring opening quotes.
+
+    # -> Closing quotes should be placed in the line after the last text
+    #    in the docstring (do not close the quotes in the same line as
+    #    the text, or leave a blank line between the last text and the
+    #    quotes)
+    "GL02",  # Permit a blank line before docstring closing quotes.
+
+    # -> Double line break found; please use only one blank line to
+    #    separate sections or paragraphs, and do not leave blank lines
+    #    at the end of docstrings
+    "GL03",  # Ignoring.
+
+    # -> See Also section not found
+    "SA01",  # Not all docstrings require a "See Also" section.
+
+    # -> No extended summary found
+    "ES01",  # Not all docstrings require an "Extended Summary" section.
+
+    # -> No examples section found
+    "EX01",  # Not all docstrings require an "Examples" section.
+
+    # -> No Yields section found
+    "YD01",  # Not all docstrings require a "Yields" section.
+
+    # Temporary checks to ignore, will be reviewed at a later date.
+    "GL08",  # The object does not have a docstrings not have a docstring
+    "PR01",  # Parameters ... not documented
+    "PR02",  # Unknown parameters {....}
+    "PR04",  # Parameter "...." has no type
+    "PR07",  # Parameter "...." has no description
+    "RT01",  # No Returns section found
+    "RT03",  # Return value has no description
+]
+exclude = [
+    '\.__eq__$',
+    '\.__ne__$',
+    '\.__repr__$',
 ]

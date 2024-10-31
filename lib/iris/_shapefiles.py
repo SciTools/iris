@@ -35,20 +35,20 @@ def create_shapefile_mask(
     ----------
     geometry : :class:`shapely.Geometry`
     cube : :class:`iris.cube.Cube`
-        A :class:`~iris.cube.Cube` which has 1d x and y coordinates
+        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
     minimum_weight : float, default 0.0
         A float between 0 and 1 determining what % of a cell
         a shape must cover for the cell to remain unmasked.
         eg: 0.1 means that at least 10% of the shape overlaps the cell
         to be unmasked.
         Requires geometry to be a Polygon or MultiPolygon
-        Defaults to 0.0 (eg only test intersection)
+        Defaults to 0.0 (eg only test intersection).
 
     Returns
     -------
     :class:`np.array`
         An array of the shape of the x & y coordinates of the cube, with points
-        to mask equal to True
+        to mask equal to True.
 
     """
     from iris.cube import Cube, CubeList
@@ -121,19 +121,19 @@ def _transform_coord_system(geometry, cube, geometry_system=None):
 
     Parameters
     ----------
-    geometry: :class:`shapely.Geometry`
-    cube: :class:`iris.cube.Cube`
+    geometry : :class:`shapely.Geometry`
+    cube : :class:`iris.cube.Cube`
         :class:`~iris.cube.Cube` with the coord_system to be projected to and
-        a x coordinate
-    geometry_system: :class:`iris.coord_systems`, optional
+        a x coordinate.
+    geometry_system : :class:`iris.coord_systems`, optional
         A :class:`~iris.coord_systems` object describing
         the coord_system of the shapefile. Defaults to None,
-        which is treated as GeogCS
+        which is treated as GeogCS.
 
     Returns
     -------
     :class:`shapely.Geometry`
-        A transformed copy of the provided :class:`shapely.Geometry`
+        A transformed copy of the provided :class:`shapely.Geometry`.
 
     """
     y_name, x_name = _cube_primary_xy_coord_names(cube)
@@ -196,7 +196,7 @@ def _cube_primary_xy_coord_names(cube):
     Returns
     -------
     tuple of str
-        The names of the primary latitude and longitude coordinates
+        The names of the primary latitude and longitude coordinates.
 
     """
     latc = (
@@ -225,12 +225,12 @@ def _get_mod_rebased_coord_bounds(coord):
     Parameters
     ----------
     coord : :class:`iris.coords.Coord`
-        An Iris coordinate with a modulus
+        An Iris coordinate with a modulus.
 
     Returns
     -------
     :class:`np.array`
-        A 1d Numpy array of [start,end] pairs for bounds of the coord
+        A 1d Numpy array of [start,end] pairs for bounds of the coord.
 
     """
     modulus = coord.units.modulus
