@@ -6,6 +6,7 @@
 function.
 
 """
+
 import numpy as np
 
 from iris.coords import AuxCoord

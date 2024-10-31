@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test plots with two dimensional coordinates."""
 
-
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np

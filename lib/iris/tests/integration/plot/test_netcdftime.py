@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Test plot of time coord with non-standard calendar."""
+
 from cf_units import Unit
 import cftime
 import numpy as np

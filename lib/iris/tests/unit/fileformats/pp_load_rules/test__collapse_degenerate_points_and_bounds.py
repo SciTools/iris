@@ -6,6 +6,7 @@
 :func:`iris.fileformats.pp_load_rules._collapse_degenerate_points_and_bounds`.
 
 """
+
 import numpy as np
 
 from iris.fileformats.pp_load_rules import _collapse_degenerate_points_and_bounds

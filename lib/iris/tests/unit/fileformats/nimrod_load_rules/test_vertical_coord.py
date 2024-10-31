@@ -6,6 +6,7 @@
 function.
 
 """
+
 import pytest
 
 from iris.fileformats.nimrod import NimrodField

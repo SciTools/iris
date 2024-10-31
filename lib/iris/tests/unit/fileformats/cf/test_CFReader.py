@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.cf.CFReader` class."""
+
 from unittest import mock
 
 import numpy as np
@@ -366,8 +367,8 @@ class Test_build_cf_groups__ugrid:
             file_format="NetCDF4", variables=self.variables, ncattrs=ncattrs
         )
 
-    # @pytest.fixture(autouse=True)
-    # def _setup(self, mocker):
+        # @pytest.fixture(autouse=True)
+        # def _setup(self, mocker):
         # Restrict the CFReader functionality to only performing
         # translations and building first level cf-groups for variables.
         mocker.patch("iris.fileformats.cf.CFReader._reset")
@@ -406,4 +407,3 @@ class Test_build_cf_groups__ugrid:
 
     def test_is_cf_ugrid_group(self):
         assert isinstance(self.cf_group, CFGroup)
-

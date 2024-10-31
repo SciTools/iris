@@ -6,11 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from copy import deepcopy
 from typing import Any, ClassVar
-
-from copy import deepcopy
-
-from copy import deepcopy
 
 import pytest
 

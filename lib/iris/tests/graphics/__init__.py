@@ -18,7 +18,7 @@ import os
 from pathlib import Path
 import sys
 import threading
-from typing import Callable, Dict, Union
+from typing import Callable, Dict, Iterator, Union
 
 import filelock
 import pytest
@@ -285,7 +285,7 @@ def skip_plot(fn: Callable) -> Callable:
 
 
 @pytest.fixture
-def _check_graphic_caller(_unique_id) -> callable:
+def _check_graphic_caller(_unique_id) -> Iterator[Callable]:
     """Provide a function calling :func:`check_graphic` with safe configuration.
 
     Ensures a safe Matplotlib setup (and tears down afterwards), and generates

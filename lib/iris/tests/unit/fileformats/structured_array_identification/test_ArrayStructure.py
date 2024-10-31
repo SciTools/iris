@@ -6,6 +6,7 @@
 :mod:`iris.fileformats._structured_array_identification.ArrayStructure` class.
 
 """
+
 import numpy as np
 import pytest
 

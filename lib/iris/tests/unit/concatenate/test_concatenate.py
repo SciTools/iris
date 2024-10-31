@@ -51,7 +51,6 @@ class TestEpoch:
 
 
 class _MessagesMixin:
-
     @pytest.fixture()
     def placeholder(self):
         # Shim to allow sample_cubes to have identical signature in both parent and subclasses

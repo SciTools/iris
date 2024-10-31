@@ -9,6 +9,7 @@ Before adding to this: consider if :mod:`iris.tests.unit.conftest` or
 """
 
 from collections import defaultdict
+from typing import Callable
 
 import pytest
 
@@ -27,7 +28,7 @@ def test_call_counter():
 
 
 @pytest.fixture
-def _unique_id(request: pytest.FixtureRequest, test_call_counter) -> callable:
+def _unique_id(request: pytest.FixtureRequest, test_call_counter) -> Callable:
     """Provide a function returning a unique ID of calling test and call number.
 
     Example: ``iris.tests.unit.test_cube.TestCube.test_data.my_param.0``
