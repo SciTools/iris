@@ -307,7 +307,7 @@ class Test_build_cf_groups__formula_terms:
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
-        with pytest.warns(match="Ignoring variable 'x'"):
+        with pytest.warns(match=r"Ignoring variable x"):
             cf_group = CFReader("dummy").cf_group
             promoted = ["x", "orography"]
             group = cf_group.promoted
@@ -319,7 +319,7 @@ class Test_build_cf_groups__formula_terms:
         self.wibble = netcdf_variable("wibble", "lat wibble", np.float64)
         self.variables["wibble"] = self.wibble
         self.orography.coordinates = "wibble"
-        with pytest.warns(match="Ignoring variable 'wibble'") as warns:
+        with pytest.warns(match="Ignoring variable wibble") as warns:
             cf_group = CFReader("dummy").cf_group.promoted
             promoted = ["wibble", "orography"]
             assert set(cf_group.keys()) == set(promoted)
