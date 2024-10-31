@@ -3,17 +3,18 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`."""
+
 from pathlib import Path
 import shutil
 import tempfile
 import warnings
 
-from iris.exceptions import IrisLoadWarning
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _load_cube
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.warnings import IrisLoadWarning
 
 """
 Notes on testing method.
@@ -52,7 +53,7 @@ class Mixin__nc_load_actions:
     """
 
     # "global" test setting : whether to output various debug info
-    debug = False
+    debug_info = False
 
     @classmethod
     def setUpClass(cls):
@@ -84,7 +85,7 @@ class Mixin__nc_load_actions:
 
             # If debug enabled, switch on the activation summary debug output.
             # Use 'patch' so it is restored after the test.
-            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
+            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
 
             with warnings.catch_warnings():
                 warnings.filterwarnings(
@@ -124,7 +125,7 @@ class Mixin__nc_load_actions:
         nc_path = cdl_path.replace(".cdl", ".nc")
 
         cdl_string = self._make_testcase_cdl(**testcase_kwargs)
-        if self.debug:
+        if self.debug_info:
             print("CDL file content:")
             print(cdl_string)
             print("------\n")
@@ -136,10 +137,10 @@ class Mixin__nc_load_actions:
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 
-        if self.debug:
+        if self.debug_info:
             print("\nCube:")
             print(cube)
-            print("")
+            print()
         return cube
 
     def _make_testcase_cdl(self, **kwargs):

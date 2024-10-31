@@ -4,41 +4,37 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.name_loaders._build_cell_methods`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+import pytest
 
 import iris.coords
-from iris.exceptions import IrisLoadWarning
 from iris.fileformats.name_loaders import _build_cell_methods
+from iris.warnings import IrisLoadWarning
 
 
-class Tests(tests.IrisTest):
-    def test_nameII_average(self):
+class Tests:
+    def test_name_ii_average(self):
         av_or_int = ["something average ob bla"]
         coord_name = "foo"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(res, [iris.coords.CellMethod("mean", "foo")])
+        assert res == [iris.coords.CellMethod("mean", "foo")]
 
-    def test_nameIII_averaged(self):
+    def test_name_iii_averaged(self):
         av_or_int = ["something averaged ob bla"]
         coord_name = "bar"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(res, [iris.coords.CellMethod("mean", "bar")])
+        assert res == [iris.coords.CellMethod("mean", "bar")]
 
-    def test_nameII_integral(self):
+    def test_name_ii_integral(self):
         av_or_int = ["something integral ob bla"]
         coord_name = "ensemble"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(res, [iris.coords.CellMethod("sum", "ensemble")])
+        assert res == [iris.coords.CellMethod("sum", "ensemble")]
 
-    def test_nameIII_integrated(self):
+    def test_name_iii_integrated(self):
         av_or_int = ["something integrated ob bla"]
         coord_name = "time"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(res, [iris.coords.CellMethod("sum", "time")])
+        assert res == [iris.coords.CellMethod("sum", "time")]
 
     def test_no_averaging(self):
         av_or_int = [
@@ -51,9 +47,9 @@ class Tests(tests.IrisTest):
         ]
         coord_name = "time"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(res, [None] * len(av_or_int))
+        assert res == [None] * len(av_or_int)
 
-    def test_nameII_mixed(self):
+    def test_name_ii_mixed(self):
         av_or_int = [
             "something integral ob bla",
             "no averaging",
@@ -61,16 +57,13 @@ class Tests(tests.IrisTest):
         ]
         coord_name = "ensemble"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(
-            res,
-            [
-                iris.coords.CellMethod("sum", "ensemble"),
-                None,
-                iris.coords.CellMethod("mean", "ensemble"),
-            ],
-        )
+        assert res == [
+            iris.coords.CellMethod("sum", "ensemble"),
+            None,
+            iris.coords.CellMethod("mean", "ensemble"),
+        ]
 
-    def test_nameIII_mixed(self):
+    def test_name_iii_mixed(self):
         av_or_int = [
             "something integrated ob bla",
             "no averaging",
@@ -78,14 +71,11 @@ class Tests(tests.IrisTest):
         ]
         coord_name = "ensemble"
         res = _build_cell_methods(av_or_int, coord_name)
-        self.assertEqual(
-            res,
-            [
-                iris.coords.CellMethod("sum", "ensemble"),
-                None,
-                iris.coords.CellMethod("mean", "ensemble"),
-            ],
-        )
+        assert res == [
+            iris.coords.CellMethod("sum", "ensemble"),
+            None,
+            iris.coords.CellMethod("mean", "ensemble"),
+        ]
 
     def test_unrecognised(self):
         unrecognised_heading = "bla else"
@@ -95,14 +85,13 @@ class Tests(tests.IrisTest):
             "something integral",
         ]
         coord_name = "foo"
-        with mock.patch("warnings.warn") as warn:
-            _ = _build_cell_methods(av_or_int, coord_name)
         expected_msg = (
             "Unknown {} statistic: {!r}. Unable to create cell method.".format(
                 coord_name, unrecognised_heading
             )
         )
-        warn.assert_called_with(expected_msg, category=IrisLoadWarning)
+        with pytest.warns(IrisLoadWarning, match=expected_msg):
+            _ = _build_cell_methods(av_or_int, coord_name)
 
     def test_unrecognised_similar_to_no_averaging(self):
         unrecognised_headings = [
@@ -121,15 +110,10 @@ class Tests(tests.IrisTest):
                 "something integral",
             ]
             coord_name = "foo"
-            with mock.patch("warnings.warn") as warn:
-                _ = _build_cell_methods(av_or_int, coord_name)
             expected_msg = (
                 "Unknown {} statistic: {!r}. Unable to create cell method.".format(
                     coord_name, unrecognised_heading
                 )
             )
-            warn.assert_called_with(expected_msg, category=IrisLoadWarning)
-
-
-if __name__ == "__main__":
-    tests.main()
+            with pytest.warns(IrisLoadWarning, match=expected_msg):
+                _ = _build_cell_methods(av_or_int, coord_name)

@@ -1,6 +1,6 @@
-.. _developer_testing_ci:
-
 .. include:: ../common_links.inc
+
+.. _developer_testing_ci:
 
 Continuous Integration (CI) Testing
 ===================================
@@ -92,12 +92,11 @@ Iris target branch by a core developer.
 
 .. _testing_cla:
 
-SciTools CLA Checker
-********************
+`CLA Assistant`_
+****************
 
-A bot which checks that the GitHub author of the pull-request has signed the
-**SciTools Contributor's License Agreement (CLA)**.  For more information on
-this please see https://scitools.org.uk/organisation.html#governance.
+A bot which checks that the GitHub authors of the pull-request have signed the
+|SciTools Contributor's License Agreement (CLA)|_.
 
 
 .. _pre_commit_ci:
@@ -119,5 +118,34 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
   Append to the ``ignore-words-list`` option any **valid words** that are
   considered **not** a typo and should **not** be corrected by `codespell`_.
 
+ruff
+----
+As of **Iris 3.8** `ruff`_ has been adopted to ensure our codebase is using best
+practice.  `ruff`_ is configured in the `Iris`_ GitHub repository using  
+`.pre-commit-config.yaml`_.  
+
+You can install and run `ruff`_ in your development **iris-dev** conda environment
+via::
+
+   conda activate iris-dev
+   pip install ruff
+   cd iris
+   ruff .
+
+.. note::
+
+  The `ruff`_ ``pre-commit`` hook checks for compliance of the whole codebase.
+  This hook is configured in the ``[tool.ruff]`` section
+  of the ``pyproject.toml`` file.
+
+  Edit the ``.ruff.toml`` file to include any *temporary* rules to be ignored. Edit the ``pyproject.toml`` to include any *permanent* rules to be ignored. We
+  aim to be fully `ruff`_ compliant as possible.
+
+For more information on how to use `ruff`_ please see the `ruff documentation`_.
+
+
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
+.. _CLA Assistant: https://github.com/cla-assistant/cla-assistant
+.. |SciTools Contributor's License Agreement (CLA)| replace:: **SciTools Contributor's License Agreement (CLA)**
+.. _ruff documentation: https://docs.astral.sh/ruff/tutorial/

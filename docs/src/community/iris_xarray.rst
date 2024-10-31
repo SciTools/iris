@@ -38,9 +38,28 @@ There are multiple ways to convert between Iris and Xarray objects.
   feasible to save a NetCDF file using one package then load that file using
   the other package. This will be lossy in places, as both Iris and Xarray
   are opinionated on how certain NetCDF concepts relate to their data models.
-* The Iris development team are exploring an improved 'bridge' between the two
-  packages. Follow the conversation on GitHub: `iris#4994`_. This project is
-  expressly intended to be as lossless as possible.
+* `ncdata <https://github.com/pp-mo/ncdata/blob/main/README.md>`_ is a package which
+  the Iris development team have developed to manage netcdf data, which can act as an
+  improved 'bridge' between Iris and Xarray :
+
+Ncdata can convert Iris cubes to an Xarray dataset, or vice versa, with minimal
+overhead and as lossless as possible.
+
+For example :
+
+.. code-block:: python
+
+      from ncdata.iris_xarray import cubes_from_xarray, cubes_to_xarray
+      cubes = cubes_from_xarray(dataset)
+      xrds = cubes_to_xarray(cubes)
+
+Ncdata avoids the feature limitations previously mentioned regarding Xarray's
+:meth:`~xarray.DataArray.to_iris` and :meth:`~xarray.DataArray.from_iris`,
+because it doesn't replicate any logic of either Xarray or Iris.
+Instead, it uses the netcdf file interfaces of both to exchange data
+"as if" via a netcdf file.  So, these conversions *behave* just like exchanging data
+via a file, but are far more efficient because they can transfer data without copying
+arrays or fetching lazy data.
 
 Regridding
 ----------
@@ -98,7 +117,7 @@ Iris :class:`~iris.cube.Cube`\ s, although an ambition for the future.
 
 NetCDF File Control
 -------------------
-(More info: :term:`NetCDF Format`)
+(More info: :ref:`netcdf_io`)
 
 Unlike Iris, Xarray generally provides full control of major file structures,
 i.e. dimensions + variables, including their order in the file.  It mostly
@@ -107,14 +126,40 @@ However, attribute handling is not so complete: like Iris, it interprets and
 modifies some recognised aspects, and can add some extra attributes not in the
 input.
 
-.. todo:
-    More detail on dates and fill values (@pp-mo suggestion).
+Whereas Iris is primarily designed to handle netCDF data encoded according to
+`CF Conventions <https://cfconventions.org/>`_ , this is not so important to Xarray,
+which therefore may make it harder to correctly manage this type of data.
+While Xarray CF support is not complete, it may improve, and obviously
+:ref:`cfxarray` may be relevant here.
+There is also relevant documentation
+`at this page <https://docs.xarray.dev/en/stable/user-guide/weather-climate.html#weather-and-climate-data>`_.
 
-Handling of dates and fill values have some special problems here.
+In some particular aspects, CF data is not loaded well (or at all), and in many cases
+output is not fully CF compliant (as-per `the cf checker <https://cfchecker.ncas.ac.uk/>`_).
 
-Ultimately, nearly everything wanted in a particular desired result file can
-be achieved in Xarray, via provided override mechanisms (`loading keywords`_
+* xarray has it's own interpretation of coordinates, which is different from the CF-based
+  approach in Iris, and means that the use of the "coordinates" attribute in output is
+  often not CF compliant.
+* dates are converted to datetime-like objects internally.  There are special features
+  providing `support for  non-standard calendars <https://docs.xarray.dev/en/stable/user-guide/weather-climate.html#non-standard-calendars-and-dates-outside-the-nanosecond-precision-range>`_,
+  however date units may not always be saved correctly.
+* CF-style coordinate bounds variables are not fully understood.  The CF approach
+  where bounds variables do not usually define their units or standard_names can cause
+  problems.  Certain files containing bounds variables with more than 2 bounds (e.g.
+  unstructured data) may not load at all.
+* missing points are always represented as NaNs, as-per Pandas usage.
+  (See :ref:`xarray_missing_data` ).
+  This means that fill values are not preserved, and that masked integer data is
+  converted to floats.
+  The netCDF default fill-values are not supported, so that variables with no
+  "_FillValue" attribute will have missing points equal to the fill-value
+  in place of NaNs.  By default, output variables generally have ``_FillValue = NaN``.
+
+Ultimately, however, nearly everything wanted in a particular desired result file
+**can** be achieved in Xarray, via provided override mechanisms (`loading keywords`_
 and the '`encoding`_' dictionaries).
+
+.. _xarray_missing_data:
 
 Missing Data
 ------------

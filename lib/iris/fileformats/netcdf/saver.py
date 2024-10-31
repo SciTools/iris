@@ -13,13 +13,14 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
+
 import collections
 from itertools import repeat, zip_longest
 import os
 import os.path
 import re
 import string
-from typing import List
+import typing
 import warnings
 
 import cf_units
@@ -49,6 +50,7 @@ import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 import iris.io
 import iris.util
+import iris.warnings
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
@@ -160,15 +162,6 @@ _FACTORY_DEFNS = {
 }
 
 
-class _WarnComboMaskSave(
-    iris.exceptions.IrisMaskValueMatchWarning,
-    iris.exceptions.IrisSaveWarning,
-):
-    """One-off combination of warning classes - enhances user filtering."""
-
-    pass
-
-
 class CFNameCoordMap:
     """Provide a simple CF name to CF coordinate mapping."""
 
@@ -182,9 +175,9 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        name:
+        name :
             CF name of the associated coordinate.
-        coord:
+        coord :
             The coordinate of the associated CF name.
 
         Returns
@@ -209,7 +202,7 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        coord:
+        coord :
             The coordinate of the associated CF name.
 
         Returns
@@ -229,12 +222,13 @@ class CFNameCoordMap:
 
         Parameters
         ----------
-        name:
+        name :
             CF name of the associated coordinate, or None if not recognised.
 
         Returns
         -------
         CF name or None.
+
         """
         result = None
         for pair in self._map:
@@ -277,106 +271,29 @@ def _setncattr(variable, name, attribute):
     return variable.setncattr(name, attribute)
 
 
-# NOTE : this matches :class:`iris.experimental.ugrid.mesh.Mesh.ELEMENTS`,
+# NOTE : this matches :class:`iris.mesh.MeshXY.ELEMENTS`,
 # but in the preferred order for coord/connectivity variables in the file.
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
-_FillvalueCheckInfo = collections.namedtuple(
-    "_FillvalueCheckInfo", ["user_value", "check_value", "dtype", "varname"]
-)
-
-
-def _data_fillvalue_check(arraylib, data, check_value):
-    """Check whether an array is masked, and whether it contains a fill-value.
-
-    Parameters
-    ----------
-    arraylib : module
-        Either numpy or dask.array : When dask, results are lazy computations.
-    data : array-like
-        Array to check (numpy or dask)
-    check_value : number or None
-        If not None, fill-value to check for existence in the array.
-        If None, do not do value-in-array check
-
-    Returns
-    -------
-    is_masked : bool
-        True if array has any masked points.
-    contains_value : bool
-        True if array contains check_value.
-        Always False if check_value is None.
-
-    """
-    is_masked = arraylib.any(arraylib.ma.getmaskarray(data))
-    if check_value is None:
-        contains_value = False
-    else:
-        contains_value = arraylib.any(data == check_value)
-    return is_masked, contains_value
-
-
-class SaverFillValueWarning(iris.exceptions.IrisSaverFillValueWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisSaverFillValueWarning`."""
+class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
+    """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
 
     # TODO: remove at the next major release.
     pass
 
 
-def _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=False):
-    """Work out whether there was a possible or actual fill-value collision.
+class VariableEmulator(typing.Protocol):
+    """Duck-type-hinting for a ncdata object.
 
-    From the given information, work out whether there was a possible or actual
-    fill-value collision, and if so construct a warning.
-
-    Parameters
-    ----------
-    fill_info : _FillvalueCheckInfo
-        A named-tuple containing the context of the fill-value check
-    is_masked : bool
-        whether the data array was masked
-    contains_fill_value : bool
-        whether the data array contained the fill-value
-    warn : bool, optional
-        if True, also issue any resulting warning immediately.
-
-    Returns
-    -------
-    None or :class:`Warning`
-        If not None, indicates a known or possible problem with filling
-
+    https://github.com/pp-mo/ncdata
     """
-    varname = fill_info.varname
-    user_value = fill_info.user_value
-    check_value = fill_info.check_value
-    is_byte_data = fill_info.dtype.itemsize == 1
-    result = None
-    if is_byte_data and is_masked and user_value is None:
-        result = SaverFillValueWarning(
-            f"CF var '{varname}' contains byte data with masked points, but "
-            "no fill_value keyword was given. As saved, these "
-            "points will read back as valid values. To save as "
-            "masked byte data, `_FillValue` needs to be explicitly "
-            "set. For Cube data this can be done via the 'fill_value' "
-            "keyword during saving, otherwise use ncedit/equivalent."
-        )
-    elif contains_fill_value:
-        result = SaverFillValueWarning(
-            f"CF var '{varname}' contains unmasked data points equal to the "
-            f"fill-value, {check_value}. As saved, these points will read back "
-            "as missing data. To save these as normal values, "
-            "`_FillValue` needs to be set to not equal any valid data "
-            "points. For Cube data this can be done via the 'fill_value' "
-            "keyword during saving, otherwise use ncedit/equivalent."
-        )
 
-    if warn and result is not None:
-        warnings.warn(
-            result,
-            category=_WarnComboMaskSave,
-        )
-    return result
+    _data_array: np.typing.ArrayLike
+    shape: tuple[int, ...]
+
+
+CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
 
 
 class Saver:
@@ -390,11 +307,9 @@ class Saver:
         filename : str or netCDF4.Dataset
             Name of the netCDF file to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
-
         netcdf_format : str
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
             'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
-
         compute : bool, default=True
             If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
@@ -404,7 +319,7 @@ class Saver:
             variables for which the source data was lazy.  These writes can be
             completed later, see :meth:`delayed_completion`.
 
-            .. Note::
+            .. note::
                 If ``filename`` is an open dataset, rather than a filepath, then the
                 caller must specify ``compute=False``, **close the dataset**, and
                 complete delayed saving afterwards.
@@ -453,7 +368,7 @@ class Saver:
         self._formula_terms_cache = {}
         #: Target filepath
         self.filepath = None  # this line just for the API page -- value is set later
-        #: Whether to complete delayed saves on exit (and raise associated warnings).
+        #: Whether to complete delayed saves on exit.
         self.compute = compute
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
         #: A per-file write lock to prevent dask attempting overlapping writes.
@@ -462,7 +377,7 @@ class Saver:
         )
 
         # A list of delayed writes for lazy saving
-        # a list of triples (source, target, fill-info).
+        # a list of couples (source, target).
         self._delayed_writes = []
 
         # Detect if we were passed a pre-opened dataset (or something like one)
@@ -543,39 +458,38 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        local_keys : iterable of str
-            An interable of cube attribute keys. Any cube attributes with
+        local_keys : iterable of str, optional
+            An iterable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
             than global attributes.
 
-            .. Note::
+            .. note::
 
                 Has no effect if :attr:`iris.FUTURE.save_split_attrs` is ``True``.
-
-        unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`
+        unlimited_dimensions : iterable of str and/or :class:`iris.coords.Coord`, optional
             List of coordinate names (or coordinate objects)
             corresponding to coordinate dimensions of `cube` to save with the
             NetCDF dimension variable length 'UNLIMITED'. By default, no
             unlimited dimensions are saved. Only the 'NETCDF4' format
             supports multiple 'UNLIMITED' dimensions.
-        zlib : bool
+        zlib : bool, default=False
             If `True`, the data will be compressed in the netCDF file using
             gzip compression (default `False`).
-        complevel : int
+        complevel : int, default=4
             An integer between 1 and 9 describing the level of compression
             desired (default 4). Ignored if `zlib=False`.
-        shuffle : bool
+        shuffle : bool, default=True
             If `True`, the HDF5 shuffle filter will be applied before
             compressing the data (default `True`). This significantly improves
             compression. Ignored if `zlib=False`.
-        fletcher32 : bool
+        fletcher32 : bool, default=False
             If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
             detect errors. Default `False`.
-        contiguous : bool
+        contiguous : bool, default=False
             If `True`, the variable data is stored contiguously on disk.
             Default `False`. Setting to `True` for a variable with an unlimited
             dimension will trigger an error.
-        chunksizes : tuple of int
+        chunksizes : tuple of int, optional
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available
@@ -583,7 +497,7 @@ class Saver:
             Basically, you want the chunk size for each dimension to match
             as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
-        endian : str
+        endian : str, default="native"
             Used to control whether the data is stored in little or big endian
             format on disk. Possible values are 'little', 'big' or 'native'
             (default). The library will automatically handle endian conversions
@@ -591,7 +505,7 @@ class Saver:
             on a computer with the opposite format as the one used to create
             the file, there may be some performance advantage to be gained by
             setting the endian-ness.
-        least_significant_digit : int
+        least_significant_digit : int, optional
             If `least_significant_digit` is specified, variable data will be
             truncated (quantized). In conjunction with `zlib=True` this
             produces 'lossy', but significantly more efficient compression. For
@@ -603,7 +517,7 @@ class Saver:
             "least_significant_digit -- power of ten of the smallest decimal
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
-        packing : type or str or dict or list
+        packing : type or str or dict or list, optional
             A numpy integer datatype (signed or unsigned) or a string that
             describes a numpy integer dtype(i.e. 'i2', 'short', 'u4') or a
             dict of packing parameters as described below. This provides
@@ -618,7 +532,7 @@ class Saver:
             manually using a dict to avoid this. The default is `None`, in
             which case the datatype is determined from the cube and no packing
             will occur.
-        fill_value:
+        fill_value : optional
             The value to use for the `_FillValue` attribute on the netCDF
             variable. If `packing` is specified the value of `fill_value`
             should be in the domain of the packed data.
@@ -739,7 +653,7 @@ class Saver:
                 cf_patch(profile, self._dataset, cf_var_cube)
             else:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
     @staticmethod
     def check_attribute_compliance(container, data_dtype):
@@ -783,7 +697,7 @@ class Saver:
 
         Parameters
         ----------
-        attributes : dict or iterable of key, value pairs
+        attributes : dict or iterable of key, value pairs, optional
             CF global attributes to be updated.
         """
         # TODO: when when iris.FUTURE.save_split_attrs is removed, this routine will
@@ -807,12 +721,14 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` in which to lookup coordinates.
+        dimension_names :
         unlimited_dimensions : iterable of strings and/or :class:`iris.coords.Coord` objects):
             List of coordinates to make unlimited (None by default).
 
         Returns
         -------
         None.
+
         """
         unlimited_dim_names = []
         if unlimited_dimensions is not None:
@@ -843,21 +759,22 @@ class Saver:
         Add the cube's mesh, and all related variables to the dataset.
         Includes all the mesh-element coordinate and connectivity variables.
 
-        ..note::
+        .. note::
 
             Here, we do *not* add the relevant referencing attributes to the
             data-variable, because we want to create the data-variable later.
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube`or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
         -------
-        cf_mesh_name : str or None
+        str or None
             The name of the mesh variable created, or None if the cube does not
             have a mesh.
+
         """
         cf_mesh_name = None
 
@@ -1020,15 +937,15 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
-        from iris.experimental.ugrid.mesh import (
-            Mesh,
+        from iris.mesh.components import (
             MeshEdgeCoords,
             MeshFaceCoords,
             MeshNodeCoords,
+            MeshXY,
         )
 
         # Exclude any mesh coords, which are bundled in with the aux-coords.
@@ -1037,8 +954,8 @@ class Saver:
         ]
 
         # Include any relevant mesh location coordinates.
-        mesh: Mesh = getattr(cube, "mesh")
-        mesh_location: str = getattr(cube, "location")
+        mesh: MeshXY | None = getattr(cube, "mesh")
+        mesh_location: str | None = getattr(cube, "location")
         if mesh and mesh_location:
             location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
                 mesh, f"{mesh_location}_coords"
@@ -1060,7 +977,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
@@ -1079,7 +996,7 @@ class Saver:
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
         """
@@ -1121,7 +1038,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube: :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`netcdf.netcdf_variable`
             CF variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -1133,7 +1050,7 @@ class Saver:
                 msg = "Unable to determine formula terms for AuxFactory: {!r}".format(
                     factory
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
             else:
                 # Override `standard_name`, `long_name`, and `axis` of the
                 # primary coord that signals the presence of a dimensionless
@@ -1203,7 +1120,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
 
         Returns
@@ -1211,7 +1128,7 @@ class Saver:
         mesh_dimensions : list of str
             A list of the mesh dimensions of the attached mesh, if any.
         cube_dimensions : list of str
-            A lists of dimension names for each dimension of the cube
+            A lists of dimension names for each dimension of the cube.
 
         Notes
         -----
@@ -1287,7 +1204,7 @@ class Saver:
                 if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
                     # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(include_nodes=True, axis="x")
+                    dim_coords = mesh.coords(location="node", axis="x")
                 else:
                     # For face/edge, use the relevant "optionally required"
                     # connectivity variable.
@@ -1300,13 +1217,6 @@ class Saver:
                     assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
-                    if dim_name is not None:
-                        # For mesh-identifying coords, we require the *same*
-                        # coord, not an identical one (i.e. "is" not "==")
-                        stored_coord = self._dim_names_and_coords.coord(dim_name)
-                        if dim_element is not stored_coord:
-                            # This is *not* a proper match after all.
-                            dim_name = None
                     if dim_name is None:
                         # No existing dim matches this, so assign a new name
                         if location == "node":
@@ -1318,7 +1228,7 @@ class Saver:
                         # Name it for the relevant mesh dimension
                         location_dim_attr = f"{location}_dimension"
                         dim_name = getattr(mesh, location_dim_attr)
-                        # NOTE: This cannot currently be empty, as a Mesh
+                        # NOTE: This cannot currently be empty, as a MeshXY
                         # "invents" dimension names which were not given.
                         assert dim_name is not None
                         # Ensure it is a valid variable name.
@@ -1417,12 +1327,12 @@ class Saver:
         Parameters
         ----------
         var_name : str
-            The var_name to normalise
+            The var_name to normalise.
 
         Returns
         -------
         str
-            var_name suitable for passing through for variable creation.
+            The var_name suitable for passing through for variable creation.
 
         """
         # Replace invalid characters with an underscore ("_").
@@ -1477,9 +1387,13 @@ class Saver:
             val_min, val_max = (values.min(), values.max())
             if is_lazy_data(values):
                 val_min, val_max = _co_realise_lazy_arrays([val_min, val_max])
+            # NumPy will inherit values.dtype even if the scalar numbers work
+            #  with a smaller type.
+            min_dtype = np.promote_types(
+                *[np.min_scalar_type(m) for m in (val_min, val_max)]
+            )
             # Cast to an integer type supported by netCDF3.
-            can_cast = all([np.can_cast(m, np.int32) for m in (val_min, val_max)])
-            if not can_cast:
+            if not np.can_cast(min_dtype, np.int32):
                 msg = (
                     "The data type of {} {!r} is not supported by {} and"
                     " its values cannot be safely cast to a supported"
@@ -1497,10 +1411,10 @@ class Saver:
         ----------
         coord : :class:`iris.coords.Coord`
             A coordinate of a cube.
-        cf_var:
-            CF-netCDF variable
+        cf_var :
+            CF-netCDF variable.
         cf_name : str
-            name of the CF-NetCDF variable.
+            Name of the CF-NetCDF variable.
 
         Returns
         -------
@@ -1541,12 +1455,7 @@ class Saver:
                 bounds.dtype.newbyteorder("="),
                 cf_var.dimensions + (bounds_dimension_name,),
             )
-            self._lazy_stream_data(
-                data=bounds,
-                fill_value=None,
-                fill_warn=True,
-                cf_var=cf_var_bounds,
-            )
+            self._lazy_stream_data(data=bounds, cf_var=cf_var_bounds)
 
     def _get_cube_variable_name(self, cube):
         """Return a CF-netCDF variable name for the given cube.
@@ -1577,7 +1486,7 @@ class Saver:
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         coord : :class:`iris.coords._DimensionalMetadata`
             An instance of a coordinate (or similar), for which a CF-netCDF
@@ -1619,10 +1528,10 @@ class Saver:
                     # element-coordinate of the mesh.
                     # Name it for it's first dim, i.e. mesh-dim of its location.
 
-                    from iris.experimental.ugrid.mesh import Connectivity
+                    from iris.mesh import Connectivity
 
                     # At present, a location-coord cannot be nameless, as the
-                    # Mesh code relies on guess_coord_axis.
+                    # MeshXY code relies on guess_coord_axis.
                     assert isinstance(coord, Connectivity)
                     location = coord.cf_role.split("_")[0]
                     location_dim_attr = f"{location}_dimension"
@@ -1639,7 +1548,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.experimental.ugrid.mesh.Mesh`
+        mesh : :class:`iris.mesh.MeshXY`
             An instance of a Mesh for which a CF-netCDF variable name is
             required.
 
@@ -1665,7 +1574,7 @@ class Saver:
 
         Parameters
         ----------
-        mesh : :class:`iris.experimental.ugrid.mesh.Mesh`
+        mesh : :class:`iris.mesh.MeshXY`
             The Mesh to be saved to CF-netCDF file.
 
         Returns
@@ -1749,13 +1658,13 @@ class Saver:
         Create the associated CF-netCDF variable in the netCDF dataset for the
         given dimensional_metadata.
 
-        ..note::
+        .. note::
             If the metadata element is a coord, it may also contain bounds.
             In which case, an additional var is created and linked to it.
 
         Parameters
         ----------
-        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.experimental.ugrid.Mesh`
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
         cube_dim_names : list of str
             The name of each dimension of the cube.
@@ -1763,12 +1672,12 @@ class Saver:
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
             Not used if 'element_dims' is not None.
-        element_dims : list of str, or None
+        element_dims : list of str, optionsl
             If set, contains the variable dimension (names),
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
             *must* be passed in, as "element.cube_dims" does not function.
-        fill_value : number or None
+        fill_value : number, optional
             If set, create the variable with this fill-value, and fill any
             masked data points with this value.
             If not set, standard netcdf4-python behaviour : the variable has no
@@ -1879,9 +1788,7 @@ class Saver:
             self._create_cf_bounds(element, cf_var, cf_name)
 
         # Add the data to the CF-netCDF variable.
-        self._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var)
 
         # Add names + units
         self._set_cf_var_attributes(cf_var, element)
@@ -1951,7 +1858,7 @@ class Saver:
             A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
             cubes to be saved to a netCDF file.
         cf_var_cube : :class:`netcdf.netcdf_variable`
-            cf variable cube representation.
+            A cf variable cube representation.
 
         Returns
         -------
@@ -2084,7 +1991,7 @@ class Saver:
                 elif isinstance(cs, iris.coord_systems.OSGB):
                     warnings.warn(
                         "OSGB coordinate system not yet handled",
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 # lambert azimuthal equal area
@@ -2172,7 +2079,7 @@ class Saver:
                         "Unable to represent the horizontal "
                         "coordinate system. The coordinate system "
                         "type %r is not yet implemented." % type(cs),
-                        category=iris.exceptions.IrisSaveWarning,
+                        category=iris.warnings.IrisSaveWarning,
                     )
 
                 self._coord_systems.append(cs)
@@ -2201,12 +2108,14 @@ class Saver:
         dimension_names : list
             String names for each dimension of the cube.
         local_keys : iterable of str, optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
         packing : type or str or dict or list, optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
         fill_value : optional
-            See :func:`iris.fileformats.netcdf.Saver.write`
+            See :func:`iris.fileformats.netcdf.Saver.write`.
 
+        Notes
+        -----
         All other keywords are passed through to the dataset's `createVariable`
         method.
 
@@ -2284,12 +2193,7 @@ class Saver:
         )
 
         set_packing_ncattrs(cf_var)
-        self._lazy_stream_data(
-            data=data,
-            fill_value=fill_value,
-            fill_warn=(not packing),
-            cf_var=cf_var,
-        )
+        self._lazy_stream_data(data=data, cf_var=cf_var)
 
         if cube.standard_name:
             _setncattr(cf_var, "standard_name", cube.standard_name)
@@ -2340,7 +2244,7 @@ class Saver:
                     "attribute, but {attr_name!r} should only be a CF "
                     "global attribute.".format(attr_name=attr_name)
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
 
@@ -2382,7 +2286,11 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    def _lazy_stream_data(self, data, fill_value, fill_warn, cf_var):
+    def _lazy_stream_data(
+        self,
+        data: np.typing.ArrayLike,
+        cf_var: CFVariable,
+    ) -> None:
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
             # Reduce dimensionality where the data array has an extra dimension
@@ -2398,83 +2306,42 @@ class Saver:
             # data to/from netcdf data container objects in other packages, such as
             # xarray.
             # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
-            # N.B. also, in this case there is no need for fill-value checking as the
-            # data is not being translated to an in-file representation.
             cf_var._data_array = data
+
         else:
-            # Decide whether we are checking for fill-value collisions.
-            dtype = cf_var.dtype
-            # fill_warn allows us to skip warning if packing attributes have been
-            #  specified. It would require much more complex operations to work out
-            #  what the values and fill_value _would_ be in such a case.
-            if fill_warn:
-                if fill_value is not None:
-                    fill_value_to_check = fill_value
-                else:
-                    # Retain 'fill_value == None', to show that no specific value was given.
-                    # But set 'fill_value_to_check' to a calculated value
-                    fill_value_to_check = _thread_safe_nc.default_fillvals[
-                        dtype.str[1:]
-                    ]
-                # Cast the check-value to the correct dtype.
-                # NOTE: In the case of 'S1' dtype (at least), the default (Python) value
-                # does not have a compatible type.  This causes a deprecation warning at
-                # numpy 1.24, *and* was preventing correct fill-value checking of character
-                # data, since they are actually bytes (dtype 'S1').
-                fill_value_to_check = np.array(fill_value_to_check, dtype=dtype)
-            else:
-                # A None means we will NOT check for collisions.
-                fill_value_to_check = None
-
-            fill_info = _FillvalueCheckInfo(
-                user_value=fill_value,
-                check_value=fill_value_to_check,
-                dtype=dtype,
-                varname=cf_var.name,
-            )
-
             doing_delayed_save = is_lazy_data(data)
             if doing_delayed_save:
                 # save lazy data with a delayed operation.  For now, we just record the
                 # necessary information -- a single, complete delayed action is constructed
                 # later by a call to delayed_completion().
-                def store(data, cf_var, fill_info):
+                def store(
+                    data: np.typing.ArrayLike,
+                    cf_var: CFVariable,
+                ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
                     write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
                         self.filepath, cf_var, self.file_write_lock
                     )
                     # Add to the list of delayed writes, used in delayed_completion().
-                    self._delayed_writes.append((data, write_wrapper, fill_info))
-                    # In this case, fill-value checking is done later. But return 2 dummy
-                    # values, to be consistent with the non-streamed "store" signature.
-                    is_masked, contains_value = False, False
-                    return is_masked, contains_value
+                    self._delayed_writes.append((data, write_wrapper))
 
             else:
                 # Real data is always written directly, i.e. not via lazy save.
-                # We also check it immediately for any fill-value problems.
-                def store(data, cf_var, fill_info):
-                    cf_var[:] = data
-                    return _data_fillvalue_check(np, data, fill_info.check_value)
+                def store(
+                    data: np.typing.ArrayLike,
+                    cf_var: CFVariable,
+                ) -> None:
+                    cf_var[:] = data  # type: ignore[index]
 
-            # Store the data and check if it is masked and contains the fill value.
-            is_masked, contains_fill_value = store(data, cf_var, fill_info)
-
-            if not doing_delayed_save:
-                # Issue a fill-value warning immediately, if appropriate.
-                _fillvalue_report(fill_info, is_masked, contains_fill_value, warn=True)
+            # Store the data.
+            store(data, cf_var)
 
     def delayed_completion(self) -> Delayed:
         """Perform file completion for delayed saves.
 
         Create and return a :class:`dask.delayed.Delayed` to perform file
         completion for delayed saves.
-
-        This contains all the delayed writes, which complete the file by
-        filling out the data of variables initially created empty, and also the
-        checks for potential fill-value collisions.  When computed, it returns
-        a list of any warnings which were generated in the save operation.
 
         Returns
         -------
@@ -2487,67 +2354,23 @@ class Saver:
         """
         if self._delayed_writes:
             # Create a single delayed da.store operation to complete the file.
-            sources, targets, fill_infos = zip(*self._delayed_writes)
-            store_op = da.store(sources, targets, compute=False, lock=False)
-
-            # Construct a delayed fill-check operation for each (lazy) source array.
-            delayed_fillvalue_checks = [
-                # NB with arraylib=dask.array, this routine does lazy array computation
-                _data_fillvalue_check(da, source, fillinfo.check_value)
-                for source, fillinfo in zip(sources, fill_infos)
-            ]
-
-            # Return a single delayed object which completes the delayed saves and
-            # returns a list of any fill-value warnings.
-            @dask.delayed
-            def compute_and_return_warnings(store_op, fv_infos, fv_checks):
-                # Note: we don't actually *do* anything with the 'store_op' argument,
-                # but including it here ensures that dask will compute it (thus
-                # performing all the delayed saves), before calling this function.
-                results = []
-                # Pair each fill_check result (is_masked, contains_value) with its
-                # fillinfo and construct a suitable Warning if needed.
-                for fillinfo, (is_masked, contains_value) in zip(fv_infos, fv_checks):
-                    fv_warning = _fillvalue_report(
-                        fill_info=fillinfo,
-                        is_masked=is_masked,
-                        contains_fill_value=contains_value,
-                    )
-                    if fv_warning is not None:
-                        # Collect the warnings and return them.
-                        results.append(fv_warning)
-                return results
-
-            result = compute_and_return_warnings(
-                store_op,
-                fv_infos=fill_infos,
-                fv_checks=delayed_fillvalue_checks,
-            )
+            sources, targets = zip(*self._delayed_writes)
+            result = da.store(sources, targets, compute=False, lock=False)
 
         else:
-            # Return a delayed, which returns an empty list, for usage consistency.
+            # Return a do-nothing delayed, for usage consistency.
             @dask.delayed
             def no_op():
-                return []
+                return None
 
             result = no_op()
 
         return result
 
-    def complete(self, issue_warnings=True) -> List[Warning]:
+    def complete(self) -> None:
         """Complete file by computing any delayed variable saves.
 
         This requires that the Saver has closed the dataset (exited its context).
-
-        Parameters
-        ----------
-        issue_warnings : bool, default = True
-            If true, issue all the resulting warnings with :func:`warnings.warn`.
-
-        Returns
-        -------
-        warnings : list of Warning
-            Any warnings that were raised while writing delayed data.
 
         """
         if self._dataset.isopen():
@@ -2557,15 +2380,8 @@ class Saver:
             )
             raise ValueError(msg)
 
-        delayed_write = self.delayed_completion()
-        # Complete the saves now, and handle any delayed warnings that occurred
-        result_warnings = delayed_write.compute()
-        if issue_warnings:
-            # Issue any delayed warnings from the compute.
-            for delayed_warning in result_warnings:
-                warnings.warn(delayed_warning, category=iris.exceptions.IrisSaveWarning)
-
-        return result_warnings
+        # Complete the saves now
+        self.delayed_completion().compute()
 
 
 def save(
@@ -2590,7 +2406,7 @@ def save(
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.
-      :data:`iris.FUTURE`\\ ``.save_split_attrs`` is ``False``, then attributes
+      :data:`iris.FUTURE` ``.save_split_attrs`` is ``False``, then attributes
       dictionaries on each cube in the saved cube list will be compared, and common
       attributes saved as NetCDF global attributes where appropriate.
 
@@ -2615,15 +2431,15 @@ def save(
         Name of the netCDF file to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
-        .. Note::
+        .. note::
             When saving to a dataset, ``compute`` **must** be ``False`` :
             See the ``compute`` parameter.
 
-    netcdf_format : str
+    netcdf_format : str, default="NETCDF"
         Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
         'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
     local_keys : iterable of str, optional
-        An interable of cube attribute keys. Any cube attributes with
+        An iterable of cube attribute keys. Any cube attributes with
         matching keys will become attributes on the data variable rather
         than global attributes.
 
@@ -2637,20 +2453,20 @@ def save(
         variable length 'UNLIMITED'. By default, no unlimited dimensions are
         saved. Only the 'NETCDF4' format supports multiple 'UNLIMITED'
         dimensions.
-    zlib : bool, optional
+    zlib : bool, default=False
         If `True`, the data will be compressed in the netCDF file using gzip
         compression (default `False`).
-    complevel : int
+    complevel : int, default=4
         An integer between 1 and 9 describing the level of compression desired
         (default 4). Ignored if `zlib=False`.
-    shuffle : bool, optional
+    shuffle : bool, default=True
         If `True`, the HDF5 shuffle filter will be applied before compressing
         the data (default `True`). This significantly improves compression.
         Ignored if `zlib=False`.
-    fletcher32 : bool, optional
+    fletcher32 : bool, default=False
         If `True`, the Fletcher32 HDF5 checksum algorithm is activated to
         detect errors. Default `False`.
-    contiguous : bool, optional
+    contiguous : bool, default=False
         If `True`, the variable data is stored contiguously on disk. Default
         `False`. Setting to `True` for a variable with an unlimited dimension
         will trigger an error.
@@ -2662,7 +2478,7 @@ def save(
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
-    endian : str
+    endian : str, default="native"
         Used to control whether the data is stored in little or big endian
         format on disk. Possible values are 'little', 'big' or 'native'
         (default). The library will automatically handle endian conversions
@@ -2707,7 +2523,7 @@ def save(
         same number of elements as `cube` if `cube` is a
         :class:`iris.cube.CubeList`, or a single element, and each element of
         this argument will be applied to each cube separately.
-    compute : bool, optional
+    compute : bool, default=True
         Default is ``True``, meaning complete the file immediately, and return ``None``.
 
         When ``False``, create the output file but don't write any lazy array content to
@@ -2717,12 +2533,7 @@ def save(
         Several such data saves can be performed in parallel, by passing a list of them
         into a :func:`dask.compute` call.
 
-        .. Note::
-            when computed, the returned :class:`dask.delayed.Delayed` object returns
-            a list of :class:`Warning` :  These are any warnings which *would* have
-            been issued in the save call, if ``compute`` had been ``True``.
-
-        .. Note::
+        .. note::
             If saving to an open dataset instead of a filepath, then the caller
             **must** specify ``compute=False``, and complete delayed saves **after
             closing the dataset**.
@@ -2732,7 +2543,7 @@ def save(
 
     Returns
     -------
-    result: None or dask.delayed.Delayed
+    None or dask.delayed.Delayed
         If `compute=True`, returns `None`.
         Otherwise returns a :class:`dask.delayed.Delayed`, which implements delayed
         writing to fill in the variables data.
@@ -2813,7 +2624,7 @@ def save(
                 f"Saving the cube global attributes {sorted(invalid_globals)} as local "
                 "(i.e. data-variable) attributes, where possible, since they are not "
                 "the same on all input cubes.",
-                category=iris.exceptions.IrisSaveWarning,
+                category=iris.warnings.IrisSaveWarning,
             )
             cubes = cubes.copy()  # avoiding modifying the actual input arg.
             for i_cube in range(len(cubes)):
@@ -2829,7 +2640,7 @@ def save(
                             f"Global cube attributes {sorted(blocked_attrs)} "
                             f'of cube "{cube.name()}" were not saved, overlaid '
                             "by existing local attributes with the same names.",
-                            category=iris.exceptions.IrisSaveWarning,
+                            category=iris.warnings.IrisSaveWarning,
                         )
                     demote_attrs -= blocked_attrs
                     if demote_attrs:
@@ -2971,7 +2782,7 @@ def save(
                 msg = "cf_profile is available but no {} defined.".format(
                     "cf_patch_conventions"
                 )
-                warnings.warn(msg, category=iris.exceptions.IrisCfSaveWarning)
+                warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
         # Add conventions attribute.
         if iris.FUTURE.save_split_attrs:
@@ -2989,3 +2800,40 @@ def save(
         result = sman.delayed_completion()
 
     return result
+
+
+def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
+    """Save mesh(es) to a netCDF file.
+
+    Parameters
+    ----------
+    mesh : :class:`iris.mesh.MeshXY` or iterable
+        Mesh(es) to save.
+    filename : str
+        Name of the netCDF file to create.
+    netcdf_format : str, default="NETCDF4"
+        Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
+        'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
+
+    """
+    if isinstance(mesh, typing.Iterable):
+        meshes = mesh
+    else:
+        meshes = [mesh]
+
+    # Initialise Manager for saving
+    with Saver(filename, netcdf_format) as sman:
+        # Iterate through the list.
+        for mesh in meshes:
+            # Get suitable dimension names.
+            mesh_dimensions, _ = sman._get_dim_names(mesh)
+
+            # Create dimensions.
+            sman._create_cf_dimensions(cube=None, dimension_names=mesh_dimensions)
+
+            # Create the mesh components.
+            sman._add_mesh(mesh)
+
+        # Add a conventions attribute.
+        # TODO: add 'UGRID' to conventions, when this is agreed with CF ?
+        sman.update_global_attributes(Conventions=CF_CONVENTIONS_VERSION)

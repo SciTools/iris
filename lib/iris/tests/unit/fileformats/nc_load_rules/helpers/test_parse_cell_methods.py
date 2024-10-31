@@ -11,14 +11,15 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 from iris.coords import CellMethod
-from iris.exceptions import IrisCfLoadWarning
 from iris.fileformats._nc_load_rules.helpers import parse_cell_methods
+from iris.warnings import IrisCfLoadWarning
 
 
 class Test(tests.IrisTest):
     def test_simple(self):
         cell_method_strings = [
             "time: mean",
+            "time:mean",
             "time : mean",
         ]
         expected = (CellMethod(method="mean", coords="time"),)
@@ -125,6 +126,7 @@ class Test(tests.IrisTest):
         cell_method_strings = [
             # "time: maximum (interval: 1 hr comment: first bit "
             # "time: mean (interval: 1 day comment: second bit)",
+            "time",
             "time: (interval: 1 hr comment: first bit) "
             "time: mean (interval: 1 day comment: second bit)",
             "time: maximum (interval: 1 hr comment: first bit) "

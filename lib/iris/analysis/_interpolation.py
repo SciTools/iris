@@ -123,7 +123,7 @@ def get_xy_coords(cube, dim_coords=False):
     ----------
     cube : :class:`iris.cube.Cube`
         An instance of :class:`iris.cube.Cube`.
-    dim_coords : bool, optional, default=False
+    dim_coords : bool, default=False
         Set this to True to only return dimension coordinates. Defaults to
         False.
 
@@ -180,7 +180,7 @@ class RectilinearInterpolator:
             The :class:`iris.cube.Cube` which is to be interpolated.
         coords :
             The names or coordinate instances which are to be
-            interpolated over
+            interpolated over.
         method :
             Either 'linear' or 'nearest'.
         extrapolation_mode : str
@@ -477,12 +477,12 @@ class RectilinearInterpolator:
         sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
-            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
         data :
             The data to interpolate - not necessarily the data from the cube
             that was used to construct this interpolator. If the data has
             fewer dimensions, then data_dims must be defined.
-        data_dims : optional, default=None
+        data_dims : optional
             The dimensions of the given data array in terms of the original
             cube passed through to this interpolator's constructor. If None,
             the data dimensions must map one-to-one onto the increasing
@@ -573,8 +573,8 @@ class RectilinearInterpolator:
         sample_points :
             A list of N iterables, where N is the number of coordinates
             passed to the constructor.
-            [sample_values_for_coord_0, sample_values_for_coord_1, ...]
-        collapse_scalar : bool, optional
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
+        collapse_scalar : bool, default=True
             Whether to collapse the dimension of the scalar sample points
             in the resulting cube. Default is True.
 

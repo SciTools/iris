@@ -7,6 +7,7 @@
 For now, we are still emulating various aspects of how our original Pyke-based
 code used the Pyke 'engine' to hold translation data, both Pyke-specific and
 not :
+
 1) basic details from the iris.fileformats.cf analysis of the file are
    recorded before translating each output cube, using
    "engine.assert_case_specific_fact(name, args)".
@@ -42,9 +43,9 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
-import iris.exceptions
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
+import iris.warnings
 
 from . import helpers as hh
 
@@ -53,8 +54,8 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 class _WarnComboCfLoadIgnoring(
-    iris.exceptions.IrisCfLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisCfLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -62,8 +63,8 @@ class _WarnComboCfLoadIgnoring(
 
 
 class _WarnComboLoadIgnoring(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 

@@ -22,6 +22,7 @@ On load, any fill-value or missing data value defined in the loaded dataset
 should be used as the ``fill_value`` of the NumPy masked array data attribute of the
 :class:`~iris.cube.Cube`. This will only appear when the cube's data is realised.
 
+.. _missing_data_saving:
 
 Saving
 ------
@@ -37,7 +38,8 @@ For example::
 .. note::
     Not all savers accept the ``fill_value`` keyword argument.
 
-Iris will check for and issue warnings of fill-value 'collisions'.
+Iris will check for and issue warnings of fill-value 'collisions' (exception:
+**NetCDF**, see the heading below).
 This basically means that whenever there are unmasked values that would read back
 as masked, we issue a warning and suggest a workaround.
 
@@ -50,6 +52,8 @@ This will occur in the following cases:
 
 NetCDF
 ~~~~~~
+
+:term:`NetCDF Format`
 
 NetCDF is a special case, because all ordinary variable data is "potentially masked",
 owing to the use of default fill values. The default fill-value used depends on the type
@@ -64,6 +68,16 @@ The exceptions to this are:
 * Small integers create problems by *not* having the exemption applied to byte data.
   Thus, in principle, ``int32`` data cannot use the full range of 2**16 valid values.
 
+Warnings are not issued for NetCDF fill value collisions. Increasingly large
+and complex parallel I/O operations unfortunately made this feature
+un-maintainable and it was retired in Iris 3.9 (:pull:`5833`).
+
+If you need to know about collisions then you can perform your own checks ahead
+of saving. Such operations can be run lazily (:term:`Lazy Data`). Here is an
+example::
+
+    >>> default_fill = netCDF4.default_fillvals[my_cube.dtype.str[1:]]
+    >>> fill_present = (my_cube.lazy_data() == default_fill).any().compute()
 
 Merging
 -------

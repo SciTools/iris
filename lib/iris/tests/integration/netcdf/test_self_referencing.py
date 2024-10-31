@@ -15,8 +15,8 @@ from unittest import mock
 import numpy as np
 
 import iris
-from iris.exceptions import IrisCfMissingVarWarning
 from iris.fileformats.netcdf import _thread_safe_nc
+from iris.warnings import IrisCfMissingVarWarning
 
 
 @tests.skip_data

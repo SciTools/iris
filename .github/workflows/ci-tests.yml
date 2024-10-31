@@ -35,22 +35,23 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.11"]
+        python-version: ["3.12"]
         session: ["doctest", "gallery", "linkcheck"]
         include:
           - os: "ubuntu-latest"
-            python-version: "3.11"
+            python-version: "3.12"
             session: "tests"
             coverage: "--coverage"
           - os: "ubuntu-latest"
-            python-version: "3.10"
+            python-version: "3.11"
             session: "tests"
           - os: "ubuntu-latest"
-            python-version: "3.9"
+            python-version: "3.10"
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.22"
+      # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
+      IRIS_TEST_DATA_VERSION: "2.28"
       ENV_NAME: "ci-tests"
 
     steps:
@@ -68,14 +69,14 @@ jobs:
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
         with:
-          cache_build: 0
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
@@ -83,15 +84,14 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
-          channels: conda-forge,defaults
+          channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
-          use-only-tar-bz2: true
 
       - name: "conda environment cache"
         uses: ./.github/workflows/composite/conda-env-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
@@ -104,14 +104,14 @@ jobs:
       - name: "cartopy cache"
         uses: ./.github/workflows/composite/cartopy-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          cache_build: 2
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
@@ -136,9 +136,13 @@ jobs:
       - name: "iris ${{ matrix.session }}"
         env:
           PY_VER: ${{ matrix.python-version }}
+          # Force coloured output on GitHub Actions.
+          PY_COLORS: "1"
         run: |
           nox --session ${{ matrix.session }} -- --verbose ${{ matrix.coverage }}
 
-      - name: Upload coverage report
-        uses: codecov/codecov-action@v3
+      - name: "upload coverage report"
         if: ${{ matrix.coverage }}
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

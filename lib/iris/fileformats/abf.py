@@ -65,11 +65,14 @@ class ABFField:
     def __init__(self, filename):
         """Create an ABFField object from the given filename.
 
-        Args:
+        Parameters
+        ----------
+        filename : str
+            An ABF filename.
 
-            * filename - An ABF filename.
-
-        Example::
+        Examples
+        --------
+        ::
 
             field = ABFField("AVHRRBUVI01.1985feba.abl")
 
@@ -194,14 +197,15 @@ class ABFField:
 def load_cubes(filespecs, callback=None):
     """Load cubes from a list of ABF filenames.
 
-    Args:
+    Parameters
+    ----------
+    filenames :
+        List of ABF filenames to load.
+    callback : optional
+        A function that can be passed to :func:`iris.io.run_callback`.
 
-    * filenames - list of ABF filenames to load
-
-    Kwargs:
-
-    * callback - a function that can be passed to :func:`iris.io.run_callback`
-
+    Notes
+    -----
     .. note::
 
         The resultant cubes may not be in the same order as in the file.

@@ -4,70 +4,69 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the function :func:`iris._lazy data.as_lazy_data`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from unittest import mock
 
 import dask.array as da
 import dask.config
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import _optimum_chunksize, as_lazy_data
 
 
-class Test_as_lazy_data(tests.IrisTest):
+class Test_as_lazy_data:
     def test_lazy(self):
         data = da.from_array(np.arange(24).reshape((2, 3, 4)), chunks="auto")
         result = as_lazy_data(data)
-        self.assertIsInstance(result, da.core.Array)
+        assert isinstance(result, da.core.Array)
 
     def test_real(self):
         data = np.arange(24).reshape((2, 3, 4))
         result = as_lazy_data(data)
-        self.assertIsInstance(result, da.core.Array)
+        assert isinstance(result, da.core.Array)
 
     def test_masked(self):
         data = np.ma.masked_greater(np.arange(24), 10)
         result = as_lazy_data(data)
-        self.assertIsInstance(result, da.core.Array)
+        assert isinstance(result, da.core.Array)
 
     def test_non_default_chunks(self):
         data = np.arange(24)
         chunks = (12,)
         lazy_data = as_lazy_data(data, chunks=chunks)
         (result,) = np.unique(lazy_data.chunks)
-        self.assertEqual(result, 24)
+        assert result == 24
 
-    def test_dask_chunking(self):
+    def test_dask_chunking(self, mocker):
         data = np.arange(24)
         chunks = (12,)
-        optimum = self.patch("iris._lazy_data._optimum_chunksize")
+        optimum = mocker.patch("iris._lazy_data._optimum_chunksize")
         optimum.return_value = chunks
-        _ = as_lazy_data(data, chunks=None, dask_chunking=True)
-        self.assertFalse(optimum.called)
-
-    def test_dask_chunking_error(self):
-        data = np.arange(24)
-        chunks = (12,)
-        optimum = self.patch("iris._lazy_data._optimum_chunksize")
-        optimum.return_value = chunks
-        with self.assertRaisesRegex(
-            ValueError,
-            r"Dask chunking chosen, but chunks already assigned value",
-        ):
-            as_lazy_data(data, chunks=chunks, dask_chunking=True)
+        _ = as_lazy_data(data, chunks="auto")
+        assert not optimum.called
 
     def test_with_masked_constant(self):
         masked_data = ma.masked_array([8], mask=True)
         masked_constant = masked_data[0]
         result = as_lazy_data(masked_constant)
-        self.assertIsInstance(result, da.core.Array)
+        assert isinstance(result, da.core.Array)
+
+    def test_missing_meta(self):
+        class MyProxy:
+            pass
+
+        data = MyProxy()
+
+        with pytest.raises(
+            ValueError,
+            match=r"For performance reasons, `meta` cannot be `None` if `data` is anything other than a Numpy "
+            r"or Dask array.",
+        ):
+            as_lazy_data(data)
 
 
-class Test__optimised_chunks(tests.IrisTest):
+class Test__optimised_chunks:
     # Stable, known chunksize for testing.
     FIXED_CHUNKSIZE_LIMIT = 1024 * 1024 * 64
 
@@ -89,7 +88,7 @@ class Test__optimised_chunks(tests.IrisTest):
         for shape, expected in given_shapes_and_resulting_chunks:
             chunks = _optimum_chunksize(shape, shape, limit=self.FIXED_CHUNKSIZE_LIMIT)
             msg = err_fmt.format(shape, chunks, expected)
-            self.assertEqual(chunks, expected, msg)
+            assert chunks == expected, msg
 
     def test_chunk_size_expanding(self):
         # Check the expansion of small chunks, (with a known size limit).
@@ -107,7 +106,7 @@ class Test__optimised_chunks(tests.IrisTest):
                 chunks=shape, shape=fullshape, limit=self.FIXED_CHUNKSIZE_LIMIT
             )
             msg = err_fmt.format(fullshape, shape, chunks, expected)
-            self.assertEqual(chunks, expected, msg)
+            assert chunks == expected, msg
 
     def test_chunk_expanding_equal_division(self):
         # Check that expansion chooses equal chunk sizes as far as possible.
@@ -145,41 +144,34 @@ class Test__optimised_chunks(tests.IrisTest):
                 chunks=chunks, shape=shape, limit=limit, dtype=np.dtype("b1")
             )
             msg = err_fmt_main.format(chunks, shape, limit, result, expected_result)
-            self.assertEqual(result, expected_result, msg)
+            assert result == expected_result, msg
 
     def test_default_chunksize(self):
         # Check that the "ideal" chunksize is taken from the dask config.
         with dask.config.set({"array.chunk-size": "20b"}):
             chunks = _optimum_chunksize((1, 8), shape=(400, 20), dtype=np.dtype("f4"))
-            self.assertEqual(chunks, (1, 4))
+            assert chunks == (1, 4)
 
-    def test_default_chunks_limiting(self):
+    def test_default_chunks_limiting(self, mocker):
         # Check that chunking is still controlled when no specific 'chunks'
         # is passed.
-        limitcall_patch = self.patch("iris._lazy_data._optimum_chunksize")
+        limitcall_patch = mocker.patch("iris._lazy_data._optimum_chunksize")
         test_shape = (3, 2, 4)
         data = self._dummydata(test_shape)
         as_lazy_data(data)
-        self.assertEqual(
-            limitcall_patch.call_args_list,
-            [
-                mock.call(
-                    list(test_shape),
-                    shape=test_shape,
-                    dtype=np.dtype("f4"),
-                    dims_fixed=None,
-                )
-            ],
-        )
+        assert limitcall_patch.call_args_list == [
+            mock.call(
+                list(test_shape),
+                shape=test_shape,
+                dtype=np.dtype("f4"),
+                dims_fixed=None,
+            )
+        ]
 
-    def test_shapeless_data(self):
+    def test_shapeless_data(self, mocker):
         # Check that chunk optimisation is skipped if shape contains a zero.
-        limitcall_patch = self.patch("iris._lazy_data._optimum_chunksize")
+        limitcall_patch = mocker.patch("iris._lazy_data._optimum_chunksize")
         test_shape = (2, 1, 0, 2)
         data = self._dummydata(test_shape)
         as_lazy_data(data, chunks=test_shape)
-        self.assertFalse(limitcall_patch.called)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert not limitcall_patch.called

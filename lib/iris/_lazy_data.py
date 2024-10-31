@@ -9,6 +9,8 @@ To avoid replicating implementation-dependent test and conversion code.
 """
 
 from functools import lru_cache, wraps
+from types import ModuleType
+from typing import Sequence
 
 import dask
 import dask.array as da
@@ -41,6 +43,11 @@ def is_lazy_data(data):
     return result
 
 
+def is_masked_data(data: np.ndarray | da.Array) -> bool:
+    """Return whether the argument is a masked array."""
+    return isinstance(da.utils.meta_from_array(data), np.ma.MaskedArray)
+
+
 def is_lazy_masked_data(data):
     """Determine whether managed data is lazy and masked.
 
@@ -48,7 +55,7 @@ def is_lazy_masked_data(data):
     underlying array is of masked type.  Otherwise return False.
 
     """
-    return is_lazy_data(data) and ma.isMA(da.utils.meta_from_array(data))
+    return is_lazy_data(data) and is_masked_data(data)
 
 
 @lru_cache
@@ -72,12 +79,12 @@ def _optimum_chunksize_internals(
         Pre-existing chunk shape of the target data.
     shape : tuple of int
         The full array shape of the target data.
-    limit : int
+    limit : int, optional
         The 'ideal' target chunk size, in bytes.  Default from
         :mod:`dask.config`.
     dtype : np.dtype
         Numpy dtype of target data.
-    dims_fixed : list of bool
+    dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or 'shape'.
         'True' values indicate a dimension that can not be changed, i.e. that
         element of the result must equal the corresponding value in 'chunks' or
@@ -220,9 +227,7 @@ def _optimum_chunksize(
     )
 
 
-def as_lazy_data(
-    data, chunks=None, asarray=False, dims_fixed=None, dask_chunking=False
-):
+def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
     """Convert the input array `data` to a :class:`dask.array.Array`.
 
     Parameters
@@ -232,17 +237,18 @@ def as_lazy_data(
         This will be converted to a :class:`dask.array.Array`.
     chunks : list of int, optional
         If present, a source chunk shape, e.g. for a chunked netcdf variable.
-    asarray : bool, optional
+        If set to "auto", Iris chunking optimisation will be bypassed, and dask's
+        default chunking will be used instead.
+    asarray : bool, default=False
         If True, then chunks will be converted to instances of `ndarray`.
         Set to False (default) to pass passed chunks through unchanged.
+    meta : numpy.ndarray, optional
+        Empty ndarray created with same NumPy backend, ndim and dtype as the
+        Dask Array being created.
     dims_fixed : list of bool, optional
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
-    dask_chunking : bool, optional
-        If True, Iris chunking optimisation will be bypassed, and dask's default
-        chunking will be used instead. Including a value for chunks while dask_chunking
-        is set to True will result in a failure.
 
     Returns
     -------
@@ -252,19 +258,22 @@ def as_lazy_data(
     Notes
     -----
     The result chunk size is a multiple of 'chunks', if given, up to the
-    dask default chunksize, i.e. `dask.config.get('array.chunk-size'),
+    dask default chunksize, i.e. `dask.config.get('array.chunk-size')`,
     or the full data shape if that is smaller.
     If 'chunks' is not given, the result has chunks of the full data shape,
     but reduced by a factor if that exceeds the dask default chunksize.
 
     """
-    if dask_chunking:
-        if chunks is not None:
-            raise ValueError(
-                f"Dask chunking chosen, but chunks already assigned value {chunks}"
-            )
-        lazy_params = {"asarray": asarray, "meta": np.ndarray}
-    else:
+    if isinstance(data, ma.core.MaskedConstant):
+        data = ma.masked_array(data.data, mask=data.mask)
+
+    if meta is None and not isinstance(data, (np.ndarray, da.Array)):
+        raise ValueError(
+            "For performance reasons, `meta` cannot be `None` if `data` is "
+            "anything other than a Numpy or Dask array."
+        )
+
+    if chunks != "auto":
         if chunks is None:
             # No existing chunks : Make a chunk the shape of the entire input array
             # (but we will subdivide it if too big).
@@ -281,15 +290,9 @@ def as_lazy_data(
                 dtype=data.dtype,
                 dims_fixed=dims_fixed,
             )
-        lazy_params = {
-            "chunks": chunks,
-            "asarray": asarray,
-            "meta": np.ndarray,
-        }
-    if isinstance(data, ma.core.MaskedConstant):
-        data = ma.masked_array(data.data, mask=data.mask)
+
     if not is_lazy_data(data):
-        data = da.from_array(data, **lazy_params)
+        data = da.from_array(data, chunks=chunks, asarray=asarray, meta=meta)
     return data
 
 
@@ -338,7 +341,7 @@ def as_concrete_data(data):
     Parameters
     ----------
     data :
-        A dask array, NumPy `ndarray` or masked array
+        A dask array, NumPy `ndarray` or masked array.
 
     Returns
     -------
@@ -351,7 +354,95 @@ def as_concrete_data(data):
     return data
 
 
-def multidim_lazy_stack(stack):
+def _combine(
+    arrays: Sequence[da.Array | np.ndarray],
+    operation: str,
+    **kwargs,
+) -> da.Array | np.ndarray:
+    """Combine multiple arrays into a single array.
+
+    Provides enhanced versions of :func:`~dask.array.concatenate` or :func:`~dask.array.stack`,
+    which ensure that all computed results are masked-array, if the combined .meta is masked.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays to combine.
+    operation :
+        The combination operation to apply.
+    **kwargs :
+        Any keyword arguments to pass to the combination operation.
+
+    """
+    lazy = any(is_lazy_data(a) for a in arrays)
+    masked = any(is_masked_data(a) for a in arrays)
+
+    array_module: ModuleType = np
+    if masked:
+        if lazy:
+            # Avoid inconsistent array type when slicing resulting array
+            arrays = tuple(
+                a if is_lazy_masked_data(a) else da.ma.masked_array(a) for a in arrays
+            )
+        else:
+            # Avoid dropping the masks
+            array_module = np.ma
+
+    func = getattr(array_module, operation)
+    return func(arrays, **kwargs)
+
+
+def concatenate(
+    arrays: Sequence[da.Array | np.ndarray],
+    axis: int = 0,
+) -> da.Array | np.ndarray:
+    """Concatenate a sequence of arrays along a new axis.
+
+    Improves on the regular :func:`dask.array.concatenate` by always respecting a masked
+    ``.meta``, as described for :func:`_combine`.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays must have the same shape, except in the dimension
+        corresponding to `axis` (the first, by default).
+    axis :
+        Dimension along which to align all of the arrays. If axis is None,
+        arrays are flattened before use.
+
+    Returns
+    -------
+    The concatenated array.
+
+    """
+    return _combine(arrays, operation="concatenate", axis=axis)
+
+
+def stack(
+    arrays: Sequence[da.Array | np.ndarray],
+    axis: int = 0,
+) -> da.Array | np.ndarray:
+    """Stack a sequence of arrays along a new axis.
+
+    Improves on the regular :func:`dask.array.stack` by always respecting a masked
+    ``.meta``, as described for :func:`_combine`.
+
+    Parameters
+    ----------
+    arrays :
+        The arrays must have the same shape.
+    axis :
+        Dimension along which to align all of the arrays.
+
+    Returns
+    -------
+    The stacked array.
+
+    """
+    return _combine(arrays, operation="stack", axis=axis)
+
+
+def multidim_lazy_stack(arr):
     """Recursively build a multidimensional stacked dask array.
 
     This is needed because :meth:`dask.array.Array.stack` only accepts a
@@ -359,7 +450,7 @@ def multidim_lazy_stack(stack):
 
     Parameters
     ----------
-    stack :
+    arr :
         An ndarray of :class:`dask.array.Array`.
 
     Returns
@@ -367,15 +458,15 @@ def multidim_lazy_stack(stack):
     The input array converted to a lazy :class:`dask.array.Array`.
 
     """
-    if stack.ndim == 0:
+    if arr.ndim == 0:
         # A 0-d array cannot be stacked.
-        result = stack.item()
-    elif stack.ndim == 1:
+        result = arr.item()
+    elif arr.ndim == 1:
         # Another base case : simple 1-d goes direct in dask.
-        result = da.stack(list(stack))
+        result = stack(list(arr))
     else:
         # Recurse because dask.stack does not do multi-dimensional.
-        result = da.stack([multidim_lazy_stack(subarray) for subarray in stack])
+        result = stack([multidim_lazy_stack(subarray) for subarray in arr])
     return result
 
 
@@ -446,14 +537,16 @@ def lazy_elementwise(lazy_array, elementwise_op):
     # call may cast to float, or not, depending on unit equality : Thus, it's
     # much safer to get udunits to decide that for us.
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
+    meta = da.utils.meta_from_array(lazy_array).astype(dtype)
 
-    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype)
+    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype, meta=meta)
 
 
-def map_complete_blocks(src, func, dims, out_sizes):
+def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
     """Apply a function to complete blocks.
 
     Complete means that the data is not chunked along the chosen dimensions.
+    Uses :func:`dask.array.map_blocks` to implement the mapping.
 
     Parameters
     ----------
@@ -465,27 +558,52 @@ def map_complete_blocks(src, func, dims, out_sizes):
         Dimensions that cannot be chunked.
     out_sizes : tuple of int
         Output size of dimensions that cannot be chunked.
+    dtype :
+        Output dtype.
+    *args : tuple
+        Additional arguments to pass to `func`.
+    **kwargs : dict
+        Additional keyword arguments to pass to `func`.
+
+    Returns
+    -------
+    Array-like
+
+    See Also
+    --------
+    :func:`dask.array.map_blocks` : The function used for the mapping.
 
     """
+    data = None
+    result = None
+
     if is_lazy_data(src):
         data = src
     elif not hasattr(src, "has_lazy_data"):
         # Not a lazy array and not a cube.  So treat as ordinary numpy array.
-        return func(src)
+        result = func(src, *args, **kwargs)
     elif not src.has_lazy_data():
-        return func(src.data)
+        result = func(src.data, *args, **kwargs)
     else:
         data = src.lazy_data()
 
-    # Ensure dims are not chunked
-    in_chunks = list(data.chunks)
-    for dim in dims:
-        in_chunks[dim] = src.shape[dim]
-    data = data.rechunk(in_chunks)
+    if result is None and data is not None:
+        # Ensure dims are not chunked
+        in_chunks = list(data.chunks)
+        for dim in dims:
+            in_chunks[dim] = src.shape[dim]
+        data = data.rechunk(in_chunks)
 
-    # Determine output chunks
-    out_chunks = list(data.chunks)
-    for dim, size in zip(dims, out_sizes):
-        out_chunks[dim] = size
+        # Determine output chunks
+        out_chunks = list(data.chunks)
+        for dim, size in zip(dims, out_sizes):
+            out_chunks[dim] = size
 
-    return data.map_blocks(func, chunks=out_chunks, dtype=src.dtype)
+        # Assume operation preserves mask.
+        meta = da.utils.meta_from_array(data).astype(dtype)
+
+        result = data.map_blocks(
+            func, *args, chunks=out_chunks, meta=meta, dtype=dtype, **kwargs
+        )
+
+    return result

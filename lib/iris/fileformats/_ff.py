@@ -5,17 +5,17 @@
 """Provides UK Met Office Fields File (FF) format specific capabilities."""
 
 import os
+from typing import Any
 import warnings
 
 import numpy as np
 
 from iris.exceptions import (
-    IrisDefaultingWarning,
-    IrisLoadWarning,
     NotYetImplementedError,
 )
 from iris.fileformats._ff_cross_references import STASH_TRANS
 
+from ..warnings import IrisDefaultingWarning, IrisLoadWarning
 from . import pp
 
 IMDI = -32768
@@ -184,7 +184,7 @@ class Grid:
 
         Returns
         -------
-            A 2-tuple of X-vector, Y-vector.
+        A 2-tuple of X-vector, Y-vector.
 
         """
         x_p, x_u = self._x_vectors()
@@ -223,7 +223,7 @@ class ArakawaC(Grid):
 
         Returns
         -------
-            A 2-tuple of BZX, BDX.
+        A 2-tuple of BZX, BDX.
 
         """
         bdx = self.ew_spacing
@@ -245,7 +245,7 @@ class ArakawaC(Grid):
 
         Returns
         -------
-            A 2-tuple of BZY, BDY.
+        A 2-tuple of BZY, BDY.
 
         """
         bdy = self.ns_spacing
@@ -307,6 +307,7 @@ class FFHeader:
         ----------
         filename : str
             Specify the name of the FieldsFile.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
         Returns
         -------
@@ -370,9 +371,22 @@ class FFHeader:
                     setattr(self, elem, res)
 
     def __str__(self):
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lookup_table`` is a tuple of NumPy scalars.
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         attributes = []
         for name, _ in FF_HEADER:
-            attributes.append("    {}: {}".format(name, getattr(self, name)))
+            attributes.append(f"    {name}: {_str_tuple(getattr(self, name))}")
         return "FF Header:\n" + "\n".join(attributes)
 
     def __repr__(self):
@@ -445,9 +459,10 @@ class FF2PP:
         ----------
         filename : str
             Specify the name of the FieldsFile.
-        read_data : bool, optional
+        read_data : bool, default=False
             Specify whether to read the associated PPField data within
             the FieldsFile.  Default value is False.
+        word_depth : int, default=DEFAULT_FF_WORD_DEPTH
 
         Returns
         -------
@@ -840,9 +855,9 @@ def load_cubes(filenames, callback, constraints=None):
     Parameters
     ----------
     filenames :
-        List of fields files filenames to load
+        List of fields files filenames to load.
     callback :
-        A function which can be passed on to :func:`iris.io.run_callback`
+        A function which can be passed on to :func:`iris.io.run_callback`.
 
     Notes
     -----
@@ -863,8 +878,8 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
 
     See Also
     --------
-    :func:`load_cubes`
-        For keyword details
+    :func:`load_cubes` :
+        For keyword details.
 
     """
     return pp._load_cubes_variable_loader(

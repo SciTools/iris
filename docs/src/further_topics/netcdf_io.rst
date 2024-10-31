@@ -66,7 +66,7 @@ creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
-There are three context manangers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
+There are three context managers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
 :meth:`~iris.fileformats.netcdf.loader.ChunkControl.set`. This allows you to specify the chunksize for each dimension,
 and to specify a ``var_name`` specifically to change.
 
@@ -134,7 +134,49 @@ Deferred Saving
 TBC
 
 
-Guess Axis
------------
+Guessing Coordinate Axes
+------------------------
 
-TBC
+Iris will attempt to add an ``axis`` attribute when saving any coordinate
+variable in a NetCDF file. E.g:
+
+::
+
+    float longitude(longitude) ;
+        longitude:axis = "X" ;
+
+This is achieved by calling :func:`iris.util.guess_coord_axis` on each
+coordinate being saved.
+
+Disabling Axis-Guessing
+^^^^^^^^^^^^^^^^^^^^^^^
+
+For some coordinates, :func:`~iris.util.guess_coord_axis` will derive an
+axis that is not appropriate. If you have such a coordinate, you can disable
+axis-guessing by setting the coordinate's
+:attr:`~iris.coords.Coord.ignore_axis` property to ``True``.
+
+One example (from https://github.com/SciTools/iris/issues/5003) is a
+coordinate describing pressure thresholds, measured in hecto-pascals.
+Iris interprets pressure units as indicating a Z-dimension coordinate, since
+pressure is most commonly used to describe altitude/depth. But a
+**pressure threshold** coordinate is instead describing alternate
+**scenarios** - not a spatial dimension at all - and it is therefore
+inappropriate to assign an axis to it.
+
+Worked example:
+
+.. doctest::
+
+    >>> from iris.coords import DimCoord
+    >>> from iris.util import guess_coord_axis
+    >>> my_coord = DimCoord(
+    ...    points=[1000, 1010, 1020],
+    ...    long_name="pressure_threshold",
+    ...    units="hPa",
+    ... )
+    >>> print(guess_coord_axis(my_coord))
+    Z
+    >>> my_coord.ignore_axis = True
+    >>> print(guess_coord_axis(my_coord))
+    None
