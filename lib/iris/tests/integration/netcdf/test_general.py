@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -29,6 +30,7 @@ from iris.fileformats.netcdf import Saver
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+import iris.warnings
 
 nc = threadsafe_nc.netCDF4
 
@@ -138,7 +140,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             warning_messages = [
                 warn
                 for warn in warning_messages
-                if isinstance(warn, iris.exceptions.IrisUnknownCellMethodWarning)
+                if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
             ]
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
@@ -486,37 +488,38 @@ class TestDatasetAndPathSaves(tests.IrisTest):
 
 @tests.skip_data
 class TestWarningRepeats(tests.IrisTest):
-    def test_datum_once(self):
-        """Tests for warnings being duplicated.
+    def test_warning_repeats(self):
+        """Confirm Iris load does not break Python duplicate warning handling."""
+        # units.nc is designed for testing Iris' 'ignoring invalid units'
+        #  warning; it contains two variables with invalid units, producing two
+        #  unique warnings (due to two different messages).
+        file_path = tests.get_data_path(("NetCDF", "testing", "units.nc"))
 
-        Notes
-        -----
-        This test relies on `iris.load` throwing a warning. This warning might
-        be removed in the future, in which case `assert len(record) == 2 should`
-        be change to `assert len(record) == 1`.
-
-        toa_brightness_temperature.nc has an AuxCoord with lazy data, and triggers a
-        specific part of dask which contains a `catch_warnings()` call which
-        causes warnings to be repeated, and so has been removed from the
-        `fnames` list until a solution is found for such a file.
-
-        """
-        #
-        fnames = [
-            "false_east_north_merc.nc",
-            "non_unit_scale_factor_merc.nc",
-            # toa_brightness_temperature.nc,
-        ]
-        fpaths = [
-            tests.get_data_path(("NetCDF", "mercator", fname)) for fname in fnames
-        ]
+        def _raise_warning() -> None:
+            # Contain in function so warning always has identical line number.
+            warnings.warn("Dummy warning", category=iris.warnings.IrisUserWarning)
 
         with warnings.catch_warnings(record=True) as record:
             warnings.simplefilter("default")
-            for fpath in fpaths:
-                iris.load(fpath)
-                warnings.warn("Dummy warning", category=iris.exceptions.IrisUserWarning)
-        assert len(record) == 2
+
+            # Warn before Iris has been invoked.
+            _raise_warning()
+            assert len(record) == 1
+
+            # This Iris call should raise 2 warnings and should NOT affect
+            #  Python's duplicate warning handling.
+            _ = iris.load(file_path)
+            assert len(record) == 3
+            # Raise a duplicate warning.
+            _raise_warning()
+            assert len(record) == 3
+
+            # Repeated identical calls should only raise duplicate warnings
+            #  and therefore not affect the record.
+            for i in range(2):
+                _ = iris.load(file_path)
+                _raise_warning()
+            assert len(record) == 3
 
 
 if __name__ == "__main__":

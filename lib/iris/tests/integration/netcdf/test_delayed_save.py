@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for delayed saving."""
-import re
+
 import warnings
 
 from cf_units import Unit
@@ -15,7 +15,6 @@ import numpy as np
 import pytest
 
 import iris
-from iris.exceptions import IrisSaverFillValueWarning
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 import iris.tests
 from iris.tests.stock import realistic_4d
@@ -184,39 +183,12 @@ class Test__lazy_stream_data:
         cube = self.make_testcube(
             include_lazy_content=True, ensure_fillvalue_collision=True
         )
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            result = iris.save(cube, output_path, compute=not save_is_delayed)
+        result = iris.save(cube, output_path, compute=not save_is_delayed)
 
         if not save_is_delayed:
             assert result is None
-            issued_warnings = [log.message for log in logged_warnings]
         else:
-            assert result is not None
-            assert len(logged_warnings) == 0
-            with warnings.catch_warnings(record=True) as logged_warnings:
-                # The compute *returns* warnings from the delayed operations.
-                issued_warnings = result.compute()
-            issued_warnings = [log.message for log in logged_warnings] + issued_warnings
-
-        warning_messages = [warning.args[0] for warning in issued_warnings]
-        if scheduler_type == "DistributedScheduler":
-            # Ignore any "large data transfer" messages generated,
-            # specifically when testing with the Distributed scheduler.
-            # These may not always occur and don't reflect something we want to
-            # test for.
-            large_transfer_message_regex = re.compile(
-                "Sending large graph.* may cause some slowdown", re.DOTALL
-            )
-            warning_messages = [
-                message
-                for message in warning_messages
-                if not large_transfer_message_regex.search(message)
-            ]
-
-        # In all cases, should get 2 fill value warnings overall.
-        assert len(warning_messages) == 2
-        expected_msg = "contains unmasked data points equal to the fill-value"
-        assert all(expected_msg in message for message in warning_messages)
+            assert isinstance(result, Delayed)
 
     def test_time_of_writing(self, save_is_delayed, output_path, scheduler_type):
         # Check when lazy data is *actually* written :
@@ -289,49 +261,6 @@ class Test__lazy_stream_data:
             assert np.all(~ancil_mask)
             assert np.all(~cm_mask)
 
-    @pytest.mark.parametrize(
-        "warning_type", ["WarnMaskedBytes", "WarnFillvalueCollision"]
-    )
-    def test_fill_warnings(self, warning_type, output_path, save_is_delayed):
-        # Test collision warnings for data with fill-value collisions, or for masked
-        # byte data.
-        if warning_type == "WarnFillvalueCollision":
-            make_fv_collide = True
-            make_maskedbytes = False
-            expected_msg = "contains unmasked data points equal to the fill-value"
-        else:
-            assert warning_type == "WarnMaskedBytes"
-            make_fv_collide = False
-            make_maskedbytes = True
-            expected_msg = "contains byte data with masked points"
-
-        cube = self.make_testcube(
-            include_lazy_content=True,
-            ensure_fillvalue_collision=make_fv_collide,
-            data_is_maskedbytes=make_maskedbytes,
-        )
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            result = iris.save(cube, output_path, compute=not save_is_delayed)
-
-        result_warnings = [
-            log.message
-            for log in logged_warnings
-            if isinstance(log.message, IrisSaverFillValueWarning)
-        ]
-
-        if save_is_delayed:
-            # Should have had *no* fill-warnings in the initial save.
-            assert len(result_warnings) == 0
-            # Complete the operation now
-            with warnings.catch_warnings():
-                # NOTE: warnings should *not* be issued here, instead they are returned.
-                warnings.simplefilter("error", category=IrisSaverFillValueWarning)
-                result_warnings = result.compute()
-
-        # Either way, we should now have 2 similar warnings.
-        assert len(result_warnings) == 2
-        assert all(expected_msg in warning.args[0] for warning in result_warnings)
-
     def test_no_delayed_writes(self, output_path):
         # Just check that a delayed save returns a usable 'delayed' object, even when
         # there is no lazy content = no delayed writes to perform.
@@ -339,4 +268,3 @@ class Test__lazy_stream_data:
         warnings.simplefilter("error")
         result = iris.save(cube, output_path, compute=False)
         assert isinstance(result, Delayed)
-        assert result.compute() == []

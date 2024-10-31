@@ -4,12 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.new_axis`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-# isort: off
-import iris.tests as tests  # noqa
-
-# isort: on
 import copy
 
 import numpy as np
@@ -24,7 +18,7 @@ from iris.util import new_axis
 
 
 class Test:
-    @pytest.fixture
+    @pytest.fixture()
     def stock_cube(self):
         cube = stock.simple_2d_w_cell_measure_ancil_var()
         time = iris.coords.DimCoord([1], standard_name="time")

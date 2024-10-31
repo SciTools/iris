@@ -18,14 +18,17 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
 import os
 import re
+from typing import ClassVar, Optional
 import warnings
 
 import numpy as np
 import numpy.ma as ma
 
-import iris.exceptions
 from iris.fileformats.netcdf import _thread_safe_nc
+from iris.mesh.components import Connectivity
 import iris.util
+import iris.warnings
+from iris.warnings import IrisCfLabelVarWarning, IrisCfMissingVarWarning
 
 #
 # CF parse pattern common to both formula terms and measure CF variables.
@@ -71,7 +74,7 @@ class CFVariable(metaclass=ABCMeta):
 
     #: Name of the netCDF variable attribute that identifies this
     #: CF-netCDF variable.
-    cf_identity = None
+    cf_identity: ClassVar[str | None] = None
 
     def __init__(self, name, data):
         # Accessing the list of netCDF attributes is surprisingly slow.
@@ -119,11 +122,11 @@ class CFVariable(metaclass=ABCMeta):
         ----------
         variables :
             Dictionary of netCDF4.Variable instance by variable name.
-        ignore : optional, default=None
+        ignore : optional
             List of variable names to ignore.
-        target : optional, default=None
+        target : optional
             Name of a single variable to check.
-        warn : optional, default=None
+        warn : bool, default=True
             Issue a warning if a missing variable is referenced.
 
         Returns
@@ -278,7 +281,7 @@ class CFAncillaryDataVariable(CFVariable):
                                 message = "Missing CF-netCDF ancillary data variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
                                     message % (name, nc_var_name),
-                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                    category=iris.warnings.IrisCfMissingVarWarning,
                                 )
                         else:
                             result[name] = CFAncillaryDataVariable(
@@ -300,8 +303,10 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
     Identified by the CF-netCDF variable attribute 'coordinates'.
     Also see :class:`iris.fileformats.cf.CFLabelVariable`.
 
-    Ref: [CF] Chapter 5. Coordinate Systems.
-         [CF] Section 6.2. Alternative Coordinates.
+    Ref:
+
+    * [CF] Chapter 5. Coordinate Systems.
+    * [CF] Section 6.2. Alternative Coordinates.
 
     """
 
@@ -325,7 +330,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
                                 message = "Missing CF-netCDF auxiliary coordinate variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
                                     message % (name, nc_var_name),
-                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                    category=iris.warnings.IrisCfMissingVarWarning,
                                 )
                         else:
                             # Restrict to non-string type i.e. not a CFLabelVariable.
@@ -375,7 +380,7 @@ class CFBoundaryVariable(CFVariable):
                             message = "Missing CF-netCDF boundary variable %r, referenced by netCDF variable %r"
                             warnings.warn(
                                 message % (name, nc_var_name),
-                                category=iris.exceptions.IrisCfMissingVarWarning,
+                                category=iris.warnings.IrisCfMissingVarWarning,
                             )
                     else:
                         result[name] = CFBoundaryVariable(name, variables[name])
@@ -451,7 +456,7 @@ class CFClimatologyVariable(CFVariable):
                             message = "Missing CF-netCDF climatology variable %r, referenced by netCDF variable %r"
                             warnings.warn(
                                 message % (name, nc_var_name),
-                                category=iris.exceptions.IrisCfMissingVarWarning,
+                                category=iris.warnings.IrisCfMissingVarWarning,
                             )
                     else:
                         result[name] = CFClimatologyVariable(name, variables[name])
@@ -554,8 +559,10 @@ class _CFFormulaTermsVariable(CFVariable):
 
     Identified by the CF-netCDF variable attribute 'formula_terms'.
 
-    Ref: [CF] Section 4.3.2. Dimensional Vertical Coordinate.
-         [CF] Appendix D. Dimensionless Vertical Coordinates.
+    Ref:
+
+    * [CF] Section 4.3.2. Dimensional Vertical Coordinate.
+    * [CF] Appendix D. Dimensionless Vertical Coordinates.
 
     """
 
@@ -589,7 +596,7 @@ class _CFFormulaTermsVariable(CFVariable):
                                 message = "Missing CF-netCDF formula term variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
                                     message % (variable_name, nc_var_name),
-                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                    category=iris.warnings.IrisCfMissingVarWarning,
                                 )
                         else:
                             if variable_name not in result:
@@ -628,8 +635,10 @@ class CFGridMappingVariable(CFVariable):
 
     Identified by the CF-netCDF variable attribute 'grid_mapping'.
 
-    Ref: [CF] Section 5.6. Horizontal Coordinate Reference Systems, Grid Mappings, and Projections.
-         [CF] Appendix F. Grid Mappings.
+    Ref:
+
+    * [CF] Section 5.6. Horizontal Coordinate Reference Systems, Grid Mappings, and Projections.
+    * [CF] Appendix F. Grid Mappings.
 
     """
 
@@ -654,7 +663,7 @@ class CFGridMappingVariable(CFVariable):
                             message = "Missing CF-netCDF grid mapping variable %r, referenced by netCDF variable %r"
                             warnings.warn(
                                 message % (name, nc_var_name),
-                                category=iris.exceptions.IrisCfMissingVarWarning,
+                                category=iris.warnings.IrisCfMissingVarWarning,
                             )
                     else:
                         result[name] = CFGridMappingVariable(name, variables[name])
@@ -695,7 +704,7 @@ class CFLabelVariable(CFVariable):
                                 message = "Missing CF-netCDF label variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
                                     message % (name, nc_var_name),
-                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                    category=iris.warnings.IrisCfMissingVarWarning,
                                 )
                         else:
                             # Register variable, but only allow string type.
@@ -870,7 +879,7 @@ class CFMeasureVariable(CFVariable):
                                 message = "Missing CF-netCDF measure variable %r, referenced by netCDF variable %r"
                                 warnings.warn(
                                     message % (variable_name, nc_var_name),
-                                    category=iris.exceptions.IrisCfMissingVarWarning,
+                                    category=iris.warnings.IrisCfMissingVarWarning,
                                 )
                         else:
                             result[variable_name] = CFMeasureVariable(
@@ -878,6 +887,226 @@ class CFMeasureVariable(CFVariable):
                                 variables[variable_name],
                                 measure,
                             )
+
+        return result
+
+
+class CFUGridConnectivityVariable(CFVariable):
+    """A CF_UGRID connectivity variable.
+
+    A CF_UGRID connectivity variable points to an index variable identifying
+    for every element (edge/face/volume) the indices of its corner nodes. The
+    connectivity array will thus be a matrix of size n-elements x n-corners.
+    For the indexing one may use either 0- or 1-based indexing; the convention
+    used should be specified using a ``start_index`` attribute to the index
+    variable.
+
+    For face elements: the corner nodes should be specified in anticlockwise
+    direction as viewed from above. For volume elements: use the
+    additional attribute ``volume_shape_type`` which points to a flag variable
+    that specifies for every volume its shape.
+
+    Identified by a CF-netCDF variable attribute equal to any one of the values
+    in :attr:`~iris.mesh.Connectivity.UGRID_CF_ROLES`.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = NotImplemented
+    cf_identities = Connectivity.UGRID_CF_ROLES
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID connectivity variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for connectivity variable references, iterating through
+            # the valid cf roles.
+            for identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    # UGRID only allows for one of each connectivity cf role.
+                    name = nc_var_att.strip()
+                    if name not in ignore:
+                        if name not in variables:
+                            message = (
+                                f"Missing CF-UGRID connectivity variable "
+                                f"{name}, referenced by netCDF variable "
+                                f"{nc_var_name}"
+                            )
+                            if warn:
+                                warnings.warn(message, category=IrisCfMissingVarWarning)
+                        else:
+                            # Restrict to non-string type i.e. not a
+                            # CFLabelVariable.
+                            if not _is_str_dtype(variables[name]):
+                                result[name] = CFUGridConnectivityVariable(
+                                    name, variables[name]
+                                )
+                            else:
+                                message = (
+                                    f"Ignoring variable {name}, identified "
+                                    f"as a CF-UGRID connectivity - is a "
+                                    f"CF-netCDF label variable."
+                                )
+                                if warn:
+                                    warnings.warn(
+                                        message, category=IrisCfLabelVarWarning
+                                    )
+
+        return result
+
+
+class CFUGridAuxiliaryCoordinateVariable(CFVariable):
+    """A CF-UGRID auxiliary coordinate variable.
+
+    A CF-UGRID auxiliary coordinate variable is a CF-netCDF auxiliary
+    coordinate variable representing the element (node/edge/face/volume)
+    locations (latitude, longitude or other spatial coordinates, and optional
+    elevation or other coordinates). These auxiliary coordinate variables will
+    have length n-elements.
+
+    For elements other than nodes, these auxiliary coordinate variables may
+    have in turn a ``bounds`` attribute that specifies the bounding coordinates
+    of the element (thereby duplicating the data in the ``node_coordinates``
+    variables).
+
+    Identified by the CF-netCDF variable attribute
+    ``node_``/``edge_``/``face_``/``volume_coordinates``.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = NotImplemented
+    cf_identities = [
+        "node_coordinates",
+        "edge_coordinates",
+        "face_coordinates",
+        "volume_coordinates",
+    ]
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify any CF-UGRID-relevant auxiliary coordinate variables.
+        for nc_var_name, nc_var in target.items():
+            # Check for UGRID auxiliary coordinate variable references.
+            for identity in cls.cf_identities:
+                nc_var_att = getattr(nc_var, identity, None)
+
+                if nc_var_att is not None:
+                    for name in nc_var_att.split():
+                        if name not in ignore:
+                            if name not in variables:
+                                message = (
+                                    f"Missing CF-netCDF auxiliary coordinate "
+                                    f"variable {name}, referenced by netCDF "
+                                    f"variable {nc_var_name}"
+                                )
+                                if warn:
+                                    warnings.warn(
+                                        message,
+                                        category=IrisCfMissingVarWarning,
+                                    )
+                            else:
+                                # Restrict to non-string type i.e. not a
+                                # CFLabelVariable.
+                                if not _is_str_dtype(variables[name]):
+                                    result[name] = CFUGridAuxiliaryCoordinateVariable(
+                                        name, variables[name]
+                                    )
+                                else:
+                                    message = (
+                                        f"Ignoring variable {name}, "
+                                        f"identified as a CF-netCDF "
+                                        f"auxiliary coordinate - is a "
+                                        f"CF-netCDF label variable."
+                                    )
+                                    if warn:
+                                        warnings.warn(
+                                            message,
+                                            category=IrisCfLabelVarWarning,
+                                        )
+
+        return result
+
+
+class CFUGridMeshVariable(CFVariable):
+    """A CF-UGRID mesh variable is a dummy variable for storing topology information as attributes.
+
+    A CF-UGRID mesh variable is a dummy variable for storing topology
+    information as attributes. The mesh variable has the ``cf_role``
+    'mesh_topology'.
+
+    The UGRID conventions describe define the mesh topology as the
+    interconnection of various geometrical elements of the mesh. The pure
+    interconnectivity is independent of georeferencing the individual
+    geometrical elements, but for the practical applications for which the
+    UGRID CF extension is defined, coordinate data will always be added.
+
+    Identified by the CF-netCDF variable attribute 'mesh'.
+
+    .. seealso::
+
+        The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    cf_identity = "mesh"
+
+    @classmethod
+    def identify(cls, variables, ignore=None, target=None, warn=True):
+        result = {}
+        ignore, target = cls._identify_common(variables, ignore, target)
+
+        # Identify all CF-UGRID mesh variables.
+        all_vars = target == variables
+        for nc_var_name, nc_var in target.items():
+            if all_vars:
+                # SPECIAL BEHAVIOUR FOR MESH VARIABLES.
+                # We are looking for all mesh variables. Check if THIS variable
+                #  is a mesh using its own attributes.
+                if getattr(nc_var, "cf_role", "") == "mesh_topology":
+                    result[nc_var_name] = CFUGridMeshVariable(nc_var_name, nc_var)
+
+            # Check for mesh variable references.
+            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+
+            if nc_var_att is not None:
+                # UGRID only allows for 1 mesh per variable.
+                name = nc_var_att.strip()
+                if name not in ignore:
+                    if name not in variables:
+                        message = (
+                            f"Missing CF-UGRID mesh variable {name}, "
+                            f"referenced by netCDF variable {nc_var_name}"
+                        )
+                        if warn:
+                            warnings.warn(message, category=IrisCfMissingVarWarning)
+                    else:
+                        # Restrict to non-string type i.e. not a
+                        # CFLabelVariable.
+                        if not _is_str_dtype(variables[name]):
+                            result[name] = CFUGridMeshVariable(name, variables[name])
+                        else:
+                            message = (
+                                f"Ignoring variable {name}, identified as a "
+                                f"CF-UGRID mesh - is a CF-netCDF label "
+                                f"variable."
+                            )
+                            if warn:
+                                warnings.warn(message, category=IrisCfLabelVarWarning)
 
         return result
 
@@ -973,11 +1202,29 @@ class CFGroup(MutableMapping):
             self.grid_mappings,
             self.labels,
             self.cell_measures,
+            self.connectivities,
+            self.ugrid_coords,
+            self.meshes,
         )
         result = set()
         for variable in non_data_variables:
             result |= set(variable)
         return result
+
+    @property
+    def connectivities(self):
+        """Collection of CF-UGRID connectivity variables."""
+        return self._cf_getter(CFUGridConnectivityVariable)
+
+    @property
+    def ugrid_coords(self):
+        """Collection of CF-UGRID-relevant auxiliary coordinate variables."""
+        return self._cf_getter(CFUGridAuxiliaryCoordinateVariable)
+
+    @property
+    def meshes(self):
+        """Collection of CF-UGRID mesh variables."""
+        return self._cf_getter(CFUGridMeshVariable)
 
     def keys(self):
         """Return the names of all the CF-netCDF variables in the group."""
@@ -1047,9 +1294,11 @@ class CFReader:
         CFGridMappingVariable,
         CFLabelVariable,
         CFMeasureVariable,
+        CFUGridConnectivityVariable,
+        CFUGridAuxiliaryCoordinateVariable,
+        CFUGridMeshVariable,
     )
 
-    # TODO: remove once iris.experimental.ugrid.CFUGridReader is folded in.
     CFGroup = CFGroup
 
     def __init__(self, file_source, warn=False, monotonic=False):
@@ -1077,10 +1326,15 @@ class CFReader:
             warnings.warn(
                 "Optimise CF-netCDF loading by converting data from NetCDF3 "
                 'to NetCDF4 file format using the "nccopy" command.',
-                category=iris.exceptions.IrisLoadWarning,
+                category=iris.warnings.IrisLoadWarning,
             )
 
         self._check_monotonic = monotonic
+
+        self._with_ugrid = True
+        if not self._has_meshes():
+            self._trim_ugrid_variable_types()
+            self._with_ugrid = False
 
         self._translate()
         self._build_cf_groups()
@@ -1098,6 +1352,25 @@ class CFReader:
     def __exit__(self, exc_type, exc_value, traceback):
         # When used as a context-manager, **always** close the file on exit.
         self._close()
+
+    def _has_meshes(self):
+        result = False
+        for variable in self._dataset.variables.values():
+            if hasattr(variable, "mesh") or hasattr(variable, "node_coordinates"):
+                result = True
+                break
+        return result
+
+    def _trim_ugrid_variable_types(self):
+        self._variable_types = (
+            CFAncillaryDataVariable,
+            CFAuxiliaryCoordinateVariable,
+            CFBoundaryVariable,
+            CFClimatologyVariable,
+            CFGridMappingVariable,
+            CFLabelVariable,
+            CFMeasureVariable,
+        )
 
     @property
     def filename(self):
@@ -1166,9 +1439,7 @@ class CFReader:
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
-            # TODO: isinstance(cf_variable, UGridMeshVariable)
-            #  UGridMeshVariable currently in experimental.ugrid - circular import.
-            is_mesh_var = cf_variable.cf_identity == "mesh"
+            is_mesh_var = isinstance(cf_variable, CFUGridMeshVariable)
             ugrid_coord_names = []
             ugrid_coords = getattr(self.cf_group, "ugrid_coords", None)
             if ugrid_coords is not None:
@@ -1176,6 +1447,35 @@ class CFReader:
 
             coordinate_names = list(self.cf_group.coordinates.keys())
             cf_group = self.CFGroup()
+
+            def _span_check(
+                var_name: str, via_formula_terms: Optional[str] = None
+            ) -> None:
+                """Sanity check dimensionality."""
+                var = self.cf_group[var_name]
+                # No span check is necessary if variable is attached to a mesh.
+                if is_mesh_var or var.spans(cf_variable):
+                    cf_group[var_name] = var
+                else:
+                    # Register the ignored variable.
+                    # N.B. 'ignored' variable from enclosing scope.
+                    ignored.add(var_name)
+
+                    text_formula = text_via = ""
+                    if via_formula_terms:
+                        text_formula = " formula terms"
+                        text_via = f" via variable {via_formula_terms}"
+
+                    message = (
+                        f"Ignoring{text_formula} variable {var_name} "
+                        f"referenced by variable {cf_variable.cf_name}"
+                        f"{text_via}: Dimensions {var.dimensions} do not span "
+                        f"{cf_variable.dimensions}"
+                    )
+                    warnings.warn(
+                        message,
+                        category=iris.warnings.IrisCfNonSpanningVarWarning,
+                    )
 
             # Build CF variable relationships.
             for variable_type in self._variable_types:
@@ -1195,28 +1495,8 @@ class CFReader:
                     warn=False,
                 )
                 # Sanity check dimensionality coverage.
-                for cf_name, cf_var in match.items():
-                    # No span check is necessary if variable is attached to a mesh.
-                    if is_mesh_var or cf_var.spans(cf_variable):
-                        cf_group[cf_name] = self.cf_group[cf_name]
-                    else:
-                        # Register the ignored variable.
-                        # N.B. 'ignored' variable from enclosing scope.
-                        ignored.add(cf_name)
-                        msg = (
-                            "Ignoring variable {!r} referenced "
-                            "by variable {!r}: Dimensions {!r} do not "
-                            "span {!r}".format(
-                                cf_name,
-                                cf_variable.cf_name,
-                                cf_var.dimensions,
-                                cf_variable.dimensions,
-                            )
-                        )
-                        warnings.warn(
-                            msg,
-                            category=iris.exceptions.IrisCfNonSpanningVarWarning,
-                        )
+                for cf_name in match:
+                    _span_check(cf_name)
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -1243,29 +1523,7 @@ class CFReader:
                 for cf_var in self.cf_group.formula_terms.values():
                     for cf_root in cf_var.cf_terms_by_root:
                         if cf_root in cf_group and cf_var.cf_name not in cf_group:
-                            # Sanity check dimensionality.
-                            if cf_var.spans(cf_variable):
-                                cf_group[cf_var.cf_name] = cf_var
-                            else:
-                                # Register the ignored variable.
-                                # N.B. 'ignored' variable from enclosing scope.
-                                ignored.add(cf_var.cf_name)
-                                msg = (
-                                    "Ignoring formula terms variable {!r} "
-                                    "referenced by data variable {!r} via "
-                                    "variable {!r}: Dimensions {!r} do not "
-                                    "span {!r}".format(
-                                        cf_var.cf_name,
-                                        cf_variable.cf_name,
-                                        cf_root,
-                                        cf_var.dimensions,
-                                        cf_variable.dimensions,
-                                    )
-                                )
-                                warnings.warn(
-                                    msg,
-                                    category=iris.exceptions.IrisCfNonSpanningVarWarning,
-                                )
+                            _span_check(cf_var.cf_name, cf_root)
 
             # Add the CF group to the variable.
             cf_variable.cf_group = cf_group

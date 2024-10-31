@@ -55,6 +55,7 @@ class Test__create_field_data(tests.IrisTest):
         data_shape = (100, 120)
         proxy = mock.Mock(
             dtype=np.dtype("f4"),
+            dask_meta=np.empty((0,) * len(data_shape), dtype=np.dtype("f4")),
             shape=data_shape,
             spec=pp.PPDataProxy,
             ndim=len(data_shape),

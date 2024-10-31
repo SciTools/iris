@@ -19,8 +19,8 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid, guess_coord_axis
+from iris.warnings import IrisImpossibleUpdateWarning
 
 
 def _transform_xy_arrays(crs_from, x, y, crs_to):
@@ -30,14 +30,17 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : arrays
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
-    x, y :  Arrays of locations defined in 'crs_to'.
+    (array, array)
+        Arrays of locations defined in 'crs_to' of (x, y).
 
     """
     pts = crs_to.transform_points(crs_from, x, y)
@@ -153,22 +156,30 @@ def _regrid_weighted_curvilinear_to_rectilinear__prepare(src_cube, weights, grid
     #
 
     # Wrap modular values (e.g. longitudes) if required.
-    modulus = sx.units.modulus
+    _modulus = sx.units.modulus
+    # Convert to NumPy scalar to enable cast checking.
+    modulus = np.min_scalar_type(_modulus).type(_modulus)
+
+    def _cast_sx_points(sx_points_: np.ndarray):
+        """Ensure modulus arithmetic will not raise a TypeError."""
+        if not np.can_cast(modulus, sx_points_.dtype):
+            new_type = np.promote_types(sx_points_.dtype, modulus.dtype)
+            result = sx_points_.astype(new_type, casting="safe")
+        else:
+            result = sx_points_
+        return result
+
     if modulus is not None:
         # Match the source cube x coordinate range to the target grid
         # cube x coordinate range.
         min_sx, min_tx = np.min(sx.points), np.min(tx.points)
         if min_sx < 0 and min_tx >= 0:
             indices = np.where(sx_points < 0)
-            # Ensure += doesn't raise a TypeError
-            if not np.can_cast(modulus, sx_points.dtype):
-                sx_points = sx_points.astype(type(modulus), casting="safe")
+            sx_points = _cast_sx_points(sx_points)
             sx_points[indices] += modulus
         elif min_sx >= 0 and min_tx < 0:
             indices = np.where(sx_points > (modulus / 2))
-            # Ensure -= doesn't raise a TypeError
-            if not np.can_cast(modulus, sx_points.dtype):
-                sx_points = sx_points.astype(type(modulus), casting="safe")
+            sx_points = _cast_sx_points(sx_points)
             sx_points[indices] -= modulus
 
     # Create target grid cube x and y cell boundaries.
@@ -384,7 +395,7 @@ class CurvilinearRegridder:
             The :class:`~iris.cube.Cube` providing the source grid.
         tgt_grid_cube : :class:`~iris.cube.Cube`
             The :class:`~iris.cube.Cube` providing the target grid.
-        weights : optional, default=None
+        weights : optional
             A :class:`numpy.ndarray` instance that defines the weights
             for the grid cells of the source grid. Must have the same shape
             as the data of the source grid.
@@ -636,9 +647,9 @@ class RectilinearRegridder:
             A 2-dimensional array of sample X values.
         sample_grid_y :
             A 2-dimensional array of sample Y values.
-        method: str, optional
+        method : str, default="linear"
             Either 'linear' or 'nearest'. The default method is 'linear'.
-        extrapolation_mode : str, optional
+        extrapolation_mode : str, default="nanmask"
             Must be one of the following strings:
 
             * 'linear' - The extrapolation points will be calculated by
@@ -656,7 +667,7 @@ class RectilinearRegridder:
 
         Returns
         -------
-        NumPu array
+        NumPy array
             The regridded data as an N-dimensional NumPy array. The lengths
             of the X and Y dimensions will now match those of the sample
             grid.
@@ -932,9 +943,18 @@ class RectilinearRegridder:
         x_dim = src.coord_dims(src_x_coord)[0]
         y_dim = src.coord_dims(src_y_coord)[0]
 
-        # Define regrid function
-        regrid = functools.partial(
-            self._regrid,
+        # Specify the output dtype
+        if self._method == "linear" and np.issubdtype(src.dtype, np.integer):
+            out_dtype = np.float64
+        else:
+            out_dtype = src.dtype
+
+        data = map_complete_blocks(
+            src,
+            func=self._regrid,
+            dims=(y_dim, x_dim),
+            out_sizes=sample_grid_x.shape,
+            dtype=out_dtype,
             x_dim=x_dim,
             y_dim=y_dim,
             src_x_coord=src_x_coord,
@@ -944,8 +964,6 @@ class RectilinearRegridder:
             method=self._method,
             extrapolation_mode=self._extrapolation_mode,
         )
-
-        data = map_complete_blocks(src, regrid, (y_dim, x_dim), sample_grid_x.shape)
 
         # Wrap up the data as a Cube.
         _regrid_callback = functools.partial(
@@ -993,10 +1011,9 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
         The source Cube.
     src_dims : tuple of int
         The dimensions of the X and Y coordinate within the source Cube.
-    tgt_coords : tuple of :class:`iris.coords.Coord`\\ 's
-        Either two 1D :class:`iris.coords.DimCoord`\\ 's, two 1D
-        :class:`iris.experimental.ugrid.DimCoord`\\ 's or two n-D
-        :class:`iris.coords.AuxCoord`\\ 's representing the new grid's
+    tgt_coords : tuple of :class:`iris.coords.Coord
+        Either two 1D :class:`iris.coords.DimCoord`, or two n-D
+        :class:`iris.coords.AuxCoord` representing the new grid's
         X and Y coordinates.
     num_tgt_dims : int
         The number of dimensions that the `tgt_coords` span.

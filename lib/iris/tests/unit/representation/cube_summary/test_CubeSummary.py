@@ -4,13 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris._representation.cube_summary.CubeSummary`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
+import dask.array as da
 import numpy as np
+import pytest
 
 from iris._representation.cube_summary import CubeSummary
+from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
 from iris.cube import Cube
 from iris.tests.stock.mesh import sample_mesh_cube
@@ -29,8 +28,9 @@ def example_cube():
     return cube
 
 
-class Test_CubeSummary(tests.IrisTest):
-    def setUp(self):
+class Test_CubeSummary:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = example_cube()
 
     def test_header(self):
@@ -38,15 +38,15 @@ class Test_CubeSummary(tests.IrisTest):
         header_left = rep.header.nameunit
         header_right = rep.header.dimension_header.contents
 
-        self.assertEqual(header_left, "air_temperature / (K)")
-        self.assertEqual(header_right, ["latitude: 3", "-- : 2"])
+        assert header_left == "air_temperature / (K)"
+        assert header_right == ["latitude: 3", "-- : 2"]
 
     def test_blank_cube(self):
         cube = Cube([1, 2])
         rep = CubeSummary(cube)
 
-        self.assertEqual(rep.header.nameunit, "unknown / (unknown)")
-        self.assertEqual(rep.header.dimension_header.contents, ["-- : 2"])
+        assert rep.header.nameunit == "unknown / (unknown)"
+        assert rep.header.dimension_header.contents == ["-- : 2"]
 
         expected_vector_sections = [
             "Dimension coordinates:",
@@ -56,11 +56,11 @@ class Test_CubeSummary(tests.IrisTest):
             "Cell measures:",
             "Ancillary variables:",
         ]
-        self.assertEqual(list(rep.vector_sections.keys()), expected_vector_sections)
+        assert list(rep.vector_sections.keys()) == expected_vector_sections
         for title in expected_vector_sections:
             vector_section = rep.vector_sections[title]
-            self.assertEqual(vector_section.contents, [])
-            self.assertTrue(vector_section.is_empty())
+            assert vector_section.contents == []
+            assert vector_section.is_empty()
 
         expected_scalar_sections = [
             "Mesh:",
@@ -71,18 +71,18 @@ class Test_CubeSummary(tests.IrisTest):
             "Attributes:",
         ]
 
-        self.assertEqual(list(rep.scalar_sections.keys()), expected_scalar_sections)
+        assert list(rep.scalar_sections.keys()) == expected_scalar_sections
         for title in expected_scalar_sections:
             scalar_section = rep.scalar_sections[title]
-            self.assertEqual(scalar_section.contents, [])
-            self.assertTrue(scalar_section.is_empty())
+            assert scalar_section.contents == []
+            assert scalar_section.is_empty()
 
     def test_vector_coord(self):
         rep = CubeSummary(self.cube)
         dim_section = rep.vector_sections["Dimension coordinates:"]
 
-        self.assertEqual(len(dim_section.contents), 1)
-        self.assertFalse(dim_section.is_empty())
+        assert len(dim_section.contents) == 1
+        assert not dim_section.is_empty()
 
         dim_summary = dim_section.contents[0]
 
@@ -90,9 +90,9 @@ class Test_CubeSummary(tests.IrisTest):
         dim_chars = dim_summary.dim_chars
         extra = dim_summary.extra
 
-        self.assertEqual(name, "latitude")
-        self.assertEqual(dim_chars, ["x", "-"])
-        self.assertEqual(extra, "")
+        assert name == "latitude"
+        assert dim_chars == ["x", "-"]
+        assert extra == ""
 
     def test_scalar_coord(self):
         cube = self.cube
@@ -114,30 +114,83 @@ class Test_CubeSummary(tests.IrisTest):
 
         scalar_section = rep.scalar_sections["Scalar coordinates:"]
 
-        self.assertEqual(len(scalar_section.contents), 4)
+        assert len(scalar_section.contents) == 4
 
         no_bounds_summary = scalar_section.contents[0]
         bounds_summary = scalar_section.contents[1]
         text_summary_simple = scalar_section.contents[2]
         text_summary_awkward = scalar_section.contents[3]
 
-        self.assertEqual(no_bounds_summary.name, "bar")
-        self.assertEqual(no_bounds_summary.content, "10 K")
-        self.assertEqual(no_bounds_summary.extra, "")
+        assert no_bounds_summary.name == "bar"
+        assert no_bounds_summary.content == "10 K"
+        assert no_bounds_summary.extra == ""
 
-        self.assertEqual(bounds_summary.name, "foo")
-        self.assertEqual(bounds_summary.content, "10 K, bound=(5, 15) K")
-        self.assertEqual(bounds_summary.extra, "")
+        assert bounds_summary.name == "foo"
+        assert bounds_summary.content == "10 K, bound=(5, 15) K"
+        assert bounds_summary.extra == ""
 
-        self.assertEqual(text_summary_simple.name, "foo")
-        self.assertEqual(text_summary_simple.content, "this and that")
-        self.assertEqual(text_summary_simple.lines, ["this and that"])
-        self.assertEqual(text_summary_simple.extra, "key=42, key2='value-str'")
+        assert text_summary_simple.name == "foo"
+        assert text_summary_simple.content == "this and that"
+        assert text_summary_simple.lines == ["this and that"]
+        assert text_summary_simple.extra == "key=42, key2='value-str'"
 
-        self.assertEqual(text_summary_awkward.name, "foo_2")
-        self.assertEqual(text_summary_awkward.content, r"'a is\nb\n and c'")
-        self.assertEqual(text_summary_awkward.lines, ["a is", "b", " and c"])
-        self.assertEqual(text_summary_awkward.extra, "")
+        assert text_summary_awkward.name == "foo_2"
+        assert text_summary_awkward.content == r"'a is\nb\n and c'"
+        assert text_summary_awkward.lines == ["a is", "b", " and c"]
+        assert text_summary_awkward.extra == ""
+
+    @pytest.mark.parametrize("bounds", ["withbounds", "nobounds"])
+    def test_lazy_scalar_coord(self, bounds):
+        """Check when we print 'lazy' instead of values for a lazy scalar coord."""
+        coord = AuxCoord(da.ones((), dtype=float), long_name="foo")
+        if bounds == "withbounds":
+            # These might be real or lazy -- it makes no difference.
+            coord.bounds = np.arange(2.0)
+        cube = Cube([0.0], aux_coords_and_dims=[(coord, ())])
+
+        rep = CubeSummary(cube)
+
+        summary = rep.scalar_sections["Scalar coordinates:"].contents[0]
+        assert summary.name == "foo"
+        expect_content = "<lazy>"
+        if bounds == "withbounds":
+            expect_content += "+bound"
+        assert summary.content == expect_content
+
+    @pytest.mark.parametrize("deps", ["deps_all_real", "deps_some_lazy"])
+    def test_hybrid_scalar_coord(self, deps):
+        """Check whether we print a value or '<lazy>', for a hybrid scalar coord."""
+        # NOTE: hybrid coords are *always* lazy (at least for now).  However, as long as
+        # no dependencies are lazy, then we print a value rather than "<lazy>".
+
+        # Construct a test hybrid coord, using HybridHeight as a template because that
+        # is both a common case and a fairly simple one (only 3 dependencies).
+        # Note: *not* testing with bounds, since lazy bounds always print the same way.
+        all_deps_real = deps == "deps_all_real"
+        aux_coords = [
+            AuxCoord(1.0, long_name=name, units=units)
+            for name, units in (("delta", "m"), ("sigma", "1"), ("orography", "m"))
+        ]
+        if not all_deps_real:
+            # Make one dependency lazy
+            aux_coords[0].points = aux_coords[0].lazy_points()
+
+        cube = Cube(
+            [0.0],
+            aux_coords_and_dims=[(co, ()) for co in aux_coords],
+            aux_factories=[HybridHeightFactory(*aux_coords)],
+        )
+
+        rep = CubeSummary(cube)
+
+        summary = rep.scalar_sections["Scalar coordinates:"].contents[0]
+        assert summary.name == "altitude"
+        # Check that the result shows lazy with lazy deps, or value when all real
+        if all_deps_real:
+            expect_content = "2.0 m"
+        else:
+            expect_content = "<lazy> m"
+        assert summary.content == expect_content
 
     def test_cell_measure(self):
         cube = self.cube
@@ -146,11 +199,11 @@ class Test_CubeSummary(tests.IrisTest):
         rep = CubeSummary(cube)
 
         cm_section = rep.vector_sections["Cell measures:"]
-        self.assertEqual(len(cm_section.contents), 1)
+        assert len(cm_section.contents) == 1
 
         cm_summary = cm_section.contents[0]
-        self.assertEqual(cm_summary.name, "foo")
-        self.assertEqual(cm_summary.dim_chars, ["x", "-"])
+        assert cm_summary.name == "foo"
+        assert cm_summary.dim_chars == ["x", "-"]
 
     def test_ancillary_variable(self):
         cube = self.cube
@@ -159,11 +212,11 @@ class Test_CubeSummary(tests.IrisTest):
         rep = CubeSummary(cube)
 
         av_section = rep.vector_sections["Ancillary variables:"]
-        self.assertEqual(len(av_section.contents), 1)
+        assert len(av_section.contents) == 1
 
         av_summary = av_section.contents[0]
-        self.assertEqual(av_summary.name, "foo")
-        self.assertEqual(av_summary.dim_chars, ["x", "-"])
+        assert av_summary.name == "foo"
+        assert av_summary.dim_chars == ["x", "-"]
 
     def test_attributes(self):
         cube = self.cube
@@ -180,7 +233,7 @@ class Test_CubeSummary(tests.IrisTest):
         # Note: a string with \n or \t in it gets "repr-d".
         # Other strings don't (though in coord 'extra' lines, they do.)
 
-        self.assertEqual(attribute_contents, expected_contents)
+        assert attribute_contents == expected_contents
 
     def test_cell_methods(self):
         cube = self.cube
@@ -194,25 +247,25 @@ class Test_CubeSummary(tests.IrisTest):
         rep = CubeSummary(cube)
         cell_method_section = rep.scalar_sections["Cell methods:"]
         expected_contents = ["0: x: y: mean", "1: x: mean"]
-        self.assertEqual(cell_method_section.contents, expected_contents)
+        assert cell_method_section.contents == expected_contents
 
     def test_scalar_cube(self):
         cube = self.cube
         while cube.ndim > 0:
             cube = cube[0]
         rep = CubeSummary(cube)
-        self.assertEqual(rep.header.nameunit, "air_temperature / (K)")
-        self.assertTrue(rep.header.dimension_header.scalar)
-        self.assertEqual(rep.header.dimension_header.dim_names, [])
-        self.assertEqual(rep.header.dimension_header.shape, [])
-        self.assertEqual(rep.header.dimension_header.contents, ["scalar cube"])
-        self.assertEqual(len(rep.vector_sections), 6)
-        self.assertTrue(all(sect.is_empty() for sect in rep.vector_sections.values()))
-        self.assertEqual(len(rep.scalar_sections), 6)
-        self.assertEqual(len(rep.scalar_sections["Scalar coordinates:"].contents), 1)
-        self.assertTrue(rep.scalar_sections["Scalar cell measures:"].is_empty())
-        self.assertTrue(rep.scalar_sections["Attributes:"].is_empty())
-        self.assertTrue(rep.scalar_sections["Cell methods:"].is_empty())
+        assert rep.header.nameunit == "air_temperature / (K)"
+        assert rep.header.dimension_header.scalar
+        assert rep.header.dimension_header.dim_names == []
+        assert rep.header.dimension_header.shape == []
+        assert rep.header.dimension_header.contents == ["scalar cube"]
+        assert len(rep.vector_sections) == 6
+        assert all(sect.is_empty() for sect in rep.vector_sections.values())
+        assert len(rep.scalar_sections) == 6
+        assert len(rep.scalar_sections["Scalar coordinates:"].contents) == 1
+        assert rep.scalar_sections["Scalar cell measures:"].is_empty()
+        assert rep.scalar_sections["Attributes:"].is_empty()
+        assert rep.scalar_sections["Cell methods:"].is_empty()
 
     def test_coord_attributes(self):
         cube = self.cube
@@ -225,8 +278,8 @@ class Test_CubeSummary(tests.IrisTest):
         co1_summ = rep.vector_sections["Dimension coordinates:"].contents[0]
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
         # Notes: 'b' is same so does not appear; sorted order; quoted strings.
-        self.assertEqual(co1_summ.extra, "a=1")
-        self.assertEqual(co2_summ.extra, "a=7, text='ok', text2='multi\\nline', z=77")
+        assert co1_summ.extra == "a=1"
+        assert co2_summ.extra == "a=7, text='ok', text2='multi\\nline', z=77"
 
     def test_array_attributes(self):
         cube = self.cube
@@ -238,8 +291,8 @@ class Test_CubeSummary(tests.IrisTest):
         rep = CubeSummary(cube)
         co1_summ = rep.vector_sections["Dimension coordinates:"].contents[0]
         co2_summ = rep.vector_sections["Auxiliary coordinates:"].contents[0]
-        self.assertEqual(co1_summ.extra, "array=array([1.2, 3. ])")
-        self.assertEqual(co2_summ.extra, "array=array([3.2, 1. ]), b=2")
+        assert co1_summ.extra == "array=array([1.2, 3. ])"
+        assert co2_summ.extra == "array=array([3.2, 1. ]), b=2"
 
     def test_attributes_subtle_differences(self):
         cube = Cube([0])
@@ -281,14 +334,14 @@ class Test_CubeSummary(tests.IrisTest):
         rep = CubeSummary(cube)
         co_summs = rep.scalar_sections["Scalar coordinates:"].contents
         co1a_summ, co1b_summ = co_summs[0:2]
-        self.assertEqual(co1a_summ.extra, "arr2=array([1, 2])")
-        self.assertEqual(co1b_summ.extra, "arr2=[1, 2]")
+        assert co1a_summ.extra == "arr2=array([1, 2])"
+        assert co1b_summ.extra == "arr2=[1, 2]"
         co2a_summ, co2b_summ = co_summs[2:4]
-        self.assertEqual(co2a_summ.extra, "arr2=array([3, 4])")
-        self.assertEqual(co2b_summ.extra, "arr2=array([3., 4.])")
+        assert co2a_summ.extra == "arr2=array([3, 4])"
+        assert co2b_summ.extra == "arr2=array([3., 4.])"
         co3a_summ, co3b_summ = co_summs[4:6]
-        self.assertEqual(co3a_summ.extra, "arr1=array([5, 6])")
-        self.assertEqual(co3b_summ.extra, "arr1=array([[5], [6]])")
+        assert co3a_summ.extra == "arr1=array([5, 6])"
+        assert co3b_summ.extra == "arr1=array([[5], [6]])"
 
     def test_unstructured_cube(self):
         cube = sample_mesh_cube()
@@ -297,10 +350,6 @@ class Test_CubeSummary(tests.IrisTest):
         dim_section = rep.vector_sections["Dimension coordinates:"]
         mesh_section = rep.vector_sections["Mesh coordinates:"]
         aux_section = rep.vector_sections["Auxiliary coordinates:"]
-        self.assertEqual(len(dim_section.contents), 2)
-        self.assertEqual(len(mesh_section.contents), 2)
-        self.assertEqual(len(aux_section.contents), 1)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert len(dim_section.contents) == 2
+        assert len(mesh_section.contents) == 2
+        assert len(aux_section.contents) == 1

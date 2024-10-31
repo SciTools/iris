@@ -69,8 +69,8 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.11"
-    all_supported = ["3.9", "3.10", latest_supported]
+    latest_supported = "3.12"
+    all_supported = ["3.10", "3.11", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
@@ -130,7 +130,7 @@ def test_categorised_warnings():
     r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
-    :class:`iris.exceptions.IrisUserWarning`.
+    :class:`iris.warnings.IrisUserWarning`.
 
     Warning matches multiple categories? Create a one-off combo class. For
     example:

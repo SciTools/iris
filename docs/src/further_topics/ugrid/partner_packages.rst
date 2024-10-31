@@ -58,7 +58,7 @@ PyVista is described as "VTK for humans" - VTK is a very powerful toolkit for
 working with meshes, and PyVista brings that power into the Python ecosystem.
 GeoVista in turn makes it easy to use PyVista specifically for cartographic
 work, designed from the start with the Iris
-:class:`~iris.experimental.ugrid.Mesh` in mind.
+:class:`~iris.mesh.MeshXY` in mind.
 
 Applications
 ------------
@@ -93,7 +93,7 @@ Applications
 * Regrid unstructured to structured.
 * Regrid with dask integration, computing in parallel and maintaining data
   laziness.
-* | Save a prepared regridder for re-use in subsequent runs.
+* | Save a prepared regridder for reuse in subsequent runs.
   | Regridders can even be re-used on sources with different masks - a
     significant efficiency gain.
 

@@ -4,24 +4,22 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :func:`iris.plot.animate`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris
 from iris.coord_systems import GeogCS
+from iris.tests import _shared_utils
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
-@tests.skip_plot
-class IntegrationTest(tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
+@_shared_utils.skip_plot
+class IntegrationTest(_shared_utils.GraphicsTest):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = iris.cube.Cube(np.arange(36, dtype=np.int32).reshape((3, 3, 4)))
         cs = GeogCS(6371229)
 
@@ -68,7 +66,3 @@ class IntegrationTest(tests.GraphicsTest):
             for anim, d in zip(ani, data):
                 anim._draw_next_frame(d, blit=False)
                 self.check_graphic()
-
-
-if __name__ == "__main__":
-    tests.main()

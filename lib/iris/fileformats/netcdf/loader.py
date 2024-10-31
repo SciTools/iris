@@ -10,12 +10,12 @@ and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
-from collections.abc import Iterable, Mapping
+
+from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
 import threading
-from typing import Union
 import warnings
 
 import numpy as np
@@ -34,12 +34,12 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
-import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
+import iris.warnings
 
 # Show actions activation statistics.
 DEBUG = False
@@ -53,8 +53,8 @@ NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
 
 
 class _WarnComboIgnoringBoundsLoad(
-    iris.exceptions.IrisIgnoringBoundsWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringBoundsWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -239,9 +239,12 @@ def _get_cf_var_data(cf_var, filename):
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
-                result = as_lazy_data(proxy, chunks=None, dask_chunking=True)
+                result = as_lazy_data(proxy, meta=proxy.dask_meta, chunks="auto")
             else:
                 chunks = cf_var.cf_data.chunking()
+                if chunks is None:
+                    # Occurs for non-version-4 netcdf
+                    chunks = "contiguous"
                 # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
                 if chunks == "contiguous":
                     if (
@@ -281,7 +284,10 @@ def _get_cf_var_data(cf_var, filename):
                 if dims_fixed is None:
                     dims_fixed = [dims_fixed]
                 result = as_lazy_data(
-                    proxy, chunks=chunks, dims_fixed=tuple(dims_fixed)
+                    proxy,
+                    meta=proxy.dask_meta,
+                    chunks=chunks,
+                    dims_fixed=tuple(dims_fixed),
                 )
     return result
 
@@ -415,7 +421,7 @@ def _load_aux_factory(engine, cube):
                         return coord
                 warnings.warn(
                     "Unable to find coordinate for variable {!r}".format(name),
-                    category=iris.exceptions.IrisFactoryCoordNotFoundWarning,
+                    category=iris.warnings.IrisFactoryCoordNotFoundWarning,
                 )
 
         if formula_type == "atmosphere_sigma_coordinate":
@@ -515,9 +521,10 @@ def _translate_constraints_to_var_callback(constraints):
 
     Returns
     -------
-    function : (cf_var:CFDataVariable)
-        bool, or None.
+    bool or None
 
+    Notes
+    -----
     For now, ONLY handles a single NameConstraint with no 'STASH' component.
 
     """
@@ -562,10 +569,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
     file_sources : str or list
         One or more NetCDF filenames/OPeNDAP URLs to load from.
         OR open datasets.
-
     callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
-
     constraints : optional
 
     Returns
@@ -573,16 +578,14 @@ def load_cubes(file_sources, callback=None, constraints=None):
     Generator of loaded NetCDF :class:`iris.cube.Cube`.
 
     """
-    # TODO: rationalise UGRID/mesh handling once experimental.ugrid is folded
-    # into standard behaviour.
     # Deferred import to avoid circular imports.
-    from iris.experimental.ugrid.cf import CFUGridReader
-    from iris.experimental.ugrid.load import (
-        PARSE_UGRID_ON_LOAD,
+    from iris.fileformats.cf import CFReader
+    from iris.io import run_callback
+
+    from .ugrid_load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )
-    from iris.io import run_callback
 
     # Create a low-level data-var filter from the original load constraints, if they are suitable.
     var_callback = _translate_constraints_to_var_callback(constraints)
@@ -595,15 +598,8 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     for file_source in file_sources:
         # Ingest the file.  At present may be a filepath or an open netCDF4.Dataset.
-        meshes = {}
-        if PARSE_UGRID_ON_LOAD:
-            cf_reader_class = CFUGridReader
-        else:
-            cf_reader_class = iris.fileformats.cf.CFReader
-
-        with cf_reader_class(file_source) as cf:
-            if PARSE_UGRID_ON_LOAD:
-                meshes = _meshes_from_cf(cf)
+        with CFReader(file_source) as cf:
+            meshes = _meshes_from_cf(cf)
 
             # Process each CF data variable.
             data_variables = list(cf.cf_group.data_variables.values()) + list(
@@ -621,8 +617,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 mesh_name = None
                 mesh = None
                 mesh_coords, mesh_dim = [], None
-                if PARSE_UGRID_ON_LOAD:
-                    mesh_name = getattr(cf_var, "mesh", None)
+                mesh_name = getattr(cf_var, "mesh", None)
                 if mesh_name is not None:
                     try:
                         mesh = meshes[mesh_name]
@@ -648,7 +643,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 except ValueError as e:
                     warnings.warn(
                         "{}".format(e),
-                        category=iris.exceptions.IrisLoadWarning,
+                        category=iris.warnings.IrisLoadWarning,
                     )
 
                 # Perform any user registered callback function.
@@ -687,8 +682,8 @@ class ChunkControl(threading.local):
         :class:`~iris.coords.AncillaryVariable` etc.
         This can be overridden, if required, by variable-specific settings.
 
-        For this purpose, :class:`~iris.experimental.ugrid.mesh.MeshCoord` and
-        :class:`~iris.experimental.ugrid.mesh.Connectivity` are not
+        For this purpose, :class:`~iris.mesh.MeshCoord` and
+        :class:`~iris.mesh.Connectivity` are not
         :class:`~iris.cube.Cube` components, and chunk control on a
         :class:`~iris.cube.Cube` data-variable will not affect them.
 
@@ -699,18 +694,18 @@ class ChunkControl(threading.local):
     @contextmanager
     def set(
         self,
-        var_names: Union[str, Iterable[str]] = None,
+        var_names: str | Iterable[str] | None = None,
         **dimension_chunksizes: Mapping[str, int],
-    ) -> None:
+    ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
         Parameters
         ----------
         var_names : str or list of str, default=None
-            apply the `dimension_chunksizes` controls only to these variables,
-            or when building :class:`~iris.cube.Cube`\\ s from these data variables.
+            Apply the `dimension_chunksizes` controls only to these variables,
+            or when building :class:`~iris.cube.Cube` from these data variables.
             If ``None``, settings apply to all loaded variables.
-        dimension_chunksizes : dict of {str: int}
+        **dimension_chunksizes : dict of {str: int}
             Kwargs specifying chunksizes for dimensions of file variables.
             Each key-value pair defines a chunk size for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
@@ -752,7 +747,7 @@ class ChunkControl(threading.local):
                 # A specific name match should override a '*' setting, but
                 # that is implemented elsewhere.
                 if not isinstance(var_name, str):
-                    msg = (
+                    msg = (  # type: ignore[unreachable]
                         "'var_names' should be an iterable of strings, "
                         f"not {var_names!r}."
                     )
@@ -772,14 +767,14 @@ class ChunkControl(threading.local):
             self.mode = old_mode
 
     @contextmanager
-    def from_file(self) -> None:
+    def from_file(self) -> Iterator[None]:
         r"""Ensure the chunk sizes are loaded in from NetCDF file variables.
 
         Raises
         ------
         KeyError
             If any NetCDF data variables - those that become
-            :class:`~iris.cube.Cube`\\ s - do not specify chunk sizes.
+            :class:`~iris.cube.Cube` - do not specify chunk sizes.
 
         Notes
         -----
@@ -795,12 +790,13 @@ class ChunkControl(threading.local):
             self.var_dim_chunksizes = old_var_dim_chunksizes
 
     @contextmanager
-    def as_dask(self) -> None:
-        """Relies on Dask :external+dask:doc:`array` to control chunk sizes.
+    def as_dask(self) -> Iterator[None]:
+        """Rely on Dask :external+dask:doc:`array` to control chunk sizes.
 
         Notes
         -----
         This function acts as a context manager, for use in a ``with`` block.
+
         """
         old_mode = self.mode
         old_var_dim_chunksizes = deepcopy(self.var_dim_chunksizes)

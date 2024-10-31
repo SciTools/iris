@@ -3,12 +3,11 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Plot benchmark tests."""
+
 import matplotlib as mpl
 import numpy as np
 
 from iris import coords, cube, plot
-
-from . import ARTIFICIAL_DIM_SIZE
 
 mpl.use("agg")
 
@@ -17,7 +16,7 @@ class AuxSort:
     def setup(self):
         # Manufacture data from which contours can be derived.
         # Should generate 10 distinct contours, regardless of dim size.
-        dim_size = int(ARTIFICIAL_DIM_SIZE / 5)
+        dim_size = 200
         repeat_number = int(dim_size / 10)
         repeat_range = range(int((dim_size**2) / repeat_number))
         data = np.repeat(repeat_range, repeat_number)

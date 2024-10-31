@@ -171,7 +171,7 @@ class DataManager:
 
     @property
     def data(self):
-        """Returns the real data. Any lazy data being managed will be realised.
+        """Return the real data. Any lazy data being managed will be realised.
 
         Returns
         -------
@@ -273,7 +273,7 @@ class DataManager:
 
         Parameters
         ----------
-        data :
+        data : optional
             Replace the data of the copy with this data.
 
         Returns

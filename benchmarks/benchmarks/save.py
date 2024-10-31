@@ -2,19 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""File saving benchmarks.
+"""File saving benchmarks."""
 
-Where possible benchmarks should be parameterised for two sizes of input data:
-  * minimal: enables detection of regressions in parts of the run-time that do
-             NOT scale with data size.
-  * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size.
-
-"""
 from iris import save
-from iris.experimental.ugrid import save_mesh
+from iris.mesh import save_mesh
 
-from . import TrackAddedMemoryAllocation, on_demand_benchmark
 from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
@@ -45,10 +37,7 @@ class NetcdfSave:
         if is_unstructured:
             self._save_mesh(self.cube)
 
-    # Vulnerable to noise, so disabled by default.
-    @on_demand_benchmark
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_netcdf_save(self, n_cubesphere, is_unstructured):
+    def tracemalloc_netcdf_save(self, n_cubesphere, is_unstructured):
         # Don't need to copy the cube here since track_ benchmarks don't
         #  do repeats between self.setup() calls.
         self._save_data(self.cube, do_copy=False)

@@ -84,6 +84,19 @@ class FormatAgent:
             ["%s" % format_spec for format_spec in self._format_specs]
         )
 
+    def __eq__(self, other):
+        return self._format_specs == other._format_specs
+
+    def copy(self):
+        """Return a copy of the format agent.
+
+        Returns
+        -------
+        FormatAgent
+            A copy of the format agent.
+        """
+        return FormatAgent(self._format_specs.copy())
+
     def get_spec(self, basename, buffer_obj):
         """Pick the first FormatSpecification.
 
@@ -175,21 +188,22 @@ class FormatSpecification:
         Parameters
         ----------
         format_name : str
-            string name of fileformat being described
+            String name of fileformat being described.
         file_element :
             FileElement instance of the element which identifies this
-            FormatSpecification
+            FormatSpecification.
         file_element_value :
             The value that the file_element should take if a file matches this
-            FormatSpecification
+            FormatSpecification.
         handler : optional
-            function which will be called when the specification has been
+            Function which will be called when the specification has been
             identified and is required to handler a format.  If None, then the
             file can still be identified but no handling can be done.
-        priority: int
+        priority : int
             Integer giving a priority for considering this specification where
             higher priority means sooner consideration.
-        constraint_aware_handler: optional, default=False
+        constraint_aware_handler : default=False
+
         """
         if not isinstance(file_element, FileElement):
             raise ValueError(
@@ -279,7 +293,7 @@ class FileElement:
 
         Parameters
         ----------
-        requires_fh : optional
+        requires_fh : bool, default=True
             Whether this FileElement needs a file buffer.
 
         """

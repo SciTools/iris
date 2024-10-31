@@ -57,13 +57,14 @@ def save(cube, target):
 
     Parameters
     ----------
-    cube: :class:`iris.cube.Cube`.
-    target
+    cube : :class:`iris.cube.Cube`
+    target :
         A filename or open file handle.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     if isinstance(target, str):
@@ -90,17 +91,17 @@ def save_png(source, target, launch=False):
 
     Parameters
     ----------
-    source: :class:`iris.cube.Cube`, or dot filename.
+    source : :class:`iris.cube.Cube`, or dot filename
     target :
         A filename or open file handle.
         If passing a file handle, take care to open it for binary output.
-    **kwargs :
-        * launch
-            Display the image. Default is False.
+    launch : bool, default=False
+        Display the image. Default is False.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # From cube or dot file?
@@ -342,6 +343,7 @@ def _dot_node(indent, id, name, attributes):
         The visual name of the node.
     attributes :
         An iterable of (name, value) attribute pairs.
+
     """  # noqa: D410, D411
     attributes = r"\n".join("%s: %s" % item for item in attributes)
     template = """%(indent)s"%(id)s" [

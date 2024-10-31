@@ -17,16 +17,18 @@
 # serve to show the default.
 # ----------------------------------------------------------------------------
 
-"""sphinx config."""
+"""Config for sphinx."""
 
 import datetime
 from importlib.metadata import version as get_version
+from inspect import getsource
 import ntpath
 import os
 from pathlib import Path
 import re
 from subprocess import run
 import sys
+from tempfile import gettempdir
 from urllib.parse import quote
 import warnings
 
@@ -193,14 +195,23 @@ copybutton_line_continuation_character = "\\"
 
 # sphinx.ext.todo configuration -----------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/todo.html
-todo_include_todos = True
+todo_include_todos = False
+todo_emit_warnings = False
 
-# api generation configuration
-autodoc_member_order = "alphabetical"
-autodoc_default_flags = ["show-inheritance"]
+# sphinx.ext.autodoc configuration --------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_default_options
+autodoc_default_options = {
+    "members": True,
+    "member-order": "alphabetical",
+    "undoc-members": True,
+    "private-members": False,
+    "special-members": False,
+    "inherited-members": True,
+    "show-inheritance": True,
+}
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
-autodoc_typehints = "none"
+autodoc_typehints = "description"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
@@ -235,13 +246,17 @@ templates_path = ["_templates"]
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
     "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cf_units": ("https://cf-units.readthedocs.io/en/stable/", None),
+    "cftime": ("https://unidata.github.io/cftime/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "dask": ("https://docs.dask.org/en/stable/", None),
+    "python": ("https://docs.python.org/3/", None),
+    "pyvista": ("https://docs.pyvista.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -292,6 +307,8 @@ html_theme_options = {
     "footer_start": ["copyright", "sphinx-version"],
     "footer_end": ["custom_footer"],
     "navigation_depth": 3,
+    "navigation_with_keys": False,
+    "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
     # removes the search box from the top bar
@@ -319,7 +336,6 @@ html_theme_options = {
         },
     ],
     "use_edit_page_button": True,
-    "show_toc_level": 1,
     # Omit `theme-switcher` from navbar_end below to disable it
     # Info: https://pydata-sphinx-theme.readthedocs.io/en/stable/user_guide/light-dark.html#configure-default-theme-mode
     # "navbar_end": ["navbar-icon-links"],
@@ -366,16 +382,6 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
-# this allows for using datatables: https://datatables.net/.
-# the version can be manually upgraded by changing the urls below.
-html_css_files = [
-    "https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css",
-]
-
-html_js_files = [
-    "https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js",
-]
-
 # url link checker.  Some links work but report as broken, lets ignore them.
 # See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
 linkcheck_ignore = [
@@ -396,6 +402,8 @@ linkcheck_ignore = [
     "https://biggus.readthedocs.io/",
     "https://stickler-ci.com/",
     "https://twitter.com/scitools_iris",
+    "https://stackoverflow.com/questions/tagged/python-iris",
+    "https://www.flaticon.com/",
 ]
 
 # list of sources to exclude from the build.
@@ -403,6 +411,26 @@ exclude_patterns = []
 
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
+
+
+def reset_modules(gallery_conf, fname):
+    """Force re-registering of nc-time-axis with matplotlib for each example.
+
+    Required for sphinx-gallery>=0.11.0.
+    """
+    from sys import modules
+
+    _ = modules.pop("nc_time_axis", None)
+
+
+# https://sphinx-gallery.github.io/dev/configuration.html#importing-callables
+reset_modules_dir = Path(gettempdir()) / reset_modules.__name__
+reset_modules_dir.mkdir(exist_ok=True)
+(reset_modules_dir / f"{reset_modules.__name__}.py").write_text(
+    getsource(reset_modules)
+)
+sys.path.insert(0, str(reset_modules_dir))
+
 
 sphinx_gallery_conf = {
     # path to your example scripts
@@ -415,11 +443,7 @@ sphinx_gallery_conf = {
     "ignore_pattern": r"__init__\.py",
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
-    # force re-registering of nc-time-axis with matplotlib for each example,
-    # required for sphinx-gallery>=0.11.0
-    "reset_modules": (
-        lambda gallery_conf, fname: sys.modules.pop("nc_time_axis", None),
-    ),
+    "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
 }
 
 # -----------------------------------------------------------------------------

@@ -15,7 +15,7 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.9", "3.10", "3.11"]
+_PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -79,7 +79,7 @@ def cache_venv(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -96,7 +96,7 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -117,7 +117,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     Notes
@@ -174,7 +174,7 @@ def tests(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -198,7 +198,7 @@ def doctest(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -225,7 +225,7 @@ def gallery(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -246,7 +246,7 @@ def linkcheck(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -272,7 +272,7 @@ def wheel(session: nox.sessions.Session):
 
     Parameters
     ----------
-    session: object
+    session : object
         A `nox.sessions.Session` object.
 
     """
@@ -291,3 +291,27 @@ def wheel(session: nox.sessions.Session):
         "import iris; print(f'{iris.__version__=}')",
         external=True,
     )
+
+
+@nox.session
+def benchmarks(session: nox.sessions.Session):
+    """Run the Iris benchmark runner. Run session with `-- --help` for help.
+
+    Parameters
+    ----------
+    session : object
+        A `nox.sessions.Session` object.
+
+    """
+    if len(session.posargs) == 0:
+        message = (
+            "This session MUST be run with at least one argument. The "
+            "arguments are passed down to the benchmark runner script. E.g:\n"
+            "nox -s benchmarks -- --help\n"
+            "nox -s benchmarks -- something --help\n"
+            "nox -s benchmarks -- something\n"
+        )
+        session.error(message)
+    session.install("asv", "nox")
+    bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
+    session.run("python", bm_runner_path, *session.posargs)

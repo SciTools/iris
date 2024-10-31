@@ -11,6 +11,7 @@ import operator
 import os
 import re
 import struct
+from typing import Any
 import warnings
 
 import cf_units
@@ -32,6 +33,7 @@ from iris.fileformats._pp_lbproc_pairs import LBPROC_PAIRS  # noqa: F401
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.fileformats.rules
+import iris.warnings
 
 try:
     import mo_pack
@@ -216,8 +218,8 @@ LBUSER_DTYPE_LOOKUP = {
 
 
 class _WarnComboLoadingMask(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisMaskValueMatchWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisMaskValueMatchWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -225,8 +227,8 @@ class _WarnComboLoadingMask(
 
 
 class _WarnComboLoadingDefaulting(
-    iris.exceptions.IrisDefaultingWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisDefaultingWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -234,8 +236,8 @@ class _WarnComboLoadingDefaulting(
 
 
 class _WarnComboIgnoringLoad(
-    iris.exceptions.IrisIgnoringWarning,
-    iris.exceptions.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -275,8 +277,8 @@ class STASH(collections.namedtuple("STASH", "model section item")):
     def __new__(cls, model, section, item):
         """Create namedtuple STASH instance.
 
-        Args
-        ----
+        Parameters
+        ----------
         model :
             A positive integer less than 100, or None.
         section :
@@ -370,28 +372,29 @@ class SplittableInt:
 
     Notes
     -----
-    No support for negative numbers
+    No support for negative numbers.
 
     """
 
     def __init__(self, value, name_mapping_dict=None):
         """Build a SplittableInt given the positive integer value provided.
 
-        Args
-        ----
-        **kwargs
-            * name_mapping_dict - (dict)
-                A special mapping to provide name based access to specific
-                integer positions:
+        Parameters
+        ----------
+        name_mapping_dict : dict
+            A special mapping to provide name based access to specific
+            integer positions.
 
-                >>> a = SplittableInt(1234, {'hundreds': 2})
-                >>> print(a.hundreds)
-                2
-                >>> a.hundreds = 9
-                >>> print(a.hundreds)
-                9
-                >>> print(a)
-                1934
+        Examples
+        --------
+            >>> a = SplittableInt(1234, {'hundreds': 2})
+            >>> print(a.hundreds)
+            2
+            >>> a.hundreds = 9
+            >>> print(a.hundreds)
+            9
+            >>> print(a)
+            1934
 
 
         """
@@ -603,6 +606,10 @@ class PPDataProxy:
     @property
     def ndim(self):
         return len(self.shape)
+
+    @property
+    def dask_meta(self):
+        return np.empty((0,) * self.ndim, dtype=self.dtype)
 
     def __getitem__(self, keys):
         with open(self.path, "rb") as pp_file:
@@ -944,6 +951,21 @@ class PPField(metaclass=ABCMeta):
 
     def __repr__(self):
         """Return a string representation of the PP field."""
+
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lbuser`` is a tuple of NumPy scalars.
+
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         # Define an ordering on the basic header names
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
@@ -969,9 +991,8 @@ class PPField(metaclass=ABCMeta):
             ),
         )
 
-        return (
-            "PP Field" + "".join(["\n   %s: %s" % (k, v) for k, v in attributes]) + "\n"
-        )
+        contents = "".join([f"\n   {k}: {_str_tuple(v)}" for k, v in attributes])
+        return f"PP Field{contents}\n"
 
     @property
     def stash(self):
@@ -1172,7 +1193,7 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">i%d" % PP_WORD_DEPTH))
         b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField
@@ -1355,7 +1376,7 @@ class PPField(metaclass=ABCMeta):
 
         Returns
         -------
-        :class:`~iris.coord_systems.GeogCS` or class:`~iris.coord_systems.RotatedGeogCS`.
+        :class:`~iris.coord_systems.GeogCS` or :class:`~iris.coord_systems.RotatedGeogCS`.
 
         """
         geog_cs = iris.coord_systems.GeogCS(EARTH_RADIUS)
@@ -1457,7 +1478,7 @@ class PPField2(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         and lbmin attributes.
@@ -1490,7 +1511,7 @@ class PPField2(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, and lbmind attributes.
@@ -1532,7 +1553,7 @@ class PPField3(PPField):
 
     @property
     def t1(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyr, lbmon, lbdat, lbhr,
         lbmin, and lbsec attributes.
@@ -1566,7 +1587,7 @@ class PPField3(PPField):
 
     @property
     def t2(self):
-        """cftime.datetime object.
+        """A cftime.datetime object.
 
         cftime.datetime object consisting of the lbyrd, lbmond, lbdatd,
         lbhrd, lbmind, and lbsecd attributes.
@@ -1617,17 +1638,16 @@ LoadedArrayBytes = collections.namedtuple("LoadedArrayBytes", "bytes, dtype")
 def load(filename, read_data=False, little_ended=False):
     """Return an iterator of PPFields given a filename.
 
-    Args
-    ----
-    filename
-        string of the filename to load.
-    **kwargs
-        * read_data - boolean
-            Flag whether or not the data should be read, if False an empty
-            data manager will be provided which can subsequently load the data
-            on demand. Default False.
-        * little_ended - boolean
-            If True, file contains all little-ended words (header and data).
+    Parameters
+    ----------
+    filename : str
+        String of the filename to load.
+    read_data : bool, default=False
+        Flag whether or not the data should be read, if False an empty
+        data manager will be provided which can subsequently load the data
+        on demand. Default False.
+    little_ended : bool, default=False
+        If True, file contains all little-ended words (header and data).
 
     Notes
     -----
@@ -1700,7 +1720,7 @@ def _interpret_fields(fields):
                 "Landmask compressed fields existed without a "
                 "landmask to decompress with. The data will have "
                 "a shape of (0, 0) and will not read.",
-                category=iris.exceptions.IrisLoadWarning,
+                category=iris.warnings.IrisLoadWarning,
             )
             mask_shape = (0, 0)
         else:
@@ -1755,7 +1775,7 @@ def _create_field_data(field, data_shape, land_mask_field=None):
         if land_mask_field is None:
             # For a "normal" (non-landsea-masked) field, the proxy can be
             # wrapped directly as a deferred array.
-            field.data = as_lazy_data(proxy, chunks=block_shape)
+            field.data = as_lazy_data(proxy, meta=proxy.dask_meta, chunks=block_shape)
         else:
             # This is a landsea-masked field, and its data must be handled in
             # a different way :  Because data shape/size is not known in
@@ -1806,8 +1826,12 @@ def _create_field_data(field, data_shape, land_mask_field=None):
                 return result
 
             delayed_result = calc_array(mask_field_array, delayed_valid_values)
+            meta = np.ma.array(np.empty((0,) * proxy.ndim, dtype=dtype), mask=True)
             lazy_result_array = da.from_delayed(
-                delayed_result, shape=block_shape, dtype=dtype
+                delayed_result,
+                shape=block_shape,
+                dtype=dtype,
+                meta=meta,
             )
             field.data = lazy_result_array
 
@@ -2006,12 +2030,11 @@ def load_cubes(filenames, callback=None, constraints=None):
     Parameters
     ----------
     filenames :
-        list of pp filenames to load
-    **kwargs :
-        * constraints
-            a list of Iris constraints
-        * callback
-            a function which can be passed on to :func:`iris.io.run_callback`
+        List of pp filenames to load.
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`.
+    constraints : optional
+        A list of Iris constraints.
 
     Notes
     -----
@@ -2028,21 +2051,20 @@ def load_cubes(filenames, callback=None, constraints=None):
 def load_cubes_little_endian(filenames, callback=None, constraints=None):
     """Load cubes from a list of pp filenames containing little-endian data.
 
-    Args
-    ----
-    filenames
-        list of pp filenames to load
-    **kwargs
-        * constraints
-            a list of Iris constraints
-        * callback
-            a function which can be passed on to :func:`iris.io.run_callback`
+    Parameters
+    ----------
+    filenames :
+        List of pp filenames to load.
+    callback : optional
+        A function which can be passed on to :func:`iris.io.run_callback`.
+    constraints : optional
+        A list of Iris constraints.
 
     Notes
     -----
     The resultant cubes may not be in the order that they are in the file
     (order is not preserved when there is a field with orography
-    references)
+    references).
 
     """
     return _load_cubes_variable_loader(
@@ -2057,9 +2079,9 @@ def load_cubes_little_endian(filenames, callback=None, constraints=None):
 def load_pairs_from_fields(pp_fields):
     r"""Convert an iterable of PP fields into an iterable of tuples of (Cubes, PPField).
 
-    Args
-    ----
-    pp_fields:
+    Parameters
+    ----------
+    pp_fields :
         An iterable of :class:`iris.fileformats.pp.PPField`.
 
     Returns
@@ -2149,30 +2171,32 @@ def _load_cubes_variable_loader(
     return result
 
 
-def save(cube, target, append=False, field_coords=None):
+def save(cube, target, append=False, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
-    Args
-    ----
-    cube: :class:`iris.cube.Cube`
-
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
     target
         A filename or open file handle.
-
-    **kwargs
-        * append
-            Whether to start a new file afresh or add the cube(s)
-            to the end of the file.
-            Only applicable when target is a filename, not a file
-            handle.
-            Default is False.
-        * field_coords
-            list of 2 coords or coord names which are to be used
-            for reducing the given cube into 2d slices,
-            which will ultimately determine the x and y
-            coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen
-            for slicing.
+    append : bool, default=False
+        Whether to start a new file afresh or add the cube(s)
+        to the end of the file.
+        Only applicable when target is a filename, not a file
+        handle.
+        Default is False.
+    field_coords : optional
+        List of 2 coords or coord names which are to be used
+        for reducing the given cube into 2d slices,
+        which will ultimately determine the x and y
+        coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen
+        for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     Notes
     -----
@@ -2181,28 +2205,27 @@ def save(cube, target, append=False, field_coords=None):
     of cubes to be saved to a PP file.
 
     """
-    fields = as_fields(cube, field_coords, target)
+    fields = as_fields(cube, field_coords, label_surface_fields=label_surface_fields)
     save_fields(fields, target, append=append)
 
 
-def save_pairs_from_cube(cube, field_coords=None, target=None):
-    """Use the PP saving rules to convert a cube.
+def save_pairs_from_cube(cube, field_coords=None, label_surface_fields=False):
+    """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
-    Use the PP saving rules to convert a cube or
-    iterable of cubes to an iterable of (2D cube, PP field) pairs.
+    Parameters
+    ----------
+    cube :
+        A :class:`iris.cube.Cube`.
+    field_coords : optional
+        List of 2 coords or coord names which are to be used for
+        reducing the given cube into 2d slices, which will ultimately
+        determine the x and y coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen for slicing.
 
-    Args
-    ----
-    cube:
-        A :class:`iris.cube.Cube`
-    **kwargs
-        * field_coords:
-            List of 2 coords or coord names which are to be used for
-            reducing the given cube into 2d slices, which will ultimately
-            determine the x and y coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen for slicing.
-        * target:
-            A filename or open file handle.
+    Yields
+    ------
+    :class:`iris.cube.Cube`, :class:`iris.fileformats.pp.PPField`.
+        2-dimensional slices of the input cube together with their associated pp-fields.
 
     """
     # Open issues
@@ -2298,58 +2321,59 @@ def save_pairs_from_cube(cube, field_coords=None, target=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        pp_field = verify(slice2D, pp_field)
+        pp_field = verify(slice2D, pp_field, label_surface_fields=label_surface_fields)
 
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None, target=None):
+def as_fields(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to convert a cube to an iterable of PP fields.
 
     Use the PP saving rules (and any user rules) to convert a cube to
     an iterable of PP fields.
 
-    Args
-    ----
-    cube
-        A :class:`iris.cube.Cube`
-    **kwargs :
-        * field_coords:
-            List of 2 coords or coord names which are to be used for
-            reducing the given cube into 2d slices, which will ultimately
-            determine the x and y coordinates of the resulting fields.
-            If None, the final two  dimensions are chosen for slicing.
-        * target:
-            A filename or open file handle.
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+    field_coords : optional
+        List of 2 coords or coord names which are to be used for
+        reducing the given cube into 2d slices, which will ultimately
+        determine the x and y coordinates of the resulting fields.
+        If None, the final two  dimensions are chosen for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     """
     return (
         field
-        for cube, field in save_pairs_from_cube(
-            cube, field_coords=field_coords, target=target
+        for _, field in save_pairs_from_cube(
+            cube, field_coords=field_coords, label_surface_fields=label_surface_fields
         )
     )
 
 
-def save_fields(fields, target, append=False):
+def save_fields(fields, target, append: bool = False):
     """Save an iterable of PP fields to a PP file.
 
-    Args
-    ----
-    fields:
+    Parameters
+    ----------
+    fields :
         An iterable of PP fields.
-    target:
+    target :
         A filename or open file handle.
-    **kwargs :
-        * append:
-            Whether to start a new file afresh or add the cube(s) to the end
-            of the file.
-            Only applicable when target is a filename, not a file handle.
-            Default is False.
+    append : bool, default=False
+        Whether to start a new file afresh or add the cube(s) to the end
+        of the file.
+        Only applicable when target is a filename, not a file handle.
+        Default is False.
 
     See Also
     --------
-    :func:`iris.io.save`.
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # Open issues

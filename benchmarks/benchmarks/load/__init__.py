@@ -2,16 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""File loading benchmark tests.
-
-Where applicable benchmarks should be parameterised for two sizes of input data:
-  * minimal: enables detection of regressions in parts of the run-time that do
-             NOT scale with data size.
-  * large: large enough to exclusively detect regressions in parts of the
-           run-time that scale with data size. Size should be _just_ large
-           enough - don't want to bloat benchmark runtime.
-
-"""
+"""File loading benchmark tests."""
 
 from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
@@ -24,16 +15,16 @@ from ..generate_data.um_files import create_um_files
 class LoadAndRealise:
     # For data generation
     timeout = 600.0
-    params = [
+    params = (
         [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
         ["FF", "PP", "NetCDF"],
-    ]
+    )
     param_names = ["xyz", "compressed", "file_format"]
 
     def setup_cache(self) -> dict:
         file_type_args = self.params[2]
-        file_path_dict = {}
+        file_path_dict: dict[tuple[int, int, int], dict[bool, dict[str, str]]] = {}
         for xyz in self.params[0]:
             file_path_dict[xyz] = {}
             x, y, z = xyz
@@ -68,7 +59,7 @@ class LoadAndRealise:
 
 class STASHConstraint:
     # xyz sizes mimic LoadAndRealise to maximise file reuse.
-    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"]]
+    params = ([(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], ["FF", "PP"])
     param_names = ["xyz", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -87,7 +78,7 @@ class STASHConstraint:
 
 
 class TimeConstraint:
-    params = [[3, 20], ["FF", "PP", "NetCDF"]]
+    params = ([3, 20], ["FF", "PP", "NetCDF"])
     param_names = ["time_dim_len", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -112,7 +103,7 @@ class ManyVars:
 
     @staticmethod
     def _create_file(save_path: str) -> None:
-        """Is run externally - everything must be self-contained."""
+        """Run externally - everything must be self-contained."""
         import numpy as np
 
         from iris import save
@@ -148,7 +139,7 @@ class StructuredFF:
     avoiding the cost of merging.
     """
 
-    params = [[(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], [False, True]]
+    params = ([(2, 2, 2), (1280, 960, 5), (2, 2, 1000)], [False, True])
     param_names = ["xyz", "structured_loading"]
 
     def setup_cache(self) -> dict:

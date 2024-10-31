@@ -41,7 +41,7 @@ def custom_command(cmd, help=""):
             script_path = os.path.join("tools", "generate_std_names.py")
             xml_path = os.path.join("etc", "cf-standard-name-table.xml")
             module_path = os.path.join(directory, "iris", "std_names.py")
-            args = (sys.executable, script_path, xml_path, module_path)
+            args = [sys.executable, script_path, xml_path, module_path]
             self.spawn(args)
 
         def finalize_options(self):

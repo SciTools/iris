@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.fileformats._nc_load_rules.engine` module."""
+
 from unittest import mock
 
 from iris.fileformats._nc_load_rules.engine import Engine, FactEntity

@@ -61,7 +61,7 @@ subsequent example operations on this page.
         >>> import numpy as np
 
         >>> from iris.coords import AuxCoord
-        >>> from iris.experimental.ugrid import Connectivity, Mesh
+        >>> from iris.mesh import Connectivity, MeshXY
 
         # Going to create the following mesh
         #  (node indices are shown to aid understanding):
@@ -102,7 +102,7 @@ subsequent example operations on this page.
         ...     indices=face_indices, cf_role="face_node_connectivity"
         ... )
 
-        >>> my_mesh = Mesh(
+        >>> my_mesh = MeshXY(
         ...     long_name="my_mesh",
         ...     topology_dimension=2,  # Supports 2D (face) elements.
         ...     node_coords_and_axes=[(node_x, "x"), (node_y, "y")],
@@ -112,7 +112,7 @@ subsequent example operations on this page.
         ... )
 
         >>> print(my_mesh)
-        Mesh : 'my_mesh'
+        MeshXY : 'my_mesh'
             topology_dimension: 2
             node
                 node_dimension: 'Mesh2d_node'
@@ -143,8 +143,8 @@ Making a Cube (with a Mesh)
 .. rubric:: |tagline: making a cube|
 
 Creating a :class:`~iris.cube.Cube` is unchanged; the
-:class:`~iris.experimental.ugrid.Mesh` is linked via a
-:class:`~iris.experimental.ugrid.MeshCoord` (see :ref:`ugrid MeshCoords`):
+:class:`~iris.mesh.MeshXY` is linked via a
+:class:`~iris.mesh.MeshCoord` (see :ref:`ugrid MeshCoords`):
 
 .. dropdown:: Code
     :icon: code
@@ -205,7 +205,7 @@ Save
 .. note:: UGRID saving support is limited to the NetCDF file format.
 
 The Iris saving process automatically detects if the :class:`~iris.cube.Cube`
-has an associated :class:`~iris.experimental.ugrid.Mesh` and automatically
+has an associated :class:`~iris.mesh.MeshXY` and automatically
 saves the file in a UGRID-conformant format:
 
 .. dropdown:: Code
@@ -282,8 +282,8 @@ saves the file in a UGRID-conformant format:
         }
         <BLANKLINE>
 
-The :func:`iris.experimental.ugrid.save_mesh` function allows
-:class:`~iris.experimental.ugrid.Mesh`\es to be saved to file without
+The :func:`iris.mesh.save_mesh` function allows
+:class:`~iris.mesh.MeshXY`\es to be saved to file without
 associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: Code
@@ -293,7 +293,7 @@ associated :class:`~iris.cube.Cube`\s:
 
         >>> from subprocess import run
 
-        >>> from iris.experimental.ugrid import save_mesh
+        >>> from iris.mesh import save_mesh
 
         >>> mesh_path = "my_mesh.nc"
         >>> save_mesh(my_mesh, mesh_path)
@@ -347,16 +347,14 @@ associated :class:`~iris.cube.Cube`\s:
 
 Load
 ----
-.. |tagline: load| replace:: |different| - UGRID parsing is opt-in
+.. |tagline: load| replace:: |unchanged|
 
 .. rubric:: |tagline: load|
 
 .. note:: UGRID loading support is limited to the NetCDF file format.
 
-While Iris' UGRID support remains :mod:`~iris.experimental`, parsing UGRID when
-loading a file remains **optional**. To load UGRID data from a file into the
-Iris mesh data model, use the
-:const:`iris.experimental.ugrid.PARSE_UGRID_ON_LOAD` context manager:
+Iris mesh support detects + parses any UGRID information when loading files, to
+produce cubes with a non-empty ".mesh" property.
 
 .. dropdown:: Code
     :icon: code
@@ -364,10 +362,8 @@ Iris mesh data model, use the
     .. doctest:: ugrid_operations
 
         >>> from iris import load
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     loaded_cubelist = load(cubelist_path)
+        >>> loaded_cubelist = load(cubelist_path)
 
         # Sort CubeList to ensure consistent result.
         >>> loaded_cubelist.sort(key=lambda cube: cube.name())
@@ -386,9 +382,8 @@ etcetera:
 
         >>> from iris import Constraint, load_cube
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     ground_cubelist = load(cubelist_path, Constraint(height=0))
-        ...     face_cube = load_cube(cubelist_path, "face_data")
+        >>> ground_cubelist = load(cubelist_path, Constraint(height=0))
+        >>> face_cube = load_cube(cubelist_path, "face_data")
 
         # Sort CubeList to ensure consistent result.
         >>> ground_cubelist.sort(key=lambda cube: cube.name())
@@ -412,15 +407,15 @@ etcetera:
 .. note::
 
     We recommend caution if constraining on coordinates associated with a
-    :class:`~iris.experimental.ugrid.Mesh`. An individual coordinate value
+    :class:`~iris.mesh.MeshXY`. An individual coordinate value
     might not be shared by any other data points, and using a coordinate range
     will demand notably higher performance given the size of the dimension
     versus structured grids
     (:ref:`see the data model detail <ugrid implications>`).
 
-The :func:`iris.experimental.ugrid.load_mesh` and
-:func:`~iris.experimental.ugrid.load_meshes` functions allow only
-:class:`~iris.experimental.ugrid.Mesh`\es to be loaded from a file without
+The :func:`iris.mesh.load_mesh` and
+:func:`~iris.mesh.load_meshes` functions allow only
+:class:`~iris.mesh.MeshXY`\es to be loaded from a file without
 creating any associated :class:`~iris.cube.Cube`\s:
 
 .. dropdown:: Code
@@ -428,13 +423,12 @@ creating any associated :class:`~iris.cube.Cube`\s:
 
     .. doctest:: ugrid_operations
 
-        >>> from iris.experimental.ugrid import load_mesh
+        >>> from iris.mesh import load_mesh
 
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     loaded_mesh = load_mesh(cubelist_path)
+        >>> loaded_mesh = load_mesh(cubelist_path)
 
         >>> print(loaded_mesh)
-        Mesh : 'my_mesh'
+        MeshXY : 'my_mesh'
             topology_dimension: 2
             node
                 node_dimension: 'Mesh2d_node'
@@ -469,14 +463,18 @@ SEM microscopy), so there is a wealth of tooling available, which
 :ref:`ugrid geovista` harnesses for cartographic plotting.
 
 GeoVista's default behaviour is to convert lat-lon information into full XYZ
-coordinates so the data is visualised on the surface of a 3D globe. The plots
-are interactive by default, so it's easy to explore the data in detail.
+coordinates so the data is visualised on the surface of a 3D globe; 2D
+projections are also supported. The plots are interactive by default, so it's
+easy to explore the data in detail.
 
-2D projections have also been demonstrated in proofs of concept, and will
-be added to API in the near future.
+Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
+easy via this convenience:
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
-This first example uses GeoVista to plot the ``face_cube`` that we created
-earlier:
+Below is an example of using GeoVista to plot a low-res
+sample :attr:`~iris.cube.Cube.mesh` based :class:`~iris.cube.Cube`. For
+some truly spectacular visualisations of high-res data please see the
+GeoVista :external+geovista:doc:`generated/gallery/index`.
 
 .. dropdown:: Code
     :icon: code
@@ -484,130 +482,46 @@ earlier:
     .. code-block:: python
 
         >>> from geovista import GeoPlotter, Transform
-        >>> from geovista.common import to_xyz
+        >>> from geovista.common import to_cartesian
+        >>> import matplotlib.pyplot as plt
 
+        >>> from iris import load_cube, sample_data_path
+        >>> from iris.experimental.geovista import cube_to_polydata
 
-        # We'll re-use this to plot some real global data later.
-        >>> def cube_faces_to_polydata(cube):
-        ...     lons, lats = cube.mesh.node_coords
-        ...     face_node = cube.mesh.face_node_connectivity
-        ...     indices = face_node.indices_by_location()
-        ...
-        ...     mesh = Transform.from_unstructured(
-        ...         lons.points,
-        ...         lats.points,
-        ...         indices,
-        ...         data=cube.data,
-        ...         name=f"{cube.name()} / {cube.units}",
-        ...         start_index=face_node.start_index,
-        ...     )
-        ...     return mesh
-
-        >>> print(face_cube)
-        face_data / (K)                     (-- : 2; height: 3)
-            Dimension coordinates:
-                height                          -          x
+        >>> sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> print(sample_mesh_cube)
+        synthetic / (1)                     (-- : 96)
             Mesh coordinates:
-                latitude                        x          -
-                longitude                       x          -
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        Topology data of 2D unstructured mesh
+                location                    face
             Attributes:
-                Conventions                 'CF-1.7'
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    np.int32(1)
 
         # Convert our mesh+data to a PolyData object.
-        # Just plotting a single height level.
-        >>> face_polydata = cube_faces_to_polydata(face_cube[:, 0])
+        >>> face_polydata = cube_to_polydata(sample_mesh_cube)
         >>> print(face_polydata)
-        PolyData (0x7ff4861ff4c0)
-          N Cells:	2
-          N Points:	5
-          X Bounds:	9.903e-01, 1.000e+00
-          Y Bounds:	0.000e+00, 1.392e-01
-          Z Bounds:	6.123e-17, 5.234e-02
-          N Arrays:	2
+        PolyData (...
+          N Cells:    96
+          N Points:   98
+          N Strips:   0
+          X Bounds:   -1.000e+00, 1.000e+00
+          Y Bounds:   -1.000e+00, 1.000e+00
+          Z Bounds:   -1.000e+00, 1.000e+00
+          N Arrays:   4
 
         # Create the GeoVista plotter and add our mesh+data to it.
         >>> my_plotter = GeoPlotter()
-        >>> my_plotter.add_coastlines(color="black")
-        >>> my_plotter.add_base_layer(color="grey")
-        >>> my_plotter.add_mesh(face_polydata)
-
-        # Centre the camera on the data.
-        >>> camera_region = to_xyz(
-        ...     face_cube.coord("longitude").points,
-        ...     face_cube.coord("latitude").points,
-        ...     radius=3,
-        ... )
-        >>> camera_pos = camera_region.mean(axis=0)
-        >>> my_plotter.camera.position = camera_pos
-
-        >>> my_plotter.show()
-
-    ..  image:: images/plotting_basic.png
-        :alt: A GeoVista plot of the basic example Mesh.
-
-    This artificial data makes West Africa rather chilly!
-
-Here's another example using a global cubed-sphere data set:
-
-.. dropdown:: Code
-    :icon: code
-
-    .. code-block:: python
-
-        >>> from iris import load_cube
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
-
-        # Demonstrating with a global data set.
-        # You could also download this file from github.com/SciTools/iris-test-data.
-        >>> from iris.tests import get_data_path
-        >>> file_path = get_data_path(
-        ...     [
-        ...         "NetCDF",
-        ...         "unstructured_grid",
-        ...         "lfric_surface_mean.nc",
-        ...     ]
-        ... )
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     global_cube = load_cube(file_path, "tstar_sea")
-        >>> print(global_cube)
-        sea_surface_temperature / (K)       (-- : 1; -- : 13824)
-            Mesh coordinates:
-                latitude                        -       x
-                longitude                       -       x
-            Auxiliary coordinates:
-                time                            x       -
-            Cell methods:
-                0                           time: mean (interval: 300 s)
-                1                           time_counter: mean
-            Attributes:
-                Conventions                 UGRID
-                description                 Created by xios
-                interval_operation          300 s
-                interval_write              1 d
-                name                        lfric_surface
-                online_operation            average
-                timeStamp                   2020-Feb-07 16:23:14 GMT
-                title                       Created by xios
-                uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
-
-        >>> global_polydata = cube_faces_to_polydata(global_cube)
-        >>> print(global_polydata)
-        PolyData (0x7f761b536160)
-          N Cells:	13824
-          N Points:	13826
-          X Bounds:	-1.000e+00, 1.000e+00
-          Y Bounds:	-1.000e+00, 1.000e+00
-          Z Bounds:	-1.000e+00, 1.000e+00
-          N Arrays:	2
-
-        >>> my_plotter = GeoPlotter()
         >>> my_plotter.add_coastlines()
-        >>> my_plotter.add_mesh(global_polydata, show_edges=True)
-
+        >>> my_plotter.add_mesh(face_polydata)
         >>> my_plotter.show()
 
-    ..  image:: images/plotting_global.png
-        :alt: A GeoVista plot of a global sea surface temperature Mesh.
+    .. image:: images/plotting.png
+       :alt: A GeoVista plot of low-res sample data.
 
 Region Extraction
 -----------------
@@ -619,11 +533,11 @@ As described in :doc:`data_model`, indexing for a range along a
 :class:`~iris.cube.Cube`\'s :meth:`~iris.cube.Cube.mesh_dim` will not provide
 a contiguous region, since **position on the unstructured dimension is
 unrelated to spatial position**. This means that subsetted
-:class:`~iris.experimental.ugrid.MeshCoord`\s cannot be reliably interpreted
-as intended, and subsetting a :class:`~iris.experimental.ugrid.MeshCoord` is
+:class:`~iris.mesh.MeshCoord`\s cannot be reliably interpreted
+as intended, and subsetting a :class:`~iris.mesh.MeshCoord` is
 therefore set to return an :class:`~iris.coords.AuxCoord` instead - breaking
 the link between :class:`~iris.cube.Cube` and
-:class:`~iris.experimental.ugrid.Mesh`:
+:class:`~iris.mesh.MeshXY`:
 
 .. dropdown:: Code
     :icon: code
@@ -656,118 +570,57 @@ position of the data points before they can be analysed as inside/outside the
 selected region. The recommended way to do this is using tools provided by
 :ref:`ugrid geovista`, which is optimised for performant mesh analysis.
 
-This approach centres around using :meth:`geovista.geodesic.BBox.enclosed` to
-get the subset of the original mesh that is inside the
-:class:`~geovista.geodesic.BBox`. This subset :class:`pyvista.PolyData` object
-includes the original indices of each datapoint - the ``vtkOriginalCellIds``
-array, which can be used to index the original :class:`~iris.cube.Cube`. Since
-we **know** that this subset :class:`~iris.cube.Cube` represents a regional
-mesh, we then reconstruct a :class:`~iris.experimental.ugrid.Mesh` from the
-:class:`~iris.cube.Cube`\'s :attr:`~iris.cube.Cube.aux_coords` using
-:meth:`iris.experimental.ugrid.Mesh.from_coords`:
+Performing GeoVista operations on your :class:`~iris.cube.Cube` is made
+easy via this convenience:
+:func:`iris.experimental.geovista.cube_to_polydata`.
 
-..
-    Not using doctest here as want to keep GeoVista as optional dependency.
+An Iris convenience for regional extraction is also provided:
+:func:`iris.experimental.geovista.extract_unstructured_region`; demonstrated
+below:
+
 
 .. dropdown:: Code
     :icon: code
 
-    .. code-block:: python
+    .. doctest:: ugrid_operations
 
-        >>> from geovista import Transform
         >>> from geovista.geodesic import BBox
-        >>> from iris import load_cube
-        >>> from iris.experimental.ugrid import Mesh, PARSE_UGRID_ON_LOAD
+        >>> from iris import load_cube, sample_data_path
+        >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
 
-        # Need a larger dataset to demonstrate this operation.
-        # You could also download this file from github.com/SciTools/iris-test-data.
-        >>> from iris.tests import get_data_path
-        >>> file_path = get_data_path(
-        ...     [
-        ...         "NetCDF",
-        ...         "unstructured_grid",
-        ...         "lfric_ngvat_2D_72t_face_half_levels_main_conv_rain.nc",
-        ...     ]
-        ... )
-
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     global_cube = load_cube(file_path, "conv_rain")
-        >>> print(global_cube)
-        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 864)
+        >>> sample_mesh_cube = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
+        >>> print(sample_mesh_cube)
+        synthetic / (1)                     (-- : 96)
             Mesh coordinates:
-                latitude                                    -        x
-                longitude                                   -        x
-            Auxiliary coordinates:
-                time                                        x        -
-            Cell methods:
-                0                                       time: point
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        Topology data of 2D unstructured mesh
+                location                    face
             Attributes:
-                Conventions                             UGRID
-                description                             Created by xios
-                interval_operation                      300 s
-                interval_write                          300 s
-                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
-                online_operation                        instant
-                timeStamp                               2020-Oct-18 21:18:35 GMT
-                title                                   Created by xios
-                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    np.int32(1)
 
-        # Convert the Mesh to a GeoVista PolyData object.
-        >>> lons, lats = global_cube.mesh.node_coords
-        >>> face_node = global_cube.mesh.face_node_connectivity
-        >>> indices = face_node.indices_by_location()
-        >>> global_polydata = Transform.from_unstructured(
-        ...     lons.points, lats.points, indices, start_index=face_node.start_index
+        >>> regional_cube = extract_unstructured_region(
+        ...     cube=sample_mesh_cube,
+        ...     polydata=cube_to_polydata(sample_mesh_cube),
+        ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
+        ...     preference="center",
         ... )
-
-        # Define a region of 4 corners connected by great circles.
-        #  Specialised sub-classes of BBox are also available e.g. panel/wedge.
-        >>> region = BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45])
-        # 'Apply' the region to the PolyData object.
-        >>> region_polydata = region.enclosed(global_polydata, preference="center")
-        # Get the remaining face indices, to use for indexing the Cube.
-        >>> indices = region_polydata["vtkOriginalCellIds"]
-
-        >>> print(type(indices))
-        <class 'numpy.ndarray'>
-        # 101 is smaller than the original 864.
-        >>> print(len(indices))
-        101
-        >>> print(indices[:10])
-        [ 6  7  8  9 10 11 18 19 20 21]
-
-        # Use the face indices to subset the global cube.
-        >>> region_cube = global_cube[:, indices]
-
-        # In this case we **know** the indices correspond to a contiguous
-        #  region, so we will convert the sub-setted Cube back into a
-        #  Cube-with-Mesh.
-        >>> new_mesh = Mesh.from_coords(*region_cube.coords(dimensions=1))
-        >>> new_mesh_coords = new_mesh.to_MeshCoords(global_cube.location)
-        >>> for coord in new_mesh_coords:
-        ...     region_cube.remove_coord(coord.name())
-        ...     region_cube.add_aux_coord(coord, 1)
-
-        # A Mesh-Cube with a subset (101) of the original 864 faces.
-        >>> print(region_cube)
-        surface_convective_rainfall_rate / (kg m-2 s-1) (-- : 72; -- : 101)
+        >>> print(regional_cube)
+        synthetic / (1)                     (-- : 11)
             Mesh coordinates:
-                latitude                                    -        x
-                longitude                                   -        x
-            Auxiliary coordinates:
-                time                                        x        -
-            Cell methods:
-                0                                       time: point
+                latitude                        x
+                longitude                       x
+            Mesh:
+                name                        unknown
+                location                    face
             Attributes:
-                Conventions                             UGRID
-                description                             Created by xios
-                interval_operation                      300 s
-                interval_write                          300 s
-                name                                    lfric_ngvat_2D_72t_face_half_levels_main_conv_rain
-                online_operation                        instant
-                timeStamp                               2020-Oct-18 21:18:35 GMT
-                title                                   Created by xios
-                uuid                                    b3dc0fb4-9828-4663-a5ac-2a5763280159
+                NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
+                history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
+                nco_openmp_thread_number    np.int32(1)
+
 
 Regridding
 ----------
@@ -804,7 +657,6 @@ with the
 
         >>> from esmf_regrid.experimental.unstructured_scheme import MeshToGridESMFRegridder
         >>> from iris import load, load_cube
-        >>> from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
         # You could also download these files from github.com/SciTools/iris-test-data.
         >>> from iris.tests import get_data_path
@@ -816,8 +668,7 @@ with the
         ... )
 
         # Load a list of cubes defined on the same Mesh.
-        >>> with PARSE_UGRID_ON_LOAD.context():
-        ...     mesh_cubes = load(mesh_file)
+        >>> mesh_cubes = load(mesh_file)
 
         # Extract a specific cube.
         >>> mesh_cube1 = mesh_cubes.extract_cube("sea_surface_temperature")
@@ -888,7 +739,7 @@ with the
 The initialisation process is computationally expensive so we use caching to
 improve performance. Once a regridder has been initialised, it can be used on
 any :class:`~iris.cube.Cube` which has been defined on the same
-:class:`~iris.experimental.ugrid.Mesh` (or on the same **grid** in the case of
+:class:`~iris.mesh.MeshXY` (or on the same **grid** in the case of
 :class:`~esmf_regrid.experimental.unstructured_scheme.GridToMeshESMFRegridder`).
 Since calling a regridder is usually a lot faster than initialising, reusing
 regridders can save a lot of time. We can demonstrate the reuse of the
@@ -956,19 +807,19 @@ Equality
 
 .. rubric:: |tagline: equality|
 
-:class:`~iris.experimental.ugrid.Mesh` comparison is supported, and comparing
-two ':class:`~iris.experimental.ugrid.Mesh`-:class:`~iris.cube.Cube`\s' will
+:class:`~iris.mesh.MeshXY` comparison is supported, and comparing
+two ':class:`~iris.mesh.MeshXY`-:class:`~iris.cube.Cube`\s' will
 include a comparison of the respective
-:class:`~iris.experimental.ugrid.Mesh`\es, with no extra action needed by the
+:class:`~iris.mesh.MeshXY`\es, with no extra action needed by the
 user.
 
 .. note::
 
     Keep an eye on memory demand when comparing large
-    :class:`~iris.experimental.ugrid.Mesh`\es, but note that
-    :class:`~iris.experimental.ugrid.Mesh`\ equality is enabled for lazy
+    :class:`~iris.mesh.MeshXY`\es, but note that
+    :class:`~iris.mesh.MeshXY`\ equality is enabled for lazy
     processing (:doc:`/userguide/real_and_lazy_data`), so if the
-    :class:`~iris.experimental.ugrid.Mesh`\es being compared are lazy the
+    :class:`~iris.mesh.MeshXY`\es being compared are lazy the
     process will use less memory than their total size.
 
 Combining Cubes
@@ -979,23 +830,23 @@ Combining Cubes
 
 Merging or concatenating :class:`~iris.cube.Cube`\s (described in
 :doc:`/userguide/merge_and_concat`) with two different
-:class:`~iris.experimental.ugrid.Mesh`\es is not possible - a
+:class:`~iris.mesh.MeshXY`\es is not possible - a
 :class:`~iris.cube.Cube` must be associated with just a single
-:class:`~iris.experimental.ugrid.Mesh`, and merge/concatenate are not yet
-capable of combining multiple :class:`~iris.experimental.ugrid.Mesh`\es into
+:class:`~iris.mesh.MeshXY`, and merge/concatenate are not yet
+capable of combining multiple :class:`~iris.mesh.MeshXY`\es into
 one.
 
 :class:`~iris.cube.Cube`\s that include
-:class:`~iris.experimental.ugrid.MeshCoord`\s can still be merged/concatenated
-on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, since such
-:class:`~iris.cube.Cube`\s will by definition share the same
-:class:`~iris.experimental.ugrid.Mesh`.
+:class:`~iris.mesh.MeshCoord`\s can still be merged/concatenated
+on dimensions other than the :meth:`~iris.cube.Cube.mesh_dim`, but only if their
+:class:`~iris.cube.Cube.mesh`\es are *equal* (in practice, identical, even to
+matching ``var_name``\s).
 
 .. seealso::
 
     You may wish to investigate
-    :func:`iris.experimental.ugrid.recombine_submeshes`, which can be used
-    for a very specific type of :class:`~iris.experimental.ugrid.Mesh`
+    :func:`iris.mesh.recombine_submeshes`, which can be used
+    for a very specific type of :class:`~iris.mesh.MeshXY`
     combination not detailed here.
 
 Arithmetic
@@ -1006,7 +857,7 @@ Arithmetic
 
 Cube Arithmetic (described in :doc:`/userguide/cube_maths`)
 has been extended to handle :class:`~iris.cube.Cube`\s that include
-:class:`~iris.experimental.ugrid.MeshCoord`\s, and hence have a ``cube.mesh``.
+:class:`~iris.mesh.MeshCoord`\s, and hence have a ``cube.mesh``.
 
 Cubes with meshes can be combined in arithmetic operations like
 "ordinary" cubes. They can combine with other cubes without that mesh

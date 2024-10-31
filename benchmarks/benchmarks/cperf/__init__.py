@@ -9,12 +9,10 @@ CPerf = comparing performance working with data in UM versus LFRic formats.
 Files available from the UK Met Office:
   moo ls moose:/adhoc/projects/avd/asv/data_for_nightly_tests/
 """
+
 import numpy as np
 
 from iris import load_cube
-
-# TODO: remove uses of PARSE_UGRID_ON_LOAD once UGRID parsing is core behaviour.
-from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD
 
 from ..generate_data import BENCHMARK_DATA
 from ..generate_data.ugrid import make_cubesphere_testfile
@@ -91,5 +89,4 @@ class SingleDiagnosticMixin:
         self.file_type = file_type
 
     def load(self):
-        with PARSE_UGRID_ON_LOAD.context():
-            return load_cube(str(self.file_path))
+        return load_cube(str(self.file_path))
