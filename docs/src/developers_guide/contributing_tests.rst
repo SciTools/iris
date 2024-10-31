@@ -54,7 +54,7 @@ module(s) under test.
 If in any doubt about what tests to add or how to write them please
 feel free to submit a pull-request in any state and ask for assistance.
 
-.. _pytesting_style_guide:
+.. _testing_style_guide:
 
 PyTest Style Guide
 ==================
@@ -71,10 +71,10 @@ At time of writing, some existing tests have already been written in PyTest,
 so might not be abiding by these guidelines.
 
 `conftest.py <https://docs.pytest.org/en/stable/reference/fixtures.html#conftest-py-sharing-fixtures-across-multiple-files>`_
-----------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------
 
 There should be a ``conftest.py`` file in the ``root/unit`` and ``root/integration``
-folders. Additional lower level ``conftest``s can be added if it is agreed there
+folders. Additional lower level ``conftest``\s can be added if it is agreed there
 is a need.
 
 `Fixtures <https://docs.pytest.org/en/stable/how-to/fixtures.html#how-to-fixtures>`_
@@ -196,7 +196,7 @@ Within that file the tests might look something like:
         ...
 
 There is no fixed naming scheme for integration tests.
-.. _pytesting_tools:
+.. _testing_tools:
 
 Testing tools
 =============
@@ -224,7 +224,7 @@ Custom assertions
 assertions, such as :func:`~iris.tests._shared_utils.assert_array_equal`, and
 :func:`~iris.tests._shared_utils.assert_array_almost_equal`.
 
-.. _pycreate-missing:
+.. _create-missing:
 
 Saving results
 --------------
