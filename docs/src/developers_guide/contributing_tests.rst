@@ -6,6 +6,9 @@
 Contributing Iris Tests
 ***********************
 
+.. note::
+    If you're converting UnitTest tests to PyTest, check out :ref:`converting_tests`.
+
 .. _developer_pytest_categories:
 
 Test Categories
