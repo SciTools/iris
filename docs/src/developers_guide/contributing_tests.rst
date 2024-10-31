@@ -61,7 +61,7 @@ PyTest Style Guide
 
 .. note::
     If you're converting UnitTest tests to PyTest, check out
-    :ref:`_contributing_pytest_conversions`.
+    :ref:`contributing_pytest_conversions`.
 
 This style guide should be approached pragmatically. Many of the guidelines laid out
 below will not be practical in every scenario, and as such should not be considered

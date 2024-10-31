@@ -33,7 +33,7 @@ Conversion Checklist
 #. Check for references to ``setUp()``. Replace this with ``_setup()`` instead.
    Ensure that this is decorated with ``@pytest.fixture(autouse=True)``.
 
-   .. codeblock:: python
+   .. code-block:: python
 
       @pytest.fixture(autouse=True)
       def _setup(self):
