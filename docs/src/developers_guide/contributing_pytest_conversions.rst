@@ -1,6 +1,6 @@
 .. include:: ../common_links.inc
 
-.. _converting_tests:
+.. _converting_from_unittest:
 
 *******************************************
 Converting From ``unittest`` to ``pytest``
@@ -15,21 +15,29 @@ Conversion Checklist
 #. Before making any manual changes, run https://github.com/dannysepler/pytestify
    on the file. This does a lot of the brunt work for you!
 #. Check for references to :class:`iris.tests.IrisTest`. If a class inherits
-   from this, remove it. :class:`iris.tests.IrisTest` has been deprecated, and
-   replaced with the :mod:`iris.tests._shared_utils` module.
+   from this, remove the inheritance. Inheritance is unnecessary for
+   pytest tests, so :class:`iris.tests.IrisTest` has been deprecated
+   and its convenience methods have been moved to the
+   :mod:`iris.tests._shared_utils` module.
 #. Check for references  to ``unittest``. Many of the functions within unittest
    are also in pytest, so often you can just change where the function is imported
    from.
-#. Check for references to `self.assert`. Pytest has a lighter-weight syntax for
+#. Check for references to ``self.assert``. Pytest has a lighter-weight syntax for
    assertions, e.g. ``assert x == 2`` instead of ``assertEqual(x, 2)``. In the
-   case of custom assertions, the majority of these have been replicated in
+   case of custom :class:`~iris.tests.IrisTest` assertions, the majority of these
+   have been replicated in
    :mod:`iris.tests._shared_utils`, but with snake_case instead of camelCase.
    Some :class:`iris.tests.IrisTest` assertions have not been converted into
-   :mod:`iris.tests._shared_utils`, as it was deemed these were easy to do
-   without.
-#. Check for references to ``setUp()``. Pytest recognises a specific method called
-   ``_setup()`` instead. Ensure that this is decorated with
-   ``@pytest.fixture(autouse=True)``.
+   :mod:`iris.tests._shared_utils`, as these were deemed easy to achieve via
+   simple ``assert ...`` statements.
+#. Check for references to ``setUp()``. Replace this with ``_setup()`` instead.
+   Ensure that this is decorated with ``@pytest.fixture(autouse=True)``.
+   .. codeblock:: python
+
+      @pytest.fixture(autouse=True)
+      def _setup(self):
+         ...
+
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for references to ``with mock.patch("...")``. These should be replaced with
    ``mocker.patch("...")``. Note, ``mocker.patch("...")`` is NOT a context manager.
@@ -42,6 +50,6 @@ Conversion Checklist
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
 #. Check for ``mock.patch("warnings.warn")``. This can be replaced with
    ``pytest.warns(match=message)``.
-#. Check the file against ruff, using ``pip install ruff`` ->
+#. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
 

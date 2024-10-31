@@ -11,3 +11,4 @@ Testing
    contributing_running_tests
    contributing_ci_tests
    contributing_benchmarks
+   contributing_pytest_conversions
