@@ -365,7 +365,8 @@ class IrisRelease(Progress):
         message = (
             f"Follow the Pull Request process to get {working_branch} "
             f"merged into upstream/{self.strings.branch} .\n"
-            "Make sure the documentation is previewed during this process."
+            "Make sure the documentation is previewed during this process.\n"
+            "Make sure you are NOT targeting the `main` branch."
         )
         self.wait_for_done(message)
 
@@ -381,7 +382,8 @@ class IrisRelease(Progress):
         message = (
             f"Select {self.strings.branch} as the Target.\n"
             f"Input {self.git_tag} as the new tag to create, and also as "
-            "the Release title."
+            "the Release title.\n"
+            "Make sure you are NOT targeting the `main` branch."
         )
         self.wait_for_done(message)
 
