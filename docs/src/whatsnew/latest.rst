@@ -24,7 +24,9 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. `:class:`iris.tests.IrisTest` is being replaced by :mod:`iris.tests._shared_utils`.
+   Once conversion from unittest to pytest is completed, :class:`iris.tests.IrisTest`
+   class will be deprecated.
 
 
 ✨ Features
@@ -66,13 +68,21 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@ESadek-MO`_ and `@trexfeathers`_ created :ref:`contributing_pytest_conversions`
+   as a guide for converting from ``unittest`` to ``pytest``. (:pull:`5785`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a style guide for ``pytest`` tests,
+   and consolidated ``Test Categories`` and ``Testing Tools`` into
+   :ref:`contributing_pytest_conversions` (:issue:`5574`, :pull:`5787`)
 
 
 💼 Internal
 ===========
 
-#. N/A
+#. `@ESadek_MO`_ `@pp-mo`_ `@bjlittle`_ `@trexfeathers`_ and `@HGWright`_ have
+   converted around a third of Iris' ``unittest`` style tests to ``pytest``. This is
+   part of an ongoing effort to move from ``unittest`` to ``pytest``. (:pull:`6207`,
+   part of :issue:`5690`)
 
 
 .. comment
