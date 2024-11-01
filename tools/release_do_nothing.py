@@ -31,6 +31,7 @@ class IrisRelease(Progress):
         MINOR = 1
         PATCH = 2
 
+    github_user: str = None
     release_type: ReleaseTypes = None
     git_tag: str = None  # v1.2.3rc0
     first_in_series: bool = None
@@ -43,6 +44,7 @@ class IrisRelease(Progress):
     @classmethod
     def get_steps(cls) -> list[typing.Callable[..., None]]:
         return [
+            cls.get_github_user,
             cls.get_release_type,
             cls.get_release_tag,
             cls.check_release_candidate,
@@ -59,6 +61,25 @@ class IrisRelease(Progress):
             cls.twitter_announce,
             cls.merge_back,
         ]
+
+    def get_github_user(self):
+        def validate(input_user: str) -> str | None:
+            if not re.fullmatch(r"[a-zA-Z0-9-]+", input_user):
+                self.report_problem("Invalid GitHub username. Please try again ...")
+            else:
+                return input_user
+
+        message = (
+            "Please input your GitHub username.\n"
+            "This is used in the URLs for creating pull requests."
+        )
+        self.set_value_from_input(
+            key="github_user",
+            message=message,
+            expected_inputs="Username",
+            post_process=validate,
+        )
+        self.print(f"GitHub username = {self.github_user}")
 
     def get_release_type(self):
         def validate(input_value: str) -> IrisRelease.ReleaseTypes | None:
@@ -166,6 +187,41 @@ class IrisRelease(Progress):
             else:
                 self.print("Existing series confirmed.")
 
+    def _create_pr(
+        self,
+        base_org: str,
+        base_repo: str,
+        base_branch: str,
+        head_branch: str
+    ) -> None:
+        """Instruct user to create a PR with a specified base and head.
+
+        Parameters
+        ----------
+        base_org : str
+            The name of the GitHub organisation that owns the `base_repo` that
+            owns the `base_branch`.
+        base_repo : str
+            The name of the GitHub repository (within the `base_org`) that owns
+            the `base_branch`.
+        base_branch : str
+            The name of the branch (within the `base_repo`) that will be the
+            base of the PR.
+        head_branch : str
+            The name of the branch (within the user's fork of `base_repo`) that
+            will be the head of the PR.
+        """
+        repo_url = f"https://github.com/{base_org}/{base_repo}"
+        diff_url = f"{base_branch}...{self.github_user}:{base_repo}:{head_branch}"
+        full_url = f"{repo_url}/compare/{diff_url}"
+
+        pr_message = (
+            "Create a Pull Request for your changes by visiting this URL "
+            "and clicking `Create pull request`:\n"
+            f"{full_url}"
+        )
+        self.wait_for_done(pr_message)
+
     def update_standard_names(self):
         if self.first_in_series:
             working_branch = self.strings.branch + ".standard_names"
@@ -188,10 +244,13 @@ class IrisRelease(Progress):
             )
             self.wait_for_done(message)
 
-            message = (
-                "Follow the Pull Request process to get "
-                f"{working_branch} merged into upstream/main ."
+            self._create_pr(
+                base_org="SciTools",
+                base_repo="iris",
+                base_branch="main",
+                head_branch=working_branch,
             )
+            message = "Work with the development team to get the PR merged."
             self.wait_for_done(message)
 
     def check_deprecations(self):
@@ -362,9 +421,14 @@ class IrisRelease(Progress):
         )
         self.wait_for_done(message)
 
+        self._create_pr(
+            base_org="SciTools",
+            base_repo="iris",
+            base_branch=self.strings.branch,
+            head_branch=working_branch,
+        )
         message = (
-            f"Follow the Pull Request process to get {working_branch} "
-            f"merged into upstream/{self.strings.branch} .\n"
+            "Work with the development team to get the PR merged.\n"
             "Make sure the documentation is previewed during this process.\n"
             "Make sure you are NOT targeting the `main` branch."
         )
@@ -671,14 +735,30 @@ class IrisRelease(Progress):
         )
         self.wait_for_done(message)
 
-        message = (
-            f"Follow the Pull Request process to get {self.git_tag} "
-            f"branch "
-            f"merged into upstream/{upstream_branch} .\n"
-            "Specific conda-forge guidance will be automatically given once "
-            "the "
-            "PR is created."
+        self._create_pr(
+            base_org="conda-forge",
+            base_repo="iris-feedstock",
+            base_branch=upstream_branch,
+            head_branch=self.git_tag,
         )
+
+        if self.is_release_candidate:
+            readme_url = f"https://github.com/{self.github_user}/iris-feedstock/blob/{self.git_tag}/README.md"
+            rc_evidence = (
+                "\n\nConfirm that conda-forge knows your changes are for the "
+                "release candidate channel by checking the below README file. "
+                "This should make multiple references to the `rc_iris` label:\n"
+                f"{readme_url}"
+            )
+        else:
+            rc_evidence = ""
+        message = (
+            "Follow the automatic conda-forge guidance for further populating "
+            f"your Pull Request.{rc_evidence}"
+        )
+        self.wait_for_done(message)
+
+        message = "Work with your fellow feedstock maintainers to get the PR merged."
         self.wait_for_done(message)
 
         message = (
@@ -846,11 +926,15 @@ class IrisRelease(Progress):
             )
             self.wait_for_done(message)
 
+            self._create_pr(
+                base_org="SciTools",
+                base_repo="iris",
+                base_branch="main",
+                head_branch=working_branch,
+            )
             message = (
-                "Follow the Pull Request process to get "
-                f"{working_branch} merged into upstream/main .\n"
-                "Make sure the documentation is previewed during this "
-                "process.\n"
+                "Work with the development team to get the PR merged.\n"
+                "Make sure the documentation is previewed during this process.\n"
                 f"{merge_commit}"
             )
             self.wait_for_done(message)
