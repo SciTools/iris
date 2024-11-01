@@ -125,8 +125,8 @@ we do not deem consistency on this a vital concern.
 Naming Test Classes and Functions
 ---------------------------------
 
-Within a test module each tested method may have corresponding test classes,
-for example:
+When testing classes and their methods, each tested method within a test module
+may have corresponding test classes, for example:
 
 * ``Test_<name of public method>``
 * ``Test_<name of public method>__<aspect of method>``
@@ -163,7 +163,8 @@ Within that file the tests might look something like:
         def test_coord_already_present(self):
             ...
 
-Within this test module there may be test classes, for example:
+When testing functions, within the test module there may be test classes, for
+example:
 
 * ``Test``
 * ``TestAspectOfFunction``
@@ -196,6 +197,7 @@ Within that file the tests might look something like:
         ...
 
 There is no fixed naming scheme for integration tests.
+
 .. _testing_tools:
 
 Testing tools
