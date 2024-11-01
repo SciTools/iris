@@ -44,6 +44,7 @@ dependencies:
   - psutil
   - pytest
   - pytest-cov
+  - pytest-mock
   - pytest-xdist
   - requests
 

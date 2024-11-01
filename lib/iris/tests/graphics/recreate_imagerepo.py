@@ -10,7 +10,7 @@ from pathlib import Path
 
 from imagehash import hex_to_hash
 
-import iris.tests
+from iris.tests import _shared_utils
 import iris.tests.graphics as graphics
 
 
@@ -47,7 +47,7 @@ def update_json(baseline_image_dir: Path, dry_run: bool = False):
 
 
 if __name__ == "__main__":
-    default_baseline_image_dir = Path(iris.tests.IrisTest.get_data_path("images"))
+    default_baseline_image_dir = Path(_shared_utils.get_data_path("images"))
     description = (
         "Update imagerepo.json based on contents of the baseline image directory"
     )

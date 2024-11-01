@@ -4,24 +4,16 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util._is_circular`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 
 from iris.util import _is_circular
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_simple(self):
         data = np.arange(12) * 30
-        self.assertTrue(_is_circular(data, 360))
+        assert _is_circular(data, 360)
 
     def test_negative_diff(self):
         data = (np.arange(96) * -3.749998) + 3.56249908e02
-        self.assertTrue(_is_circular(data, 360))
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert _is_circular(data, 360)
