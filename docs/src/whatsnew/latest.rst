@@ -79,7 +79,7 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. `@ESadek_MO`_ `@pp-mo`_ `@bjlittle`_ `@trexfeathers`_ and `@HGWright`_ have
+#. `@ESadek-MO`_ `@pp-mo`_ `@bjlittle`_ `@trexfeathers`_ and `@HGWright`_ have
    converted around a third of Iris' ``unittest`` style tests to ``pytest``. This is
    part of an ongoing effort to move from ``unittest`` to ``pytest``. (:pull:`6207`,
    part of :issue:`5690`)
