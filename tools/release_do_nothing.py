@@ -584,7 +584,7 @@ class IrisRelease(Progress):
                 _ = int(sha256_string, 16)
             except ValueError:
                 valid = False
-            valid = valid & len(sha256_string) == 64
+            valid = valid and len(sha256_string) == 64
 
             if not valid:
                 self.report_problem("Invalid SHA256 hash. Please try again ...")
