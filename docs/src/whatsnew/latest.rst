@@ -84,6 +84,10 @@ This document explains the changes made to Iris for this release
    part of an ongoing effort to move from ``unittest`` to ``pytest``. (:pull:`6207`,
    part of :issue:`6212`)
 
+#. `@trexfeathers`_, `@ESadek-MO`_ and `@HGWright`_ heavily re-worked
+   :doc:`/developers_guide/release_do_nothing` to be more thorough and apply
+   lessons learned from recent releases. (:pull:`6062`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
