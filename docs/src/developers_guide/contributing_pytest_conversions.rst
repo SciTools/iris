@@ -41,7 +41,7 @@ Conversion Checklist
 
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for references to ``with mock.patch("...")``. These should be replaced with
-   ``mocker.patch("...")``. Note, ``mocker.patch("...")`` is NOT a context manager.
+   ``mocker.patch("...")``.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
 #. Check for references to ``super()``. Most test classes used to inherit from
@@ -53,4 +53,24 @@ Conversion Checklist
    ``pytest.warns(match=message)``.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
+
+Common Translations
+-------------------
+
+.. list-table::
+   :widths: 50 50
+   :header-rows: 1
+
+   * - ``unittest`` method
+     - ``pytest`` equivalent
+   * - ``assertTrue(x)``
+     - ``assert x``
+   * - ``assertFalse(x)``
+     - ``assert not x``
+   * - ``assertRegex(x, y)``
+     - ``assert re.match(y, x)``
+   * - ``assertRaisesRegex(cls, msg_re)``
+     - ``with pytest.raises(cls, match=msg_re):``
+   * - ``mock.patch(...)``
+     - ``mocker.patch(...)``
 
