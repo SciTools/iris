@@ -491,7 +491,7 @@ def list_of_constraints(constraints):
     return [as_constraint(constraint) for constraint in constraints]
 
 
-def as_constraint(thing):
+def as_constraint(thing: Constraint | str | None) -> Constraint:
     """Cast an object into a cube constraint where possible.
 
     Cast an object into a cube constraint where possible, otherwise

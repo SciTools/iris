@@ -35,13 +35,13 @@ The gallery contains several interesting worked examples of how an
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 import functools
 from functools import wraps
 from inspect import getfullargspec
 import itertools
 from numbers import Number
-from typing import Optional, Union
+from typing import Optional, Protocol, Union
 import warnings
 
 from cf_units import Unit
@@ -56,7 +56,7 @@ from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import EXTRAPOLATION_MODES, RectilinearInterpolator
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
-from iris.coords import _DimensionalMetadata
+from iris.coords import AuxCoord, DimCoord, _DimensionalMetadata
 from iris.exceptions import LazyAggregatorError
 import iris.util
 
@@ -1390,9 +1390,10 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     result = iris._lazy_data.map_complete_blocks(
         data,
-        _calc_percentile,
-        (-1,),
-        percent.shape,
+        func=_calc_percentile,
+        dims=(-1,),
+        out_sizes=percent.shape,
+        dtype=np.float64,
         percent=percent,
         fast_percentile_method=fast_percentile_method,
         **kwargs,
@@ -2288,8 +2289,8 @@ class _Groupby:
 
     def __init__(
         self,
-        groupby_coords: list[iris.coords.Coord],
-        shared_coords: Optional[list[tuple[iris.coords.Coord, int]]] = None,
+        groupby_coords: Iterable[AuxCoord | DimCoord],
+        shared_coords: Optional[Iterable[tuple[AuxCoord | DimCoord, int]]] = None,
         climatological: bool = False,
     ) -> None:
         """Determine the group slices over the group-by coordinates.
@@ -2310,9 +2311,9 @@ class _Groupby:
 
         """
         #: Group-by and shared coordinates that have been grouped.
-        self.coords: list[iris.coords.Coord] = []
-        self._groupby_coords: list[iris.coords.Coord] = []
-        self._shared_coords: list[tuple[iris.coords.Coord, int]] = []
+        self.coords: list[AuxCoord | DimCoord] = []
+        self._groupby_coords: list[AuxCoord | DimCoord] = []
+        self._shared_coords: list[tuple[AuxCoord | DimCoord, int]] = []
         self._groupby_indices: list[tuple[int, ...]] = []
         self._stop = None
         # Ensure group-by coordinates are iterable.
@@ -2338,10 +2339,10 @@ class _Groupby:
         # Stores mapping from original cube coords to new ones, as metadata may
         # not match
         self.coord_replacement_mapping: list[
-            tuple[iris.coords.Coord, iris.coords.Coord]
+            tuple[AuxCoord | DimCoord, AuxCoord | DimCoord]
         ] = []
 
-    def _add_groupby_coord(self, coord: iris.coords.Coord) -> None:
+    def _add_groupby_coord(self, coord: AuxCoord | DimCoord) -> None:
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
         if self._stop is None:
@@ -2350,7 +2351,7 @@ class _Groupby:
             raise ValueError("Group-by coordinates have different lengths.")
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord: iris.coords.Coord, dim: int) -> None:
+    def _add_shared_coord(self, coord: AuxCoord | DimCoord, dim: int) -> None:
         if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError("Shared coordinates have different lengths.")
         self._shared_coords.append((coord, dim))
@@ -2581,6 +2582,37 @@ def clear_phenomenon_identity(cube):
 # Interpolation API
 #
 ###############################################################################
+
+
+class Interpolator(Protocol):
+    def __call__(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        sample_points: Sequence[np.typing.ArrayLike],
+        collapse_scalar: bool,
+    ) -> iris.cube.Cube: ...
+
+
+class InterpolationScheme(Protocol):
+    def interpolator(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        cube: iris.cube.Cube,
+        coords: AuxCoord | DimCoord | str,
+    ) -> Interpolator: ...
+
+
+class Regridder(Protocol):
+    def __call__(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        src: iris.cube.Cube,
+    ) -> iris.cube.Cube: ...
+
+
+class RegriddingScheme(Protocol):
+    def regridder(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        src_grid: iris.cube.Cube,
+        target_grid: iris.cube.Cube,
+    ) -> Regridder: ...
 
 
 class Linear:

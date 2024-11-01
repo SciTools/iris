@@ -11,6 +11,7 @@ import operator
 import os
 import re
 import struct
+from typing import Any
 import warnings
 
 import cf_units
@@ -950,6 +951,21 @@ class PPField(metaclass=ABCMeta):
 
     def __repr__(self):
         """Return a string representation of the PP field."""
+
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lbuser`` is a tuple of NumPy scalars.
+
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         # Define an ordering on the basic header names
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
@@ -975,9 +991,8 @@ class PPField(metaclass=ABCMeta):
             ),
         )
 
-        return (
-            "PP Field" + "".join(["\n   %s: %s" % (k, v) for k, v in attributes]) + "\n"
-        )
+        contents = "".join([f"\n   {k}: {_str_tuple(v)}" for k, v in attributes])
+        return f"PP Field{contents}\n"
 
     @property
     def stash(self):
@@ -1178,7 +1193,7 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">i%d" % PP_WORD_DEPTH))
         b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField
@@ -2156,7 +2171,7 @@ def _load_cubes_variable_loader(
     return result
 
 
-def save(cube, target, append=False, field_coords=None):
+def save(cube, target, append=False, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
     Parameters
@@ -2177,6 +2192,11 @@ def save(cube, target, append=False, field_coords=None):
         coordinates of the resulting fields.
         If None, the final two  dimensions are chosen
         for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     Notes
     -----
@@ -2185,11 +2205,11 @@ def save(cube, target, append=False, field_coords=None):
     of cubes to be saved to a PP file.
 
     """
-    fields = as_fields(cube, field_coords)
+    fields = as_fields(cube, field_coords, label_surface_fields=label_surface_fields)
     save_fields(fields, target, append=append)
 
 
-def save_pairs_from_cube(cube, field_coords=None):
+def save_pairs_from_cube(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
     Parameters
@@ -2301,12 +2321,12 @@ def save_pairs_from_cube(cube, field_coords=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        pp_field = verify(slice2D, pp_field)
+        pp_field = verify(slice2D, pp_field, label_surface_fields=label_surface_fields)
 
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None):
+def as_fields(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to convert a cube to an iterable of PP fields.
 
     Use the PP saving rules (and any user rules) to convert a cube to
@@ -2320,9 +2340,19 @@ def as_fields(cube, field_coords=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     """
-    return (field for _, field in save_pairs_from_cube(cube, field_coords=field_coords))
+    return (
+        field
+        for _, field in save_pairs_from_cube(
+            cube, field_coords=field_coords, label_surface_fields=label_surface_fields
+        )
+    )
 
 
 def save_fields(fields, target, append: bool = False):
