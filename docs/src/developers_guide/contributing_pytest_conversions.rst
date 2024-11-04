@@ -41,7 +41,7 @@ Conversion Checklist
 
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for references to ``with mock.patch("...")``. These should be replaced with
-   ``mocker.patch("...")``, which can be passed into functions as a fixture.
+   ``mocker.patch("...")``. ``mocker`` is a fixture, and can be passed into functions.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
 #. Check for references to ``super()``. Most test classes used to inherit from
