@@ -22,10 +22,6 @@ This document explains the changes made to Iris for this release
      coordinates, e.g. a time-varying orography.  This is controlled by the
      :meth:`~iris.LOAD_POLICY` object : see :class:`~iris.LoadPolicy`.
 
-   * We now have type hints in :class:`~iris.cube.Cube`, and
-     :meth:`iris.cube.CubeList.concatenate` is in places almost an order of
-     magnitude faster!
-
    * `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`.
 
    * Checkout the significant performance enhancements section for a couple of
