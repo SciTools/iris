@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.11 (28 Oct 2024) [release candidate]
-***************************************
+v3.11 (11 Nov 2024)
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -21,10 +21,6 @@ This document explains the changes made to Iris for this release
    * Loading now supports varying reference fields for hybrid vertical
      coordinates, e.g. a time-varying orography.  This is controlled by the
      :meth:`~iris.LOAD_POLICY` object : see :class:`~iris.LoadPolicy`.
-
-   * We now have type hints in :class:`~iris.cube.Cube`, and
-     :meth:`iris.cube.CubeList.concatenate` is in places almost an order of
-     magnitude faster!
 
    * `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`.
 
