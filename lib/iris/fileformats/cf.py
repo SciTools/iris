@@ -1336,9 +1336,11 @@ class CFReader:
             self._trim_ugrid_variable_types()
             self._with_ugrid = False
 
-        self._translate()
-        self._build_cf_groups()
-        self._reset()
+        # Read the variables in the dataset only once to reduce runtime.
+        variables = self._dataset.variables
+        self._translate(variables)
+        self._build_cf_groups(variables)
+        self._reset(variables)
 
     def __enter__(self):
         # Enable use as a context manager
@@ -1380,16 +1382,16 @@ class CFReader:
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._filename)
 
-    def _translate(self):
+    def _translate(self, variables):
         """Classify the netCDF variables into CF-netCDF variables."""
-        netcdf_variable_names = list(self._dataset.variables.keys())
+        netcdf_variable_names = list(variables.keys())
 
         # Identify all CF coordinate variables first. This must be done
         # first as, by CF convention, the definition of a CF auxiliary
         # coordinate variable may include a scalar CF coordinate variable,
         # whereas we want these two types of variables to be mutually exclusive.
         coords = CFCoordinateVariable.identify(
-            self._dataset.variables, monotonic=self._check_monotonic
+            variables, monotonic=self._check_monotonic
         )
         self.cf_group.update(coords)
         coordinate_names = list(self.cf_group.coordinates.keys())
@@ -1402,9 +1404,7 @@ class CFReader:
                 if issubclass(variable_type, CFGridMappingVariable)
                 else coordinate_names
             )
-            self.cf_group.update(
-                variable_type.identify(self._dataset.variables, ignore=ignore)
-            )
+            self.cf_group.update(variable_type.identify(variables, ignore=ignore))
 
         # Identify global netCDF attributes.
         attr_dict = {
@@ -1414,7 +1414,7 @@ class CFReader:
         self.cf_group.global_attributes.update(attr_dict)
 
         # Identify and register all CF formula terms.
-        formula_terms = _CFFormulaTermsVariable.identify(self._dataset.variables)
+        formula_terms = _CFFormulaTermsVariable.identify(variables)
 
         for cf_var in formula_terms.values():
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
@@ -1433,9 +1433,9 @@ class CFReader:
         )
 
         for name in data_variable_names:
-            self.cf_group[name] = CFDataVariable(name, self._dataset.variables[name])
+            self.cf_group[name] = CFDataVariable(name, variables[name])
 
-    def _build_cf_groups(self):
+    def _build_cf_groups(self, variables):
         """Build the first order relationships between CF-netCDF variables."""
 
         def _build(cf_variable):
@@ -1489,7 +1489,7 @@ class CFReader:
                     ignore += coordinate_names
 
                 match = variable_type.identify(
-                    self._dataset.variables,
+                    variables,
                     ignore=ignore,
                     target=cf_variable.cf_name,
                     warn=False,
@@ -1569,9 +1569,9 @@ class CFReader:
             promoted.add(cf_name)
             not_promoted = ignored.difference(promoted)
 
-    def _reset(self):
+    def _reset(self, variables):
         """Reset the attribute touch history of each variable."""
-        for nc_var_name in self._dataset.variables.keys():
+        for nc_var_name in variables.keys():
             self.cf_group[nc_var_name].cf_attrs_reset()
 
     def _close(self):
