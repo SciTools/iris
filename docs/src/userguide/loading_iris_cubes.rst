@@ -4,37 +4,30 @@
 Loading Iris Cubes
 ===================
 
-To load a single file into a **list** of Iris cubes
-the :py:func:`iris.load` function is used::
+Start by loading a data file into our notebook. Supported file types include common meteorological formats such as ``.pp``, ``.nc``, and ``.grib2``. The :py:func:`iris.load` function returns a :class:`iris.cube.CubeList` object, which is essentially a list of :class:`iris.cube.Cube` objects.
 
-    import iris
-    filename = '/path/to/file'
-    cubes = iris.load(filename)
+The :class:`iris.cube.CubeList` supports all standard :class:`list` methods. Note that the cubes within a :class:`iris.cube.CubeList` will not maintain a specific order, so their order can vary between loads.
+
+The :py:func:`iris.load` function automatically detects the file format and parse the contents into :class:`iris.cube.Cube` objects. No additional configuration is required for file format handling.
+
+An example of using the :py:func:`iris.load` function::
+
+    >>>import iris
+    >>>file_path = '/path/to/file/uk_hires.pp'
+    >>>uk_hires_cubes = iris.load(file_path)
+    >>>print(uk_hires_cubes)
+    0: air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    1: surface_altitude / (m)              (grid_latitude: 204; grid_longitude: 187)
+    
+    >>>print(uk_hires_cubes[1:])
+    0: surface_altitude / (m)              (grid_latitude: 204; grid_longitude: 187)
 
 Iris will attempt to return **as few cubes as possible**
 by collecting together multiple fields with a shared standard name
 into a single multidimensional cube.
 
-The :py:func:`iris.load` function automatically recognises the format
-of the given files and attempts to produce Iris Cubes from their contents.
 
-.. note::
-
-    Currently there is support for CF NetCDF, GRIB 1 & 2, PP and FieldsFiles
-    file formats with a framework for this to be extended to custom formats.
-
-
-In order to find out what has been loaded, the result can be printed:
-
-    >>> import iris
-    >>> filename = iris.sample_data_path('uk_hires.pp')
-    >>> cubes = iris.load(filename)
-    >>> print(cubes)
-    0: air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
-    1: surface_altitude / (m)              (grid_latitude: 204; grid_longitude: 187)
-
-
-This shows that there were 2 cubes as a result of loading the file, they were:
+The output shows that there were 2 cubes as a result of loading the file, they were:
 ``air_potential_temperature`` and ``surface_altitude``.
 
 The ``surface_altitude`` cube was 2 dimensional with:
@@ -51,15 +44,9 @@ The ``air_potential_temperature`` cubes were 4 dimensional with:
 
 .. note::
 
-     The result of :func:`iris.load` is **always** a :class:`iris.cube.CubeList`
-     (even if it only contains one :class:`iris.cube.Cube` - see
-     :ref:`strict-loading`). Anything that can be done with a Python
-     :class:`list` can be done with an :class:`iris.cube.CubeList`.
-
-     The order of this list should not be relied upon. Ways of loading a
-     specific cube or cubes are covered in :ref:`constrained-loading` and
-     :ref:`strict-loading`.
-
+    Currently there is support for CF NetCDF, GRIB 1 & 2, PP and FieldsFiles
+    file formats with a framework for this to be extended to custom formats.
+    
 .. hint::
 
     Throughout this user guide you will see the function
