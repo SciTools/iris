@@ -111,6 +111,15 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         result = concatenate([cube_a, cube_b])
         self.assertEqual(len(result), 2)
 
+    def test_diff_aux_coord_anonymous_dim(self):
+        cube_a = self.create_cube()
+        cube_a.remove_coord("latitude")
+        cube_b = cube_a.copy()[:, :1]
+        cube_b.coord("time").points = [12, 18]
+
+        result = concatenate([cube_a, cube_b])
+        self.assertEqual(len(result), 2)
+
     def test_ignore_diff_aux_coord(self):
         cube_a = self.create_cube()
         cube_b = cube_a.copy()

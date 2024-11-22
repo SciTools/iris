@@ -2115,22 +2115,39 @@ class Coord(_DimensionalMetadata):
         if np.issubdtype(self.dtype, np.str_):
             # Collapse the coordinate by serializing the points and
             # bounds as strings.
-            def serialize(x):
-                return "|".join([str(i) for i in x.flatten()])
+            def serialize(x, axis):
+                if axis is None:
+                    return "|".join(str(i) for i in x.flatten())
+
+                # np.apply_along_axis combined with str.join will truncate strings in
+                # some cases (https://github.com/numpy/numpy/issues/8352), so we need to
+                # loop through the array directly. First move (possibly multiple) axis
+                # of interest to trailing dim(s), then make a 2D array we can loop
+                # through.
+                work_array = np.moveaxis(x, axis, range(-len(axis), 0))
+                out_shape = work_array.shape[: -len(axis)]
+                work_array = work_array.reshape(np.prod(out_shape, dtype=int), -1)
+
+                joined = []
+                for arr_slice in work_array:
+                    joined.append(serialize(arr_slice, None))
+
+                return np.array(joined).reshape(out_shape)
 
             bounds = None
             if self.has_bounds():
-                shape = self._bounds_dm.shape[1:]
-                bounds = []
-                for index in np.ndindex(shape):
-                    index_slice = (slice(None),) + tuple(index)
-                    bounds.append(serialize(self.bounds[index_slice]))
-                dtype = np.dtype("U{}".format(max(map(len, bounds))))
-                bounds = np.array(bounds, dtype=dtype).reshape((1,) + shape)
-            points = serialize(self.points)
-            dtype = np.dtype("U{}".format(len(points)))
+                # Express dims_to_collapse as non-negative integers.
+                if dims_to_collapse is None:
+                    dims_to_collapse = range(self.ndim)
+                else:
+                    dims_to_collapse = tuple(
+                        dim % self.ndim for dim in dims_to_collapse
+                    )
+                bounds = serialize(self.bounds, dims_to_collapse)
+
+            points = serialize(self.points, dims_to_collapse)
             # Create the new collapsed coordinate.
-            coord = self.copy(points=np.array(points, dtype=dtype), bounds=bounds)
+            coord = self.copy(points=np.array(points), bounds=bounds)
         else:
             # Collapse the coordinate by calculating the bounded extremes.
             if self.ndim > 1:
@@ -2414,9 +2431,9 @@ class Coord(_DimensionalMetadata):
 
         >>> cube = iris.load_cube(iris.sample_data_path('ostia_monthly.nc'))
         >>> cube.coord('latitude').nearest_neighbour_index(0)
-        9
+        np.int64(9)
         >>> cube.coord('longitude').nearest_neighbour_index(10)
-        12
+        np.int64(12)
 
         .. note:: If the coordinate contains bounds, these will be used to
             determine the nearest neighbour instead of the point values.

@@ -50,7 +50,8 @@ jobs:
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.25"
+      # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
+      IRIS_TEST_DATA_VERSION: "2.28"
       ENV_NAME: "ci-tests"
 
     steps:
@@ -68,14 +69,14 @@ jobs:
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
         with:
-          cache_build: 0
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
@@ -83,15 +84,14 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           miniforge-version: latest
-          channels: conda-forge,defaults
+          channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
-          use-only-tar-bz2: true
 
       - name: "conda environment cache"
         uses: ./.github/workflows/composite/conda-env-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
@@ -104,14 +104,14 @@ jobs:
       - name: "cartopy cache"
         uses: ./.github/workflows/composite/cartopy-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          cache_build: 2
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
@@ -143,6 +143,6 @@ jobs:
 
       - name: "upload coverage report"
         if: ${{ matrix.coverage }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
