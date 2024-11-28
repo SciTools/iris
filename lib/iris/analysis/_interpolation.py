@@ -572,6 +572,7 @@ class RectilinearInterpolator:
             self._interpolate,
             dims=dims_not_chunked,
             out_sizes=interp_shape,
+            dtype=_interpolated_dtype(data.dtype, self._method),
             src_points=self._src_points,
             interp_points=interp_points,
             interp_shape=interp_shape,
