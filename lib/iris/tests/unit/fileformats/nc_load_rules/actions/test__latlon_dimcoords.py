@@ -133,9 +133,9 @@ netcdf test {{
         self.assertEqual(1, len(cube.coords(dim_coords=True)))
         (coord,) = coords
         if self.debug_info:
-            print("")
+            print()
             print("DEBUG : result coord =", coord)
-            print("")
+            print()
 
         coord_stdname, coord_longname, coord_units, coord_crs = [
             getattr(coord, name)

@@ -4,26 +4,24 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test some key usages of :func:`iris.plot.quiver`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
 import numpy as np
+import pytest
 
 from iris.coord_systems import Mercator
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import sample_2d_latlons
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
     from iris.plot import barbs, quiver
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class MixinVectorPlotCases:
     """Test examples mixin, used by separate barb, quiver + streamplot classes.
 
@@ -147,7 +145,7 @@ class MixinVectorPlotCases:
             r"Can only plot .* lat-lon projection, .* "
             r"This .* translates as Cartopy \+proj=merc .*"
         )
-        with self.assertRaisesRegex(ValueError, re_msg):
+        with pytest.raises(ValueError, match=re_msg):
             self.plot("2d_rotated", u_cube, v_cube, coords=("longitude", "latitude"))
 
     def test_circular_longitude(self):
@@ -178,10 +176,7 @@ class MixinVectorPlotCases:
         self.plot("circular", u_cube, v_cube, coords=("longitude", "latitude"))
 
 
-class TestBarbs(MixinVectorPlotCases, tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
-
+class TestBarbs(MixinVectorPlotCases, _shared_utils.GraphicsTest):
     @staticmethod
     def _nonlatlon_xyuv():
         # Increase the range of wind speeds used in the barbs test to test more
@@ -206,13 +201,6 @@ class TestBarbs(MixinVectorPlotCases, tests.GraphicsTest):
         return barbs
 
 
-class TestQuiver(MixinVectorPlotCases, tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
-
+class TestQuiver(MixinVectorPlotCases, _shared_utils.GraphicsTest):
     def plot_function_to_test(self):
         return quiver
-
-
-if __name__ == "__main__":
-    tests.main()

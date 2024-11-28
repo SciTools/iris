@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from typing import Iterable
+from typing import Iterable, Literal
 import warnings
 
 from cf_units import Unit
@@ -2649,6 +2649,9 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
         return self._members["face_node_connectivity"]
 
 
+Location = Literal["edge", "node", "face"]
+
+
 class MeshCoord(AuxCoord):
     """Geographic coordinate values of data on an unstructured mesh.
 
@@ -2687,16 +2690,16 @@ class MeshCoord(AuxCoord):
 
     def __init__(
         self,
-        mesh,
-        location,
-        axis,
+        mesh: MeshXY,
+        location: Location,
+        axis: Literal["x", "y"],
     ):
         # Setup the metadata.
         self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
 
         # Validate and record the class-specific constructor args.
         if not isinstance(mesh, MeshXY):
-            msg = (
+            msg = (  # type: ignore[unreachable]
                 "'mesh' must be an "
                 f"{MeshXY.__module__}.{MeshXY.__name__}, "
                 f"got {mesh}."
@@ -2801,7 +2804,7 @@ class MeshCoord(AuxCoord):
         return self._mesh
 
     @property
-    def location(self):
+    def location(self) -> Location:
         return self._metadata_manager.location
 
     @property

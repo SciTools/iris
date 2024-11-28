@@ -134,23 +134,23 @@ def recombine_submeshes(
         for i_dim in range(mesh_cube.ndim):
             if i_dim == mesh_dim:
                 # mesh dim : look for index coords (by name)
-                full_coord = mesh_cube.coords(
+                full_coords = mesh_cube.coords(
                     name_or_coord=index_coord_name, dimensions=(i_dim,)
                 )
-                sub_coord = cube.coords(
+                sub_coords = cube.coords(
                     name_or_coord=index_coord_name, dimensions=(i_dim,)
                 )
             else:
                 # non-mesh dims : look for dim-coords (only)
-                full_coord = mesh_cube.coords(dim_coords=True, dimensions=(i_dim,))
-                sub_coord = cube.coords(dim_coords=True, dimensions=(i_dim,))
+                full_coords = mesh_cube.coords(dim_coords=True, dimensions=(i_dim,))
+                sub_coords = cube.coords(dim_coords=True, dimensions=(i_dim,))
 
-            if full_coord:
-                (full_coord,) = full_coord
+            if full_coords:
+                (full_coord,) = full_coords
                 full_dimname = full_coord.name()
                 full_metadata = full_coord.metadata._replace(var_name=None)
-            if sub_coord:
-                (sub_coord,) = sub_coord
+            if sub_coords:
+                (sub_coord,) = sub_coords
                 sub_dimname = sub_coord.name()
                 sub_metadata = sub_coord.metadata._replace(var_name=None)
 
@@ -158,18 +158,18 @@ def recombine_submeshes(
             # N.B. checks for mesh- and non-mesh-dims are different
             if i_dim != mesh_dim:
                 # i_dim == mesh_dim :  checks for non-mesh dims
-                if full_coord and not sub_coord:
+                if full_coords and not sub_coords:
                     err = (
                         f"{sub_str} has no dim-coord for dimension "
                         f"{i_dim}, to match the 'mesh_cube' dimension "
                         f'"{full_dimname}".'
                     )
-                elif sub_coord and not full_coord:
+                elif sub_coords and not full_coords:
                     err = (
                         f'{sub_str} has a dim-coord "{sub_dimname}" for '
                         f"dimension {i_dim}, but 'mesh_cube' has none."
                     )
-                elif sub_coord != full_coord:
+                elif sub_coords != full_coords:
                     err = (
                         f'{sub_str} has a dim-coord "{sub_dimname}" for '
                         f"dimension {i_dim}, which does not match that "
@@ -177,13 +177,13 @@ def recombine_submeshes(
                     )
             else:
                 # i_dim == mesh_dim :  different rules for this one
-                if not sub_coord:
+                if not sub_coords:
                     # Must have an index coord on the mesh dimension
                     err = (
                         f'{sub_str} has no "{index_coord_name}" coord on '
                         f"the mesh dimension (dimension {mesh_dim})."
                     )
-                elif full_coord and sub_metadata != full_metadata:
+                elif full_coords and sub_metadata != full_metadata:
                     # May *not* have full-cube index, but if so it must match
                     err = (
                         f"{sub_str} has an index coord "
@@ -277,6 +277,9 @@ def recombine_submeshes(
     # Notes on resultant calculation properties:
     # 1. map_blocks is chunk-mapped, so it is parallelisable and space-saving
     # 2. However, fetching less than a whole chunk is not efficient
+    meta = np.ma.array(
+        np.empty((0,) * result_array.ndim, dtype=result_array.dtype), mask=True
+    )
     for cube in submesh_cubes:
         # Lazy data array from the region cube
         sub_data = cube.lazy_data()
@@ -300,7 +303,7 @@ def recombine_submeshes(
             sub_data,
             indarr,
             dtype=result_array.dtype,
-            meta=np.ndarray,
+            meta=meta,
         )
 
     # Construct the result cube
