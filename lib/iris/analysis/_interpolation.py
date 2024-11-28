@@ -480,14 +480,6 @@ class RectilinearInterpolator:
                     msg = "Cannot interpolate over the non-monotonic coordinate {}."
                     raise ValueError(msg.format(coord.name()))
 
-    def _interpolated_dtype(self, dtype):
-        """Determine the minimum base dtype required by the underlying interpolator."""
-        if self._method == "nearest":
-            result = dtype
-        else:
-            result = np.result_type(_DEFAULT_DTYPE, dtype)
-        return result
-
     def _points(self, sample_points, data, data_dims=None):
         """Interpolate at the specified points.
 
@@ -556,7 +548,7 @@ class RectilinearInterpolator:
         interp_points = []
         interp_shape = []
         for index, points in enumerate(sample_points):
-            dtype = self._interpolated_dtype(self._src_points[index].dtype)
+            dtype = _interpolated_dtype(self._src_points[index].dtype, self._method)
             points = np.array(points, dtype=dtype, ndmin=1)
             interp_points.append(points)
             interp_shape.append(points.size)
