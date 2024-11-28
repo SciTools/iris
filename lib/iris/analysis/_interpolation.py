@@ -504,9 +504,8 @@ class RectilinearInterpolator:
 
         Returns
         -------
-        :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
-            An :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
-            instance of the interpolated data.
+        ndarray
+            The interpolated data array.
 
         """
         dims = list(range(self._src_cube.ndim))
@@ -590,6 +589,9 @@ class RectilinearInterpolator:
     def __call__(self, sample_points, collapse_scalar=True):
         """Construct a cube from the specified orthogonal interpolation points.
 
+        If the source cube has lazy data, the returned cube will also
+        have lazy data.
+
         Parameters
         ----------
         sample_points :
@@ -606,6 +608,14 @@ class RectilinearInterpolator:
             A cube interpolated at the given sample points. The dimensionality
             of the cube will be the number of original cube dimensions minus
             the number of scalar coordinates, if collapse_scalar is True.
+
+        Notes
+        -----
+        .. note::
+
+            If the source cube has lazy data,
+            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
+            in the interpolated dimensions will be combined before regridding.
 
         """
         if len(sample_points) != len(self._src_coords):
