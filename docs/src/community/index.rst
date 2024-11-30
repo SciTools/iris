@@ -25,7 +25,7 @@ Quick Links
 
 * `GitHub Discussions`_
 * :ref:`Getting involved<development_where_to_start>`
-* `Twitter <https://twitter.com/scitools_iris>`_
+* `Bluesky <https://bsky.app/profile/scitools.bsky.social>`_
 
 Interoperability
 ----------------

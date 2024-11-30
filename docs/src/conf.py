@@ -316,9 +316,13 @@ html_theme_options = {
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
-    "twitter_url": "https://twitter.com/scitools_iris",
     # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
     "icon_links": [
+        {
+            "name": "Bluesky",
+            "url": "https://bsky.app/profile/scitools.bsky.social",
+            "icon": "fa-brands fa-bluesky",
+        },
         {
             "name": "GitHub Discussions",
             "url": "https://github.com/SciTools/iris/discussions",
