@@ -52,6 +52,9 @@ license = {text = "BSD-3-Clause"}
 name = "scitools-iris"
 requires-python = ">=3.10"
 
+[project.optional-dependencies]
+RASTERIO = ["rasterio"]
+
 [project.urls]
 Code = "https://github.com/SciTools/iris"
 Discussions = "https://github.com/SciTools/iris/discussions"
