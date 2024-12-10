@@ -50,7 +50,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@fnattino`_ enabled lazy cube interpolation using the linear and
+   nearest-neighbour interpolators (:class:`iris.analysis.Linear` and
+   :class:`iris.analysis.Nearest`). (:pull:`6084`)
 
 
 🔥 Deprecations
@@ -93,7 +95,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@fnattino: httsps://github.com/fnattino
 
 
 .. comment
