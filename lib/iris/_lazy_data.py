@@ -202,6 +202,7 @@ def _optimum_chunksize_internals(
                 dim = working[0]
                 working = working[1:]
             result.append(dim)
+        result = tuple(result)
 
     return result
 
@@ -225,6 +226,33 @@ def _optimum_chunksize(
         dims_fixed=dims_fixed,
         dask_array_chunksize=dask.config.get("array.chunk-size"),
     )
+
+
+class LRUCache:
+    def __init__(self, maxsize: int) -> None:
+        self._cache: dict = {}
+        self.maxsize = maxsize
+
+    def __getitem__(self, key):
+        value = self._cache.pop(key)
+        self._cache[key] = value
+        return value
+
+    def __setitem__(self, key, value):
+        self._cache[key] = value
+        if len(self._cache) > self.maxsize:
+            self._cache.pop(next(iter(self._cache)))
+
+    def __contains__(self, key):
+        return key in self._cache
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} maxsize={self.maxsize} cache={self._cache!r} >"
+        )
+
+
+CACHE = LRUCache(100)
 
 
 def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
@@ -264,6 +292,8 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
     but reduced by a factor if that exceeds the dask default chunksize.
 
     """
+    from iris.fileformats.netcdf._thread_safe_nc import NetCDFDataProxy
+
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
 
@@ -277,7 +307,7 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
         if chunks is None:
             # No existing chunks : Make a chunk the shape of the entire input array
             # (but we will subdivide it if too big).
-            chunks = list(data.shape)
+            chunks = tuple(data.shape)
 
         # Adjust chunk size for better dask performance,
         # NOTE: but only if no shape dimension is zero, so that we can handle the
@@ -291,9 +321,24 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
                 dims_fixed=dims_fixed,
             )
 
-    if not is_lazy_data(data):
-        data = da.from_array(data, chunks=chunks, asarray=asarray, meta=meta)
-    return data
+    # Define a cache key for caching arrays created from NetCDFDataProxy objects.
+    # Creating new Dask arrays is relatively slow, therefore caching is beneficial
+    # if many cubes in the same file share coordinate arrays.
+    if isinstance(data, NetCDFDataProxy):
+        key = (repr(data), chunks, asarray, meta.dtype, type(meta))
+    else:
+        key = None
+
+    if is_lazy_data(data):
+        result = data
+    elif key in CACHE:
+        result = CACHE[key].copy()
+    else:
+        result = da.from_array(data, chunks=chunks, asarray=asarray, meta=meta)
+        if key is not None:
+            CACHE[key] = result.copy()
+
+    return result
 
 
 def _co_realise_lazy_arrays(arrays):
