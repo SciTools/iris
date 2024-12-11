@@ -132,6 +132,58 @@ class ManyVars:
         _ = load(str(self.FILE_PATH))
 
 
+class ManyCubes:
+    FILE_PATH = BENCHMARK_DATA / "many_cube_file.nc"
+
+    @staticmethod
+    def _create_file(save_path: str) -> None:
+        """Run externally - everything must be self-contained."""
+        import numpy as np
+
+        from iris import save
+        from iris.coords import AuxCoord, DimCoord
+        from iris.cube import Cube, CubeList
+
+        data_len = 81920
+        bnds_len = 3
+        data = np.arange(data_len).astype(np.float32)
+        bnds_data = (
+            np.arange(data_len * bnds_len)
+            .astype(np.float32)
+            .reshape(data_len, bnds_len)
+        )
+        time = DimCoord(np.array([0]), standard_name="time")
+        lat = AuxCoord(
+            data, bounds=bnds_data, standard_name="latitude", units="degrees"
+        )
+        lon = AuxCoord(
+            data, bounds=bnds_data, standard_name="longitude", units="degrees"
+        )
+        cube = Cube(data.reshape(1, -1), units="unknown")
+        cube.add_dim_coord(time, 0)
+        cube.add_aux_coord(lat, 1)
+        cube.add_aux_coord(lon, 1)
+
+        n_cubes = 100
+        cubes = CubeList()
+        for i in range(n_cubes):
+            cube = cube.copy()
+            cube.long_name = f"var_{i}"
+            cubes.append(cube)
+        save(cubes, save_path)
+
+    def setup_cache(self) -> None:
+        if not REUSE_DATA or not self.FILE_PATH.is_file():
+            # See :mod:`benchmarks.generate_data` docstring for full explanation.
+            _ = run_function_elsewhere(
+                self._create_file,
+                str(self.FILE_PATH),
+            )
+
+    def time_many_cube_load(self) -> None:
+        _ = load(str(self.FILE_PATH))
+
+
 class StructuredFF:
     """Test structured loading of a large-ish fieldsfile.
 
