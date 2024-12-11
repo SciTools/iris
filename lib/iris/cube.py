@@ -1190,7 +1190,7 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike, # should this now be none? test this
+        data: np.typing.ArrayLike,  # should this now be none? test this
         shape: tuple | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,

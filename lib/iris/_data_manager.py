@@ -5,14 +5,14 @@
 """Management of common state and behaviour for cube and coordinate data."""
 
 import copy
-
-import iris.exceptions
-import iris.warnings
 from warnings import warn
+
 import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+import iris.exceptions
+import iris.warnings
 
 
 class DataManager:
@@ -51,7 +51,6 @@ class DataManager:
         else:
             msg = f"A cube may not be created without both data and a custom shape."
             warn(msg, iris.warnings.IrisUserWarning)
-
 
     def __copy__(self):
         """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
@@ -294,7 +293,7 @@ class DataManager:
         print("1", self.data)
         if self.data is None:
             print("2", self.data)
-        # if self._lazy_array is None and np.all(self.data == None):
+            # if self._lazy_array is None and np.all(self.data == None):
             result = self._shape
         else:
             result = self.core_data().shape
