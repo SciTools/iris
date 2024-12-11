@@ -137,10 +137,11 @@ class DataManager:
         if overfilled:
             msg = "Unexpected data state, got both lazy and real data."
             raise iris.exceptions.InvalidCubeError(msg)
-        elif empty and self._shape is None:  # if I remove the second check, allows empty arrays, like old behaviour
+        elif (
+            empty and self._shape is None
+        ):  # if I remove the second check, allows empty arrays, like old behaviour
             msg = "Unexpected data state, got no lazy or real data, and no shape."
             raise iris.exceptions.InvalidCubeError(msg)
-
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
