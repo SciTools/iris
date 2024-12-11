@@ -41,10 +41,10 @@ class DataManager:
         self._assert_axioms()
         # if cube is empty
         if (shape is not None) and (data is not None):
-            msg = f"A cube may not be created with both data and a custom shape."
+            msg = "A cube may not be created with both data and a custom shape."
             raise iris.exceptions.InvalidCubeError(msg)
         elif (shape is None) and (data is None):
-            msg = f"A cube may not be created without both data and a custom shape."
+            msg = "A cube may not be created without both data and a custom shape."
             warn(msg, iris.warnings.IrisUserWarning)
 
     def __copy__(self):
@@ -137,13 +137,14 @@ class DataManager:
     def _assert_axioms(self):
         """Definition of the manager state, that should never be violated."""
         # Ensure there is a valid data state.
-        is_lazy = self._lazy_array is not None
-        is_real = self._real_array is not None
-        is_dataless = not(is_lazy or is_real) and self._shape is not None # if I remove the second check, allows empty arrays, like old behaviour
-        emsg = "Unexpected data state, got {}lazy and {}real data."
-        state = (is_lazy ^ is_real) or is_dataless
-        if not state:
-            raise iris.exceptions.InvalidCubeError(emsg.format("" if is_lazy else "no ", "" if is_real else "no "))
+        empty = self._lazy_array is None and self._real_array is None
+        overfilled = self._lazy_array is not None and self._real_array is not None
+        if overfilled:
+            msg = "Unexpected data state, got both lazy and real data."
+            raise iris.exceptions.InvalidCubeError(msg)
+        elif empty and self._shape is None:  # if I remove the second check, allows empty arrays, like old behaviour
+            msg = "Unexpected data state, got no lazy or real data, and no shape."
+            raise iris.exceptions.InvalidCubeError(msg)
 
 
     def _deepcopy(self, memo, data=None):
