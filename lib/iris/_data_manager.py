@@ -32,6 +32,7 @@ class DataManager:
         # Initialise the instance.
         self._lazy_array = None
         self._real_array = None
+        self._shape = shape
 
         # Assign the data payload to be managed.
         self.data = data
@@ -39,18 +40,13 @@ class DataManager:
         # Enforce the manager contract.
         self._assert_axioms()
         # if cube is empty
-        if (shape is None) and (data is not None):
-            self.data = data
-            self._shape = None
-        # if cube is dataless
-        elif (shape is not None) and (data is None):
-            self._shape = shape
-        elif (shape is not None) and (data is not None):
+        if (shape is not None) and (data is not None):
             msg = f"A cube may not be created with both data and a custom shape."
             raise iris.exceptions.InvalidCubeError(msg)
-        else:
+        elif (shape is None) and (data is None):
             msg = f"A cube may not be created without both data and a custom shape."
             warn(msg, iris.warnings.IrisUserWarning)
+
 
 
     def __copy__(self):
@@ -145,10 +141,12 @@ class DataManager:
         # Ensure there is a valid data state.
         is_lazy = self._lazy_array is not None
         is_real = self._real_array is not None
-        has_shape = self._shape is not None
+        is_dataless = not(is_lazy or is_real) and self._shape is not None # if I remove the second check, allows empty arrays, like old behaviour
         emsg = "Unexpected data state, got {}lazy and {}real data."
-        state = is_lazy ^ is_real
-        assert state, emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
+        state = (is_lazy ^ is_real) or is_dataless
+        if not state:
+            raise iris.exceptions.InvalidCubeError(emsg.format("" if is_lazy else "no ", "" if is_real else "no "))
+
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
@@ -239,21 +237,21 @@ class DataManager:
 
         """
         # Ensure we have numpy-like data.
+        dataless = data is None
         if not (hasattr(data, "shape") and hasattr(data, "dtype")):
             # data = np.asanyarray(data)
-            if data is not None:
+            if not dataless:
                 data = np.asanyarray(data)
 
         # Determine whether the class instance has been created,
         # as this method is called from within the __init__.
         init_done = self._lazy_array is not None or self._real_array is not None
-        # @TODO set self._shape every time you change the data
 
-        if init_done and self.shape != data.shape:
+        if init_done and not dataless and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if (not is_lazy_data(data)) and data is None:
+            if (not is_lazy_data(data)) and dataless:
                 self._shape = self.shape
             elif self.shape or data.shape != (1,):
                 emsg = "Require data with shape {!r}, got {!r}."
@@ -266,7 +264,7 @@ class DataManager:
         else:
             if not ma.isMaskedArray(data):
                 # Coerce input data to ndarray (including ndarray subclasses).
-                if data is not None:
+                if not dataless:
                     data = np.asarray(data)
             if isinstance(data, ma.core.MaskedConstant):
                 # Promote to a masked array so that the fill-value is
@@ -291,9 +289,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        print("1", self.data)
         if self.data is None:
-            print("2", self.data)
         # if self._lazy_array is None and np.all(self.data == None):
             result = self._shape
         else:
