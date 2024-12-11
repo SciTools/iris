@@ -5,7 +5,6 @@
 """Management of common state and behaviour for cube and coordinate data."""
 
 import copy
-from warnings import warn
 
 import numpy as np
 import numpy.ma as ma

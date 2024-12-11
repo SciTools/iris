@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris._data_manager.DataManager`."""
-
+import iris.exceptions
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -167,14 +167,14 @@ class Test__assert_axioms(tests.IrisTest):
 
     def test_array_none(self):
         self.dm._real_array = None
-        emsg = "Unexpected data state, got no lazy and no real data"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        emsg = "Unexpected data state, got no lazy or real data, and no shape."
+        with self.assertRaisesRegex(iris.exceptions.InvalidCubeError, emsg):
             self.dm._assert_axioms()
 
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
-        emsg = "Unexpected data state, got lazy and real data"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        emsg = "Unexpected data state, got both lazy and real data."
+        with self.assertRaisesRegex(iris.exceptions.InvalidCubeError, emsg):
             self.dm._assert_axioms()
 
 
