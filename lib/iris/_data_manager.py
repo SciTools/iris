@@ -10,12 +10,14 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
+import iris.exceptions
+import iris.warnings
 
 
 class DataManager:
     """Provides a well defined API for management of real or lazy data."""
 
-    def __init__(self, data):
+    def __init__(self, data, shape=None):
         """Create a data manager for the specified data.
 
         Parameters
@@ -31,10 +33,13 @@ class DataManager:
         self._real_array = None
 
         # Assign the data payload to be managed.
+        self._shape = shape
         self.data = data
 
-        # Enforce the manager contract.
-        self._assert_axioms()
+        # if cube has shape and data
+        if (shape is not None) and (data is not None):
+            msg = "A cube may not be created with both data and a custom shape."
+            raise iris.exceptions.InvalidCubeError(msg)
 
     def __copy__(self):
         """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
@@ -126,11 +131,16 @@ class DataManager:
     def _assert_axioms(self):
         """Definition of the manager state, that should never be violated."""
         # Ensure there is a valid data state.
-        is_lazy = self._lazy_array is not None
-        is_real = self._real_array is not None
-        emsg = "Unexpected data state, got {}lazy and {}real data."
-        state = is_lazy ^ is_real
-        assert state, emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
+        empty = self._lazy_array is None and self._real_array is None
+        overfilled = self._lazy_array is not None and self._real_array is not None
+        if overfilled:
+            msg = "Unexpected data state, got both lazy and real data."
+            raise iris.exceptions.InvalidCubeError(msg)
+        elif (
+            empty and self._shape is None
+        ):  # if I remove the second check, allows empty arrays, like old behaviour
+            msg = "Unexpected data state, got no lazy or real data, and no shape."
+            raise iris.exceptions.InvalidCubeError(msg)
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
@@ -148,6 +158,7 @@ class DataManager:
         :class:`~iris._data_manager.DataManager` instance.
 
         """
+        # @TODO how to ask copy to make an empty cube, special value? flag?
         try:
             if data is None:
                 # Copy the managed data.
@@ -220,18 +231,22 @@ class DataManager:
 
         """
         # Ensure we have numpy-like data.
+        dataless = data is None
         if not (hasattr(data, "shape") and hasattr(data, "dtype")):
-            data = np.asanyarray(data)
+            if not dataless:
+                data = np.asanyarray(data)
 
         # Determine whether the class instance has been created,
         # as this method is called from within the __init__.
         init_done = self._lazy_array is not None or self._real_array is not None
 
-        if init_done and self.shape != data.shape:
+        if init_done and not dataless and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
+            if (not is_lazy_data(data)) and dataless:
+                self._shape = self.shape
+            elif self.shape or data.shape != (1,):
                 emsg = "Require data with shape {!r}, got {!r}."
                 raise ValueError(emsg.format(self.shape, data.shape))
 
@@ -242,7 +257,8 @@ class DataManager:
         else:
             if not ma.isMaskedArray(data):
                 # Coerce input data to ndarray (including ndarray subclasses).
-                data = np.asarray(data)
+                if not dataless:
+                    data = np.asarray(data)
             if isinstance(data, ma.core.MaskedConstant):
                 # Promote to a masked array so that the fill-value is
                 # writeable to the data owner.
@@ -261,12 +277,16 @@ class DataManager:
     @property
     def ndim(self):
         """The number of dimensions covered by the data being managed."""
-        return self.core_data().ndim
+        return len(self.shape)
 
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self.core_data().shape
+        if self.core_data() is None:
+            result = self._shape
+        else:
+            result = self.core_data().shape
+        return result
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.

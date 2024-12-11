@@ -1204,6 +1204,7 @@ class Cube(CFVariableMixin):
         cell_measures_and_dims: Iterable[tuple[CellMeasure, int]] | None = None,
         ancillary_variables_and_dims: Iterable[tuple[AncillaryVariable, int]]
         | None = None,
+        shape: tuple | None = None,
     ):
         """Create a cube with data and optional metadata.
 
@@ -1276,7 +1277,7 @@ class Cube(CFVariableMixin):
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
 
         # Initialise the cube data manager.
-        self._data_manager = DataManager(data)
+        self._data_manager = DataManager(data, shape)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
