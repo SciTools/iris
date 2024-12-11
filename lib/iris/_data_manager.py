@@ -34,10 +34,11 @@ class DataManager:
         self._real_array = None
 
         # Assign the data payload to be managed.
-        self.data = data
         self._shape = shape
+        self.data = data
 
-        # if cube is empty
+
+        # if cube has shape and data
         if (shape is not None) and (data is not None):
             msg = "A cube may not be created with both data and a custom shape."
             raise iris.exceptions.InvalidCubeError(msg)
@@ -233,7 +234,6 @@ class DataManager:
         # Ensure we have numpy-like data.
         dataless = data is None
         if not (hasattr(data, "shape") and hasattr(data, "dtype")):
-            # data = np.asanyarray(data)
             if not dataless:
                 data = np.asanyarray(data)
 
@@ -283,7 +283,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        if self.data is None:
+        if self.core_data() is None:
             result = self._shape
         else:
             result = self.core_data().shape
