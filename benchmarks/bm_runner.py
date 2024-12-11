@@ -27,7 +27,7 @@ ROOT_DIR = BENCHMARKS_DIR.parent
 GH_REPORT_DIR = ROOT_DIR.joinpath(".github", "workflows", "benchmark_reports")
 
 # Common ASV arguments for all run_types except `custom`.
-ASV_HARNESS = "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
+ASV_HARNESS = "run {posargs} --attribute rounds=3 --interleave-rounds --show-stderr"
 
 
 def echo(echo_string: str):
