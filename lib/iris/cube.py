@@ -1190,8 +1190,7 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike,  # should this now be none? test this
-        shape: tuple | None = None,
+        data: np.typing.ArrayLike,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -1205,6 +1204,7 @@ class Cube(CFVariableMixin):
         cell_measures_and_dims: Iterable[tuple[CellMeasure, int]] | None = None,
         ancillary_variables_and_dims: Iterable[tuple[AncillaryVariable, int]]
         | None = None,
+        shape: tuple | None = None,
     ):
         """Create a cube with data and optional metadata.
 

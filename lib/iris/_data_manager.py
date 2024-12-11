@@ -32,20 +32,15 @@ class DataManager:
         # Initialise the instance.
         self._lazy_array = None
         self._real_array = None
-        self._shape = shape
 
         # Assign the data payload to be managed.
         self.data = data
+        self._shape = shape
 
-        # Enforce the manager contract.
-        self._assert_axioms()
         # if cube is empty
         if (shape is not None) and (data is not None):
             msg = "A cube may not be created with both data and a custom shape."
             raise iris.exceptions.InvalidCubeError(msg)
-        elif (shape is None) and (data is None):
-            msg = "A cube may not be created without both data and a custom shape."
-            warn(msg, iris.warnings.IrisUserWarning)
 
     def __copy__(self):
         """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
