@@ -2189,3 +2189,127 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
+
+
+def equalise_cubes(
+    cubes,
+    apply_all=False,
+    unify_names=False,
+    equalise_attributes=False,
+    unify_time_units=False,
+):
+    """Modify a set of cubes to assist merge/concatenate operations.
+
+    Various different adjustments can be applied to the input cubes, to remove
+    differences which may prevent them from combining into larger cubes.  The requested
+    adjustment operations are applied to each group of input cubes with matching
+    cube metadata (names, units, attributes and cell-methods).
+
+    Parameters
+    ----------
+    cubes : sequence of :class:`~iris.cube.Cube`
+        The input cubes, in a list or similar.
+
+    apply_all : bool, default=False
+        Enable *all possible* equalisation operations : that is, all those which have a
+        simple boolean key, so require no additional context information.
+
+    unify_names : bool, default=False
+        When True, remove any redundant ``var_name`` and ``long_name`` properties,
+        leaving only one ``standard_name``, ``long_name`` or ``var_name`` per cube.
+        In this case, the revised name properties are also used in selecting input
+        groups.
+
+    equalise_attributes : bool, default=False
+        When ``True``, apply an :func:`equalise_attributes` operation to each input
+        group.  In this case, all attributes are ignored when selecting input groups.
+
+    unify_time_units : bool, default=False
+        When True, apply the :func:`unify_time_units` operation to each input group.
+        In this case, all time-reference type (i.e. date) units are treated as
+        equivalent when selecting input groups.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+        A CubeList containing one output cube for each input cube, ready for a merge or
+        concatenate operation.  Each result cube is either the corresponding input
+        cube, modified or unmodified, or a new replacement derived from it.
+
+    Notes
+    -----
+    The various 'equalise' operations are not applied to the entire input, but to
+    each group of input cubes with the same ``cube.metadata``.
+
+    Every 'equalise' operation operates in a similar fashion, in that it identifies and
+    removes one specific type of metadata difference so that a group of cubes can
+    potentially combine into a single result cube.
+
+    In some cases, the identification of input cube groups *also* depends on the
+    equalisation operation(s) selected :  Operations which work on cube metadata
+    elements (names, units, attributes and cell-methods) will prevent that element from
+    discriminating between different input groups.
+
+    """
+    from iris.common.metadata import CubeMetadata
+    from iris.cube import CubeList
+
+    if unify_names or apply_all:
+        # Tidy all cube names
+        # Note: this option operates as a special case, independent of
+        #  and *in advance of* the group selection
+        for cube in cubes:
+            if cube.standard_name:
+                cube.long_name = None
+                cube.var_name = None
+            elif cube.long_name:
+                cube.var_name = None
+
+    # Snapshot the cube metadata elements which we use to identify input groups
+    # TODO: we might want to sanitise practically comparable types here ?
+    #  (e.g. large object arrays ??)
+    cube_grouping_keys = [
+        {key: getattr(cube.metadata, key) for key in CubeMetadata._fields}
+        for cube in cubes
+    ]
+
+    # Collect the selected operations which we are going to apply.
+    equalisation_ops = []
+
+    if equalise_attributes or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["equalise_attributes"])
+        # Prevent any attributes from distinguishing input groups
+        for cat in cube_grouping_keys:
+            cat.pop["attributes"]
+
+    if unify_time_units or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["unify_time_units"])
+        # Treat all time-reference units (only) as identical when identifying
+        # input groups
+        for cat in cube_grouping_keys:
+            if cat["units"].is_time_reference():
+                cat["units"] = "<time-ref>"
+
+    if not equalisation_ops:
+        # Nothing more to do.
+        # Note that, if 'unify-names' was done, we already modified cubes in-place.
+        result = cubes
+    else:
+        # Compute the cube groups
+        # TODO: might something nasty happen here if attributes contain weird stuff ??
+        cube_group_keys = set(cube_grouping_keys)
+
+        # Process each cube group + collect the results
+        cubes_and_keys = zip(cubes, cube_grouping_keys)
+        result = []
+        for group_keys in cube_group_keys:
+            group_cubes = [cube for cube, keys in cubes_and_keys if keys == group_keys]
+            for op in equalisation_ops:
+                op(group_cubes)
+            result.extend(group_cubes)
+
+    # Always return a CubeList result
+    result = CubeList(result)
+    return result
