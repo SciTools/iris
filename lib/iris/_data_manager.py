@@ -139,12 +139,15 @@ class DataManager:
         # Ensure there is a valid data state.
         is_lazy = self._lazy_array is not None
         is_real = self._real_array is not None
-        is_dataless = not(is_lazy or is_real) and self._shape is not None # if I remove the second check, allows empty arrays, like old behaviour
+        is_dataless = (
+            not (is_lazy or is_real) and self._shape is not None
+        )  # if I remove the second check, allows empty arrays, like old behaviour
         emsg = "Unexpected data state, got {}lazy and {}real data."
         state = (is_lazy ^ is_real) or is_dataless
         if not state:
-            raise iris.exceptions.InvalidCubeError(emsg.format("" if is_lazy else "no ", "" if is_real else "no "))
-
+            raise iris.exceptions.InvalidCubeError(
+                emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
+            )
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
