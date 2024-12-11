@@ -37,7 +37,6 @@ class DataManager:
         self._shape = shape
         self.data = data
 
-
         # if cube has shape and data
         if (shape is not None) and (data is not None):
             msg = "A cube may not be created with both data and a custom shape."
