@@ -6,6 +6,9 @@
 
 import copy
 
+import iris.exceptions
+import iris.warnings
+from warnings import warn
 import numpy as np
 import numpy.ma as ma
 
@@ -15,7 +18,7 @@ from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 class DataManager:
     """Provides a well defined API for management of real or lazy data."""
 
-    def __init__(self, data):
+    def __init__(self, data, shape=None):
         """Create a data manager for the specified data.
 
         Parameters
@@ -35,6 +38,20 @@ class DataManager:
 
         # Enforce the manager contract.
         self._assert_axioms()
+        # if cube is empty
+        if (shape is None) and (data is not None):
+            self.data = data
+            self._shape = None
+        # if cube is dataless
+        elif (shape is not None) and (data is None):
+            self._shape = shape
+        elif (shape is not None) and (data is not None):
+            msg = f"A cube may not be created with both data and a custom shape."
+            raise iris.exceptions.InvalidCubeError(msg)
+        else:
+            msg = f"A cube may not be created without both data and a custom shape."
+            warn(msg, iris.warnings.IrisUserWarning)
+
 
     def __copy__(self):
         """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
@@ -128,6 +145,7 @@ class DataManager:
         # Ensure there is a valid data state.
         is_lazy = self._lazy_array is not None
         is_real = self._real_array is not None
+        has_shape = self._shape is not None
         emsg = "Unexpected data state, got {}lazy and {}real data."
         state = is_lazy ^ is_real
         assert state, emsg.format("" if is_lazy else "no ", "" if is_real else "no ")
@@ -148,6 +166,7 @@ class DataManager:
         :class:`~iris._data_manager.DataManager` instance.
 
         """
+        # @TODO how to ask copy to make an empty cube, special value? flag?
         try:
             if data is None:
                 # Copy the managed data.
@@ -221,17 +240,22 @@ class DataManager:
         """
         # Ensure we have numpy-like data.
         if not (hasattr(data, "shape") and hasattr(data, "dtype")):
-            data = np.asanyarray(data)
+            # data = np.asanyarray(data)
+            if data is not None:
+                data = np.asanyarray(data)
 
         # Determine whether the class instance has been created,
         # as this method is called from within the __init__.
         init_done = self._lazy_array is not None or self._real_array is not None
+        # @TODO set self._shape every time you change the data
 
         if init_done and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
+            if (not is_lazy_data(data)) and data is None:
+                self._shape = self.shape
+            elif self.shape or data.shape != (1,):
                 emsg = "Require data with shape {!r}, got {!r}."
                 raise ValueError(emsg.format(self.shape, data.shape))
 
@@ -242,7 +266,8 @@ class DataManager:
         else:
             if not ma.isMaskedArray(data):
                 # Coerce input data to ndarray (including ndarray subclasses).
-                data = np.asarray(data)
+                if data is not None:
+                    data = np.asarray(data)
             if isinstance(data, ma.core.MaskedConstant):
                 # Promote to a masked array so that the fill-value is
                 # writeable to the data owner.
@@ -261,12 +286,19 @@ class DataManager:
     @property
     def ndim(self):
         """The number of dimensions covered by the data being managed."""
-        return self.core_data().ndim
+        return len(self.shape)
 
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self.core_data().shape
+        print("1", self.data)
+        if self.data is None:
+            print("2", self.data)
+        # if self._lazy_array is None and np.all(self.data == None):
+            result = self._shape
+        else:
+            result = self.core_data().shape
+        return result
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.

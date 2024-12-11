@@ -1190,7 +1190,8 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike,
+        data: np.typing.ArrayLike, # should this now be none? test this
+        shape: tuple | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -1276,7 +1277,7 @@ class Cube(CFVariableMixin):
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
 
         # Initialise the cube data manager.
-        self._data_manager = DataManager(data)
+        self._data_manager = DataManager(data, shape)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
