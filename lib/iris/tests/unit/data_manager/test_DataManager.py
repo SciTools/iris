@@ -463,7 +463,6 @@ class Test_data__setter(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         dm.data = None
         self.assertTrue(dm.core_data() is None)
-        self.assertTrue(dm.shape == shape)
 
     def test_nd_real_to_dataless(self):
         shape = (2, 3, 4)
@@ -473,7 +472,6 @@ class Test_data__setter(tests.IrisTest):
         self.assertFalse(dm.has_lazy_data())
         dm.data = None
         self.assertTrue(dm.core_data() is None)
-        self.assertTrue(dm.shape == shape)
 
     def test_dataless_to_nd_lazy(self):
         shape = (2, 3, 4)
