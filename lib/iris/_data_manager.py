@@ -157,9 +157,14 @@ class DataManager:
         :class:`~iris._data_manager.DataManager` instance.
 
         """
-        # @TODO how to ask copy to make an empty cube, special value? flag?
+        shape = None
         try:
-            if data is None:
+            if (iris.FUTURE.dataless_cube and data is None):
+                shape = self.shape
+            elif (
+                    (iris.FUTURE.dataless_cube and data == iris.MAINTAIN_DATA)
+                    or (data is None)
+                ):
                 # Copy the managed data.
                 if self.has_lazy_data():
                     data = copy.deepcopy(self._lazy_array, memo)
@@ -172,11 +177,10 @@ class DataManager:
                 dm_check.data = data
                 # If the replacement data is valid, then use it but
                 # without copying it.
-            result = DataManager(data)
+            result = DataManager(data=data, shape=shape)
         except ValueError as error:
             emsg = "Cannot copy {!r} - {}"
             raise ValueError(emsg.format(type(self).__name__, error))
-
         return result
 
     @property

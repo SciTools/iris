@@ -4084,6 +4084,7 @@ class Cube(CFVariableMixin):
             aux_coords_and_dims=new_aux_coords_and_dims,
             cell_measures_and_dims=new_cell_measures_and_dims,
             ancillary_variables_and_dims=new_ancillary_variables_and_dims,
+            shape=(dm.shape if dm.core_data() is None else None)
         )
 
         new_cube.metadata = deepcopy(self.metadata, memo)
