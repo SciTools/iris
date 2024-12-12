@@ -143,7 +143,13 @@ NameConstraint = iris._constraints.NameConstraint
 class Future(threading.local):
     """Run-time configuration controller."""
 
-    def __init__(self, datum_support=False, pandas_ndim=False, save_split_attrs=False, dataless_cube=False):
+    def __init__(
+        self,
+        datum_support=False,
+        pandas_ndim=False,
+        save_split_attrs=False,
+        dataless_cube=False,
+    ):
         """Container for run-time options controls.
 
         To adjust the values simply update the relevant attribute from
@@ -190,7 +196,12 @@ class Future(threading.local):
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
         msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={}, dataless_cubes={})"
-        return msg.format(self.datum_support, self.pandas_ndim, self.save_split_attrs, self.dataless_cube)
+        return msg.format(
+            self.datum_support,
+            self.pandas_ndim,
+            self.save_split_attrs,
+            self.dataless_cube,
+        )
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options: dict[str, Literal["error", "warning"]] = {}
@@ -833,5 +844,6 @@ def use_plugin(plugin_name):
     significance of the import statement and warn that it is an unused import.
     """
     importlib.import_module(f"iris.plugins.{plugin_name}")
+
 
 MAINTAIN_DATA = "MAINTAINDATA"
