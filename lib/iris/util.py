@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from copy import deepcopy
 import functools
 import inspect
 import os
@@ -2202,7 +2203,7 @@ def equalise_cubes(
 
     Various different adjustments can be applied to the input cubes, to remove
     differences which may prevent them from combining into larger cubes.  The requested
-    adjustment operations are applied to each group of input cubes with matching
+    "equalisation" operations are applied to each group of input cubes with matching
     cube metadata (names, units, attributes and cell-methods).
 
     Parameters
@@ -2269,7 +2270,7 @@ def equalise_cubes(
     # TODO: we might want to sanitise practically comparable types here ?
     #  (e.g. large object arrays ??)
     cube_grouping_keys = [
-        {key: getattr(cube.metadata, key) for key in CubeMetadata._fields}
+        {key: deepcopy(getattr(cube.metadata, key)) for key in CubeMetadata._fields}
         for cube in cubes
     ]
 
@@ -2281,7 +2282,7 @@ def equalise_cubes(
         equalisation_ops.append(globals()["equalise_attributes"])
         # Prevent any attributes from distinguishing input groups
         for cat in cube_grouping_keys:
-            cat.pop["attributes"]
+            cat.pop("attributes")
 
     if unify_time_units or apply_all:
         # get the function of the same name in this module
@@ -2299,12 +2300,20 @@ def equalise_cubes(
     else:
         # Compute the cube groups
         # TODO: might something nasty happen here if attributes contain weird stuff ??
-        cube_group_keys = set(cube_grouping_keys)
+        def find_uniques(inputs):
+            results = []
+            while inputs:
+                candidate, inputs = inputs[0], inputs[1:]
+                if candidate not in results:
+                    results.append(candidate)
+            return results
+
+        input_group_keys = find_uniques(cube_grouping_keys)
 
         # Process each cube group + collect the results
-        cubes_and_keys = zip(cubes, cube_grouping_keys)
+        cubes_and_keys = list(zip(cubes, cube_grouping_keys))
         result = []
-        for group_keys in cube_group_keys:
+        for group_keys in input_group_keys:
             group_cubes = [cube for cube, keys in cubes_and_keys if keys == group_keys]
             for op in equalisation_ops:
                 op(group_cubes)
