@@ -454,6 +454,48 @@ class Test_data__setter(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
+    def test_nd_lazy_to_dataless(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        lazy_array = as_lazy_data(real_array)
+        dm = DataManager(lazy_array * 10)
+        self.assertTrue(dm.has_lazy_data())
+        dm.data = None
+        self.assertTrue(dm.core_data() is None)
+        self.assertTrue(dm.shape == shape)
+
+    def test_nd_real_to_dataless(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        dm = DataManager(real_array)
+        self.assertFalse(dm.has_lazy_data())
+        dm.data = None
+        self.assertTrue(dm.core_data() is None)
+        self.assertTrue(dm.shape == shape)
+
+    def test_dataless_to_nd_lazy(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        lazy_array = as_lazy_data(real_array)
+        dm = DataManager(None, shape)
+        self.assertTrue(dm.shape == shape)
+        dm.data = lazy_array
+        self.assertTrue(dm.has_lazy_data())
+        self.assertArrayEqual(dm.data, lazy_array.compute())
+
+    def test_dataless_to_nd_real(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        dm = DataManager(None, shape)
+        self.assertTrue(dm.data is None)
+        dm.data = real_array
+        self.assertFalse(dm.has_lazy_data())
+        self.assertArrayEqual(dm.data, real_array)
+
     def test_coerce_to_ndarray(self):
         shape = (2, 3)
         size = np.prod(shape)
@@ -525,6 +567,11 @@ class Test_shape(tests.IrisTest):
         self.assertEqual(dm.shape, shape)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array)
+        self.assertEqual(dm.shape, shape)
+
+    def test_shape_dataless(self):
+        shape = (2, 3, 4)
+        dm = DataManager(None, shape)
         self.assertEqual(dm.shape, shape)
 
 

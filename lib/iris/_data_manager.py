@@ -28,6 +28,10 @@ class DataManager:
             managed.
 
         """
+        if (shape is not None) and (data is not None):
+            msg = "A cube may not be created with both data and a custom shape."
+            raise iris.exceptions.InvalidCubeError(msg)
+
         # Initialise the instance.
         self._lazy_array = None
         self._real_array = None
@@ -35,11 +39,6 @@ class DataManager:
         # Assign the data payload to be managed.
         self._shape = shape
         self.data = data
-
-        # if cube has shape and data
-        if (shape is not None) and (data is not None):
-            msg = "A cube may not be created with both data and a custom shape."
-            raise iris.exceptions.InvalidCubeError(msg)
 
     def __copy__(self):
         """Forbid :class:`~iris._data_manager.DataManager` instance shallow-copy support."""
@@ -230,23 +229,24 @@ class DataManager:
             managed.
 
         """
-        # Ensure we have numpy-like data.
+        # If data is None, ensure previous shape is maintained, and that it is
+        # not wrapped in an np.array
         dataless = data is None
-        if not (hasattr(data, "shape") and hasattr(data, "dtype")):
-            if not dataless:
-                data = np.asanyarray(data)
+        if dataless:
+            self._shape = self.shape
 
-        # Determine whether the class instance has been created,
-        # as this method is called from within the __init__.
-        init_done = self._lazy_array is not None or self._real_array is not None
+        # Ensure we have numpy-like data.
+        elif not (hasattr(data, "shape") and hasattr(data, "dtype")):
+            data = np.asanyarray(data)
 
-        if init_done and not dataless and self.shape != data.shape:
+        # Determine whether the class already has a defined shape,
+        # as this method is called from __init__.
+        has_shape = self.shape is not None
+        if has_shape and not dataless and self.shape != data.shape:
             # The _ONLY_ data reshape permitted is converting a 0-dimensional
             # array i.e. self.shape == () into a 1-dimensional array of length
             # one i.e. data.shape == (1,)
-            if (not is_lazy_data(data)) and dataless:
-                self._shape = self.shape
-            elif self.shape or data.shape != (1,):
+            if self.shape or data.shape != (1,):
                 emsg = "Require data with shape {!r}, got {!r}."
                 raise ValueError(emsg.format(self.shape, data.shape))
 
