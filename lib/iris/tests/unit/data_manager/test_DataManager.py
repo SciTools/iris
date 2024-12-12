@@ -545,10 +545,10 @@ class Test_ndim(tests.IrisTest):
         shape = (2, 3, 4)
         real_array = np.arange(24).reshape(shape)
         dm = DataManager(real_array)
-        self.assertEqual(dm.ndim, len(shape))
+        self.assertEqual(dm.ndim, 3)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array)
-        self.assertEqual(dm.ndim, len(shape))
+        self.assertEqual(dm.ndim, 3)
 
 
 class Test_shape(tests.IrisTest):
@@ -569,9 +569,20 @@ class Test_shape(tests.IrisTest):
         dm = DataManager(lazy_array)
         self.assertEqual(dm.shape, shape)
 
-    def test_shape_dataless(self):
+    def test_shape_data_to_dataless(self):
         shape = (2, 3, 4)
+        real_array = np.arange(24).reshape(shape)
         dm = DataManager(None, shape)
+        self.assertEqual(dm.shape, shape)
+        dm.data = real_array
+        self.assertEqual(dm.shape, shape)
+
+    def test_shape_dataless_to_data(self):
+        shape = (2, 3, 4)
+        real_array = np.arange(24).reshape(shape)
+        dm = DataManager(real_array)
+        self.assertEqual(dm.shape, shape)
+        dm.data = None
         self.assertEqual(dm.shape, shape)
 
 
