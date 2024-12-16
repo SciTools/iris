@@ -200,7 +200,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             else:
                 extended_shape = tuple([1] * ndims_missing + list(src.shape))
                 result = src.reshape(extended_shape)
-        else:
+        elif src is None:
             # Real data : a few more things to do in this case.
             # Ensure the array is writeable.
             # NB. Returns the *same object* if src is already writeable.
@@ -1535,6 +1535,10 @@ class Coord(_DimensionalMetadata):
         """
         if points is None and bounds is not None:
             raise ValueError("If bounds are specified, points must also be specified")
+        if points is None and iris.FUTURE.dataless_cube:
+            # dataless coords are not currently implemented, so points should never
+            # be removed in a copy
+            points = iris.MAINTAIN_DATA
 
         new_coord = super().copy(values=points)
         if points is not None:
