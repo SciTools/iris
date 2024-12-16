@@ -22,6 +22,7 @@ from xxhash import xxh64_hexdigest
 
 if TYPE_CHECKING:
     from iris.coords import CellMethod
+from .. import FUTURE
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -64,6 +65,10 @@ def _num2date_to_nearest_second(
     only_use_cftime_datetimes=True,
     only_use_python_datetimes=False,
 ):
+    # Used to monkey-patch the cf_units.Unit.num2date method to round to the
+    #  nearest second, which was the legacy behaviour. This is under a FUTURE
+    #  flag - users will need to adapt to microsecond precision eventually,
+    #  which may involve floating point issues.
     def _round(date):
         if date.microsecond == 0:
             return date
@@ -74,17 +79,20 @@ def _num2date_to_nearest_second(
                 date + timedelta(seconds=1) - timedelta(microseconds=date.microsecond)
             )
 
-    dates = _num2date_original(
+    result = _num2date_original(
         self, time_value, only_use_cftime_datetimes, only_use_python_datetimes
     )
-    if hasattr(dates, "shape"):
-        vfunc = np.vectorize(_round)
-        result = vfunc(dates)
-    else:
-        result = _round(dates)
+    if FUTURE.date_microseconds:
+        if hasattr(result, "shape"):
+            vfunc = np.vectorize(_round)
+            result = vfunc(result)
+        else:
+            result = _round(result)
+
     return result
 
 
+# See the note in _num2date_to_nearest_second.
 cf_units.Unit.num2date = _num2date_to_nearest_second
 
 
