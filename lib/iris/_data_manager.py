@@ -161,7 +161,7 @@ class DataManager:
         try:
             if iris.FUTURE.dataless_cube and data is None:
                 shape = self.shape
-            elif (iris.FUTURE.dataless_cube and data == iris.MAINTAIN_DATA) or (
+            elif (iris.FUTURE.dataless_cube and type(data) is str and data == iris.MAINTAIN_DATA) or (
                 data is None
             ):
                 # Copy the managed data.

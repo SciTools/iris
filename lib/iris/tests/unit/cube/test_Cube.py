@@ -2090,12 +2090,12 @@ class Test_copy:
         _shared_utils.assert_array_equal(new_cube.data, new_data)
 
     def test_copy_remove_data(self):
-        iris.FUTURE.dataless_cube = True
-        cube = stock.realistic_4d_w_everything()
-        new_cube = cube.copy()
-        assert new_cube.metadata == cube.metadata
-        assert new_cube.data is None
-        assert new_cube.shape == cube.shape
+        with iris.FUTURE.context(dataless_cube = True):
+            cube = stock.simple_3d()
+            new_cube = cube.copy()
+            assert new_cube.metadata == cube.metadata
+            assert new_cube.data is None
+            assert new_cube.shape == cube.shape
 
     def test__masked_emptymask(self):
         cube = Cube(ma.array([0, 1]))
