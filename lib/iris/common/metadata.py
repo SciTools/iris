@@ -10,6 +10,7 @@ from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
+from datetime import timedelta
 from functools import lru_cache, wraps
 import re
 from typing import TYPE_CHECKING, Any
@@ -52,6 +53,37 @@ _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
 # Configure the logger.
 logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]")
+
+
+_num2date_original = cf_units.Unit.num2date
+
+
+def _num2date_to_nearest_second(
+    self,
+    time_value,
+    only_use_cftime_datetimes=True,
+    only_use_python_datetimes=False,
+):
+    def _round(date):
+        if date.microsecond == 0:
+            return date
+        elif date.microsecond < 500000:
+            return date - timedelta(microseconds=date.microsecond)
+        else:
+            return date + timedelta(seconds=1) - timedelta(microseconds=date.microsecond)
+
+    dates = _num2date_original(
+        self, time_value, only_use_cftime_datetimes, only_use_python_datetimes
+    )
+    if hasattr(dates, "shape"):
+        vfunc = np.vectorize(_round)
+        result = vfunc(dates)
+    else:
+        result = _round(dates)
+    return result
+
+
+cf_units.Unit.num2date = _num2date_to_nearest_second
 
 
 def hexdigest(item):
