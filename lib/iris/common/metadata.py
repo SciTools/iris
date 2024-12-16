@@ -70,7 +70,9 @@ def _num2date_to_nearest_second(
         elif date.microsecond < 500000:
             return date - timedelta(microseconds=date.microsecond)
         else:
-            return date + timedelta(seconds=1) - timedelta(microseconds=date.microsecond)
+            return (
+                date + timedelta(seconds=1) - timedelta(microseconds=date.microsecond)
+            )
 
     dates = _num2date_original(
         self, time_value, only_use_cftime_datetimes, only_use_python_datetimes
