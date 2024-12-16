@@ -14,6 +14,7 @@ from datetime import timedelta
 from functools import lru_cache, wraps
 import re
 from typing import TYPE_CHECKING, Any
+import warnings
 
 import cf_units
 import numpy as np
@@ -88,6 +89,15 @@ def _num2date_to_nearest_second(
             result = vfunc(result)
         else:
             result = _round(result)
+
+    else:
+        message = (
+            "You are using legacy date precision for Iris units - max "
+            "precision is seconds. In future, Iris will use microsecond "
+            "precision, which may affect core behaviour. To opt-in to the "
+            "new behaviour, set `iris.FUTURE.date_microseconds = True`."
+        )
+        warnings.warn(message, category=FutureWarning)
 
     return result
 
