@@ -642,8 +642,8 @@ class Test_collapsed__warning:
         msg = "Collapsing spatial coordinate {!r} without weighting"
         for coord in coords:
             assert (
-                    mock.call(msg.format(coord), category=IrisUserWarning)
-                    in warn.call_args_list
+                mock.call(msg.format(coord), category=IrisUserWarning)
+                in warn.call_args_list
             )
 
     def _assert_nowarn_collapse_without_weight(self, coords, warn):
@@ -735,7 +735,7 @@ class Test_collapsed_coord_with_3_bounds:
                 f"'{coord}'. Ignoring bounds."
             )
             assert (
-                    mock.call(msg, category=IrisVagueMetadataWarning) in warn.call_args_list
+                mock.call(msg, category=IrisVagueMetadataWarning) in warn.call_args_list
             )
 
     def _assert_cube_as_expected(self, cube):
@@ -839,7 +839,7 @@ class Test_summary:
                     # For lines with any columns : check that columns are where expected
                     for col_ind in colon_inds:
                         # Chop out chars before+after each expected column.
-                        assert line[col_ind - 1: col_ind + 2] == " x "
+                        assert line[col_ind - 1 : col_ind + 2] == " x "
 
             # Finally also: compare old with new, but replacing new name and ignoring spacing differences
             def collapse_space(string):
