@@ -2212,53 +2212,52 @@ def equalise_cubes(
         The input cubes, in a list or similar.
 
     apply_all : bool, default=False
-        Enable *all possible* equalisation operations : that is, all those which have a
-        simple boolean key, so require no additional context information.
+        Enable *all* the equalisation operations.
 
     unify_names : bool, default=False
         When True, remove any redundant ``var_name`` and ``long_name`` properties,
         leaving only one ``standard_name``, ``long_name`` or ``var_name`` per cube.
-        In this case, the revised name properties are also used in selecting input
-        groups.
+        In this case, the adjusted names are also used when selecting input groups.
 
     equalise_attributes : bool, default=False
         When ``True``, apply an :func:`equalise_attributes` operation to each input
-        group.  In this case, all attributes are ignored when selecting input groups.
+        group.  In this case, attributes are ignored when selecting input groups.
 
     unify_time_units : bool, default=False
         When True, apply the :func:`unify_time_units` operation to each input group.
         In this case, all time-reference type (i.e. date) units are treated as
-        equivalent when selecting input groups.
+        identical when selecting input groups.
 
     Returns
     -------
     :class:`~iris.cube.CubeList`
-        A CubeList containing one output cube for each input cube, ready for a merge or
-        concatenate operation.  Each result cube is either the corresponding input
-        cube, modified or unmodified, or a new replacement derived from it.
+        A CubeList containing the original input cubes, ready for merge or concatenate
+        operations.  The cubes are possibly modified (in-place), and possibly in a
+        different order.
 
     Notes
     -----
+    All the 'equalise' operations operate in a similar fashion, in that they identify
+    and remove differences in a specific metadata element, altering metadata so that
+    a merge or concatenate can potentially combine a group of cubes into a single
+    result cube.
+
     The various 'equalise' operations are not applied to the entire input, but to
-    each group of input cubes with the same ``cube.metadata``.
+    groups of input cubes with the same ``cube.metadata``.
 
-    Every 'equalise' operation operates in a similar fashion, in that it identifies and
-    removes one specific type of metadata difference so that a group of cubes can
-    potentially combine into a single result cube.
-
-    In some cases, the identification of input cube groups *also* depends on the
-    equalisation operation(s) selected :  Operations which work on cube metadata
-    elements (names, units, attributes and cell-methods) will prevent that element from
-    discriminating between different input groups.
+    The input cube groups also depend on the equalisation operation(s) selected :
+    Operations which equalise a specific cube metadata element (names, units,
+    attributes or cell-methods) exclude that element from the input grouping criteria.
 
     """
     from iris.common.metadata import CubeMetadata
     from iris.cube import CubeList
 
     if unify_names or apply_all:
-        # Tidy all cube names
+        # Rationalise all the cube names
         # Note: this option operates as a special case, independent of
         #  and *in advance of* the group selection
+        # (hence, it affects the groups which other operations are applied to)
         for cube in cubes:
             if cube.standard_name:
                 cube.long_name = None
@@ -2280,7 +2279,7 @@ def equalise_cubes(
     if equalise_attributes or apply_all:
         # get the function of the same name in this module
         equalisation_ops.append(globals()["equalise_attributes"])
-        # Prevent any attributes from distinguishing input groups
+        # Prevent attributes from distinguishing input groups
         for cat in cube_grouping_keys:
             cat.pop("attributes")
 
@@ -2295,11 +2294,15 @@ def equalise_cubes(
 
     if not equalisation_ops:
         # Nothing more to do.
-        # Note that, if 'unify-names' was done, we already modified cubes in-place.
+        # Note that, if 'unify-names' was done, we *already* modified cubes in-place.
         result = cubes
     else:
         # Compute the cube groups
+        # N.B. *can't* use sets, as contents not always hashable, e.g. array attributes
+        # I fear could be inefficient (repeated array compare), but maybe unavoidable
         # TODO: might something nasty happen here if attributes contain weird stuff ??
+
+        # TODO: this can be improved -- there is no need to re-scan for each group
         def find_uniques(inputs):
             results = []
             while inputs:
