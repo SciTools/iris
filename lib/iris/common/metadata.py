@@ -83,14 +83,7 @@ def _num2date_to_nearest_second(
     result = _num2date_original(
         self, time_value, only_use_cftime_datetimes, only_use_python_datetimes
     )
-    if FUTURE.date_microseconds:
-        if hasattr(result, "shape"):
-            vfunc = np.vectorize(_round)
-            result = vfunc(result)
-        else:
-            result = _round(result)
-
-    else:
+    if FUTURE.date_microseconds is False:
         message = (
             "You are using legacy date precision for Iris units - max "
             "precision is seconds. In future, Iris will use microsecond "
@@ -98,6 +91,12 @@ def _num2date_to_nearest_second(
             "new behaviour, set `iris.FUTURE.date_microseconds = True`."
         )
         warnings.warn(message, category=FutureWarning)
+
+        if hasattr(result, "shape"):
+            vfunc = np.vectorize(_round)
+            result = vfunc(result)
+        else:
+            result = _round(result)
 
     return result
 
