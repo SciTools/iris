@@ -161,9 +161,11 @@ class DataManager:
         try:
             if iris.FUTURE.dataless_cube and data is None:
                 shape = self.shape
-            elif (iris.FUTURE.dataless_cube and type(data) is str and data == iris.MAINTAIN_DATA) or (
-                data is None
-            ):
+            elif (
+                iris.FUTURE.dataless_cube
+                and type(data) is str
+                and data == iris.MAINTAIN_DATA
+            ) or (data is None):
                 # Copy the managed data.
                 if self.has_lazy_data():
                     data = copy.deepcopy(self._lazy_array, memo)

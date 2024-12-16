@@ -2090,7 +2090,7 @@ class Test_copy:
         _shared_utils.assert_array_equal(new_cube.data, new_data)
 
     def test_copy_remove_data(self):
-        with iris.FUTURE.context(dataless_cube = True):
+        with iris.FUTURE.context(dataless_cube=True):
             cube = stock.simple_3d()
             new_cube = cube.copy()
             assert new_cube.metadata == cube.metadata
