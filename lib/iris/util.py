@@ -2304,12 +2304,11 @@ def equalise_cubes(
 
         # TODO: this can be improved -- there is no need to re-scan for each group
         def find_uniques(inputs):
-            results = []
-            while inputs:
-                candidate, inputs = inputs[0], inputs[1:]
-                if candidate not in results:
-                    results.append(candidate)
-            return results
+            unique_inputs = []
+            for candidate in inputs:
+                if candidate not in unique_inputs:
+                    unique_inputs.append(candidate)
+            return unique_inputs
 
         input_group_keys = find_uniques(cube_grouping_keys)
 

@@ -39,11 +39,11 @@ def _scramble(inputs, rng=_RNG):
 
 def _cube(
     stdname=None,
-    varname=None,
     longname=None,
+    varname=None,
     units="unknown",
     cell_methods=(),
-    **kwattributes,
+    **attributes,
 ):
     # Construct a simple test-cube with given metadata properties
     cube = Cube(
@@ -53,7 +53,7 @@ def _cube(
         var_name=varname,
         cell_methods=cell_methods,
         units=units,
-        attributes=kwattributes,
+        attributes=attributes,
     )
     return cube
 
