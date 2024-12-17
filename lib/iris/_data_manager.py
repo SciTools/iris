@@ -169,8 +169,10 @@ class DataManager:
                 # Copy the managed data.
                 if self.has_lazy_data():
                     data = copy.deepcopy(self._lazy_array, memo)
-                else:
+                elif self._real_array is not None:
                     data = self._real_array.copy()
+                else:
+                    shape = self.shape
             elif type(data) is str and data == iris.DATALESS_COPY:
                 shape = self.shape
                 data = None
