@@ -87,7 +87,8 @@ def _num2date_to_nearest_second(
         message = (
             "You are using legacy date precision for Iris units - max "
             "precision is seconds. In future, Iris will use microsecond "
-            "precision, which may affect core behaviour. To opt-in to the "
+            "precision - from cf-units version 3.3 - which may affect core "
+            "behaviour. To opt-in to the "
             "new behaviour, set `iris.FUTURE.date_microseconds = True`."
         )
         warnings.warn(message, category=FutureWarning)

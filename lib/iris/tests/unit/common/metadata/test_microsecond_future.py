@@ -6,12 +6,16 @@
 
 import warnings
 
+import cf_units
 import numpy as np
+from packaging.version import Version
 import pytest
 
 from iris import FUTURE
 from iris.coords import DimCoord
 from iris.tests._shared_utils import assert_array_equal
+
+cf_units_legacy = Version(cf_units.__version__) < Version("3.3.0")
 
 
 @pytest.fixture(
@@ -74,7 +78,7 @@ def test_num2date(time_coord, future_date_microseconds, indexing):
         result = result.flatten()
 
     expected_microseconds = n_microseconds
-    if not future_date_microseconds:
+    if not future_date_microseconds or cf_units_legacy:
         expected_microseconds = 0
 
     assert all(r.microsecond == expected_microseconds for r in result)
