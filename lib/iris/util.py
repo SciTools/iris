@@ -2225,8 +2225,8 @@ def equalise_cubes(
 
     unify_time_units : bool, default=False
         When True, apply the :func:`unify_time_units` operation to each input group.
-        In this case, all time-reference type (i.e. date) units are treated as
-        identical when selecting input groups.
+        Note : while this may convert units of time reference coordinates, it does
+        not affect the units of the cubes themselves.
 
     Returns
     -------
@@ -2286,11 +2286,6 @@ def equalise_cubes(
     if unify_time_units or apply_all:
         # get the function of the same name in this module
         equalisation_ops.append(globals()["unify_time_units"])
-        # Treat all time-reference units (only) as identical when identifying
-        # input groups
-        for cat in cube_grouping_keys:
-            if cat["units"].is_time_reference():
-                cat["units"] = "<time-ref>"
 
     if not equalisation_ops:
         # Nothing more to do.
