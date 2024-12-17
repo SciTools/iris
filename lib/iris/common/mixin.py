@@ -141,13 +141,13 @@ class LimitedAttributeDict(dict):
         dict.update(self, other, **kwargs)
 
 
-class _IrisUnit(cf_units.Unit):
+class Unit(cf_units.Unit):
     # TODO: remove this subclass once FUTURE.date_microseconds is removed.
 
     @classmethod
     def from_unit(cls, unit: cf_units.Unit):
-        """Cast a :class:`cf_units.Unit` to an :class:`_IrisUnit`."""
-        if isinstance(unit, _IrisUnit):
+        """Cast a :class:`cf_units.Unit` to an :class:`Unit`."""
+        if isinstance(unit, Unit):
             result = unit
         elif isinstance(unit, cf_units.Unit):
             result = cls.__new__(cls)
@@ -272,7 +272,7 @@ class CFVariableMixin:
     @units.setter
     def units(self, unit: cf_units.Unit | str | None) -> None:
         unit = cf_units.as_unit(unit)
-        self._metadata_manager.units = _IrisUnit.from_unit(unit)
+        self._metadata_manager.units = Unit.from_unit(unit)
 
     @property
     def attributes(self) -> LimitedAttributeDict:
