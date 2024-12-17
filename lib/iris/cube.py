@@ -1190,7 +1190,7 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike,
+        data: np.typing.ArrayLike | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -1251,6 +1251,9 @@ class Cube(CFVariableMixin):
             A list of CellMeasures with dimension mappings.
         ancillary_variables_and_dims :
             A list of AncillaryVariables with dimension mappings.
+        shape :
+            An alternative to providing data, this defines the shape of the
+            cube, but initialises the cube as dataless.
 
         Examples
         --------
