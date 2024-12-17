@@ -2887,6 +2887,16 @@ class Cube(CFVariableMixin):
         """
         return self._data_manager.has_lazy_data()
 
+    def is_dataless(self) -> bool:
+        """Detail whether this :class:`~iris.cube.Cube` is dataless.
+
+        Returns
+        -------
+        bool
+
+        """
+        return self._data_manager.is_dataless()
+
     @property
     def dim_coords(self) -> tuple[DimCoord, ...]:
         """Return a tuple of all the dimension coordinates, ordered by dimension.

@@ -647,6 +647,19 @@ class Test_lazy_data(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         self.assertIs(result, dm._lazy_array)
 
+class Test_is_dataless(tests.IrisTest):
+    def setUp(self):
+        self.data = np.array(0)
+        self.shape = (0)
+
+    def test_with_data(self):
+        dm = DataManager(self.data)
+        self.assertFalse(dm.is_dataless())
+
+    def test_without_data(self):
+        dm = DataManager(None, self.shape)
+        self.assertTrue(dm.is_dataless())
+
 
 if __name__ == "__main__":
     tests.main()

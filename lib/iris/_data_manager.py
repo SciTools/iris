@@ -25,12 +25,18 @@ class DataManager:
         data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
-            managed.
+            managed. If a value of None is given, the data manager will be
+            considered dataless.
+
+        shape :
+            A tuple, representing the shape of the data manager. This can only
+            be used in the case of `data=None`, and will render the data manager
+            dataless.
 
         """
         if (shape is not None) and (data is not None):
-            msg = "A cube may not be created with both data and a custom shape."
-            raise iris.exceptions.InvalidCubeError(msg)
+            msg = "`shape` should only be provided if `data is None`"
+            raise ValueError(msg)
 
         # Initialise the instance.
         self._lazy_array = None
@@ -134,12 +140,12 @@ class DataManager:
         overfilled = self._lazy_array is not None and self._real_array is not None
         if overfilled:
             msg = "Unexpected data state, got both lazy and real data."
-            raise iris.exceptions.InvalidCubeError(msg)
+            raise ValueError(msg)
         elif (
             empty and self._shape is None
         ):  # if I remove the second check, allows empty arrays, like old behaviour
             msg = "Unexpected data state, got no lazy or real data, and no shape."
-            raise iris.exceptions.InvalidCubeError(msg)
+            raise ValueError(msg)
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
@@ -289,6 +295,9 @@ class DataManager:
         else:
             result = self.core_data().shape
         return result
+
+    def is_dataless(self):
+        return (self.core_data() is None) and (self.shape is not None)
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.
