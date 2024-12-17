@@ -148,7 +148,6 @@ class Future(threading.local):
         datum_support=False,
         pandas_ndim=False,
         save_split_attrs=False,
-        dataless_cube=False,
     ):
         """Container for run-time options controls.
 
@@ -187,7 +186,6 @@ class Future(threading.local):
         self.__dict__["datum_support"] = datum_support
         self.__dict__["pandas_ndim"] = pandas_ndim
         self.__dict__["save_split_attrs"] = save_split_attrs
-        self.__dict__["dataless_cube"] = dataless_cube
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
@@ -195,12 +193,11 @@ class Future(threading.local):
     def __repr__(self):
         # msg = ('Future(example_future_flag={})')
         # return msg.format(self.example_future_flag)
-        msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={}, dataless_cubes={})"
+        msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={})"
         return msg.format(
             self.datum_support,
             self.pandas_ndim,
             self.save_split_attrs,
-            self.dataless_cube,
         )
 
     # deprecated_options = {'example_future_flag': 'warning',}
@@ -846,4 +843,4 @@ def use_plugin(plugin_name):
     importlib.import_module(f"iris.plugins.{plugin_name}")
 
 
-MAINTAIN_DATA = "MAINTAINDATA"
+DATALESS_COPY = "NONE"

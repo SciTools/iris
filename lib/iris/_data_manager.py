@@ -159,18 +159,15 @@ class DataManager:
         """
         shape = None
         try:
-            if iris.FUTURE.dataless_cube and data is None:
-                shape = self.shape
-            elif (
-                iris.FUTURE.dataless_cube
-                and type(data) is str
-                and data == iris.MAINTAIN_DATA
-            ) or (data is None):
+            if data is None:
                 # Copy the managed data.
                 if self.has_lazy_data():
                     data = copy.deepcopy(self._lazy_array, memo)
                 else:
                     data = self._real_array.copy()
+            elif type(data) is str and data == iris.DATALESS_COPY:
+                shape = self.shape
+                data = None
             else:
                 # Check that the replacement data is valid relative to
                 # the currently managed data.

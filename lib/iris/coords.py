@@ -2708,8 +2708,7 @@ class DimCoord(Coord):
         """
         new_coord = copy.deepcopy(super(), memo)
         # Ensure points and bounds arrays are read-only.
-        if not (new_coord._values_dm.data is None and iris.FUTURE.dataless_cube):
-            new_coord._values_dm.data.flags.writeable = False
+        new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
             new_coord._bounds_dm.data.flags.writeable = False
         return new_coord
