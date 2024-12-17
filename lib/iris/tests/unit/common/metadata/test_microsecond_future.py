@@ -81,7 +81,8 @@ def test_num2date(time_coord, future_date_microseconds, indexing):
     if not future_date_microseconds or cf_units_legacy:
         expected_microseconds = 0
 
-    assert all(r.microsecond == expected_microseconds for r in result)
+    result_microseconds = np.array([r.microsecond for r in result])
+    assert_array_equal(result_microseconds, expected_microseconds)
 
 
 def test_roundup(time_coord, future_date_microseconds):
@@ -89,7 +90,8 @@ def test_roundup(time_coord, future_date_microseconds):
     result = coord.units.num2date(coord.points)
 
     expected_seconds = np.floor(coord.points)
-    if n_microseconds >= 500000 and not future_date_microseconds:
+    if n_microseconds >= 500000 and (not future_date_microseconds or cf_units_legacy):
+        # Legacy cf-units versions round microseconds and ignore the future flag.
         expected_seconds += 1
 
     result_seconds = np.array([r.second for r in result])
