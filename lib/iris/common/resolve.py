@@ -122,8 +122,6 @@ class Resolve:
         import iris
         import numpy as np
         from iris.common import Resolve
-        # See https://github.com/dask/dask/issues/11433
-        np.set_printoptions(legacy="1.25")
         cube1 = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
         cube2 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))[0]
         cube2.transpose()
@@ -2594,9 +2592,9 @@ class Resolve:
                     source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().shape is None
             True
-            >>> Resolve(cube1, cube2).shape
+            >>> Resolve(cube1, cube2).shape  # doctest: +SKIP
             (240, 37, 49)
-            >>> Resolve(cube2, cube1).shape
+            >>> Resolve(cube2, cube1).shape  # doctest: +SKIP
             (240, 37, 49)
 
         """  # noqa: D214, D406, D407, D410, D411
