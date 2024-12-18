@@ -174,6 +174,8 @@ class CubeList(list):
         if not hasattr(obj, "add_aux_coord"):
             msg = r"Object {obj} cannot be put in a cubelist, as it is not a Cube."
             raise ValueError(msg)
+        elif obj.is_dataless():
+            raise iris.exceptions.DatalessError("CubeList")
 
     def _repr_html_(self):
         from iris.experimental.representation import CubeListRepresentation
@@ -1479,6 +1481,8 @@ class Cube(CFVariableMixin):
 
         """
         # If the cube has units convert the data.
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("convert_units")
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
                 "Cannot convert from unknown units. "
@@ -3105,6 +3109,8 @@ class Cube(CFVariableMixin):
         whole cube is returned. As such, the operation is not strict.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("subset")
         if not isinstance(coord, iris.coords.Coord):
             raise ValueError("coord_to_extract must be a valid Coord.")
 
@@ -3226,6 +3232,8 @@ class Cube(CFVariableMixin):
             which intersects with the requested coordinate intervals.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("intersection")
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
@@ -3750,6 +3758,9 @@ class Cube(CFVariableMixin):
             dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("slices")
+
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
@@ -3837,7 +3848,8 @@ class Cube(CFVariableMixin):
 
         # Transpose the data payload.
         dm = self._data_manager
-        data = dm.core_data().transpose(new_order)
+        if not self.is_dataless():
+            data = dm.core_data().transpose(new_order)
         self._data_manager = DataManager(data)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
@@ -4325,6 +4337,8 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("collapsed")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4545,6 +4559,8 @@ x            -              -
                     STASH                       m01s00i024
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("aggregated_by")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4844,6 +4860,8 @@ x            -               -
         """  # noqa: D214, D406, D407, D410, D411
         # Update weights kwargs (if necessary) to handle different types of
         # weights
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("rolling_window")
         weights_info = None
         if kwargs.get("weights") is not None:
             weights_info = _Weights(kwargs["weights"], self)
@@ -5049,6 +5067,8 @@ x            -               -
             True
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("interoplate")
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
         return interp(points, collapse_scalar=collapse_scalar)
@@ -5094,6 +5114,8 @@ x            -               -
             this function is not applicable.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("regrid")
         regridder = scheme.regridder(self, grid)
         return regridder(self)
 
