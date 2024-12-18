@@ -143,6 +143,7 @@ NameConstraint = iris._constraints.NameConstraint
 #: To be used when copying a cube to make the new cube dataless.
 DATALESS = "NONE"
 
+
 class Future(threading.local):
     """Run-time configuration controller."""
 

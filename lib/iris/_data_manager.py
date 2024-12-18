@@ -193,11 +193,10 @@ class DataManager:
     @property
     def data(self):
         """Return the real data. Any lazy data being managed will be realised.
-        ``None`` will be returned if in the dataless state.
 
         Returns
         -------
-        :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray`.
+        :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or None.
 
         """
         if self.has_lazy_data():
@@ -241,7 +240,7 @@ class DataManager:
             managed. If data is None, the current shape will be maintained.
 
         """
-        if dataless := data is None:
+        if data is None:
             self._shape = self.shape
             self._lazy_array = None
             self._real_array = None
@@ -293,7 +292,11 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self._shape if self._shape else self.core_data().shape
+        if self.core_data() is None:
+            result = self._shape
+        else:
+            result = self.core_data().shape
+        return result
 
     def is_dataless(self) -> bool:
         """Determine whether the cube has no data.
