@@ -174,8 +174,6 @@ class CubeList(list):
         if not hasattr(obj, "add_aux_coord"):
             msg = r"Object {obj} cannot be put in a cubelist, as it is not a Cube."
             raise ValueError(msg)
-        elif obj.is_dataless():
-            raise iris.exceptions.DatalessError("CubeList")
 
     def _repr_html_(self):
         from iris.experimental.representation import CubeListRepresentation
@@ -412,7 +410,6 @@ class CubeList(list):
         """
         if not self:
             raise ValueError("can't merge an empty CubeList")
-
         # Register each of our cubes with a single ProtoCube.
         proto_cube = iris._merge.ProtoCube(self[0])
         for c in self[1:]:

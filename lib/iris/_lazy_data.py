@@ -16,6 +16,7 @@ import dask
 import dask.array as da
 import dask.config
 import dask.utils
+import iris.exceptions
 import numpy as np
 import numpy.ma as ma
 
@@ -317,7 +318,10 @@ def _co_realise_lazy_arrays(arrays):
         # Note : in some cases dask (and numpy) will return a scalar
         # numpy.int/numpy.float object rather than an ndarray.
         # Recorded in https://github.com/dask/dask/issues/2111.
-        real_out = np.asanyarray(real_out)
+        if real_out is not None:
+            real_out = np.asanyarray(real_out)
+        else:
+            raise iris.exceptions.DatalessError("realising")
         if isinstance(real_out, ma.core.MaskedConstant):
             # Convert any masked constants into NumPy masked arrays.
             # NOTE: in this case, also apply the original lazy-array dtype, as
