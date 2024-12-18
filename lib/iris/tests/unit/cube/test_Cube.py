@@ -2091,7 +2091,7 @@ class Test_copy:
 
     def test_copy_to_dataless(self):
         cube = stock.simple_3d()
-        new_cube = cube.copy(iris.DATALESS_COPY)
+        new_cube = cube.copy(iris.DATALESS)
         assert new_cube.metadata == cube.metadata
         assert new_cube.data is None
         assert new_cube.shape == cube.shape

@@ -173,7 +173,7 @@ class DataManager:
                     data = self._real_array.copy()
                 else:
                     shape = self.shape
-            elif type(data) is str and data == iris.DATALESS_COPY:
+            elif type(data) is str and data == iris.DATALESS:
                 shape = self.shape
                 data = None
             else:

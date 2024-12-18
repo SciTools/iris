@@ -843,4 +843,5 @@ def use_plugin(plugin_name):
     importlib.import_module(f"iris.plugins.{plugin_name}")
 
 
-DATALESS_COPY = "NONE"
+# To be used when copying a cube to make the new cube dataless.
+DATALESS = "NONE"
