@@ -299,6 +299,13 @@ class DataManager:
         return result
 
     def is_dataless(self):
+        """Determine whether the cube is dataless.
+
+        Returns
+        -------
+        bool
+
+        """
         return (self.core_data() is None) and (self.shape is not None)
 
     def copy(self, data=None):

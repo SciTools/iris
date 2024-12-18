@@ -148,6 +148,7 @@ class Future(threading.local):
         datum_support=False,
         pandas_ndim=False,
         save_split_attrs=False,
+        date_microseconds=False,
     ):
         """Container for run-time options controls.
 
@@ -174,6 +175,13 @@ class Future(threading.local):
             different ways :  "global" ones are saved as dataset attributes, where
             possible, while "local" ones are saved as data-variable attributes.
             See :func:`iris.fileformats.netcdf.saver.save`.
+        date_microseconds : bool, default=False
+            Newer versions of cftime and cf-units support microsecond precision
+            for dates, compared to the legacy behaviour that only works with
+            seconds. Enabling microsecond precision will alter core Iris
+            behaviour, such as when using :class:`~iris.Constraint`, and you
+            may need to defend against floating point precision issues where
+            you didn't need to before.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -186,6 +194,7 @@ class Future(threading.local):
         self.__dict__["datum_support"] = datum_support
         self.__dict__["pandas_ndim"] = pandas_ndim
         self.__dict__["save_split_attrs"] = save_split_attrs
+        self.__dict__["date_microseconds"] = date_microseconds
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
@@ -198,6 +207,7 @@ class Future(threading.local):
             self.datum_support,
             self.pandas_ndim,
             self.save_split_attrs,
+            self.date_microseconds,
         )
 
     # deprecated_options = {'example_future_flag': 'warning',}
