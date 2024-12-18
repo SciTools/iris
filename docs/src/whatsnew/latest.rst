@@ -38,6 +38,17 @@ This document explains the changes made to Iris for this release
    your code for new floating point problems if activating this (e.g. when
    using the :class:`~iris.Constraint` API). (:pull:`6260`)
 
+#. `@ESadek-MO`_ made :attr:`~iris.cube.Cube.data` optional in a
+   :class:`~iris.cube.Cube`, when :attr:`~iris.cube.Cube.shape` is provided
+   instead. `dataless cubes` can currently be used as targets in regridding, or
+   for templates to add data to at a later time.
+
+   This is the first step in making `dataless cubes`. Currently, most cube methods
+   don't work on `dataless cubes`, and will raise in an error if attempted.
+   :meth:`~iris.cube.Cube.transpose` will work, as will :meth:`~iris.cube.Cube.copy`.
+   `my_cube.copy(data = iris.DATALESS)` will copy the cube and remove data in
+   the process.
+   (:issue:`4447`, :pull:`6253`)
 
 🐛 Bugs Fixed
 =============
