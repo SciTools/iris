@@ -118,6 +118,7 @@ except ImportError:
 __all__ = [
     "AttributeConstraint",
     "Constraint",
+    "DATALESS",
     "FUTURE",
     "Future",
     "IrisDeprecation",
@@ -139,6 +140,8 @@ Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 NameConstraint = iris._constraints.NameConstraint
 
+#: To be used when copying a cube to make the new cube dataless.
+DATALESS = "NONE"
 
 class Future(threading.local):
     """Run-time configuration controller."""
@@ -851,7 +854,3 @@ def use_plugin(plugin_name):
     significance of the import statement and warn that it is an unused import.
     """
     importlib.import_module(f"iris.plugins.{plugin_name}")
-
-
-#: To be used when copying a cube to make the new cube dataless.
-DATALESS = "NONE"

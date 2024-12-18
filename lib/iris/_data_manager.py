@@ -22,28 +22,29 @@ class DataManager:
 
         Parameters
         ----------
-        data :
+        data : np.typing.ArrayLike, optional
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
             managed. If a value of None is given, the data manager will be
             considered dataless.
 
-        shape :
+        shape : tuple, optional
             A tuple, representing the shape of the data manager. This can only
-            be used in the case of `data=None`, and will render the data manager
+            be used in the case of ``data=None``, and will render the data manager
             dataless.
 
         """
         if (shape is not None) and (data is not None):
-            msg = "`shape` should only be provided if `data is None`"
+            msg = '"shape" should only be provided if "data" is None'
             raise ValueError(msg)
+
+        self._shape = shape
 
         # Initialise the instance.
         self._lazy_array = None
         self._real_array = None
 
         # Assign the data payload to be managed.
-        self._shape = shape
         self.data = data
 
     def __copy__(self):
@@ -136,16 +137,16 @@ class DataManager:
     def _assert_axioms(self):
         """Definition of the manager state, that should never be violated."""
         # Ensure there is a valid data state.
-        empty = self._lazy_array is None and self._real_array is None
-        overfilled = self._lazy_array is not None and self._real_array is not None
-        if overfilled:
-            msg = "Unexpected data state, got both lazy and real data."
-            raise ValueError(msg)
-        elif (
-            empty and self._shape is None
-        ):  # if I remove the second check, allows empty arrays, like old behaviour
-            msg = "Unexpected data state, got no lazy or real data, and no shape."
-            raise ValueError(msg)
+        is_lazy = self._lazy_array is not None
+        is_real = self._real_array is not None
+
+        if not (is_lazy ^ is_real):
+            if is_lazy and is_real:
+                msg = "Unexpected data state, got both lazy and real data."
+                raise ValueError(msg)
+            if not self._shape and not (is_lazy or is_real):
+                msg = "Unexpected data state, got no lazy or real data, and no shape."
+                raise ValueError(msg)
 
     def _deepcopy(self, memo, data=None):
         """Perform a deepcopy of the :class:`~iris._data_manager.DataManager` instance.
@@ -172,7 +173,7 @@ class DataManager:
                 elif self._real_array is not None:
                     data = self._real_array.copy()
                 else:
-                    shape = self.shape
+                    shape = self._shape
             elif type(data) is str and data == iris.DATALESS:
                 shape = self.shape
                 data = None
@@ -192,6 +193,7 @@ class DataManager:
     @property
     def data(self):
         """Return the real data. Any lazy data being managed will be realised.
+        ``None`` will be returned if in the dataless state.
 
         Returns
         -------
@@ -236,47 +238,46 @@ class DataManager:
         data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
-            managed.
+            managed. If data is None, the current shape will be maintained.
 
         """
-        # If data is None, ensure previous shape is maintained, and that it is
-        # not wrapped in an np.array
-        dataless = data is None
-        if dataless:
+        if dataless := data is None:
             self._shape = self.shape
+            self._lazy_array = None
+            self._real_array = None
 
         # Ensure we have numpy-like data.
-        elif not (hasattr(data, "shape") and hasattr(data, "dtype")):
-            data = np.asanyarray(data)
-
-        # Determine whether the class already has a defined shape,
-        # as this method is called from __init__.
-        has_shape = self.shape is not None
-        if has_shape and not dataless and self.shape != data.shape:
-            # The _ONLY_ data reshape permitted is converting a 0-dimensional
-            # array i.e. self.shape == () into a 1-dimensional array of length
-            # one i.e. data.shape == (1,)
-            if self.shape or data.shape != (1,):
-                emsg = "Require data with shape {!r}, got {!r}."
-                raise ValueError(emsg.format(self.shape, data.shape))
-
-        # Set lazy or real data, and reset the other.
-        if is_lazy_data(data):
-            self._lazy_array = data
-            self._real_array = None
         else:
-            if not ma.isMaskedArray(data):
-                # Coerce input data to ndarray (including ndarray subclasses).
-                if not dataless:
-                    data = np.asarray(data)
-            if isinstance(data, ma.core.MaskedConstant):
-                # Promote to a masked array so that the fill-value is
-                # writeable to the data owner.
-                data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
-            self._lazy_array = None
-            self._real_array = data
+            if not (hasattr(data, "shape") and hasattr(data, "dtype")):
+                data = np.asanyarray(data)
 
-        # Check the manager contract, as the managed data has changed.
+            # Determine whether the class already has a defined shape,
+            # as this method is called from __init__.
+            has_shape = self.shape is not None
+            if has_shape and self.shape != data.shape:
+                # The _ONLY_ data reshape permitted is converting a 0-dimensional
+                # array i.e. self.shape == () into a 1-dimensional array of length
+                # one i.e. data.shape == (1,)
+                if self.shape or data.shape != (1,):
+                    emsg = "Require data with shape {!r}, got {!r}."
+                    raise ValueError(emsg.format(self.shape, data.shape))
+
+            # Set lazy or real data, and reset the other.
+            if is_lazy_data(data):
+                self._lazy_array = data
+                self._real_array = None
+            else:
+                if not ma.isMaskedArray(data):
+                    # Coerce input data to ndarray (including ndarray subclasses).
+                    data = np.asarray(data)
+                if isinstance(data, ma.core.MaskedConstant):
+                    # Promote to a masked array so that the fill-value is
+                    # writeable to the data owner.
+                    data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
+                self._lazy_array = None
+                self._real_array = data
+
+            # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
 
     @property
@@ -292,21 +293,17 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        if self.core_data() is None:
-            result = self._shape
-        else:
-            result = self.core_data().shape
-        return result
+        return self._shape if self._shape else self.core_data().shape
 
-    def is_dataless(self):
-        """Determine whether the cube is dataless.
+    def is_dataless(self) -> bool:
+        """Determine whether the cube has no data.
 
         Returns
         -------
         bool
 
         """
-        return (self.core_data() is None) and (self.shape is not None)
+        return self.core_data() is None
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.
