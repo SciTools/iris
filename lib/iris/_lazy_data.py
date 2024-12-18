@@ -16,9 +16,10 @@ import dask
 import dask.array as da
 import dask.config
 import dask.utils
-import iris.exceptions
 import numpy as np
 import numpy.ma as ma
+
+import iris.exceptions
 
 
 def non_lazy(func):
