@@ -186,6 +186,8 @@ class TestEqualiseAttributes:
                 _cube(longname="b", att_a=10, att_b=1).metadata,
                 _cube(longname="b", att_a=10, att_b=1).metadata,
             ]
+            if usage == "scrambled":
+                _scramble(expected_metadatas)
 
         # Apply operation
         results = equalise_cubes(test_cubes, **kwargs)
@@ -254,6 +256,8 @@ class TestUnifyTimeUnits:
                 _cube(longname="b", att_a=10, att_b=1).metadata,
                 _cube(longname="b", att_a=10, att_b=1).metadata,
             ]
+            if usage == "scrambled":
+                _scramble(expected_metadatas)
 
         # Apply operation
         results = equalise_cubes(test_cubes, **kwargs)

@@ -2287,35 +2287,30 @@ def equalise_cubes(
         # get the function of the same name in this module
         equalisation_ops.append(globals()["unify_time_units"])
 
-    if not equalisation_ops:
-        # Nothing more to do.
-        # Note that, if 'unify-names' was done, we *already* modified cubes in-place.
-        result = cubes
-    else:
+    if equalisation_ops:
+        # NOTE: if no "equalisation_ops", nothing more to do.
+        # However, if 'unify-names' was done, we *already* modified cubes in-place.
+
         # Compute the cube groups
-        # N.B. *can't* use sets, as contents not always hashable, e.g. array attributes
-        # I fear could be inefficient (repeated array compare), but maybe unavoidable
+        # N.B. *can't* use sets, or dictionary key checking, as our 'keys' are not
+        #  always hashable -- e.g. especially, array attributes.
+        # I fear this can be inefficient (repeated array compare), but maybe unavoidable
         # TODO: might something nasty happen here if attributes contain weird stuff ??
+        cube_group_keys = []
+        cube_group_cubes = []
+        for cube, cube_group_key in zip(cubes, cube_grouping_keys):
+            if cube_group_key not in cube_group_keys:
+                cube_group_keys.append(cube_group_key)
+                cube_group_cubes.append([cube])
+            else:
+                i_at = cube_group_keys.index(cube_group_key)
+                cube_group_cubes[i_at].append(cube)
 
-        # TODO: this can be improved -- there is no need to re-scan for each group
-        def find_uniques(inputs):
-            unique_inputs = []
-            for candidate in inputs:
-                if candidate not in unique_inputs:
-                    unique_inputs.append(candidate)
-            return unique_inputs
-
-        input_group_keys = find_uniques(cube_grouping_keys)
-
-        # Process each cube group + collect the results
-        cubes_and_keys = list(zip(cubes, cube_grouping_keys))
-        result = []
-        for group_keys in input_group_keys:
-            group_cubes = [cube for cube, keys in cubes_and_keys if keys == group_keys]
+        # Apply operations to the groups : in-place modifications on the cubes
+        for group_cubes in cube_group_cubes:
             for op in equalisation_ops:
                 op(group_cubes)
-            result.extend(group_cubes)
 
-    # Always return a CubeList result
-    result = CubeList(result)
+    # Return a CubeList result = the *original* cubes, as modified
+    result = CubeList(cubes)
     return result
