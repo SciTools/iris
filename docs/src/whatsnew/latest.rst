@@ -71,7 +71,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@stephenworsley`_ pinned dask to <2024.9 due to an indexing bug. (:issue:`6251`,
+   :pull:`6255`)
 
 
 📚 Documentation
