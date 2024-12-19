@@ -38,6 +38,11 @@ This document explains the changes made to Iris for this release
    your code for new floating point problems if activating this (e.g. when
    using the :class:`~iris.Constraint` API). (:pull:`6260`)
 
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
+   with aligning cubes so they can merge / concatenate.
+   (:issue:`6248`, :pull:`6257`)
+
+
 
 🐛 Bugs Fixed
 =============
