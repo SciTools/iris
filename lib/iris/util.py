@@ -2195,7 +2195,7 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 def equalise_cubes(
     cubes,
     apply_all=False,
-    unify_names=False,
+    normalise_names=False,
     equalise_attributes=False,
     unify_time_units=False,
 ):
@@ -2214,7 +2214,7 @@ def equalise_cubes(
     apply_all : bool, default=False
         Enable *all* the equalisation operations.
 
-    unify_names : bool, default=False
+    normalise_names : bool, default=False
         When True, remove any redundant ``var_name`` and ``long_name`` properties,
         leaving only one ``standard_name``, ``long_name`` or ``var_name`` per cube.
         In this case, the adjusted names are also used when selecting input groups.
@@ -2253,7 +2253,7 @@ def equalise_cubes(
     from iris.common.metadata import CubeMetadata
     from iris.cube import CubeList
 
-    if unify_names or apply_all:
+    if normalise_names or apply_all:
         # Rationalise all the cube names
         # Note: this option operates as a special case, independent of
         #  and *in advance of* the group selection

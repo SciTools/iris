@@ -76,7 +76,7 @@ def _cube(
 
 
 class TestUnifyNames:
-    # Test the 'unify_names' operation.
+    # Test the 'normalise_names' operation.
     def test_simple(self, usage):
         sn = "air_temperature"
         stdnames = [sn, sn, sn]
@@ -86,7 +86,7 @@ class TestUnifyNames:
             _cube(stdname=stdname, longname=longname, varname=varname)
             for stdname, longname, varname in zip(stdnames, longnames, varnames)
         ]
-        kwargs, expected_metadatas = _usage_common(usage, "unify_names", test_cubes)
+        kwargs, expected_metadatas = _usage_common(usage, "normalise_names", test_cubes)
 
         # Calculate expected results
         if usage != "off":
@@ -110,7 +110,7 @@ class TestUnifyNames:
             _cube(stdname=stdname, longname=longname, varname=varname)
             for stdname, longname, varname in zip(stdnames, longnames, varnames)
         ]
-        kwargs, expected_metadatas = _usage_common(usage, "unify_names", test_cubes)
+        kwargs, expected_metadatas = _usage_common(usage, "normalise_names", test_cubes)
 
         # Calculate expected results
         if usage != "off":
