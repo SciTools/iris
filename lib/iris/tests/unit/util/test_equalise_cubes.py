@@ -18,7 +18,16 @@ from iris.warnings import IrisUserWarning
 
 
 def _scramble(inputs, rng=95297):
-    # Reorder items to check that order does not affect the operation
+    # Reorder items (IN PLACE) to check that order does not affect operation
+    # NOTE: the "magic" number is chosen because it happens to encode a permutation
+    # which is usefully non-trivial for small numbers
+    # examples:
+    #   [0, 1] -->  [1, 0]
+    #   [0, 1, 2] -->  [1, 2, 0]
+    #   [0, 1, 2, 3] -->  [1, 2, 3, 0]
+    #   [0, 1, 2, 3, 4] -->  [1, 2, 3, 0, 4]
+    #   [0, 1, 2, 3, 4, 5] -->  [1, 3, 2, 0, 5, 4]
+    #   [0, 1, 2, 3, 4, 5, 6] -->  [1, 5, 3, 2, 0, 6, 4]
     if not isinstance(rng, Generator):
         rng = np.random.default_rng(rng)
     n_inputs = len(inputs)
@@ -31,7 +40,6 @@ def _scramble(inputs, rng=95297):
     inputs_array = inputs_array[scramble_inds]
     # Modify input list **BUT N.B. IN PLACE**
     inputs[:] = inputs_array
-    return inputs
 
 
 @pytest.fixture(params=["off", "on", "applyall", "scrambled"])
@@ -147,7 +155,7 @@ class TestUnifyNames(WarnChecked):
                 for stdname, longname, varname in zip(stdnames, longnames, varnames)
             ]
             if usage == "scrambled":
-                expected_metadatas = _scramble(expected_metadatas)
+                _scramble(expected_metadatas)
 
         # Apply operation
         results = equalise_cubes(test_cubes, **kwargs)
