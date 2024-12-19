@@ -2268,8 +2268,11 @@ def equalise_cubes(
     # Snapshot the cube metadata elements which we use to identify input groups
     # TODO: we might want to sanitise practically comparable types here ?
     #  (e.g. large object arrays ??)
-    cube_grouping_keys = [
-        {key: deepcopy(getattr(cube.metadata, key)) for key in CubeMetadata._fields}
+    cube_grouping_values = [
+        {
+            field: deepcopy(getattr(cube.metadata, field))
+            for field in CubeMetadata._fields
+        }
         for cube in cubes
     ]
 
@@ -2280,8 +2283,8 @@ def equalise_cubes(
         # get the function of the same name in this module
         equalisation_ops.append(globals()["equalise_attributes"])
         # Prevent attributes from distinguishing input groups
-        for cat in cube_grouping_keys:
-            cat.pop("attributes")
+        for grouping_values in cube_grouping_values:
+            grouping_values.pop("attributes")
 
     if unify_time_units or apply_all:
         # get the function of the same name in this module
@@ -2291,23 +2294,23 @@ def equalise_cubes(
         # NOTE: if no "equalisation_ops", nothing more to do.
         # However, if 'unify-names' was done, we *already* modified cubes in-place.
 
-        # Compute the cube groups
-        # N.B. *can't* use sets, or dictionary key checking, as our 'keys' are not
+        # Group the cubes into sets with the same 'grouping values'.
+        # N.B. we *can't* use sets, or dictionary key checking, as our 'values' are not
         #  always hashable -- e.g. especially, array attributes.
         # I fear this can be inefficient (repeated array compare), but maybe unavoidable
         # TODO: might something nasty happen here if attributes contain weird stuff ??
-        cube_group_keys = []
-        cube_group_cubes = []
-        for cube, cube_group_key in zip(cubes, cube_grouping_keys):
-            if cube_group_key not in cube_group_keys:
-                cube_group_keys.append(cube_group_key)
-                cube_group_cubes.append([cube])
+        cubegroup_values = []
+        cubegroup_cubes = []
+        for cube, grouping_values in zip(cubes, cube_grouping_values):
+            if grouping_values not in cubegroup_values:
+                cubegroup_values.append(grouping_values)
+                cubegroup_cubes.append([cube])
             else:
-                i_at = cube_group_keys.index(cube_group_key)
-                cube_group_cubes[i_at].append(cube)
+                i_at = cubegroup_values.index(grouping_values)
+                cubegroup_cubes[i_at].append(cube)
 
         # Apply operations to the groups : in-place modifications on the cubes
-        for group_cubes in cube_group_cubes:
+        for group_cubes in cubegroup_cubes:
             for op in equalisation_ops:
                 op(group_cubes)
 
