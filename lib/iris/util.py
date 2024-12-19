@@ -2233,9 +2233,8 @@ def equalise_cubes(
     Returns
     -------
     :class:`~iris.cube.CubeList`
-        A CubeList containing the original input cubes, ready for merge or concatenate
-        operations.  The cubes are possibly modified (in-place), and possibly in a
-        different order.
+        A CubeList containing the original input cubes, modified as required (in-place)
+        ready for merge or concatenate operations.
 
     Notes
     -----
