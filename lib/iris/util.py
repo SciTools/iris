@@ -16,6 +16,7 @@ import os.path
 import sys
 import tempfile
 from typing import Literal
+from warnings import warn
 
 import cf_units
 from dask import array as da
@@ -28,6 +29,7 @@ from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
+import iris.warnings
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
@@ -2290,7 +2292,15 @@ def equalise_cubes(
         # get the function of the same name in this module
         equalisation_ops.append(globals()["unify_time_units"])
 
-    if equalisation_ops:
+    if not equalisation_ops:
+        if not normalise_names:
+            msg = (
+                "'equalise_cubes' call does nothing, as no equalisation operations "
+                "are enabled (neither `apply_all` nor any individual keywords set)."
+            )
+            warn(msg, category=iris.warnings.IrisUserWarning)
+
+    else:
         # NOTE: if no "equalisation_ops", nothing more to do.
         # However, if 'unify-names' was done, we *already* modified cubes in-place.
 

@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.util.equalise_cubes` function."""
 
+import warnings
+
 from cf_units import Unit
 import numpy as np
 from numpy.random import Generator
@@ -12,6 +14,7 @@ import pytest
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.util import equalise_cubes
+from iris.warnings import IrisUserWarning
 
 
 def _scramble(inputs, rng=95297):
@@ -75,7 +78,29 @@ def _cube(
     return cube
 
 
-class TestUnifyNames:
+_NO_OP_MESSAGE = "'equalise_cubes' call does nothing"
+
+
+class TestNoOperation:
+    def test(self):
+        # A standalone test, that a call with no operations enabled raises a warning
+        with pytest.warns(IrisUserWarning, match=_NO_OP_MESSAGE):
+            equalise_cubes([])
+
+
+class WarnChecked:
+    @pytest.fixture(autouse=True)
+    def nowarn(self, usage):
+        if usage == "off":
+            with pytest.warns(IrisUserWarning, match=_NO_OP_MESSAGE):
+                yield
+        else:
+            with warnings.catch_warnings():
+                warnings.simplefilter("error")
+                yield
+
+
+class TestUnifyNames(WarnChecked):
     # Test the 'normalise_names' operation.
     def test_simple(self, usage):
         sn = "air_temperature"
@@ -131,7 +156,7 @@ class TestUnifyNames:
         assert [cube.metadata for cube in results] == expected_metadatas
 
 
-class TestEqualiseAttributes:
+class TestEqualiseAttributes(WarnChecked):
     # Test the 'equalise_attributes' operation.
     def test_calling(self, usage, mocker):
         patch = mocker.patch("iris.util.equalise_attributes")
@@ -196,7 +221,7 @@ class TestEqualiseAttributes:
         assert [cube.metadata for cube in results] == expected_metadatas
 
 
-class TestUnifyTimeUnits:
+class TestUnifyTimeUnits(WarnChecked):
     # Test the 'unify_time_units' operation.
     def test_calling(self, usage, mocker):
         patch = mocker.patch("iris.util.unify_time_units")
