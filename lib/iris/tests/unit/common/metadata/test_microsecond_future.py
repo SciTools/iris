@@ -8,12 +8,12 @@ import warnings
 
 import cf_units
 import numpy as np
+from numpy.testing import assert_array_equal
 from packaging.version import Version
 import pytest
 
 from iris import FUTURE
 from iris.coords import DimCoord
-from iris.tests._shared_utils import assert_array_equal
 
 cf_units_legacy = Version(cf_units.__version__) < Version("3.3.0")
 
