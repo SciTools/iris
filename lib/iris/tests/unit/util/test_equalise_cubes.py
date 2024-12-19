@@ -30,7 +30,7 @@ def _scramble(inputs, rng=95297):
     scramble_inds = rng.permutation(n_inputs)
     inputs_array = inputs_array[scramble_inds]
     # Modify input list **BUT N.B. IN PLACE**
-    inputs[0:] = inputs_array
+    inputs[:] = inputs_array
     return inputs
 
 
