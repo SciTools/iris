@@ -125,8 +125,7 @@ For more information see :ref:`why_iris`.
                 Voted Issues
 
 
-Icons made by `FreePik <https://www.freepik.com>`_ from
-`Flaticon <https://www.flaticon.com/>`_
+Icons made by FreePik from `Flaticon <https://www.flaticon.com/>`_
 
 
 .. _iris_support:
