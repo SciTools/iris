@@ -34,6 +34,20 @@ This document explains the changes made to Iris for this release
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
 
+v3.11.1 (19 Dec 2024)
+===========================
+
+.. dropdown:: |iris_version| Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+
+   The patches in this release of Iris include:
+
+   #. We added in a :class:`~iris.Future` flag - ``date_microseconds``, which
+      prevents floating point problems arisen from :class:`cf_units.Unit` v3.3.
+
+   #. We pinned dask to <2024.9 to prevent an indexing bug.
 
 📢 Announcements
 ================
@@ -72,6 +86,14 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ updated to the latest CF Standard Names Table v86
    (5 September 2024). (:pull:`6200`)
+
+#. `@trexfeathers`_ added a new :class:`~iris.Future` flag -
+   ``date_microseconds`` - which sets whether Iris should use the new
+   microsecond-precision units (see :class:`cf_units.Unit`, microseconds
+   introduced in version 3.3) when the unit
+   is a time unit. The previous maximum precision was seconds. You should check
+   your code for new floating point problems if activating this (e.g. when
+   using the :class:`~iris.Constraint` API). (:pull:`6260`)
 
 🐛 Bugs Fixed
 =============
@@ -116,6 +138,10 @@ This document explains the changes made to Iris for this release
    the concatenation axis. This issue can be avoided by disabling the
    problematic check. (:pull:`5926` and :pull:`6187`)
 
+#. Note that due to the new ``date_microseconds`` :class:`~iris.Future` flag,
+   the time coordinate categorisation speedup introduced above
+   will only be available when ``iris.FUTURE.date_microseconds == True``.
+
 🔥 Deprecations
 ===============
 
@@ -134,6 +160,9 @@ This document explains the changes made to Iris for this release
    * `NumPy v2 changed data type promotion`_
 
    * `NumPy v2 changed scalar printing`_
+
+#. `@stephenworsley`_ pinned dask to <2024.9 due to an indexing bug. (:issue:`6251`,
+   :pull:`6255`)
 
 
 📚 Documentation
