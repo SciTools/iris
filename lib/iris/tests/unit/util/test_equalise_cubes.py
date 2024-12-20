@@ -228,6 +228,40 @@ class TestEqualiseAttributes(WarnChecked):
         # Assert result
         assert [cube.metadata for cube in results] == expected_metadatas
 
+    def test_array_attributes(self, usage):
+        # Array content is worth a special test because it breaks dictionary equality.
+        a1 = np.array([4.1, 5.2, 6.3])
+        a2 = np.array([1, 2])
+        a3 = np.array([1, 3])
+        test_cubes = [
+            _cube(longname="a", v1=a1, v2=a2),
+            _cube(longname="a", v1=a1, v2=a3),
+            _cube(longname="b", v1=a1, v2=a2),
+            _cube(longname="b", v1=a1, v2=a2),
+        ]
+        kwargs, expected_metadatas = _usage_common(
+            usage, "equalise_attributes", test_cubes
+        )
+
+        # Calculate expected results
+        if usage != "off":
+            # result cube metadata should all be the same, with no varname
+            result_cubes = [
+                _cube(longname="a", v1=a1),
+                _cube(longname="a", v1=a1),
+                _cube(longname="b", v1=a1, v2=a2),
+                _cube(longname="b", v1=a1, v2=a2),
+            ]
+            expected_metadatas = [cube.metadata for cube in result_cubes]
+            if usage == "scrambled":
+                _scramble(expected_metadatas)
+
+        # Apply operation
+        results = equalise_cubes(test_cubes, **kwargs)
+
+        # Assert result
+        assert [cube.metadata for cube in results] == expected_metadatas
+
 
 class TestUnifyTimeUnits(WarnChecked):
     # Test the 'unify_time_units' operation.
