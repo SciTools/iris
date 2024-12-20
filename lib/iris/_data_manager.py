@@ -94,12 +94,14 @@ class DataManager:
         result = NotImplemented
 
         if isinstance(other, type(self)):
-            result = False
-            same_lazy = self.has_lazy_data() == other.has_lazy_data()
-            same_dtype = self.dtype == other.dtype
-            if same_lazy and same_dtype:
-                result = array_equal(self.core_data(), other.core_data())
-
+            if self.is_dataless() and other.is_dataless():
+                result = self.shape == other.shape
+            else:
+                result = False
+                same_lazy = self.has_lazy_data() == other.has_lazy_data()
+                same_dtype = self.dtype == other.dtype
+                if same_lazy and same_dtype:
+                    result = array_equal(self.core_data(), other.core_data())
         return result
 
     def __ne__(self, other):
@@ -131,6 +133,8 @@ class DataManager:
         """Return an string representation of the instance."""
         fmt = "{cls}({data!r})"
         result = fmt.format(data=self.core_data(), cls=type(self).__name__)
+        if self.is_dataless():
+            result = f"{result}, shape={self.shape}"
 
         return result
 
@@ -284,7 +288,7 @@ class DataManager:
     @property
     def dtype(self):
         """The dtype of the realised lazy data or the dtype of the real data."""
-        return self.core_data().dtype
+        return self.core_data().dtype if not self.is_dataless() else None
 
     @property
     def ndim(self):
@@ -294,7 +298,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self._shape if self._shape else self.core_data().shape
+        return self._shape
 
     def is_dataless(self) -> bool:
         """Determine whether the cube has no data.
@@ -365,7 +369,9 @@ class DataManager:
             This method will never realise any lazy data.
 
         """
-        if self.has_lazy_data():
+        if self.is_dataless():
+            result = None
+        elif self.has_lazy_data():
             result = self._lazy_array
         else:
             result = as_lazy_data(self._real_array)
