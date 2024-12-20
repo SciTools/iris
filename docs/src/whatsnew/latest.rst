@@ -32,6 +32,11 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
+   with aligning cubes so they can merge / concatenate.
+   (:issue:`6248`, :pull:`6257`)
+
+
 
 🐛 Bugs Fixed
 =============
