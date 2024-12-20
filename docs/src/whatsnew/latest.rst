@@ -30,13 +30,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@trexfeathers`_ added a new :class:`~iris.Future` flag -
-   ``date_microseconds`` - which sets whether Iris should use the new
-   microsecond-precision units (see :class:`cf_units.Unit`, microseconds
-   introduced in version 3.3) when the unit
-   is a time unit. The previous maximum precision was seconds. You should check
-   your code for new floating point problems if activating this (e.g. when
-   using the :class:`~iris.Constraint` API). (:pull:`6260`)
+#. N/A
 
 #. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
    with aligning cubes so they can merge / concatenate.
@@ -61,10 +55,7 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. Note that due to the new ``date_microseconds`` :class:`~iris.Future` flag,
-   the time coordinate categorisation speedup introduced in
-   :doc:`/whatsnew/3.11` will only be available when
-   ``iris.FUTURE.date_microseconds == True``.
+#. N/A
 
 
 🔥 Deprecations
@@ -76,8 +67,7 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@stephenworsley`_ pinned dask to <2024.9 due to an indexing bug. (:issue:`6251`,
-   :pull:`6255`)
+#. N/A
 
 
 📚 Documentation
