@@ -8,7 +8,6 @@ import warnings
 
 from cf_units import Unit
 import numpy as np
-from numpy.random import Generator
 import pytest
 
 from iris.coords import DimCoord
@@ -17,29 +16,10 @@ from iris.util import equalise_cubes
 from iris.warnings import IrisUserWarning
 
 
-def _scramble(inputs, rng=95297):
-    # Reorder items (IN PLACE) to check that order does not affect operation
-    # NOTE: the "magic" number is chosen because it happens to encode a permutation
-    # which is usefully non-trivial for small numbers
-    # examples:
-    #   [0, 1] -->  [1, 0]
-    #   [0, 1, 2] -->  [1, 2, 0]
-    #   [0, 1, 2, 3] -->  [1, 2, 3, 0]
-    #   [0, 1, 2, 3, 4] -->  [1, 2, 3, 0, 4]
-    #   [0, 1, 2, 3, 4, 5] -->  [1, 3, 2, 0, 5, 4]
-    #   [0, 1, 2, 3, 4, 5, 6] -->  [1, 5, 3, 2, 0, 6, 4]
-    if not isinstance(rng, Generator):
-        rng = np.random.default_rng(rng)
-    n_inputs = len(inputs)
-    # NOTE: make object array of explicit shape + fill it,
-    # since np.array(inputs) *fails* specifically with a list of metadata objects
-    inputs_array = np.empty((n_inputs,), dtype=object)
-    inputs_array[:] = inputs
-    n_inputs = inputs_array.shape[0]
-    scramble_inds = rng.permutation(n_inputs)
-    inputs_array = inputs_array[scramble_inds]
-    # Modify input list **BUT N.B. IN PLACE**
-    inputs[:] = inputs_array
+def _scramble(inputs):
+    # Reorder items (IN PLACE) to check that order does not affect operation.
+    # Rather than anything more clever, we'll settle for just reversing the order.
+    inputs[:] = inputs[::-1]
 
 
 @pytest.fixture(params=["off", "on", "applyall", "scrambled"])
