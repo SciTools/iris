@@ -144,7 +144,7 @@ class DataManager:
             if is_lazy and is_real:
                 msg = "Unexpected data state, got both lazy and real data."
                 raise ValueError(msg)
-            if not self._shape and not (is_lazy or is_real):
+            elif not self._shape:
                 msg = "Unexpected data state, got no lazy or real data, and no shape."
                 raise ValueError(msg)
 
@@ -252,7 +252,7 @@ class DataManager:
 
             # Determine whether the class already has a defined shape,
             # as this method is called from __init__.
-            has_shape = self.shape is not None
+            has_shape = self._shape is not None
             if has_shape and self.shape != data.shape:
                 # The _ONLY_ data reshape permitted is converting a 0-dimensional
                 # array i.e. self.shape == () into a 1-dimensional array of length
@@ -275,6 +275,8 @@ class DataManager:
                     data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
                 self._lazy_array = None
                 self._real_array = data
+            if not has_shape:
+                self._shape = self.core_data().shape
 
             # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
@@ -292,11 +294,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        if self.core_data() is None:
-            result = self._shape
-        else:
-            result = self.core_data().shape
-        return result
+        return self._shape if self._shape else self.core_data().shape
 
     def is_dataless(self) -> bool:
         """Determine whether the cube has no data.
