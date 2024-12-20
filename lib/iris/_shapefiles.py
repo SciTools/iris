@@ -118,14 +118,28 @@ def create_shapefile_mask(
             f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. Check that your coordinates are correctly specified."
         )
 
-    # Define raster transform based on cube
+    # Check for CRS equality and transform if necessary
     dst_crs = cube.coord_system().as_cartopy_projection()
-    y_name, x_name = _cube_primary_xy_coord_names(cube)
-    w = cube.coord(x_name).points.size
-    h = cube.coord(y_name).points.size
+    if not geometry_crs.equals(dst_crs):
+        trans_geometry = rwarp.transform_geom(
+            geom=geometry, src_crs=geometry_crs, dst_crs=dst_crs
+        )
+        geometry = sgeom.shape(trans_geometry)
 
+    # Get cube coordinates
+    y_name, x_name = _cube_primary_xy_coord_names(cube)
+    x_points = iris.analysis.cartography.wrap_lons(
+        cube.coord(x_name).points, base=-180, period=360
+    )
+    y_points = cube.coord(y_name).points
+    w = len(x_points)
+    h = len(y_points)
+
+    # Define raster transform based on cube
+    # This maps the geometry domain onto the cube domain
+    # using an Affine transformation
     tr, w, h = rwarp.calculate_default_transform(
-        src_crs=geometry_crs,
+        src_crs=dst_crs,
         dst_crs=dst_crs,
         width=w,
         height=h,
@@ -133,23 +147,18 @@ def create_shapefile_mask(
         dst_height=h,
         src_geoloc_array=(
             np.meshgrid(
-                cube.coord(x_name).points, cube.coord(y_name).points, indexing="xy"
+                x_points,
+                y_points,
+                indexing="xy",
             )
         ),
     )
-
-    # Check for CRS equality and transform if necessary
-    if not geometry_crs.equals(dst_crs):
-        trans_geometry = rwarp.transform_geom(
-            geom=geometry, src_crs=geometry_crs, dst_crs=dst_crs
-        )
-        geometry = sgeom.shape(trans_geometry)
-
+    # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
         geometries=shapely.get_parts(geometry), out_shape=(h, w), transform=tr
     )
 
-    return mask_template
+    return mask_template[::-1,:]  #TODO: check why need to reverse i dimension
 
 
 def _is_geometry_valid(
@@ -222,3 +231,27 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
+
+
+def _get_mod_rebased_coord_bounds(coord):
+    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
+
+    Parameters
+    ----------
+    coord : :class:`iris.coords.Coord`
+        An Iris coordinate with a modulus.
+
+    Returns
+    -------
+    :class:`np.array`
+        A 1d Numpy array of [start,end] pairs for bounds of the coord.
+
+    """
+    modulus = coord.units.modulus
+    # Force realisation (rather than core_bounds) - more efficient for the
+    #  repeated indexing happening downstream.
+    result = np.array(coord.bounds)
+    if modulus:
+        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
+        result[np.isclose(result, modulus, 1e-10)] = 0.0
+    return result
