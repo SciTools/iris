@@ -2673,9 +2673,7 @@ class Linear:
         the given coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------
@@ -2876,9 +2874,7 @@ class Nearest:
         by the dimensions of the specified coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------
