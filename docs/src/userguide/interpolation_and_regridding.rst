@@ -194,46 +194,6 @@ For example, to mask values that lie beyond the range of the original data:
    [-- 494.44451904296875 588.888916015625 683.333251953125 777.77783203125
     872.2222290039062 966.666748046875 1061.111083984375 1155.555419921875 --]
 
-
-.. _caching_an_interpolator:
-
-Caching an Interpolator
-^^^^^^^^^^^^^^^^^^^^^^^
-
-If you need to interpolate a cube on multiple sets of sample points you can
-'cache' an interpolator to be used for each of these interpolations. This can
-shorten the execution time of your code as the most computationally
-intensive part of an interpolation is setting up the interpolator.
-
-To cache an interpolator you must set up an interpolator scheme and call the
-scheme's interpolator method. The interpolator method takes as arguments:
-
-#. a cube to be interpolated, and
-#. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
-
-For example:
-
-    >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> interpolator = iris.analysis.Nearest().interpolator(air_temp, ['latitude', 'longitude'])
-
-When this cached interpolator is called you must pass it an iterable of sample points
-that have the same form as the iterable of coordinates passed to the constructor.
-So, to use the cached interpolator defined above:
-
-    >>> latitudes = np.linspace(48, 60, 13)
-    >>> longitudes = np.linspace(-11, 2, 14)
-    >>> for lat, lon in zip(latitudes, longitudes):
-    ...     result = interpolator([lat, lon])
-
-In each case ``result`` will be a cube interpolated from the ``air_temp`` cube we
-passed to interpolator.
-
-Note that you must specify the required extrapolation mode when setting up the cached interpolator.
-For example::
-
-    >>> interpolator = iris.analysis.Nearest(extrapolation_mode='nan').interpolator(cube, coords)
-
-
 .. _regridding:
 
 Regridding
