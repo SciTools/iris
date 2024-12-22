@@ -431,10 +431,10 @@ high resolution target grid. When this happens, make sure the input cube has laz
     True
 
 and the interpolation or regridding scheme supports lazy data. All interpolation and
-regridding schemes described here with exception of the the point-in-cell regridder
-support lazy data. If you still run out of memory even while using lazy data, inspect the
-`chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
-:
+regridding schemes described here with exception of :class:`iris.analysis.PointInCell`
+(point-in-cell regridder) and :class:`iris.analysis.UnstructuredNearest` (nearest-neighbour
+regridder) support lazy data. If you still run out of memory even while using lazy data,
+inspect the `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__ :
 
     >>> air_temp.lazy_data().chunks
     ((240,), (37,), (49,))
