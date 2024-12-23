@@ -298,7 +298,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self._shape
+        return self._shape if self._shape else self.core_data().shape
 
     def is_dataless(self) -> bool:
         """Determine whether the cube has no data.
