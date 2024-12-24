@@ -87,6 +87,16 @@ class Test___eq__(tests.IrisTest):
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
         self.assertFalse(dm1 == dm2)
 
+    def test_none(self):
+        dm1 = DataManager(data=None, shape=(1, ))
+        dm2 = DataManager(data=None, shape=(1, ))
+        self.assertTrue(dm1 == dm2)
+
+    def test_none_with_real(self):
+        dm1 = DataManager(data=None, shape=(1, ))
+        dm2 = DataManager(self.real_array)
+        self.assertFalse(dm1 == dm2)
+
     def test_non_DataManager_failure(self):
         dm = DataManager(np.array(0))
         self.assertFalse(dm == 0)
@@ -156,6 +166,13 @@ class Test___repr__(tests.IrisTest):
         dm = DataManager(self.lazy_array)
         result = repr(dm)
         expected = "{}({!r})".format(self.name, self.lazy_array)
+        self.assertEqual(result, expected)
+
+    def test_dataless(self):
+        print(self.real_array.shape)
+        dm = DataManager(None, self.real_array.shape)
+        result = repr(dm)
+        expected = "{}({!r}), shape={}".format(self.name, None, self.real_array.shape)
         self.assertEqual(result, expected)
 
 

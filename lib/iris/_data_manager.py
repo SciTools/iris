@@ -148,7 +148,7 @@ class DataManager:
             if is_lazy and is_real:
                 msg = "Unexpected data state, got both lazy and real data."
                 raise ValueError(msg)
-            elif not self._shape:
+            elif self._shape is None:
                 msg = "Unexpected data state, got no lazy or real data, and no shape."
                 raise ValueError(msg)
 
@@ -300,7 +300,7 @@ class DataManager:
     @property
     def shape(self):
         """The shape of the data being managed."""
-        return self._shape if self._shape else self.core_data().shape
+        return self._shape
 
     def is_dataless(self) -> bool:
         """Determine whether the cube has no data.
