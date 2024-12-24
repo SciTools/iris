@@ -279,7 +279,9 @@ class DataManager:
                     data = ma.array(data.data, mask=data.mask, dtype=data.dtype)
                 self._lazy_array = None
                 self._real_array = data
-            if not has_shape:
+            # sets ``self._shape`` if it is None, or if it is being converted from
+            # ( ) to (1, )
+            if not has_shape or (self._shape == () and data.shape == (1,)):
                 self._shape = self.core_data().shape
 
             # Check the manager contract, as the managed data has changed.
