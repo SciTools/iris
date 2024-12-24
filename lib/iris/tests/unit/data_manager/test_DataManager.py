@@ -88,12 +88,12 @@ class Test___eq__(tests.IrisTest):
         self.assertFalse(dm1 == dm2)
 
     def test_none(self):
-        dm1 = DataManager(data=None, shape=(1, ))
-        dm2 = DataManager(data=None, shape=(1, ))
+        dm1 = DataManager(data=None, shape=(1,))
+        dm2 = DataManager(data=None, shape=(1,))
         self.assertTrue(dm1 == dm2)
 
     def test_none_with_real(self):
-        dm1 = DataManager(data=None, shape=(1, ))
+        dm1 = DataManager(data=None, shape=(1,))
         dm2 = DataManager(self.real_array)
         self.assertFalse(dm1 == dm2)
 
