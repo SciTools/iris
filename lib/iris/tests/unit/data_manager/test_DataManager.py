@@ -184,6 +184,7 @@ class Test__assert_axioms(tests.IrisTest):
 
     def test_array_none(self):
         self.dm._real_array = None
+        self.dm._shape = None
         emsg = "Unexpected data state, got no lazy or real data, and no shape."
         with self.assertRaisesRegex(ValueError, emsg):
             self.dm._assert_axioms()
