@@ -1109,6 +1109,8 @@ class ProtoCube:
         source-cube.
 
         """
+        if cube.is_dataless():
+            raise iris.exceptions.DatalessError("merge")
         # Default hint ordering for candidate dimension coordinates.
         self._hints = [
             "time",
@@ -1289,6 +1291,8 @@ class ProtoCube:
             this :class:`ProtoCube`.
 
         """
+        if cube.is_dataless():
+            raise iris.exceptions.DatalessError("merge")
         cube_signature = self._cube_signature
         other = self._build_signature(cube)
         match = cube_signature.match(other, error_on_mismatch)
