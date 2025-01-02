@@ -2082,6 +2082,28 @@ class Test_copy:
         cube.add_cell_measure(cms, 0)
         self._check_copy(cube, cube.copy())
 
+    def test_copy_replace_data(self):
+        cube = stock.simple_3d()
+        new_data = np.ones(cube.shape)
+        new_cube = cube.copy(data=new_data)
+        assert new_cube.metadata == new_cube.metadata
+        _shared_utils.assert_array_equal(new_cube.data, new_data)
+
+    def test_copy_to_dataless(self):
+        cube = stock.simple_3d()
+        new_cube = cube.copy(iris.DATALESS)
+        assert new_cube.metadata == cube.metadata
+        assert new_cube.data is None
+        assert new_cube.shape == cube.shape
+
+    def test_copy_from_dataless(self):
+        cube = stock.simple_3d()
+        cube.data = None
+        new_cube = cube.copy()
+        assert new_cube.metadata == cube.metadata
+        assert new_cube.data is cube.data
+        assert new_cube.shape == cube.shape
+
     def test__masked_emptymask(self):
         cube = Cube(ma.array([0, 1]))
         self._check_copy(cube, cube.copy())
