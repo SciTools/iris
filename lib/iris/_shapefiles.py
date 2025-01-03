@@ -95,8 +95,16 @@ def create_shapefile_mask(
 
     Warning
     -------
-    Using a shapefile that crosses the 180th meridian may lead to unexpected masking behaviour.
-    For best results, ensure that the shapefile is pre-split at the 180th meridian.
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function to avoid unexpected masking behaviour.
+
+    Shape geometries can be checked prior to masking using the :func:`is_geometry_valid`.
+
+    See Also
+    --------
+    :func:`is_geometry_valid`
     """
     # Check validity of geometry CRS
     is_geometry_valid(geometry, geometry_crs)
@@ -165,9 +173,9 @@ def is_geometry_valid(
     1) The geometry is a valid shapely geometry.
     2) The geometry falls within bounds equivalent to
        lon = [-180, 180] and lat = [-90, 90].
-    3) The geometry does not cross the 180th meridian,
+    3) The geometry does not cross the antimeridian,
         based on the assumption that the shape will
-        cross the 180th meridian if the difference between
+        cross the antimeridian if the difference between
         the shape bound longitudes is greater than 180.
     4) The geometry does not cross the poles.
 
@@ -191,7 +199,7 @@ def is_geometry_valid(
         This most likely occurs when the geometry coordinates are not within the bounds of the
         geometry coordinates reference system.
     ValueError
-        If the geometry crosses the 180th meridian.
+        If the geometry crosses the antimeridian.
     ValueError
         If the geometry crosses the poles.
 
@@ -237,14 +245,14 @@ def is_geometry_valid(
             src_crs=WGS84_crs, dst_crs=geometry_crs, geom=lon_lat_bounds
         )
         lon_lat_bounds = sgeom.shape(lon_lat_bounds)
-    if not lon_lat_bounds.contains(shapely.get_parts(geometry)).all():
-        msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system \
-            {geometry_crs.to_string()}. Check that your coordinates are correctly specified."
+    geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
+    if not geom_valid.all():
+        msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. \nCheck that your coordinates are correctly specified."
         raise ValueError(msg)
 
     # Check if shape crosses the 180th meridian (or equivalent)
     if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
-        msg = "Geometry crossing the 180th meridian is not supported."
+        msg = "Geometry crossing the antimeridian is not supported."
         raise ValueError(msg)
 
     # Check if the geometry crosses the poles

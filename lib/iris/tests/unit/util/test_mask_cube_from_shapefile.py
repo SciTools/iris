@@ -5,8 +5,12 @@
 """Unit tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
 import numpy as np
+from pyproj import CRS
 import pytest
 import shapely
+from shapely import Point, MultiPoint, LineString
+from shapely.geometry import box
+from cartopy.feature import ShapelyFeature
 
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
@@ -14,7 +18,76 @@ import iris.cube
 from iris.util import mask_cube_from_shapefile
 from iris.warnings import IrisUserWarning
 
+# def _apply_WGS84_crs(geometry):
+#     """Apply a WGS84 CRS to a geometry."""
+#     crs = CRS.from_epsg(4326)
+#     return ShapelyFeature(geom
 
+# def _apply_OSGB36_crs(geometry):
+#     """Apply an OSGB36 CRS to a geometry."""
+#     crs = CRS.from_epsg(27700)
+#     geometry = geometry.__geo_interface__
+#     geometry["crs"] = crs
+#     return geometry
+
+@pytest.fixture
+def basic_circular_geometry():
+    # Define geometry of a basic circle with center at (0, 0) and radius 10
+    center = (0, 0)
+    radius = 10
+
+    circle = Point(center).buffer(radius)
+
+    return circle
+
+
+@pytest.fixture
+def basic_rectangular_geometry():
+    # Define the coordinates of a basic rectangle
+    min_lon = -90
+    min_lat = -45
+    max_lon = 90
+    max_lat = 45
+
+    # Create the rectangular geometry
+    rectangle = box(min_lon, min_lat, max_lon, max_lat)
+
+    return rectangle
+
+
+@pytest.fixture
+def basic_point_geometry():
+    # Define the coordinates of a basic point (lon, lat)
+    point = Point((-3.476204, 50.727059))
+
+    return point
+
+@pytest.fixture
+def basic_line_geometry():
+    # Define the coordinates of a basic line
+    line = LineString([(0, 0), (10, 10)])
+
+    return line
+
+@pytest.fixture
+def basic_point_collection():
+    # Define the coordinates of a basic collection of points
+    # as (lon, lat) tuples, assuming a WGS84 projection.
+    points = MultiPoint(
+        [
+            (0, 0),
+            (10, 10),
+            (-10, -10),
+            (-3.476204, 50.727059),
+            (174.761067, -36.846211),
+            (-77.032801, 38.892717),
+        ]
+    )
+
+    return points
+
+@pytest.fixture
+def basic_line_geometry()
 class TestBasicCubeMasking:
     """Unit tests for mask_cube_from_shapefile function."""
 
