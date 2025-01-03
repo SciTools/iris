@@ -11,24 +11,21 @@ from __future__ import annotations
 
 import importlib
 from itertools import product
-import warnings
 import sys
+import warnings
 
 import numpy as np
+from pyproj import CRS
+import rasterio.features as rfeatures
+import rasterio.transform as rtransform
+import rasterio.warp as rwarp
 import shapely
 import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops
-from pyproj import CRS
-
-import rasterio.features as rfeatures
-import rasterio.transform as rtransform
-import rasterio.warp as rwarp
 
 import iris
 from iris.warnings import IrisDefaultingWarning, IrisUserWarning
-
-import pdb
 
 if "iris.cube" in sys.modules:
     import iris.cube
@@ -81,10 +78,8 @@ def create_shapefile_mask(
 
     Raises
     ------
-    ValueError
-        If the geometry is not valid for the given coordinate system.
-        This most likely occurs when the geometry coordinates are not within the bounds of the
-        geometry coordinates reference system.
+    TypeError
+        If the cube is not a :class:`~iris.cube.Cube`.
 
     Notes
     -----
@@ -97,11 +92,16 @@ def create_shapefile_mask(
     the cube **must** have a coord_system defined.
 
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
-    """
-    if not shapely.is_valid(geometry):
-        msg = "Geometry is not a valid Shapely object"
-        raise TypeError(msg)
 
+    Warning
+    -------
+    Using a shapefile that crosses the 180th meridian may lead to unexpected masking behaviour.
+    For best results, ensure that the shapefile is pre-split at the 180th meridian.
+    """
+    # Check validity of geometry CRS
+    is_geometry_valid(geometry, geometry_crs)
+
+    # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):
         if isinstance(cube, iris.cube.CubeList):
             msg = "Received CubeList object rather than Cube - \
@@ -110,13 +110,6 @@ def create_shapefile_mask(
         else:
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
-
-    # Check validity of geometry
-    geom_valid = _is_geometry_valid(geometry, geometry_crs)
-    if not geom_valid.all():
-        raise ValueError(
-            f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. Check that your coordinates are correctly specified."
-        )
 
     # Check for CRS equality and transform if necessary
     dst_crs = cube.coord_system().as_cartopy_projection()
@@ -128,9 +121,10 @@ def create_shapefile_mask(
 
     # Get cube coordinates
     y_name, x_name = _cube_primary_xy_coord_names(cube)
-    x_points = iris.analysis.cartography.wrap_lons(
-        cube.coord(x_name).points, base=-180, period=360
-    )
+    # Check if cube lons exist in [0, 360] or [-180, 180]
+    if cube.coord(x_name).circular:
+        cube = cube.intersection(longitude=(-180, 180))
+    x_points = cube.coord(x_name).points
     y_points = cube.coord(y_name).points
     w = len(x_points)
     h = len(y_points)
@@ -158,17 +152,24 @@ def create_shapefile_mask(
         geometries=shapely.get_parts(geometry), out_shape=(h, w), transform=tr
     )
 
-    return mask_template[::-1,:]  #TODO: check why need to reverse i dimension
+    return mask_template
 
 
-def _is_geometry_valid(
+def is_geometry_valid(
     geometry: shapely.Geometry,
     geometry_crs: cartopy.crs,
-) -> np.array:
-    """Check if a shape geometry is valid given its coordinate system.
+) -> None:
+    """Check the validity of the shape geometry.
 
-    Achieved by asserting that the geometry, falls within bounds equivalent to
-    lon = [-180, 180] and lat = [-90, 90].
+    This function checks that:
+    1) The geometry is a valid shapely geometry.
+    2) The geometry falls within bounds equivalent to
+       lon = [-180, 180] and lat = [-90, 90].
+    3) The geometry does not cross the 180th meridian,
+        based on the assumption that the shape will
+        cross the 180th meridian if the difference between
+        the shape bound longitudes is greater than 180.
+    4) The geometry does not cross the poles.
 
     Parameters
     ----------
@@ -179,25 +180,90 @@ def _is_geometry_valid(
 
     Returns
     -------
-    np.array of bool
-        True if the geometry is valid, False otherwise for each part of geometry.
+    None if the geometry is valid.
 
+    Raises
+    ------
+    TypeError
+        If the geometry is not a valid shapely geometry.
+    ValueError
+        If the geometry is not valid for the given coordinate system.
+        This most likely occurs when the geometry coordinates are not within the bounds of the
+        geometry coordinates reference system.
+    ValueError
+        If the geometry crosses the 180th meridian.
+    ValueError
+        If the geometry crosses the poles.
+
+    Examples
+    --------
+    >>> from shapely.geometry import box
+    >>> from pyproj import CRS
+    >>> from iris._shapefiles import is_geometry_valid
+
+    Create a valid geometry covering Canada, and check
+    its validity for the WGS84 coordinate system:
+
+    >>> canada = box(-143.5,42.6,-37.8,84.0)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> is_geometry_valid(canada, wgs84)
+
+    The function returns silently as the geometry is valid.
+
+    Now create an invalid geometry covering the Bering Sea,
+    and check its validity for the WGS84 coordinate system.
+
+    >>> bering_sea = box(148.42,49.1,-138.74,73.12)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> is_geometry_valid(bering_sea, wgs84) # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last)
+    ValueError: Geometry crossing the 180th meridian is not supported.
     """
     WGS84_crs = CRS.from_epsg(4326)
 
+    # Check geometry is valid shapely geometry
+    if not shapely.is_valid(geometry):
+        msg = "Geometry is not a valid Shapely object"
+        raise TypeError(msg)
+
+    # Check that the geometry is within the bounds of the coordinate system
+    # If the geometry is not in WGS84, transform the validation bounds
+    # to the geometry's CR
     lon_lat_bounds = shapely.geometry.Polygon.from_bounds(
         xmin=-180.0, ymin=-90.0, xmax=180.0, ymax=90.0
     )
-
-    # If the geometry is not in WGS84, transform the validation bounds
-    # to the geometry's CRS
     if not geometry_crs.equals(WGS84_crs):
         lon_lat_bounds = rwarp.transform_geom(
             src_crs=WGS84_crs, dst_crs=geometry_crs, geom=lon_lat_bounds
         )
         lon_lat_bounds = sgeom.shape(lon_lat_bounds)
+    if not lon_lat_bounds.contains(shapely.get_parts(geometry)).all():
+        msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system \
+            {geometry_crs.to_string()}. Check that your coordinates are correctly specified."
+        raise ValueError(msg)
 
-    return lon_lat_bounds.contains(shapely.get_parts(geometry))
+    # Check if shape crosses the 180th meridian (or equivalent)
+    if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
+        msg = "Geometry crossing the 180th meridian is not supported."
+        raise ValueError(msg)
+
+    # Check if the geometry crosses the poles
+    npole = sgeom.Point(0, 90)
+    spole = sgeom.Point(0, -90)
+    if not geometry_crs.equals(WGS84_crs):
+        npole = rwarp.transform_geom(
+            src_crs=WGS84_crs, dst_crs=geometry_crs, geom=npole
+        )
+        spole = rwarp.transform_geom(
+            src_crs=WGS84_crs, dst_crs=geometry_crs, geom=spole
+        )
+        npole = sgeom.shape(npole)
+        spole = sgeom.shape(spole)
+    if geometry.intersects(npole) or geometry.intersects(spole):
+        msg = "Geometry crossing the poles is not supported."
+        raise ValueError(msg)
+
+    return
 
 
 def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
@@ -231,27 +297,3 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
-
-
-def _get_mod_rebased_coord_bounds(coord):
-    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
-
-    Parameters
-    ----------
-    coord : :class:`iris.coords.Coord`
-        An Iris coordinate with a modulus.
-
-    Returns
-    -------
-    :class:`np.array`
-        A 1d Numpy array of [start,end] pairs for bounds of the coord.
-
-    """
-    modulus = coord.units.modulus
-    # Force realisation (rather than core_bounds) - more efficient for the
-    #  repeated indexing happening downstream.
-    result = np.array(coord.bounds)
-    if modulus:
-        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
-        result[np.isclose(result, modulus, 1e-10)] = 0.0
-    return result
