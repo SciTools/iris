@@ -92,6 +92,7 @@ def bering_sea_geometry():
     # Define the coordinates of a rectangle that covers the Bering Sea
     return box(148.42, 49.1, -138.74, 73.12)
 
+
 @pytest.fixture(scope="session")
 def uk_geometry():
     # Define the coordinates of a rectangle that covers the UK

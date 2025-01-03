@@ -4,13 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
+from cartopy.feature import ShapelyFeature
 import numpy as np
 from pyproj import CRS
 import pytest
 import shapely
-from shapely import Point, MultiPoint, LineString
+from shapely import LineString, MultiPoint, Point
 from shapely.geometry import box
-from cartopy.feature import ShapelyFeature
 
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
@@ -31,6 +31,7 @@ from iris.warnings import IrisUserWarning
 #     return geometry
 
 # Fixtures retrieved from _shapefiles/test_is_geometry_valid.py
+
 
 class TestBasicCubeMasking:
     """Unit tests for mask_cube_from_shapefile function."""
