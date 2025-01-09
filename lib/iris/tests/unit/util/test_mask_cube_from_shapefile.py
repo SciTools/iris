@@ -4,15 +4,33 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
+from cartopy.feature import ShapelyFeature
 import numpy as np
+from pyproj import CRS
 import pytest
 import shapely
+from shapely import LineString, MultiPoint, Point
+from shapely.geometry import box
 
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
 import iris.cube
 from iris.util import mask_cube_from_shapefile
 from iris.warnings import IrisUserWarning
+
+# def _apply_WGS84_crs(geometry):
+#     """Apply a WGS84 CRS to a geometry."""
+#     crs = CRS.from_epsg(4326)
+#     return ShapelyFeature(geom
+
+# def _apply_OSGB36_crs(geometry):
+#     """Apply an OSGB36 CRS to a geometry."""
+#     crs = CRS.from_epsg(27700)
+#     geometry = geometry.__geo_interface__
+#     geometry["crs"] = crs
+#     return geometry
+
+# Fixtures retrieved from _shapefiles/test_is_geometry_valid.py
 
 
 class TestBasicCubeMasking:
