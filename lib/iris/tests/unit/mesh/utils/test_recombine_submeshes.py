@@ -336,7 +336,7 @@ class TestRecombine__api(tests.IrisTest):
 
     def test_fail_dimcoord_sub_no_mesh(self):
         self.mesh_cube.remove_coord("level")
-        msg = 'has a dim-coord "level" for dimension 0, ' "but 'mesh_cube' has none."
+        msg = "has a dim-coord \"level\" for dimension 0, but 'mesh_cube' has none."
         with self.assertRaisesRegex(ValueError, msg):
             recombine_submeshes(self.mesh_cube, self.region_cubes)
 

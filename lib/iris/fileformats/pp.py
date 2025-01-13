@@ -304,7 +304,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         if msi_match is None:
             raise ValueError(
-                'Expected STASH code MSI string "mXXsXXiXXX", ' "got %r" % (msi,)
+                'Expected STASH code MSI string "mXXsXXiXXX", got %r' % (msi,)
             )
 
         return STASH(*msi_match.groups())

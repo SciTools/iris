@@ -40,35 +40,35 @@ class TestBasicCubeMasking:
     def test_basic_cube_intersect(self):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
         masked_cube = mask_cube_from_shapefile(self.basic_cube, shape)
-        assert (
-            np.sum(masked_cube.data) == 8
-        ), f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
+        assert np.sum(masked_cube.data) == 8, (
+            f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
+        )
 
     def test_basic_cube_intersect_in_place(self):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
         cube = self.basic_cube.copy()
         mask_cube_from_shapefile(cube, shape, in_place=True)
-        assert (
-            np.sum(cube.data) == 8
-        ), f"basic cube masking failed test - expected 8 got {np.sum(cube.data)}"
+        assert np.sum(cube.data) == 8, (
+            f"basic cube masking failed test - expected 8 got {np.sum(cube.data)}"
+        )
 
     def test_basic_cube_intersect_low_weight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
             self.basic_cube, shape, minimum_weight=0.2
         )
-        assert (
-            np.sum(masked_cube.data) == 12
-        ), f"basic cube masking weighting failed test - expected 12 got {np.sum(masked_cube.data)}"
+        assert np.sum(masked_cube.data) == 12, (
+            f"basic cube masking weighting failed test - expected 12 got {np.sum(masked_cube.data)}"
+        )
 
     def test_basic_cube_intersect_high_weight(self):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
             self.basic_cube, shape, minimum_weight=0.7
         )
-        assert (
-            np.sum(masked_cube.data) == 8
-        ), f"basic cube masking weighting failed test- expected 8 got {np.sum(masked_cube.data)}"
+        assert np.sum(masked_cube.data) == 8, (
+            f"basic cube masking weighting failed test- expected 8 got {np.sum(masked_cube.data)}"
+        )
 
     def test_cube_list_error(self):
         cubelist = iris.cube.CubeList([self.basic_cube])
@@ -88,9 +88,9 @@ class TestBasicCubeMasking:
             masked_cube = mask_cube_from_shapefile(
                 self.basic_cube, shape, minimum_weight=0.1
             )
-        assert (
-            np.sum(masked_cube.data) == 24
-        ), f"basic cube masking against line failed test - expected 24 got {np.sum(masked_cube.data)}"
+        assert np.sum(masked_cube.data) == 24, (
+            f"basic cube masking against line failed test - expected 24 got {np.sum(masked_cube.data)}"
+        )
 
     def test_cube_coord_mismatch_warning(self):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
