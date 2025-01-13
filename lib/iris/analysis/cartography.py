@@ -1078,8 +1078,9 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     """
     if x.shape != y.shape:
         raise ValueError(
-            "Arrays do not have matching shapes. "
-            "x.shape is {}, y.shape is {}.".format(x.shape, y.shape)
+            "Arrays do not have matching shapes. x.shape is {}, y.shape is {}.".format(
+                x.shape, y.shape
+            )
         )
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
