@@ -427,8 +427,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         for coord in (pressure_at_top, surface_air_pressure):
             if coord.nbounds:
                 msg = (
-                    f"Coordinate '{coord.name()}' has bounds. These will "
-                    "be disregarded"
+                    f"Coordinate '{coord.name()}' has bounds. These will be disregarded"
                 )
                 warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
@@ -438,7 +437,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
             sigma.units = cf_units.Unit("1")
         if not sigma.units.is_dimensionless():
             raise ValueError(
-                f"Invalid units: 'sigma' must be dimensionless, got " f"'{sigma.units}'"
+                f"Invalid units: 'sigma' must be dimensionless, got '{sigma.units}'"
             )
         if pressure_at_top.units != surface_air_pressure.units:
             raise ValueError(
@@ -1389,9 +1388,8 @@ class OceanSg1Factory(AuxCoordFactory):
                 coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
-                msg = (
-                    "Invalid units: {} coordinate {!r} "
-                    "must be dimensionless.".format(term, coord.name())
+                msg = "Invalid units: {} coordinate {!r} must be dimensionless.".format(
+                    term, coord.name()
                 )
                 raise ValueError(msg)
 
@@ -1770,9 +1768,8 @@ class OceanSg2Factory(AuxCoordFactory):
                 coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
-                msg = (
-                    "Invalid units: {} coordinate {!r} "
-                    "must be dimensionless.".format(term, coord.name())
+                msg = "Invalid units: {} coordinate {!r} must be dimensionless.".format(
+                    term, coord.name()
                 )
                 raise ValueError(msg)
 

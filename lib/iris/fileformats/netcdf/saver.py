@@ -672,8 +672,7 @@ class Saver:
             or container.attributes.get("valid_max") is not None
         ) and container.attributes.get("valid_range") is not None:
             msg = (
-                'Both "valid_range" and "valid_min" or "valid_max" '
-                "attributes present."
+                'Both "valid_range" and "valid_min" or "valid_max" attributes present.'
             )
             raise ValueError(msg)
 

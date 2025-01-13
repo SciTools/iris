@@ -1546,9 +1546,8 @@ class Cube(CFVariableMixin):
 
         if data_dims:
             if len(data_dims) != metadata.ndim:
-                msg = (
-                    "Invalid data dimensions: {} given, {} expected for "
-                    "{!r}.".format(len(data_dims), metadata.ndim, metadata.name())
+                msg = "Invalid data dimensions: {} given, {} expected for {!r}.".format(
+                    len(data_dims), metadata.ndim, metadata.name()
                 )
                 raise iris.exceptions.CannotAddError(msg)
             # Check compatibility with the shape of the data
@@ -2401,8 +2400,7 @@ class Cube(CFVariableMixin):
 
             bad_name = _name or standard_name or long_name or ""
             emsg = (
-                f"Expected to find exactly 1 {bad_name!r} coordinate, "
-                "but found none."
+                f"Expected to find exactly 1 {bad_name!r} coordinate, but found none."
             )
             raise iris.exceptions.CoordinateNotFoundError(emsg)
 
@@ -2615,8 +2613,7 @@ class Cube(CFVariableMixin):
 
         if len(cell_measures) > 1:
             msg = (
-                "Expected to find exactly 1 cell_measure, but found {}. "
-                "They were: {}."
+                "Expected to find exactly 1 cell_measure, but found {}. They were: {}."
             )
             msg = msg.format(
                 len(cell_measures),
@@ -2635,8 +2632,7 @@ class Cube(CFVariableMixin):
                     )
                     raise iris.exceptions.CellMeasureNotFoundError(emsg)
             msg = (
-                f"Expected to find exactly 1 {bad_name!r} cell measure, "
-                "but found none."
+                f"Expected to find exactly 1 {bad_name!r} cell measure, but found none."
             )
             raise iris.exceptions.CellMeasureNotFoundError(msg)
 

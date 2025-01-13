@@ -141,7 +141,7 @@ rst_epilog = f"""
 .. |python_version| replace:: {build_python_version}
 .. |python_support| replace:: {python_support}
 .. |iris_version| replace:: v{version}
-.. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
+.. |build_date| replace:: ({datetime.datetime.now().strftime("%d %b %Y")})
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
