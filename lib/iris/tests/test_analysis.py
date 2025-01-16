@@ -1192,8 +1192,6 @@ class TestRotatedPole:
 
 @_shared_utils.skip_data
 class TestAreaWeights:
-    # Note: chunks is simply ignored for non-lazy data
-    @pytest.mark.parametrize("chunks", [None, (2, 3)])
     @pytest.fixture(autouse=True)
     def _setup(self, request):
         self.request = request
