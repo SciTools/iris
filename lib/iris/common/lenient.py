@@ -72,16 +72,16 @@ def _lenient_client(*dargs, services=None):
     ndargs = len(dargs)
 
     if ndargs:
-        assert (
-            ndargs == 1
-        ), f"Invalid lenient client arguments, expecting 1 got {ndargs}."
-        assert callable(
-            dargs[0]
-        ), "Invalid lenient client argument, expecting a callable."
+        assert ndargs == 1, (
+            f"Invalid lenient client arguments, expecting 1 got {ndargs}."
+        )
+        assert callable(dargs[0]), (
+            "Invalid lenient client argument, expecting a callable."
+        )
 
-    assert not (
-        ndargs and services
-    ), "Invalid lenient client, got both arguments and keyword arguments."
+    assert not (ndargs and services), (
+        "Invalid lenient client, got both arguments and keyword arguments."
+    )
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.
@@ -164,12 +164,12 @@ def _lenient_service(*dargs):
     ndargs = len(dargs)
 
     if ndargs:
-        assert (
-            ndargs == 1
-        ), f"Invalid lenient service arguments, expecting 1 got {ndargs}."
-        assert callable(
-            dargs[0]
-        ), "Invalid lenient service argument, expecting a callable."
+        assert ndargs == 1, (
+            f"Invalid lenient service arguments, expecting 1 got {ndargs}."
+        )
+        assert callable(dargs[0]), (
+            "Invalid lenient service argument, expecting a callable."
+        )
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.

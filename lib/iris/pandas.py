@@ -173,7 +173,7 @@ def as_cube(
     # 1.6 doesn't. Since we don't care about preserving the order we can
     # just force it back to C-order.)
     order = "C" if copy else "A"
-    data = np.array(pandas_array, copy=copy, order=order)
+    data = np.array(pandas_array.values, copy=copy, order=order)
     cube = Cube(np.ma.masked_invalid(data, copy=False))
     _add_iris_coord(cube, "index", pandas_array.index, 0, calendars.get(0, None))
     if pandas_array.ndim == 2:
@@ -308,7 +308,7 @@ def as_cubes(
     Pandas uses ``NaN`` rather than masking data. Converted
     :class:`~iris.cube.Cube` can be masked in downstream user code :
 
-    >>> my_series = Series([300, np.NaN, 302], name="air_temperature")
+    >>> my_series = Series([300, np.nan, 302], name="air_temperature")
     >>> converted_cube = as_cubes(my_series)[0]
     >>> print(converted_cube.data)
     [300.  nan 302.]

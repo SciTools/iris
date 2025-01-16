@@ -202,7 +202,7 @@ def _assert_is_cube(cube):
     from iris.cube import Cube
 
     if not isinstance(cube, Cube):
-        raise TypeError('The "cube" argument must be an instance of ' "iris.cube.Cube.")
+        raise TypeError('The "cube" argument must be an instance of iris.cube.Cube.')
 
 
 @_lenient_client(services=SERVICES)
@@ -441,8 +441,7 @@ def _inplace_common_checks(cube, other, math_op):
     other_dtype = _get_dtype(other)
     if not np.can_cast(other_dtype, cube.dtype, "same_kind"):
         aemsg = (
-            "Cannot perform inplace {} between {!r} "
-            "with {} data and {!r} with {} data."
+            "Cannot perform inplace {} between {!r} with {} data and {!r} with {} data."
         )
         raise ArithmeticError(
             aemsg.format(math_op, cube, cube.dtype, other, other_dtype)
@@ -867,7 +866,7 @@ def _binary_op_common(
         if iris._lazy_data.is_lazy_data(other):
             rhs = other
         else:
-            rhs = np.asanyarray(other)
+            rhs = np.asanyarray(other, dtype=new_dtype)
 
     def unary_func(lhs):
         data = operation_function(lhs, rhs)
@@ -1139,8 +1138,7 @@ class IFunc:
 
     def __repr__(self):
         result = (
-            f"iris.analysis.maths.IFunc({self._data_func_name}, "
-            f"{self._unit_func_name})"
+            f"iris.analysis.maths.IFunc({self._data_func_name}, {self._unit_func_name})"
         )
         return result
 

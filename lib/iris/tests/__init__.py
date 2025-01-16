@@ -339,8 +339,7 @@ class IrisTest(unittest.TestCase):
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
             # don't want the ".cml" for the json stats file
-            if fname[-1].endswith(".cml"):
-                fname[-1] = fname[-1][:-4]
+            fname[-1] = fname[-1].removesuffix(".cml")
             fname[-1] += ".data.%d.json" % i
             self.assertDataAlmostEqual(cube.data, fname, **kwargs)
         self.assertCML(cubes, reference_filename, checksum=False)
@@ -1033,7 +1032,7 @@ skip_plot = graphics.skip_plot
 
 skip_sample_data = unittest.skipIf(
     not SAMPLE_DATA_AVAILABLE,
-    ('Test(s) require "iris-sample-data", ' "which is not available."),
+    ('Test(s) require "iris-sample-data", which is not available.'),
 )
 
 
@@ -1045,7 +1044,7 @@ skip_nc_time_axis = unittest.skipIf(
 
 skip_inet = unittest.skipIf(
     not INET_AVAILABLE,
-    ('Test(s) require an "internet connection", ' "which is not available."),
+    ('Test(s) require an "internet connection", which is not available.'),
 )
 
 

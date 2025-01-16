@@ -34,7 +34,7 @@ matplotlib.units.registry = default_units_registry
 
 skip_pandas = pytest.mark.skipif(
     pd is None,
-    reason='Test(s) require "pandas", ' "which is not available.",
+    reason='Test(s) require "pandas", which is not available.',
 )
 
 if pd is not None:
