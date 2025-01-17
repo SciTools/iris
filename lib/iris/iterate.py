@@ -90,9 +90,9 @@ def izip(*cubes, **kwargs):
         if len(requested_dims) != sum(
             (len(cube.coord_dims(coord)) for coord in coords)
         ):
-            msg = (
-                "The requested coordinates (%r) of cube (%r) are not "
-                "orthogonal." % ([coord.name() for coord in coords], cube)
+            msg = "The requested coordinates (%r) of cube (%r) are not orthogonal." % (
+                [coord.name() for coord in coords],
+                cube,
             )
             raise ValueError(msg)
 

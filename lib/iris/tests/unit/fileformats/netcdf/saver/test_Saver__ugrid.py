@@ -936,7 +936,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             f'{title}="{name}"'
             for title, name in zip(("standard", "long", "var"), names)
         ]
-        return f'({" ".join(name_texts)})'
+        return f"({' '.join(name_texts)})"
 
     def test_mesh_names(self):
         # Check the selection of mesh-variables names.

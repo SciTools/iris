@@ -1932,13 +1932,13 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
 
     supported = ["iris.plot", "iris.quickplot"]
     if plot_func.__module__ not in supported:
-        msg = 'Given plotting module "{}" may not be supported, intended ' "use: {}."
+        msg = 'Given plotting module "{}" may not be supported, intended use: {}.'
         msg = msg.format(plot_func.__module__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
-        msg = 'Given plotting function "{}" may not be supported, intended ' "use: {}."
+        msg = 'Given plotting function "{}" may not be supported, intended use: {}.'
         msg = msg.format(plot_func.__name__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 

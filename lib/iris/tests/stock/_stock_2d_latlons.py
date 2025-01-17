@@ -83,9 +83,7 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     """
     for coord in (x_coord_1d, y_coord_1d):
         if coord.ndim != 1:
-            msg = (
-                "Input coords must be one-dimensional. " 'Coordinate "{}" has shape {}.'
-            )
+            msg = 'Input coords must be one-dimensional. Coordinate "{}" has shape {}.'
             raise ValueError(msg.format(coord.name(), coord.shape))
 
     # Calculate centre-points as a mesh of the 2 inputs.

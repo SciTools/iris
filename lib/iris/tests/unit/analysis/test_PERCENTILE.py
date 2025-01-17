@@ -216,8 +216,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(data, axis=0, percent=50, fast_percentile_method=True)
@@ -324,8 +323,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
             data, axis=0, percent=50, fast_percentile_method=True
         )
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
