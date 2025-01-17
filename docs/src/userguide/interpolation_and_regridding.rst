@@ -29,9 +29,9 @@ The following are the regridding schemes that are currently available in Iris:
 * point in cell regridding (:class:`iris.analysis.PointInCell`) and
 * area-weighted regridding (:class:`iris.analysis.AreaWeighted`, first-order conservative).
 
-The linear, nearest-neighbor, and area-weighted regridding schemes support
-lazy regridding, i.e. if the source cube has lazy data, the resulting cube
-will also have lazy data.
+The linear and nearest-neighbour interpolation schemes, and the linear, nearest-neighbour,
+and area-weighted regridding schemes support lazy regridding, i.e. if the source cube has lazy data,
+the resulting cube will also have lazy data.
 See :doc:`real_and_lazy_data` for an introduction to lazy data.
 See :doc:`../further_topics/which_regridder_to_use` for a more in depth overview of the different regridders.
 
@@ -193,46 +193,6 @@ For example, to mask values that lie beyond the range of the original data:
    >>> print(new_column.coord('altitude').points)
    [-- 494.44451904296875 588.888916015625 683.333251953125 777.77783203125
     872.2222290039062 966.666748046875 1061.111083984375 1155.555419921875 --]
-
-
-.. _caching_an_interpolator:
-
-Caching an Interpolator
-^^^^^^^^^^^^^^^^^^^^^^^
-
-If you need to interpolate a cube on multiple sets of sample points you can
-'cache' an interpolator to be used for each of these interpolations. This can
-shorten the execution time of your code as the most computationally
-intensive part of an interpolation is setting up the interpolator.
-
-To cache an interpolator you must set up an interpolator scheme and call the
-scheme's interpolator method. The interpolator method takes as arguments:
-
-#. a cube to be interpolated, and
-#. an iterable of coordinate names or coordinate instances of the coordinates that are to be interpolated over.
-
-For example:
-
-    >>> air_temp = iris.load_cube(iris.sample_data_path('air_temp.pp'))
-    >>> interpolator = iris.analysis.Nearest().interpolator(air_temp, ['latitude', 'longitude'])
-
-When this cached interpolator is called you must pass it an iterable of sample points
-that have the same form as the iterable of coordinates passed to the constructor.
-So, to use the cached interpolator defined above:
-
-    >>> latitudes = np.linspace(48, 60, 13)
-    >>> longitudes = np.linspace(-11, 2, 14)
-    >>> for lat, lon in zip(latitudes, longitudes):
-    ...     result = interpolator([lat, lon])
-
-In each case ``result`` will be a cube interpolated from the ``air_temp`` cube we
-passed to interpolator.
-
-Note that you must specify the required extrapolation mode when setting up the cached interpolator.
-For example::
-
-    >>> interpolator = iris.analysis.Nearest(extrapolation_mode='nan').interpolator(cube, coords)
-
 
 .. _regridding:
 
@@ -417,12 +377,12 @@ In each case ``result`` will be the input cube regridded to the grid defined by
 the target grid cube (in this case ``rotated_psl``) that we used to define the
 cached regridder.
 
-Regridding Lazy Data
-^^^^^^^^^^^^^^^^^^^^
+Interpolating and Regridding Lazy Data
+--------------------------------------
 
-If you are working with large cubes, especially when you are regridding to a
-high resolution target grid, you may run out of memory when trying to
-regrid a cube. When this happens, make sure the input cube has lazy data
+If you are working with large cubes, you may run out of memory when trying to
+interpolate or regrid a cube. For instance, this might happen when regridding to a
+high resolution target grid. When this happens, make sure the input cube has lazy data
 
     >>> air_temp = iris.load_cube(iris.sample_data_path('A1B_north_america.nc'))
     >>> air_temp
@@ -430,11 +390,11 @@ regrid a cube. When this happens, make sure the input cube has lazy data
     >>> air_temp.has_lazy_data()
     True
 
-and the regridding scheme supports lazy data. All regridding schemes described
-here support lazy data. If you still run out of memory even while using lazy
-data, inspect the
-`chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
-:
+and the interpolation or regridding scheme supports lazy data. All interpolation and
+regridding schemes described here with exception of :class:`iris.analysis.PointInCell`
+(point-in-cell regridder) and :class:`iris.analysis.UnstructuredNearest` (nearest-neighbour
+regridder) support lazy data. If you still run out of memory even while using lazy data,
+inspect the `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__ :
 
     >>> air_temp.lazy_data().chunks
     ((240,), (37,), (49,))
@@ -455,6 +415,6 @@ dimension, to regrid it in 8 chunks of 30 timesteps at a time:
 Assuming that Dask is configured such that it processes only a few chunks of
 the data array at a time, this will further reduce memory use.
 
-Note that chunking in the horizontal dimensions is not supported by the
-regridding schemes. Chunks in these dimensions will automatically be combined
+Note that chunking in the horizontal dimensions is not supported by the interpolation
+and regridding schemes. Chunks in these dimensions will automatically be combined
 before regridding.

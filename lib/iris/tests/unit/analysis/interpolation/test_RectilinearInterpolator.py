@@ -499,24 +499,37 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
         self.assertEqual(result_cube, non_collapsed_cube[0, ...])
 
 
+class Test___call___real_data(ThreeDimCube):
+    def test_src_cube_data_loaded(self):
+        # If the source cube has real data when the interpolator is
+        # instantiated, then the interpolated result should also have
+        # real data.
+        self.assertFalse(self.cube.has_lazy_data())
+
+        # Perform interpolation and check the data is real.
+        interpolator = RectilinearInterpolator(
+            self.cube, ["latitude"], LINEAR, EXTRAPOLATE
+        )
+        res = interpolator([[1.5]])
+        self.assertFalse(res.has_lazy_data())
+
+
 class Test___call___lazy_data(ThreeDimCube):
     def test_src_cube_data_loaded(self):
-        # RectilinearInterpolator operates using a snapshot of the source cube.
         # If the source cube has lazy data when the interpolator is
-        # instantiated we want to make sure the source cube's data is
-        # loaded as a consequence of interpolation to avoid the risk
-        # of loading it again and again.
+        # instantiated, then the interpolated result should also have
+        # lazy data.
 
         # Modify self.cube to have lazy data.
         self.cube.data = as_lazy_data(self.data)
         self.assertTrue(self.cube.has_lazy_data())
 
-        # Perform interpolation and check the data has been loaded.
+        # Perform interpolation and check the data is lazy..
         interpolator = RectilinearInterpolator(
             self.cube, ["latitude"], LINEAR, EXTRAPOLATE
         )
-        interpolator([[1.5]])
-        self.assertFalse(self.cube.has_lazy_data())
+        res = interpolator([[1.5]])
+        self.assertTrue(res.has_lazy_data())
 
 
 class Test___call___time(tests.IrisTest):
