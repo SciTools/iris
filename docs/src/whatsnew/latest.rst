@@ -60,7 +60,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from small NetCDF
+   files faster. (:pull:`6229`)
 
 
 🔥 Deprecations
