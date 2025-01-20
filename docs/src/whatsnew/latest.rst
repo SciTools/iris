@@ -45,7 +45,8 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@rcomer`_ added handling for string stash codes when saving pp files.
+   (:issue:`6239`, :pull:`6289`)
 
 
 💣 Incompatible Changes
