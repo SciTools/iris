@@ -1612,19 +1612,6 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     return result
 
 
-def _lazy_median(data, axis=None, **kwargs):
-    """Calculate the lazy median, with support for masked arrays."""
-    # Dask median requires the axes to be explicitly listed.
-    axis = range(data.ndim) if axis is None else axis
-
-    if np.issubdtype(data, np.integer):
-        data = data.astype(float)
-    filled = da.ma.filled(data, np.nan)
-    result = da.nanmedian(filled, axis=axis, **kwargs)
-    result_masked = da.ma.fix_invalid(result)
-    return result_masked
-
-
 def _rms(array, axis, **kwargs):
     rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
 
@@ -1953,9 +1940,7 @@ This aggregator handles masked data.
 """
 
 
-MEDIAN = Aggregator(
-    "median", ma.median, lazy_func=_build_dask_mdtol_function(_lazy_median)
-)
+MEDIAN = Aggregator("median", ma.median)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the median over a :class:`~iris.cube.Cube`, as computed by
@@ -1968,7 +1953,8 @@ To compute zonal medians over the *longitude* axis of a cube::
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
 
-This aggregator handles masked data and lazy data.
+This aggregator handles masked data, but NOT lazy data.  For lazy aggregation,
+please try :obj:`~.PERCENTILE`.
 
 """
 
