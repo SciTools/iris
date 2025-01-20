@@ -98,6 +98,11 @@ This document explains the changes made to Iris for this release
    :doc:`/developers_guide/release_do_nothing` to be more thorough and apply
    lessons learned from recent releases. (:pull:`6062`)
 
+#. `@schlunma`_ made lazy [smart
+   weights](https://github.com/SciTools/iris/pull/5084) used for cube
+   aggregations have the same chunks as their parent cube if broadcasting is
+   necessary. (:issue:`6285`, :pull:`6288`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

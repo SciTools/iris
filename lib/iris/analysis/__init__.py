@@ -1198,10 +1198,15 @@ class _Weights:
             dim_metadata = cube._dimensional_metadata(weights)
             derived_array = dim_metadata._core_values()
             if dim_metadata.shape != cube.shape:
+                if isinstance(derived_array, da.Array):
+                    chunks = cube.lazy_data().chunks
+                else:
+                    chunks = None
                 derived_array = iris.util.broadcast_to_shape(
                     derived_array,
                     cube.shape,
                     dim_metadata.cube_dims(cube),
+                    chunks=chunks,
                 )
             derived_units = dim_metadata.units
 

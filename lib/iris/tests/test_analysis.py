@@ -1192,8 +1192,6 @@ class TestRotatedPole:
 
 @_shared_utils.skip_data
 class TestAreaWeights:
-    # Note: chunks is simply ignored for non-lazy data
-    @pytest.mark.parametrize("chunks", [None, (2, 3)])
     @pytest.fixture(autouse=True)
     def _setup(self, request):
         self.request = request
@@ -1726,15 +1724,24 @@ class TestCreateWeightedAggregatorFn:
         assert kwargs == {"test_kwarg": "test", "weights": "ignored"}
 
 
+@pytest.mark.parametrize("lazy", [True, False])
 class TestWeights:
     @pytest.fixture(autouse=True)
-    def _setup_test_data(self):
-        self.array_lib = np
-        self.target_type = np.ndarray
+    def _setup_test_data(self, lazy):
+        if lazy:
+            self.array_lib = da
+            self.target_type = da.Array
+            self.chunks = ((2,), (1, 1, 1))
+        else:
+            self.array_lib = np
+            self.target_type = np.ndarray
+            self.chunks = None
         self.create_test_data()
 
     def create_test_data(self):
         self.data = self.array_lib.arange(6).reshape(2, 3)
+        if self.chunks is not None:
+            self.data = self.data.rechunk(self.chunks)
         self.lat = iris.coords.DimCoord(
             self.array_lib.array([0, 1]),
             standard_name="latitude",
@@ -1770,6 +1777,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         assert weights.array is self.data
         assert weights.units == "1"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_cube(self):
         weights = _Weights(self.cube, self.cube)
@@ -1777,6 +1786,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         assert weights.array is self.data
         assert weights.units == "K"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_str_dim_coord(self):
         weights = _Weights("latitude", self.cube)
@@ -1792,6 +1803,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_str_ancillary_variable(self):
         weights = _Weights("ancvar", self.cube)
@@ -1799,6 +1812,10 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
+        # Chunks of existing array dimensions passed to broadcast_to_shape are
+        # ignored
+        if self.chunks is not None:
+            assert weights.array.chunks == ((2,), (3,))
 
     def test_init_with_str_cell_measure(self):
         weights = _Weights("cell_area", self.cube)
@@ -1806,6 +1823,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_dim_coord(self):
         weights = _Weights(self.lat, self.cube)
@@ -1821,6 +1840,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, [[3, 3, 3], [4, 4, 4]])
         assert weights.units == "s"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_ancillary_variable(self):
         weights = _Weights(self.ancillary_variable, self.cube)
@@ -1828,6 +1849,10 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, [[5, 6, 7], [5, 6, 7]])
         assert weights.units == "kg"
+        # Chunks of existing array dimensions passed to broadcast_to_shape are
+        # ignored
+        if self.chunks is not None:
+            assert weights.array.chunks == ((2,), (3,))
 
     def test_init_with_cell_measure(self):
         weights = _Weights(self.cell_measure, self.cube)
@@ -1835,6 +1860,8 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         _shared_utils.assert_array_equal(weights.array, self.data)
         assert weights.units == "m2"
+        if self.chunks is not None:
+            assert weights.array.chunks == self.chunks
 
     def test_init_with_list(self):
         list_in = [0, 1, 2]
@@ -1843,16 +1870,6 @@ class TestWeights:
         assert isinstance(weights.units, cf_units.Unit)
         assert weights.array is list_in
         assert weights.units == "1"
-
-
-class TestWeightsLazy(TestWeights):
-    """Repeat tests from ``TestWeights`` with lazy arrays."""
-
-    @pytest.fixture(autouse=True)
-    def _setup_test_data(self):
-        self.array_lib = da
-        self.target_type = da.core.Array
-        self.create_test_data()
 
 
 def test__Groupby_repr():
