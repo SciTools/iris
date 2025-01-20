@@ -19,6 +19,8 @@ import dask.utils
 import numpy as np
 import numpy.ma as ma
 
+import iris.exceptions
+
 
 def non_lazy(func):
     """Turn a lazy function into a function that returns a result immediately."""
@@ -317,7 +319,10 @@ def _co_realise_lazy_arrays(arrays):
         # Note : in some cases dask (and numpy) will return a scalar
         # numpy.int/numpy.float object rather than an ndarray.
         # Recorded in https://github.com/dask/dask/issues/2111.
-        real_out = np.asanyarray(real_out)
+        if real_out is not None:
+            real_out = np.asanyarray(real_out)
+        else:
+            raise iris.exceptions.DatalessError("realising")
         if isinstance(real_out, ma.core.MaskedConstant):
             # Convert any masked constants into NumPy masked arrays.
             # NOTE: in this case, also apply the original lazy-array dtype, as
