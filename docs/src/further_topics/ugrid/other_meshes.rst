@@ -360,5 +360,5 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
 
 
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3
-.. _FESOM 1.4: https://www.fesom.de/models/fesom14/
+.. _FESOM 1.4: https://fesom.de/models/fesom14/
 .. _NEMO: https://www.nemo-ocean.eu/
