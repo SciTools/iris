@@ -327,6 +327,12 @@ class NetCDFDataProxy:
     def dask_meta(self):
         return np.ma.array(np.empty((0,) * self.ndim, dtype=self.dtype), mask=True)
 
+    def __dask_tokenize__(self):
+        # Dask uses this function to uniquely identify the "array".
+        # A custom function is slightly faster than general object tokenization,
+        # which improves the speed of loading small NetCDF files.
+        return f"<{self.__class__.__name__} path={self.path!r} variable_name={self.variable_name!r}>"
+
     def __getitem__(self, keys):
         # Using a DatasetWrapper causes problems with invalid ID's and the
         # netCDF4 library, presumably because __getitem__ gets called so many
