@@ -405,9 +405,8 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
         If False, return a lazy dask array. If True, return a numpy array.
     chunks : tuple, optional
         If compute is False and a value is provided, then the result will use
-        these chunks instead of the same chunks as the cube data. The values
-        provided here will only be used along dimensions that are not latitude
-        or longitude.
+        these chunks. The values provided here will only be used along
+        dimensions that are not latitude or longitude.
 
     Returns
     -------
