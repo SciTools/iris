@@ -410,7 +410,6 @@ class CubeList(list):
         """
         if not self:
             raise ValueError("can't merge an empty CubeList")
-
         # Register each of our cubes with a single ProtoCube.
         proto_cube = iris._merge.ProtoCube(self[0])
         for c in self[1:]:
@@ -1190,7 +1189,7 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike,
+        data: np.typing.ArrayLike | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -1204,6 +1203,7 @@ class Cube(CFVariableMixin):
         cell_measures_and_dims: Iterable[tuple[CellMeasure, int]] | None = None,
         ancillary_variables_and_dims: Iterable[tuple[AncillaryVariable, int]]
         | None = None,
+        shape: tuple | None = None,
     ):
         """Create a cube with data and optional metadata.
 
@@ -1250,6 +1250,9 @@ class Cube(CFVariableMixin):
             A list of CellMeasures with dimension mappings.
         ancillary_variables_and_dims :
             A list of AncillaryVariables with dimension mappings.
+        shape :
+            An alternative to providing data, this defines the shape of the
+            cube, but initialises the cube as dataless.
 
         Examples
         --------
@@ -1276,7 +1279,7 @@ class Cube(CFVariableMixin):
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
 
         # Initialise the cube data manager.
-        self._data_manager = DataManager(data)
+        self._data_manager = DataManager(data, shape)
 
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
@@ -1475,6 +1478,8 @@ class Cube(CFVariableMixin):
 
         """
         # If the cube has units convert the data.
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("convert_units")
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
                 "Cannot convert from unknown units. "
@@ -2879,6 +2884,16 @@ class Cube(CFVariableMixin):
         """
         return self._data_manager.has_lazy_data()
 
+    def is_dataless(self) -> bool:
+        """Detail whether this :class:`~iris.cube.Cube` is dataless.
+
+        Returns
+        -------
+        bool
+
+        """
+        return self._data_manager.is_dataless()
+
     @property
     def dim_coords(self) -> tuple[DimCoord, ...]:
         """Return a tuple of all the dimension coordinates, ordered by dimension.
@@ -3087,6 +3102,8 @@ class Cube(CFVariableMixin):
         whole cube is returned. As such, the operation is not strict.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("subset")
         if not isinstance(coord, iris.coords.Coord):
             raise ValueError("coord_to_extract must be a valid Coord.")
 
@@ -3208,6 +3225,8 @@ class Cube(CFVariableMixin):
             which intersects with the requested coordinate intervals.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("intersection")
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
@@ -3732,6 +3751,9 @@ class Cube(CFVariableMixin):
             dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("slices")
+
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
@@ -3819,7 +3841,8 @@ class Cube(CFVariableMixin):
 
         # Transpose the data payload.
         dm = self._data_manager
-        data = dm.core_data().transpose(new_order)
+        if not self.is_dataless():
+            data = dm.core_data().transpose(new_order)
         self._data_manager = DataManager(data)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
@@ -4079,6 +4102,7 @@ class Cube(CFVariableMixin):
             aux_coords_and_dims=new_aux_coords_and_dims,
             cell_measures_and_dims=new_cell_measures_and_dims,
             ancillary_variables_and_dims=new_ancillary_variables_and_dims,
+            shape=(dm.shape if dm.core_data() is None else None),
         )
 
         new_cube.metadata = deepcopy(self.metadata, memo)
@@ -4306,6 +4330,8 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("collapsed")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4526,6 +4552,8 @@ x            -              -
                     STASH                       m01s00i024
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("aggregated_by")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4825,6 +4853,8 @@ x            -               -
         """  # noqa: D214, D406, D407, D410, D411
         # Update weights kwargs (if necessary) to handle different types of
         # weights
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("rolling_window")
         weights_info = None
         if kwargs.get("weights") is not None:
             weights_info = _Weights(kwargs["weights"], self)
@@ -5030,6 +5060,8 @@ x            -               -
             True
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("interoplate")
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
         return interp(points, collapse_scalar=collapse_scalar)
@@ -5075,6 +5107,8 @@ x            -               -
             this function is not applicable.
 
         """
+        if self.is_dataless():
+            raise iris.exceptions.DatalessError("regrid")
         regridder = scheme.regridder(self, grid)
         return regridder(self)
 
