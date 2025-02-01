@@ -12,11 +12,13 @@
 import iris.tests as tests  # isort:skip
 
 import numpy as np
+import pytest
 
 from iris.fileformats._structured_array_identification import (
     ArrayStructure,
     GroupStructure,
 )
+from iris.tests._shared_utils import assert_array_equal
 
 
 def regular_array_structures(shape, names="abcdefg"):
@@ -34,7 +36,7 @@ class TestGroupStructure_from_component_arrays(tests.IrisTest):
     def test_different_sizes(self):
         arrays = {"a": np.arange(6), "b": np.arange(5)}
         msg = "All array elements must have the same size."
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             GroupStructure.from_component_arrays(arrays)
 
     def test_structure_creation(self):
@@ -45,8 +47,8 @@ class TestGroupStructure_from_component_arrays(tests.IrisTest):
 
         grp = GroupStructure.from_component_arrays({"a": array})
 
-        self.assertEqual(grp.length, 6)
-        self.assertEqual(grp._cmpt_structure, expected_structure)
+        assert grp.length == 6
+        assert grp._cmpt_structure == expected_structure
 
 
 class TestGroupStructure_possible_structures(tests.IrisTest):
@@ -66,7 +68,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
                 ("c", array_structures["c"]),
             ],
         )
-        self.assertEqual(structure.possible_structures(), expected)
+        assert structure.possible_structures() == expected
 
     def assert_potentials(self, length, array_structures, expected):
         structure = GroupStructure(length, array_structures, array_order="f")
@@ -74,7 +76,7 @@ class TestGroupStructure_possible_structures(tests.IrisTest):
         names = [
             [name for (name, _) in allowed_structure] for allowed_structure in allowed
         ]
-        self.assertEqual(names, expected)
+        assert names == expected
 
     def test_multiple_potentials(self):
         # More than one potential dimension for dim 1.
@@ -116,8 +118,8 @@ class TestGroupStructure_build_arrays(tests.IrisTest):
     def assert_built_array(self, name, result, expected):
         ex_arr, ex_dims = expected
         re_arr, re_dims = result[name]
-        self.assertEqual(ex_dims, re_dims)
-        self.assertArrayEqual(ex_arr, re_arr)
+        assert ex_dims == re_dims
+        assert_array_equal(ex_arr, re_arr)
 
     def test_build_arrays_regular_f_order(self):
         # Construct simple orthogonal 1d array structures, adding a trailing
@@ -181,7 +183,3 @@ class TestGroupStructure_build_arrays(tests.IrisTest):
             },
         )
         self.assert_built_array("d", r, (expected, (0, 1, 2)))
-
-
-if __name__ == "__main__":
-    tests.main()

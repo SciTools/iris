@@ -98,8 +98,8 @@ class Test_save(tests.IrisTest):
     def test_masked_mdi_value_warning(self):
         # Check that an unmasked MDI value raises a warning.
         field = DummyPPField()._ready_for_save()
-        field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
+        field.bmdi = np.float32(-123.4)
         field.data = np.ma.masked_array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
         with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):

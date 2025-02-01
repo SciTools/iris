@@ -14,7 +14,7 @@ from iris.cube import CubeAttrsDict
 from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
 
 
-@pytest.fixture
+@pytest.fixture()
 def sample_attrs() -> CubeAttrsDict:
     return CubeAttrsDict(locals={"a": 1, "z": "this"}, globals={"b": 2, "z": "that"})
 
@@ -208,9 +208,7 @@ class Test_OddMethods:
     def test__repr__(self, sample_attrs):
         result = repr(sample_attrs)
         expected = (
-            "CubeAttrsDict("
-            "globals={'b': 2, 'z': 'that'}, "
-            "locals={'a': 1, 'z': 'this'})"
+            "CubeAttrsDict(globals={'b': 2, 'z': 'that'}, locals={'a': 1, 'z': 'this'})"
         )
         assert result == expected
 
@@ -367,10 +365,10 @@ class TestSettingBehaviours:
         sample_attrs.globals["z"] == "other"
         assert sample_attrs["z"] == "new"
 
-    @pytest.mark.parametrize("globals_or_locals", ("globals", "locals"))
+    @pytest.mark.parametrize("globals_or_locals", ["globals", "locals"])
     @pytest.mark.parametrize(
         "value_type",
-        ("replace", "emptylist", "emptytuple", "none", "zero", "false"),
+        ["replace", "emptylist", "emptytuple", "none", "zero", "false"],
     )
     def test_replace_subdict(self, globals_or_locals, value_type):
         # Writing to attrs.xx always replaces content with a *new* LimitedAttributeDict

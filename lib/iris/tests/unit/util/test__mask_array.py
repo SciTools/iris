@@ -34,7 +34,7 @@ array_choices = [(array_1d, expected1), (masked_arr_1d, expected2)]
 )
 @pytest.mark.parametrize("lazy_mask", [False, True], ids=["real", "lazy"])
 @pytest.mark.parametrize(
-    "array, expected", array_choices, ids=["plain-array", "masked-array"]
+    ("array", "expected"), array_choices, ids=["plain-array", "masked-array"]
 )
 @pytest.mark.parametrize("lazy_array", [False, True], ids=["real", "lazy"])
 def test_1d_not_in_place(array, mask, expected, lazy_array, lazy_mask):

@@ -202,11 +202,11 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
-_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s*)+")
 _CM_PARSE = re.compile(
     r"""
-                           (?P<name>([\w_]+\s*?:\s+)+)
-                           (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
+                           (?P<name>([\w_]+\s*?:\s*)+)
+                           (?P<method>[^\s][\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
                                (?P<extra>.+)
@@ -296,6 +296,12 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
         name_start_inds.append(m.start())
 
+    # No matches? Must be malformed cell_method string; warn and return
+    if not name_start_inds:
+        msg = f"Failed to parse cell method string: {nc_cell_methods}"
+        warnings.warn(msg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2)
+        return []
+
     # Remove those that fall inside brackets
     bracket_depth = 0
     for ind, cha in enumerate(nc_cell_methods):
@@ -305,8 +311,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             bracket_depth -= 1
             if bracket_depth < 0:
                 msg = (
-                    "Cell methods may be incorrectly parsed due to mismatched "
-                    "brackets"
+                    "Cell methods may be incorrectly parsed due to mismatched brackets"
                 )
                 warnings.warn(
                     msg,

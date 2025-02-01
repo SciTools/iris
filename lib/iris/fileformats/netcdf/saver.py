@@ -672,8 +672,7 @@ class Saver:
             or container.attributes.get("valid_max") is not None
         ) and container.attributes.get("valid_range") is not None:
             msg = (
-                'Both "valid_range" and "valid_min" or "valid_max" '
-                "attributes present."
+                'Both "valid_range" and "valid_min" or "valid_max" attributes present.'
             )
             raise ValueError(msg)
 
@@ -1387,9 +1386,13 @@ class Saver:
             val_min, val_max = (values.min(), values.max())
             if is_lazy_data(values):
                 val_min, val_max = _co_realise_lazy_arrays([val_min, val_max])
+            # NumPy will inherit values.dtype even if the scalar numbers work
+            #  with a smaller type.
+            min_dtype = np.promote_types(
+                *[np.min_scalar_type(m) for m in (val_min, val_max)]
+            )
             # Cast to an integer type supported by netCDF3.
-            can_cast = all([np.can_cast(m, np.int32) for m in (val_min, val_max)])
-            if not can_cast:
+            if not np.can_cast(min_dtype, np.int32):
                 msg = (
                     "The data type of {} {!r} is not supported by {} and"
                     " its values cannot be safely cast to a supported"

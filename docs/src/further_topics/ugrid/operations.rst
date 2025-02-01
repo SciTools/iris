@@ -500,7 +500,7 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
             Attributes:
                 NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
                 history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
-                nco_openmp_thread_number    1
+                nco_openmp_thread_number    np.int32(1)
 
         # Convert our mesh+data to a PolyData object.
         >>> face_polydata = cube_to_polydata(sample_mesh_cube)
@@ -600,7 +600,7 @@ below:
             Attributes:
                 NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
                 history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
-                nco_openmp_thread_number    1
+                nco_openmp_thread_number    np.int32(1)
 
         >>> regional_cube = extract_unstructured_region(
         ...     cube=sample_mesh_cube,
@@ -619,7 +619,7 @@ below:
             Attributes:
                 NCO                         'netCDF Operators version 4.7.5 (Homepage = http://nco.sf.net, Code = h ...'
                 history                     'Mon Apr 12 01:44:41 2021: ncap2 -s synthetic=float(synthetic) mesh_C4_synthetic.nc ...'
-                nco_openmp_thread_number    1
+                nco_openmp_thread_number    np.int32(1)
 
 
 Regridding

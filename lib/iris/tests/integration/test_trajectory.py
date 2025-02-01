@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 import numpy as np
 
 import iris
+from iris import LOAD_POLICY
 from iris._lazy_data import as_lazy_data
 from iris.analysis.trajectory import Trajectory
 from iris.analysis.trajectory import interpolate as traj_interpolate
@@ -22,7 +23,9 @@ class TestColpex(tests.IrisTest):
     def setUp(self):
         # Load the COLPEX data => TZYX
         path = tests.get_data_path(["PP", "COLPEX", "theta_and_orog_subset.pp"])
-        cube = iris.load_cube(path, "air_potential_temperature")
+        # Fix to ignore time-varying orography, for the purposes of these tests
+        with LOAD_POLICY.context(support_multiple_references=False):
+            cube = iris.load_cube(path, "air_potential_temperature")
         cube.coord("grid_latitude").bounds = None
         cube.coord("grid_longitude").bounds = None
         # TODO: Workaround until regrid can handle factories

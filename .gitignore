@@ -79,3 +79,6 @@ docs/iris_image_test_output/
 
 # Files generated during test runs.
 lib/iris/tests/results/**/*.dot
+
+# Uses of SciTools-incubator/nothing.
+**/.nothing

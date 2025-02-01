@@ -145,8 +145,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
             msg = (
-                "NetCDF variable 'odd_phenomenon' contains unknown cell "
-                "method 'oddity'"
+                "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
             )
             self.assertIn(msg, message)
         finally:

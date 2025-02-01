@@ -4,17 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot.plot` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris.coord_systems as ics
 import iris.coords as coords
+from iris.tests import _shared_utils
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import cartopy.crs as ccrs
     import cartopy.mpl.geoaxes
     from matplotlib.path import Path
@@ -23,20 +21,22 @@ if tests.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
-    def setUp(self):
-        super().setUp()
+    parent_setup = TestGraphicStringCoord._setup
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, parent_setup):
         self.cube = self.cube[0, :]
         self.lat_lon_cube = self.lat_lon_cube[0, :]
 
     def test_yaxis_labels(self):
         iplt.plot(self.cube, self.cube.coord("str_coord"))
-        self.assertBoundsTickLabels("yaxis")
+        self.assert_bounds_tick_labels("yaxis")
 
     def test_xaxis_labels(self):
         iplt.plot(self.cube.coord("str_coord"), self.cube)
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
     def test_yaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -45,7 +45,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax = fig.add_subplot(111)
         iplt.plot(self.cube, self.cube.coord("str_coord"), axes=ax)
         plt.close(fig)
-        self.assertBoundsTickLabels("yaxis", ax)
+        self.assert_bounds_tick_labels("yaxis", ax)
 
     def test_xaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -54,7 +54,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax = fig.add_subplot(111)
         iplt.plot(self.cube.coord("str_coord"), self.cube, axes=ax)
         plt.close(fig)
-        self.assertBoundsTickLabels("xaxis", ax)
+        self.assert_bounds_tick_labels("xaxis", ax)
 
     def test_plot_longitude(self):
         import matplotlib.pyplot as plt
@@ -65,14 +65,15 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         plt.close(fig)
 
 
-@tests.skip_plot
-class TestTrajectoryWrap(tests.IrisTest):
+@_shared_utils.skip_plot
+class TestTrajectoryWrap:
     """Test that a line plot of geographic coordinates wraps around the end of the
     coordinates rather than plotting across the map.
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         plt.figure()
         self.geog_cs = ics.GeogCS(6371229.0)
         self.plate_carree = self.geog_cs.as_cartopy_projection()
@@ -85,7 +86,7 @@ class TestTrajectoryWrap(tests.IrisTest):
             coords.AuxCoord(lats, "latitude", units="degrees", coord_system=cs),
         )
 
-    def assertPathsEqual(self, expected, actual):
+    def assert_paths_equal(self, expected, actual):
         """Assert that the given paths are equal once STOP vertices have been
         removed.
 
@@ -95,17 +96,15 @@ class TestTrajectoryWrap(tests.IrisTest):
         # Remove Path.STOP vertices
         everts = expected.vertices[np.where(expected.codes != Path.STOP)]
         averts = actual.vertices[np.where(actual.codes != Path.STOP)]
-        self.assertArrayAlmostEqual(everts, averts)
-        self.assertArrayEqual(expected.codes, actual.codes)
+        _shared_utils.assert_array_almost_equal(everts, averts)
+        _shared_utils.assert_array_equal(expected.codes, actual.codes)
 
     def check_paths(self, expected_path, expected_path_crs, lines, axes):
         """Check that the paths in `lines` match the given expected paths when
         plotted on the given geoaxes.
 
         """
-        self.assertEqual(
-            1, len(lines), "Expected a single line, got {}".format(len(lines))
-        )
+        assert 1 == len(lines), "Expected a single line, got {}".format(len(lines))
         (line,) = lines
         inter_proj_transform = cartopy.mpl.geoaxes.InterProjectionTransform(
             expected_path_crs, axes.projection
@@ -115,7 +114,7 @@ class TestTrajectoryWrap(tests.IrisTest):
         expected = ax_transform.transform_path(expected_path)
         actual = line.get_transform().transform_path(line.get_path())
 
-        self.assertPathsEqual(expected, actual)
+        self.assert_paths_equal(expected, actual)
 
     def test_simple(self):
         lon, lat = self.lon_lat_coords([359, 1], [0, 0])
@@ -255,7 +254,3 @@ class TestTrajectoryWrap(tests.IrisTest):
             grid_north_pole_longitude=120,
             north_pole_grid_longitude=45,
         )
-
-
-if __name__ == "__main__":
-    tests.main()
