@@ -924,7 +924,8 @@ class CubeAttrsDict(MutableMapping):
         # For equality, require both globals + locals to match exactly.
         # NOTE: array content works correctly, since 'locals' and 'globals' are always
         # iris.common.mixin.LimitedAttributeDict, which gets this right.
-        other = CubeAttrsDict(other)
+        if not isinstance(other, CubeAttrsDict):
+            other = CubeAttrsDict(other)
         result = self.locals == other.locals and self.globals == other.globals
         return result
 
