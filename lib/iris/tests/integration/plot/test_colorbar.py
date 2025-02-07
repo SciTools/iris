@@ -44,18 +44,18 @@ class TestColorBarCreation(_shared_utils.GraphicsTest):
         for draw_function in self.draw_functions:
             mappable = draw_function(self.cube)
             cbar = plt.colorbar()
-            assert (
-                cbar.mappable is mappable
-            ), "Problem with draw function iris.plot.{}".format(draw_function.__name__)
+            assert cbar.mappable is mappable, (
+                "Problem with draw function iris.plot.{}".format(draw_function.__name__)
+            )
 
     def test_common_draw_functions_specified_mappable(self):
         for draw_function in self.draw_functions:
             mappable_initial = draw_function(self.cube, cmap="cool")
             _ = draw_function(self.cube)
             cbar = plt.colorbar(mappable_initial)
-            assert (
-                cbar.mappable is mappable_initial
-            ), "Problem with draw function iris.plot.{}".format(draw_function.__name__)
+            assert cbar.mappable is mappable_initial, (
+                "Problem with draw function iris.plot.{}".format(draw_function.__name__)
+            )
 
     def test_points_with_c_kwarg(self):
         mappable = points(self.cube, c=self.cube.data)

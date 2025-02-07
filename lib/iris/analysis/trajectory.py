@@ -560,8 +560,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             coord, value = sample_points[0]
         except (KeyError, ValueError):
             emsg = (
-                "Sample points must be a list of "
-                "(coordinate, value) pairs, got {!r}."
+                "Sample points must be a list of (coordinate, value) pairs, got {!r}."
             )
             raise TypeError(emsg.format(sample_points))
 

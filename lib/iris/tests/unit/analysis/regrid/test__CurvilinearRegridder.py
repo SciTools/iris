@@ -43,12 +43,10 @@ class Test___init__(tests.IrisTest):
 class Test___call__(tests.IrisTest):
     def setUp(self):
         self.func_setup = (
-            "iris.analysis._regrid."
-            "_regrid_weighted_curvilinear_to_rectilinear__prepare"
+            "iris.analysis._regrid._regrid_weighted_curvilinear_to_rectilinear__prepare"
         )
         self.func_operate = (
-            "iris.analysis._regrid."
-            "_regrid_weighted_curvilinear_to_rectilinear__perform"
+            "iris.analysis._regrid._regrid_weighted_curvilinear_to_rectilinear__perform"
         )
         # Define a test source grid and target grid, basically the same.
         self.src_grid = global_pp()

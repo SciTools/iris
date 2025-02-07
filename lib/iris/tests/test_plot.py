@@ -817,8 +817,7 @@ class TestPlotCoordinatesGiven(_shared_utils.GraphicsTest):
                 self.check_graphic()
             except AssertionError as err:
                 msg = (
-                    "Draw method {!r} failed with coords: {!r}. "
-                    "Assertion message: {!s}"
+                    "Draw method {!r} failed with coords: {!r}. Assertion message: {!s}"
                 )
                 self.fail(msg.format(draw_method, rcoords, err))
 

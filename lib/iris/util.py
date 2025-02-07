@@ -592,15 +592,13 @@ def reverse(cube_or_array, coords_or_dims):
                 axes.update(cube_or_array.coord_dims(coord_or_dim))
             except AttributeError:
                 raise TypeError(
-                    "coords_or_dims must be int, str, coordinate "
-                    "or sequence of these."
+                    "coords_or_dims must be int, str, coordinate or sequence of these."
                 )
 
     axes = np.array(list(axes), ndmin=1)
     if axes.ndim != 1 or axes.size == 0:
         raise ValueError(
-            "Reverse was expecting a single axis or a 1d array "
-            "of axes, got %r" % axes
+            "Reverse was expecting a single axis or a 1d array of axes, got %r" % axes
         )
     if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim - 1:
         raise ValueError(
@@ -945,8 +943,7 @@ class _MetaOrderedHashable(ABCMeta):
             if "_init" not in namespace:
                 # Create a default _init method for the class
                 method_source = (
-                    "def _init(self, %s):\n "
-                    "self._init_from_tuple((%s,))" % (args, args)
+                    "def _init(self, %s):\n self._init_from_tuple((%s,))" % (args, args)
                 )
                 exec(method_source, namespace)
 
@@ -1647,10 +1644,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         return
 
     if aux_coord not in cube.aux_coords:
-        msg = (
-            "Attempting to promote an AuxCoord ({}) "
-            "which does not exist in the cube."
-        )
+        msg = "Attempting to promote an AuxCoord ({}) which does not exist in the cube."
         msg = msg.format(aux_coord.name())
         raise ValueError(msg)
 
