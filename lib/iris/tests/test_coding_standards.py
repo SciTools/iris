@@ -172,13 +172,13 @@ def test_categorised_warnings():
                 warns_with_user_warning.append(warn_ref)
 
     # This avoids UserWarnings being raised by unwritten default behaviour.
-    assert (
-        warns_without_category == []
-    ), "All warnings raised by Iris must be raised with the category kwarg."
+    assert warns_without_category == [], (
+        "All warnings raised by Iris must be raised with the category kwarg."
+    )
 
-    assert (
-        warns_with_user_warning == []
-    ), "No warnings raised by Iris can be the base UserWarning class."
+    assert warns_with_user_warning == [], (
+        "No warnings raised by Iris can be the base UserWarning class."
+    )
 
 
 class TestLicenseHeaders(tests.IrisTest):

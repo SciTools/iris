@@ -311,8 +311,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             bracket_depth -= 1
             if bracket_depth < 0:
                 msg = (
-                    "Cell methods may be incorrectly parsed due to mismatched "
-                    "brackets"
+                    "Cell methods may be incorrectly parsed due to mismatched brackets"
                 )
                 warnings.warn(
                     msg,

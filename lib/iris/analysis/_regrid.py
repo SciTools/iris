@@ -1120,8 +1120,9 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
             result.add_aux_factory(factory.updated(coord_mapping))
         except KeyError:
             msg = (
-                "Cannot update aux_factory {!r} because of dropped"
-                " coordinates.".format(factory.name())
+                "Cannot update aux_factory {!r} because of dropped coordinates.".format(
+                    factory.name()
+                )
             )
             warnings.warn(msg, category=IrisImpossibleUpdateWarning)
 

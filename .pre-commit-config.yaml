@@ -29,7 +29,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.7.3"
+    rev: "v0.9.6"
     hooks:
     -   id: ruff
         types: [file, python]
@@ -38,7 +38,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: "v2.3.0"
+    rev: "v2.4.1"
     hooks:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]
@@ -63,7 +63,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.13.0'
+    rev: 'v1.15.0'
     hooks:
     -   id: mypy
         additional_dependencies:

@@ -363,8 +363,9 @@ class FFHeader:
                             res = res.reshape((addr[1], addr[2]), order="F")
                         else:
                             raise ValueError(
-                                "ff header element {} is not"
-                                "handled correctly".format(elem)
+                                "ff header element {} is nothandled correctly".format(
+                                    elem
+                                )
                             )
                     else:
                         res = None
@@ -809,8 +810,7 @@ class FF2PP:
                         yield result_field
                 except ValueError as valerr:
                     msg = (
-                        "Input field skipped as PPField creation failed :"
-                        " error = {!r}"
+                        "Input field skipped as PPField creation failed : error = {!r}"
                     )
                     warnings.warn(msg.format(str(valerr)), category=IrisLoadWarning)
 
