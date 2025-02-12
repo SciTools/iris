@@ -1198,10 +1198,15 @@ class _Weights:
             dim_metadata = cube._dimensional_metadata(weights)
             derived_array = dim_metadata._core_values()
             if dim_metadata.shape != cube.shape:
+                if isinstance(derived_array, da.Array):
+                    chunks = cube.lazy_data().chunks
+                else:
+                    chunks = None
                 derived_array = iris.util.broadcast_to_shape(
                     derived_array,
                     cube.shape,
                     dim_metadata.cube_dims(cube),
+                    chunks=chunks,
                 )
             derived_units = dim_metadata.units
 
@@ -1612,6 +1617,19 @@ def _lazy_max_run(array, axis=-1, **kwargs):
     return result
 
 
+def _lazy_median(data, axis=None, **kwargs):
+    """Calculate the lazy median, with support for masked arrays."""
+    # Dask median requires the axes to be explicitly listed.
+    axis = range(data.ndim) if axis is None else axis
+
+    if np.issubdtype(data, np.integer):
+        data = data.astype(float)
+    filled = da.ma.filled(data, np.nan)
+    result = da.nanmedian(filled, axis=axis, **kwargs)
+    result_masked = da.ma.fix_invalid(result)
+    return result_masked
+
+
 def _rms(array, axis, **kwargs):
     rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
 
@@ -1940,7 +1958,9 @@ This aggregator handles masked data.
 """
 
 
-MEDIAN = Aggregator("median", ma.median)
+MEDIAN = Aggregator(
+    "median", ma.median, lazy_func=_build_dask_mdtol_function(_lazy_median)
+)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the median over a :class:`~iris.cube.Cube`, as computed by
@@ -1953,8 +1973,7 @@ To compute zonal medians over the *longitude* axis of a cube::
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
 
-This aggregator handles masked data, but NOT lazy data.  For lazy aggregation,
-please try :obj:`~.PERCENTILE`.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -2673,9 +2692,7 @@ class Linear:
         the given coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------
@@ -2876,9 +2893,7 @@ class Nearest:
         by the dimensions of the specified coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------

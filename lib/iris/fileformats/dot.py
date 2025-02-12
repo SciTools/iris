@@ -117,7 +117,7 @@ def save_png(source, target, launch=False):
     # Create png data
     if not _dot_path():
         raise ValueError(
-            'Executable "dot" not found: ' "Review dot_path setting in site.cfg."
+            'Executable "dot" not found: Review dot_path setting in site.cfg.'
         )
     # To filename or open file handle?
     if isinstance(target, str):

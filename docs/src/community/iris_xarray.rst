@@ -141,7 +141,7 @@ output is not fully CF compliant (as-per `the cf checker <https://cfchecker.ncas
   approach in Iris, and means that the use of the "coordinates" attribute in output is
   often not CF compliant.
 * dates are converted to datetime-like objects internally.  There are special features
-  providing `support for  non-standard calendars <https://docs.xarray.dev/en/stable/user-guide/weather-climate.html#non-standard-calendars-and-dates-outside-the-nanosecond-precision-range>`_,
+  providing `support for  non-standard calendars <https://docs.xarray.dev/en/stable/user-guide/weather-climate.html#non-standard-calendars-and-dates-outside-the-precision-range>`_,
   however date units may not always be saved correctly.
 * CF-style coordinate bounds variables are not fully understood.  The CF approach
   where bounds variables do not usually define their units or standard_names can cause

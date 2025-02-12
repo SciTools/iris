@@ -208,9 +208,7 @@ class Test_OddMethods:
     def test__repr__(self, sample_attrs):
         result = repr(sample_attrs)
         expected = (
-            "CubeAttrsDict("
-            "globals={'b': 2, 'z': 'that'}, "
-            "locals={'a': 1, 'z': 'this'})"
+            "CubeAttrsDict(globals={'b': 2, 'z': 'that'}, locals={'a': 1, 'z': 'this'})"
         )
         assert result == expected
 
