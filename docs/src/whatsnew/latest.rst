@@ -61,7 +61,7 @@ This document explains the changes made to Iris for this release
 ===========================
 
 #. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from small NetCDF
-   files faster. (:pull:`6229`)
+   files faster. (:pull:`6229` and :pull:`6231`)
 
 #. `@fnattino`_ enabled lazy cube interpolation using the linear and
    nearest-neighbour interpolators (:class:`iris.analysis.Linear` and
