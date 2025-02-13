@@ -9,20 +9,22 @@
 
 from __future__ import annotations
 
+import pdb
+from typing import overload
 import importlib
 from itertools import product
 import sys
 import warnings
 
 import numpy as np
-from pyproj import CRS
+from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
 import rasterio.transform as rtransform
 import rasterio.warp as rwarp
 import shapely
 import shapely.errors
 import shapely.geometry as sgeom
-import shapely.ops
+import shapely.ops as sops
 
 import iris
 from iris.warnings import IrisDefaultingWarning, IrisUserWarning
@@ -33,6 +35,14 @@ if "iris.analysis.cartography" in sys.modules:
     import iris.analysis.cartography
 
 
+@overload
+def create_shapefile_mask(
+    geometry: shapely.Geometry,
+    geometry_crs: cartopy.crs | CRS,
+    cube: iris.cube.Cube,
+    all_touched: bool = False,
+    invert: bool = False,
+) -> np.array: ...
 def create_shapefile_mask(
     geometry: shapely.Geometry,
     geometry_crs: cartopy.crs | CRS,
@@ -50,21 +60,14 @@ def create_shapefile_mask(
     Parameters
     ----------
     geometry : :class:`shapely.Geometry`
-    cube : :class:`iris.cube.Cube`
-        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
-    minimum_weight : float, default 0.0
-        A float between 0 and 1 determining what % of a cell
-        a shape must cover for the cell to remain unmasked.
-        eg: 0.1 means that at least 10% of the shape overlaps the cell
-        to be unmasked.
-        Requires geometry to be a Polygon or MultiPolygon
-        Defaults to 0.0 (eg only test intersection).
     geometry_crs : :class:`cartopy.crs`, optional
         A :class:`~iris.coord_systems` object describing
         the coord_system of the shapefile. Defaults to None,
         in which case the geometry_crs is assumed to be the
-        same as the `cube`.
-    **kwargs
+        same as the :class:`iris.cube.Cube`.
+    cube : :class:`iris.cube.Cube`
+        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
+    **kwargs :
         Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
         Valid keyword arguments are:
         all_touched : bool, optional
@@ -83,15 +86,15 @@ def create_shapefile_mask(
 
     Notes
     -----
-    For best masking results, both the cube _and_ masking geometry should have a
+    For best masking results, both the :class:`iris.cube.Cube` _and_ masking geometry should have a
     coordinate reference system (CRS) defined. Masking results will be most reliable
-    when the cube and masking geometry have the same CRS.
+    when the :class:`iris.cube.Cube` and masking geometry have the same CRS.
 
-    If the cube has no coord_system, the default GeogCS is used where
+    If the :class:`iris.cube.Cube` has no :class:`~iris.coord_systems`, the default GeogCS is used where
     the coordinate units are degrees. For any other coordinate units,
-    the cube **must** have a coord_system defined.
+    the cube **must** have a :class:`~iris.coord_systems` defined.
 
-    If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
+    If a CRS is not provided for the the masking geometry, the CRS of the :class:`iris.cube.Cube` is assumed.
 
     Warning
     -------
@@ -120,18 +123,31 @@ def create_shapefile_mask(
             raise TypeError(msg)
 
     # Check for CRS equality and transform if necessary
-    dst_crs = cube.coord_system().as_cartopy_projection()
-    if not geometry_crs.equals(dst_crs):
-        trans_geometry = rwarp.transform_geom(
-            geom=geometry, src_crs=geometry_crs, dst_crs=dst_crs
-        )
-        geometry = sgeom.shape(trans_geometry)
+    cube_crs = cube.coord_system().as_cartopy_projection()
+    if not geometry_crs.equals(cube_crs):
+        transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
+        warnings.warn(transform_warning_msg, category=iris.warnings.IrisUserWarning)
+        # Set-up transform via pyproj
+        t = Transformer.from_crs(
+            crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
+        ).transform
+        # Transform geometry
+        geometry = shapely.ops.transform(t, geometry)
+        # Recheck geometry validity
+        if not shapely.is_valid(geometry):
+            msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
+            raise TypeError(msg)
 
     # Get cube coordinates
+    isLonFix = False
     y_name, x_name = _cube_primary_xy_coord_names(cube)
-    # Check if cube lons exist in [0, 360] or [-180, 180]
-    if cube.coord(x_name).circular:
-        cube = cube.intersection(longitude=(-180, 180))
+    # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
+    if (cube.coord(x_name).units.origin == "degrees") and (
+        cube.coord(x_name).points.max() > 180
+    ):
+        isLonFix = True
+        cube = cube.intersection(iris.coords.CoordExtent(x_name, -180, 180))
+
     x_points = cube.coord(x_name).points
     y_points = cube.coord(y_name).points
     w = len(x_points)
@@ -140,26 +156,48 @@ def create_shapefile_mask(
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
     # using an Affine transformation
-    tr, w, h = rwarp.calculate_default_transform(
-        src_crs=dst_crs,
-        dst_crs=dst_crs,
-        width=w,
-        height=h,
-        dst_width=w,
-        dst_height=h,
-        src_geoloc_array=(
-            np.meshgrid(
-                x_points,
-                y_points,
-                indexing="xy",
-            )
-        ),
-    )
+    # tr, w, h = rwarp.calculate_default_transform(
+    #     src_crs=cube_crs,
+    #     dst_crs=cube_crs,
+    #     width=w,
+    #     height=h,
+    #     dst_width=w,
+    #     dst_height=h,
+    #     src_geoloc_array=(
+    #         np.meshgrid(
+    #             x_points,
+    #             y_points,
+    #             indexing="ij",
+    #         )
+    #     ),
+    # )
+
+    # tr = rtransform.from_bounds(
+    #     west=x_points.min(),
+    #     south=y_points.min(),
+    #     east=x_points.max(),
+    #     north=y_points.max(),
+    #     width=h,
+    #     height=-w,
+    # )
+
+    tr = _transform_from_latlon(x_points, y_points)
+
     # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
-        geometries=shapely.get_parts(geometry), out_shape=(h, w), transform=tr
+        geometries=shapely.get_parts(geometry),
+        out_shape=(h, w),
+        transform=tr,
+        **kwargs,
     )
 
+    # If cube was on [0, 360] domain, then shift mask template
+    # to match the cube domain
+    # if isLonFix:
+    #     mask_template = np.roll(mask_template, w // 2, axis=1)
+
+    # pdb.set_trace()
+    # return mask_template[::-1,:]
     return mask_template
 
 
@@ -188,7 +226,7 @@ def is_geometry_valid(
 
     Returns
     -------
-    None if the geometry is valid.
+    None if the geometry is valid.OSTN15_NTv2OSGBtoETRS.gsb
 
     Raises
     ------
@@ -231,20 +269,21 @@ def is_geometry_valid(
 
     # Check geometry is valid shapely geometry
     if not shapely.is_valid(geometry):
-        msg = "Geometry is not a valid Shapely object"
+        msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
         raise TypeError(msg)
 
     # Check that the geometry is within the bounds of the coordinate system
-    # If the geometry is not in WGS84, transform the validation bounds
-    # to the geometry's CR
+    # If the geometry is not in WGS84, transform the geometry to WGS84
+    # This is more reliable than transforming the lon_lat_bounds to the geometry CRS
     lon_lat_bounds = shapely.geometry.Polygon.from_bounds(
         xmin=-180.0, ymin=-90.0, xmax=180.0, ymax=90.0
     )
     if not geometry_crs.equals(WGS84_crs):
-        lon_lat_bounds = rwarp.transform_geom(
-            src_crs=WGS84_crs, dst_crs=geometry_crs, geom=lon_lat_bounds
-        )
-        lon_lat_bounds = sgeom.shape(lon_lat_bounds)
+        # Make pyproj transformer
+        # Transforms the input geometry to the WGS84 coordinate system
+        t = Transformer.from_crs(geometry_crs, WGS84_crs, always_xy=True).transform
+        geometry = shapely.ops.transform(t, geometry)
+
     geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
     if not geom_valid.all():
         msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. \nCheck that your coordinates are correctly specified."
@@ -258,15 +297,6 @@ def is_geometry_valid(
     # Check if the geometry crosses the poles
     npole = sgeom.Point(0, 90)
     spole = sgeom.Point(0, -90)
-    if not geometry_crs.equals(WGS84_crs):
-        npole = rwarp.transform_geom(
-            src_crs=WGS84_crs, dst_crs=geometry_crs, geom=npole
-        )
-        spole = rwarp.transform_geom(
-            src_crs=WGS84_crs, dst_crs=geometry_crs, geom=spole
-        )
-        npole = sgeom.shape(npole)
-        spole = sgeom.shape(spole)
     if geometry.intersects(npole) or geometry.intersects(spole):
         msg = "Geometry crossing the poles is not supported."
         raise ValueError(msg)
@@ -305,3 +335,19 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
+
+
+def _transform_from_latlon(lon, lat):
+    """perform an affine transformation to the latitude/longitude coordinates"""
+
+    from affine import Affine
+
+    lat = np.asarray(lat)
+    lon = np.asarray(lon)
+
+    d_lon = lon[1] - lon[0]
+    d_lat = lat[1] - lat[0]
+
+    trans = Affine.translation(lon[0] - d_lon / 2, lat[0] - d_lat / 2)
+    scale = Affine.scale(d_lon, d_lat)
+    return trans * scale
