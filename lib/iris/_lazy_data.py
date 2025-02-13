@@ -19,6 +19,9 @@ import dask.utils
 import numpy as np
 import numpy.ma as ma
 
+MAX_CACHE_SIZE = 100
+"""Maximum number of Dask arrays to cache."""
+
 
 def non_lazy(func):
     """Turn a lazy function into a function that returns a result immediately."""
@@ -252,7 +255,7 @@ class LRUCache:
         )
 
 
-CACHE = LRUCache(100)
+CACHE = LRUCache(MAX_CACHE_SIZE)
 
 
 def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
