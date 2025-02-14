@@ -3,19 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# Much of this code is originally based off the ASCEND library, developed in
-# the Met Office by Chris Kent, Emilie Vanvyve, David Bentley, Joana Mendes
-# many thanks to them. Converted to iris by Alex Chamberlain-Clay
-
 from __future__ import annotations
 
-import pdb
-from typing import overload
 import importlib
 from itertools import product
 import sys
+from typing import overload
 import warnings
 
+from affine import Affine
 import numpy as np
 from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
@@ -83,12 +79,20 @@ def create_shapefile_mask(
     ------
     TypeError
         If the cube is not a :class:`~iris.cube.Cube`.
+    ValueError
+        If the :class:`~iris.cube.Cube` has a semi-structured model grid.
 
     Notes
     -----
     For best masking results, both the :class:`iris.cube.Cube` _and_ masking geometry should have a
     coordinate reference system (CRS) defined. Masking results will be most reliable
     when the :class:`iris.cube.Cube` and masking geometry have the same CRS.
+
+    Where the :class:`iris.cube.Cube` CRS and the geometry CRS differ, the geometry will be
+    transformed to the cube CRS using the pyproj library. This is a best-effort
+    transformation and may not be perfect, especially for complex geometries and
+    non-standard coordinate referece systems. Consult the `pyproj documentation`_ for
+    more information.
 
     If the :class:`iris.cube.Cube` has no :class:`~iris.coord_systems`, the default GeogCS is used where
     the coordinate units are degrees. For any other coordinate units,
@@ -108,6 +112,8 @@ def create_shapefile_mask(
     See Also
     --------
     :func:`is_geometry_valid`
+
+    .. _`pyproj documentation`: https://pyproj4.github.io/pyproj/stable/api/transformer.html#pyproj-transformer
     """
     # Check validity of geometry CRS
     is_geometry_valid(geometry, geometry_crs)
@@ -121,6 +127,15 @@ def create_shapefile_mask(
         else:
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
+
+    # Get cube coordinates
+    y_name, x_name = _cube_primary_xy_coord_names(cube)
+    # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
+    if (cube.coord(x_name).units.origin == "degrees") and (
+        cube.coord(x_name).points.max() > 180
+    ):
+        # Convert to [-180, 180] domain
+        cube = cube.intersection(iris.coords.CoordExtent(x_name, -180, 180))
 
     # Check for CRS equality and transform if necessary
     cube_crs = cube.coord_system().as_cartopy_projection()
@@ -138,50 +153,18 @@ def create_shapefile_mask(
             msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
             raise TypeError(msg)
 
-    # Get cube coordinates
-    isLonFix = False
-    y_name, x_name = _cube_primary_xy_coord_names(cube)
-    # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
-    if (cube.coord(x_name).units.origin == "degrees") and (
-        cube.coord(x_name).points.max() > 180
-    ):
-        isLonFix = True
-        cube = cube.intersection(iris.coords.CoordExtent(x_name, -180, 180))
-
     x_points = cube.coord(x_name).points
     y_points = cube.coord(y_name).points
+    dx = iris.util.regular_step(cube.coord(x_name))
+    dy = iris.util.regular_step(cube.coord(y_name))
     w = len(x_points)
     h = len(y_points)
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
-    # using an Affine transformation
-    # tr, w, h = rwarp.calculate_default_transform(
-    #     src_crs=cube_crs,
-    #     dst_crs=cube_crs,
-    #     width=w,
-    #     height=h,
-    #     dst_width=w,
-    #     dst_height=h,
-    #     src_geoloc_array=(
-    #         np.meshgrid(
-    #             x_points,
-    #             y_points,
-    #             indexing="ij",
-    #         )
-    #     ),
-    # )
-
-    # tr = rtransform.from_bounds(
-    #     west=x_points.min(),
-    #     south=y_points.min(),
-    #     east=x_points.max(),
-    #     north=y_points.max(),
-    #     width=h,
-    #     height=-w,
-    # )
-
-    tr = _transform_from_latlon(x_points, y_points)
+    trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
+    scale = Affine.scale(dx, dy)
+    tr = trans * scale
 
     # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
@@ -191,13 +174,11 @@ def create_shapefile_mask(
         **kwargs,
     )
 
-    # If cube was on [0, 360] domain, then shift mask template
-    # to match the cube domain
-    # if isLonFix:
-    #     mask_template = np.roll(mask_template, w // 2, axis=1)
+    # If cube was on circular domain, then the transformed
+    # mask template needs shifting to match the cube domain
+    if cube.coord(x_name).circular:
+        mask_template = np.roll(mask_template, w // 2, axis=1)
 
-    # pdb.set_trace()
-    # return mask_template[::-1,:]
     return mask_template
 
 
@@ -335,19 +316,3 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
-
-
-def _transform_from_latlon(lon, lat):
-    """perform an affine transformation to the latitude/longitude coordinates"""
-
-    from affine import Affine
-
-    lat = np.asarray(lat)
-    lon = np.asarray(lon)
-
-    d_lon = lon[1] - lon[0]
-    d_lat = lat[1] - lat[0]
-
-    trans = Affine.translation(lon[0] - d_lon / 2, lat[0] - d_lat / 2)
-    scale = Affine.scale(d_lon, d_lat)
-    return trans * scale
