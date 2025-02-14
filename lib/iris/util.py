@@ -2128,6 +2128,7 @@ def _strip_metadata_from_dims(cube, dims):
 
     return reduced_cube
 
+
 @overload
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
@@ -2136,8 +2137,7 @@ def mask_cube_from_shapefile(
     in_place: bool = False,
     all_touched: bool = False,
     invert: bool = False,
-):
-    ...
+): ...
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
@@ -2151,9 +2151,9 @@ def mask_cube_from_shapefile(
     Finds the overlap between the `shapefile` shape and the :class:`~iris.cube.Cube` and
     masks out any cells that __do not__ intersect the shape.
 
-    Shapes can be polygons, lines or points.  
+    Shapes can be polygons, lines or points.
 
-    By default, only the only cells whose center is within the polygon or that are selected by 
+    By default, only the only cells whose center is within the polygon or that are selected by
     Bresenham’s line algorithm (for line type shape) are kept.  This behaviour can be changed by
     using the `all_touched=True` keyword argument. Then all cells touched by geometries are kept.
 
@@ -2208,28 +2208,28 @@ def mask_cube_from_shapefile(
     >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
     >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
     >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
-    
+
     Extract a trajectory by using a line shapefile:
 
     >>> from shapely import LineString
     >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
     >>> masked_cube = mask_cube_from_shapefile(cube, line, wgs84)
 
-    Standard shapely manipulations can be applied.  For example, to extract a trajectory 
+    Standard shapely manipulations can be applied.  For example, to extract a trajectory
     with a 1 degree buffer around it:
 
     >>> buffer = line.buffer(1)
     >>> masked_cube = mask_cube_from_shapefile(cube, buffer, wgs84)
 
-    You can load more complex shapes from other libraries. For example, to extract the 
-    Canadian provience of Ontario from a cube: 
+    You can load more complex shapes from other libraries. For example, to extract the
+    Canadian provience of Ontario from a cube:
 
     >>> import cartopy.io.shapereader as shpreader
     >>> admin1 = shpreader.natural_earth(resolution='110m',
-                                         category='cultural', 
+                                         category='cultural',
                                          name='admin_1_states_provinces_lakes')
     >>> admin1shp = shpreader.Reader(admin1).geometries()
-    
+
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
     >>> wgs84 = CRS.from_epsg(4326)
@@ -2248,7 +2248,9 @@ def mask_cube_from_shapefile(
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
 
     """
-    shapefile_mask = create_shapefile_mask(geometry=shape, geometry_crs=shape_crs, cube=cube, **kwargs)
+    shapefile_mask = create_shapefile_mask(
+        geometry=shape, geometry_crs=shape_crs, cube=cube, **kwargs
+    )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
