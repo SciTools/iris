@@ -17,6 +17,7 @@ from collections.abc import (
 import copy
 from copy import deepcopy
 from functools import partial, reduce
+from html import unescape
 import itertools
 import operator
 from typing import TYPE_CHECKING, Any, Optional, TypeGuard
@@ -256,7 +257,7 @@ class CubeList(list):
 
         # return our newly created XML string
         doc = Cube._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return unescape(doc.toprettyxml(indent="  "))
 
     def extract(self, constraints):
         """Filter each of the cubes which can be filtered by the given constraints.
@@ -3868,7 +3869,7 @@ class Cube(CFVariableMixin):
 
         # Print our newly created XML
         doc = self._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return unescape(doc.toprettyxml(indent="  "))
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
         cube_xml_element = doc.createElement("cube")
