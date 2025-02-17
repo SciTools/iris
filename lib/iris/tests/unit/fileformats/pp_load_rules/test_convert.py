@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.pp_load_rules.convert`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from types import MethodType
 from unittest import mock
 
@@ -17,8 +13,39 @@ import numpy as np
 
 from iris.fileformats.pp import STASH, PPField3, SplittableInt
 from iris.fileformats.pp_load_rules import convert
-import iris.tests.unit.fileformats
+from iris.tests._shared_utils import assert_array_equal
 from iris.util import guess_coord_axis
+
+
+def assert_test_for_coord(
+    field, convert, coord_predicate, expected_points, expected_bounds
+):
+    (
+        factories,
+        references,
+        standard_name,
+        long_name,
+        units,
+        attributes,
+        cell_methods,
+        dim_coords_and_dims,
+        aux_coords_and_dims,
+    ) = convert(field)
+
+    # Check for one and only one matching coordinate.
+    coords_and_dims = dim_coords_and_dims + aux_coords_and_dims
+    matching_coords = [coord for coord, _ in coords_and_dims if coord_predicate(coord)]
+    assert len(matching_coords) == 1, str(matching_coords)
+    coord = matching_coords[0]
+
+    # Check points and bounds.
+    if expected_points is not None:
+        assert_array_equal(coord.points, expected_points)
+
+    if expected_bounds is None:
+        assert coord.bounds is None
+    else:
+        assert_array_equal(coord.bounds, expected_bounds)
 
 
 def _mock_field(**kwargs):
@@ -31,7 +58,7 @@ def _mock_field(**kwargs):
     return field
 
 
-class TestLBCODE(iris.tests.unit.fileformats.TestField):
+class TestLBCODE:
     @staticmethod
     def _is_cross_section_height_coord(coord):
         return (
@@ -45,7 +72,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         points = np.array([10, 20, 30, 40])
         bounds = np.array([[0, 15], [15, 25], [25, 35], [35, 45]])
         field = _mock_field(lbcode=lbcode, bdy=0, y=points, y_bounds=bounds)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBCODE._is_cross_section_height_coord,
@@ -61,7 +88,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         field = _mock_field(
             lbcode=lbcode, bdy=bmdi, bmdi=bmdi, y=points, y_bounds=bounds
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBCODE._is_cross_section_height_coord,
@@ -70,7 +97,7 @@ class TestLBCODE(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBVC(iris.tests.unit.fileformats.TestField):
+class TestLBVC:
     @staticmethod
     def _is_potm_level_coord(coord):
         return (
@@ -113,7 +140,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_soil_levels(self):
         level = 1234
         field = _mock_field(lbvc=6, lblev=level, brsvd=[0, 0], brlev=0)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self._is_soil_model_level_number_coord,
@@ -124,7 +151,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_soil_depth(self):
         lower, point, upper = 1.2, 3.4, 5.6
         field = _mock_field(lbvc=6, blev=point, brsvd=[lower, 0], brlev=upper)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self._is_soil_depth_coord,
@@ -143,7 +170,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=45,
             brsvd=[17, 40],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_model_level_number_coord,
@@ -164,7 +191,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=delta_lower_bound,
             brsvd=[17, delta_upper_bound],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_level_pressure_coord,
@@ -185,7 +212,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
             bhrlev=11,
             brsvd=[sigma_upper_bound, 13],
         )
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_sigma_coord,
@@ -196,7 +223,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
     def test_potential_temperature_levels(self):
         potm_value = 27.32
         field = _mock_field(lbvc=19, blev=potm_value)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBVC._is_potm_level_coord,
@@ -205,7 +232,7 @@ class TestLBVC(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBTIM(iris.tests.unit.fileformats.TestField):
+class TestLBTIM:
     def test_365_calendar(self):
         f = mock.MagicMock(
             lbtim=SplittableInt(4, {"ia": 2, "ib": 1, "ic": 0}),
@@ -238,10 +265,10 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             return coord.standard_name == "time"
 
         coords_and_dims = list(filter(is_t_coord, aux_coords_and_dims))
-        self.assertEqual(len(coords_and_dims), 1)
+        assert len(coords_and_dims) == 1
         coord, dims = coords_and_dims[0]
-        self.assertEqual(guess_coord_axis(coord), "T")
-        self.assertEqual(coord.units.calendar, "365_day")
+        assert guess_coord_axis(coord) == "T"
+        assert coord.units.calendar == "365_day"
 
     def base_field(self):
         field = PPField3(header=mock.MagicMock())
@@ -278,7 +305,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbyrd, field.lbmond, field.lbdatd = 1970, 1, 2
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_forecast_period,
@@ -286,7 +313,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             expected_bounds=[[6, 9]],
         )
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_time,
@@ -306,7 +333,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         field.lbyrd, field.lbmond, field.lbdatd = 1971, 1, 2
         field.lbhrd, field.lbmind, field.lbsecd = 15, 0, 0
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_forecast_period,
@@ -314,7 +341,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
             expected_bounds=[[36 - 30, lbft]],
         )
 
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             self.is_time,
@@ -323,7 +350,7 @@ class TestLBTIM(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBRSVD(iris.tests.unit.fileformats.TestField):
+class TestLBRSVD:
     @staticmethod
     def _is_realization(coord):
         return coord.standard_name == "realization" and coord.units == "1"
@@ -334,7 +361,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
         points = np.array([71])
         bounds = None
         field = _mock_field(lbrsvd=lbrsvd)
-        self._test_for_coord(
+        assert_test_for_coord(
             field,
             convert,
             TestLBRSVD._is_realization,
@@ -343,7 +370,7 @@ class TestLBRSVD(iris.tests.unit.fileformats.TestField):
         )
 
 
-class TestLBSRCE(iris.tests.IrisTest):
+class TestLBSRCE:
     def check_um_source_attrs(self, lbsrce, source_str=None, um_version_str=None):
         field = _mock_field(lbsrce=lbsrce)
         (
@@ -358,13 +385,13 @@ class TestLBSRCE(iris.tests.IrisTest):
             aux_coords_and_dims,
         ) = convert(field)
         if source_str is not None:
-            self.assertEqual(attributes["source"], source_str)
+            assert attributes["source"] == source_str
         else:
-            self.assertNotIn("source", attributes)
+            assert "source" not in attributes
         if um_version_str is not None:
-            self.assertEqual(attributes["um_version"], um_version_str)
+            assert attributes["um_version"] == um_version_str
         else:
-            self.assertNotIn("um_version", attributes)
+            assert "um_version" not in attributes
 
     def test_none(self):
         self.check_um_source_attrs(lbsrce=8123, source_str=None, um_version_str=None)
@@ -384,7 +411,7 @@ class TestLBSRCE(iris.tests.IrisTest):
         )
 
 
-class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
+class Test_STASH_CF:
     def test_stash_cf_air_temp(self):
         lbuser = [1, 0, 0, 16203, 0, 0, 1]
         lbfc = 16
@@ -401,8 +428,8 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
             dim_coords_and_dims,
             aux_coords_and_dims,
         ) = convert(field)
-        self.assertEqual(standard_name, "air_temperature")
-        self.assertEqual(units, "K")
+        assert standard_name == "air_temperature"
+        assert units == "K"
 
     def test_no_std_name(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
@@ -420,11 +447,11 @@ class Test_STASH_CF(iris.tests.unit.fileformats.TestField):
             dim_coords_and_dims,
             aux_coords_and_dims,
         ) = convert(field)
-        self.assertIsNone(standard_name)
-        self.assertIsNone(units)
+        assert standard_name is None
+        assert units is None
 
 
-class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
+class Test_LBFC_CF:
     def test_fc_cf_air_temp(self):
         lbuser = [1, 0, 0, 0, 0, 0, 0]
         lbfc = 16
@@ -441,9 +468,5 @@ class Test_LBFC_CF(iris.tests.unit.fileformats.TestField):
             dim_coords_and_dims,
             aux_coords_and_dims,
         ) = convert(field)
-        self.assertEqual(standard_name, "air_temperature")
-        self.assertEqual(units, "K")
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert standard_name == "air_temperature"
+        assert units == "K"

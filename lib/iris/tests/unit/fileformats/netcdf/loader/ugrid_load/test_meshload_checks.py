@@ -61,7 +61,7 @@ class TestMeshLoad:
         param = self.param
         if param == "nolocation":
             match_msg = (
-                "mesh data variable 'extra_data' has an " "invalid location='<empty>'."
+                "mesh data variable 'extra_data' has an invalid location='<empty>'."
             )
         elif param == "badlocation":
             match_msg = (

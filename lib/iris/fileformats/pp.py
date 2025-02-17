@@ -304,7 +304,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         if msi_match is None:
             raise ValueError(
-                'Expected STASH code MSI string "mXXsXXiXXX", ' "got %r" % (msi,)
+                'Expected STASH code MSI string "mXXsXXiXXX", got %r' % (msi,)
             )
 
         return STASH(*msi_match.groups())
@@ -2171,7 +2171,7 @@ def _load_cubes_variable_loader(
     return result
 
 
-def save(cube, target, append=False, field_coords=None):
+def save(cube, target, append=False, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
     Parameters
@@ -2192,6 +2192,11 @@ def save(cube, target, append=False, field_coords=None):
         coordinates of the resulting fields.
         If None, the final two  dimensions are chosen
         for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     Notes
     -----
@@ -2200,11 +2205,11 @@ def save(cube, target, append=False, field_coords=None):
     of cubes to be saved to a PP file.
 
     """
-    fields = as_fields(cube, field_coords)
+    fields = as_fields(cube, field_coords, label_surface_fields=label_surface_fields)
     save_fields(fields, target, append=append)
 
 
-def save_pairs_from_cube(cube, field_coords=None):
+def save_pairs_from_cube(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
     Parameters
@@ -2316,12 +2321,12 @@ def save_pairs_from_cube(cube, field_coords=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        pp_field = verify(slice2D, pp_field)
+        pp_field = verify(slice2D, pp_field, label_surface_fields=label_surface_fields)
 
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None):
+def as_fields(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to convert a cube to an iterable of PP fields.
 
     Use the PP saving rules (and any user rules) to convert a cube to
@@ -2335,9 +2340,19 @@ def as_fields(cube, field_coords=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     """
-    return (field for _, field in save_pairs_from_cube(cube, field_coords=field_coords))
+    return (
+        field
+        for _, field in save_pairs_from_cube(
+            cube, field_coords=field_coords, label_surface_fields=label_surface_fields
+        )
+    )
 
 
 def save_fields(fields, target, append: bool = False):

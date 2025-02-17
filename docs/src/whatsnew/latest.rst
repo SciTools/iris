@@ -24,72 +24,52 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. Iris is now compliant with NumPy v2. This may affect your scripts.
-   :ref:`See the full What's New entry for more details <numpy2>`.
+#. N/A
 
 
 ✨ Features
 ===========
 
-#. `@jrackham-mo`_ added :meth:`~iris.io.format_picker.FormatAgent.copy` and
-   equality methods to :class:`iris.io.format_picker.FormatAgent`, as requested
-   in :issue:`6108`, actioned in :pull:`6119`.
+#. N/A
 
-#. `@ukmo-ccbunney`_ added ``colorbar`` keyword to allow optional creation of
-   the colorbar in the following quickplot methods:
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
+   with aligning cubes so they can merge / concatenate.
+   (:issue:`6248`, :pull:`6257`)
 
-   * :meth:`iris.quickplot.contourf`
 
-   * :meth:`iris.quickplot.pcolor`
-
-   * :meth:`iris.quickplot.pcolormesh`
-
-   Requested in :issue:`5970`, actioned in :pull:`6169`.
-
-#. `@pp-mo`_ and `@stephenworsley`_ added support for hybrid coordinates whose
-   references are split across multiple input fields, and :meth:`~iris.LOAD_POLICY` to
-   control it, as requested in :issue:`5369`, actioned in :pull:`6168`.
+#. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
+   based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
+   :issue:`4039` (:pull:`6167`).
 
 
 🐛 Bugs Fixed
 =============
 
-#. `@rcomer`_ enabled partial collapse of multi-dimensional string coordinates,
-   fixing :issue:`3653`. (:pull:`5955`)
+#. `@rcomer`_ added handling for string stash codes when saving pp files.
+   (:issue:`6239`, :pull:`6289`)
 
-#. `@ukmo-ccbunney`_ improved error handling for malformed `cell_method`
-   attribute. Also made cell_method string parsing more lenient w.r.t.
-   whitespace. (:pull:`6083`)
-
-#. `@ukmo-ccbunney`_ fixed comparison of cubes with array type attributes;
-   fixes :issue:`6027` (:pull:`6181`)
 
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. :class:`iris.tests.IrisTest` is being replaced by :mod:`iris.tests._shared_utils`.
+   Once conversion from unittest to pytest is completed, :class:`iris.tests.IrisTest`
+   class will be deprecated.
 
 
 🚀 Performance Enhancements
 ===========================
 
-#. `@bouweandela`_ made the time coordinate categorisation functions in
-   :mod:`~iris.coord_categorisation` faster. Anyone using
-   :func:`~iris.coord_categorisation.add_categorised_coord`
-   with cftime :class:`~cftime.datetime` objects can benefit from the same
-   improvement by adding a type hint to their category funcion. (:pull:`5999`)
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from NetCDF files
+   faster. (:pull:`6229` and :pull:`6252`)
 
-#. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster if more
-   than two cubes are concatenated with equality checks on the values of
-   auxiliary coordinates, derived coordinates, cell measures, or ancillary
-   variables enabled.
-   In some cases, this may lead to higher memory use. This can be remedied by
-   reducing the number of Dask workers.
-   In rare cases, the new implementation could potentially be slower. This
-   may happen when there are very many or large auxiliary coordinates, derived
-   coordinates, cell measures, or ancillary variables to be checked that span
-   the concatenation axis. This issue can be avoided by disabling the
-   problematic check. (:pull:`5926` and :pull:`6187`)
+#. `@fnattino`_ enabled lazy cube interpolation using the linear and
+   nearest-neighbour interpolators (:class:`iris.analysis.Linear` and
+   :class:`iris.analysis.Nearest`). Note that this implementation removes
+   performance benefits linked to caching an interpolator object. While this does
+   not break previously suggested code (instantiating and re-using an interpolator
+   object remains possible), this is no longer an advertised feature. (:pull:`6084`)
+
 
 🔥 Deprecations
 ===============
@@ -100,47 +80,47 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-.. _numpy2:
-
-#. `@trexfeathers`_ adapted the Iris codebase to work with NumPy v2. The
-   `NumPy v2 full release notes`_ have the exhaustive details. Notable
-   changes that may affect your Iris scripts are below. (:pull:`6035`)
-
-   * `NumPy v2 changed data type promotion`_
-
-   * `NumPy v2 changed scalar printing`_
-
 #. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
    as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
 📚 Documentation
 ================
 
-#. `@bouweandela`_ added type hints for :class:`~iris.cube.Cube`. (:pull:`6037`)
+#. `@ESadek-MO`_ and `@trexfeathers`_ created :ref:`contributing_pytest_conversions`
+   as a guide for converting from ``unittest`` to ``pytest``. (:pull:`5785`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a style guide for ``pytest`` tests,
+   and consolidated ``Test Categories`` and ``Testing Tools`` into
+   :ref:`contributing_tests` (:issue:`5574`, :pull:`5785`)
+
 
 💼 Internal
 ===========
 
-#. `@trexfeathers`_ improved the new ``tracemalloc`` benchmarking (introduced
-   in Iris v3.10.0, :pull:`5948`) to use the same statistical repeat strategy
-   as timing benchmarks. (:pull:`5981`)
+#. `@ESadek-MO`_ `@pp-mo`_ `@bjlittle`_ `@trexfeathers`_ and `@HGWright`_ have
+   converted around a third of Iris' ``unittest`` style tests to ``pytest``. This is
+   part of an ongoing effort to move from ``unittest`` to ``pytest``. (:pull:`6207`,
+   part of :issue:`6212`)
 
-#. `@trexfeathers`_ adapted Iris to work with Cartopy v0.24. (:pull:`6171`,
-   :pull:`6172`)
+#. `@trexfeathers`_, `@ESadek-MO`_ and `@HGWright`_ heavily re-worked
+   :doc:`/developers_guide/release_do_nothing` to be more thorough and apply
+   lessons learned from recent releases. (:pull:`6062`)
+
+#. `@schlunma`_ made lazy [smart
+   weights](https://github.com/SciTools/iris/pull/5084) used for cube
+   aggregations have the same chunks as their parent cube if broadcasting is
+   necessary. (:issue:`6285`, :pull:`6288`)
 
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@fnattino: https://github.com/fnattino
 .. _@jrackham-mo: https://github.com/jrackham-mo
-
+.. _@stefsmeets: https://github.com/stefsmeets
 
 .. comment
     Whatsnew resources in alphabetical order:
 
-.. _cartopy#2390: https://github.com/SciTools/cartopy/issues/2390
-.. _NumPy v2 changed data type promotion: https://numpy.org/doc/stable/numpy_2_0_migration_guide.html#changes-to-numpy-data-type-promotion
-.. _NumPy v2 changed scalar printing: https://numpy.org/doc/stable/release/2.0.0-notes.html#representation-of-numpy-scalars-changed
-.. _NumPy v2 full release notes: https://numpy.org/doc/stable/release/2.0.0-notes.html
 .. _SPEC 0: https://scientific-python.org/specs/spec-0000/

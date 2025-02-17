@@ -6,6 +6,8 @@
 
 from unittest.mock import MagicMock
 
+import pytest
+
 from iris.fileformats.cf import (
     CFAuxiliaryCoordinateVariable,
     CFCoordinateVariable,
@@ -16,14 +18,11 @@ from iris.fileformats.cf import (
     CFUGridMeshVariable,
 )
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 
-
-class Tests(tests.IrisTest):
+class Tests:
     # TODO: unit tests for existing functionality pre 2021-03-11.
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cf_group = CFGroup()
 
     def test_non_data_names(self):
@@ -44,36 +43,37 @@ class Tests(tests.IrisTest):
 
         expected_names = [var.cf_name for var in (aux_var, coord_var, coord_var2)]
         expected = set(expected_names)
-        self.assertEqual(expected, self.cf_group.non_data_variable_names)
+        assert self.cf_group.non_data_variable_names == expected
 
 
-class Ugrid(tests.IrisTest):
+class TestUgrid:
     """Separate class to test UGRID functionality."""
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cf_group = CFGroup()
 
     def test_inherited(self):
         coord_var = MagicMock(spec=CFCoordinateVariable, cf_name="coord_var")
         self.cf_group[coord_var.cf_name] = coord_var
-        self.assertEqual(coord_var, self.cf_group.coordinates[coord_var.cf_name])
+        assert self.cf_group.coordinates[coord_var.cf_name] == coord_var
 
     def test_connectivities(self):
         conn_var = MagicMock(spec=CFUGridConnectivityVariable, cf_name="conn_var")
         self.cf_group[conn_var.cf_name] = conn_var
-        self.assertEqual(conn_var, self.cf_group.connectivities[conn_var.cf_name])
+        assert self.cf_group.connectivities[conn_var.cf_name] == conn_var
 
     def test_ugrid_coords(self):
         coord_var = MagicMock(
             spec=CFUGridAuxiliaryCoordinateVariable, cf_name="coord_var"
         )
         self.cf_group[coord_var.cf_name] = coord_var
-        self.assertEqual(coord_var, self.cf_group.ugrid_coords[coord_var.cf_name])
+        assert self.cf_group.ugrid_coords[coord_var.cf_name] == coord_var
 
     def test_meshes(self):
         mesh_var = MagicMock(spec=CFUGridMeshVariable, cf_name="mesh_var")
         self.cf_group[mesh_var.cf_name] = mesh_var
-        self.assertEqual(mesh_var, self.cf_group.meshes[mesh_var.cf_name])
+        assert self.cf_group.meshes[mesh_var.cf_name] == mesh_var
 
     def test_non_data_names(self):
         data_var = MagicMock(spec=CFDataVariable, cf_name="data_var")
@@ -108,4 +108,4 @@ class Ugrid(tests.IrisTest):
             )
         ]
         expected = set(expected_names)
-        self.assertEqual(expected, self.cf_group.non_data_variable_names)
+        assert self.cf_group.non_data_variable_names == expected

@@ -514,10 +514,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
                 "<AuxCoord: time / (hours since 2025-03-23 01:00:00)  "
                 "[2025-03-23 01:00:00]>"
             ),
-            (
-                "AuxCoord :  time / (hours since 2025-03-23 01:00:00, "
-                "standard calendar)"
-            ),
+            ("AuxCoord :  time / (hours since 2025-03-23 01:00:00, standard calendar)"),
             "    points: [2025-03-23 01:00:00]",
             "    shape: (1,)",
             "    dtype: float64",
@@ -1019,10 +1016,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
         expected = [
             "AuxCoord :  x / (days since 1970-03-5, standard calendar)",
             "    points: [",
-            (
-                "        1970-03-05 00:00:00, 1970-03-06 00:00:00, "
-                "1970-03-07 00:00:00,"
-            ),
+            ("        1970-03-05 00:00:00, 1970-03-06 00:00:00, 1970-03-07 00:00:00,"),
             "        1970-03-08 00:00:00, 1970-03-09 00:00:00]",
             "    shape: (5,)",
             "    dtype: float64",

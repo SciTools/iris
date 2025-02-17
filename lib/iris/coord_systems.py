@@ -769,8 +769,7 @@ class Orthographic(CoordSystem):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         warnings.warn(
-            "Discarding false_easting and false_northing that are "
-            "not used by Cartopy.",
+            "Discarding false_easting and false_northing that are not used by Cartopy.",
             category=iris.warnings.IrisDefaultingWarning,
         )
 

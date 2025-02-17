@@ -76,8 +76,7 @@ def _default_rulenamesfunc(func_name):
     funcname_prefix = "action_"
     rulename_prefix = "fc_"  # To match existing behaviours
     rule_name = func_name
-    if rule_name.startswith(funcname_prefix):
-        rule_name = rule_name[len(funcname_prefix) :]
+    rule_name = rule_name.removeprefix(funcname_prefix)
     if not rule_name.startswith(rulename_prefix):
         rule_name = rulename_prefix + rule_name
     return rule_name

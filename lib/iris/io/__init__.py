@@ -162,8 +162,7 @@ def expand_filespecs(file_specs, files_expected=True):
     """
     # Remove any hostname component - currently unused
     filenames = [
-        os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith("//") else fn))
-        for fn in file_specs
+        os.path.abspath(os.path.expanduser(fn.removeprefix("//"))) for fn in file_specs
     ]
 
     if files_expected:
@@ -301,7 +300,7 @@ def _grib_save(cube, target, append=False, **kwargs):
         from iris_grib import save_grib2
     except ImportError:
         raise RuntimeError(
-            "Unable to save GRIB file - " '"iris_grib" package is not installed.'
+            'Unable to save GRIB file - "iris_grib" package is not installed.'
         )
 
     save_grib2(cube, target, append, **kwargs)

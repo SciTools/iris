@@ -134,6 +134,7 @@ version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
 addopts = "-ra --durations=25"
+required_plugins = "pytest-mock"
 testpaths = "lib/iris"
 
 [tool.coverage.run]
@@ -154,7 +155,7 @@ exclude_lines = [
 ]
 
 [tool.codespell]
-ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin"
+ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin,re-use,re-uses,re-using,re-used,anc,abl"
 skip = "./CODE_OF_CONDUCT.md,_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
 
 [tool.check-manifest]
