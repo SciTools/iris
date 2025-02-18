@@ -2320,3 +2320,8 @@ def equalise_cubes(
     # Return a CubeList result = the *original* cubes, as modified
     result = CubeList(cubes)
     return result
+
+def _print_xml(doc):
+    result = doc.toprettyxml(indent=" ")
+    result.replace("&#10;", "\n")
+    return result
