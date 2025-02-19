@@ -13,9 +13,10 @@ demonstration, we will revert back to this legacy loading behaviour as follows:
     >>> iris.LOAD_POLICY.set("legacy")
 
 .. note::
-    The default settings for :data:`iris.LOAD_POLICY` effectively implements some version of the following demonstration
-    automatically upon loading. It may still be worth being aware of how to handle this manually if an even finer degree
-    of control is required.
+    Since Iris v3.11, the default settings for :data:`iris.LOAD_POLICY` effectively
+    implements some version of the following demonstration **automatically** upon
+    loading. It may still be worth being aware of how to handle this manually, if an
+    even finer degree of control is required.
 
 How to Merge Cubes When Coordinates Differ
 ------------------------------------------
