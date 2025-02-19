@@ -2324,5 +2324,4 @@ def equalise_cubes(
 
 def _print_xml(doc):
     result = doc.toprettyxml(indent="  ")
-    result.replace("&#10;", "\n")
-    return result
+    return result.replace("&#10;", "\n")
