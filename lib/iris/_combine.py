@@ -13,13 +13,16 @@ publicly available.
 
 import contextlib
 import threading
-from typing import Mapping
+from typing import List, Mapping
+
+import iris
 
 
 class CombineOptions(threading.local):
     """A container for cube combination options.
 
-    Controls for generalised merge/concatenate options.
+    Controls for generalised merge/concatenate options : see :data:`iris.LOAD_POLICY`
+    and :func:`iris.util.combine_cubes`.
 
     Also controls the detection and handling of cases where a hybrid coordinate
     uses multiple reference fields during loading : for example, a UM file which
@@ -246,64 +249,57 @@ class CombineOptions(threading.local):
             self.set(saved_settings)
 
 
-def _combine_cubes(cubes, options):
-    """Combine cubes as for load, according to "loading policy" options.
+def _combine_cubes_inner(
+    cubes: List[iris.cube.Cube], options: dict
+) -> iris.cube.CubeList:
+    """Combine cubes, according to "combine options".
 
-    Applies :meth:`~iris.cube.CubeList.merge`/:meth:`~iris.cube.CubeList.concatenate`
-    steps to the given cubes, as determined by the 'settings'.
+    As described for the main "iris.utils.combine_cubes".
 
     Parameters
     ----------
-    cubes : list of :class:`~iris.cube.Cube`
-        A list of cubes to combine.
+    cubes : list of Cube
+        Cubes to combine.
+
     options : dict
-        Settings, as described for :class:`iris.CombineOptions`.
+        A list of options, as described in CombineOptions.
 
     Returns
     -------
-    :class:`~iris.cube.CubeList`
-
-    .. Note::
-        The ``support_multiple_references`` keyword/property has no effect on the
-        :func:`_combine_cubes` operation : it only takes effect during a load operation.
-
-    Notes
-    -----
-    TODO: make this public API in future.
-    At that point, change the API to support (options=None, **kwargs) + add testing of
-    those modes (notably arg type = None / str / dict).
-
+        CubeList
     """
     from iris.cube import CubeList
 
-    if not isinstance(cubes, CubeList):
-        cubes = CubeList(cubes)
+    if isinstance(cubes, CubeList):
+        cubelist = cubes
+    else:
+        cubelist = CubeList(cubes)
 
+    sequence = options["merge_concat_sequence"]
     while True:
-        n_original_cubes = len(cubes)
-        sequence = options["merge_concat_sequence"]
+        n_original_cubes = len(cubelist)
 
         if sequence[0] == "c":
             # concat if it comes first
-            cubes = cubes.concatenate()
+            cubelist = cubelist.concatenate()
         if "m" in sequence:
             # merge if requested
             # NOTE: this needs "unique=False" to make "iris.load()" work correctly.
             # TODO: make configurable via options.
-            cubes = cubes.merge(unique=False)
+            cubelist = cubelist.merge(unique=False)
         if sequence[-1] == "c":
             # concat if it comes last
-            cubes = cubes.concatenate()
+            cubelist = cubelist.concatenate()
 
         # Repeat if requested, *and* this step reduced the number of cubes
-        if not options["repeat_until_unchanged"] or len(cubes) >= n_original_cubes:
+        if not options["repeat_until_unchanged"] or len(cubelist) >= n_original_cubes:
             break
 
-    return cubes
+    return cubelist
 
 
 def _combine_load_cubes(cubes):
-    # A special version to call _combine_cubes while also implementing the
+    # A special version to call _combine_cubes_inner while also implementing the
     # _MULTIREF_DETECTION behaviour
     from iris import LOAD_POLICY
 
@@ -318,4 +314,4 @@ def _combine_load_cubes(cubes):
         if _MULTIREF_DETECTION.found_multiple_refs:
             options["merge_concat_sequence"] += "c"
 
-    return _combine_cubes(cubes, options)
+    return _combine_cubes_inner(cubes, options)

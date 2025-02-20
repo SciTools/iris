@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :func:`iris.io.loading.combine_cubes` function.
+"""Unit tests for the :func:`iris.loading.combine_cubes` function.
 
 Note: These tests are fairly extensive to cover functional uses within the loading
 operations.
@@ -13,8 +13,8 @@ i.e. different types + defaulting of the 'options' arg, and **kwargs support.
 import pytest
 
 from iris import LoadPolicy
-from iris._combine import _combine_cubes
 from iris.tests.unit.fileformats.test_load_functions import cu
+from iris.util import combine_cubes
 
 
 @pytest.fixture(params=list(LoadPolicy.SETTINGS.keys()))
@@ -23,12 +23,12 @@ def options(request):
     return request.param  # Return the name of the attribute to test.
 
 
-# Interface to convert settings-name / kwargs into an options dict,
-# TODO: remove this wrapper when the API of "combine_cubes" is opened up.
-def combine_cubes(cubes, settings_name="default", **kwargs):
-    options = LoadPolicy.SETTINGS[settings_name]
-    options.update(kwargs)
-    return _combine_cubes(cubes, options)
+# # Interface to convert settings-name / kwargs into an options dict,
+# # TODO: remove this wrapper when the API of "combine_cubes" is opened up.
+# def combine_cubes(cubes, settings_name="default", **kwargs):
+#     options = LoadPolicy.SETTINGS[settings_name]
+#     options.update(kwargs)
+#     return _combine_cubes(cubes, options)
 
 
 class Test:
