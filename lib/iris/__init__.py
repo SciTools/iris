@@ -97,6 +97,23 @@ from typing import Callable, Literal
 import iris._constraints
 import iris.config
 import iris.io
+from iris.io import save
+from iris.loading import LOAD_POLICY as _LOAD_POLICY
+from iris.loading import (
+    CombineOptions,
+    LoadPolicy,
+    load,
+    load_cube,
+    load_cubes,
+    load_raw,
+)
+
+# NOTE: we make an independent local 'LOAD_POLICY' definition here, just so that we
+# can ensure an entry for it in our API documentation page.
+
+#: A control object containing the current file loading strategy options.
+LOAD_POLICY = _LOAD_POLICY
+
 
 from ._deprecation import IrisDeprecation, warn_deprecated
 
@@ -280,25 +297,6 @@ except ImportError:
     pass
 else:
     _update(site_configuration)
-
-
-import iris.loading
-from iris.loading import (
-    CombineOptions,
-    LoadPolicy,
-    load,
-    load_cube,
-    load_cubes,
-    load_raw,
-)
-
-# NOTE: we define an independent local 'LOAD_POLICY' object here, just so that we can
-# ensure an entry in the API documentation output page.
-
-#: A control object containing the current file loading strategy options.
-LOAD_POLICY = iris.loading.LOAD_POLICY
-
-from iris.io import save
 
 
 def sample_data_path(*path_to_join):
