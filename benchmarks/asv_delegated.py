@@ -7,6 +7,11 @@
 Preps an environment via custom user scripts, then uses that as the
 benchmarking environment.
 
+This module is intended as the generic code that can be shared between
+repositories. Providing a functional benchmarking environment relies on correct
+subclassing of the :class:`Delegated` class to specialise it for the repo in
+question.
+
 """
 
 from abc import ABC, abstractmethod
@@ -18,88 +23,6 @@ import sys
 from asv.console import log
 from asv.environment import Environment, EnvironmentUnavailable
 from asv.repo import Repo
-from asv.util import ProcessError
-
-
-class EnvPrepCommands:
-    """A container for the environment preparation commands for a given commit.
-
-    Designed to read a value from the `delegated_env_commands` in the ASV
-    config, and validate that the command(s) are structured correctly.
-    """
-
-    ENV_PARENT_VAR = "ENV_PARENT"
-    env_parent: Path
-    commands: list[str]
-
-    def __init__(self, environment: Environment, raw_commands: tuple[str]):
-        env_var = self.ENV_PARENT_VAR
-        raw_commands_list = list(raw_commands)
-
-        (first_command,) = environment._interpolate_commands(raw_commands_list[0])
-        env: dict
-        command, env, return_codes, cwd = first_command
-
-        valid = command == []
-        valid = valid and return_codes == {0}
-        valid = valid and cwd is None
-        valid = valid and list(env.keys()) == [env_var]
-        if not valid:
-            message = (
-                "First command MUST ONLY "
-                f"define the {env_var} env var, with no command e.g: "
-                f"`{env_var}=foo/`. Got: \n {raw_commands_list[0]}"
-            )
-            raise ValueError(message)
-
-        self.env_parent = Path(env[env_var]).resolve()
-        self.commands = raw_commands_list[1:]
-
-
-class CommitFinder(dict[str, EnvPrepCommands]):
-    """A specialised dict for finding the appropriate env prep script for a commit."""
-
-    def __call__(self, repo: Repo, commit_hash: str):
-        """Return the latest env prep script that is earlier than the given commit."""
-
-        def validate_commit(commit: str, is_lookup: bool) -> None:
-            try:
-                _ = repo.get_date(commit)
-            except ProcessError:
-                if is_lookup:
-                    message_start = "Lookup commit"
-                else:
-                    message_start = "Requested commit"
-                repo_path = getattr(repo, "_path", "unknown")
-                message = f"{message_start}: {commit} not found in repo: {repo_path}"
-                raise KeyError(message)
-
-        for lookup in self.keys():
-            validate_commit(lookup, is_lookup=True)
-        validate_commit(commit_hash, is_lookup=False)
-
-        def parent_distance(parent_hash: str) -> int:
-            range_spec = repo.get_range_spec(parent_hash, commit_hash)
-            parents = repo.get_hashes_from_range(range_spec)
-
-            if parent_hash[:8] == commit_hash[:8]:
-                distance = 0
-            elif len(parents) == 0:
-                distance = -1
-            else:
-                distance = len(parents)
-            return distance
-
-        parentage = {commit: parent_distance(commit) for commit in self.keys()}
-        parentage = {k: v for k, v in parentage.items() if v >= 0}
-        if len(parentage) == 0:
-            message = f"No env prep script available for commit: {commit_hash} ."
-            raise KeyError(message)
-        else:
-            parentage = dict(sorted(parentage.items(), key=lambda item: item[1]))
-            commit = next(iter(parentage))
-            content = self[commit]
-            return content
 
 
 class Delegated(Environment, ABC):
@@ -110,11 +33,21 @@ class Delegated(Environment, ABC):
 
     A vanilla :class:`asv.environment.Environment` is created for containing
     the expected ASV configuration files and checked-out project. The actual
-    'functional' environment is created/updated using the command(s) specified
-    in the config ``delegated_env_commands``, then the location is recorded via
+    'functional' environment is created/updated using
+    :meth:`_prep_env_override`, then the location is recorded via
     a symlink within the ASV environment. The symlink is used as the
     environment path used for any executable calls (e.g.
     ``python my_script.py``).
+
+    Intended as the generic parent class that can be shared between
+    repositories. Providing a functional benchmarking environment relies on
+    correct subclassing of this class to specialise it for the repo in question.
+
+    Warnings
+    --------
+    :class:`Delegated` is an abstract base class. It MUST ONLY be used via
+    subclasses implementing their own :meth:`_prep_env_override`, and also
+    :attr:`tool_name`, which must be unique.
 
     """
 
@@ -179,20 +112,6 @@ class Delegated(Environment, ABC):
         """Preserves the 'true' path of the environment so that self._path can
         be safely modified and restored."""
 
-        env_commands = getattr(conf, "delegated_env_commands")
-        try:
-            env_prep_commands = {
-                commit: EnvPrepCommands(self, commands)
-                for commit, commands in env_commands.items()
-            }
-        except ValueError as err:
-            message = f"Problem handling `delegated_env_commands`:\n{err}"
-            log.error(message)
-            raise EnvironmentUnavailable(message)
-        self._env_prep_lookup = CommitFinder(**env_prep_commands)
-        """An object that can be called downstream to get the appropriate
-        env prep script for a given repo and commit."""
-
     @property
     def _path_delegated(self) -> Path:
         """The path of the symlink to the delegated environment."""
@@ -241,10 +160,26 @@ class Delegated(Environment, ABC):
         log.warning(message)
 
     @abstractmethod
-    def _prep_env_script(self, env_parent_dir: Path, **kwargs) -> Path:
+    def _prep_env_override(self, env_parent_dir: Path) -> Path:
+        """Run aspects of :meth:`_prep_env` that vary between repos.
+
+        This is the method that is expected to do the preparing
+        (:meth:`_prep_env` only performs pre- and post- steps). MUST be
+        overridden in any subclass environments before they will work.
+
+        Parameters
+        ----------
+        env_parent_dir : Path
+            The directory that the prepared environment should be placed in.
+
+        Returns
+        -------
+        Path
+            The path to the prepared environment.
+        """
         pass
 
-    def _prep_env(self, repo: Repo, commit_hash: str) -> None:
+    def _prep_env(self, commit_hash: str) -> None:
         """Prepare the delegated environment for the given commit hash."""
         message = (
             f"Running delegated environment management for: {self.name} "
@@ -252,23 +187,12 @@ class Delegated(Environment, ABC):
         )
         log.info(message)
 
-        env_prep: EnvPrepCommands
-        try:
-            env_prep = self._env_prep_lookup(repo, commit_hash)
-        except KeyError as err:
-            message = f"Problem finding env prep commands: {err}"
-            log.error(message)
-            raise EnvironmentUnavailable(message)
-
+        env_parent = Path(self._env_dir).resolve()
         new_env_per_commit = self.COMMIT_ENVS_VAR in environ
         if new_env_per_commit:
-            env_parent = env_prep.env_parent / commit_hash[:8]
-        else:
-            env_parent = env_prep.env_parent
+            env_parent = env_parent / commit_hash[:8]
 
-        delegated_env_path = self._prep_env_script(
-            env_parent, commands=env_prep.commands
-        )
+        delegated_env_path = self._prep_env_override(env_parent)
         assert delegated_env_path.is_relative_to(env_parent)
 
         # Record the environment's path via a symlink within this environment.
@@ -280,7 +204,7 @@ class Delegated(Environment, ABC):
     def checkout_project(self, repo: Repo, commit_hash: str) -> None:
         """Check out the working tree of the project at given commit hash."""
         super().checkout_project(repo, commit_hash)
-        self._prep_env(repo, commit_hash)
+        self._prep_env(commit_hash)
 
     @contextmanager
     def _delegate_path(self):
