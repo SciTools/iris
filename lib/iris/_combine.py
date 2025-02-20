@@ -288,7 +288,9 @@ def _combine_cubes(cubes, options):
             cubes = cubes.concatenate()
         if "m" in sequence:
             # merge if requested
-            cubes = cubes.merge()
+            # NOTE: this needs "unique=False" to make "iris.load()" work correctly.
+            # TODO: make configurable via options.
+            cubes = cubes.merge(unique=False)
         if sequence[-1] == "c":
             # concat if it comes last
             cubes = cubes.concatenate()
