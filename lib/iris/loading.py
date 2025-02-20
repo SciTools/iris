@@ -58,23 +58,17 @@ class _CubeFilter:
         if sub_cube is not None:
             self.cubes.append(sub_cube)
 
-    def combined(self, unique=False):
+    def combined(self):
         """Return a new :class:`_CubeFilter` by combining the list of cubes.
 
         Combines the list of cubes with :func:`~iris._combine_load_cubes`.
-
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
 
         """
         from iris._combine import _combine_load_cubes
 
         return _CubeFilter(
             self.constraint,
-            _combine_load_cubes(self.cubes, merge_require_unique=unique),
+            _combine_load_cubes(self.cubes),
         )
 
 
@@ -110,19 +104,13 @@ class _CubeFilterCollection:
             result.extend(pair.cubes)
         return result
 
-    def combined(self, unique=False):
+    def combined(self):
         """Return a new :class:`_CubeFilterCollection` by combining all the cube lists of this collection.
 
         Combines each list of cubes using :func:`~iris._combine_load_cubes`.
 
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
         """
-        return _CubeFilterCollection([pair.combined(unique) for pair in self.pairs])
+        return _CubeFilterCollection([pair.combined() for pair in self.pairs])
 
 
 def _load_collection(uris, constraints=None, callback=None):
@@ -203,7 +191,7 @@ def load_cube(uris, constraint=None, callback=None):
     if len(constraints) != 1:
         raise ValueError("only a single constraint is allowed")
 
-    cubes = _load_collection(uris, constraints, callback).combined(unique=False).cubes()
+    cubes = _load_collection(uris, constraints, callback).combined().cubes()
 
     try:
         # NOTE: this call currently retained to preserve the legacy exceptions
