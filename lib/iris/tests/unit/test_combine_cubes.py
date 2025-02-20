@@ -28,7 +28,7 @@ def options(request):
 def combine_cubes(cubes, settings_name="default", **kwargs):
     options = LoadPolicy.SETTINGS[settings_name]
     options.update(kwargs)
-    return _combine_cubes(cubes, options, merge_require_unique=False)
+    return _combine_cubes(cubes, options)
 
 
 class Test:

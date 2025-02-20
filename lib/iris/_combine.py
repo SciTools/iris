@@ -246,7 +246,7 @@ class CombineOptions(threading.local):
             self.set(saved_settings)
 
 
-def _combine_cubes(cubes, options, merge_require_unique):
+def _combine_cubes(cubes, options):
     """Combine cubes as for load, according to "loading policy" options.
 
     Applies :meth:`~iris.cube.CubeList.merge`/:meth:`~iris.cube.CubeList.concatenate`
@@ -258,8 +258,6 @@ def _combine_cubes(cubes, options, merge_require_unique):
         A list of cubes to combine.
     options : dict
         Settings, as described for :class:`iris.CombineOptions`.
-    merge_require_unique : bool
-        Value for the 'unique' keyword in any merge operations.
 
     Returns
     -------
@@ -290,7 +288,7 @@ def _combine_cubes(cubes, options, merge_require_unique):
             cubes = cubes.concatenate()
         if "m" in sequence:
             # merge if requested
-            cubes = cubes.merge(unique=merge_require_unique)
+            cubes = cubes.merge()
         if sequence[-1] == "c":
             # concat if it comes last
             cubes = cubes.concatenate()
@@ -302,7 +300,7 @@ def _combine_cubes(cubes, options, merge_require_unique):
     return cubes
 
 
-def _combine_load_cubes(cubes, merge_require_unique=False):
+def _combine_load_cubes(cubes):
     # A special version to call _combine_cubes while also implementing the
     # _MULTIREF_DETECTION behaviour
     from iris import LOAD_POLICY
@@ -318,4 +316,4 @@ def _combine_load_cubes(cubes, merge_require_unique=False):
         if _MULTIREF_DETECTION.found_multiple_refs:
             options["merge_concat_sequence"] += "c"
 
-    return _combine_cubes(cubes, options, merge_require_unique=merge_require_unique)
+    return _combine_cubes(cubes, options)
