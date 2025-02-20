@@ -2204,6 +2204,10 @@ class Test_mesh:
         result = self.cube.mesh
         assert result is self.mesh
 
+    def test_mesh_timestamp(self):
+        result = self.cube.mesh.timestamp
+        self.assertIsNotNone(result)
+
     def test_no_mesh(self):
         # Replace standard setUp cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
