@@ -2323,5 +2323,23 @@ def equalise_cubes(
 
 
 def _print_xml(doc):
+    """Print xml in a standard fashion.
+
+    Modifies :meth: `xml.dom.minidom.Document.toprettyxml` to maintain backwards
+    compatibilitiy with the way Iris expects arrays to be represented. Changes to
+    xml introduced with https://github.com/python/cpython/pull/107947 mean that
+    newlines in attributes are escaped by default. This reverts to the old behaviour
+    by replacing the escaped newlines with proper newlines.
+
+    Parameters
+    ----------
+    doc : :class: `xml.dom.minidom.Document`
+        The xml document to be printed.
+
+    Returns
+    -------
+    str
+        Standard string representation of xml document.
+    """
     result = doc.toprettyxml(indent="  ")
     return result.replace("&#10;", "\n")
