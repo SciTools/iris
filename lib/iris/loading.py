@@ -5,7 +5,11 @@
 """Iris general file loading mechanism."""
 
 import itertools
-from typing import Iterable
+from typing import TYPE_CHECKING, Any, Iterable
+
+if TYPE_CHECKING:
+    from pathlib import Path
+    from traceback import TracebackException
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -322,3 +326,11 @@ class LoadPolicy(CombineOptions):
 
 #: A control object containing the current file loading strategy options.
 LOAD_POLICY = LoadPolicy()
+
+
+# TODO: could this be a context manager in future?
+# TODO: type alias for the tuple
+# TODO: docstring, inc examples:
+#  ".join(TracebackException.format())
+#  TracebackException.exc_type
+LOAD_PROBLEMS: dict[Path, list[tuple[Any, TracebackException]]] = {}
