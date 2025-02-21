@@ -10,8 +10,10 @@ hybrid reference dimensions on loading.
 This is effectively a generalised "combine cubes" operation, but it is not (yet)
 publicly available.
 """
+
 import threading
 from typing import Mapping
+
 
 class CombineOptions(threading.local):
     """A container for cube combination options.
