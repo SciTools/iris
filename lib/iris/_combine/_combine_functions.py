@@ -2,23 +2,24 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generalised mechanism for combining cubes into larger ones.
+"""Private functions supporting the combine_cubes and loading operations.
 
-Integrates merge and concatenate with the cube-equalisation options and the promotion of
-hybrid reference dimensions on loading.
-
-This is effectively a generalised "combine cubes" operation, but it is not (yet)
-publicly available.
+Placed in a separate submodule, purely so that iris.loading can import
+iris._combine.CombineOptions without causing a circular import problem.
+For legacy reasons, we are obliged to expose the iris load_xxx functions in
+iris.__all__, so it must be possible to import from iris.loading into a
+partially initalised iris main module.
+But do we want to import from iris.cube here, to type these routine properly.
 """
 
 from typing import List
 
 import iris
+from iris import LOAD_POLICY
+from iris.cube import Cube, CubeList
 
 
-def _combine_cubes_inner(
-    cubes: List[iris.cube.Cube], options: dict
-) -> iris.cube.CubeList:
+def _combine_cubes_inner(cubes: List[Cube], options: dict) -> CubeList:
     """Combine cubes, according to "combine options".
 
     As described for the main "iris.utils.combine_cubes".
@@ -35,8 +36,6 @@ def _combine_cubes_inner(
     -------
         CubeList
     """
-    from iris.cube import CubeList
-
     if isinstance(cubes, CubeList):
         cubelist = cubes
     else:
@@ -68,8 +67,6 @@ def _combine_cubes_inner(
 def _combine_load_cubes(cubes):
     # A special version to call _combine_cubes_inner while also implementing the
     # _MULTIREF_DETECTION behaviour
-    from iris import LOAD_POLICY
-
     options = LOAD_POLICY.settings()
     if (
         options["support_multiple_references"]

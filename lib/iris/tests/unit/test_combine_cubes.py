@@ -12,12 +12,12 @@ i.e. different types + defaulting of the 'options' arg, and **kwargs support.
 
 import pytest
 
-from iris import LoadPolicy
+from iris._combine import CombineOptions
 from iris.tests.unit.fileformats.test_load_functions import cu
 from iris.util import combine_cubes
 
 
-@pytest.fixture(params=list(LoadPolicy.SETTINGS.keys()))
+@pytest.fixture(params=list(CombineOptions.SETTINGS.keys()))
 def options(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.

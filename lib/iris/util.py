@@ -2366,7 +2366,7 @@ def combine_cubes(
     # TODO: somehow make a real + useful example
 
     from iris import LOAD_POLICY, CombineOptions
-    from iris._combine import _combine_cubes_inner
+    from iris._combine._combine_functions import _combine_cubes_inner
 
     err = None
     opts_dict = {}
