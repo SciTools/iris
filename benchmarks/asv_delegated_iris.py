@@ -117,13 +117,15 @@ class DelegatedIris(Delegated):
                     env=local_envs,
                 )
 
-                # Find the environment created/updated by running command.
-                #  I.e. the most recently updated directory in env_parent.
-                delegated_env_path = sorted(
-                    env_parent_dir.glob("*"),
-                    key=getmtime,
-                    reverse=True,
-                )[0]
+                env_parent_contents = list(env_parent_dir.iterdir())
+                if len(env_parent_contents) != 1:
+                    message = (
+                        f"{env_parent_dir} contains {len(env_parent_contents)} "
+                        "items, expected 1. Cannot determine the environment "
+                        "directory."
+                    )
+                    raise FileNotFoundError(message)
+                (delegated_env_path,) = env_parent_contents
 
             case _:
                 message = "No environment setup is known for this commit of Iris."
