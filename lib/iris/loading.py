@@ -2,10 +2,19 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iris general file loading mechanism."""
+"""Iris file loading support."""
 
+#
+# N.B. it is not currently possible to properly typehint the loading functions,
+# since we are obliged for backwards-compatibilty to import and expose them in the
+# iris main module API, but importing iris.cube here will cause a circular import.
+#
+
+import contextlib
 import itertools
 from typing import Iterable
+
+from iris._combine import CombineOptions
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -58,23 +67,17 @@ class _CubeFilter:
         if sub_cube is not None:
             self.cubes.append(sub_cube)
 
-    def combined(self, unique=False):
+    def combined(self):
         """Return a new :class:`_CubeFilter` by combining the list of cubes.
 
         Combines the list of cubes with :func:`~iris._combine_load_cubes`.
 
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
         """
-        from iris._combine import _combine_load_cubes
+        from iris._combine._combine_functions import _combine_load_cubes
 
         return _CubeFilter(
             self.constraint,
-            _combine_load_cubes(self.cubes, merge_require_unique=unique),
+            _combine_load_cubes(self.cubes),
         )
 
 
@@ -110,19 +113,13 @@ class _CubeFilterCollection:
             result.extend(pair.cubes)
         return result
 
-    def combined(self, unique=False):
+    def combined(self):
         """Return a new :class:`_CubeFilterCollection` by combining all the cube lists of this collection.
 
         Combines each list of cubes using :func:`~iris._combine_load_cubes`.
 
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
         """
-        return _CubeFilterCollection([pair.combined(unique) for pair in self.pairs])
+        return _CubeFilterCollection([pair.combined() for pair in self.pairs])
 
 
 def _load_collection(uris, constraints=None, callback=None):
@@ -203,7 +200,7 @@ def load_cube(uris, constraint=None, callback=None):
     if len(constraints) != 1:
         raise ValueError("only a single constraint is allowed")
 
-    cubes = _load_collection(uris, constraints, callback).combined(unique=False).cubes()
+    cubes = _load_collection(uris, constraints, callback).combined().cubes()
 
     try:
         # NOTE: this call currently retained to preserve the legacy exceptions
@@ -290,13 +287,31 @@ def load_raw(uris, constraints=None, callback=None):
         return _load_collection(uris, constraints, callback).cubes()
 
 
-from iris._combine import CombineOptions
-
-
 class LoadPolicy(CombineOptions):
     """A control object for Iris loading options.
 
-    Incorporates all the settings of a :class:`~iris.CombineOptions`.
+    Incorporates all the settings of a :class:`~iris.CombineOptions`, and adds the
+    ``support_multiple_references`` control.
+
+    IN addition to controlling "combine" operation during loading, this also controls
+    the detection and handling of cases where a hybrid coordinate uses multiple
+    reference fields during loading : for example, a UM file which contains a series of
+    fields describing a time-varying orography.
+
+    Options can be set directly, or via :meth:`~iris.LoadPolicy.set`, or changed for
+    the scope of a code block with :meth:`~iris.LoadPolicy.context`.
+
+    .. note ::
+
+        The default behaviour will "fix" loading for cases like the time-varying
+        orography case described above.  However, this is not strictly
+        backwards-compatible.  If this causes problems, you can force identical loading
+        behaviour to earlier Iris versions with ``LOAD_POLICY.set("legacy")`` or
+        equivalent.
+
+    .. testsetup::
+
+        from iris import LOAD_POLICY
 
     Examples
     --------
@@ -317,7 +332,62 @@ class LoadPolicy(CombineOptions):
 
     """
 
-    pass
+    OPTION_KEYS = ("support_multiple_references",) + CombineOptions.OPTION_KEYS
+    # allowed values are as for CombineOptions, plus boolean values for multiple-refs
+    _OPTIONS_ALLOWED_VALUES = dict(
+        list(CombineOptions._OPTIONS_ALLOWED_VALUES.items())
+        + [("support_multiple_references", (True, False))]
+    )
+    # Settings are as for CombineOptions, but all with multiple load references enabled
+    SETTINGS = {
+        key: dict(list(settings.items()) + [("support_multiple_references", True)])
+        for key, settings in CombineOptions.SETTINGS.items()
+    }
+
+    @contextlib.contextmanager
+    def context(self, settings=None, **kwargs):
+        """Return a context manager applying given options.
+
+        Parameters
+        ----------
+        settings : str or dict
+            Options dictionary or name, as for :meth:`~LoadPolicy.set`.
+        kwargs : dict
+            Option values, as for :meth:`~LoadPolicy.set`.
+
+        Examples
+        --------
+        .. testsetup::
+
+            import iris
+            from iris import LOAD_POLICY, sample_data_path
+
+        >>> # Show how a CombineOptions acts in the context of a load operation
+        >>> path = sample_data_path("time_varying_hybrid_height", "*.pp")
+        >>> # "legacy" load behaviour allows merge but not concatenate
+        >>> with LOAD_POLICY.context("legacy"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
+        1: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
+        2: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
+        >>>
+        >>> # "recommended" behaviour enables concatenation also
+        >>> with LOAD_POLICY.context("recommended"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (model_level_number: 5; time: 15; latitude: 144; longitude: 192)
+        """
+        # Save the current state
+        saved_settings = self.settings()
+
+        # Apply the new options and execute the context
+        try:
+            self.set(settings, **kwargs)
+            yield
+        finally:
+            # Re-establish the former state
+            self.set(saved_settings)
 
 
 #: A control object containing the current file loading strategy options.
