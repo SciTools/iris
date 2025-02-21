@@ -235,9 +235,9 @@ class TestDescribeDiff:
         test_cube_a.standard_name = "relative_humidity"
         test_cube_a.units = cf_units.Unit("m")
 
-        with tmp_path / "tmp" as filename:
-            with open(filename, "w") as f:
-                iris.util.describe_diff(test_cube_a, test_cube_b, output_file=f)
-                f.close()
+        filename = tmp_path / "tmp"
+        with open(filename, "w") as f:
+            iris.util.describe_diff(test_cube_a, test_cube_b, output_file=f)
+            f.close()
 
-            _shared_utils.assert_files_equal(filename, "incompatible_cubes.str.txt")
+        _shared_utils.assert_files_equal(filename, "incompatible_cubes.str.txt")

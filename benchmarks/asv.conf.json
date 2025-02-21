@@ -36,6 +36,10 @@
 
     ],
     "delegated_env_commands": {
+        "59738a4": [
+            "ENV_PARENT={conf_dir}/.asv/env/nox313",
+            "PY_VER=3.13 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
+        ],
         "c8a663a0": [
             "ENV_PARENT={conf_dir}/.asv/env/nox312",
             "PY_VER=3.12 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
