@@ -30,8 +30,6 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
-
 #. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
    with aligning cubes so they can merge / concatenate.
    (:issue:`6248`, :pull:`6257`)
@@ -40,6 +38,10 @@ This document explains the changes made to Iris for this release
 #. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
    based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
    :issue:`4039` (:pull:`6167`).
+
+#. `@ESadek-MO`_ added a convenience kwarg to :mod:`iris.quickplot` to
+   add a consisently laid-out footer to plots.
+   (:issue:`6247`, :pull:`6332`)
 
 
 🐛 Bugs Fixed
