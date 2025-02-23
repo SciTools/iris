@@ -144,7 +144,7 @@ def _label_1d_plot(*args, **kwargs):
 
 def _footer(text):
     if text:
-        plt.figtext(x=.99, y=.01, s=text, fontsize=12, ha="right")
+        plt.figtext(x=0.99, y=0.01, s=text, fontsize=12, ha="right")
         plt.subplots_adjust(bottom=0.15, left=0.1)
 
 
