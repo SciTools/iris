@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism."""
 
+import contextlib
 import itertools
 from typing import Iterable
 
@@ -284,7 +285,32 @@ from iris._combine import CombineOptions
 class LoadPolicy(CombineOptions):
     """A control object for Iris loading options.
 
-    Incorporates all the settings of a :class:`~iris.CombineOptions`.
+    Incorporates all the settings of a :class:`~iris.CombineOptions`, and adds an
+    additional ``support_multiple_references`` option.
+
+    Also adds :meth:`~iris.LoadPolicy.context`, allowing loading behaviours to be
+    modified for the duration of a code block.
+
+    In addition to controlling the "combine" operations during loading, LoadPolicy also
+    provides a ``support_multiple_references`` option to manage the detection and
+    handling of cases where a hybrid coordinate has multiple reference fields : for
+    example, a UM file which contains a series of fields describing a time-varying
+    orography.
+
+    The ``support_multiple_references`` option takes the value ``True`` or ``False`` to
+    enable or disable this.  The default is ``True``.
+
+    .. note ::
+
+        The default behaviour will "fix" loading for cases like the time-varying
+        orography case described above.  However, this is not strictly
+        backwards-compatible.  If this causes problems, you can force identical loading
+        behaviour to earlier Iris versions with ``LOAD_POLICY.set("legacy")`` or
+        equivalent.
+
+    .. testsetup::
+
+        from iris import LOAD_POLICY
 
     Examples
     --------
@@ -302,10 +328,68 @@ class LoadPolicy(CombineOptions):
     LoadPolicy(support_multiple_references=True, merge_concat_sequence='mc', repeat_until_unchanged=True)
     >>> print(LOAD_POLICY)
     LoadPolicy(support_multiple_references=True, merge_concat_sequence='cm', repeat_until_unchanged=False)
-
     """
 
-    pass
+    # Option keys are as for CombineOptions, plus the multiple-refs control
+    OPTION_KEYS = CombineOptions.OPTION_KEYS + ["support_multiple_references"]
+
+    # Allowed values are as for CombineOptions, plus boolean values for multiple-refs
+    _OPTIONS_ALLOWED_VALUES = dict(
+        list(CombineOptions._OPTIONS_ALLOWED_VALUES.items())
+        + [("support_multiple_references", (True, False))]
+    )
+
+    # Settings dicts are as for CombineOptions, but all have multiple load refs enabled
+    SETTINGS = {
+        key: dict(list(settings.items()) + [("support_multiple_references", True)])
+        for key, settings in CombineOptions.SETTINGS.items()
+    }
+
+    @contextlib.contextmanager
+    def context(self, settings: str | dict, **kwargs):
+        """Return a context manager applying given options changes during a scope.
+
+        Parameters
+        ----------
+        settings : str or dict
+            A settings name or options dictionary, as for :meth:`~LoadPolicy.set`.
+        kwargs : dict
+            Option values, as for :meth:`~LoadPolicy.set`.
+
+        Examples
+        --------
+        .. testsetup::
+
+            import iris
+            from iris import LOAD_POLICY, sample_data_path
+
+        >>> # Show how a CombineOptions acts in the context of a load operation
+        >>> path = sample_data_path("time_varying_hybrid_height", "*.pp")
+        >>>
+        >>> # Show that "legacy" load behaviour allows merge but not concatenate
+        >>> with LOAD_POLICY.context("legacy"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
+        1: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
+        2: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
+        >>>
+        >>> # Show how "recommended" behaviour enables concatenation also
+        >>> with LOAD_POLICY.context("recommended"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (model_level_number: 5; time: 15; latitude: 144; longitude: 192)
+        """
+        # Save the current state
+        saved_settings = self.settings()
+
+        # Apply the new options and execute the context
+        try:
+            self.set(settings, **kwargs)
+            yield
+        finally:
+            # Re-establish the former state
+            self.set(saved_settings)
 
 
 #: A control object containing the current file loading strategy options.
