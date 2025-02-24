@@ -80,8 +80,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
-
+#. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
+   as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
 📚 Documentation
 ================
@@ -111,6 +111,9 @@ This document explains the changes made to Iris for this release
    aggregations have the same chunks as their parent cube if broadcasting is
    necessary. (:issue:`6285`, :pull:`6288`)
 
+#. `@trexfeathers`_ improved the handling of benchmark environments, especially
+    when working across Python versions. (:pull:`6329`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -122,3 +125,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
