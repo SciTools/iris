@@ -292,7 +292,7 @@ class LoadPolicy(CombineOptions):
     modified for the duration of a code block.
 
     In addition to controlling the "combine" operations during loading, LoadPolicy also
-    provides a ``support_multiple_references`` option to manage the detection and
+    provides the ``support_multiple_references`` option, to manage the detection and
     handling of cases where a hybrid coordinate has multiple reference fields : for
     example, a UM file which contains a series of fields describing a time-varying
     orography.
@@ -346,12 +346,12 @@ class LoadPolicy(CombineOptions):
     }
 
     @contextlib.contextmanager
-    def context(self, settings: str | dict, **kwargs):
+    def context(self, settings: str | dict | None = None, **kwargs):
         """Return a context manager applying given options changes during a scope.
 
         Parameters
         ----------
-        settings : str or dict
+        settings : str or dict, optional
             A settings name or options dictionary, as for :meth:`~LoadPolicy.set`.
         kwargs : dict
             Option values, as for :meth:`~LoadPolicy.set`.
