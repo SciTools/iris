@@ -158,16 +158,23 @@ class CombineOptions(threading.local):
         """
         if options is None:
             options_dict = {}
-        elif isinstance(options, str) and options in self.SETTINGS:
-            options_dict = self.SETTINGS[options]
+        elif isinstance(options, str):
+            if options in self.SETTINGS:
+                options_dict = self.SETTINGS[options]
+            else:
+                msg = (
+                    f"arg 'options'={options!r}, which is not a valid settings name, "
+                    f"expected one of {self.SETTINGS_NAMES}."
+                )
+                raise ValueError(msg)
         elif isinstance(options, dict):
             options_dict = options
         else:
-            msg = (
-                f"arg `options` has unexpected type {type(options)!r}, "
-                f"expected one of (None | str | dcit)."
-            )
-            raise TypeError(msg)
+            msg = (  # type: ignore[unreachable]
+                f"arg 'options' has unexpected type {type(options)!r}, "
+                f"expected one of (None | str | dict)."
+            )  # type: ignore[unreachable]
+            raise TypeError(msg)  # type: ignore[unreachable]
 
         # Override any options with keywords
         options_dict = options_dict.copy()  # don't modify original
