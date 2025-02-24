@@ -298,7 +298,8 @@ class LoadPolicy(CombineOptions):
     orography.
 
     The ``support_multiple_references`` option takes the value ``True`` or ``False`` to
-    enable or disable this.  The default is ``True``.
+    enable or disable this.  The default is ``True`` for all standard settings except
+    "legacy".
 
     .. note ::
 
@@ -339,9 +340,11 @@ class LoadPolicy(CombineOptions):
         + [("support_multiple_references", (True, False))]
     )
 
-    # Settings dicts are as for CombineOptions, but all have multiple load refs enabled
+    # Settings dicts are as for CombineOptions, but with a multiple-load value added
     SETTINGS = {
-        key: dict(list(settings.items()) + [("support_multiple_references", True)])
+        key: dict(
+            list(settings.items()) + [("support_multiple_references", key != "legacy")]
+        )
         for key, settings in CombineOptions.SETTINGS.items()
     }
 
