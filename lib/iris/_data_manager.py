@@ -38,9 +38,8 @@ class DataManager:
             msg = '"shape" should only be provided if "data" is None'
             raise ValueError(msg)
 
-        self._shape = shape
-
         # Initialise the instance.
+        self._shape = shape
         self._lazy_array = None
         self._real_array = None
 
