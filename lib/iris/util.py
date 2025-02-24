@@ -2424,7 +2424,8 @@ def combine_cubes(
         Either a standard "combine settings" name, i.e. one of the
         :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
         settings options, as described for :class:`~iris.CombineOptions`.
-        Defaults to the current value of :data:`iris.LOAD_POLICY.settings`.
+        Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+        :data:`iris.LOAD_POLICY`.
 
     kwargs : dict
         Individual option setting values, i.e. values for keys named in
@@ -2436,10 +2437,11 @@ def combine_cubes(
     -------
     :class:`~iris.cube.CubeList`
 
-    .. Note::
-        A ``support_multiple_references`` keyword/property is treated as a valid
-        option, but it has *no* effect on :func:`combine_cubes` because this option
-        only acts during load operations.
+    Notes
+    -----
+        A ``support_multiple_references`` option will be accepted as valid, but will
+        have *no* effect on :func:`combine_cubes` because this option only acts during
+        load operations.
 
     Examples
     --------
