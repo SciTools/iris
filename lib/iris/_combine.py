@@ -287,12 +287,14 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
     """
     from iris.cube import CubeList
 
-    if not isinstance(cubes, CubeList):
+    if isinstance(cubes, CubeList):
+        cubelist = cubes
+    else:
         cubelist = CubeList(cubes)
 
+    sequence = options["merge_concat_sequence"]
     while True:
-        n_original_cubes = len(cubes)
-        sequence = options["merge_concat_sequence"]
+        n_original_cubes = len(cubelist)
 
         if sequence[0] == "c":
             # concat if it comes first
