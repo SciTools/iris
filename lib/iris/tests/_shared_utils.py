@@ -555,7 +555,7 @@ def assert_XML_element(obj, reference_filename):
     # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
     # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
     doc = iris.cube.Cube._sort_xml_attrs(doc)
-    pretty_xml = doc.toprettyxml(indent="  ")
+    pretty_xml = iris.util._print_xml(doc)
     reference_path = get_result_path(reference_filename)
     _check_same(pretty_xml, reference_path, type_comparison_name="XML")
 

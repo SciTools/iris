@@ -173,7 +173,7 @@ class CubeList(list):
 
         # return our newly created XML string
         doc = Cube._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return iris.util._print_xml(doc)
 
     def extract(self, constraints):
         """Filter each of the cubes which can be filtered by the given constraints.
@@ -3782,7 +3782,7 @@ class Cube(CFVariableMixin):
 
         # Print our newly created XML
         doc = self._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return iris.util._print_xml(doc)
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
         cube_xml_element = doc.createElement("cube")

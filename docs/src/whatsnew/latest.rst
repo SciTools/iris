@@ -80,8 +80,8 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
-
+#. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
+   as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
 📚 Documentation
 ================
@@ -125,3 +125,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
