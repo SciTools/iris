@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import Literal
+from typing import TYPE_CHECKING, List, Literal
 from warnings import warn
 
 import cf_units
@@ -30,6 +30,9 @@ from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
 import iris.warnings
+
+if TYPE_CHECKING:
+    from iris.cube import Cube, CubeList
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
@@ -2398,3 +2401,80 @@ def _print_xml(doc):
     """
     result = doc.toprettyxml(indent="  ")
     return result.replace("&#10;", "\n")
+
+
+def combine_cubes(
+    cubes: List[Cube],
+    options: str | dict | None = None,
+    **kwargs,
+) -> CubeList:
+    """Combine cubes, according to "combine options".
+
+    Applies a combination of :meth:`~iris.util.equalise_cubes`,
+    :meth:`~iris.cube.CubeList.merge` and/or :meth:`~iris.cube.CubeList.concatenate`
+    steps to the given cubes, as determined by the given settings (from `options` and
+    `kwargs`).
+
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
+        A list of cubes to combine.
+
+    options : str or dict, optional
+        Either a standard "combine settings" name, i.e. one of the
+        :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+        settings options, as described for :class:`~iris.CombineOptions`.
+        Defaults to the current value of :data:`iris.LOAD_POLICY.settings`.
+
+    kwargs : dict
+        Individual option setting values, i.e. values for keys named in
+        :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+        :meth:`~iris.CombineOptions.set`.  These take precedence over those set by the
+        `options` arg.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+
+    .. Note::
+        A ``support_multiple_references`` keyword/property is treated as a valid
+        option, but it has *no* effect on :func:`combine_cubes` because this option
+        only acts during load operations.
+
+    Examples
+    --------
+    >>> results = combine_cubes(cubes)
+    >>> results = combine_cubes(cubes, options=CombineOptions("recommended"))
+    >>> results = combine_cubes(cubes, repeat_until_unchanged=True)
+
+    """
+    # TODO: somehow, provide a real + useful working code example
+
+    from iris import LOAD_POLICY, CombineOptions
+    from iris._combine import _combine_cubes
+
+    if options is None:
+        opts_dict = LOAD_POLICY.settings()
+    elif isinstance(options, str):
+        if options in CombineOptions.SETTINGS:
+            opts_dict = CombineOptions.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(CombineOptions.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    elif isinstance(options, dict):
+        opts_dict = options
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    if kwargs is not None:
+        opts_dict = opts_dict.copy()  # avoid changing original
+        opts_dict.update(kwargs)
+
+    return _combine_cubes(cubes, opts_dict)
