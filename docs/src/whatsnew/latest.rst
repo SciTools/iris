@@ -111,6 +111,9 @@ This document explains the changes made to Iris for this release
    aggregations have the same chunks as their parent cube if broadcasting is
    necessary. (:issue:`6285`, :pull:`6288`)
 
+#. `@trexfeathers`_ improved the handling of benchmark environments, especially
+    when working across Python versions. (:pull:`6329`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
