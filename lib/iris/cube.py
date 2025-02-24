@@ -49,6 +49,8 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, Di
 if TYPE_CHECKING:
     import iris.mesh
     from iris.mesh import MeshCoord
+    from typing import TYPE_CHECKING
+    from numpy.typing import ArrayLike
 import iris.exceptions
 import iris.util
 import iris.warnings
