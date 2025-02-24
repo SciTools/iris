@@ -3,7 +3,7 @@
     "project": "scitools-iris",
     "project_url": "https://github.com/SciTools/iris",
     "repo": "..",
-    "environment_type": "delegated",
+    "environment_type": "delegated-iris",
     "show_commit_url": "https://github.com/scitools/iris/commit/",
     "branches": ["upstream/main"],
 
@@ -11,53 +11,12 @@
     "env_dir": ".asv/env",
     "results_dir": ".asv/results",
     "html_dir": ".asv/html",
-    "plugins": [".asv_delegated"],
-
-    "delegated_env_commands_comment": [
-        "The command(s) that create/update an environment correctly for the",
-        "checked-out commit. Command(s) format follows `build_command`:",
-        "  https://asv.readthedocs.io/en/stable/asv.conf.json.html#build-command-install-command-uninstall-command",
-
-        "The commit key indicates the earliest commit where the command(s)",
-        "will work.",
-
-        "Differences from `build_command`:",
-        "  * See: https://asv.readthedocs.io/en/stable/asv.conf.json.html#build-command-install-command-uninstall-command",
-        "  * Env vars limited to those set outside build time.",
-        "    (e.g. `{conf_dir}` available but `{build_dir}` not)",
-        "  * Run in the same environment as the ASV install itself.",
-
-        "Mandatory format for the first 'command' within each commit:",
-        "  * `ENV_PARENT=path/to/parent/directory/of/env-directory`",
-        "  * Can contain env vars (e.g. `{conf_dir}`)",
-        "  * `ENV_PARENT` available as `{env_parent}` in subsequent commands",
-        "  * The environment will be detected as the most recently updated",
-        "    environment in `{env_parent}`."
-
-    ],
-    "delegated_env_commands": {
-        "59738a4": [
-            "ENV_PARENT={conf_dir}/.asv/env/nox313",
-            "PY_VER=3.13 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
-        ],
-        "c8a663a0": [
-            "ENV_PARENT={conf_dir}/.asv/env/nox312",
-            "PY_VER=3.12 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
-        ],
-        "d58fca7e": [
-            "ENV_PARENT={conf_dir}/.asv/env/nox311",
-            "PY_VER=3.11 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
-        ],
-        "44fae030": [
-            "ENV_PARENT={conf_dir}/.asv/env/nox310",
-            "PY_VER=3.10 nox --envdir={env_parent} --session=tests --install-only --no-error-on-external-run --verbose"
-        ]
-    },
+    "plugins": [".asv_delegated_iris"],
 
     "command_comment": [
-        "We know that the Nox command takes care of installation in each",
-        "environment, and in the case of Iris no specialised uninstall or",
-        "build commands are needed to get it working.",
+        "The inherited setup of the Iris test environment takes care of ",
+        "Iris-installation too, and in the case of Iris no specialised ",
+        "uninstall or build commands are needed to get it working either.",
 
         "We do however need to install the custom benchmarks for them to be",
         "usable."
