@@ -13,7 +13,11 @@ publicly available.
 
 import contextlib
 import threading
-from typing import Mapping
+import typing
+from typing import List
+
+if typing.TYPE_CHECKING:
+    from iris.cube import Cube, CubeList
 
 
 class CombineOptions(threading.local):
@@ -97,6 +101,7 @@ class CombineOptions(threading.local):
     """
 
     # Useful constants
+    #: Valid option names
     OPTION_KEYS = (
         "support_multiple_references",
         "merge_concat_sequence",
@@ -107,6 +112,7 @@ class CombineOptions(threading.local):
         "merge_concat_sequence": ("", "m", "c", "mc", "cm"),
         "repeat_until_unchanged": (False, True),
     }
+    #: Settings content
     SETTINGS = {
         "legacy": dict(
             support_multiple_references=False,
@@ -129,6 +135,8 @@ class CombineOptions(threading.local):
             repeat_until_unchanged=True,
         ),
     }
+    #: Valid settings names
+    SETTINGS_NAMES = list(SETTINGS.keys())
 
     def __init__(self, options: str | dict | None = None, **kwargs):
         """Create loading strategy control object."""
@@ -168,28 +176,31 @@ class CombineOptions(threading.local):
 
         """
         if options is None:
-            options = {}
+            options_dict = {}
         elif isinstance(options, str) and options in self.SETTINGS:
-            options = self.SETTINGS[options]
-        elif not isinstance(options, Mapping):
+            options_dict = self.SETTINGS[options]
+        elif isinstance(options, dict):
+            options_dict = options
+        else:
             msg = (
-                f"Invalid arg options={options!r} : "
-                f"must be a dict, or one of {tuple(self.SETTINGS.keys())}"
+                f"'options' arg has unexpected type {type(options)!r}, "
+                "expected (None | str | dict)."
             )
-            raise TypeError(msg)
+            raise ValueError(msg)
 
         # Override any options with keywords
-        options.update(**kwargs)
-        bad_keys = [key for key in options if key not in self.OPTION_KEYS]
+        options_dict = options_dict.copy()  # do not modify source (!)
+        options_dict.update(**kwargs)
+        bad_keys = [key for key in options_dict if key not in self.OPTION_KEYS]
         if bad_keys:
             msg = f"Unknown options {bad_keys} : valid options are {self.OPTION_KEYS}."
             raise ValueError(msg)
 
         # Implement all options by changing own content.
-        for key, value in options.items():
+        for key, value in options_dict.items():
             setattr(self, key, value)
 
-    def settings(self):
+    def settings(self) -> dict:
         """Return an options dict containing the current settings."""
         return {key: getattr(self, key) for key in self.OPTION_KEYS}
 
@@ -200,7 +211,7 @@ class CombineOptions(threading.local):
         return msg
 
     @contextlib.contextmanager
-    def context(self, settings=None, **kwargs):
+    def context(self, settings: str | dict | None = None, **kwargs):
         """Return a context manager applying given options.
 
         Parameters
@@ -246,7 +257,7 @@ class CombineOptions(threading.local):
             self.set(saved_settings)
 
 
-def _combine_cubes(cubes, options):
+def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
     """Combine cubes as for load, according to "loading policy" options.
 
     Applies :meth:`~iris.cube.CubeList.merge`/:meth:`~iris.cube.CubeList.concatenate`
@@ -257,7 +268,7 @@ def _combine_cubes(cubes, options):
     cubes : list of :class:`~iris.cube.Cube`
         A list of cubes to combine.
     options : dict
-        Settings, as described for :class:`iris.CombineOptions`.
+        Dictionary of settings options, as described for :class:`iris.CombineOptions`.
 
     Returns
     -------
@@ -277,7 +288,7 @@ def _combine_cubes(cubes, options):
     from iris.cube import CubeList
 
     if not isinstance(cubes, CubeList):
-        cubes = CubeList(cubes)
+        cubelist = CubeList(cubes)
 
     while True:
         n_original_cubes = len(cubes)
@@ -285,24 +296,24 @@ def _combine_cubes(cubes, options):
 
         if sequence[0] == "c":
             # concat if it comes first
-            cubes = cubes.concatenate()
+            cubelist = cubelist.concatenate()
         if "m" in sequence:
             # merge if requested
             # NOTE: this needs "unique=False" to make "iris.load()" work correctly.
             # TODO: make configurable via options.
-            cubes = cubes.merge(unique=False)
+            cubelist = cubelist.merge(unique=False)
         if sequence[-1] == "c":
             # concat if it comes last
-            cubes = cubes.concatenate()
+            cubelist = cubelist.concatenate()
 
         # Repeat if requested, *and* this step reduced the number of cubes
-        if not options["repeat_until_unchanged"] or len(cubes) >= n_original_cubes:
+        if not options["repeat_until_unchanged"] or len(cubelist) >= n_original_cubes:
             break
 
-    return cubes
+    return cubelist
 
 
-def _combine_load_cubes(cubes):
+def _combine_load_cubes(cubes: List[Cube]) -> CubeList:
     # A special version to call _combine_cubes while also implementing the
     # _MULTIREF_DETECTION behaviour
     from iris import LOAD_POLICY
