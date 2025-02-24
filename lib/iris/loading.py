@@ -5,11 +5,9 @@
 """Iris general file loading mechanism."""
 
 import itertools
-from typing import TYPE_CHECKING, Any, Iterable
-
-if TYPE_CHECKING:
-    from pathlib import Path
-    from traceback import TracebackException
+from pathlib import Path
+from traceback import TracebackException
+from typing import Any, Iterable
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -333,4 +331,14 @@ LOAD_POLICY = LoadPolicy()
 # TODO: docstring, inc examples:
 #  ".join(TracebackException.format())
 #  TracebackException.exc_type
+# TODO: include in an __all__ somewhere
 LOAD_PROBLEMS: dict[Path, list[tuple[Any, TracebackException]]] = {}
+"""Collections of cubes/coords/etcetera that could not be loaded correctly.
+
+Structured as a dictionary of file paths. The values are lists of tuples:
+
+- The object that had loading problems
+- The traceback exception
+
+.. todo: More docstring
+"""
