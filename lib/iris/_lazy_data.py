@@ -25,7 +25,6 @@ MAX_CACHE_SIZE = 100
 """Maximum number of Dask arrays to cache."""
 
 
-
 def non_lazy(func):
     """Turn a lazy function into a function that returns a result immediately."""
 
