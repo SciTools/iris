@@ -13,22 +13,14 @@ i.e. different types + defaulting of the 'options' arg, and **kwargs support.
 import pytest
 
 from iris import LoadPolicy
-from iris._combine import _combine_cubes
 from iris.tests.unit.fileformats.test_load_functions import cu
+from iris.util import combine_cubes
 
 
 @pytest.fixture(params=list(LoadPolicy.SETTINGS.keys()))
 def options(request):
     # N.B. "request" is a standard PyTest fixture
     return request.param  # Return the name of the attribute to test.
-
-
-# Interface to convert settings-name / kwargs into an options dict,
-# TODO: remove this wrapper when the API of "combine_cubes" is opened up.
-def combine_cubes(cubes, settings_name="default", **kwargs):
-    options = LoadPolicy.SETTINGS[settings_name]
-    options.update(kwargs)
-    return _combine_cubes(cubes, options)
 
 
 class Test:
