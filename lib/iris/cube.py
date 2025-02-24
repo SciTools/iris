@@ -4075,14 +4075,17 @@ class Cube(CFVariableMixin):
 
             # Having checked everything else, check approximate data equality.
             if result:
-                # TODO: why do we use allclose() here, but strict equality in
-                #  _DimensionalMetadata (via util.array_equal())?
-                result = bool(
-                    np.allclose(
-                        self.core_data(),
-                        other.core_data(),
-                        equal_nan=True,
-                    )
+                if self.is_dataless() or other.is_dataless():
+                    result = self.is_dataless() and other.is_dataless()
+                else:
+                    # TODO: why do we use allclose() here, but strict equality in
+                    #  _DimensionalMetadata (via util.array_equal())?
+                    result = bool(
+                        np.allclose(
+                            self.core_data(),
+                            other.core_data(),
+                            equal_nan=True,
+                        )
                 )
         return result
 
