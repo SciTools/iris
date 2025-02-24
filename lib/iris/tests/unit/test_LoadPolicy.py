@@ -81,12 +81,6 @@ class Test_set:
         with pytest.raises(ValueError, match=expected):
             options.set("oddthing")
 
-    def test_arg_bad_type(self):
-        options = LoadPolicy()
-        expected = r"arg 'options' has unexpected type \<class 'tuple'\>, expected one of \(None \| str \| dict\)\."
-        with pytest.raises(TypeError, match=expected):
-            options.set((1, 2, 3))
-
     def test_kwargs(self):
         options = LoadPolicy()
         assert options.settings()["merge_concat_sequence"] == "m"

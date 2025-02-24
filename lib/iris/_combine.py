@@ -14,7 +14,7 @@ publicly available.
 from __future__ import annotations
 
 import threading
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 if TYPE_CHECKING:
     from iris.cube import Cube, CubeList
@@ -35,11 +35,15 @@ class CombineOptions(threading.local):
     -----
     The individual configurable options are :
 
+    * ``equalise_cubes_kwargs`` = (dict)
+        Specifies keywords for a :func:`iris.util.equalise_cubes` call, to be applied
+        before any merge/concatenate step.
+
     * ``merge_concat_sequence`` = "m" / "c" / "cm" / "mc"
         Specifies whether to apply :meth:`~iris.cube.CubeList.merge`, or
         :meth:`~iris.cube.CubeList.concatenate` operations, or both, in either order.
 
-    * ``merge_uses_unique`` = True / False
+    * ``merge_unique`` = True / False
         When True, any merge operation will error if its result contains multiple
         identical cubes.  Otherwise (unique=False), that is a permitted result.
 
@@ -90,29 +94,40 @@ class CombineOptions(threading.local):
     # Useful constants
     #: Valid option names
     OPTION_KEYS = [
+        "equalise_cubes_kwargs",  # N.B. gets special treatment in options checking
         "merge_concat_sequence",
+        "merge_unique",
         "repeat_until_unchanged",
     ]  # this is a list, so we can update it in an inheriting class
     _OPTIONS_ALLOWED_VALUES = {
         "merge_concat_sequence": ("", "m", "c", "mc", "cm"),
+        "merge_unique": (True, False),
         "repeat_until_unchanged": (False, True),
     }
-    #: Settings content
-    SETTINGS = {
+    #: Standard settings dictionaries
+    SETTINGS: Dict[str, Dict[str, Any]] = {
         "legacy": dict(
+            equalise_cubes_kwargs=None,
             merge_concat_sequence="m",
+            merge_unique=False,
             repeat_until_unchanged=False,
         ),
         "default": dict(
+            equalise_cubes_kwargs=None,
             merge_concat_sequence="m",
+            merge_unique=False,
             repeat_until_unchanged=False,
         ),
         "recommended": dict(
+            equalise_cubes_kwargs=None,
             merge_concat_sequence="mc",
+            merge_unique=False,
             repeat_until_unchanged=False,
         ),
         "comprehensive": dict(
+            equalise_cubes_kwargs={"apply_all": True},
             merge_concat_sequence="mc",
+            merge_unique=False,
             repeat_until_unchanged=True,
         ),
     }
@@ -128,13 +143,14 @@ class CombineOptions(threading.local):
         if key not in self.OPTION_KEYS:
             raise KeyError(f"LoadPolicy object has no property '{key}'.")
 
-        allowed_values = self._OPTIONS_ALLOWED_VALUES[key]
-        if value not in allowed_values:
-            msg = (
-                f"{value!r} is not a valid setting for LoadPolicy.{key} : "
-                f"must be one of '{allowed_values}'."
-            )
-            raise ValueError(msg)
+        if key != "equalise_cubes_kwargs":
+            allowed_values = self._OPTIONS_ALLOWED_VALUES[key]
+            if value not in allowed_values:
+                msg = (
+                    f"{value!r} is not a valid setting for LoadPolicy.{key} : "
+                    f"must be one of '{allowed_values}'."
+                )
+                raise ValueError(msg)
 
         self.__dict__[key] = value
 
@@ -157,7 +173,7 @@ class CombineOptions(threading.local):
 
         """
         if options is None:
-            options_dict = {}
+            options_dict: dict = {}
         elif isinstance(options, str):
             if options in self.SETTINGS:
                 options_dict = self.SETTINGS[options]
@@ -169,12 +185,6 @@ class CombineOptions(threading.local):
                 raise ValueError(msg)
         elif isinstance(options, dict):
             options_dict = options
-        else:
-            msg = (  # type: ignore[unreachable]
-                f"arg 'options' has unexpected type {type(options)!r}, "
-                f"expected one of (None | str | dict)."
-            )  # type: ignore[unreachable]
-            raise TypeError(msg)  # type: ignore[unreachable]
 
         # Override any options with keywords
         options_dict = options_dict.copy()  # don't modify original
@@ -189,7 +199,7 @@ class CombineOptions(threading.local):
             setattr(self, key, value)
 
     def settings(self) -> dict:
-        """Return an options dict containing the current settings."""
+        """Return a settings dict containing the current options settings."""
         return {key: getattr(self, key) for key in self.OPTION_KEYS}
 
     def __repr__(self):
@@ -234,7 +244,14 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
     else:
         cubelist = CubeList(cubes)
 
+    eq_args = options.get("equalise_cubes_kwargs", None)
+    if eq_args:
+        from iris.util import equalise_cubes
+
+        equalise_cubes(cubelist, **eq_args)
+
     sequence = options["merge_concat_sequence"]
+    merge_unique = options.get("merge_unique", False)
     while True:
         n_original_cubes = len(cubelist)
 
@@ -245,7 +262,7 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
             # merge if requested
             # NOTE: this needs "unique=False" to make "iris.load()" work correctly.
             # TODO: make configurable via options.
-            cubelist = cubelist.merge(unique=False)
+            cubelist = cubelist.merge(unique=merge_unique)
         if sequence[-1] == "c":
             # concat if it comes last
             cubelist = cubelist.concatenate()
