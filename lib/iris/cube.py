@@ -1189,7 +1189,7 @@ class Cube(CFVariableMixin):
 
     def __init__(
         self,
-        data: np.typing.ArrayLike | None = None,
+        data: ArrayLike | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,

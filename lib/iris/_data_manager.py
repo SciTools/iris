@@ -22,10 +22,10 @@ class DataManager:
 
         Parameters
         ----------
-        data : np.typing.ArrayLike, optional
+        data : ArrayLike, optional
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
-            managed. If a value of None is given, the data manager will be
+            managed. If a value of ``None`` is given, the data manager will be
             considered dataless.
 
         shape : tuple, optional
@@ -159,7 +159,7 @@ class DataManager:
         ----------
         memo : :func:`copy`
             :func:`copy` memo dictionary.
-        data : optional
+        data : ArrayLike, optional
             Replacement data to substitute the currently managed
             data with.
 
@@ -200,7 +200,7 @@ class DataManager:
 
         Returns
         -------
-        :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or None.
+        :class:`~numpy.ndarray` or :class:`numpy.ma.core.MaskedArray` or ``None``.
 
         """
         if self.has_lazy_data():
@@ -241,7 +241,7 @@ class DataManager:
         data :
             The :class:`~numpy.ndarray` or :class:`~numpy.ma.core.MaskedArray`
             real data, or :class:`~dask.array.core.Array` lazy data to be
-            managed. If data is None, the current shape will be maintained.
+            managed. If data is ``None``, the current shape will be maintained.
 
         """
         if data is None:
@@ -284,7 +284,7 @@ class DataManager:
             if not has_shape or (self._shape == () and data.shape == (1,)):
                 self._shape = self.core_data().shape
 
-            # Check the manager contract, as the managed data has changed.
+        # Check the manager contract, as the managed data has changed.
         self._assert_axioms()
 
     @property
