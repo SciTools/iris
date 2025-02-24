@@ -41,7 +41,8 @@ class DataManager:
         elif (shape is not None) and (data is not None):
             if shape == data.shape():
                 msg = '"shape" should only be provided if "data" is None'
-                warnings.warn(msg, UserWarning)
+                warnings.warn(message=msg, category=iris.warnings.IrisUserWarning)
+
             else:
                 msg = '"shape" provided does not match "data"'
                 raise ValueError(msg)
