@@ -154,9 +154,7 @@ def _assert_str_same(
             0,
         )
     )
-    fail_string = (
-        f"{type_comparison_name} do not match: {reference_filename}\n" f"{diff}"
-    )
+    fail_string = f"{type_comparison_name} do not match: {reference_filename}\n{diff}"
     assert reference_str == test_str, fail_string
 
 
@@ -214,8 +212,7 @@ def _check_for_request_fixture(request, func_name: str):
     """
     if not hasattr(request, "fixturenames"):
         message = (
-            f"{func_name}() expected: pytest.FixtureRequest instance, got: "
-            f"{request}"
+            f"{func_name}() expected: pytest.FixtureRequest instance, got: {request}"
         )
         raise ValueError(message)
 
@@ -307,8 +304,7 @@ def assert_CML_approx_data(
     for i, cube in enumerate(cubes):
         fname = list(reference_filename)
         # don't want the ".cml" for the json stats file
-        if fname[-1].endswith(".cml"):
-            fname[-1] = fname[-1][:-4]
+        fname[-1] = fname[-1].removesuffix(".cml")
         fname[-1] += ".data.%d.json" % i
         assert_data_almost_equal(cube.data, fname, **kwargs)
     assert_CML(request, cubes, reference_filename, checksum=False)
@@ -448,7 +444,7 @@ def assert_text_file(source_filename, reference_filename, desc="text file"):
         )
     )
     fail_string = (
-        f"{desc} does not match: reference file " f"{reference_filename} \n {diff}"
+        f"{desc} does not match: reference file {reference_filename} \n {diff}"
     )
     assert reference_text == source_text, fail_string
 
@@ -559,7 +555,7 @@ def assert_XML_element(obj, reference_filename):
     # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
     # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
     doc = iris.cube.Cube._sort_xml_attrs(doc)
-    pretty_xml = doc.toprettyxml(indent="  ")
+    pretty_xml = iris.util._print_xml(doc)
     reference_path = get_result_path(reference_filename)
     _check_same(pretty_xml, reference_path, type_comparison_name="XML")
 
@@ -924,7 +920,7 @@ skip_plot = graphics.skip_plot
 
 skip_sample_data = pytest.mark.skipif(
     not SAMPLE_DATA_AVAILABLE,
-    reason=('Test(s) require "iris-sample-data", ' "which is not available."),
+    reason=('Test(s) require "iris-sample-data", which is not available.'),
 )
 
 
@@ -936,7 +932,7 @@ skip_nc_time_axis = pytest.mark.skipif(
 
 skip_inet = pytest.mark.skipif(
     not INET_AVAILABLE,
-    reason=('Test(s) require an "internet connection", ' "which is not available."),
+    reason=('Test(s) require an "internet connection", which is not available.'),
 )
 
 

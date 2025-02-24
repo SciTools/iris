@@ -140,7 +140,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         else:
             phenom_coords_string = " ".join(phenom_coords)
             phenom_coords_string = (
-                "            " f'phenom:coordinates = "{phenom_coords_string}" ; '
+                f'            phenom:coordinates = "{phenom_coords_string}" ; '
             )
 
         # Create a testcase with time dims + coords.

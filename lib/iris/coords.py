@@ -2253,8 +2253,7 @@ class Coord(_DimensionalMetadata):
 
         if self.has_bounds():
             raise ValueError(
-                "Coord already has bounds. Remove the bounds "
-                "before guessing new ones."
+                "Coord already has bounds. Remove the bounds before guessing new ones."
             )
 
         if monthly or yearly:
@@ -2446,8 +2445,7 @@ class Coord(_DimensionalMetadata):
         bounds = self.bounds if self.has_bounds() else np.array([])
         if self.ndim != 1:
             raise ValueError(
-                "Nearest-neighbour is currently limited"
-                " to one-dimensional coordinates."
+                "Nearest-neighbour is currently limited to one-dimensional coordinates."
             )
         do_circular = getattr(self, "circular", False)
         if do_circular:
