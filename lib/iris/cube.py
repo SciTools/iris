@@ -4044,6 +4044,13 @@ class Cube(CFVariableMixin):
         if isinstance(other, Cube):
             result = self.metadata == other.metadata
 
+            if result:
+                if self.is_dataless() or other.is_dataless():
+                    result = (self.is_dataless() and other.is_dataless()) and (
+                        self.core_data().shape == self.core_data().shape
+                    )
+                    dataless_equality = True
+
             # having checked the metadata, now check the coordinates
             if result:
                 coord_compares = iris.analysis._dimensional_metadata_comparison(
@@ -4074,19 +4081,16 @@ class Cube(CFVariableMixin):
                 )
 
             # Having checked everything else, check approximate data equality.
-            if result:
-                if self.is_dataless() or other.is_dataless():
-                    result = self.is_dataless() and other.is_dataless()
-                else:
-                    # TODO: why do we use allclose() here, but strict equality in
-                    #  _DimensionalMetadata (via util.array_equal())?
-                    result = bool(
-                        np.allclose(
-                            self.core_data(),
-                            other.core_data(),
-                            equal_nan=True,
-                        )
+            if result and not dataless_equality:
+                # TODO: why do we use allclose() here, but strict equality in
+                #  _DimensionalMetadata (via util.array_equal())?
+                result = bool(
+                    np.allclose(
+                        self.core_data(),
+                        other.core_data(),
+                        equal_nan=True,
                     )
+                )
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality

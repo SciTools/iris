@@ -23,11 +23,7 @@ from iris._lazy_data import as_lazy_data
 class Test__init__:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.data = np.array(
-            [
-                1,
-            ]
-        )
+        self.data = np.array([1])
 
     def test_data_same_shape(self):
         with pytest.warns(match=""):
