@@ -2407,6 +2407,12 @@ def combine_cubes(
             return cube
 
         cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+        combinecubes_old_policysettings = iris.LOAD_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore old state to avoid upsetting other tests
+        iris.LOAD_POLICY.set(combinecubes_old_policysettings)
 
     >>> # Take a pair of sample cubes which can concatenate together
     >>> print(cubes)

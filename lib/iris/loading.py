@@ -312,23 +312,29 @@ class LoadPolicy(CombineOptions):
     .. testsetup::
 
         from iris import LOAD_POLICY
+        loadpolicy_old_settings = LOAD_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore original settings, so as not to upset other tests
+        LOAD_POLICY.set(loadpolicy_old_settings)
 
     Examples
     --------
     >>> LOAD_POLICY.set("legacy")
     >>> print(LOAD_POLICY)
-    LoadPolicy(support_multiple_references=False, merge_concat_sequence='m', repeat_until_unchanged=False)
+    LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=False)
     >>> LOAD_POLICY.support_multiple_references = True
     >>> print(LOAD_POLICY)
-    LoadPolicy(support_multiple_references=True, merge_concat_sequence='m', repeat_until_unchanged=False)
+    LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
     >>> LOAD_POLICY.set(merge_concat_sequence="cm")
     >>> print(LOAD_POLICY)
-    LoadPolicy(support_multiple_references=True, merge_concat_sequence='cm', repeat_until_unchanged=False)
+    LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
     >>> with LOAD_POLICY.context("comprehensive"):
     ...    print(LOAD_POLICY)
-    LoadPolicy(support_multiple_references=True, merge_concat_sequence='mc', repeat_until_unchanged=True)
+    LoadPolicy(equalise_cubes_kwargs={'apply_all': True}, merge_concat_sequence='mc', merge_unique=False, repeat_until_unchanged=True, support_multiple_references=True)
     >>> print(LOAD_POLICY)
-    LoadPolicy(support_multiple_references=True, merge_concat_sequence='cm', repeat_until_unchanged=False)
+    LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
     """
 
     # Option keys are as for CombineOptions, plus the multiple-refs control
