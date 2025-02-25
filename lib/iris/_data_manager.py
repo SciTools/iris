@@ -5,7 +5,6 @@
 """Management of common state and behaviour for cube and coordinate data."""
 
 import copy
-import warnings
 
 import numpy as np
 import numpy.ma as ma
@@ -39,13 +38,8 @@ class DataManager:
             msg = 'one of "shape" or "data" should be provided; both are None'
             raise ValueError(msg)
         elif (shape is not None) and (data is not None):
-            if shape == data.shape:
-                msg = '"shape" should only be provided if "data" is None'
-                warnings.warn(message=msg, category=iris.warnings.IrisUserWarning)
-
-            else:
-                msg = '"shape" provided does not match "data"'
-                raise ValueError(msg)
+            msg = '"shape" should only be provided if "data" is None'
+            raise ValueError(msg)
 
         # Initialise the instance.
         self._shape = shape

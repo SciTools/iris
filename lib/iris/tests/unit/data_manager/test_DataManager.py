@@ -26,11 +26,12 @@ class Test__init__:
         self.data = np.array([1])
 
     def test_data_same_shape(self):
-        with pytest.warns(match=""):
+        msg = '"shape" should only be provided if "data" is None'
+        with pytest.raises(ValueError, match=msg):
             DataManager(self.data, self.data.shape)
 
     def test_data_conflicting_shape(self):
-        msg = 'shape" provided does not match "data'
+        msg = '"shape" should only be provided if "data" is None'
         with pytest.raises(ValueError, match=msg):
             DataManager(self.data, ())
 
@@ -191,7 +192,6 @@ class Test___repr__(tests.IrisTest):
         self.assertEqual(result, expected)
 
     def test_dataless(self):
-        print(self.real_array.shape)
         dm = DataManager(None, self.real_array.shape)
         result = repr(dm)
         expected = "{}({!r}), shape={}".format(self.name, None, self.real_array.shape)
@@ -500,7 +500,7 @@ class Test_data__setter(tests.IrisTest):
         dm = DataManager(lazy_array * 10)
         self.assertTrue(dm.has_lazy_data())
         dm.data = None
-        self.assertTrue(dm.core_data() is None)
+        self.assertIsNone(dm.core_data())
 
     def test_nd_real_to_dataless(self):
         shape = (2, 3, 4)
@@ -509,7 +509,7 @@ class Test_data__setter(tests.IrisTest):
         dm = DataManager(real_array)
         self.assertFalse(dm.has_lazy_data())
         dm.data = None
-        self.assertTrue(dm.core_data() is None)
+        self.assertIsNone(dm.core_data())
 
     def test_dataless_to_nd_lazy(self):
         shape = (2, 3, 4)
@@ -527,7 +527,7 @@ class Test_data__setter(tests.IrisTest):
         size = np.prod(shape)
         real_array = np.arange(size).reshape(shape)
         dm = DataManager(None, shape)
-        self.assertTrue(dm.data is None)
+        self.assertIsNone(dm.core_data())
         dm.data = real_array
         self.assertFalse(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, real_array)
