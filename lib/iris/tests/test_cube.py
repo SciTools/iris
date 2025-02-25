@@ -2,6 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
+import pytest
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -78,21 +79,26 @@ class Test_Cube_add_dim_coord(tests.IrisTest):
 
 
 class TestEquality:
-    def test_not_implmemented(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.cube = iris.cube.Cube(1)
+
+    def test_not_implemented(self):
         class Terry:
             pass
 
-        cube = iris.cube.Cube(0)
-        assert cube.__eq__(Terry()) is NotImplemented
-        assert cube.__ne__(Terry()) is NotImplemented
+        assert self.cube.__eq__(Terry()) is NotImplemented
+        assert self.cube.__ne__(Terry()) is NotImplemented
 
     def test_dataless_comparison(self):
-        cube = iris.cube.Cube(1)
-        dataless_cube = iris.cube.Cube(shape=(1,))
-        dataless_copy = iris.cube.Cube(shape=(1,))
+        shape = (1,)
+        dataless_cube = iris.cube.Cube(shape=shape)
+        dataless_copy = iris.cube.Cube(shape=shape)
+        dataless_diff = iris.cube.Cube(shape=(2,))
 
-        assert cube != dataless_cube
-        assert dataless_copy == dataless_cube
+        assert dataless_cube != self.cube
+        assert dataless_cube == dataless_copy
+        assert dataless_cube != dataless_diff
 
 
 if __name__ == "__main__":

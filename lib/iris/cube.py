@@ -4048,7 +4048,7 @@ class Cube(CFVariableMixin):
                 dataless_equality = self.is_dataless() or other.is_dataless()
                 if dataless_equality:
                     result = (self.is_dataless() and other.is_dataless()) and (
-                        self.shape == self.shape
+                        self.shape == other.shape
                     )
 
             # having checked the metadata, now check the coordinates
