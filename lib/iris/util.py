@@ -2443,11 +2443,59 @@ def combine_cubes(
         have *no* effect on :func:`combine_cubes` because this option only acts during
         load operations.
 
+
     Examples
     --------
-    >>> results = combine_cubes(cubes)
-    >>> results = combine_cubes(cubes, options=CombineOptions("recommended"))
-    >>> results = combine_cubes(cubes, repeat_until_unchanged=True)
+    .. testsetup::
+
+        import numpy as np
+        from iris.cube import Cube, CubeList
+        from iris.coords import DimCoord
+        from iris.util import combine_cubes
+
+        def testcube(timepts):
+            cube = Cube(np.array(timepts))
+            cube.add_dim_coord(
+                DimCoord(timepts, standard_name="time", units="days since 1990-01-01"),
+                0
+            )
+            return cube
+
+        cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+
+    >>> # Take a pair of sample cubes which can concatenate together
+    >>> print(cubes)
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> print([cube.coord("time").points for cube in cubes])
+    [array([1., 2.]), array([13., 14., 15.])]
+
+    >>> # Show these do NOT combine with the "default" action, which only merges ..
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... however, they **do** combine if you enable concatenation
+    >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
+    0: unknown / (unknown)                 (time: 5)
+    >>> # ... which may be controlled by various means
+    >>> iris.LOAD_POLICY.set("recommended")
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # Also, show how a differing attribute will block cube combination
+    >>> cubes[0].attributes["x"] = 3
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... which can then be fixed by enabling attribute equalisation
+    >>> with iris.LOAD_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    ...     print(combine_cubes(cubes))
+    ...
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # .. BUT NOTE : this modifies the original input cubes
+    >>> print(cubes[0].attributes.get("x"))
+    None
 
     """
     # TODO: somehow, provide a real + useful working code example
