@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import Literal
+from typing import TYPE_CHECKING, List, Literal
 from warnings import warn
 
 import cf_units
@@ -30,6 +30,9 @@ from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
 import iris.warnings
+
+if TYPE_CHECKING:
+    from iris.cube import Cube, CubeList
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
@@ -2343,3 +2346,136 @@ def _print_xml(doc):
     """
     result = doc.toprettyxml(indent="  ")
     return result.replace("&#10;", "\n")
+
+
+def combine_cubes(
+    cubes: List[Cube],
+    options: str | dict | None = None,
+    **kwargs,
+) -> CubeList:
+    """Combine cubes, according to "combine options".
+
+    Applies a combination of :meth:`~iris.util.equalise_cubes`,
+    :meth:`~iris.cube.CubeList.merge` and/or :meth:`~iris.cube.CubeList.concatenate`
+    steps to the given cubes, as determined by the given settings (from `options` and
+    `kwargs`).
+
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
+        A list of cubes to combine.
+
+    options : str or dict, optional
+        Either a standard "combine settings" name, i.e. one of the
+        :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+        settings options, as described for :class:`~iris.CombineOptions`.
+        Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+        :data:`iris.LOAD_POLICY`.
+
+    kwargs : dict
+        Individual option setting values, i.e. values for keys named in
+        :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+        :meth:`~iris.CombineOptions.set`.  These take precedence over those set by the
+        `options` arg.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+
+    Notes
+    -----
+        A ``support_multiple_references`` option will be accepted as valid, but will
+        have *no* effect on :func:`combine_cubes` because this option only acts during
+        load operations.
+
+
+    Examples
+    --------
+    .. testsetup::
+
+        import numpy as np
+        from iris.cube import Cube, CubeList
+        from iris.coords import DimCoord
+        from iris.util import combine_cubes
+
+        def testcube(timepts):
+            cube = Cube(np.array(timepts))
+            cube.add_dim_coord(
+                DimCoord(timepts, standard_name="time", units="days since 1990-01-01"),
+                0
+            )
+            return cube
+
+        cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+        combinecubes_old_policysettings = iris.LOAD_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore old state to avoid upsetting other tests
+        iris.LOAD_POLICY.set(combinecubes_old_policysettings)
+
+    >>> # Take a pair of sample cubes which can concatenate together
+    >>> print(cubes)
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> print([cube.coord("time").points for cube in cubes])
+    [array([1., 2.]), array([13., 14., 15.])]
+
+    >>> # Show these do NOT combine with the "default" action, which only merges ..
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... however, they **do** combine if you enable concatenation
+    >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
+    0: unknown / (unknown)                 (time: 5)
+    >>> # ... which may be controlled by various means
+    >>> iris.LOAD_POLICY.set("recommended")
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # Also, show how a differing attribute will block cube combination
+    >>> cubes[0].attributes["x"] = 3
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... which can then be fixed by enabling attribute equalisation
+    >>> with iris.LOAD_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    ...     print(combine_cubes(cubes))
+    ...
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # .. BUT NOTE : this modifies the original input cubes
+    >>> print(cubes[0].attributes.get("x"))
+    None
+
+    """
+    # TODO: somehow, provide a real + useful working code example
+
+    from iris import LOAD_POLICY, CombineOptions
+    from iris._combine import _combine_cubes
+
+    if options is None:
+        opts_dict = LOAD_POLICY.settings()
+    elif isinstance(options, str):
+        if options in CombineOptions.SETTINGS:
+            opts_dict = CombineOptions.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(CombineOptions.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    elif isinstance(options, dict):
+        opts_dict = options
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    if kwargs is not None:
+        opts_dict = opts_dict.copy()  # avoid changing original
+        opts_dict.update(kwargs)
+
+    return _combine_cubes(cubes, opts_dict)

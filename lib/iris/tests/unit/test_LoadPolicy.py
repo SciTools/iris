@@ -36,7 +36,7 @@ class Test_settings:
         options = LoadPolicy()
         settings = options.settings()
         assert isinstance(settings, dict)
-        assert tuple(settings.keys()) == LoadPolicy.OPTION_KEYS
+        assert list(settings.keys()) == LoadPolicy.OPTION_KEYS
         for key in LoadPolicy.OPTION_KEYS:
             assert settings[key] == getattr(options, key)
 
@@ -74,15 +74,12 @@ class Test_set:
 
     def test_arg_bad_string(self):
         options = LoadPolicy()
-        expected = "Invalid arg options='unknown' : must be a dict, or one of"
-        with pytest.raises(TypeError, match=expected):
-            options.set("unknown")
-
-    def test_arg_bad_type(self):
-        options = LoadPolicy()
-        expected = "must be a dict, or one of"
-        with pytest.raises(TypeError, match=expected):
-            options.set((1, 2, 3))
+        expected = (
+            r"arg 'options'='oddthing'.*not a valid setting.*expected one of.* "
+            "['legacy', 'default', 'recommended', 'comprehensive']"
+        )
+        with pytest.raises(ValueError, match=expected):
+            options.set("oddthing")
 
     def test_kwargs(self):
         options = LoadPolicy()
