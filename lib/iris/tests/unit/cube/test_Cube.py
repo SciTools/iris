@@ -3436,5 +3436,20 @@ class TestAttributesProperty:
         assert cube.attributes == {}
 
 
+class Test_is_dataless:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.data = np.array(0)
+        self.shape = (0,)
+
+    def test_with_data(self):
+        cube = Cube(data=self.data)
+        assert not cube.is_dataless()
+
+    def test_without_data(self):
+        cube = Cube(data=None, shape=self.shape)
+        assert cube.is_dataless()
+
+
 if __name__ == "__main__":
     tests.main()
