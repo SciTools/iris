@@ -4086,7 +4086,7 @@ class Cube(CFVariableMixin):
                             other.core_data(),
                             equal_nan=True,
                         )
-                )
+                    )
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
