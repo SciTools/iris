@@ -88,8 +88,8 @@ class TestEquality:
 
     def test_dataless_comparison(self):
         cube = iris.cube.Cube(1)
-        dataless_cube = iris.cube.Cube(shape=(1, ))
-        dataless_copy = iris.cube.Cube(shape=(1, ))
+        dataless_cube = iris.cube.Cube(shape=(1,))
+        dataless_copy = iris.cube.Cube(shape=(1,))
 
         assert cube != dataless_cube
         assert dataless_copy == dataless_cube
