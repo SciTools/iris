@@ -6,8 +6,6 @@
 
 import pytest
 
-import iris.exceptions
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -33,17 +31,17 @@ class Test__init__:
 
     def test_data_same_shape(self):
         with pytest.warns(match=""):
-            dm = DataManager(self.data, self.data.shape)
+            DataManager(self.data, self.data.shape)
 
     def test_data_conflicting_shape(self):
         msg = 'shape" provided does not match "data'
         with pytest.raises(ValueError, match=msg):
-            dm = DataManager(self.data, ())
+            DataManager(self.data, ())
 
     def test_no_data_no_shape(self):
         msg = 'one of "shape" or "data" should be provided; both are None'
         with pytest.raises(ValueError, match=msg):
-            dm = DataManager(None, None)
+            DataManager(None, None)
 
 
 class Test___copy__(tests.IrisTest):
