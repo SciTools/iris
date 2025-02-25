@@ -3,7 +3,9 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris._data_manager.DataManager`."""
+import pytest
 
+import iris.exceptions
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -17,6 +19,26 @@ import numpy.ma as ma
 from iris._data_manager import DataManager
 from iris._lazy_data import as_lazy_data
 
+
+class Test__init__:
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.data = np.array([1,])
+
+    def test_data_same_shape(self):
+        with pytest.warns(match=""):
+            dm = DataManager(self.data, self.data.shape)
+
+    def test_data_conflicting_shape(self):
+        msg = 'shape" provided does not match "data'
+        with pytest.raises(ValueError, match=msg):
+            dm = DataManager(self.data, ())
+
+    def test_no_data_no_shape(self):
+        msg = 'one of "shape" or "data" should be provided; both are None'
+        with pytest.raises(ValueError, match=msg):
+            dm = DataManager(None, None)
 
 class Test___copy__(tests.IrisTest):
     def test(self):
