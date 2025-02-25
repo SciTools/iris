@@ -155,10 +155,10 @@ class ScipyAggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        self.agg_method(data, axis=axis, percent=percent)
+        result = self.agg_method(data, axis=axis, percent=percent)
 
         # Trigger calculation for lazy case.
-        as_concrete_data(data)
+        as_concrete_data(result)
         for key in ["alphap", "betap"]:
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], 1)
 
@@ -170,10 +170,12 @@ class ScipyAggregateMixin:
         if self.lazy:
             data = as_lazy_data(data)
 
-        self.agg_method(data, axis=axis, percent=percent, alphap=0.6, betap=0.5)
+        result = self.agg_method(
+            data, axis=axis, percent=percent, alphap=0.6, betap=0.5
+        )
 
         # Trigger calculation for lazy case.
-        as_concrete_data(data)
+        as_concrete_data(result)
         for key, val in zip(["alphap", "betap"], [0.6, 0.5]):
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], val)
 
@@ -214,8 +216,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(data, axis=0, percent=50, fast_percentile_method=True)
@@ -322,8 +323,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
             data, axis=0, percent=50, fast_percentile_method=True
         )
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)

@@ -60,78 +60,6 @@ __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
 
 
-class _CubeFilter:
-    """A constraint, paired with a list of cubes matching that constraint."""
-
-    def __init__(self, constraint, cubes=None):
-        self.constraint = constraint
-        if cubes is None:
-            cubes = CubeList()
-        self.cubes = cubes
-
-    def __len__(self):
-        return len(self.cubes)
-
-    def add(self, cube):
-        """Add the appropriate (sub)cube to the list of cubes where it matches the constraint."""
-        sub_cube = self.constraint.extract(cube)
-        if sub_cube is not None:
-            self.cubes.append(sub_cube)
-
-    def merged(self, unique=False):
-        """Return a new :class:`_CubeFilter` by merging the list of cubes.
-
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
-        """
-        return _CubeFilter(self.constraint, self.cubes.merge(unique))
-
-
-class _CubeFilterCollection:
-    """A list of _CubeFilter instances."""
-
-    @staticmethod
-    def from_cubes(cubes, constraints=None):
-        """Create a new collection from an iterable of cubes, and some optional constraints."""
-        constraints = iris._constraints.list_of_constraints(constraints)
-        pairs = [_CubeFilter(constraint) for constraint in constraints]
-        collection = _CubeFilterCollection(pairs)
-        for c in cubes:
-            collection.add_cube(c)
-        return collection
-
-    def __init__(self, pairs):
-        self.pairs = pairs
-
-    def add_cube(self, cube):
-        """Add the given :class:`~iris.cube.Cube` to all of the relevant constraint pairs."""
-        for pair in self.pairs:
-            pair.add(cube)
-
-    def cubes(self):
-        """Return all the cubes in this collection concatenated into a single :class:`CubeList`."""
-        result = CubeList()
-        for pair in self.pairs:
-            result.extend(pair.cubes)
-        return result
-
-    def merged(self, unique=False):
-        """Return a new :class:`_CubeFilterCollection` by merging all the cube lists of this collection.
-
-        Parameters
-        ----------
-        unique : bool, default=False
-            If True, raises `iris.exceptions.DuplicateDataError` if
-            duplicate cubes are detected.
-
-        """
-        return _CubeFilterCollection([pair.merged(unique) for pair in self.pairs])
-
-
 class CubeList(list):
     """All the functionality of a standard :class:`list` with added "Cube" context."""
 
@@ -245,7 +173,7 @@ class CubeList(list):
 
         # return our newly created XML string
         doc = Cube._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return iris.util._print_xml(doc)
 
     def extract(self, constraints):
         """Filter each of the cubes which can be filtered by the given constraints.
@@ -913,7 +841,8 @@ class CubeAttrsDict(MutableMapping):
         # For equality, require both globals + locals to match exactly.
         # NOTE: array content works correctly, since 'locals' and 'globals' are always
         # iris.common.mixin.LimitedAttributeDict, which gets this right.
-        other = CubeAttrsDict(other)
+        if not isinstance(other, CubeAttrsDict):
+            other = CubeAttrsDict(other)
         result = self.locals == other.locals and self.globals == other.globals
         return result
 
@@ -1535,9 +1464,8 @@ class Cube(CFVariableMixin):
 
         if data_dims:
             if len(data_dims) != metadata.ndim:
-                msg = (
-                    "Invalid data dimensions: {} given, {} expected for "
-                    "{!r}.".format(len(data_dims), metadata.ndim, metadata.name())
+                msg = "Invalid data dimensions: {} given, {} expected for {!r}.".format(
+                    len(data_dims), metadata.ndim, metadata.name()
                 )
                 raise iris.exceptions.CannotAddError(msg)
             # Check compatibility with the shape of the data
@@ -2390,8 +2318,7 @@ class Cube(CFVariableMixin):
 
             bad_name = _name or standard_name or long_name or ""
             emsg = (
-                f"Expected to find exactly 1 {bad_name!r} coordinate, "
-                "but found none."
+                f"Expected to find exactly 1 {bad_name!r} coordinate, but found none."
             )
             raise iris.exceptions.CoordinateNotFoundError(emsg)
 
@@ -2604,8 +2531,7 @@ class Cube(CFVariableMixin):
 
         if len(cell_measures) > 1:
             msg = (
-                "Expected to find exactly 1 cell_measure, but found {}. "
-                "They were: {}."
+                "Expected to find exactly 1 cell_measure, but found {}. They were: {}."
             )
             msg = msg.format(
                 len(cell_measures),
@@ -2624,8 +2550,7 @@ class Cube(CFVariableMixin):
                     )
                     raise iris.exceptions.CellMeasureNotFoundError(emsg)
             msg = (
-                f"Expected to find exactly 1 {bad_name!r} cell measure, "
-                "but found none."
+                f"Expected to find exactly 1 {bad_name!r} cell measure, but found none."
             )
             raise iris.exceptions.CellMeasureNotFoundError(msg)
 
@@ -3857,7 +3782,7 @@ class Cube(CFVariableMixin):
 
         # Print our newly created XML
         doc = self._sort_xml_attrs(doc)
-        return doc.toprettyxml(indent="  ")
+        return iris.util._print_xml(doc)
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
         cube_xml_element = doc.createElement("cube")

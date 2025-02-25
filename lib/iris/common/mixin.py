@@ -7,10 +7,13 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import timedelta
 from functools import wraps
 from typing import Any
+import warnings
 
 import cf_units
+import numpy as np
 
 import iris.std_names
 
@@ -104,11 +107,9 @@ class LimitedAttributeDict(dict):
         match = set(self.keys()) == set(other.keys())
         if match:
             for key, value in self.items():
-                match = value == other[key]
-                try:
-                    match = bool(match)
-                except ValueError:
-                    match = match.all()
+                match = np.array_equal(
+                    np.array(value, ndmin=1), np.array(other[key], ndmin=1)
+                )
                 if not match:
                     break
         return match
@@ -138,6 +139,68 @@ class LimitedAttributeDict(dict):
                 raise ValueError(f"{key!r} is not a permitted attribute")
 
         dict.update(self, other, **kwargs)
+
+
+class Unit(cf_units.Unit):
+    # TODO: remove this subclass once FUTURE.date_microseconds is removed.
+
+    @classmethod
+    def from_unit(cls, unit: cf_units.Unit):
+        """Cast a :class:`cf_units.Unit` to an :class:`Unit`."""
+        if isinstance(unit, Unit):
+            result = unit
+        elif isinstance(unit, cf_units.Unit):
+            result = cls.__new__(cls)
+            result.__dict__.update(unit.__dict__)
+        else:
+            message = f"Expected a cf_units.Unit, got {type(unit)}"
+            raise TypeError(message)
+        return result
+
+    def num2date(
+        self,
+        time_value,
+        only_use_cftime_datetimes=True,
+        only_use_python_datetimes=False,
+    ):
+        # Used to patch the cf_units.Unit.num2date method to round to the
+        #  nearest second, which was the legacy behaviour. This is under a FUTURE
+        #  flag - users will need to adapt to microsecond precision eventually,
+        #  which may involve floating point issues.
+        from iris import FUTURE
+
+        def _round(date):
+            if date.microsecond == 0:
+                return date
+            elif date.microsecond < 500000:
+                return date - timedelta(microseconds=date.microsecond)
+            else:
+                return (
+                    date
+                    + timedelta(seconds=1)
+                    - timedelta(microseconds=date.microsecond)
+                )
+
+        result = super().num2date(
+            time_value, only_use_cftime_datetimes, only_use_python_datetimes
+        )
+        if FUTURE.date_microseconds is False:
+            message = (
+                "You are using legacy date precision for Iris units - max "
+                "precision is seconds. In future, Iris will use microsecond "
+                "precision - available since cf-units version 3.3 - which may "
+                "affect core behaviour. To opt-in to the "
+                "new behaviour, set `iris.FUTURE.date_microseconds = True`."
+            )
+            warnings.warn(message, category=FutureWarning)
+
+            if hasattr(result, "shape"):
+                vfunc = np.vectorize(_round)
+                result = vfunc(result)
+            else:
+                result = _round(result)
+
+        return result
 
 
 class CFVariableMixin:
@@ -208,7 +271,8 @@ class CFVariableMixin:
 
     @units.setter
     def units(self, unit: cf_units.Unit | str | None) -> None:
-        self._metadata_manager.units = cf_units.as_unit(unit)
+        unit = cf_units.as_unit(unit)
+        self._metadata_manager.units = Unit.from_unit(unit)
 
     @property
     def attributes(self) -> LimitedAttributeDict:

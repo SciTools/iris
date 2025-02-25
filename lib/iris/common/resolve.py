@@ -2358,16 +2358,16 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            124652160.0
+            np.float32(124652160.0)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
-            0.0
+            np.float32(0.0)
             >>> result = resolver.cube(zeros, in_place=True)
             >>> result is cube1
             True
             >>> cube1.data.sum()
-            0.0
+            np.float32(0.0)
 
         """
         from iris.cube import Cube
@@ -2592,9 +2592,9 @@ class Resolve:
                     source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().shape is None
             True
-            >>> Resolve(cube1, cube2).shape
+            >>> Resolve(cube1, cube2).shape  # doctest: +SKIP
             (240, 37, 49)
-            >>> Resolve(cube2, cube1).shape
+            >>> Resolve(cube2, cube1).shape  # doctest: +SKIP
             (240, 37, 49)
 
         """  # noqa: D214, D406, D407, D410, D411

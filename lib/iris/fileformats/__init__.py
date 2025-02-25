@@ -62,7 +62,7 @@ def _load_grib(*args, **kwargs):
         from iris_grib import load_cubes
     except ImportError:
         raise RuntimeError(
-            "Unable to load GRIB file - " '"iris_grib" package is not installed.'
+            'Unable to load GRIB file - "iris_grib" package is not installed.'
         )
 
     return load_cubes(*args, **kwargs)
