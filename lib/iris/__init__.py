@@ -134,6 +134,7 @@ __all__ = [
     "AttributeConstraint",
     "CombineOptions",
     "Constraint",
+    "DATALESS",
     "FUTURE",
     "Future",
     "IrisDeprecation",
@@ -154,6 +155,9 @@ __all__ = [
 Constraint = iris._constraints.Constraint
 AttributeConstraint = iris._constraints.AttributeConstraint
 NameConstraint = iris._constraints.NameConstraint
+
+#: To be used when copying a cube to make the new cube dataless.
+DATALESS = "NONE"
 
 
 class Future(threading.local):
