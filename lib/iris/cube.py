@@ -1873,14 +1873,6 @@ class Cube(CFVariableMixin):
             if match is None:
                 dims_by_id.update(aux_dims_by_id)
 
-        if match is None and not name_provided:
-            # We may have an equivalent coordinate but not the actual
-            # cube coordinate instance - so forced to perform coordinate
-            # lookup to attempt to retrieve it
-            coord = self.coord(coord)
-            # Check for id match - faster than equality
-            match = dims_by_id.get(id(coord))
-
         # Search derived aux coordinates
         if match is None:
             target_metadata = coord.metadata
@@ -1892,6 +1884,14 @@ class Cube(CFVariableMixin):
             matches = [factory.derived_dims(self.coord_dims) for factory in factories]
             if matches:
                 match = matches[0]
+
+        if match is None and not name_provided:
+            # We may have an equivalent coordinate but not the actual
+            # cube coordinate instance - so forced to perform coordinate
+            # lookup to attempt to retrieve it
+            coord = self.coord(coord)
+            # Check for id match - faster than equality
+            match = dims_by_id.get(id(coord))
 
         if match is None:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
