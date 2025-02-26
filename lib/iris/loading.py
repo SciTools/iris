@@ -319,20 +319,50 @@ class LoadPolicy(CombineOptions):
         # restore original settings, so as not to upset other tests
         LOAD_POLICY.set(loadpolicy_old_settings)
 
+
+    Notes
+    -----
+    The ``SETTINGS`` options for the various
+    :data:`~iris._combine.CombineOptions.SETTINGS_NAMES` are as follows:
+
+    *  ``"legacy"``
+        Produces loading behaviour identical to Iris versions < 3.11, i.e. before the
+        varying hybrid references were supported.
+
+    * ``"default"``
+        As "legacy" except that ``support_multiple_references=True``.  This differs
+        from "legacy" only when multiple mergeable reference fields are encountered,
+        in which case incoming cubes are extended into the extra dimension, and a
+        concatenate step is added.
+
+    * ``"recommended"``
+        Enables multiple reference handling, *and* applies a merge step followed by
+        a concatenate step.
+
+    * ``"comprehensive"``
+        Like "recommended", uses the 'mc' merge-concatenate sequence, but now also
+        *repeats* the merge+concatenate steps until no further change is produced.
+        Also applies a prior 'equalise_cubes' call, of the form
+        ``equalise_cubes(cubes, apply_all=True)``.
+
     Examples
     --------
     >>> LOAD_POLICY.set("legacy")
     >>> print(LOAD_POLICY)
     LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=False)
+    >>>
     >>> LOAD_POLICY.support_multiple_references = True
     >>> print(LOAD_POLICY)
     LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
+
     >>> LOAD_POLICY.set(merge_concat_sequence="cm")
     >>> print(LOAD_POLICY)
     LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
+
     >>> with LOAD_POLICY.context("comprehensive"):
     ...    print(LOAD_POLICY)
     LoadPolicy(equalise_cubes_kwargs={'apply_all': True}, merge_concat_sequence='mc', merge_unique=False, repeat_until_unchanged=True, support_multiple_references=True)
+    >>>
     >>> print(LOAD_POLICY)
     LoadPolicy(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
     """
