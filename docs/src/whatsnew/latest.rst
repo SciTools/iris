@@ -48,11 +48,11 @@ This document explains the changes made to Iris for this release
    However, :meth:`~iris.cube.Cube.transpose` will work, as will
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
-   
+
 #. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
    render text in the bottom right of the plot figure.
    (:issue:`6247`, :pull:`6332`)
-   
+
 
 🐛 Bugs Fixed
 =============
@@ -64,6 +64,9 @@ This document explains the changes made to Iris for this release
    saving NetCDF ``valid_range``, ``valid_min`` and ``valid_max`` attributes -
    older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
    32-bit. (:issue:`6178`, :pull:`6343`)
+
+#. `@bouweandela`_ fixed handling of masked Dask arrays in
+    :func:`~iris.util.array_equal`.
 
 
 💣 Incompatible Changes
