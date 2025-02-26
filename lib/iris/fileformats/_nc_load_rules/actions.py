@@ -47,7 +47,7 @@ import warnings
 from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
-from iris.loading import LOAD_PROBLEMS
+from iris.loading import LOAD_PROBLEMS, LoadProblemsEntry
 import iris.warnings
 
 from . import helpers as hh
@@ -395,8 +395,11 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             raise error
         except error.__class__ as error:
             tb_exception = TracebackException.from_exception(error)
-            captured_tuple = (hh.build_raw_cube(cf_var, engine.filename), tb_exception)
-            LOAD_PROBLEMS[Path(engine.filename)].append(captured_tuple)
+            load_problems_entry = LoadProblemsEntry(
+                loaded=hh.build_raw_cube(cf_var, engine.filename),
+                stack_trace=tb_exception,
+            )
+            LOAD_PROBLEMS[Path(engine.filename)].append(load_problems_entry)
 
     return rule_name
 

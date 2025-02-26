@@ -5,10 +5,14 @@
 """Iris general file loading mechanism."""
 
 from collections import defaultdict
+from dataclasses import dataclass
 import itertools
 from pathlib import Path
 from traceback import TracebackException
 from typing import Any, Iterable
+
+from iris.common import LimitedAttributeDict
+from iris.cube import Cube
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -327,14 +331,45 @@ class LoadPolicy(CombineOptions):
 LOAD_POLICY = LoadPolicy()
 
 
+@dataclass
+class LoadProblemsEntry:
+    loaded: Cube | dict[str, Any] | None
+    """The object that experienced loading problems.
+
+    Two possible types:
+
+    - :class:`~iris.cube.Cube`: if problems occurred while building a
+      :class:`~iris.common.mixin.CFVariableMixin` -
+      e.g. :class:`~iris.cube.Cube` or
+      :class:`~iris.coords.DimCoord` - then the information will be stored in
+      a 'bare bones' :class:`~iris.cube.Cube` containing only the
+      :attr:`~iris.cube.Cube.data` array and the attributes. The attributes
+      are un-parsed (they can still contain ``_FillValue`` etcetera), and are
+      stored under a special key in the Cube :attr:`~iris.cube.Cube.attributes`
+      dictionary: :attr:`~iris.common.mixin.LimitedAttributeDict.IRIS_RAW`.
+    - :class:`dict`: if problems occurred while building objects from NetCDF
+      attributes - e.g. :class:`~cf_units.Unit` or a ``standard_name``. The
+      dictionary key is the key of the attribute, and the value is the raw
+      attribute returned by the ``netCDF4`` library.
+    """
+
+    stack_trace: TracebackException
+    """The traceback exception that was raised during loading.
+
+    This instance contains rich information to support user-specific workflows,
+    e.g:
+
+    - ``"".join(stack_trace.format())``: the full stack trace as a string - the
+      same way this would be seen at the command line.
+    - ``stack_trace.exc_type``: the exception type e.g. :class:`ValueError`.
+    """
+
+
 # TODO: could this be a context manager in future?
-# TODO: type alias for the tuple. Maybe a namedtuple for easy access?
-# TODO: docstring, inc examples:
-#  ".join(TracebackException.format())
-#  TracebackException.exc_type
+# TODO: docstring, inc examples
 # TODO: include in an __all__ somewhere
 # TODO: defaultdict is bad UX (investigate setdefault on a dict?)
-LOAD_PROBLEMS: dict[Path, list[tuple[Any, TracebackException]]] = defaultdict(list)
+LOAD_PROBLEMS: dict[Path, list[LoadProblemsEntry]] = defaultdict(list)
 """Collections of cubes/coords/etcetera that could not be loaded correctly.
 
 Structured as a dictionary of file paths. The values are lists of tuples:
@@ -344,3 +379,34 @@ Structured as a dictionary of file paths. The values are lists of tuples:
 
 .. todo: More docstring
 """
+
+
+def _profile_load_problems() -> dict[Path, list[tuple[str | None, TracebackException]]]:
+    """Return a simplified copy of the current :const:`LOAD_PROBLEMS`.
+
+    Represent :class:`~iris.cube.Cube` s by their var_name, and :class:`dict` s
+    by their keys. This avoids any large array payloads.
+    """
+
+    def _simplify_entry(
+        entry: LoadProblemsEntry,
+    ) -> tuple[str | None, TracebackException]:
+        basic_value: str | None = None
+        if hasattr(entry.loaded, "keys"):
+            assert isinstance(entry.loaded, dict)
+            (basic_value,) = entry.loaded.keys()
+        elif hasattr(entry.loaded, "var_name"):
+            assert isinstance(entry.loaded, Cube)
+            attributes = entry.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
+            # TODO: should "var_name" also be encoded as a constant?
+            #  Is there a better way to store this info in the first place?
+            basic_value = attributes["var_name"]
+        else:
+            assert entry.loaded is None
+
+        return basic_value, entry.stack_trace
+
+    return {
+        path: [_simplify_entry(entry) for entry in entries]
+        for path, entries in LOAD_PROBLEMS.items()
+    }

@@ -95,8 +95,8 @@ class LimitedAttributeDict(dict):
     )
     """Attributes with special CF meaning, forbidden in Iris attribute dictionaries."""
 
-    RAW_KEY = "iris_raw"
-    """Used by Iris to store ALL attributes when problems are encountered during loading.
+    IRIS_RAW = "IRIS_RAW"
+    """Key used by Iris to store ALL attributes when problems are encountered during loading.
 
     See Also
     --------

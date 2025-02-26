@@ -40,7 +40,7 @@ import iris.exceptions
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
-from iris.loading import LOAD_PROBLEMS
+from iris.loading import LOAD_PROBLEMS, LoadProblemsEntry
 import iris.std_names
 import iris.util
 import iris.warnings
@@ -467,7 +467,7 @@ def _add_or_capture(
     filename: str,
     cf_var: iris.fileformats.cf.CFVariable,
     attr_key: Optional[str] = None,
-) -> Optional[tuple[Any, TracebackException]]:
+) -> Optional[LoadProblemsEntry]:
     """Build & add objects to the Cube, capturing problem objects - common code.
 
     Problems are captured in :const:`iris.loading.LOAD_PROBLEMS`.
@@ -521,7 +521,7 @@ def _add_or_capture(
     iris.loading.LOAD_PROBLEMS: The destination for captured problems.
     """
     captured: Cube | dict[str, Any] | None = None
-    captured_tuple = None
+    load_problems_entry: LoadProblemsEntry | None = None
 
     try:
         built = build_func()
@@ -533,12 +533,15 @@ def _add_or_capture(
         #  best to capture objects IF possible.
         if attr_key is not None:
             with contextlib.suppress(AttributeError):
-                captured = {attr_key: getattr(cf_var, attr_key)}
+                captured_attr = getattr(cf_var, attr_key)
+            captured = {attr_key: captured_attr}
         else:
             with contextlib.suppress(Exception):
                 captured = build_raw_cube(cf_var, filename)
 
-        captured_tuple = (captured, tb_exception)
+        load_problems_entry = LoadProblemsEntry(
+            loaded=captured, stack_trace=tb_exception
+        )
 
     else:
         try:
@@ -550,12 +553,15 @@ def _add_or_capture(
                 captured = {attr_key: built}
             else:
                 captured = built
-            captured_tuple = (captured, tb_exception)
 
-    if captured_tuple is not None:
+            load_problems_entry = LoadProblemsEntry(
+                loaded=captured, stack_trace=tb_exception
+            )
+
+    if load_problems_entry is not None:
         file_path = Path(filename)
-        LOAD_PROBLEMS[file_path].append(captured_tuple)
-    return captured_tuple
+        LOAD_PROBLEMS[file_path].append(load_problems_entry)
+    return load_problems_entry
 
 
 ################################################################################
@@ -563,11 +569,11 @@ def build_raw_cube(cf_var: cf.CFVariable, filename: str) -> Cube:
     """Build the most basic Cube possible - used as a 'last resort' fallback."""
     # TODO: dataless Cubes might be an opportunity for _get_cf_var_data() to return None?
     data = _get_cf_var_data(cf_var, filename)
-    cube = Cube(data)
-    cube.attributes[LimitedAttributeDict.RAW_KEY] = {
-        key: value for key, value in cf_var.cf_attrs()
-    }
-    return cube
+    raw_attributes = {key: value for key, value in cf_var.cf_attrs()}
+    # Not a real attribute, but this is 'Iris language'.
+    raw_attributes["var_name"] = cf_var.cf_name
+    attributes = {LimitedAttributeDict.IRIS_RAW: raw_attributes}
+    return Cube(data=data, attributes=attributes)
 
 
 ################################################################################
@@ -607,9 +613,9 @@ def build_and_add_names(engine: Engine) -> None:
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_STD_NAME,
     )
-    if problem is not None:
-        problem_dict, tb_exception = problem
-        invalid_std_name = problem_dict.get(CF_ATTR_STD_NAME)
+    if problem is not None and hasattr(problem.loaded, "get"):
+        assert isinstance(problem.loaded, dict)
+        invalid_std_name = problem.loaded.get(CF_ATTR_STD_NAME)
     else:
         invalid_std_name = None
 
@@ -1354,8 +1360,10 @@ def build_dimension_coordinate(
             f"Gracefully creating {coord_var_name} auxiliary coordinate instead."
         )
         tb_exception = TracebackException.from_exception(dim_error)
-        captured_tuple = (build_raw_cube(cf_coord_var, filename), tb_exception)
-        LOAD_PROBLEMS[Path(filename)].append(captured_tuple)
+        load_problems_entry = LoadProblemsEntry(
+            loaded=build_raw_cube(cf_coord_var, filename), stack_trace=tb_exception
+        )
+        LOAD_PROBLEMS[Path(filename)].append(load_problems_entry)
 
         coord = iris.coords.AuxCoord(
             points_data,
