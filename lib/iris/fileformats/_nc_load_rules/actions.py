@@ -399,7 +399,9 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 loaded=hh.build_raw_cube(cf_var, engine.filename),
                 stack_trace=tb_exception,
             )
-            LOAD_PROBLEMS[Path(engine.filename)].append(load_problems_entry)
+            LOAD_PROBLEMS.setdefault(Path(engine.filename), []).append(
+                load_problems_entry
+            )
 
     return rule_name
 

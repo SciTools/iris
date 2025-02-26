@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism."""
 
-from collections import defaultdict
 from dataclasses import dataclass
 import itertools
 from pathlib import Path
@@ -340,7 +339,7 @@ class LoadProblemsEntry:
 
     - :class:`~iris.cube.Cube`: if problems occurred while building a
       :class:`~iris.common.mixin.CFVariableMixin` -
-      e.g. :class:`~iris.cube.Cube` or
+      currently the only handled case is
       :class:`~iris.coords.DimCoord` - then the information will be stored in
       a 'bare bones' :class:`~iris.cube.Cube` containing only the
       :attr:`~iris.cube.Cube.data` array and the attributes. The attributes
@@ -348,7 +347,8 @@ class LoadProblemsEntry:
       stored under a special key in the Cube :attr:`~iris.cube.Cube.attributes`
       dictionary: :attr:`~iris.common.mixin.LimitedAttributeDict.IRIS_RAW`.
     - :class:`dict`: if problems occurred while building objects from NetCDF
-      attributes - e.g. :class:`~cf_units.Unit` or a ``standard_name``. The
+      attributes - currently the only handled cases are ``standard_name``,
+      ``long_name``, ``var_name``. The
       dictionary key is the key of the attribute, and the value is the raw
       attribute returned by the ``netCDF4`` library.
     """
@@ -366,18 +366,140 @@ class LoadProblemsEntry:
 
 
 # TODO: could this be a context manager in future?
-# TODO: docstring, inc examples
 # TODO: include in an __all__ somewhere
-# TODO: defaultdict is bad UX (investigate setdefault on a dict?)
-LOAD_PROBLEMS: dict[Path, list[LoadProblemsEntry]] = defaultdict(list)
+LOAD_PROBLEMS: dict[Path, list[LoadProblemsEntry]] = {}
 """Collections of cubes/coords/etcetera that could not be loaded correctly.
 
-Structured as a dictionary of file paths. The values are lists of tuples:
+Structured as a dictionary of file paths. The dictionary values are lists of
+:class:`LoadProblemsEntry` - see that docstring for more about what is stored.
 
-- The object that had loading problems
-- The traceback exception
+Provided to increase transparency (problem objects are not simply discarded),
+and to make it possible to fix loading problems without leaving the Iris API.
 
-.. todo: More docstring
+.. testsetup::
+
+    from pathlib import Path
+    from pprint import pprint
+    import sys
+    import warnings
+
+    import cf_units
+    import iris
+    import iris.common
+    import iris.coords
+    from iris.fileformats._nc_load_rules import helpers
+    import iris.loading
+    from iris import std_names
+
+    # Hack to ensure doctests actually see Warnings that are raised, and that
+    #  they have a relative path (so a test pass is not machine-dependent).
+    warnings.filterwarnings("default")
+    IRIS_FILE = Path(iris.__file__)
+    def custom_warn(message, category, filename, lineno, file=None, line=None):
+        filepath = Path(filename)
+        filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
+        sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+    warnings.showwarning = custom_warn
+
+    build_dimension_coordinate_original = helpers.build_dimension_coordinate
+
+    def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
+        if cf_coord_var.cf_name == "time":
+            raise ValueError("Example dimension coordinate error")
+        else:
+            return build_dimension_coordinate_original(
+                filename, cf_coord_var, coord_name, coord_system
+            )
+
+    helpers.build_dimension_coordinate = raise_example_error_dim
+    del std_names.STD_NAMES["air_temperature"]
+    iris.FUTURE.date_microseconds = True
+
+
+Examples
+--------
+For this example we have 'booby-trapped' the Iris loading process to force
+errors to occur. When we load our first cube, we see the warning that
+:class:`LOAD_PROBLEMS` has been added to:
+
+>>> cube_a1b = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+iris/...IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
+  warnings.warn(message, category=IrisLoadWarning)
+
+Remember that Python by default suppresses duplicate warnings, so a second
+load action does not raise another:
+
+>>> cube_e1 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+
+Examining the contents of :class:`LOAD_PROBLEMS` we can see that both files
+experienced some problems:
+
+>>> print([path.name for path in iris.loading.LOAD_PROBLEMS.keys()])
+['A1B_north_america.nc', 'E1_north_america.nc']
+
+Printing the A1B cube shows that the time dimension coordinate is missing:
+
+>>> print(cube_a1b.summary(shorten=True))
+air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
+
+Below demonstrates how to explore the captured stack traces in detail:
+
+>>> (A1B,) = [
+...     entries for path, entries in iris.loading.LOAD_PROBLEMS.items()
+...     if path.name == "A1B_north_america.nc"
+... ]
+>>> for problem in A1B:
+...     print(problem.stack_trace.exc_type)
+<class 'ValueError'>
+<class 'ValueError'>
+
+>>> last_problem = A1B[-1]
+>>> print("".join(last_problem.stack_trace.format()))
+Traceback (most recent call last):
+  File ..., in _add_or_capture
+    built = build_func()
+            ^^^^^^^^^^^^
+  File ..., in raise_example_error_dim
+ValueError: Example dimension coordinate error
+<BLANKLINE>
+
+:class:`LOAD_PROBLEMS` also captures the 'raw' information in the object that
+could not be loaded - the time dimension coordinate. This is captured as a
+:class:`~iris.cube.Cube`:
+
+>>> print(last_problem.loaded)
+unknown / (unknown)                 (-- : 240)
+    Attributes:
+        IRIS_RAW                    {'axis': 'T', ...}
+
+Using ``last_problem.loaded``, we can manually reconstruct the missing
+dimension coordinate:
+
+>>> attributes = last_problem.loaded.attributes[
+...     iris.common.LimitedAttributeDict.IRIS_RAW
+... ]
+>>> pprint(attributes)
+{'axis': 'T',
+ 'bounds': 'time_bnds',
+ 'calendar': '360_day',
+ 'standard_name': 'time',
+ 'units': 'hours since 1970-01-01 00:00:00',
+ 'var_name': 'time'}
+
+>>> units = cf_units.Unit(attributes["units"], calendar=attributes["calendar"])
+>>> dim_coord = iris.coords.DimCoord(
+...     points=last_problem.loaded.data,
+...     standard_name=attributes["standard_name"],
+...     units=units,
+... )
+>>> cube_a1b.add_dim_coord(dim_coord, 0)
+>>> print(cube_a1b.summary(shorten=True))
+air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+
+Note that we were unable to reconstruct the missing bounds - ``time_bnds`` -
+demonstrating that this error handling is a 'best effort' and not perfect. We
+hope to continually improve it over time.
+
 """
 
 

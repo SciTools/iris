@@ -560,7 +560,7 @@ def _add_or_capture(
 
     if load_problems_entry is not None:
         file_path = Path(filename)
-        LOAD_PROBLEMS[file_path].append(load_problems_entry)
+        LOAD_PROBLEMS.setdefault(file_path, []).append(load_problems_entry)
     return load_problems_entry
 
 
@@ -1363,7 +1363,7 @@ def build_dimension_coordinate(
         load_problems_entry = LoadProblemsEntry(
             loaded=build_raw_cube(cf_coord_var, filename), stack_trace=tb_exception
         )
-        LOAD_PROBLEMS[Path(filename)].append(load_problems_entry)
+        LOAD_PROBLEMS.setdefault(Path(filename), []).append(load_problems_entry)
 
         coord = iris.coords.AuxCoord(
             points_data,
