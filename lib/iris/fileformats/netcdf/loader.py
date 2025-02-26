@@ -230,11 +230,21 @@ def _get_cf_var_data(cf_var, filename):
             )
             warnings.warn(msg)
 
+            # A stab in the dark at the mean size of the variable length arrays (this could be anything):
+            mean_vl_array_len = 10
+
+            # Give user the chance to pass a hint of the average variable length array size via
+            # the chunk control context manager. This allows for better decisions to be made on
+            # whether the data should be lazy-loaded or not.
+            if CHUNK_CONTROL.mode is not CHUNK_CONTROL.Modes.AS_DASK:
+                if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.name):
+                    if vl_chunk_hint := chunks.get("_vl_hint"):
+                        mean_vl_array_len = vl_chunk_hint
+
             # In this case, cf_var.size will just return the known dimension size.
             # Special handling for strings (`str` type) as this don't have an itemsize; assume 4 bytes
-            total_bytes = (
-                cf_var.size * 4 if cf_var.dtype is str else cf_var.dtype.itemsize
-            )
+            itemsize = 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+            total_bytes = cf_var.size * mean_vl_array_len * itemsize
         else:
             # Normal NCVariable type:
             total_bytes = cf_var.size * cf_var.dtype.itemsize
