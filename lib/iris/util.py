@@ -2405,19 +2405,19 @@ def _print_xml(doc):
 
 def _combine_options_asdict(options: str | dict | None) -> dict:
     """Convert any valid combine options into an options dictionary."""
-    from iris import LOAD_POLICY
+    from iris import COMBINE_POLICY
 
     if options is None:
-        opts_dict = LOAD_POLICY.settings()
+        opts_dict = COMBINE_POLICY.settings()
     elif isinstance(options, dict):
         opts_dict = options
     elif isinstance(options, str):
-        if options in LOAD_POLICY.SETTINGS:
-            opts_dict = LOAD_POLICY.SETTINGS[options]
+        if options in COMBINE_POLICY.SETTINGS:
+            opts_dict = COMBINE_POLICY.SETTINGS[options]
         else:
             msg = (
                 "Unrecognised settings name : expected one of "
-                f"{tuple(LOAD_POLICY.SETTINGS)}."
+                f"{tuple(COMBINE_POLICY.SETTINGS)}."
             )
             raise ValueError(msg)
     else:
@@ -2452,7 +2452,7 @@ def combine_cubes(
         :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
         settings options, as described for :class:`~iris.CombineOptions`.
         Defaults to the current :meth:`~iris.CombineOptions.settings` of the
-        :data:`iris.LOAD_POLICY`.
+        :data:`iris.COMBINE_POLICY`.
 
     kwargs : dict
         Individual option setting values, i.e. values for keys named in
@@ -2489,12 +2489,12 @@ def combine_cubes(
             return cube
 
         cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
-        combinecubes_old_policysettings = iris.LOAD_POLICY.settings()
+        combinecubes_old_policysettings = iris.COMBINE_POLICY.settings()
 
     .. testcleanup::
 
         # restore old state to avoid upsetting other tests
-        iris.LOAD_POLICY.set(combinecubes_old_policysettings)
+        iris.COMBINE_POLICY.set(combinecubes_old_policysettings)
 
     >>> # Take a pair of sample cubes which can concatenate together
     >>> print(cubes)
@@ -2511,7 +2511,7 @@ def combine_cubes(
     >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
     0: unknown / (unknown)                 (time: 5)
     >>> # ... which may be controlled by various means
-    >>> iris.LOAD_POLICY.set("recommended")
+    >>> iris.COMBINE_POLICY.set("recommended")
     >>> print(combine_cubes(cubes))
     0: unknown / (unknown)                 (time: 5)
 
@@ -2521,7 +2521,7 @@ def combine_cubes(
     0: unknown / (unknown)                 (time: 2)
     1: unknown / (unknown)                 (time: 3)
     >>> # ... which can then be fixed by enabling attribute equalisation
-    >>> with iris.LOAD_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    >>> with iris.COMBINE_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
     ...     print(combine_cubes(cubes))
     ...
     0: unknown / (unknown)                 (time: 5)

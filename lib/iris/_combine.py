@@ -13,6 +13,7 @@ publicly available.
 
 from __future__ import annotations
 
+import contextlib
 import threading
 from typing import TYPE_CHECKING, Any, Dict, List
 
@@ -21,18 +22,21 @@ if TYPE_CHECKING:
 
 
 class CombineOptions(threading.local):
-    """A container for cube combination options.
+    """A control object for Iris loading and cube combination options.
 
-    Controls for generalised merge/concatenate options.  These are used as controls for
+    Both the iris loading functions and the "combine_cubes" utility apply a number of
+    possible "cube combination" operations to a list of cubes, in a definite sequence,
+    all of which tend to combine cubes into a smaller number of larger or
+    higher-dimensional cubes.
+
+    This object groups various control options for these behaviours, which apply to
     both the :func:`iris.util.combine_cubes` utility method and the core Iris loading
-    functions : see also  :data:`iris.loading.LoadPolicy`.
+    functions "iris.load_xxx".
 
-    It specifies a number of possible operations which may be applied to a list of
-    cubes, in a definite sequence, all of which tend to combine cubes into a smaller
-    number of larger or higher-dimensional cubes.
+    The :class:`CombineOptions` class defines the allowed control options, while a
+    global singleton object :data:`iris.COMBINE_POLICY` holds the current global
+    default settings.
 
-    Notes
-    -----
     The individual configurable options are :
 
     * ``equalise_cubes_kwargs`` = (dict)
@@ -58,47 +62,95 @@ class CombineOptions(threading.local):
         When enabled, the configured "combine" operation will be repeated until the
         result is stable (no more cubes are combined).
 
-    Several sets of combined options are grouped for convenience for selection by
-    "settings" name, one of :data:`CombineOptions.SETTINGS_NAMES`.
-    Note though that these different "settings" are partly determined by the needs of
-    loading support.  See the discussion in the derived
-    :class:`~iris.loading.LoadPolicy` class.  The choices are:
+    * ``support_multiple_references`` = True / False
+        When enabled, support cases where a hybrid coordinate has multiple reference
+        fields : for example, a UM file which contains a series of fields describing a
+        time-varying orography.
 
-    * ``"default"``
-        Apply a plain merge step only, i.e. ``merge_concat_sequence="m"``.
-        Other options are all "off".
+    Alternatively, certain fixed combinations of options can be selected by a
+    "settings" name, one of :data:`CombineOptions.SETTINGS_NAMES` :
 
     *  ``"legacy"``
-        Identical to "default".  See :class:`iris.LoadPolicy` for where this makes
-        a difference.
+        Apply a plain merge step only, i.e. ``merge_concat_sequence="m"``.
+        Other options are all "off".
+        This produces loading behaviour identical to Iris versions < 3.11, i.e. before
+        the varying hybrid references were supported.
+
+    * ``"default"``
+        As "legacy" except that ``support_multiple_references=True``.  This differs
+        from "legacy" only when multiple mergeable reference fields are encountered,
+        in which case incoming cubes are extended into the extra dimension, and a
+        concatenate step is added.
+        Since the handling of multiple references affects only loading operations,
+        for the purposes of calls to :func:`~iris.util.combine_cubes`, this setting is
+        *identical* to "legacy".
+
+        .. Warning::
+
+            The ``"default"`` setting **is** the initial default mode.
+
+            This "fixes" loading for cases like the time-varying orography case
+            described.  However, this setting is not strictly
+            backwards-compatible.  If this causes problems, you can force identical
+            loading behaviour to earlier Iris versions (< v3.11) with
+            ``COMBINE_POLICY.set("legacy")`` or equivalent.
 
     * ``"recommended"``
         In addition to the "merge" step, allow a following "concatenate", i.e.
         ``merge_concat_sequence="mc"``.
 
     * ``"comprehensive"``
-        Like "recommended", uses ``merge_concat_sequence="mc"``, but now also
+        As for "recommended", uses ``merge_concat_sequence="mc"``, but now also
         *repeats* the merge+concatenate steps until no further change is produced,
         i.e. ``repeat_until_unchanged=True``.
         Also applies a prior 'equalise_cubes' call, of the form
         ``equalise_cubes(cubes, apply_all=True)``.
 
-        .. note ::
+        .. Note::
 
             The "comprehensive" policy makes a maximum effort to reduce the number of
             cubes to a minimum.  However, it still cannot combine cubes with a mixture
             of matching dimension and scalar coordinates.  This may be supported at
             some later date, but for now is not possible without specific user actions.
 
-    .. Note ::
+    .. testsetup::
 
-        See also : :ref:`controlling_merge`.
+        loadpolicy_old_settings = COMBINE_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore original settings, so as not to upset other tests
+        COMBINE_POLICY.set(loadpolicy_old_settings)
 
     Examples
     --------
-    Please see :func:`iris.util.combine_cubes` for usage examples of the settings and
-    keywords described here.
+    Note: :data:`COMBINE_POLICY` is the global control object, which determines
+    the current default options for loading or :func:`iris.util.combine_cubes` calls.
+    For the latter case, however, control via argument and keywords is also available.
 
+    .. Note::
+
+        The name ``iris.LOAD_POLICY`` refers to the same thing as
+        ``iris.COMBINE_POLICY``, and is still usable, but no longer recommended.
+
+    >>> COMBINE_POLICY.set("legacy")
+    >>> print(COMBINE_POLICY)
+    CombineOptions(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=False)
+    >>>
+    >>> COMBINE_POLICY.support_multiple_references = True
+    >>> print(COMBINE_POLICY)
+    CombineOptions(equalise_cubes_kwargs=None, merge_concat_sequence='m', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
+
+    >>> COMBINE_POLICY.set(merge_concat_sequence="cm")
+    >>> print(COMBINE_POLICY)
+    CombineOptions(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
+
+    >>> with COMBINE_POLICY.context("comprehensive"):
+    ...    print(COMBINE_POLICY)
+    CombineOptions(equalise_cubes_kwargs={'apply_all': True}, merge_concat_sequence='mc', merge_unique=False, repeat_until_unchanged=True, support_multiple_references=True)
+    >>>
+    >>> print(COMBINE_POLICY)
+    CombineOptions(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
     """
 
     # Useful constants
@@ -108,11 +160,13 @@ class CombineOptions(threading.local):
         "merge_concat_sequence",
         "merge_unique",
         "repeat_until_unchanged",
+        "support_multiple_references",
     ]  # this is a list, so we can update it in an inheriting class
     _OPTIONS_ALLOWED_VALUES = {
         "merge_concat_sequence": ("", "m", "c", "mc", "cm"),
         "merge_unique": (True, False),
         "repeat_until_unchanged": (False, True),
+        "support_multiple_references": (True, False),
     }
     #: Standard settings dictionaries
     SETTINGS: Dict[str, Dict[str, Any]] = {
@@ -121,24 +175,28 @@ class CombineOptions(threading.local):
             merge_concat_sequence="m",
             merge_unique=False,
             repeat_until_unchanged=False,
+            support_multiple_references=False,
         ),
         "default": dict(
             equalise_cubes_kwargs=None,
             merge_concat_sequence="m",
             merge_unique=False,
             repeat_until_unchanged=False,
+            support_multiple_references=True,
         ),
         "recommended": dict(
             equalise_cubes_kwargs=None,
             merge_concat_sequence="mc",
             merge_unique=False,
             repeat_until_unchanged=False,
+            support_multiple_references=True,
         ),
         "comprehensive": dict(
             equalise_cubes_kwargs={"apply_all": True},
             merge_concat_sequence="mc",
             merge_unique=False,
             repeat_until_unchanged=True,
+            support_multiple_references=True,
         ),
     }
     #: Valid settings names
@@ -151,7 +209,7 @@ class CombineOptions(threading.local):
 
     def __setattr__(self, key, value):
         if key not in self.OPTION_KEYS:
-            raise KeyError(f"LoadPolicy object has no property '{key}'.")
+            raise KeyError(f"CombineOptions object has no property '{key}'.")
 
         if key != "equalise_cubes_kwargs":
             allowed_values = self._OPTIONS_ALLOWED_VALUES[key]
@@ -207,6 +265,52 @@ class CombineOptions(threading.local):
         # Implement all options by changing own content.
         for key, value in options_dict.items():
             setattr(self, key, value)
+
+    @contextlib.contextmanager
+    def context(self, settings: str | dict | None = None, **kwargs):
+        """Return a context manager applying given options changes during a scope.
+
+        Parameters
+        ----------
+        settings : str or dict, optional
+            A settings name or options dictionary, as for :meth:`~LoadPolicy.set`.
+        kwargs : dict
+            Option values, as for :meth:`~LoadPolicy.set`.
+
+        Examples
+        --------
+        .. testsetup::
+
+            import iris
+            from iris import COMBINE_POLICY, sample_data_path
+
+        >>> # Show how a CombineOptions acts in the context of a load operation
+        >>> path = sample_data_path("time_varying_hybrid_height", "*.pp")
+        >>>
+        >>> # Show that "legacy" load behaviour allows merge but not concatenate
+        >>> with COMBINE_POLICY.context("legacy"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (time: 2; model_level_number: 5; latitude: 144; longitude: 192)
+        1: x_wind / (m s-1)                    (time: 12; model_level_number: 5; latitude: 144; longitude: 192)
+        2: x_wind / (m s-1)                    (model_level_number: 5; latitude: 144; longitude: 192)
+        >>>
+        >>> # Show how "recommended" behaviour enables concatenation also
+        >>> with COMBINE_POLICY.context("recommended"):
+        ...     cubes = iris.load(path, "x_wind")
+        >>> print(cubes)
+        0: x_wind / (m s-1)                    (model_level_number: 5; time: 15; latitude: 144; longitude: 192)
+        """
+        # Save the current state
+        saved_settings = self.settings()
+
+        # Apply the new options and execute the context
+        try:
+            self.set(settings, **kwargs)
+            yield
+        finally:
+            # Re-establish the former state
+            self.set(saved_settings)
 
     def settings(self) -> dict:
         """Return a settings dict containing the current options settings."""
@@ -287,9 +391,9 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
 def _combine_load_cubes(cubes: List[Cube]) -> CubeList:
     # A special version to call _combine_cubes while also implementing the
     # _MULTIREF_DETECTION behaviour
-    from iris import LOAD_POLICY
+    from iris import COMBINE_POLICY
 
-    options = LOAD_POLICY.settings()
+    options = COMBINE_POLICY.settings()
     if (
         options["support_multiple_references"]
         and "c" not in options["merge_concat_sequence"]
@@ -301,3 +405,7 @@ def _combine_load_cubes(cubes: List[Cube]) -> CubeList:
             options["merge_concat_sequence"] += "c"
 
     return _combine_cubes(cubes, options)
+
+
+#: An object to control default cube combination and loading options
+COMBINE_POLICY = CombineOptions()
