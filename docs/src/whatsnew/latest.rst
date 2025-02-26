@@ -42,16 +42,15 @@ This document explains the changes made to Iris for this release
    :issue:`4039` (:pull:`6167`).
 
 #. `@ESadek-MO`_ made :attr:`~iris.cube.Cube.data` optional in a
-   :class:`~iris.cube.Cube`, when :attr:`~iris.cube.Cube.shape` is provided
-   instead. `dataless cubes` can currently be used as targets in regridding, or
-   for templates to add data to at a later time.
+   :class:`~iris.cube.Cube`, when :attr:`~iris.cube.Cube.shape` is provided. A
+   `dataless cube` may be used as a target in regridding, or as a template cube
+   to add data to at a later time.
 
-   This is the first step in making `dataless cubes`. Currently, most cube methods
-   don't work on `dataless cubes`, and will raise in an error if attempted.
-   :meth:`~iris.cube.Cube.transpose` will work, as will :meth:`~iris.cube.Cube.copy`.
-   `my_cube.copy(data = iris.DATALESS)` will copy the cube and remove data in
-   the process.
-   (:issue:`4447`, :pull:`6253`)
+   This is the first step in providing `dataless cube` support. Currently, most
+   cube methods won't work with a `dataless cube` and will raise an exception.
+   However, :meth:`~iris.cube.Cube.transpose` will work, as will
+   :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
+   will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
 
 🐛 Bugs Fixed
 =============
