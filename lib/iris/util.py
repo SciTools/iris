@@ -2348,6 +2348,33 @@ def _print_xml(doc):
     return result.replace("&#10;", "\n")
 
 
+def _combine_options_asdict(options: str | dict | None) -> dict:
+    """Convert any valid combine options into an options dictionary."""
+    from iris import LOAD_POLICY
+
+    if options is None:
+        opts_dict = LOAD_POLICY.settings()
+    elif isinstance(options, dict):
+        opts_dict = options
+    elif isinstance(options, str):
+        if options in LOAD_POLICY.SETTINGS:
+            opts_dict = LOAD_POLICY.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(LOAD_POLICY.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    return opts_dict
+
+
 def combine_cubes(
     cubes: List[Cube],
     options: str | dict | None = None,
@@ -2450,30 +2477,9 @@ def combine_cubes(
 
     """
     # TODO: somehow, provide a real + useful working code example
-
-    from iris import LOAD_POLICY, CombineOptions
     from iris._combine import _combine_cubes
 
-    if options is None:
-        opts_dict = LOAD_POLICY.settings()
-    elif isinstance(options, str):
-        if options in CombineOptions.SETTINGS:
-            opts_dict = CombineOptions.SETTINGS[options]
-        else:
-            msg = (
-                "Unrecognised settings name : expected one of "
-                f"{tuple(CombineOptions.SETTINGS)}."
-            )
-            raise ValueError(msg)
-    elif isinstance(options, dict):
-        opts_dict = options
-    else:
-        msg = (  # type: ignore[unreachable]
-            f"arg 'options' has type {type(options)!r}, "
-            "expected one of (str | dict | None)"
-        )
-        raise ValueError(msg)  # type: ignore[unreachable]
-
+    opts_dict = _combine_options_asdict(options)
     if kwargs is not None:
         opts_dict = opts_dict.copy()  # avoid changing original
         opts_dict.update(kwargs)

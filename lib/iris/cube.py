@@ -637,6 +637,34 @@ class CubeList(list):
             check_derived_coords=check_derived_coords,
         )
 
+    def combine(self, options: str | dict | None = None, **kwargs) -> CubeList:
+        from iris.util import combine_cubes
+
+        return combine_cubes(self, options, **kwargs)
+
+    def combine_cube(self, options: str | dict | None = None, **kwargs) -> CubeList:
+        result = self.combine()
+        n_cubes = len(result)
+        if n_cubes != 1:
+            from iris.util import _combine_options_asdict
+
+            opts_dict = _combine_options_asdict(options)
+            merge_concat_sequence = opts_dict.get("merge_concat_sequence")
+            is_merge = (
+                not isinstance(merge_concat_sequence, str)
+                or len(merge_concat_sequence) < 0
+                or not merge_concat_sequence.endswith("m")
+            )
+            err_type = (
+                iris.exceptions.MergeError
+                if is_merge
+                else iris.exceptions.ConcatenateError
+            )
+            msg = f"'combine' operation yielded {n_cubes} cubes, expected exactly 1."
+            raise err_type(msg)
+
+        return result
+
     def realise_data(self):
         """Fetch 'real' data for all cubes, in a shared calculation.
 
