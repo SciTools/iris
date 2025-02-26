@@ -110,12 +110,17 @@ class Test___eq__(tests.IrisTest):
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
         self.assertFalse(dm1 == dm2)
 
-    def test_none(self):
+    def test_dataless(self):
         dm1 = DataManager(data=None, shape=(1,))
         dm2 = DataManager(data=None, shape=(1,))
         self.assertTrue(dm1 == dm2)
 
-    def test_none_with_real(self):
+    def test_dataless_failure(self):
+        dm1 = DataManager(data=None, shape=(1,))
+        dm2 = DataManager(data=None, shape=(2,))
+        self.assertTrue(dm1 != dm2)
+
+    def test_dataless_with_real(self):
         dm1 = DataManager(data=None, shape=(1,))
         dm2 = DataManager(self.real_array)
         self.assertFalse(dm1 == dm2)
