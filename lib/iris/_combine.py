@@ -36,7 +36,7 @@ class CombineOptions(threading.local):
     The individual configurable options are :
 
     * ``equalise_cubes_kwargs`` = (dict)
-        Specifies keywords for a :func:`iris.util.equalise_cubes` call, to be applied
+        Specifies keywords for an :func:`iris.util.equalise_cubes` call, to be applied
         before any merge/concatenate step.
 
     * ``merge_concat_sequence`` = "m" / "c" / "cm" / "mc"
@@ -58,29 +58,34 @@ class CombineOptions(threading.local):
         When enabled, the configured "combine" operation will be repeated until the
         result is stable (no more cubes are combined).
 
-    Several common sets of options are provided in :data:`~iris.LOAD_POLICY.SETTINGS` :
-
-    *  ``"legacy"``
-        Produces loading behaviour identical to Iris versions < 3.11, i.e. before the
-        varying hybrid references were supported.
+    Several sets of combined options are grouped for convenience for selection by
+    "settings" name, one of :data:`CombineOptions.SETTINGS_NAMES`.
+    Note though that these different "settings" are partly determined by the needs of
+    loading support.  See the discussion in the derived
+    :class:`~iris.loading.LoadPolicy` class.  The choices are:
 
     * ``"default"``
-        As "legacy" except that ``support_multiple_references=True``.  This differs
-        from "legacy" only when multiple mergeable reference fields are encountered,
-        in which case incoming cubes are extended into the extra dimension, and a
-        concatenate step is added.
+        Apply a plain merge step only, i.e. ``merge_concat_sequence="m"``.
+        Other options are all "off".
+
+    *  ``"legacy"``
+        Identical to "default".  See :class:`iris.LoadPolicy` for where this makes
+        a difference.
 
     * ``"recommended"``
-        Enables multiple reference handling, *and* applies a merge step followed by
-        a concatenate step.
+        In addition to the "merge" step, allow a following "concatenate", i.e.
+        ``merge_concat_sequence="mc"``.
 
     * ``"comprehensive"``
-        Like "recommended", but will also *repeat* the merge+concatenate steps until no
-        further change is produced.
+        Like "recommended", uses ``merge_concat_sequence="mc"``, but now also
+        *repeats* the merge+concatenate steps until no further change is produced,
+        i.e. ``repeat_until_unchanged=True``.
+        Also applies a prior 'equalise_cubes' call, of the form
+        ``equalise_cubes(cubes, apply_all=True)``.
 
         .. note ::
 
-            The 'comprehensive' policy makes a maximum effort to reduce the number of
+            The "comprehensive" policy makes a maximum effort to reduce the number of
             cubes to a minimum.  However, it still cannot combine cubes with a mixture
             of matching dimension and scalar coordinates.  This may be supported at
             some later date, but for now is not possible without specific user actions.
@@ -88,6 +93,11 @@ class CombineOptions(threading.local):
     .. Note ::
 
         See also : :ref:`controlling_merge`.
+
+    Examples
+    --------
+    Please see :func:`iris.util.combine_cubes` for usage examples of the settings and
+    keywords described here.
 
     """
 
