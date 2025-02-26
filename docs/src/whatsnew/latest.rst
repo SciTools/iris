@@ -52,6 +52,13 @@ This document explains the changes made to Iris for this release
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
 
+#. `@trexfeathers`_ added the :class:`iris.loading.LOAD_PROBLEMS` dictionary to
+   capture objects that could not be loaded correctly, increasing transparency
+   and helping users to fix loading problems via the Iris API. As a first pass,
+   this is currently limited to ``standard_name`` and dimension coordinates from
+   NetCDF files. (:issue:`6317`, :pull:`6338`)
+
+
 🐛 Bugs Fixed
 =============
 
@@ -122,7 +129,7 @@ This document explains the changes made to Iris for this release
    necessary. (:issue:`6285`, :pull:`6288`)
 
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
-    when working across Python versions. (:pull:`6329`)
+   when working across Python versions. (:pull:`6329`)
 
 
 .. comment
