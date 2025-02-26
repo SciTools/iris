@@ -115,6 +115,7 @@ class CombineOptions(threading.local):
 
     .. testsetup::
 
+        from iris import COMBINE_POLICY
         loadpolicy_old_settings = COMBINE_POLICY.settings()
 
     .. testcleanup::
