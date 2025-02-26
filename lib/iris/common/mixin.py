@@ -73,7 +73,6 @@ class LimitedAttributeDict(dict):
 
     """
 
-    #: Attributes with special CF meaning, forbidden in Iris attribute dictionaries.
     CF_ATTRS_FORBIDDEN = (
         "standard_name",
         "long_name",
@@ -94,6 +93,15 @@ class LimitedAttributeDict(dict):
         "scale_factor",
         "_FillValue",
     )
+    """Attributes with special CF meaning, forbidden in Iris attribute dictionaries."""
+
+    RAW_KEY = "iris_raw"
+    """Used by Iris to store ALL attributes when problems are encountered during loading.
+
+    See Also
+    --------
+    iris.loading.LOAD_PROBLEMS: The destination for captured loading problems.
+    """
 
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)

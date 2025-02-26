@@ -40,11 +40,14 @@ longer useful, this can be considerably simplified.
 """
 
 from functools import wraps
+from pathlib import Path
+from traceback import TracebackException
 import warnings
 
 from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
+from iris.loading import LOAD_PROBLEMS
 import iris.warnings
 
 from . import helpers as hh
@@ -104,6 +107,10 @@ def action_function(func):
 @action_function
 def action_default(engine):
     """Perform standard operations for every cube."""
+    # Future pattern (iris#6319).
+    hh.build_and_add_names(engine)
+
+    # Legacy pattern.
     hh.build_cube_metadata(engine)
 
 
@@ -286,6 +293,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
     coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
+    succeed = None
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -367,9 +375,29 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             assert coord_grid_class in grid_classes
 
     if succeed:
-        hh.build_dimension_coordinate(
+        hh.build_and_add_dimension_coordinate(
             engine, cf_var, coord_name=coord_name, coord_system=coord_system
         )
+
+    else:
+        message = f"Dimension coordinate {var_name} not created. Debug info:\n"
+        if succeed is None:
+            message += "An unexpected error occurred"
+            error = NotImplementedError(message)
+        else:
+            message += rule_name
+            error = ValueError(message)
+
+        try:
+            # TODO: is there a better way to create a stack trace?
+            #  Is an ST even valuable? `error` can be passed straight into
+            #   from_exception() without raising it first.
+            raise error
+        except error.__class__ as error:
+            tb_exception = TracebackException.from_exception(error)
+            captured_tuple = (hh.build_raw_cube(cf_var, engine.filename), tb_exception)
+            LOAD_PROBLEMS[Path(engine.filename)].append(captured_tuple)
+
     return rule_name
 
 

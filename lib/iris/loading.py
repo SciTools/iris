@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism."""
 
+from collections import defaultdict
 import itertools
 from pathlib import Path
 from traceback import TracebackException
@@ -327,12 +328,13 @@ LOAD_POLICY = LoadPolicy()
 
 
 # TODO: could this be a context manager in future?
-# TODO: type alias for the tuple
+# TODO: type alias for the tuple. Maybe a namedtuple for easy access?
 # TODO: docstring, inc examples:
 #  ".join(TracebackException.format())
 #  TracebackException.exc_type
 # TODO: include in an __all__ somewhere
-LOAD_PROBLEMS: dict[Path, list[tuple[Any, TracebackException]]] = {}
+# TODO: defaultdict is bad UX (investigate setdefault on a dict?)
+LOAD_PROBLEMS: dict[Path, list[tuple[Any, TracebackException]]] = defaultdict(list)
 """Collections of cubes/coords/etcetera that could not be loaded correctly.
 
 Structured as a dictionary of file paths. The values are lists of tuples:
