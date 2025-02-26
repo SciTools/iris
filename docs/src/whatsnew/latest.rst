@@ -48,11 +48,11 @@ This document explains the changes made to Iris for this release
    However, :meth:`~iris.cube.Cube.transpose` will work, as will
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
-   
+
 #. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
    render text in the bottom right of the plot figure.
    (:issue:`6247`, :pull:`6332`)
-   
+
 
 🐛 Bugs Fixed
 =============
