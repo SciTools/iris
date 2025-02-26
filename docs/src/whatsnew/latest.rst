@@ -58,6 +58,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ added handling for string stash codes when saving pp files.
    (:issue:`6239`, :pull:`6289`)
 
+#. `@bouweandela`_ fixed handling of masked Dask arrays in
+    :func:`~iris.util.array_equal`.
+
 
 💣 Incompatible Changes
 =======================
