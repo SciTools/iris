@@ -218,23 +218,28 @@ def _get_cf_var_data(cf_var, filename):
         # Determine size of data; however can't do this for variable length (VLEN)
         # arrays as the size of the array can only be known by reading the data.
         # "Variable length" netCDF types have a datatype of `nc.VLType`.
-        if isinstance(cf_var.datatype, _thread_safe_nc.netCDF4.VLType): # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
+        if isinstance(
+            cf_var.datatype, _thread_safe_nc.netCDF4.VLType
+        ):  # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
             # We can't know the size of VLen data without reading the variable from disk
             # first; see https://github.com/Unidata/netcdf-c/issues/1893
-            msg = (f"netCDF variable `{cf_var.name}` is a variable length type of kind {cf_var.dtype} "
+            msg = (
+                f"netCDF variable `{cf_var.name}` is a variable length type of kind {cf_var.dtype} "
                 "and the total data size cannot be known in advance. This may affect the lazy loading "
                 "of the data."
             )
             warnings.warn(msg)
 
             # In this case, cf_var.size will just return the known dimension size.
-            # Special hadling for strings (`str` type) as this don't have an itemsize; assume 4 bytes
-            total_bytes = cf_var.size * 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+            # Special handling for strings (`str` type) as this don't have an itemsize; assume 4 bytes
+            total_bytes = (
+                cf_var.size * 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+            )
         else:
             # Normal NCVariable type:
             total_bytes = cf_var.size * cf_var.dtype.itemsize
 
-        if total_bytes <_LAZYVAR_MIN_BYTES:
+        if total_bytes < _LAZYVAR_MIN_BYTES:
             result = cf_var[:]
 
         else:
@@ -246,7 +251,7 @@ def _get_cf_var_data(cf_var, filename):
             # Make a data-proxy that mimics array access and can fetch from the file.
             # Note: Special handling needed for "variable length string" types which
             # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
-            fill_dtype = 'S1' if cf_var.dtype is str else cf_var.dtype.str[1:]
+            fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
             fill_value = getattr(
                 cf_var.cf_data,
                 "_FillValue",
