@@ -215,39 +215,26 @@ def _get_cf_var_data(cf_var, filename):
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
         result = cf_var._data_array
     else:
-        #####################
-        # ChrisB TODO: 
-        # Ideally, we want to check the type of the netCDF variable; if it is a
-        # `netCDF4.VLType`
-        # The caveat on this that variable length string (str) data is still stored
-        # as a normal `netCDF4.Variable`
-        #
-        # The problem is that we cannot get to the underlying netCDF4 type from
-        # the Iris CFVar* classes.
-        #
-        # The lazy load also needs updating as it fails with the `str` type
-        # when decoding the dtype.
-        #
-        # psedo code:
-        #   if not (isinstance(cf_var.'nc variable tpye', netCDF4.VLType) or
-        #       cf_var.dtype is str) or
-        #       cf_var.size * cf_var.dtype.itemsize <_LAZYVAR_MIN_BYTES:
-        #     <load the data>
-        #   else:
-        #     <lazy load>
-        #####################
-
-        # Determine size of array; however can't do this for variable length (VLEN)
+        # Determine size of data; however can't do this for variable length (VLEN)
         # arrays as the size of the array can only be known by reading the data.
-        print(f'[CB] {cf_var}: type: {type(cf_var)}')
-        print(f'[CB] has itemsize? {hasattr(cf_var.dtype, 'itemsize')}')
-        if cf_var.dtype is str or \
-            cf_var.size * cf_var.dtype.itemsize <_LAZYVAR_MIN_BYTES:
-        
-#        total_bytes = cf_var.size * cf_var.dtype.itemsize
-#        if total_bytes < _LAZYVAR_MIN_BYTES:
-            # Don't make a lazy array, as it will cost more memory AND more time to access.
-            # Instead fetch the data immediately, as a real array, and return that.
+        # "Variable length" netCDF types have a datatype of `nc.VLType`.
+        if isinstance(cf_var.datatype, _thread_safe_nc.netCDF4.VLType): # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
+            # We can't know the size of VLen data without reading the variable from disk
+            # first; see https://github.com/Unidata/netcdf-c/issues/1893
+            msg = (f"netCDF variable `{cf_var.name}` is a variable length type of kind {cf_var.dtype} "
+                "and the total data size cannot be known in advance. This may affect the lazy loading "
+                "of the data."
+            )
+            warnings.warn(msg)
+
+            # In this case, cf_var.size will just return the known dimension size.
+            # Special hadling for strings (`str` type) as this don't have an itemsize; assume 4 bytes
+            total_bytes = cf_var.size * 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+        else:
+            # Normal NCVariable type:
+            total_bytes = cf_var.size * cf_var.dtype.itemsize
+
+        if total_bytes <_LAZYVAR_MIN_BYTES:
             result = cf_var[:]
 
         else:
@@ -257,10 +244,13 @@ def _get_cf_var_data(cf_var, filename):
             dtype = _get_actual_dtype(cf_var)
 
             # Make a data-proxy that mimics array access and can fetch from the file.
+            # Note: Special handling needed for "variable length string" types which
+            # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
+            fill_dtype = 'S1' if cf_var.dtype is str else cf_var.dtype.str[1:]
             fill_value = getattr(
                 cf_var.cf_data,
                 "_FillValue",
-                _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
+                _thread_safe_nc.default_fillvals[fill_dtype],
             )
             proxy = NetCDFDataProxy(
                 cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
