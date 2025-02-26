@@ -124,6 +124,8 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
     when working across Python versions. (:pull:`6329`)
 
+#. `@bouweandela`_ fixed a bug in the benchmarking code that caused all benchmarks
+    to be run with lazy data. (:pull:`6339`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
