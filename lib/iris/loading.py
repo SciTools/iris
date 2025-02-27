@@ -376,48 +376,55 @@ Structured as a dictionary of file paths. The dictionary values are lists of
 Provided to increase transparency (problem objects are not simply discarded),
 and to make it possible to fix loading problems without leaving the Iris API.
 
-.. testsetup::
-
-    from pathlib import Path
-    from pprint import pprint
-    import sys
-    import warnings
-
-    import cf_units
-    import iris
-    import iris.common
-    import iris.coords
-    from iris.fileformats._nc_load_rules import helpers
-    import iris.loading
-    from iris import std_names
-
-    # Hack to ensure doctests actually see Warnings that are raised, and that
-    #  they have a relative path (so a test pass is not machine-dependent).
-    warnings.filterwarnings("default")
-    IRIS_FILE = Path(iris.__file__)
-    def custom_warn(message, category, filename, lineno, file=None, line=None):
-        filepath = Path(filename)
-        filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
-        sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
-    warnings.showwarning = custom_warn
-
-    build_dimension_coordinate_original = helpers.build_dimension_coordinate
-
-    def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
-        if cf_coord_var.cf_name == "time":
-            raise ValueError("Example dimension coordinate error")
-        else:
-            return build_dimension_coordinate_original(
-                filename, cf_coord_var, coord_name, coord_system
-            )
-
-    helpers.build_dimension_coordinate = raise_example_error_dim
-    del std_names.STD_NAMES["air_temperature"]
-    iris.FUTURE.date_microseconds = True
-
-
 Examples
 --------
+.. dropdown:: (expand to see setup)
+
+    ..
+        Necessary as NumPy docstring doctests do not allow labelled
+        testsetup/testcleanup, so this setup was clashing with other doctests in
+        the same module.
+
+    **This section is not necessary for understanding the examples.**
+
+    >>> from pathlib import Path
+    >>> from pprint import pprint
+    >>> import sys
+    >>> import warnings
+
+    >>> import cf_units
+    >>> import iris
+    >>> import iris.common
+    >>> import iris.coords
+    >>> from iris.fileformats._nc_load_rules import helpers
+    >>> import iris.loading
+    >>> from iris import std_names
+
+    >>> # Ensure doctests actually see Warnings that are raised, and that
+    >>> #  they have a relative path (so a test pass is not machine-dependent).
+    >>> showwarning_original = warnings.showwarning
+    >>> warnings.filterwarnings("default")
+    >>> IRIS_FILE = Path(iris.__file__)
+    >>> def custom_warn(message, category, filename, lineno, file=None, line=None):
+    ...     filepath = Path(filename)
+    ...     filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
+    ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+    >>> warnings.showwarning = custom_warn
+
+    >>> build_dimension_coordinate_original = helpers.build_dimension_coordinate
+
+    >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
+    ...     if cf_coord_var.cf_name == "time":
+    ...         raise ValueError("Example dimension coordinate error")
+    ...     else:
+    ...         return build_dimension_coordinate_original(
+    ...             filename, cf_coord_var, coord_name, coord_system
+    ...         )
+
+    >>> helpers.build_dimension_coordinate = raise_example_error_dim
+    >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
+    >>> iris.FUTURE.date_microseconds = True
+
 For this example we have 'booby-trapped' the Iris loading process to force
 errors to occur. When we load our first cube, we see the warning that
 :class:`LOAD_PROBLEMS` has been added to:
@@ -499,6 +506,20 @@ air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
 Note that we were unable to reconstruct the missing bounds - ``time_bnds`` -
 demonstrating that this error handling is a 'best effort' and not perfect. We
 hope to continually improve it over time.
+
+.. dropdown:: (expand to see cleanup)
+
+    ..
+        Necessary as NumPy docstring doctests do not allow labelled
+        testsetup/testcleanup, so this cleanup was clashing with other doctests
+        in the same module.
+
+    **This section is not necessary for understanding the examples.**
+
+    >>> warnings.showwarning = showwarning_original
+    >>> warnings.filterwarnings("ignore")
+    >>> helpers.build_dimension_coordinate = build_dimension_coordinate_original
+    >>> std_names.STD_NAMES["air_temperature"] = air_temperature
 
 """
 
