@@ -15,6 +15,12 @@ Iris will attempt to return **as few cubes as possible**
 by collecting together multiple fields with a shared standard name
 into a single multidimensional cube.
 
+.. hint::
+
+    There are some hints at :class:`iris.CombineOptions` on how Iris works to load
+    fewer and larger cubes, along with user options that can aid in controlling the
+    process.
+
 The :py:func:`iris.load` function automatically recognises the format
 of the given files and attempts to produce Iris Cubes from their contents.
 

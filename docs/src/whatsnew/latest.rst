@@ -30,6 +30,26 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
+#. `@pp-mo`_ renamed the :class:`iris.LoadPolicy` as :class:`iris.CombineOptions` and
+   :data:`iris.LOAD_POLICY` as :data:`iris.COMBINE_POLICY`, though the original names
+   remain functional (and refer to the same things) for now.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ added new :meth:`~iris.cube.CubeList.combine` and
+   :meth:`~iris.cube.CubeList.combine_cube` methods of a :class:`~iris.cube.CubeList`
+   as an alternative way of accessing the :func:`~iris.util.combine_cubes` mechanism.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.combine_cubes`, to give
+   general public access to the combine merge/concatenate mechanism introduced for
+   generalised loading support via :class:`iris.LoadPolicy` in the Iris 3.11 release.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ overhauled the :class:`iris.LoadPolicy` facility by adding a new
+   ``equalise_cubes_kwarg`` keyword, enabling it to call the
+   :func:`~iris.util.equalise_cubes` utility function as one of its processing stages.
+   (:issue:`6203`, :pull:`6334`)
+
 #. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
    with aligning cubes so they can merge / concatenate.
    (:issue:`6248`, :pull:`6257`)
@@ -48,11 +68,11 @@ This document explains the changes made to Iris for this release
    However, :meth:`~iris.cube.Cube.transpose` will work, as will
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
-   
+
 #. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
    render text in the bottom right of the plot figure.
    (:issue:`6247`, :pull:`6332`)
-   
+
 
 🐛 Bugs Fixed
 =============
