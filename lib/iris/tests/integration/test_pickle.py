@@ -9,13 +9,14 @@
 import iris.tests as tests  # isort:skip
 
 import pickle
+
 import pytest
 
 import iris
 
-
 MIN_PICKLE_PROTOCOL = 4
 TESTED_PROTOCOLS = list(range(MIN_PICKLE_PROTOCOL, pickle.HIGHEST_PROTOCOL + 1))
+
 
 def pickle_cube(path, protocol, tmp_path):
     # Ensure that data proxies are pickleable.
