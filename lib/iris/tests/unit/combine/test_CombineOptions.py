@@ -41,30 +41,126 @@ class Test_settings:
             assert settings[key] == getattr(options, key)
 
 
-class Test_set:
-    """Check the .set(arg, **kwargs) behaviour."""
+def options_checks(options, checks):
+    # Check (parts of) options against a dictionary of "expected" values.
+    settings = options.settings()
+    return all(settings[key] == value for key, value in checks.items())
 
-    def test_empty(self):
+
+class Test_set_and_context:
+    """Check the .set(arg, **kwargs) and .context(arg, **kwargs) behaviours."""
+
+    @staticmethod
+    def do_check(
+        op_arg=None,
+        op_kwargs=None,
+        before_checks=None,
+        after_checks=None,
+        initial_options=None,
+        op_is_set=True,
+    ):
+        """Generic test routine check method.
+
+        Perform an operation(op_arg, **op_kwargs) and test (partial) options state
+        before and after.  If provided, can also start from a non-default
+        'initial_options' state.
+
+        Used to generalise between the .set() and .context() calls.
+        In the case of .context(), the 'after' is within the block, and the 'before'
+        state should always be restored again afterwards.
+        """
+        if initial_options is not None:
+            options = initial_options
+        else:
+            options = CombineOptions()
+
+        op_kwargs = op_kwargs or {}
+
+        if before_checks is not None:
+            assert options_checks(options, before_checks)
+
+        if op_is_set:
+            # do "set" check
+            options.set(op_arg, **op_kwargs)
+            assert options_checks(options, after_checks)
+        else:
+            # do "context" checks
+            with options.context(op_arg, **op_kwargs):
+                assert options_checks(options, after_checks)
+            assert options_checks(options, before_checks)
+
+    @pytest.fixture(params=["set", "context"])
+    def op_is_set(self, request):
+        """Parametrise a test over both .set() and and .context() calls."""
+        return request.param == "set"
+
+    def test_empty_set(self):
+        # More or less, just check that an empty set() call is OK.
         options = CombineOptions()
         orig_settings = options.settings()
         options.set()
         assert options.settings() == orig_settings
 
-    def test_arg_dict(self):
+    def test_empty_context(self):
+        # More or less, just check that an empty context() call is OK.
         options = CombineOptions()
-        assert options.settings()["merge_concat_sequence"] == "m"
-        assert options.settings()["repeat_until_unchanged"] is False
-        options.set({"merge_concat_sequence": "c", "repeat_until_unchanged": True})
-        assert options.settings()["merge_concat_sequence"] == "c"
-        assert options.settings()["repeat_until_unchanged"] is True
+        orig_settings = options.settings()
+        with options.context():
+            assert options.settings() == orig_settings
 
-    def test_arg_string(self):
-        options = CombineOptions()
-        assert options.settings()["merge_concat_sequence"] == "m"
-        assert options.settings()["repeat_until_unchanged"] is False
-        options.set("comprehensive")
-        assert options.settings()["merge_concat_sequence"] == "mc"
-        assert options.settings()["repeat_until_unchanged"] is True
+    def test_arg_dict(self, op_is_set):
+        expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
+        set_arg = {"merge_concat_sequence": "c", "repeat_until_unchanged": True}
+        expect_after = {"merge_concat_sequence": "c", "repeat_until_unchanged": True}
+        self.do_check(
+            op_arg=set_arg,
+            before_checks=expect_before,
+            after_checks=expect_after,
+            op_is_set=op_is_set,
+        )
+
+    def test_arg_string(self, op_is_set):
+        expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
+        set_arg = "comprehensive"
+        expect_after = {"merge_concat_sequence": "mc", "repeat_until_unchanged": True}
+        self.do_check(
+            op_arg=set_arg,
+            before_checks=expect_before,
+            after_checks=expect_after,
+            op_is_set=op_is_set,
+        )
+
+    def test_kwargs(self, op_is_set):
+        expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
+        set_arg = {"merge_concat_sequence": "c", "repeat_until_unchanged": True}
+        expect_after = {"merge_concat_sequence": "c", "repeat_until_unchanged": True}
+        self.do_check(
+            op_arg=set_arg,
+            before_checks=expect_before,
+            after_checks=expect_after,
+            op_is_set=op_is_set,
+        )
+
+    def test_arg_kwargs(self, op_is_set):
+        # Show that kwargs override arg
+        initial_options = CombineOptions(
+            merge_concat_sequence="m",
+            repeat_until_unchanged=False,
+        )
+        expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
+        # NOTE: the arg changes the sequence from "m" to "c" ...
+        set_arg = dict(merge_concat_sequence="c", repeat_until_unchanged=True)
+        # .. but the keyword overrides that to "mc"
+        set_kwargs = dict(merge_concat_sequence="mc")
+        expect_after = {"merge_concat_sequence": "mc", "repeat_until_unchanged": True}
+        self.do_check(
+            initial_options=initial_options,
+            before_checks=expect_before,
+            op_arg=set_arg,
+            op_kwargs=set_kwargs,
+            after_checks=expect_after,
+            op_is_set=op_is_set,
+        )
 
     def test_arg_bad_dict(self):
         options = CombineOptions()
@@ -80,28 +176,6 @@ class Test_set:
         )
         with pytest.raises(ValueError, match=expected):
             options.set("oddthing")
-
-    def test_kwargs(self):
-        options = CombineOptions()
-        assert options.settings()["merge_concat_sequence"] == "m"
-        assert options.settings()["repeat_until_unchanged"] is False
-        options.set(merge_concat_sequence="c", repeat_until_unchanged=True)
-        assert options.settings()["merge_concat_sequence"] == "c"
-        assert options.settings()["repeat_until_unchanged"] is True
-
-    def test_arg_kwargs(self):
-        # Show that kwargs override arg
-        options = CombineOptions(
-            support_multiple_references=False,
-            merge_concat_sequence="",
-            repeat_until_unchanged=False,
-        )
-        options.set(
-            dict(merge_concat_sequence="c", repeat_until_unchanged=True),
-            merge_concat_sequence="mc",
-        )
-        assert options.merge_concat_sequence == "mc"
-        assert options.repeat_until_unchanged is True
 
     def test_bad_kwarg(self):
         options = CombineOptions()
