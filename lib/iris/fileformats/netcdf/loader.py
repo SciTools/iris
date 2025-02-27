@@ -228,7 +228,7 @@ def _get_cf_var_data(cf_var, filename):
                 "and the total data size cannot be known in advance. This may affect the lazy loading "
                 "of the data."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
 
             # A stab in the dark at the mean size of the variable length arrays (this could be anything):
             mean_vl_array_len = 10
