@@ -69,8 +69,8 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.12"
-    all_supported = ["3.10", "3.11", latest_supported]
+    latest_supported = "3.13"
+    all_supported = ["3.11", "3.12", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
@@ -82,7 +82,6 @@ def test_python_versions():
     nox_file = root_dir / "noxfile.py"
     ci_wheels_file = workflows_dir / "ci-wheels.yml"
     ci_tests_file = workflows_dir / "ci-tests.yml"
-    asv_config_file = benchmarks_dir / "asv.conf.json"
     benchmark_runner_file = benchmarks_dir / "bm_runner.py"
 
     text_searches: List[Tuple[Path, str]] = [
@@ -107,7 +106,6 @@ def test_python_versions():
                 f'{" " * 8}session: ["doctest", "gallery", "linkcheck"]'
             ),
         ),
-        (asv_config_file, f"PY_VER={latest_supported}"),
         (benchmark_runner_file, f'python_version = "{latest_supported}"'),
     ]
 

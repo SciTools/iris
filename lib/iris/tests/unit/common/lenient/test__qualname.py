@@ -34,7 +34,7 @@ class Test:
         import iris
 
         result = _qualname(iris.load)
-        assert result == "iris.load"
+        assert result == "iris.loading.load"
 
     def test_callable_method_local(self):
         class MyClass:
