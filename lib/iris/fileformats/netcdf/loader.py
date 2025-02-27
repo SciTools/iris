@@ -219,7 +219,7 @@ def _get_cf_var_data(cf_var, filename):
         # arrays as the size of the array can only be known by reading the data.
         # "Variable length" netCDF types have a datatype of `nc.VLType`.
         if isinstance(
-            getattr(cf_var, "datatype", None), _thread_safe_nc.netCDF4.VLType
+            getattr(cf_var, "datatype", None), _thread_safe_nc.VLType
         ):  # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
             # We can't know the size of VLen data without reading the variable from disk
             # first; see https://github.com/Unidata/netcdf-c/issues/1893

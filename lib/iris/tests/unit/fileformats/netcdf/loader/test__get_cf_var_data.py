@@ -11,11 +11,11 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import dask.array as da
-from netCDF4 import VLType
 import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
+from iris.fileformats.netcdf._thread_safe_nc import VLType
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 
 
