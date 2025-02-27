@@ -7,8 +7,6 @@
 # Import iris tests first so that some things can be initialised
 # before importing anything else.
 import iris.tests as tests  # isort:skip
-from iris.tests import MIN_PICKLE_PROTOCOL
-
 import io
 import pickle
 
@@ -17,6 +15,7 @@ import numpy as np
 
 import iris
 from iris._lazy_data import as_concrete_data, as_lazy_data
+from iris.tests import MIN_PICKLE_PROTOCOL
 
 
 class TestPickle(tests.IrisTest):

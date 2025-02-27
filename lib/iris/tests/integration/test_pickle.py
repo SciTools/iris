@@ -7,13 +7,12 @@
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
-from iris.tests import MIN_PICKLE_PROTOCOL
-
 import pickle
 
 import pytest
 
 import iris
+from iris.tests import MIN_PICKLE_PROTOCOL
 
 TESTED_PROTOCOLS = list(range(MIN_PICKLE_PROTOCOL, pickle.HIGHEST_PROTOCOL + 1))
 
