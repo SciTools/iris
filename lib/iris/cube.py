@@ -643,27 +643,13 @@ class CubeList(list):
         return combine_cubes(self, options, **kwargs)
 
     def combine_cube(self, options: str | dict | None = None, **kwargs) -> CubeList:
-        result = self.combine()
+        result = self.combine(options, **kwargs)
         n_cubes = len(result)
         if n_cubes != 1:
-            from iris.util import _combine_options_asdict
-
-            opts_dict = _combine_options_asdict(options)
-            merge_concat_sequence = opts_dict.get("merge_concat_sequence")
-            is_merge = (
-                not isinstance(merge_concat_sequence, str)
-                or len(merge_concat_sequence) < 0
-                or not merge_concat_sequence.endswith("m")
-            )
-            err_type = (
-                iris.exceptions.MergeError
-                if is_merge
-                else iris.exceptions.ConcatenateError
-            )
             msg = f"'combine' operation yielded {n_cubes} cubes, expected exactly 1."
-            raise err_type(msg)
+            raise ValueError(msg)
 
-        return result
+        return result[0]
 
     def realise_data(self):
         """Fetch 'real' data for all cubes, in a shared calculation.
