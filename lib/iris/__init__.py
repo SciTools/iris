@@ -16,7 +16,8 @@ your data.
 The :func:`load` function provides a simple way to explore data from
 the interactive Python prompt. It will convert the source data into
 :class:`Cubes <iris.cube.Cube>`, and combine those cubes into
-higher-dimensional cubes where possible.
+higher-dimensional cubes where possible
+(for which, please see :class:`iris.CombineOptions`).
 
 The :func:`load_cube` and :func:`load_cubes` functions are similar to
 :func:`load`, but they raise an exception if the number of cubes is not
