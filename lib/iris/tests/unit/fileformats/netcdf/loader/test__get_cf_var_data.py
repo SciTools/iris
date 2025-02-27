@@ -11,6 +11,7 @@ import iris.tests as tests  # isort:skip
 from unittest import mock
 
 import dask.array as da
+from netCDF4 import VLType
 import numpy as np
 
 from iris._lazy_data import _optimum_chunksize
@@ -33,7 +34,8 @@ class Test__get_cf_var_data(tests.IrisTest):
         cf_data.chunking = mock.MagicMock(return_value=chunksizes)
         if shape is None:
             shape = self.shape
-        dtype = np.dtype(dtype)
+        if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
+            dtype = np.dtype(dtype)
         cf_var = mock.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
             dtype=dtype,
@@ -101,6 +103,51 @@ class Test__get_cf_var_data(tests.IrisTest):
     def test_arraytype__100f8_is_real(self):
         cf_var = self._make(shape=(100,), dtype="f8")
         var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIs(var_data, mock.sentinel.real_data_accessed)
+
+    def test_vltype__1000str_is_lazy(self):
+        # Variable length string type
+        mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
+        cf_var = self._make(shape=(1000,), dtype=str, datatype=mock_vltype)
+        var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIsInstance(var_data, da.Array)
+
+    def test_vltype__1000str_is_real_with_hint(self):
+        # Variable length string type with a hint on the array variable length size
+        mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
+        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=1):
+            var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIs(var_data, mock.sentinel.real_data_accessed)
+
+    def test_vltype__100str_is_real(self):
+        # Variable length string type
+        mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
+        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIs(var_data, mock.sentinel.real_data_accessed)
+
+    def test_vltype__100str_is_lazy_with_hint(self):
+        # Variable length string type with a hint on the array variable length size
+        mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
+        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=50):
+            var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIsInstance(var_data, da.Array)
+
+    def test_vltype__100f8_is_lazy(self):
+        # Variable length float64 type
+        mock_vltype = mock.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
+        cf_var = self._make(shape=(1000,), dtype="f8", datatype=mock_vltype)
+        var_data = _get_cf_var_data(cf_var, self.filename)
+        self.assertIsInstance(var_data, da.Array)
+
+    def test_vltype__100f8_is_real_with_hint(self):
+        # Variable length float64 type with a hint on the array variable length size
+        mock_vltype = mock.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
+        cf_var = self._make(shape=(100,), dtype="f8", datatype=mock_vltype)
+        with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=2):
+            var_data = _get_cf_var_data(cf_var, self.filename)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_cf_data_emulation(self):

@@ -219,12 +219,12 @@ def _get_cf_var_data(cf_var, filename):
         # arrays as the size of the array can only be known by reading the data.
         # "Variable length" netCDF types have a datatype of `nc.VLType`.
         if isinstance(
-            getattr(cf_var.cf_data, "datatype", None), _thread_safe_nc.netCDF4.VLType
+            getattr(cf_var, "datatype", None), _thread_safe_nc.netCDF4.VLType
         ):  # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
             # We can't know the size of VLen data without reading the variable from disk
             # first; see https://github.com/Unidata/netcdf-c/issues/1893
             msg = (
-                f"netCDF variable `{cf_var.name}` is a variable length type of kind {cf_var.dtype} "
+                f"netCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
                 "and the total data size cannot be known in advance. This may affect the lazy loading "
                 "of the data."
             )
@@ -237,12 +237,12 @@ def _get_cf_var_data(cf_var, filename):
             # the chunk control context manager. This allows for better decisions to be made on
             # whether the data should be lazy-loaded or not.
             if CHUNK_CONTROL.mode is not CHUNK_CONTROL.Modes.AS_DASK:
-                if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.name):
+                if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.cf_name):
                     if vl_chunk_hint := chunks.get("_vl_hint"):
                         mean_vl_array_len = vl_chunk_hint
 
             # In this case, cf_var.size will just return the known dimension size.
-            # Special handling for strings (`str` type) as this don't have an itemsize; assume 4 bytes
+            # Special handling for strings (`str` type) as these don't have an itemsize attribute; assume 4 bytes
             itemsize = 4 if cf_var.dtype is str else cf_var.dtype.itemsize
             total_bytes = cf_var.size * mean_vl_array_len * itemsize
         else:
