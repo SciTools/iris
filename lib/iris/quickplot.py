@@ -15,6 +15,7 @@ See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 """
 
 import cf_units
+from matplotlib import patheffects
 import matplotlib.pyplot as plt
 
 import iris.config
@@ -142,9 +143,12 @@ def _label_1d_plot(*args, **kwargs):
     axes.set_ylabel(ylabel)
 
 
-def _footer(text):
-    if text:
-        plt.figtext(x=.99, y=.01, s=text, fontsize=12, ha="right")
+def _footer(footer_text):
+    if footer_text:
+        text = plt.figtext(x=0.99, y=0.01, s=footer_text, fontsize=12, ha="right")
+        text.set_path_effects(
+            [patheffects.Stroke(linewidth=3, foreground="white"), patheffects.Normal()]
+        )
         plt.subplots_adjust(bottom=0.15, left=0.1)
 
 
