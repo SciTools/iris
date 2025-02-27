@@ -17,14 +17,13 @@ from iris.tests import MIN_PICKLE_PROTOCOL
 TESTED_PROTOCOLS = list(range(MIN_PICKLE_PROTOCOL, pickle.HIGHEST_PROTOCOL + 1))
 
 
-def pickle_cube(path, protocol, tmp_path):
+def pickle_cube(path, protocol, filename):
     # Ensure that data proxies are pickleable.
     cube = iris.load(path)[0]
-    with tmp_path as filename:
-        with open(filename, "wb") as f:
-            pickle.dump(cube, f, protocol)
-        with open(filename, "rb") as f:
-            ncube = pickle.load(f)
+    with open(filename, "wb") as f:
+        pickle.dump(cube, f, protocol)
+    with open(filename, "rb") as f:
+        ncube = pickle.load(f)
     assert ncube == cube
 
 
