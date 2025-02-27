@@ -572,7 +572,11 @@ def concatenate(
         A :class:`iris.cube.CubeList` of concatenated :class:`iris.cube.Cube` instances.
 
     """
-    cube_signatures = [_CubeSignature(cube) for cube in cubes]
+    cube_signatures = []
+    for cube in cubes:
+        if cube.is_dataless():
+            raise iris.exceptions.DatalessError("concatenate")
+        cube_signatures.append(_CubeSignature(cube))
 
     proto_cubes: list[_ProtoCube] = []
     # Initialise the nominated axis (dimension) of concatenation

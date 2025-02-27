@@ -12,7 +12,8 @@ i.e. different types + defaulting of the 'options' arg, and **kwargs support.
 
 import pytest
 
-from iris import LoadPolicy, _combine_cubes
+from iris import LoadPolicy
+from iris._combine import _combine_cubes
 from iris.tests.unit.fileformats.test_load_functions import cu
 
 
