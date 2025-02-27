@@ -124,6 +124,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
     when working across Python versions. (:pull:`6329`)
 
+#. `@trexfeathers`_ temporarily pinned Sphinx to `<8.2`.
+   (:pull:`6344`, :issue:`6345`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
