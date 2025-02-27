@@ -7,8 +7,8 @@
 These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 
-These also have the optional kwarg `footer`, which adds text to the bottom right of
-the plot.
+These also have the optional kwarg ``footer``, which adds text to the bottom right of
+the plot figure.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
@@ -143,9 +143,11 @@ def _label_1d_plot(*args, **kwargs):
     axes.set_ylabel(ylabel)
 
 
-def _footer(footer_text):
+def _footer(footer_text: str) -> None:
     if footer_text:
-        text = plt.figtext(x=0.99, y=0.01, s=footer_text, fontsize=12, ha="right")
+        text = plt.figtext(
+            x=0.99, y=0.01, s=footer_text, fontsize=12, ha="right", va="bottom"
+        )
         text.set_path_effects(
             [patheffects.Stroke(linewidth=3, foreground="white"), patheffects.Normal()]
         )
