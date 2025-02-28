@@ -87,6 +87,9 @@ This document explains the changes made to Iris for this release
    not break previously suggested code (instantiating and re-using an interpolator
    object remains possible), this is no longer an advertised feature. (:pull:`6084`)
 
+#. `@bouweandela`_ made coordinate dimension lookups faster for derived
+   coordinates. (:pull:`6337`)
+
 
 🔥 Deprecations
 ===============
