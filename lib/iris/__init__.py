@@ -169,6 +169,7 @@ class Future(threading.local):
         pandas_ndim=False,
         save_split_attrs=False,
         date_microseconds=False,
+        derived_bounds=False,
     ):
         """Container for run-time options controls.
 
@@ -202,6 +203,8 @@ class Future(threading.local):
             behaviour, such as when using :class:`~iris.Constraint`, and you
             may need to defend against floating point precision issues where
             you didn't need to before.
+        derived_bounds : bool, default=False
+            When True, uses the new form for deriving bounds with the load.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -215,6 +218,7 @@ class Future(threading.local):
         self.__dict__["pandas_ndim"] = pandas_ndim
         self.__dict__["save_split_attrs"] = save_split_attrs
         self.__dict__["date_microseconds"] = date_microseconds
+        self.__dict__["derived_bounds"] = derived_bounds
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
@@ -228,6 +232,7 @@ class Future(threading.local):
             self.pandas_ndim,
             self.save_split_attrs,
             self.date_microseconds,
+            self.derived_bounds,
         )
 
     # deprecated_options = {'example_future_flag': 'warning',}
