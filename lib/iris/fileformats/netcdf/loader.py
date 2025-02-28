@@ -735,6 +735,10 @@ class ChunkControl(threading.local):
     ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
+        This function can also be used to provide a size hint for the unknown
+        array lengths when loading "variable-length" NetCDF data types.
+        See https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes
+
         Parameters
         ----------
         var_names : str or list of str, default=None
@@ -746,7 +750,8 @@ class ChunkControl(threading.local):
             Each key-value pair defines a chunk size for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
             Values of ``-1`` will lock the chunk size to the full size of that
-            dimension.
+            dimension. To specify a size hint for "variable-length"  data types
+            use the special name `_vl_hint`.
 
         Notes
         -----
@@ -769,6 +774,16 @@ class ChunkControl(threading.local):
         or down by integer factors to best match the Dask default chunk size,
         i.e. the setting configured by
         ``dask.config.set({'array.chunk-size': '250MiB'})``.
+
+        For variable-length data types the size of the variable (or "ragged")
+        dimension of the individual array elements cannot be known without
+        reading the data. This can make it difficult for Iris to determine
+        whether to load the data lazily or not. If the user has some apriori
+        knowledge of the mean variable array length this can be passed as
+        as a size hint via the special `_vl_hint` name. For example a hint
+        that variable-length string array that contains 4 character experiment
+        identifiers:
+        ``CHUNK_CONTROL.set("expver", _vl_hint=4)``
 
         """
         old_mode = self.mode

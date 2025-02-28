@@ -122,6 +122,47 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
     (70, 37, 49)
 
 
+Variable-length datatypes
+-------------------------
+
+The NetCDF4 provides support for variable-length (or "ragged") data types (``VLType``);
+see https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes
+
+The ``VLType`` allows for storing data where the length of the data in each array element
+can vary. When ``VLType`` arrays are loaded into Iris cubes (or numpy), they are stored
+as an array of ``Object`` - essentially an array-of-arrays, rather than a single
+multi-dimensional array.
+
+The most likely case to encounter variable-length data types is when an array of
+strings (not characters) are stored in a NetCDF file. As the string length for any
+particular array element can vary the values are stored as an array of ``VLType``.
+
+Unfortunately, the size of a ``VLType`` variable cannot be determined without loading
+the data first, which can make it difficult for Iris to make an informed decision on
+whether the load the data lazily or not. If the user has some apriori knowledge of
+the average size of the variable length dimension, this can be provided as a hint
+to  Iris via the ``CHUNK_CONTROL`` context manager and the special ``_vl_hint``
+keyword targeting the variable, e.g. ``CHUNK_CONTROL.set("varname", _vl_hint=5)``.
+
+For example, consider a netCDF file with an auxiliary coordinate
+``experiment_version`` that is stored as a variable-length string type.
+By default, Iris will make a guess of the total array size based on the known
+dimension sizes (``time=150`` in this example) and load the data lazily. However,
+it is known prior to loading that the experiment versions are all no longer than
+5 characters this information can be passed to the Iris NetCDF loaded so it can
+be make a more informed decision on lazy loading:
+
+.. doctest::
+
+    >>> sample_file = iris.sample_data_path("vlstr_type.nc")
+    >>> cube = iris.load_cube(sample_file)
+    >>> print(cube.coord('experiment_version').has_lazy_points())
+    True
+    >>> with CHUNK_CONTROL.set("expver", _vl_hint=5):
+    >>>     cube = iris.load_cube(sample_file)
+    >>> print(cube.coord('experiment_version').has_lazy_points())
+    False
+
 Split Attributes
 -----------------
 
