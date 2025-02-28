@@ -225,7 +225,7 @@ def _get_cf_var_data(cf_var, filename):
         # data; see https://github.com/Unidata/netcdf-c/issues/1893.
         # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
         if isinstance(
-            getattr(cf_var, "datatype", None), _thread_safe_nc.netCDF4.VLType
+            getattr(cf_var, "datatype", None), _thread_safe_nc.VLType
         ):
             msg = (
                 f"NetCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
