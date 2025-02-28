@@ -601,9 +601,11 @@ class _Common__check_attribute_compliance:
             np.asarray(self.container.attributes[self.attribute]).dtype, value
         )
 
-    def check_attribute_compliance_call(self, value):
+    def check_attribute_compliance_call(self, value, file_type="NETCDF4"):
         self.set_attribute(value)
-        with Saver("nonexistent test file", "NETCDF4") as saver:
+        with Saver("nonexistent test file", file_type) as saver:
+            # Get the Mock to work properly.
+            saver._dataset.file_format = file_type
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
@@ -638,6 +640,12 @@ class Test_check_attribute_compliance__valid_range(
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
 
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = [0, np.iinfo(self.data_dtype).max]
+        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
+
 
 class Test_check_attribute_compliance__valid_min(
     _Common__check_attribute_compliance, tests.IrisTest
@@ -670,6 +678,12 @@ class Test_check_attribute_compliance__valid_min(
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
 
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = np.iinfo(self.data_dtype).min
+        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
+
 
 class Test_check_attribute_compliance__valid_max(
     _Common__check_attribute_compliance, tests.IrisTest
@@ -701,6 +715,12 @@ class Test_check_attribute_compliance__valid_max(
         value = 2
         self.check_attribute_compliance_call(value)
         self.assertAttribute(np.int64)
+
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = np.iinfo(self.data_dtype).max
+        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
 class Test_check_attribute_compliance__exception_handling(

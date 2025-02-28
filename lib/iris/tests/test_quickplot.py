@@ -279,3 +279,13 @@ class TestPlotHist(_shared_utils.GraphicsTest):
         cube = test_plot.simple_cube()[0]
         qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11), orientation="horizontal")
         self.check_graphic()
+
+
+@_shared_utils.skip_plot
+class TestFooter:
+    def test__footer(self):
+        text = "Example"
+        qplt._footer(text)
+        fig = plt.gcf()
+        footer_text = fig.texts[0].get_text()
+        assert text == footer_text
