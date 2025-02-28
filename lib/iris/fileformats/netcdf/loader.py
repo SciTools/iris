@@ -196,6 +196,11 @@ def _get_actual_dtype(cf_var):
 # mostly done for speed improvement.  See https://github.com/SciTools/iris/pull/5069
 _LAZYVAR_MIN_BYTES = 5000
 
+# A stab in the dark at the mean length of the "ragged dimension" for netCDF "variable
+# length arrays" (`NetCDF.VLType` type). Total array size is unknown until the variable is
+# read in. Making this number bigger makes it more likely an array will be loaded lazily.
+_MEAN_VL_ARRAY_LEN = 10
+
 
 def _get_cf_var_data(cf_var, filename):
     """Get an array representing the data of a CF variable.
@@ -216,34 +221,33 @@ def _get_cf_var_data(cf_var, filename):
         result = cf_var._data_array
     else:
         # Determine size of data; however can't do this for variable length (VLEN)
-        # arrays as the size of the array can only be known by reading the data.
-        # "Variable length" netCDF types have a datatype of `nc.VLType`.
+        # netCDF arrays as the size of the array can only be known by reading the
+        # data; see https://github.com/Unidata/netcdf-c/issues/1893.
+        # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
         if isinstance(
             getattr(cf_var, "datatype", None), _thread_safe_nc.VLType
-        ):  # TODO(ChrisB): I am accessing netCDF4 directly here - is this ok? Just for type comparison.
-            # We can't know the size of VLen data without reading the variable from disk
-            # first; see https://github.com/Unidata/netcdf-c/issues/1893
+        ):
             msg = (
-                f"netCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
-                "and the total data size cannot be known in advance. This may affect the lazy loading "
+                f"NetCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
+                "thus the total data size cannot be known in advance. This may affect the lazy loading "
                 "of the data."
             )
             warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
 
-            # A stab in the dark at the mean size of the variable length arrays (this could be anything):
-            mean_vl_array_len = 10
-
             # Give user the chance to pass a hint of the average variable length array size via
             # the chunk control context manager. This allows for better decisions to be made on
             # whether the data should be lazy-loaded or not.
+            mean_vl_array_len = _MEAN_VL_ARRAY_LEN
             if CHUNK_CONTROL.mode is not CHUNK_CONTROL.Modes.AS_DASK:
                 if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.cf_name):
                     if vl_chunk_hint := chunks.get("_vl_hint"):
                         mean_vl_array_len = vl_chunk_hint
 
-            # In this case, cf_var.size will just return the known dimension size.
-            # Special handling for strings (`str` type) as these don't have an itemsize attribute; assume 4 bytes
+            # Special handling for strings (`str` type) as these don't have an itemsize attribute;
+            # assume 4 bytes which is sufficient for unicode character storage
             itemsize = 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+
+            # For `VLType` cf_var.size will just return the known dimension size.
             total_bytes = cf_var.size * mean_vl_array_len * itemsize
         else:
             # Normal NCVariable type:
@@ -251,7 +255,6 @@ def _get_cf_var_data(cf_var, filename):
 
         if total_bytes < _LAZYVAR_MIN_BYTES:
             result = cf_var[:]
-
         else:
             # Get lazy chunked data out of a cf variable.
             # Creates Dask wrappers around data arrays for any cube components which
