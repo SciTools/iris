@@ -364,7 +364,7 @@ class LoadProblemsEntry:
 
     - ``"".join(stack_trace.format())``: the full stack trace as a string - the
       same way this would be seen at the command line.
-    - ``stack_trace.exc_type``: the exception type e.g. :class:`ValueError`.
+    - ``stack_trace.exc_type_str``: the exception type e.g. :class:`ValueError`.
     """
 
 
@@ -459,16 +459,15 @@ Below demonstrates how to explore the captured stack traces in detail:
 ...     if path.name == "A1B_north_america.nc"
 ... ]
 >>> for problem in A1B:
-...     print(problem.stack_trace.exc_type)
-<class 'ValueError'>
-<class 'ValueError'>
+...     print(problem.stack_trace.exc_type_str)
+ValueError
+ValueError
 
 >>> last_problem = A1B[-1]
 >>> print("".join(last_problem.stack_trace.format()))
 Traceback (most recent call last):
   File ..., in _add_or_capture
     built = build_func()
-            ^^^^^^^^^^^^
   File ..., in raise_example_error_dim
 ValueError: Example dimension coordinate error
 <BLANKLINE>
