@@ -65,6 +65,9 @@ This document explains the changes made to Iris for this release
    older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
    32-bit. (:issue:`6178`, :pull:`6343`)
 
+# `@ukmo-ccbunney` added support for loading NetCDF variable-length string types
+   and size hinting for better lazy loading (:issue:`6149`, :pull:`6340`)
+
 
 💣 Incompatible Changes
 =======================

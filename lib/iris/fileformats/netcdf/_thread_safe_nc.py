@@ -20,6 +20,7 @@ _GLOBAL_NETCDF4_LOCK = Lock()
 # Doesn't need thread protection, but this allows all netCDF4 refs to be
 #  replaced with thread_safe refs.
 default_fillvals = netCDF4.default_fillvals
+VLType = netCDF4.VLType
 
 
 class _ThreadSafeWrapper(ABC):
