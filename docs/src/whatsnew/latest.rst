@@ -60,6 +60,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ added handling for string stash codes when saving pp files.
    (:issue:`6239`, :pull:`6289`)
 
+#. `@trexfeathers`_ and `@jrackham-mo`_ added a check for dtype castability when
+   saving NetCDF ``valid_range``, ``valid_min`` and ``valid_max`` attributes -
+   older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
+   32-bit. (:issue:`6178`, :pull:`6343`)
+
 
 💣 Incompatible Changes
 =======================
@@ -72,7 +77,7 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from NetCDF files
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`\s from NetCDF files
    faster. (:pull:`6229` and :pull:`6252`)
 
 #. `@fnattino`_ enabled lazy cube interpolation using the linear and
