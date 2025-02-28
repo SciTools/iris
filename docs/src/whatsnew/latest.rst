@@ -100,6 +100,11 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
    as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
+#. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
+   versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
+   to avoid this bug. (:pull:`6342`)
+
+
 📚 Documentation
 ================
 
@@ -142,6 +147,7 @@ This document explains the changes made to Iris for this release
 .. _@fnattino: https://github.com/fnattino
 .. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@stefsmeets: https://github.com/stefsmeets
+.. _@valeriupredoi: https://github.com/valeriupredoi
 
 .. comment
     Whatsnew resources in alphabetical order:
