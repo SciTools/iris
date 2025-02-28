@@ -16,7 +16,10 @@ from unittest import mock
 import numpy as np
 
 from iris.cube import Cube
-from iris.fileformats._nc_load_rules.helpers import build_cube_metadata
+from iris.fileformats._nc_load_rules.helpers import (
+    build_and_add_names,
+    build_cube_metadata,
+)
 
 
 def _make_engine(global_attributes=None, standard_name=None, long_name=None):
@@ -35,7 +38,7 @@ def _make_engine(global_attributes=None, standard_name=None, long_name=None):
         cf_group=cf_group,
     )
 
-    engine = mock.Mock(cube=Cube([23]), cf_var=cf_var)
+    engine = mock.Mock(cube=Cube([23]), cf_var=cf_var, filename="foo.nc")
 
     return engine
 
@@ -81,7 +84,7 @@ class TestCubeName(tests.IrisTest):
         exp_standard_name, exp_long_name = expected
 
         engine = _make_engine(standard_name=standard_name, long_name=long_name)
-        build_cube_metadata(engine)
+        build_and_add_names(engine)
 
         # Check the cube's standard name and long name are as expected.
         self.assertEqual(engine.cube.standard_name, exp_standard_name)

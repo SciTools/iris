@@ -10,8 +10,7 @@ from pathlib import Path
 from traceback import TracebackException
 from typing import Any, Iterable
 
-from iris.common import LimitedAttributeDict
-from iris.cube import Cube
+from iris.common import CFVariableMixin, LimitedAttributeDict
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -332,10 +331,10 @@ LOAD_POLICY = LoadPolicy()
 
 @dataclass
 class LoadProblemsEntry:
-    loaded: Cube | dict[str, Any] | None
+    loaded: CFVariableMixin | dict[str, Any] | None
     """The object that experienced loading problems.
 
-    Two possible types:
+    Four possible types:
 
     - :class:`~iris.cube.Cube`: if problems occurred while building a
       :class:`~iris.common.mixin.CFVariableMixin` -
@@ -351,6 +350,10 @@ class LoadProblemsEntry:
       ``long_name``, ``var_name``. The
       dictionary key is the key of the attribute, and the value is the raw
       attribute returned by the ``netCDF4`` library.
+    - Built objects, such as :class:`~iris.coords.DimCoord`: if the object was
+      built successfully, but could not be added to the Cube being loaded.
+    - ``None``: if a loading error occurred, but problems occurred while trying
+      to store the problem object.
     """
 
     stack_trace: TracebackException
@@ -535,15 +538,22 @@ def _profile_load_problems() -> dict[Path, list[tuple[str | None, TracebackExcep
         entry: LoadProblemsEntry,
     ) -> tuple[str | None, TracebackException]:
         basic_value: str | None = None
+
         if hasattr(entry.loaded, "keys"):
             assert isinstance(entry.loaded, dict)
             (basic_value,) = entry.loaded.keys()
+
         elif hasattr(entry.loaded, "var_name"):
-            assert isinstance(entry.loaded, Cube)
-            attributes = entry.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
+            assert isinstance(entry.loaded, CFVariableMixin)
+            iris_raw = LimitedAttributeDict.IRIS_RAW
+            raw_attributes = entry.loaded.attributes.get(iris_raw)
             # TODO: should "var_name" also be encoded as a constant?
             #  Is there a better way to store this info in the first place?
-            basic_value = attributes["var_name"]
+            if raw_attributes is not None:
+                basic_value = raw_attributes["var_name"]
+            else:
+                basic_value = entry.loaded.name()
+
         else:
             assert entry.loaded is None
 
