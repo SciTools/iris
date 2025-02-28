@@ -13,6 +13,7 @@ import iris.tests as tests  # isort: skip
 
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -255,6 +256,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         yco_is_aux=False,
         xco_stdname=True,
         yco_stdname=True,
+        load_problems_regex=None,
     ):
         """Check key properties of a result cube.
 
@@ -333,6 +335,11 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 self.assertIsNone(yco_cs)
             else:
                 self.assertEqual(yco_cs, cube_cs)
+
+        if load_problems_regex is not None:
+            load_problems = list(LOAD_PROBLEMS.values())[-1]
+            load_problem = load_problems[-1]
+            self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
 
 
 class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
@@ -842,9 +849,9 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         # Notes:
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
-        warning = "must be.* monotonic"
-        result = self.run_testcase(warning_regex=warning, yco_values=[0.0, 0.0])
-        self.check_result(result, yco_is_aux=True)
+        error = "must be.* monotonic"
+        result = self.run_testcase(yco_values=[0.0, 0.0])
+        self.check_result(result, yco_is_aux=True, load_problems_regex=error)
 
 
 if __name__ == "__main__":
