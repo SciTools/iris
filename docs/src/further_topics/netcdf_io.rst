@@ -147,11 +147,11 @@ keyword targeting the variable, e.g. ``CHUNK_CONTROL.set("varname", _vl_hint=5)`
 
 For example, consider a netCDF file with an auxiliary coordinate
 ``experiment_version`` that is stored as a variable-length string type.
-By default, Iris will attempt to guess  the total array size based on the known
+By default, Iris will attempt to guess the total array size based on the known
 dimension sizes (``time=150`` in this example) and load the data lazily. However,
-it is known prior to loading the file that the experiment version strings are all
-no longer than 5 characters this information can be passed to the Iris NetCDF loader
-so it can be make a more informed decision on lazy loading:
+if it is known prior to loading the file that the strings are all no longer than
+5 characters this information can be passed to the Iris NetCDF loader so it can
+be make a more informed decision on lazy loading:
 
 .. doctest::
     >>> import iris
