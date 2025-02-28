@@ -655,8 +655,7 @@ class Saver:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
-    @staticmethod
-    def check_attribute_compliance(container, data_dtype):
+    def check_attribute_compliance(self, container, data_dtype):
         """Check attributte complliance."""
 
         def _coerce_value(val_attr, val_attr_value, data_dtype):
@@ -681,6 +680,7 @@ class Saver:
             val_attr_value = container.attributes.get(val_attr)
             if val_attr_value is not None:
                 val_attr_value = np.asarray(val_attr_value)
+                self._ensure_valid_dtype(val_attr_value, val_attr, val_attr_value)
                 if data_dtype.itemsize == 1:
                     # Allow signed integral type
                     if val_attr_value.dtype.kind == "i":
