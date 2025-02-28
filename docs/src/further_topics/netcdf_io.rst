@@ -125,12 +125,13 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 Variable-length datatypes
 -------------------------
 
-The NetCDF4 provides support for variable-length (or "ragged") data types (``VLType``);
-see https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes
+The NetCDF4 module provides support for variable-length (or "ragged") data
+types (``VLType``); see
+`netCDF4.Dataset.vltypes <https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes>`_
 
 The ``VLType`` allows for storing data where the length of the data in each array element
 can vary. When ``VLType`` arrays are loaded into Iris cubes (or numpy), they are stored
-as an array of ``Object`` - essentially an array-of-arrays, rather than a single
+as an array of ``Object`` types - essentially an array-of-arrays, rather than a single
 multi-dimensional array.
 
 The most likely case to encounter variable-length data types is when an array of
@@ -146,11 +147,11 @@ keyword targeting the variable, e.g. ``CHUNK_CONTROL.set("varname", _vl_hint=5)`
 
 For example, consider a netCDF file with an auxiliary coordinate
 ``experiment_version`` that is stored as a variable-length string type.
-By default, Iris will make a guess of the total array size based on the known
+By default, Iris will attempt to guess  the total array size based on the known
 dimension sizes (``time=150`` in this example) and load the data lazily. However,
-it is known prior to loading that the experiment versions are all no longer than
-5 characters this information can be passed to the Iris NetCDF loaded so it can
-be make a more informed decision on lazy loading:
+it is known prior to loading the file that the experiment version strings are all
+no longer than 5 characters this information can be passed to the Iris NetCDF loader
+so it can be make a more informed decision on lazy loading:
 
 .. doctest::
 
