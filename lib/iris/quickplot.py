@@ -8,11 +8,14 @@ These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 
 These also have the optional kwarg ``footer``, which adds text to the bottom right of
-the plot figure.
+the plot figure. For security classifications, the enum :class:`Classifications`
+can be used for common usages.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
+
+from enum import StrEnum
 
 import cf_units
 from matplotlib import patheffects
@@ -21,6 +24,13 @@ import matplotlib.pyplot as plt
 import iris.config
 import iris.coords
 import iris.plot as iplt
+
+
+class Classification(StrEnum):
+    official = "Official"
+    official_sensitive = "Official-Sensitive"
+    secret = "Secret"
+    top_secret = "Top Secret"
 
 
 def _use_symbol(units):
