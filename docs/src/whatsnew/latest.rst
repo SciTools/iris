@@ -30,12 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
-
 #. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
    with aligning cubes so they can merge / concatenate.
    (:issue:`6248`, :pull:`6257`)
-
 
 #. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
    based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
@@ -51,12 +48,22 @@ This document explains the changes made to Iris for this release
    However, :meth:`~iris.cube.Cube.transpose` will work, as will
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
+   
+#. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
+   render text in the bottom right of the plot figure.
+   (:issue:`6247`, :pull:`6332`)
+   
 
 🐛 Bugs Fixed
 =============
 
 #. `@rcomer`_ added handling for string stash codes when saving pp files.
    (:issue:`6239`, :pull:`6289`)
+
+#. `@trexfeathers`_ and `@jrackham-mo`_ added a check for dtype castability when
+   saving NetCDF ``valid_range``, ``valid_min`` and ``valid_max`` attributes -
+   older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
+   32-bit. (:issue:`6178`, :pull:`6343`)
 
 
 💣 Incompatible Changes
@@ -70,7 +77,7 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from NetCDF files
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`\s from NetCDF files
    faster. (:pull:`6229` and :pull:`6252`)
 
 #. `@fnattino`_ enabled lazy cube interpolation using the linear and
@@ -79,6 +86,9 @@ This document explains the changes made to Iris for this release
    performance benefits linked to caching an interpolator object. While this does
    not break previously suggested code (instantiating and re-using an interpolator
    object remains possible), this is no longer an advertised feature. (:pull:`6084`)
+
+#. `@bouweandela`_ made coordinate dimension lookups faster for derived
+   coordinates. (:pull:`6337`)
 
 
 🔥 Deprecations
@@ -92,6 +102,11 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
    as per the `SPEC 0`_ schedule. (:pull:`6195`)
+
+#. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
+   versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
+   to avoid this bug. (:pull:`6342`)
+
 
 📚 Documentation
 ================
@@ -124,6 +139,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
     when working across Python versions. (:pull:`6329`)
 
+#. `@trexfeathers`_ temporarily pinned Sphinx to `<8.2`.
+   (:pull:`6344`, :issue:`6345`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -132,6 +150,7 @@ This document explains the changes made to Iris for this release
 .. _@fnattino: https://github.com/fnattino
 .. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@stefsmeets: https://github.com/stefsmeets
+.. _@valeriupredoi: https://github.com/valeriupredoi
 
 .. comment
     Whatsnew resources in alphabetical order:
