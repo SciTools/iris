@@ -160,7 +160,7 @@ so it can be make a more informed decision on lazy loading:
     >>> print(cube.coord('experiment_version').has_lazy_points())
     True
     >>> with CHUNK_CONTROL.set("expver", _vl_hint=5):
-    >>>     cube = iris.load_cube(sample_file)
+    ...     cube = iris.load_cube(sample_file)
     >>> print(cube.coord('experiment_version').has_lazy_points())
     False
 
