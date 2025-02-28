@@ -252,6 +252,7 @@ def _get_cf_var_data(cf_var, filename):
             total_bytes = cf_var.size * cf_var.dtype.itemsize
 
         if total_bytes < _LAZYVAR_MIN_BYTES:
+            # Don't make a lazy array, as it will cost more memory AND more time to access.
             result = cf_var[:]
         else:
             # Get lazy chunked data out of a cf variable.
