@@ -30,12 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
-
 #. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
    with aligning cubes so they can merge / concatenate.
    (:issue:`6248`, :pull:`6257`)
-
 
 #. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
    based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
@@ -51,6 +48,11 @@ This document explains the changes made to Iris for this release
    However, :meth:`~iris.cube.Cube.transpose` will work, as will
    :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
    will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
+   
+#. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
+   render text in the bottom right of the plot figure.
+   (:issue:`6247`, :pull:`6332`)
+   
 
 🐛 Bugs Fixed
 =============
@@ -123,6 +125,9 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
     when working across Python versions. (:pull:`6329`)
+
+#. `@trexfeathers`_ temporarily pinned Sphinx to `<8.2`.
+   (:pull:`6344`, :issue:`6345`)
 
 
 .. comment
