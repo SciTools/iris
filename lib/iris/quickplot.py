@@ -8,8 +8,8 @@ These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 
 These also have the optional kwarg ``footer``, which adds text to the bottom right of
-the plot figure. For security classifications, the enum :class:`Classifications`
-can be used for common usages.
+the plot figure. For UK government security classifications, the enum
+:class:`Classification` can be used for common usages.
 
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
@@ -27,6 +27,11 @@ import iris.plot as iplt
 
 
 class Classification(StrEnum):
+    """Holds common UK security classifications, for convenience and consistency whilst using `footer`.
+
+    See `government documentation <https://assets.publishing.service.gov.uk/media/66b0d3c9ab418ab0555932d9/2024-08-05_-_2024_GSCP_UPDATE_.docx__1_.pdf>`__.
+    """
+
     official = "Official"
     official_sensitive = "Official-Sensitive"
     secret = "Secret"
