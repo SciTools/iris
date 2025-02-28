@@ -206,7 +206,8 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": False,
     "special-members": False,
-    "inherited-members": True,
+    # Enums are most valuable when documented as concisely as possible.
+    "inherited-members": "Enum,IntEnum,ReprEnum,StrEnum",
     "show-inheritance": True,
 }
 
