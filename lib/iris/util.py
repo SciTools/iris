@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import Literal
+from typing import Literal, overload
 from warnings import warn
 
 import cf_units
@@ -2129,27 +2129,52 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
-    """Take a shape object and masks all points not touching it in a cube.
+@overload
+def mask_cube_from_shapefile(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | CRS,
+    in_place: bool = False,
+    all_touched: bool = False,
+    invert: bool = False,
+): ...
+def mask_cube_from_shapefile(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | CRS,
+    in_place: bool = False,
+    **kwargs,
+):
+    """Mask all points in a cube that do not intersect a shapefile object.
 
-    Finds the overlap between the `shape` and the `cube` in 2D xy space and
-    masks out any cells with less % overlap with shape than set.
-    Default behaviour is to count any overlap between shape and cell as valid
+    Mask a :class:`~iris.cube.Cube` with any shapefile object, (e.g. Natural Earth Shapefiles via cartopy).
+    Finds the overlap between the `shapefile` shape and the :class:`~iris.cube.Cube` and
+    masks out any cells that __do not__ intersect the shape.
+
+    Shapes can be polygons, lines or points.
+
+    By default, only the only cells whose center is within the polygon or that are selected by
+    Bresenham’s line algorithm (for line type shape) are kept.  This behaviour can be changed by
+    using the `all_touched=True` keyword argument. Then all cells touched by geometries are kept.
 
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube` object
         The `Cube` object to masked. Must be singular, rather than a `CubeList`.
-    shape : Shapely.Geometry object
+    shape : shapely.Geometry object
         A single `shape` of the area to remain unmasked on the `cube`.
         If it a line object of some kind then minimum_weight will be ignored,
         because you cannot compare the area of a 1D line and 2D Cell.
-    minimum_weight : float , default=0.0
-        A number between 0-1 describing what % of a cube cell area must
-        the shape overlap to include it.
+    shape_crs : cartopy.crs.CRS, default=None
+        The coordinate reference system of the shape object.
     in_place : bool, default=False
         Whether to mask the `cube` in-place or return a newly masked `cube`.
         Defaults to False.
+    **kwargs
+        Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
+        Valid keyword arguments are:
+        all_touched : bool, optional
+        invert : bool, optional
 
     Returns
     -------
@@ -2163,8 +2188,6 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
 
     Notes
     -----
-    This function allows masking a cube with any cartopy projection by a shape object,
-    most commonly from Natural Earth Shapefiles via cartopy.
     To mask a cube from a shapefile, both must first be on the same coordinate system.
     Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
     The shapefile is projected to the coord system of the cube using cartopy, then each cell
@@ -2176,13 +2199,58 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     Examples
     --------
     >>> import shapely
+    >>> from pyproj import CRS
     >>> from iris.util import mask_cube_from_shapefile
+
+    Extract a rectangular region covering the UK from a stereographic projection cube:
+
+    >>> cube = iris.load_cube(iris.sample_data_path("toa_brightness_stereographic.nc"))
+    >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
+    >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
+
+    Extract a trajectory by using a line shapefile:
+
+    >>> from shapely import LineString
+    >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
+    >>> masked_cube = mask_cube_from_shapefile(cube, line, wgs84)
+
+    Standard shapely manipulations can be applied.  For example, to extract a trajectory
+    with a 1 degree buffer around it:
+
+    >>> buffer = line.buffer(1)
+    >>> masked_cube = mask_cube_from_shapefile(cube, buffer, wgs84)
+
+    You can load more complex shapes from other libraries. For example, to extract the
+    Canadian provience of Ontario from a cube:
+
+    >>> import cartopy.io.shapereader as shpreader
+    >>> admin1 = shpreader.natural_earth(resolution='110m',
+                                         category='cultural',
+                                         name='admin_1_states_provinces_lakes')
+    >>> admin1shp = shpreader.Reader(admin1).geometries()
+
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
+
+    Warning
+    -------
+    For best masking results, both the cube _and_ masking geometry should have a
+    coordinate reference system (CRS) defined. Masking results will be most reliable
+    when the cube and masking geometry have the same CRS.
+
+    If the cube has no coord_system, the default GeogCS is used where
+    the coordinate units are degrees. For any other coordinate units,
+    the cube **must** have a coord_system defined.
+
+    If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
 
     """
-    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    shapefile_mask = create_shapefile_mask(
+        geometry=shape, geometry_crs=shape_crs, cube=cube, **kwargs
+    )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
