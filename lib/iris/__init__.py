@@ -16,7 +16,8 @@ your data.
 The :func:`load` function provides a simple way to explore data from
 the interactive Python prompt. It will convert the source data into
 :class:`Cubes <iris.cube.Cube>`, and combine those cubes into
-higher-dimensional cubes where possible.
+higher-dimensional cubes where possible
+(for which, please see :class:`iris.CombineOptions`).
 
 The :func:`load_cube` and :func:`load_cubes` functions are similar to
 :func:`load`, but they raise an exception if the number of cubes is not
@@ -94,14 +95,13 @@ import os.path
 import threading
 from typing import Callable, Literal
 
+from iris._combine import COMBINE_POLICY as _COMBINE_POLICY
+from iris._combine import CombineOptions
 import iris._constraints
 import iris.config
 import iris.io
 from iris.io import save
-from iris.loading import LOAD_POLICY as _LOAD_POLICY
 from iris.loading import (
-    CombineOptions,
-    LoadPolicy,
     load,
     load_cube,
     load_cubes,
@@ -111,8 +111,14 @@ from iris.loading import (
 # NOTE: we make an independent local 'LOAD_POLICY' definition here, just so that we
 # can ensure an entry for it in our API documentation page.
 
-#: A control object containing the current file loading strategy options.
-LOAD_POLICY = _LOAD_POLICY
+#: An object to control default cube combination and loading options
+COMBINE_POLICY = _COMBINE_POLICY
+
+#: An alias for the :class:`~iris._combine.CombineOptions` class.
+LoadPolicy = CombineOptions
+
+#: An alias for the :data:`~iris.COMBINE_POLICY` object.
+LOAD_POLICY = _COMBINE_POLICY
 
 
 from ._deprecation import IrisDeprecation, warn_deprecated
@@ -132,6 +138,7 @@ except ImportError:
 # Restrict the names imported when using "from iris import *"
 __all__ = [
     "AttributeConstraint",
+    "COMBINE_POLICY",
     "CombineOptions",
     "Constraint",
     "DATALESS",

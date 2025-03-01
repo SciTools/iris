@@ -230,11 +230,11 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # single, distinct dimension.
         # PP-MOD: first promote any scalar coords when needed as dims
         for target_coord in target_dimcoords:
-            from iris import LOAD_POLICY
+            from iris import COMBINE_POLICY
 
             if (
                 not target_cube.coord_dims(target_coord)
-                and LOAD_POLICY.support_multiple_references
+                and COMBINE_POLICY.support_multiple_references
             ):
                 # The chosen coord is not a dimcoord in the target (yet)
                 # Make it one with 'new_axis'
@@ -400,7 +400,7 @@ class MultipleReferenceFieldDetector(threading.local):
 # A single global object (per thread) to record whether multiple reference fields
 # (e.g. time-dependent orography, or surface pressure fields) have been detected during
 # the latest load operation.
-# This is used purely to implement the iris.LOAD_POLICY.multiref_triggers_concatenate
+# This is used purely to implement the iris.COMBINE_POLICY.multiref_triggers_concatenate
 # functionality.
 _MULTIREF_DETECTION = MultipleReferenceFieldDetector()
 
