@@ -162,7 +162,7 @@ https://conda.anaconda.org/conda-forge/noarch/hyperframe-6.1.0-pyhd8ed1ab_0.cond
 https://conda.anaconda.org/conda-forge/noarch/idna-3.10-pyhd8ed1ab_1.conda#39a4f67be3286c86d696df570b1201b7
 https://conda.anaconda.org/conda-forge/noarch/imagesize-1.4.1-pyhd8ed1ab_0.tar.bz2#7de5386c8fea29e76b303f37dde4c352
 https://conda.anaconda.org/conda-forge/noarch/iniconfig-2.0.0-pyhd8ed1ab_1.conda#6837f3eff7dcea42ecd714ce1ac2b108
-https://conda.anaconda.org/conda-forge/noarch/iris-sample-data-2.5.1-pyhd8ed1ab_1.conda#ae376af0a29183e98a95508ed6944664
+https://conda.anaconda.org/conda-forge/noarch/iris-sample-data-2.5.2-pyhd8ed1ab_0.conda#895f6625dd8a246fece9279fcc12c1de
 https://conda.anaconda.org/conda-forge/linux-64/jack-1.9.22-h7c63dc7_2.conda#f56277b7f079f1b13cbf7fb9b4f194c4
 https://conda.anaconda.org/conda-forge/linux-64/kiwisolver-1.4.7-py311hd18a35c_0.conda#be34c90cce87090d24da64a7c239ca96
 https://conda.anaconda.org/conda-forge/linux-64/libblas-3.9.0-31_h59b9bed_openblas.conda#728dbebd0f7a20337218beacffd37916
@@ -328,7 +328,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libopenvino-pytorch-frontend-202
 https://conda.anaconda.org/conda-forge/linux-64/libopenvino-tensorflow-frontend-2025.0.0-h630ec5c_0.conda#a40f3f3e5fc56f43e3e9722928eb4576
 https://conda.anaconda.org/conda-forge/linux-64/libopenvino-tensorflow-lite-frontend-2025.0.0-h5888daf_0.conda#983c158703765c9446ef28674435d291
 https://conda.anaconda.org/conda-forge/linux-64/librsvg-2.58.4-h49af25d_2.conda#b9846db0abffb09847e2cb0fec4b4db6
-https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.0-py311h2b939e6_0.conda#79239585ea50c427415ef629534bb3aa
+https://conda.anaconda.org/conda-forge/linux-64/matplotlib-base-3.10.1-py311h2b939e6_0.conda#eed17bae389043337f33b95a0fd8c172
 https://conda.anaconda.org/conda-forge/linux-64/netcdf4-1.7.2-nompi_py311h7c29e4f_101.conda#d966f11d28c699da7e9de2aa2f323a4f
 https://conda.anaconda.org/conda-forge/noarch/pre-commit-4.1.0-pyha770c72_0.conda#5353f5eb201a9415b12385e35ed1148d
 https://conda.anaconda.org/conda-forge/noarch/requests-2.32.3-pyhd8ed1ab_1.conda#a9b9368f3701a417eac9edbcae7cb737
