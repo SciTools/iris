@@ -117,9 +117,9 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         # Get the 'main' calculation entry.
         mask_toplev_item = lazy_mask_array.dask[mask_toplev_key]
         # This should be a task (a simple fetch).
-        self.assertTrue(callable(mask_toplev_item[0]))
+        self.assertTrue(callable(mask_toplev_item))
         # Get the key (name) of the array that it fetches.
-        mask_data_name = mask_toplev_item[1]
+        mask_data_name = mask_toplev_item.args[0].key
 
         # Check that the item this refers to is a PPDataProxy.
         self.assertIsInstance(lazy_mask_array.dask[mask_data_name], pp.PPDataProxy)

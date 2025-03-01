@@ -2956,7 +2956,7 @@ class AuxCoord(Coord):
             Descriptive name of the coordinate.
         var_name : optional
             The netCDF variable name for the coordinate.
-        unit : :class:`~cf_units.Unit`, optional
+        units : :class:`~cf_units.Unit`, optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         bounds : optional
