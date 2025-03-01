@@ -65,6 +65,9 @@ This document explains the changes made to Iris for this release
    older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
    32-bit. (:issue:`6178`, :pull:`6343`)
 
+#. `@bouweandela`_ fixed handling of masked Dask arrays in
+    :func:`~iris.util.array_equal`.
+
 
 💣 Incompatible Changes
 =======================

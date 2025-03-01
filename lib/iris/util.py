@@ -422,16 +422,36 @@ def array_equal(array1, array2, withnans=False):
 
     eq = array1.shape == array2.shape
     if eq:
-        array1_masked = ma.is_masked(array1)
-        eq = array1_masked == ma.is_masked(array2)
-    if eq and array1_masked:
-        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
-    if eq:
-        eqs = array1 == array2
+        if is_lazy_data(array1) or is_lazy_data(array2):
+            data1 = da.ma.getdata(array1)
+            data2 = da.ma.getdata(array2)
+            mask1 = da.ma.getmaskarray(array1)
+            mask2 = da.ma.getmaskarray(array2)
+        else:
+            data1 = ma.getdata(array1)
+            data2 = ma.getdata(array2)
+            mask1 = ma.getmask(array1)
+            mask2 = ma.getmask(array2)
+
+        if mask1 is ma.nomask or mask2 is ma.nomask:
+            ignore = np.False_
+        else:
+            ignore = mask1 & mask2
+
         if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = np.all(eqs)
-        eq = bool(eq) or eq is ma.masked
+            nanmask = np.isnan(data1) & np.isnan(data2)
+            if ignore is np.False_:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        data_eqs = data1 == data2
+        if ignore is not np.False_:
+            data_eqs = np.where(ignore, True, data_eqs)
+        data_eq = data_eqs.all()
+        mask_eq = (mask1 == mask2).all()
+
+        eq = bool(data_eq & mask_eq)
 
     return eq
 
