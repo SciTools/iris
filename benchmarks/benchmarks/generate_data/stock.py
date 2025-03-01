@@ -162,7 +162,8 @@ def realistic_4d_w_everything(w_mesh=False, lazy=False) -> iris.cube.Cube:
     lazy : bool
         If True, the Cube will be returned with all arrays as they would
         normally be loaded from file (i.e. most will still be lazy Dask
-        arrays). If False, all arrays will be realised NumPy arrays.
+        arrays). If False, all arrays (except derived coordinates) will be
+        realised NumPy arrays.
 
     """
 
