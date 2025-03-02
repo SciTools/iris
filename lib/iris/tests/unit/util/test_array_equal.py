@@ -176,9 +176,9 @@ def test_array_equal(array_a, array_b, withnans, eq, lazy):
     if lazy:
         identical = array_a is array_b
         if isinstance(array_a, np.ndarray):
-            array_a = da.asarray(array_a)
+            array_a = da.asarray(array_a, chunks=2)
         if isinstance(array_b, np.ndarray):
-            array_b = da.asarray(array_b)
+            array_b = da.asarray(array_b, chunks=1)
         if identical:
             array_b = array_a
     assert eq == array_equal(array_a, array_b, withnans=withnans)

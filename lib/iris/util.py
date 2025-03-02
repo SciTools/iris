@@ -387,14 +387,59 @@ def rolling_window(
     return rw
 
 
-def array_equal(array1, array2, withnans=False):
+def _masked_array_equal(
+    array1: np.ndarray,
+    array2: np.ndarray,
+    equal_nan: bool,
+) -> bool:
+    """Return whether two, possibly masked, arrays are equal."""
+    mask1 = ma.getmask(array1)
+    mask2 = ma.getmask(array2)
+
+    if mask1 is ma.nomask and mask2 is ma.nomask:
+        eq = True
+    elif mask1 is ma.nomask:
+        eq = not mask2.any()
+    elif mask2 is ma.nomask:
+        eq = not mask1.any()
+    else:
+        eq = np.array_equal(mask1, mask2)
+
+    if eq:
+        if ma.isMaskedArray(array1):
+            array1 = array1.compressed()
+        if ma.isMaskedArray(array2):
+            array2 = array2.compressed()
+        eq = np.array_equal(array1, array2, equal_nan=equal_nan)
+
+    return eq
+
+
+def _apply_masked_array_equal(
+    blocks1: Iterable[np.ndarray],
+    blocks2: Iterable[np.ndarray],
+    equal_nan: bool,
+) -> bool:
+    """Return whether two, possibly masked, arrays are equal.
+
+    This function is for use with :func:`dask.array.blockwise`.
+    """
+    eq = True
+    for block1, block2 in zip(blocks1, blocks2, strict=True):
+        eq = _masked_array_equal(block1, block2, equal_nan=equal_nan)
+        if eq is False:
+            break
+    return eq
+
+
+def array_equal(array1, array2, withnans: bool = False) -> bool:
     """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
     array1, array2 : arraylike
         Args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, default=False
+    withnans : default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -412,6 +457,9 @@ def array_equal(array1, array2, withnans=False):
     if withnans and (array1 is array2):
         return True
 
+    if withnans and not (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
+        withnans = False
+
     def normalise_array(array):
         if not is_lazy_data(array):
             if not ma.isMaskedArray(array):
@@ -423,37 +471,21 @@ def array_equal(array1, array2, withnans=False):
     eq = array1.shape == array2.shape
     if eq:
         if is_lazy_data(array1) or is_lazy_data(array2):
-            data1 = da.ma.getdata(array1)
-            data2 = da.ma.getdata(array2)
-            mask1 = da.ma.getmaskarray(array1)
-            mask2 = da.ma.getmaskarray(array2)
+            eq = da.blockwise(
+                _apply_masked_array_equal,
+                "",
+                array1.flatten(),
+                "i",
+                array2.flatten(),
+                "i",
+                dtype=bool,
+                meta=np.empty((0,), dtype=bool),
+                equal_nan=withnans,
+            )
         else:
-            data1 = ma.getdata(array1)
-            data2 = ma.getdata(array2)
-            mask1 = ma.getmask(array1)
-            mask2 = ma.getmask(array2)
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans)
 
-        if mask1 is ma.nomask or mask2 is ma.nomask:
-            ignore = np.False_
-        else:
-            ignore = mask1 & mask2
-
-        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            nanmask = np.isnan(data1) & np.isnan(data2)
-            if ignore is np.False_:
-                ignore = nanmask
-            else:
-                ignore |= nanmask
-
-        data_eqs = data1 == data2
-        if ignore is not np.False_:
-            data_eqs = np.where(ignore, True, data_eqs)
-        data_eq = data_eqs.all()
-        mask_eq = (mask1 == mask2).all()
-
-        eq = bool(data_eq & mask_eq)
-
-    return eq
+    return bool(eq)
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
