@@ -119,7 +119,10 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ and `@trexfeathers`_ created a style guide for ``pytest`` tests,
    and consolidated ``Test Categories`` and ``Testing Tools`` into
-   :ref:`contributing_tests` (:issue:`5574`, :pull:`5785`)
+   :ref:`contributing_tests`. (:issue:`5574`, :pull:`5785`)
+
+#. `@jfrost-mo`_ corrected ``unit`` to ``units`` in the docstring for
+   :class:`iris.coords.AuxCoord`. (:issue:`6347`, :pull:`6348`)
 
 
 💼 Internal
@@ -151,6 +154,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
+.. _@jfrost-mo: https://github.com/jfrost-mo
 .. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@stefsmeets: https://github.com/stefsmeets
 .. _@valeriupredoi: https://github.com/valeriupredoi
