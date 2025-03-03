@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
-build_and_add_dimension_coordinate`.
-
-"""
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_dimension_coordinate`."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -264,7 +261,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         load_problems = list(LOAD_PROBLEMS.values())[-1]
         load_problem = load_problems[-1]
-        assert "CannotAddError" in "".join(load_problem.stack_trace.format())
+        assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
     def test_auxcoord_not_added(self):
@@ -283,7 +280,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         load_problems = list(LOAD_PROBLEMS.values())[-1]
         load_problem = load_problems[-1]
-        assert "CannotAddError" in "".join(load_problem.stack_trace.format())
+        assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
 

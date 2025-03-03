@@ -1279,7 +1279,7 @@ def _normalise_bounds_units(
 
 
 ################################################################################
-def build_dimension_coordinate(
+def _build_dimension_coordinate(
     filename: str,
     cf_coord_var: cf.CFCoordinateVariable,
     coord_name: Optional[str] = None,
@@ -1429,7 +1429,7 @@ def build_and_add_dimension_coordinate(
 
     _ = _add_or_capture(
         build_func=partial(
-            build_dimension_coordinate,
+            _build_dimension_coordinate,
             engine.filename,
             cf_coord_var,
             coord_name,
