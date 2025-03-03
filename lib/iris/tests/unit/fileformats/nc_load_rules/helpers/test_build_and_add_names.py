@@ -1,3 +1,9 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_names`."""
+
 # import iris tests first so that some things can be initialised before
 # importing anything else
 import iris.tests as tests  # isort:skip
