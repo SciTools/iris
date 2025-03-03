@@ -16,10 +16,7 @@ from unittest import mock
 import numpy as np
 
 from iris.cube import Cube
-from iris.fileformats._nc_load_rules.helpers import (
-    build_and_add_names,
-    build_cube_metadata,
-)
+from iris.fileformats._nc_load_rules.helpers import build_cube_metadata
 
 
 def _make_engine(global_attributes=None, standard_name=None, long_name=None):
@@ -74,54 +71,6 @@ class TestGlobalAttributes(tests.IrisTest):
         global_attributes.pop("calendar")
         expected = global_attributes
         self.assertEqual(engine.cube.attributes.globals, expected)
-
-
-class TestCubeName(tests.IrisTest):
-    def check_cube_names(self, inputs, expected):
-        # Inputs - attributes on the fake CF Variable.
-        standard_name, long_name = inputs
-        # Expected - The expected cube attributes.
-        exp_standard_name, exp_long_name = expected
-
-        engine = _make_engine(standard_name=standard_name, long_name=long_name)
-        build_and_add_names(engine)
-
-        # Check the cube's standard name and long name are as expected.
-        self.assertEqual(engine.cube.standard_name, exp_standard_name)
-        self.assertEqual(engine.cube.long_name, exp_long_name)
-
-    def test_standard_name_none_long_name_none(self):
-        inputs = (None, None)
-        expected = (None, None)
-        self.check_cube_names(inputs, expected)
-
-    def test_standard_name_none_long_name_set(self):
-        inputs = (None, "ice_thickness_long_name")
-        expected = (None, "ice_thickness_long_name")
-        self.check_cube_names(inputs, expected)
-
-    def test_standard_name_valid_long_name_none(self):
-        inputs = ("sea_ice_thickness", None)
-        expected = ("sea_ice_thickness", None)
-        self.check_cube_names(inputs, expected)
-
-    def test_standard_name_valid_long_name_set(self):
-        inputs = ("sea_ice_thickness", "ice_thickness_long_name")
-        expected = ("sea_ice_thickness", "ice_thickness_long_name")
-        self.check_cube_names(inputs, expected)
-
-    def test_standard_name_invalid_long_name_none(self):
-        inputs = ("not_a_standard_name", None)
-        expected = (
-            None,
-            "not_a_standard_name",
-        )
-        self.check_cube_names(inputs, expected)
-
-    def test_standard_name_invalid_long_name_set(self):
-        inputs = ("not_a_standard_name", "ice_thickness_long_name")
-        expected = (None, "ice_thickness_long_name")
-        self.check_cube_names(inputs, expected)
 
 
 if __name__ == "__main__":
