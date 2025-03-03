@@ -10,6 +10,7 @@ import iris.tests as tests  # isort:skip
 
 from iris.fileformats._nc_load_rules.helpers import build_and_add_names
 from iris.loading import LOAD_PROBLEMS
+from iris.tests._shared_utils import get_latest_load_problem
 
 from .test_build_cube_metadata import _make_engine
 
@@ -35,8 +36,7 @@ class TestCubeName(tests.IrisTest):
         if invalid_standard_name is None:
             self.assertEqual(LOAD_PROBLEMS, {})
         else:
-            load_problems = list(LOAD_PROBLEMS.values())[-1]
-            load_problem = load_problems[-1]
+            load_problem = get_latest_load_problem()
             self.assertEqual(
                 load_problem.loaded, {"standard_name": invalid_standard_name}
             )

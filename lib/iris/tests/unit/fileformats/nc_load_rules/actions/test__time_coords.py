@@ -14,7 +14,7 @@ from typing import ClassVar
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
-from iris.loading import LOAD_PROBLEMS
+from iris.tests._shared_utils import get_latest_load_problem
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -218,8 +218,7 @@ netcdf test {{
             self.assertIsInstance(period_auxcos[0], AuxCoord)
 
         if load_problems_regex is not None:
-            load_problems = list(LOAD_PROBLEMS.values())[-1]
-            load_problem = load_problems[-1]
+            load_problem = get_latest_load_problem()
             self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
 
 

@@ -16,7 +16,7 @@ import iris.tests as tests  # isort: skip
 
 from iris.common import LimitedAttributeDict
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from iris.loading import LOAD_PROBLEMS
+from iris.tests._shared_utils import get_latest_load_problem
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -160,8 +160,7 @@ netcdf test {{
     def check_load_problem(self, setup_kwargs, expected_msg):
         # Check that the expected load problem is stored.
         _ = self.run_testcase(**setup_kwargs)
-        load_problems = list(LOAD_PROBLEMS.values())[-1]
-        load_problem = load_problems[-1]
+        load_problem = get_latest_load_problem()
         attributes = load_problem.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
         self.assertEqual(attributes["standard_name"], setup_kwargs["standard_name"])
         self.assertRegex("".join(load_problem.stack_trace.format()), expected_msg)
