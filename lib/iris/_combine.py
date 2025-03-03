@@ -39,9 +39,10 @@ class CombineOptions(threading.local):
 
     The individual configurable options are :
 
-    * ``equalise_cubes_kwargs`` = (dict)
+    * ``equalise_cubes_kwargs`` = (dict or None)
         Specifies keywords for an :func:`iris.util.equalise_cubes` call, to be applied
-        before any merge/concatenate step.
+        before any merge/concatenate step.  If ``None``, or empty, no equalisation step
+        is performed.
 
     * ``merge_concat_sequence`` = "m" / "c" / "cm" / "mc"
         Specifies whether to apply :meth:`~iris.cube.CubeList.merge`, or
@@ -361,6 +362,7 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
 
     eq_args = options.get("equalise_cubes_kwargs", None)
     if eq_args:
+        # Skip missing (or empty) arg, as no effect : see `equalise_cubes`.
         from iris.util import equalise_cubes
 
         equalise_cubes(cubelist, **eq_args)
