@@ -154,6 +154,7 @@ if it is known prior to loading the file that the strings are all no longer than
 be make a more informed decision on lazy loading:
 
 .. doctest::
+
     >>> import iris
     >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
     >>>
@@ -165,6 +166,7 @@ be make a more informed decision on lazy loading:
     ...     cube = iris.load_cube(sample_file)
     >>> print(cube.coord('experiment_version').has_lazy_points())
     False
+
 
 Split Attributes
 -----------------
