@@ -86,6 +86,7 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+MIN_PICKLE_PROTOCOL = 4
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")

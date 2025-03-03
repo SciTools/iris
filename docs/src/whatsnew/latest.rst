@@ -80,6 +80,11 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ added handling for string stash codes when saving pp files.
    (:issue:`6239`, :pull:`6289`)
 
+#. `@trexfeathers`_ and `@jrackham-mo`_ added a check for dtype castability when
+   saving NetCDF ``valid_range``, ``valid_min`` and ``valid_max`` attributes -
+   older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
+   32-bit. (:issue:`6178`, :pull:`6343`)
+
 
 💣 Incompatible Changes
 =======================
@@ -92,7 +97,7 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`s from NetCDF files
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`\s from NetCDF files
    faster. (:pull:`6229` and :pull:`6252`)
 
 #. `@fnattino`_ enabled lazy cube interpolation using the linear and
@@ -101,6 +106,9 @@ This document explains the changes made to Iris for this release
    performance benefits linked to caching an interpolator object. While this does
    not break previously suggested code (instantiating and re-using an interpolator
    object remains possible), this is no longer an advertised feature. (:pull:`6084`)
+
+#. `@bouweandela`_ made coordinate dimension lookups faster for derived
+   coordinates. (:pull:`6337`)
 
 
 🔥 Deprecations
@@ -115,6 +123,11 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
    as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
+#. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
+   versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
+   to avoid this bug. (:pull:`6342`)
+
+
 📚 Documentation
 ================
 
@@ -123,7 +136,10 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ and `@trexfeathers`_ created a style guide for ``pytest`` tests,
    and consolidated ``Test Categories`` and ``Testing Tools`` into
-   :ref:`contributing_tests` (:issue:`5574`, :pull:`5785`)
+   :ref:`contributing_tests`. (:issue:`5574`, :pull:`5785`)
+
+#. `@jfrost-mo`_ corrected ``unit`` to ``units`` in the docstring for
+   :class:`iris.coords.AuxCoord`. (:issue:`6347`, :pull:`6348`)
 
 
 💼 Internal
@@ -155,8 +171,10 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@fnattino: https://github.com/fnattino
+.. _@jfrost-mo: https://github.com/jfrost-mo
 .. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@stefsmeets: https://github.com/stefsmeets
+.. _@valeriupredoi: https://github.com/valeriupredoi
 
 .. comment
     Whatsnew resources in alphabetical order:

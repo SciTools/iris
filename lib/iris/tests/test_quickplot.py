@@ -283,9 +283,11 @@ class TestPlotHist(_shared_utils.GraphicsTest):
 
 @_shared_utils.skip_plot
 class TestFooter:
-    def test__footer(self):
-        text = "Example"
+    @pytest.mark.parametrize(
+        "text", [qplt.Classification.official_sensitive, "Example"]
+    )
+    def test__footer(self, text):
+        fig = plt.figure()
         qplt._footer(text)
-        fig = plt.gcf()
         footer_text = fig.texts[0].get_text()
         assert text == footer_text
