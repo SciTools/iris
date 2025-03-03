@@ -17,9 +17,10 @@ into a single multidimensional cube.
 
 .. hint::
 
-    There are some hints at :class:`iris.CombineOptions` on how Iris works to load
-    fewer and larger cubes, along with user options that can aid in controlling the
-    process.
+    There are details at :class:`iris.CombineOptions` on how Iris works to load
+    fewer and larger cubes :  The :data:`iris.COMBINE_POLICY` object allows the user to
+    control how cubes are combined during the loading process.  See the documentation
+    of the :class:`iris.CombineOptions` class for details.
 
 The :py:func:`iris.load` function automatically recognises the format
 of the given files and attempts to produce Iris Cubes from their contents.
