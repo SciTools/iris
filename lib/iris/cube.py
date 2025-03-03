@@ -686,7 +686,7 @@ class CubeList(list):
 
         Returns
         -------
-        Cube
+        :class:`Cube`
 
         """
         result = self.combine(options, **kwargs)
