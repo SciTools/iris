@@ -434,19 +434,39 @@ def _masked_array_equal(
 
 
 def _apply_masked_array_equal(
-    blocks1: Iterable[np.ndarray],
-    blocks2: Iterable[np.ndarray],
+    blocks1: list | np.ndarray,
+    blocks2: list | np.ndarray,
     equal_nan: bool,
 ) -> bool:
-    """Return whether two, possibly masked, arrays are equal.
+    """Return whether two collections of arrays are equal or not.
 
     This function is for use with :func:`dask.array.blockwise`.
+
+    Parameters
+    ----------
+    blocks1 :
+        The collection of arrays representing chunks from the first array. Can
+        be a numpy array or a (nested) list of numpy arrays.
+    blocks2 :
+        The collection of arrays representing chunks from the second array. Can
+        be a numpy array or a (nested) list of numpy arrays.
+    equal_nan :
+        Consder NaN values equal.
+
+    Returns
+    -------
+    :
+        Whether the two collections are equal or not.
+
     """
-    eq = True
-    for block1, block2 in zip(blocks1, blocks2, strict=True):
-        eq = _masked_array_equal(block1, block2, equal_nan=equal_nan)
-        if not eq:
-            break
+    if isinstance(blocks1, np.ndarray):
+        eq = _masked_array_equal(blocks1, blocks2, equal_nan=equal_nan)
+    else:
+        eq = True
+        for block1, block2 in zip(blocks1, blocks2, strict=True):
+            eq = _apply_masked_array_equal(block1, block2, equal_nan=equal_nan)
+            if not eq:
+                break
     return eq
 
 
@@ -491,11 +511,11 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
         if is_lazy_data(array1) or is_lazy_data(array2):
             eq = da.blockwise(
                 _apply_masked_array_equal,
-                "",
-                array1.flatten(),
-                "i",
-                array2.flatten(),
-                "i",
+                tuple(),
+                array1,
+                tuple(range(array1.ndim)),
+                array2,
+                tuple(range(array2.ndim)),
                 dtype=bool,
                 meta=np.empty((0,), dtype=bool),
                 equal_nan=withnans,
