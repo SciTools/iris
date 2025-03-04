@@ -396,6 +396,7 @@ def _masked_array_equal(
     mask1 = ma.getmask(array1)
     mask2 = ma.getmask(array2)
 
+    # Compare mask equality.
     if mask1 is ma.nomask and mask2 is ma.nomask:
         eq = True
     elif mask1 is ma.nomask:
@@ -406,11 +407,28 @@ def _masked_array_equal(
         eq = np.array_equal(mask1, mask2)
 
     if eq:
-        if ma.isMaskedArray(array1):
-            array1 = array1.compressed()
-        if ma.isMaskedArray(array2):
-            array2 = array2.compressed()
-        eq = np.array_equal(array1, array2, equal_nan=equal_nan)
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        # This is faster than using np.array_equal with equal_nan=True.
+        data1 = array1.data if ma.isMaskedArray(array1) else array1
+        data2 = array2.data if ma.isMaskedArray(array2) else array2
+        eqs = data1 == data2
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+        eq = eqs.all()
 
     return eq
 
@@ -427,7 +445,7 @@ def _apply_masked_array_equal(
     eq = True
     for block1, block2 in zip(blocks1, blocks2, strict=True):
         eq = _masked_array_equal(block1, block2, equal_nan=equal_nan)
-        if eq is False:
+        if not eq:
             break
     return eq
 
