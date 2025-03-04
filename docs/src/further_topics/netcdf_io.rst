@@ -140,18 +140,21 @@ particular array element can vary the values are stored as an array of ``VLType`
 
 Unfortunately, the size of a ``VLType`` variable cannot be determined without loading
 the data first, which can make it difficult for Iris to make an informed decision on
-whether the load the data lazily or not. If the user has some apriori knowledge of
+whether to the load the data lazily or not. If the user has some apriori knowledge of
 the average size of the variable length dimension, this can be provided as a hint
 to  Iris via the ``CHUNK_CONTROL`` context manager and the special ``_vl_hint``
 keyword targeting the variable, e.g. ``CHUNK_CONTROL.set("varname", _vl_hint=5)``.
 
-For example, consider a netCDF file with an auxiliary coordinate
-``experiment_version`` that is stored as a variable-length string type.
-By default, Iris will attempt to guess the total array size based on the known
-dimension sizes (``time=150`` in this example) and load the data lazily. However,
-if it is known prior to loading the file that the strings are all no longer than
-5 characters this information can be passed to the Iris NetCDF loader so it can
-be make a more informed decision on lazy loading:
+For example
+^^^^^^^^^^^
+
+Consider a netCDF file with an auxiliary coordinate ``experiment_version`` that
+is stored as a variable-length string type. By default, Iris will attempt to
+guess the total array size based on the known dimension sizes (``time=150`` in
+this example) and load the data lazily. However, if it is known prior to
+loading the file that the strings are all no longer than 5 characters this
+information can be passed to the Iris NetCDF loader so it can be make a more
+informed decision on lazy loading:
 
 .. doctest::
 
