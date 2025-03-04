@@ -127,7 +127,7 @@ Variable-length datatypes
 
 The NetCDF4 module provides support for variable-length (or "ragged") data
 types (``VLType``); see
-`netCDF4.Dataset.vltypes <https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes>`_
+`Variable-length data types <https://unidata.github.io/netcdf4-python/#variable-length-vlen-data-types>`_
 
 The ``VLType`` allows for storing data where the length of the data in each array element
 can vary. When ``VLType`` arrays are loaded into Iris cubes (or numpy), they are stored
