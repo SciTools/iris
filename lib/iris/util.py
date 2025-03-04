@@ -423,9 +423,7 @@ def _masked_array_equal(
                 ignore |= nanmask
 
         # This is faster than using np.array_equal with equal_nan=True.
-        data1 = array1.data if ma.isMaskedArray(array1) else array1
-        data2 = array2.data if ma.isMaskedArray(array2) else array2
-        eqs = data1 == data2
+        eqs = ma.getdata(array1) == ma.getdata(array2)
         if ignore is not None:
             eqs = np.where(ignore, True, eqs)
         eq = eqs.all()
