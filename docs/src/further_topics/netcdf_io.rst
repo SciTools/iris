@@ -139,10 +139,10 @@ strings (not characters) are stored in a NetCDF file. As the string length for a
 particular array element can vary the values are stored as an array of ``VLType``.
 
 As each element of a variable-length array is stored as a ``VLType`` containing
-an unknown number of vales, the total size of an variable-length NetCDF array
+an unknown number of vales, the total size of a variable-length NetCDF array
 cannot be known without first loading the data. This makes it difficult for
 Iris to make an informed decision on whether to the load the data lazily or not.
-The user can aid this decision using size hinting.
+The user can aid this decision using *VLType size hinting* described below.
 
 VLType size hinting
 ^^^^^^^^^^^^^^^^^^^
