@@ -396,6 +396,7 @@ def _masked_array_equal(
     mask1 = ma.getmask(array1)
     mask2 = ma.getmask(array2)
 
+    # Compare mask equality.
     if mask1 is ma.nomask and mask2 is ma.nomask:
         eq = True
     elif mask1 is ma.nomask:
@@ -406,29 +407,64 @@ def _masked_array_equal(
         eq = np.array_equal(mask1, mask2)
 
     if eq:
-        if ma.isMaskedArray(array1):
-            array1 = array1.compressed()
-        if ma.isMaskedArray(array2):
-            array2 = array2.compressed()
-        eq = np.array_equal(array1, array2, equal_nan=equal_nan)
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        # This is faster than using np.array_equal with equal_nan=True.
+        eqs = ma.getdata(array1) == ma.getdata(array2)
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+        eq = eqs.all()
 
     return eq
 
 
 def _apply_masked_array_equal(
-    blocks1: Iterable[np.ndarray],
-    blocks2: Iterable[np.ndarray],
+    blocks1: list | np.ndarray,
+    blocks2: list | np.ndarray,
     equal_nan: bool,
 ) -> bool:
-    """Return whether two, possibly masked, arrays are equal.
+    """Return whether two collections of arrays are equal or not.
 
     This function is for use with :func:`dask.array.blockwise`.
+
+    Parameters
+    ----------
+    blocks1 :
+        The collection of arrays representing chunks from the first array. Can
+        be a numpy array or a (nested) list of numpy arrays.
+    blocks2 :
+        The collection of arrays representing chunks from the second array. Can
+        be a numpy array or a (nested) list of numpy arrays.
+    equal_nan :
+        Consder NaN values equal.
+
+    Returns
+    -------
+    :
+        Whether the two collections are equal or not.
+
     """
-    eq = True
-    for block1, block2 in zip(blocks1, blocks2, strict=True):
-        eq = _masked_array_equal(block1, block2, equal_nan=equal_nan)
-        if eq is False:
-            break
+    if isinstance(blocks1, np.ndarray):
+        eq = _masked_array_equal(blocks1, blocks2, equal_nan=equal_nan)
+    else:
+        eq = True
+        for block1, block2 in zip(blocks1, blocks2, strict=True):
+            eq = _apply_masked_array_equal(block1, block2, equal_nan=equal_nan)
+            if not eq:
+                break
     return eq
 
 
@@ -473,11 +509,11 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
         if is_lazy_data(array1) or is_lazy_data(array2):
             eq = da.blockwise(
                 _apply_masked_array_equal,
-                "",
-                array1.flatten(),
-                "i",
-                array2.flatten(),
-                "i",
+                tuple(),
+                array1,
+                tuple(range(array1.ndim)),
+                array2,
+                tuple(range(array2.ndim)),
                 dtype=bool,
                 meta=np.empty((0,), dtype=bool),
                 equal_nan=withnans,

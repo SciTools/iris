@@ -589,21 +589,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if hasattr(other, "metadata"):
             # metadata comparison
             eq = self.metadata == other.metadata
+
+            # Also consider bounds, if we have them.
+            # (N.B. though only Coords can ever actually *have* bounds).
+            if eq and eq is not NotImplemented:
+                eq = self.has_bounds() is other.has_bounds()
+
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
                     self._core_values(), other._core_values(), withnans=True
                 )
-
-            # Also consider bounds, if we have them.
-            # (N.B. though only Coords can ever actually *have* bounds).
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(
                         self.core_bounds(), other.core_bounds(), withnans=True
                     )
-                else:
-                    eq = not self.has_bounds() and not other.has_bounds()
 
         return eq
 

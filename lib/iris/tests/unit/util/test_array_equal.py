@@ -17,6 +17,9 @@ ARRAY1[0, 1, 2] = 100
 ARRAY2 = np.array([1.0, np.nan, 2.0, np.nan, 3.0])
 
 TEST_CASES = [
+    # test empty
+    (np.array([]), np.array([]), False, True),
+    (np.array([]), np.array([], dtype=np.float64), True, True),
     # test 0d
     (np.array(23), np.array(23), False, True),
     (np.array(23), np.array(7), False, False),
