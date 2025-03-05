@@ -68,6 +68,12 @@ TEST_CASES = [
         False,
     ),
     (
+        ma.masked_array([1, 2, 2], mask=[0, 0, 1]),
+        ma.masked_array([1, 2, 2]),
+        False,
+        False,
+    ),
+    (
         np.array([1, 2]),
         ma.masked_array([1, 3], mask=[0, 1]),
         False,
