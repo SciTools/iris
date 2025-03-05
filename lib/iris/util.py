@@ -391,7 +391,7 @@ def _masked_array_equal(
     array1: np.ndarray,
     array2: np.ndarray,
     equal_nan: bool,
-) -> bool:
+) -> np.ndarray:
     """Return whether two, possibly masked, arrays are equal."""
     mask1 = ma.getmask(array1)
     mask2 = ma.getmask(array2)
@@ -406,7 +406,9 @@ def _masked_array_equal(
     else:
         eq = np.array_equal(mask1, mask2)
 
-    if eq:
+    if not eq:
+        eqs = np.zeros(array1.shape, dtype=bool)
+    else:
         # Compare data equality.
         if not (mask1 is ma.nomask or mask2 is ma.nomask):
             # Ignore masked data.
@@ -422,50 +424,11 @@ def _masked_array_equal(
             else:
                 ignore |= nanmask
 
-        # This is faster than using np.array_equal with equal_nan=True.
         eqs = ma.getdata(array1) == ma.getdata(array2)
         if ignore is not None:
             eqs = np.where(ignore, True, eqs)
-        eq = eqs.all()
 
-    return eq
-
-
-def _apply_masked_array_equal(
-    blocks1: list | np.ndarray,
-    blocks2: list | np.ndarray,
-    equal_nan: bool,
-) -> bool:
-    """Return whether two collections of arrays are equal or not.
-
-    This function is for use with :func:`dask.array.blockwise`.
-
-    Parameters
-    ----------
-    blocks1 :
-        The collection of arrays representing chunks from the first array. Can
-        be a numpy array or a (nested) list of numpy arrays.
-    blocks2 :
-        The collection of arrays representing chunks from the second array. Can
-        be a numpy array or a (nested) list of numpy arrays.
-    equal_nan :
-        Consder NaN values equal.
-
-    Returns
-    -------
-    :
-        Whether the two collections are equal or not.
-
-    """
-    if isinstance(blocks1, np.ndarray):
-        eq = _masked_array_equal(blocks1, blocks2, equal_nan=equal_nan)
-    else:
-        eq = True
-        for block1, block2 in zip(blocks1, blocks2, strict=True):
-            eq = _apply_masked_array_equal(block1, block2, equal_nan=equal_nan)
-            if not eq:
-                break
-    return eq
+    return eqs
 
 
 def array_equal(array1, array2, withnans: bool = False) -> bool:
@@ -507,19 +470,22 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
     eq = array1.shape == array2.shape
     if eq:
         if is_lazy_data(array1) or is_lazy_data(array2):
+            # Use a separate map and reduce operation to avoid running out of memory.
+            ndim = array1.ndim
+            indices = tuple(range(ndim))
             eq = da.blockwise(
-                _apply_masked_array_equal,
-                tuple(),
+                _masked_array_equal,
+                indices,
                 array1,
-                tuple(range(array1.ndim)),
+                indices,
                 array2,
-                tuple(range(array2.ndim)),
+                indices,
                 dtype=bool,
-                meta=np.empty((0,), dtype=bool),
+                meta=np.empty((0,) * ndim, dtype=bool),
                 equal_nan=withnans,
-            )
+            ).all()
         else:
-            eq = _masked_array_equal(array1, array2, equal_nan=withnans)
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
     return bool(eq)
 
