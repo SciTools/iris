@@ -414,7 +414,7 @@ Examples
     ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
     >>> warnings.showwarning = custom_warn
 
-    >>> build_dimension_coordinate_original = helpers.build_dimension_coordinate
+    >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
 
     >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
     ...     if cf_coord_var.cf_name == "time":
@@ -424,7 +424,7 @@ Examples
     ...             filename, cf_coord_var, coord_name, coord_system
     ...         )
 
-    >>> helpers.build_dimension_coordinate = raise_example_error_dim
+    >>> helpers._build_dimension_coordinate = raise_example_error_dim
     >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
     >>> iris.FUTURE.date_microseconds = True
 
@@ -520,7 +520,7 @@ hope to continually improve it over time.
 
     >>> warnings.showwarning = showwarning_original
     >>> warnings.filterwarnings("ignore")
-    >>> helpers.build_dimension_coordinate = build_dimension_coordinate_original
+    >>> helpers._build_dimension_coordinate = build_dimension_coordinate_original
     >>> std_names.STD_NAMES["air_temperature"] = air_temperature
 
 """
