@@ -453,19 +453,20 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    if withnans and (array1 is array2):
-        return True
-
-    if withnans and not (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-        withnans = False
 
     def normalise_array(array):
-        if not is_lazy_data(array):
-            if not ma.isMaskedArray(array):
-                array = np.asanyarray(array)
+        if not isinstance(array, np.ndarray | da.Array):
+            array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
+
+    floating_point_arrays = array1.dtype.kind == "f" or array2.dtype.kind == "f"
+    if (array1 is array2) and (withnans or not floating_point_arrays):
+        return True
+
+    if not floating_point_arrays:
+        withnans = False
 
     eq = array1.shape == array2.shape
     if eq:
