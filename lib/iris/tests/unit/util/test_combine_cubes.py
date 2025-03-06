@@ -2,13 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :func:`iris.io.loading.combine_cubes` function.
-
-Note: These tests are fairly extensive to cover functional uses within the loading
-operations.
-TODO: when function is public API, extend testing to the extended API options,
-i.e. different types + defaulting of the 'options' arg, and **kwargs support.
-"""
+"""Unit tests for the :func:`iris.util.combine_cubes` function."""
 
 import pytest
 
@@ -25,6 +19,10 @@ def settings(request):
 
 
 class Test_settings:
+    """These tests cover functional uses of the different "settings" choices, with specific
+    sets of cubes sensitive to those choices.
+    """
+
     def test_mergeable(self, settings):
         c1, c2 = cu(t=1), cu(t=2)
         c12 = cu(t=(1, 2))
@@ -62,14 +60,6 @@ class Test_settings:
         }[settings]
         assert result == expected
 
-    def test_cat_enables_merge__custom(self):
-        c1, c2 = cu(t=(1, 2), z=1), cu(t=(3, 4, 5), z=1)
-        c3, c4 = cu(t=(1, 2, 3), z=2), cu(t=(4, 5), z=2)
-        c1234 = cu(t=(1, 2, 3, 4, 5), z=(1, 2))
-        input_cubes = [c1, c2, c3, c4]
-        result = combine_cubes(input_cubes, merge_concat_sequence="cm")
-        assert result == [c1234]
-
     def test_nocombine_overlapping(self, settings):
         c1, c2 = cu(t=(1, 3)), cu(t=(2, 4))
         input_cubes = [c1, c2]
@@ -83,8 +73,21 @@ class Test_settings:
         assert result == input_cubes  # can't do this at present
 
 
+def test_cat_enables_merge__custom():
+    """A standalone testcase.
+
+    This shows specifically how a 'cm' sequence can improve on the default 'm'.
+    """
+    c1, c2 = cu(t=(1, 2), z=1), cu(t=(3, 4, 5), z=1)
+    c3, c4 = cu(t=(1, 2, 3), z=2), cu(t=(4, 5), z=2)
+    c1234 = cu(t=(1, 2, 3, 4, 5), z=(1, 2))
+    input_cubes = [c1, c2, c3, c4]
+    result = combine_cubes(input_cubes, merge_concat_sequence="cm")
+    assert result == [c1234]
+
+
 class Test_options:
-    """Test the individual combine options keywords."""
+    """Test all the individual combine options keywords."""
 
     def test_equalise_cubes_kwargs(self):
         # two cubes will merge ..
