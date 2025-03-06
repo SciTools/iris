@@ -19,12 +19,14 @@ import calendar
 import collections
 import inspect
 from typing import Callable
+import warnings
 
 import cftime
 import numpy as np
 
 import iris.coords
 import iris.cube
+import iris.warnings
 
 
 def add_categorised_coord(
@@ -433,6 +435,12 @@ def add_season_membership(cube, coord, season, name="season_membership"):
     months = _months_in_season(season)
 
     def _season_membership(_, value: cftime.datetime) -> bool:
+        warnings.warn(
+            "The 'season_membership' coordinate is a boolean and will not be"
+            "saveable to a NetCDF file. If you need to save the file you can"
+            "convert them to integers using coord.points = coord.points.astype(int)",
+            category=iris.warnings.IrisCfSaveWarning,
+        )
         return value.month in months
 
     add_categorised_coord(cube, name, coord, _season_membership)
