@@ -132,8 +132,18 @@ class CombineOptions(threading.local):
 
     .. Note::
 
-        The name ``iris.LOAD_POLICY`` refers to the same thing as
-        ``iris.COMBINE_POLICY``, and is still usable, but no longer recommended.
+        The ``iris.COMBINE_POLICY`` can be adjusted by either:
+
+        1. calling ``iris.COMBINE_POLICY.set(<something>)``, or
+        2. using ``with COMBINE_POLICY.context(<something>): ...``, or
+        3. assigning a property ``COMBINE_POLICY.<option> = <value>``, such as
+           ``COMBINE_POLICY.merge_concat_sequence="cm"``
+
+        What you should **not** ever do is to assign :data:`iris.COMBINE_POLICY` itself,
+        e.g. ``iris.COMBINE_POLICY = CombineOptions("legacy")``, since in that case the
+        original object still exists, and is still the one in control of load/combine
+        operations.  Here, the correct approach would be
+        ``iris.COMBINE_POLICY.set("legacy")``.
 
     >>> COMBINE_POLICY.set("legacy")
     >>> print(COMBINE_POLICY)
@@ -153,6 +163,12 @@ class CombineOptions(threading.local):
     >>>
     >>> print(COMBINE_POLICY)
     CombineOptions(equalise_cubes_kwargs=None, merge_concat_sequence='cm', merge_unique=False, repeat_until_unchanged=False, support_multiple_references=True)
+
+    .. Note::
+
+        The name ``iris.LOAD_POLICY`` refers to the same thing as
+        ``iris.COMBINE_POLICY``, and is still usable, but is no longer recommended.
+
     """
 
     # Useful constants
