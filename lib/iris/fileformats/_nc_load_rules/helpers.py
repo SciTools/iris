@@ -581,7 +581,7 @@ def build_raw_cube(cf_var: cf.CFVariable, filename: str) -> Cube:
 # TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
 
 
-def build_name_standard(cf_var: cf.CFVariable) -> str | None:
+def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
     value = getattr(cf_var, CF_ATTR_STD_NAME, None)
     if value is not None:
         standard_name = _get_valid_standard_name(value)
@@ -590,11 +590,11 @@ def build_name_standard(cf_var: cf.CFVariable) -> str | None:
     return standard_name
 
 
-def build_name_long(cf_var: cf.CFVariable) -> str | None:
+def _build_name_long(cf_var: cf.CFVariable) -> str | None:
     return getattr(cf_var, CF_ATTR_LONG_NAME, None)
 
 
-def build_name_var(cf_var: cf.CFVariable) -> str | None:
+def _build_name_var(cf_var: cf.CFVariable) -> str | None:
     return cf_var.cf_name
 
 
@@ -608,7 +608,7 @@ def build_and_add_names(engine: Engine) -> None:
         return partial(setattr, engine.cube, attr_name)
 
     problem = _add_or_capture(
-        build_func=partial(build_name_standard, engine.cf_var),
+        build_func=partial(_build_name_standard, engine.cf_var),
         add_method=setter("standard_name"),
         filename=engine.filename,
         cf_var=engine.cf_var,
@@ -627,7 +627,7 @@ def build_and_add_names(engine: Engine) -> None:
         attr_key=CF_ATTR_LONG_NAME,
     )
     _ = _add_or_capture(
-        build_func=partial(build_name_long, engine.cf_var),
+        build_func=partial(_build_name_long, engine.cf_var),
         **long_name_kwargs,
     )
 
@@ -643,7 +643,7 @@ def build_and_add_names(engine: Engine) -> None:
             engine.cube.attributes["invalid_standard_name"] = invalid_std_name
 
     _ = _add_or_capture(
-        build_func=partial(build_name_var, engine.cf_var),
+        build_func=partial(_build_name_var, engine.cf_var),
         add_method=setter("var_name"),
         filename=engine.filename,
         cf_var=engine.cf_var,
