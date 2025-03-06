@@ -532,6 +532,7 @@ def _add_or_capture(
         # Fully suppress further problems since we're just trying to do our
         #  best to capture objects IF possible.
         if attr_key is not None:
+            captured_attr = None
             with contextlib.suppress(AttributeError):
                 captured_attr = getattr(cf_var, attr_key)
             captured = {attr_key: captured_attr}
