@@ -141,12 +141,8 @@ class Test_set_and_context:
             op_is_set=op_is_set,
         )
 
-    def test_arg_kwargs(self, op_is_set):
-        # Show that kwargs override arg
-        initial_options = CombineOptions(
-            merge_concat_sequence="m",
-            repeat_until_unchanged=False,
-        )
+    def test_arg_dict_plus_kwargs(self, op_is_set):
+        # Show that kwargs override dictionary arg
         expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
         # NOTE: the arg changes the sequence from "m" to "c" ...
         set_arg = dict(merge_concat_sequence="c", repeat_until_unchanged=True)
@@ -154,7 +150,22 @@ class Test_set_and_context:
         set_kwargs = dict(merge_concat_sequence="mc")
         expect_after = {"merge_concat_sequence": "mc", "repeat_until_unchanged": True}
         self.do_check(
-            initial_options=initial_options,
+            before_checks=expect_before,
+            op_arg=set_arg,
+            op_kwargs=set_kwargs,
+            after_checks=expect_after,
+            op_is_set=op_is_set,
+        )
+
+    def test_arg_str_plus_kwargs(self, op_is_set):
+        # Show that kwargs override settings-name arg
+        expect_before = {"merge_concat_sequence": "m", "repeat_until_unchanged": False}
+        # NOTE: the arg changes 'sequence' to "mc", and 'repeat' to True ...
+        set_arg = "comprehensive"
+        # .. but the keyword overrides 'repeat' to False again
+        set_kwargs = dict(repeat_until_unchanged=False)
+        expect_after = {"merge_concat_sequence": "mc", "repeat_until_unchanged": False}
+        self.do_check(
             before_checks=expect_before,
             op_arg=set_arg,
             op_kwargs=set_kwargs,
