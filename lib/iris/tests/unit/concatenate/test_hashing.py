@@ -9,6 +9,8 @@ import numpy as np
 import pytest
 
 from iris import _concatenate
+from iris.tests.unit.util.test_array_equal import TEST_CASES
+from iris.util import array_equal
 
 
 @pytest.mark.parametrize(
@@ -73,6 +75,20 @@ from iris import _concatenate
 def test_compute_hashes(a, b, eq):
     hashes = _concatenate._compute_hashes({"a": a, "b": b})
     assert eq == (hashes["a"] == hashes["b"])
+
+
+@pytest.mark.parametrize(
+    "a,b",
+    [
+        (a, b)
+        for (a, b, withnans, eq) in TEST_CASES
+        if isinstance(a, np.ndarray | da.Array) and isinstance(b, np.ndarray | da.Array)
+    ],
+)
+def test_compute_hashes_vs_array_equal(a, b):
+    """Test that hashing give the same answer as `array_equal(withnans=True)`."""
+    hashes = _concatenate._compute_hashes({"a": a, "b": b})
+    assert array_equal(a, b, withnans=True) == (hashes["a"] == hashes["b"])
 
 
 def test_arrayhash_equal_incompatible_chunks_raises():
