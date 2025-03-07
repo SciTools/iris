@@ -986,6 +986,19 @@ def env_bin_path(exe_name: Optional[str] = None):
     return exe_path
 
 
+def get_latest_load_problem():
+    """Return the latest :class:`iris.loading.LoadProblemsEntry` instance.
+
+    Simplifies checking for new additions to LOAD_PROBLEMS, without
+    worrying about clearing LOAD_PROBLEMS during setup, or using some
+    sort of context manager.
+    """
+    from iris.loading import LOAD_PROBLEMS
+
+    load_problems = list(LOAD_PROBLEMS.values())[-1]
+    return load_problems[-1]
+
+
 class GraphicsTest:
     """All inheriting classes automatically have access to ``self.check_graphic()``."""
 

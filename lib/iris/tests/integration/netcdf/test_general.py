@@ -34,6 +34,7 @@ import iris.warnings
 
 nc = threadsafe_nc.netCDF4
 
+from iris.tests._shared_utils import get_latest_load_problem
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -319,7 +320,7 @@ class TestConstrainedLoad(tests.IrisTest):
 
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
-    #  Warning is raised and the coord is skipped.
+    #  Warning is raised and the coord is stored in iris.loading.LOAD_PROBLEMS.
     # This 'catching' is generic to all CannotAddErrors, but currently the only
     #  such problem that can exist in a NetCDF file is a mismatch of dimensions
     #  between phenomenon and coord.
@@ -356,12 +357,13 @@ data:
         self.nc_path.unlink()
 
     def test_lat_not_loaded(self):
-        # iris#5068 includes discussion of possible retention of the skipped
-        #  coords in the future.
-        with pytest.warns(match="Missing data dimensions for multi-valued DimCoord"):
+        with pytest.warns(match="Not all file objects were parsed correctly"):
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
+        load_problem = get_latest_load_problem()
+        assert isinstance(load_problem.loaded, iris.coords.DimCoord)
+        assert load_problem.loaded.name() == "latitude"
 
 
 @tests.skip_data
