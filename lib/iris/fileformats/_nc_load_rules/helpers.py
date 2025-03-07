@@ -1381,8 +1381,47 @@ def _build_dimension_coordinate(
     return coord
 
 
+def _add_dimension_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    # Determine the name of the dimension/s shared between the CF-netCDF
+    #  data variable and the coordinate being built.
+    common_dims = [
+        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
+    ]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [int(engine.cf_var.dimensions.index(dim)) for dim in common_dims]
+
+    if hasattr(coord, "circular") and data_dims is not None:
+        # Appease MyPy. The check itself uses duck typing to avoid any
+        #  silent errors when Mocking.
+        assert isinstance(coord, iris.coords.DimCoord)
+        try:
+            (data_dim,) = data_dims
+        except ValueError:
+            message = (
+                "Expected single dimension for dimension coordinate "
+                f"{coord.var_name}, got: {data_dims}."
+            )
+            raise ValueError(message)
+        engine.cube.add_dim_coord(coord, data_dim)
+    else:
+        # Should work fine for scalar coords - data_dims passed as None.
+        engine.cube.add_aux_coord(coord, data_dims)
+
+    # Update the coordinate to CF-netCDF variable mapping.
+    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+
 # TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
-# TODO: this naming convention is clunky. Suggestions welcome.
 def build_and_add_dimension_coordinate(
     engine: Engine,
     cf_coord_var: cf.CFCoordinateVariable,
@@ -1390,43 +1429,6 @@ def build_and_add_dimension_coordinate(
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
     assert engine.filename is not None
-
-    def add_method(coord: iris.coords.DimCoord | iris.coords.AuxCoord) -> None:
-        assert engine.cf_var is not None
-        assert engine.cube is not None
-        assert engine.cube_parts is not None
-
-        # Determine the name of the dimension/s shared between the CF-netCDF
-        #  data variable and the coordinate being built.
-        common_dims = [
-            dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
-        ]
-        data_dims = None
-        if common_dims:
-            # Calculate the offset of each common dimension.
-            data_dims = [
-                int(engine.cf_var.dimensions.index(dim)) for dim in common_dims
-            ]
-
-        if hasattr(coord, "circular") and data_dims is not None:
-            # Appease MyPy. The check itself uses duck typing to avoid any
-            #  silent errors when Mocking.
-            assert isinstance(coord, iris.coords.DimCoord)
-            try:
-                (data_dim,) = data_dims
-            except ValueError:
-                message = (
-                    "Expected single dimension for dimension coordinate "
-                    f"{coord.var_name}, got: {data_dims}."
-                )
-                raise ValueError(message)
-            engine.cube.add_dim_coord(coord, data_dim)
-        else:
-            # Should work fine for scalar coords - data_dims passed as None.
-            engine.cube.add_aux_coord(coord, data_dims)
-
-        # Update the coordinate to CF-netCDF variable mapping.
-        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
 
     _ = _add_or_capture(
         build_func=partial(
@@ -1436,7 +1438,7 @@ def build_and_add_dimension_coordinate(
             coord_name,
             coord_system,
         ),
-        add_method=partial(add_method),
+        add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
         filename=engine.filename,
         cf_var=cf_coord_var,
     )
