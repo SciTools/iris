@@ -389,9 +389,6 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             error = ValueError(message)
 
         try:
-            # TODO: is there a better way to create a stack trace?
-            #  Is an ST even valuable? `error` can be passed straight into
-            #   from_exception() without raising it first.
             raise error
         except error.__class__ as error:
             tb_exception = TracebackException.from_exception(error)
