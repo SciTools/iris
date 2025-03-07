@@ -390,14 +390,58 @@ def rolling_window(
     return rw
 
 
-def array_equal(array1, array2, withnans=False):
+def _masked_array_equal(
+    array1: np.ndarray,
+    array2: np.ndarray,
+    equal_nan: bool,
+) -> np.ndarray:
+    """Return whether two, possibly masked, arrays are equal."""
+    mask1 = ma.getmask(array1)
+    mask2 = ma.getmask(array2)
+
+    # Compare mask equality.
+    if mask1 is ma.nomask and mask2 is ma.nomask:
+        eq = True
+    elif mask1 is ma.nomask:
+        eq = not mask2.any()
+    elif mask2 is ma.nomask:
+        eq = not mask1.any()
+    else:
+        eq = np.array_equal(mask1, mask2)
+
+    if not eq:
+        eqs = np.zeros(array1.shape, dtype=bool)
+    else:
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        eqs = ma.getdata(array1) == ma.getdata(array2)
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+
+    return eqs
+
+
+def array_equal(array1, array2, withnans: bool = False) -> bool:
     """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
     array1, array2 : arraylike
         Args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, default=False
+    withnans : default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -412,31 +456,42 @@ def array_equal(array1, array2, withnans=False):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    if withnans and (array1 is array2):
-        return True
 
     def normalise_array(array):
-        if not is_lazy_data(array):
-            if not ma.isMaskedArray(array):
-                array = np.asanyarray(array)
+        if not isinstance(array, np.ndarray | da.Array):
+            array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
+    floating_point_arrays = array1.dtype.kind == "f" or array2.dtype.kind == "f"
+    if (array1 is array2) and (withnans or not floating_point_arrays):
+        return True
+
+    if not floating_point_arrays:
+        withnans = False
+
     eq = array1.shape == array2.shape
     if eq:
-        array1_masked = ma.is_masked(array1)
-        eq = array1_masked == ma.is_masked(array2)
-    if eq and array1_masked:
-        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
-    if eq:
-        eqs = array1 == array2
-        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = np.all(eqs)
-        eq = bool(eq) or eq is ma.masked
+        if is_lazy_data(array1) or is_lazy_data(array2):
+            # Use a separate map and reduce operation to avoid running out of memory.
+            ndim = array1.ndim
+            indices = tuple(range(ndim))
+            eq = da.blockwise(
+                _masked_array_equal,
+                indices,
+                array1,
+                indices,
+                array2,
+                indices,
+                dtype=bool,
+                meta=np.empty((0,) * ndim, dtype=bool),
+                equal_nan=withnans,
+            ).all()
+        else:
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
-    return eq
+    return bool(eq)
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
