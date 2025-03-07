@@ -122,6 +122,61 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
     (70, 37, 49)
 
 
+Variable-length datatypes
+-------------------------
+
+The NetCDF4 module provides support for variable-length (or "ragged") data
+types (``VLType``); see
+`Variable-length data types <https://unidata.github.io/netcdf4-python/#variable-length-vlen-data-types>`_
+
+The ``VLType`` allows for storing data where the length of the data in each array element
+can vary. When ``VLType`` arrays are loaded into Iris cubes (or numpy), they are stored
+as an array of ``Object`` types - essentially an array-of-arrays, rather than a single
+multi-dimensional array.
+
+The most likely case to encounter variable-length data types is when an array of
+strings (not characters) are stored in a NetCDF file. As the string length for any
+particular array element can vary the values are stored as an array of ``VLType``.
+
+As each element of a variable-length array is stored as a ``VLType`` containing
+an unknown number of vales, the total size of a variable-length NetCDF array
+cannot be known without first loading the data. This makes it difficult for
+Iris to make an informed decision on whether to the load the data lazily or not.
+The user can aid this decision using *VLType size hinting* described below.
+
+VLType size hinting
+^^^^^^^^^^^^^^^^^^^
+
+If the user has some *a priori* knowledge of the average length of the data in
+variable-length ``VLType``, this can be provided as a hint to Iris via the
+``CHUNK_CONTROL`` context manager and the special ``_vl_hint`` keyword
+targeting the variable, e.g. ``CHUNK_CONTROL.set("varname", _vl_hint=5)``.
+This allows Iris to make a more informed decision on whether to load the
+data lazily.
+
+For example, consider a netCDF file with an auxiliary coordinate
+``experiment_version`` that is stored as a variable-length string type. By 
+default, Iris will attempt to guess the total array size based on the known
+dimension sizes (``time=150`` in this example) and load the data lazily.
+However, if it is known prior to loading the file that the strings are all no
+longer than 5 characters this information can be passed to the Iris NetCDF
+loader so it can be make a more informed decision on lazy loading:
+
+.. doctest::
+
+    >>> import iris
+    >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+    >>>
+    >>> sample_file = iris.sample_data_path("vlstr_type.nc")
+    >>> cube = iris.load_cube(sample_file)
+    >>> print(cube.coord('experiment_version').has_lazy_points())
+    True
+    >>> with CHUNK_CONTROL.set("expver", _vl_hint=5):
+    ...     cube = iris.load_cube(sample_file)
+    >>> print(cube.coord('experiment_version').has_lazy_points())
+    False
+
+
 Split Attributes
 -----------------
 
