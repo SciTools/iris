@@ -650,6 +650,7 @@ def build_cube_metadata(engine):
     cube = engine.cube
 
     # Note: name building has been moved to the build_name_* functions.
+    # So `action_default` now calls both this *and* the new `build_and_add_names`.
     #  All other code will follow in future (iris#6319).
 
     # Determine the cube units.
@@ -1357,6 +1358,7 @@ def _build_dimension_coordinate(
             loaded=build_raw_cube(cf_coord_var, filename), stack_trace=tb_exception
         )
         LOAD_PROBLEMS.setdefault(Path(filename), []).append(load_problems_entry)
+        # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
 
         coord = iris.coords.AuxCoord(
             points_data,
