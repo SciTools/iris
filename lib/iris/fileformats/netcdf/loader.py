@@ -196,6 +196,11 @@ def _get_actual_dtype(cf_var):
 # mostly done for speed improvement.  See https://github.com/SciTools/iris/pull/5069
 _LAZYVAR_MIN_BYTES = 5000
 
+# A stab in the dark at the mean length of the "ragged dimension" for netCDF "variable
+# length arrays" (`NetCDF.VLType` type). Total array size is unknown until the variable is
+# read in. Making this number bigger makes it more likely an array will be loaded lazily.
+_MEAN_VL_ARRAY_LEN = 10
+
 
 def _get_cf_var_data(cf_var, filename):
     """Get an array representing the data of a CF variable.
@@ -215,12 +220,40 @@ def _get_cf_var_data(cf_var, filename):
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
         result = cf_var._data_array
     else:
-        total_bytes = cf_var.size * cf_var.dtype.itemsize
+        # Determine size of data; however can't do this for variable length (VLEN)
+        # netCDF arrays as the size of the array can only be known by reading the
+        # data; see https://github.com/Unidata/netcdf-c/issues/1893.
+        # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
+        if isinstance(getattr(cf_var, "datatype", None), _thread_safe_nc.VLType):
+            msg = (
+                f"NetCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
+                "thus the total data size cannot be known in advance. This may affect the lazy loading "
+                "of the data."
+            )
+            warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
+
+            # Give user the chance to pass a hint of the average variable length array size via
+            # the chunk control context manager. This allows for better decisions to be made on
+            # whether the data should be lazy-loaded or not.
+            mean_vl_array_len = _MEAN_VL_ARRAY_LEN
+            if CHUNK_CONTROL.mode is not CHUNK_CONTROL.Modes.AS_DASK:
+                if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.cf_name):
+                    if vl_chunk_hint := chunks.get("_vl_hint"):
+                        mean_vl_array_len = vl_chunk_hint
+
+            # Special handling for strings (`str` type) as these don't have an itemsize attribute;
+            # assume 4 bytes which is sufficient for unicode character storage
+            itemsize = 4 if cf_var.dtype is str else cf_var.dtype.itemsize
+
+            # For `VLType` cf_var.size will just return the known dimension size.
+            total_bytes = cf_var.size * mean_vl_array_len * itemsize
+        else:
+            # Normal NCVariable type:
+            total_bytes = cf_var.size * cf_var.dtype.itemsize
+
         if total_bytes < _LAZYVAR_MIN_BYTES:
             # Don't make a lazy array, as it will cost more memory AND more time to access.
-            # Instead fetch the data immediately, as a real array, and return that.
             result = cf_var[:]
-
         else:
             # Get lazy chunked data out of a cf variable.
             # Creates Dask wrappers around data arrays for any cube components which
@@ -228,10 +261,13 @@ def _get_cf_var_data(cf_var, filename):
             dtype = _get_actual_dtype(cf_var)
 
             # Make a data-proxy that mimics array access and can fetch from the file.
+            # Note: Special handling needed for "variable length string" types which
+            # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
+            fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
             fill_value = getattr(
                 cf_var.cf_data,
                 "_FillValue",
-                _thread_safe_nc.default_fillvals[cf_var.dtype.str[1:]],
+                _thread_safe_nc.default_fillvals[fill_dtype],
             )
             proxy = NetCDFDataProxy(
                 cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
@@ -699,6 +735,10 @@ class ChunkControl(threading.local):
     ) -> Iterator[None]:
         r"""Control the Dask chunk sizes applied to NetCDF variables during loading.
 
+        This function can also be used to provide a size hint for the unknown
+        array lengths when loading "variable-length" NetCDF data types.
+        See https://unidata.github.io/netcdf4-python/#netCDF4.Dataset.vltypes
+
         Parameters
         ----------
         var_names : str or list of str, default=None
@@ -710,7 +750,8 @@ class ChunkControl(threading.local):
             Each key-value pair defines a chunk size for a named file
             dimension, e.g. ``{'time': 10, 'model_levels':1}``.
             Values of ``-1`` will lock the chunk size to the full size of that
-            dimension.
+            dimension. To specify a size hint for "variable-length"  data types
+            use the special name `_vl_hint`.
 
         Notes
         -----
@@ -733,6 +774,16 @@ class ChunkControl(threading.local):
         or down by integer factors to best match the Dask default chunk size,
         i.e. the setting configured by
         ``dask.config.set({'array.chunk-size': '250MiB'})``.
+
+        For variable-length data types the size of the variable (or "ragged")
+        dimension of the individual array elements cannot be known without
+        reading the data. This can make it difficult for Iris to determine
+        whether to load the data lazily or not. If the user has some apriori
+        knowledge of the mean variable array length this can be passed as
+        as a size hint via the special `_vl_hint` name. For example a hint
+        that variable-length string array that contains 4 character experiment
+        identifiers:
+        ``CHUNK_CONTROL.set("expver", _vl_hint=4)``
 
         """
         old_mode = self.mode
