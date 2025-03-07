@@ -503,21 +503,13 @@ def _add_or_capture(
 
     Returns
     -------
-    problem_object: Any
-        Returned in case of captured exceptions (to aid downstream code); the
-        containing tuple is the same one added to
-        :const:`iris.loading.LOAD_PROBLEMS`. This is the object that was
-        attempted to be built-then-added to the Cube. See
-        :const:`iris.loading.LOAD_PROBLEMS` for the expected types.
-
-    problem_traceback : TracebackException
-        Returned in case of captured exceptions (to aid downstream code); the
-        containing tuple is the same one added to
-        :const:`iris.loading.LOAD_PROBLEMS`. This is the traceback of the
-        captured exception.
+    LoadProblemsEntry or None
+        The captured problem, if any; the same object that is added to
+        :const:`iris.loading.LOAD_PROBLEMS`.
 
     See Also
     --------
+    iris.loading.LoadProblemsEntry: The type of the returned object.
     iris.loading.LOAD_PROBLEMS: The destination for captured problems.
     """
     captured: Cube | dict[str, Any] | None = None
