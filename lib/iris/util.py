@@ -2531,7 +2531,6 @@ def combine_cubes(
     None
 
     """
-    # TODO: somehow, provide a real + useful working code example
     from iris._combine import _combine_cubes
 
     opts_dict = _combine_options_asdict(options)

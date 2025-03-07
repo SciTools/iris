@@ -344,8 +344,11 @@ class CombineOptions(threading.local):
 def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
     """Combine cubes as for load, according to "loading policy" options.
 
-    Applies :meth:`~iris.cube.CubeList.merge`/:meth:`~iris.cube.CubeList.concatenate`
-    steps to the given cubes, as determined by the 'settings'.
+    This is the 'inner' implementation called by :func:`iris.util.combine_cubes`.
+    Details of the operation and args are described there.
+
+    It is also called by :func:`_combine_load_cubes`, which implements the
+    ``support_multiple_references`` action within loading operations.
 
     Parameters
     ----------
@@ -357,16 +360,6 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
     Returns
     -------
     :class:`~iris.cube.CubeList`
-
-    .. Note::
-        The ``support_multiple_references`` keyword/property has no effect on the
-        :func:`_combine_cubes` operation : it only takes effect during a load operation.
-
-    Notes
-    -----
-    TODO: make this public API in future.
-    At that point, change the API to support (options=None, **kwargs) + add testing of
-    those modes (notably arg type = None / str / dict).
 
     """
     from iris.cube import CubeList
@@ -392,9 +385,11 @@ def _combine_cubes(cubes: List[Cube], options: dict) -> CubeList:
             # concat if it comes first
             cubelist = cubelist.concatenate()
         if "m" in sequence:
-            # merge if requested
-            # NOTE: this needs "unique=False" to make "iris.load()" work correctly.
-            # TODO: make configurable via options.
+            # merge if requested.
+            # NOTE: the 'unique' arg is configurable in the combine options.
+            # All CombineOptions settings have "unique=False", as that is needed for
+            #  "iris.load_xxx()" functions to work correctly.  However, the default
+            #  for CubeList.merge() is "unique=True".
             cubelist = cubelist.merge(unique=merge_unique)
         if sequence[-1] == "c":
             # concat if it comes last
