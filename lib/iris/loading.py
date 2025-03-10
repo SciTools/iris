@@ -285,7 +285,6 @@ def load_raw(uris, constraints=None, callback=None):
         return _load_collection(uris, constraints, callback).cubes()
 
 
-# TODO: include in an __all__ somewhere
 class LoadProblems(threading.local):
     """A collection of objects that could not be loaded correctly.
 
@@ -576,8 +575,6 @@ class LoadProblems(threading.local):
 
         # Python's default warning behaviour means this will only be raised
         #  once, regardless of the number of warnings.
-        # TODO: should this print self, too? (Note that this would result in
-        #  one warning per record unless we did something to prevent that).
         message = (
             "Not all file objects were parsed correctly. See "
             "iris.loading.LOAD_PROBLEMS for details."
@@ -602,7 +599,6 @@ class LoadProblems(threading.local):
             ]
 
 
-# TODO: include in an __all__ somewhere.
 LOAD_PROBLEMS = LoadProblems()
 """The global run-time instance of :class:`LoadProblems`.
 
