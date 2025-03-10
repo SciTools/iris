@@ -17,7 +17,7 @@ import pytest
 from iris.coords import AuxCoord, DimCoord
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coordinate
-from iris.tests._shared_utils import get_latest_load_problem
+from iris.loading import LOAD_PROBLEMS
 
 
 def _make_bounds_var(bounds, dimensions, units):
@@ -238,7 +238,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
             # Test that expected coord is built and added to cube.
             self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
-            load_problem = get_latest_load_problem()
+            load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertIn(
                 "creating wibble auxiliary coordinate instead",
                 "".join(load_problem.stack_trace.format()),
@@ -258,7 +258,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
                 build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-        load_problem = get_latest_load_problem()
+        load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
@@ -276,7 +276,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
                 build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-        load_problem = get_latest_load_problem()
+        load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 

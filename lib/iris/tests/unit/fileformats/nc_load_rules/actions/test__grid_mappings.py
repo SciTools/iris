@@ -13,7 +13,7 @@ import iris.tests as tests  # isort: skip
 
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.tests._shared_utils import get_latest_load_problem
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -337,7 +337,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 self.assertEqual(yco_cs, cube_cs)
 
         if load_problems_regex is not None:
-            load_problem = get_latest_load_problem()
+            load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
 
 
@@ -523,9 +523,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # Notes:
         #     * NO grid-mapping is identified (or coord-system built)
-        #     * There is no warning for this : it fails silently.
-        #         TODO: perhaps there _should_ be a warning in such cases ?
-        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL)
+        warn_regex = "Not all file objects were parsed correctly."
+        result = self.run_testcase(
+            mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL, warning_regex=warn_regex
+        )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     def test_mapping_undefined(self):
@@ -538,10 +539,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     004 : fc_provides_coordinate_(projection_x)
         #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
         #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
-        # Notes:
-        #     * There is no warning for this : it fails silently.
-        #         TODO: perhaps there _should_ be a warning in such cases ?
-        result = self.run_testcase(mapping_type_name="unknown")
+        warn_regex = "Not all file objects were parsed correctly."
+        result = self.run_testcase(
+            mapping_type_name="unknown", warning_regex=warn_regex
+        )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     #
@@ -585,6 +586,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             xco_units="degrees_east",
             yco_name="latitude",
             yco_units="degrees_north",
+            warning_regex="Not all file objects were parsed correctly.",
         )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
@@ -642,6 +644,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             xco_units="degrees",
             yco_name="grid_latitude",
             yco_units="degrees",
+            warning_regex="Not all file objects were parsed correctly.",
         )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
@@ -849,7 +852,10 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
         error = "must be.* monotonic"
-        result = self.run_testcase(yco_values=[0.0, 0.0])
+        result = self.run_testcase(
+            yco_values=[0.0, 0.0],
+            warning_regex="Not all file objects were parsed correctly.",
+        )
         self.check_result(result, yco_is_aux=True, load_problems_regex=error)
 
 

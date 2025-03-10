@@ -18,9 +18,7 @@ from __future__ import annotations
 
 import contextlib
 from functools import partial
-from pathlib import Path
 import re
-from traceback import TracebackException
 from typing import TYPE_CHECKING, Any, List, Optional
 import warnings
 
@@ -40,7 +38,7 @@ import iris.exceptions
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
-from iris.loading import LOAD_PROBLEMS, LoadProblemsEntry
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.std_names
 import iris.util
 import iris.warnings
@@ -467,7 +465,7 @@ def _add_or_capture(
     filename: str,
     cf_var: iris.fileformats.cf.CFVariable,
     attr_key: Optional[str] = None,
-) -> Optional[LoadProblemsEntry]:
+) -> Optional[LoadProblems.Problem]:
     """Build & add objects to the Cube, capturing problem objects - common code.
 
     Problems are captured in :const:`iris.loading.LOAD_PROBLEMS`.
@@ -503,24 +501,23 @@ def _add_or_capture(
 
     Returns
     -------
-    LoadProblemsEntry or None
+    iris.loading.LoadProblems.Problem or None
         The captured problem, if any; the same object that is added to
         :const:`iris.loading.LOAD_PROBLEMS`.
 
     See Also
     --------
-    iris.loading.LoadProblemsEntry: The type of the returned object.
+    iris.loading.LoadProblems.Problem: The type of the returned object.
     iris.loading.LOAD_PROBLEMS: The destination for captured problems.
     """
     captured: Cube | dict[str, Any] | None = None
-    load_problems_entry: LoadProblemsEntry | None = None
+    load_problems_entry: LoadProblems.Problem | None = None
 
     try:
         built = build_func()
 
     except Exception as exc_build:
         # Problems CREATING the desired object.
-        tb_exception = TracebackException.from_exception(exc_build)
         # Fully suppress further problems since we're just trying to do our
         #  best to capture objects IF possible.
         if attr_key is not None:
@@ -532,8 +529,10 @@ def _add_or_capture(
             with contextlib.suppress(Exception):
                 captured = build_raw_cube(cf_var, filename)
 
-        load_problems_entry = LoadProblemsEntry(
-            loaded=captured, stack_trace=tb_exception
+        load_problems_entry = LOAD_PROBLEMS.record(
+            filename=filename,
+            loaded=captured,
+            exception=exc_build,
         )
 
     else:
@@ -541,19 +540,15 @@ def _add_or_capture(
             add_method(built)
         except Exception as exc_add:
             # Problems ADDING the built object to the Cube.
-            tb_exception = TracebackException.from_exception(exc_add)
             if attr_key is not None:
                 captured = {attr_key: built}
             else:
                 captured = built
 
-            load_problems_entry = LoadProblemsEntry(
-                loaded=captured, stack_trace=tb_exception
+            load_problems_entry = LOAD_PROBLEMS.record(
+                filename=filename, loaded=captured, exception=exc_add
             )
 
-    if load_problems_entry is not None:
-        file_path = Path(filename)
-        LOAD_PROBLEMS.setdefault(file_path, []).append(load_problems_entry)
     return load_problems_entry
 
 
@@ -1353,12 +1348,12 @@ def _build_dimension_coordinate(
             f"Failed to create {coord_var_name} dimension coordinate:\n"
             f"Gracefully creating {coord_var_name} auxiliary coordinate instead."
         )
-        tb_exception = TracebackException.from_exception(dim_error)
-        load_problems_entry = LoadProblemsEntry(
-            loaded=build_raw_cube(cf_coord_var, filename), stack_trace=tb_exception
-        )
-        LOAD_PROBLEMS.setdefault(Path(filename), []).append(load_problems_entry)
         # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
+        _ = LOAD_PROBLEMS.record(
+            filename=filename,
+            loaded=build_raw_cube(cf_coord_var, filename),
+            exception=dim_error,
+        )
 
         coord = iris.coords.AuxCoord(
             points_data,

@@ -6,11 +6,13 @@
 
 from dataclasses import dataclass
 import itertools
-from pathlib import Path
+import threading
 from traceback import TracebackException
 from typing import Any, Iterable
+import warnings
 
-from iris.common import CFVariableMixin, LimitedAttributeDict
+from iris.common import CFVariableMixin
+from iris.warnings import IrisLoadWarning
 
 
 def _generate_cubes(uris, callback, constraints):
@@ -329,236 +331,328 @@ class LoadPolicy(CombineOptions):
 LOAD_POLICY = LoadPolicy()
 
 
-@dataclass
-class LoadProblemsEntry:
-    loaded: CFVariableMixin | dict[str, Any] | None
-    """The object that experienced loading problems.
-
-    Four possible types:
-
-    - :class:`~iris.cube.Cube`: if problems occurred while building a
-      :class:`~iris.common.mixin.CFVariableMixin` -
-      currently the only handled case is
-      :class:`~iris.coords.DimCoord` - then the information will be stored in
-      a 'bare bones' :class:`~iris.cube.Cube` containing only the
-      :attr:`~iris.cube.Cube.data` array and the attributes. The attributes
-      are un-parsed (they can still contain ``_FillValue`` etcetera), and are
-      stored under a special key in the Cube :attr:`~iris.cube.Cube.attributes`
-      dictionary: :attr:`~iris.common.mixin.LimitedAttributeDict.IRIS_RAW`.
-    - :class:`dict`: if problems occurred while building objects from NetCDF
-      attributes - currently the only handled cases are ``standard_name``,
-      ``long_name``, ``var_name``. The
-      dictionary key is the key of the attribute, and the value is the raw
-      attribute returned by the ``netCDF4`` library.
-    - Built objects, such as :class:`~iris.coords.DimCoord`: if the object was
-      built successfully, but could not be added to the Cube being loaded.
-    - ``None``: if a loading error occurred, but problems occurred while trying
-      to store the problem object.
-    """
-
-    stack_trace: TracebackException
-    """The traceback exception that was raised during loading.
-
-    This instance contains rich information to support user-specific workflows,
-    e.g:
-
-    - ``"".join(stack_trace.format())``: the full stack trace as a string - the
-      same way this would be seen at the command line.
-    - ``stack_trace.exc_type_str``: the exception type e.g. :class:`ValueError`.
-    """
-
-
-# TODO: could this be a context manager in future?
 # TODO: include in an __all__ somewhere
-LOAD_PROBLEMS: dict[Path, list[LoadProblemsEntry]] = {}
-"""Collections of cubes/coords/etcetera that could not be loaded correctly.
+class LoadProblems(threading.local):
+    """A collection of objects that could not be loaded correctly.
 
-Structured as a dictionary of file paths. The dictionary values are lists of
-:class:`LoadProblemsEntry` - see that docstring for more about what is stored.
+    Structured as a list - accessed via :attr:`LoadProblems.problems` - of
+    :class:`LoadProblems.Problem` instances; see :class:`LoadProblems.Problem`
+    for more details of the recorded content.
 
-Provided to increase transparency (problem objects are not simply discarded),
-and to make it possible to fix loading problems without leaving the Iris API.
+    Provided to increase transparency (problem objects are not simply
+    discarded), and to make it possible to fix loading problems without leaving
+    the Iris API.
 
-Examples
---------
-.. dropdown:: (expand to see setup)
+    Expected usage is via the global :const:`LOAD_PROBLEMS` instance; see the
+    example below.
 
-    ..
-        Necessary as NumPy docstring doctests do not allow labelled
-        testsetup/testcleanup, so this setup was clashing with other doctests in
-        the same module.
+    Examples
+    --------
+    .. dropdown:: (expand to see setup)
 
-    **This section is not necessary for understanding the examples.**
+        ..
+            Necessary as NumPy docstring doctests do not allow labelled
+            testsetup/testcleanup, so this setup was clashing with other
+            doctests in the same module.
 
-    >>> from pathlib import Path
-    >>> from pprint import pprint
-    >>> import sys
-    >>> import warnings
+        **This section is not necessary for understanding the examples.**
 
-    >>> import cf_units
-    >>> import iris
-    >>> import iris.common
-    >>> import iris.coords
-    >>> from iris.fileformats._nc_load_rules import helpers
-    >>> import iris.loading
-    >>> from iris import std_names
+        >>> from pathlib import Path
+        >>> from pprint import pprint
+        >>> import sys
+        >>> import warnings
 
-    >>> # Ensure doctests actually see Warnings that are raised, and that
-    >>> #  they have a relative path (so a test pass is not machine-dependent).
-    >>> showwarning_original = warnings.showwarning
-    >>> warnings.filterwarnings("default")
-    >>> IRIS_FILE = Path(iris.__file__)
-    >>> def custom_warn(message, category, filename, lineno, file=None, line=None):
-    ...     filepath = Path(filename)
-    ...     filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
-    ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
-    >>> warnings.showwarning = custom_warn
+        >>> import cf_units
+        >>> import iris
+        >>> import iris.common
+        >>> import iris.coords
+        >>> from iris.fileformats._nc_load_rules import helpers
+        >>> import iris.loading
+        >>> from iris import std_names
 
-    >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
+        >>> # Ensure doctests actually see Warnings that are raised, and that
+        >>> #  they have a relative path (so a test pass is not machine-dependent).
+        >>> showwarning_original = warnings.showwarning
+        >>> warnings.filterwarnings("default")
+        >>> IRIS_FILE = Path(iris.__file__)
+        >>> def custom_warn(message, category, filename, lineno, file=None, line=None):
+        ...     filepath = Path(filename)
+        ...     filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
+        ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+        >>> warnings.showwarning = custom_warn
 
-    >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
-    ...     if cf_coord_var.cf_name == "time":
-    ...         raise ValueError("Example dimension coordinate error")
-    ...     else:
-    ...         return build_dimension_coordinate_original(
-    ...             filename, cf_coord_var, coord_name, coord_system
-    ...         )
+        >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
 
-    >>> helpers._build_dimension_coordinate = raise_example_error_dim
-    >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
-    >>> iris.FUTURE.date_microseconds = True
+        >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
+        ...     if cf_coord_var.cf_name == "time":
+        ...         raise ValueError("Example dimension coordinate error")
+        ...     else:
+        ...         return build_dimension_coordinate_original(
+        ...             filename, cf_coord_var, coord_name, coord_system
+        ...         )
 
-For this example we have 'booby-trapped' the Iris loading process to force
-errors to occur. When we load our first cube, we see the warning that
-:class:`LOAD_PROBLEMS` has been added to:
+        >>> helpers._build_dimension_coordinate = raise_example_error_dim
+        >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
+        >>> iris.FUTURE.date_microseconds = True
 
->>> cube_a1b = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
-iris/...IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
-  warnings.warn(message, category=IrisLoadWarning)
+    For this example we have 'booby-trapped' the Iris loading process to force
+    errors to occur. When we load our first cube, we see the warning that
+    :const:`LOAD_PROBLEMS` has been added to:
 
-Remember that Python by default suppresses duplicate warnings, so a second
-load action does not raise another:
+    >>> cube_a1b = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+    iris/...IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
+      warnings.warn(message, category=IrisLoadWarning)
 
->>> cube_e1 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
+    Remember that Python by default suppresses duplicate warnings, so a second
+    load action does not raise another:
 
-Examining the contents of :class:`LOAD_PROBLEMS` we can see that both files
-experienced some problems:
+    >>> cube_e1 = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
 
->>> print([path.name for path in iris.loading.LOAD_PROBLEMS.keys()])
-['A1B_north_america.nc', 'E1_north_america.nc']
+    Examining the contents of :const:`LOAD_PROBLEMS` we can see that both files
+    experienced some problems:
 
-Printing the A1B cube shows that the time dimension coordinate is missing:
+    >>> problems_by_file = iris.loading.LOAD_PROBLEMS.problems_by_file
+    >>> print([Path(filename).name for filename in problems_by_file.keys()])
+    ['A1B_north_america.nc', 'E1_north_america.nc']
 
->>> print(cube_a1b.summary(shorten=True))
-air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
+    Printing the A1B cube shows that the time dimension coordinate is missing:
 
-Below demonstrates how to explore the captured stack traces in detail:
+    >>> print(cube_a1b.summary(shorten=True))
+    air_temperature / (K)               (-- : 240; latitude: 37; longitude: 49)
 
->>> (A1B,) = [
-...     entries for path, entries in iris.loading.LOAD_PROBLEMS.items()
-...     if path.name == "A1B_north_america.nc"
-... ]
->>> for problem in A1B:
-...     print(problem.stack_trace.exc_type_str)
-ValueError
-ValueError
+    A more detailed summary is available by printing :const:`LOAD_PROBLEMS`:
 
->>> last_problem = A1B[-1]
->>> print("".join(last_problem.stack_trace.format()))
-Traceback (most recent call last):
-  File ..., in _add_or_capture
-    built = build_func()
-  File ..., in raise_example_error_dim
-ValueError: Example dimension coordinate error
-<BLANKLINE>
-
-:class:`LOAD_PROBLEMS` also captures the 'raw' information in the object that
-could not be loaded - the time dimension coordinate. This is captured as a
-:class:`~iris.cube.Cube`:
-
->>> print(last_problem.loaded)
-unknown / (unknown)                 (-- : 240)
-    Attributes:
-        IRIS_RAW                    {'axis': 'T', ...}
-
-Using ``last_problem.loaded``, we can manually reconstruct the missing
-dimension coordinate:
-
->>> attributes = last_problem.loaded.attributes[
-...     iris.common.LimitedAttributeDict.IRIS_RAW
-... ]
->>> pprint(attributes)
-{'axis': 'T',
- 'bounds': 'time_bnds',
- 'calendar': '360_day',
- 'standard_name': 'time',
- 'units': 'hours since 1970-01-01 00:00:00',
- 'var_name': 'time'}
-
->>> units = cf_units.Unit(attributes["units"], calendar=attributes["calendar"])
->>> dim_coord = iris.coords.DimCoord(
-...     points=last_problem.loaded.data,
-...     standard_name=attributes["standard_name"],
-...     units=units,
-... )
->>> cube_a1b.add_dim_coord(dim_coord, 0)
->>> print(cube_a1b.summary(shorten=True))
-air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-
-Note that we were unable to reconstruct the missing bounds - ``time_bnds`` -
-demonstrating that this error handling is a 'best effort' and not perfect. We
-hope to continually improve it over time.
-
-.. dropdown:: (expand to see cleanup)
-
-    ..
-        Necessary as NumPy docstring doctests do not allow labelled
-        testsetup/testcleanup, so this cleanup was clashing with other doctests
-        in the same module.
-
-    **This section is not necessary for understanding the examples.**
-
-    >>> warnings.showwarning = showwarning_original
-    >>> warnings.filterwarnings("ignore")
-    >>> helpers._build_dimension_coordinate = build_dimension_coordinate_original
-    >>> std_names.STD_NAMES["air_temperature"] = air_temperature
-
-"""
+    >>> print(iris.loading.LOAD_PROBLEMS)
+    <iris.loading.LoadProblems object at ...>:
+      .../A1B_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
+      .../A1B_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+      .../E1_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
+      .../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
 
 
-def _profile_load_problems() -> dict[Path, list[tuple[str | None, TracebackException]]]:
-    """Return a simplified copy of the current :const:`LOAD_PROBLEMS`.
+    Below demonstrates how to explore the captured stack traces in detail:
 
-    Represent :class:`~iris.cube.Cube` s by their var_name, and :class:`dict` s
-    by their keys. This avoids any large array payloads.
+    >>> (a1b_full_name,) = [
+    ...     filename for filename in problems_by_file.keys()
+    ...     if Path(filename).name == "A1B_north_america.nc"
+    ... ]
+    >>> A1B = problems_by_file[a1b_full_name]
+    >>> for problem in A1B:
+    ...     print(problem.stack_trace.exc_type_str)
+    ValueError
+    ValueError
+
+    >>> last_problem = A1B[-1]
+    >>> print("".join(last_problem.stack_trace.format()))
+    Traceback (most recent call last):
+      File ..., in _add_or_capture
+        built = build_func()
+      File ..., in raise_example_error_dim
+    ValueError: Example dimension coordinate error
+    <BLANKLINE>
+
+    :const:`LOAD_PROBLEMS` also captures the 'raw' information in the object
+    that could not be loaded - the time dimension coordinate. This is captured
+    as a :class:`~iris.cube.Cube`:
+
+    >>> print(last_problem.loaded)
+    unknown / (unknown)                 (-- : 240)
+
+    Attributes
+    ----------
+            IRIS_RAW                    {'axis': 'T', ...}
+
+    Using ``last_problem.loaded``, we can manually reconstruct the missing
+    dimension coordinate:
+
+    >>> attributes = last_problem.loaded.attributes[
+    ...     iris.common.LimitedAttributeDict.IRIS_RAW
+    ... ]
+    >>> pprint(attributes)
+    {'axis': 'T',
+     'bounds': 'time_bnds',
+     'calendar': '360_day',
+     'standard_name': 'time',
+     'units': 'hours since 1970-01-01 00:00:00',
+     'var_name': 'time'}
+
+    >>> units = cf_units.Unit(attributes["units"], calendar=attributes["calendar"])
+    >>> dim_coord = iris.coords.DimCoord(
+    ...     points=last_problem.loaded.data,
+    ...     standard_name=attributes["standard_name"],
+    ...     units=units,
+    ... )
+    >>> cube_a1b.add_dim_coord(dim_coord, 0)
+    >>> print(cube_a1b.summary(shorten=True))
+    air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+
+    Note that we were unable to reconstruct the missing bounds - ``time_bnds`` -
+    demonstrating that this error handling is a 'best effort' and not perfect. We
+    hope to continually improve it over time.
+
+    .. dropdown:: (expand to see cleanup)
+
+        ..
+            Necessary as NumPy docstring doctests do not allow labelled
+            testsetup/testcleanup, so this cleanup was clashing with other doctests
+            in the same module.
+
+        **This section is not necessary for understanding the examples.**
+
+        >>> warnings.showwarning = showwarning_original
+        >>> warnings.filterwarnings("ignore")
+        >>> helpers._build_dimension_coordinate = build_dimension_coordinate_original
+        >>> std_names.STD_NAMES["air_temperature"] = air_temperature
+
     """
 
-    def _simplify_entry(
-        entry: LoadProblemsEntry,
-    ) -> tuple[str | None, TracebackException]:
-        basic_value: str | None = None
+    @dataclass
+    class Problem:
+        """A single object that could not be loaded correctly."""
 
-        if hasattr(entry.loaded, "keys"):
-            assert isinstance(entry.loaded, dict)
-            (basic_value,) = entry.loaded.keys()
+        filename: str
+        """The file path/URL that contained the problem object."""
 
-        elif hasattr(entry.loaded, "var_name"):
-            assert isinstance(entry.loaded, CFVariableMixin)
-            iris_raw = LimitedAttributeDict.IRIS_RAW
-            raw_attributes = entry.loaded.attributes.get(iris_raw)
-            # TODO: should "var_name" also be encoded as a constant?
-            #  Is there a better way to store this info in the first place?
-            if raw_attributes is not None:
-                basic_value = raw_attributes["var_name"]
+        loaded: CFVariableMixin | dict[str, Any] | None
+        """The object that experienced loading problems.
+
+        Four possible types:
+
+        - :class:`~iris.cube.Cube`: if problems occurred while building a
+          :class:`~iris.common.mixin.CFVariableMixin` - currently the only
+          handled case is :class:`~iris.coords.DimCoord` - then the information
+          will be stored in a 'bare bones' :class:`~iris.cube.Cube` containing
+          only the :attr:`~iris.cube.Cube.data` array and the attributes. The
+          attributes are un-parsed (they can still contain ``_FillValue``
+          etcetera), and are stored under a special key in the Cube
+          :attr:`~iris.cube.Cube.attributes` dictionary:
+          :attr:`~iris.common.mixin.LimitedAttributeDict.IRIS_RAW`.
+        - :class:`dict`: if problems occurred while building objects from NetCDF
+          attributes - currently the only handled cases are ``standard_name``,
+          ``long_name``, ``var_name``. The dictionary key is the key of the
+          attribute, and the value is the raw attribute returned by the
+          ``netCDF4`` library.
+        - Built objects, such as :class:`~iris.coords.DimCoord`: if the object
+          was built successfully, but could not be added to the Cube being
+          loaded.
+        - ``None``: if a loading error occurred, but problems occurred while
+          trying to store the problem object.
+        """
+
+        stack_trace: TracebackException
+        """The traceback exception that was raised during loading.
+
+        This instance contains rich information to support user-specific
+        workflows, e.g:
+
+        - ``"".join(stack_trace.format())``: the full stack trace as a string -
+          the same way this would be seen at the command line.
+        - ``stack_trace.exc_type_str``: the exception type e.g.
+          :class:`ValueError`.
+        """
+
+        def __str__(self):
+            if hasattr(self.loaded, "summary"):
+                loaded = self.loaded.summary(shorten=True)
             else:
-                basic_value = entry.loaded.name()
+                loaded = self.loaded
+            return f'{self.filename}: "{self.stack_trace}", {loaded}'
 
+    def __init__(self):
+        super().__init__()
+        self._problems: list[LoadProblems.Problem] = []
+
+    def __str__(self):
+        lines = [
+            self.__repr__() + ":",
+            *[f"  {problem}" for problem in self.problems],
+        ]
+        return "\n".join(lines)
+
+    @property
+    def problems(self) -> list[Problem]:
+        """All recorded :class:`LoadProblems.Problem` instances."""
+        return self._problems
+
+    @property
+    def problems_by_file(self) -> dict[str, list[Problem]]:
+        """All recorded :class:`LoadProblems.Problem` instances, organised by filename.
+
+        Returns
+        -------
+        dict[str, list[LoadProblems.Problem]]
+            A dictionary with filenames as keys and lists of
+            :class:`LoadProblems.Problem` instances as values.
+        """
+        by_file: dict[str, list[LoadProblems.Problem]] = {}
+        for problem in self.problems:
+            by_file.setdefault(problem.filename, []).append(problem)
+        return by_file
+
+    # TODO: context manager method in future.
+
+    def record(
+        self,
+        filename: str,
+        loaded: CFVariableMixin | dict[str, Any] | None,
+        exception: BaseException,
+    ) -> Problem:
+        """Record a problem object that could not be loaded correctly.
+
+        The arguments passed will be used to create a
+        :class:`LoadProblems.Problem` instance - see that docstring for more
+        details.
+
+        Parameters
+        ----------
+        filename : str
+            The file path/URL that contained the problem object.
+        loaded : CFVariableMixin | dict[str, Any] | None
+            The object that experienced loading problems. See
+            :attr:`LoadProblems.Problem.loaded` for details on possible values.
+        exception : Exception
+            The traceback exception that was raised during loading.
+
+        Returns
+        -------
+        LoadProblems.Problem
+            The recorded load problem.
+        """
+        stack_trace = TracebackException.from_exception(exception)
+        problem = LoadProblems.Problem(filename, loaded, stack_trace)
+        self._problems.append(problem)
+
+        # Python's default warning behaviour means this will only be raised
+        #  once, regardless of the number of warnings.
+        # TODO: should this print self, too? (Note that this would result in
+        #  one warning per record unless we did something to prevent that).
+        message = (
+            "Not all file objects were parsed correctly. See "
+            "iris.loading.LOAD_PROBLEMS for details."
+        )
+        warnings.warn(message, category=IrisLoadWarning)
+
+        return problem
+
+    def reset(self, filename: str | None = None) -> None:
+        """Remove all recorded :class:`LoadProblems.Problem` instances.
+
+        Parameters
+        ----------
+        filename : str, optional
+            If provided, only remove problems for this filename.
+        """
+        if filename is None:
+            self._problems.clear()
         else:
-            assert entry.loaded is None
+            self._problems = [
+                problem for problem in self.problems if problem.filename != filename
+            ]
 
-        return basic_value, entry.stack_trace
 
-    return {
-        path: [_simplify_entry(entry) for entry in entries]
-        for path, entries in LOAD_PROBLEMS.items()
-    }
+# TODO: include in an __all__ somewhere.
+LOAD_PROBLEMS = LoadProblems()
+"""The global run-time instance of :class:`LoadProblems`.
+
+See :class:`LoadProblems` for more details.
+"""

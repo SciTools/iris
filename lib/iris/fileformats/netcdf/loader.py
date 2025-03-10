@@ -581,15 +581,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
     # Deferred import to avoid circular imports.
     from iris.fileformats.cf import CFReader
     from iris.io import run_callback
-    from iris.loading import _profile_load_problems
-    from iris.warnings import IrisLoadWarning
 
     from .ugrid_load import (
         _build_mesh_coords,
         _meshes_from_cf,
     )
-
-    load_problems_original = _profile_load_problems()
 
     # Create a low-level data-var filter from the original load constraints, if they are suitable.
     var_callback = _translate_constraints_to_var_callback(constraints)
@@ -658,17 +654,6 @@ def load_cubes(file_sources, callback=None, constraints=None):
                     continue
 
                 yield cube
-
-    # TODO: consider propagating to other loaders in future.
-    #  Could not apply at a higher level as user support and ncdata both access
-    #  this lower-level loader.
-    if _profile_load_problems() != load_problems_original:
-        # TODO: should this print iris.loading.LOAD_PROBLEMS?
-        message = (
-            "Not all file objects were parsed correctly. See "
-            "iris.loading.LOAD_PROBLEMS for details."
-        )
-        warnings.warn(message, category=IrisLoadWarning)
 
 
 class ChunkControl(threading.local):

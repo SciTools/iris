@@ -16,7 +16,7 @@ import iris.tests as tests  # isort: skip
 
 from iris.common import LimitedAttributeDict
 from iris.coord_systems import GeogCS, RotatedGeogCS
-from iris.tests._shared_utils import get_latest_load_problem
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -160,7 +160,7 @@ netcdf test {{
     def check_load_problem(self, setup_kwargs, expected_msg):
         # Check that the expected load problem is stored.
         _ = self.run_testcase(**setup_kwargs)
-        load_problem = get_latest_load_problem()
+        load_problem = LOAD_PROBLEMS.problems[-1]
         attributes = load_problem.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
         self.assertEqual(attributes["standard_name"], setup_kwargs["standard_name"])
         self.assertRegex("".join(load_problem.stack_trace.format()), expected_msg)
@@ -302,19 +302,30 @@ netcdf test {{
 
     def test_fail_latlon(self):
         self.check_load_problem(
-            dict(standard_name=self.unrotated_name, grid_mapping="rotated"),
+            dict(
+                standard_name=self.unrotated_name,
+                grid_mapping="rotated",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
             "FAILED : latlon coord with rotated cs",
         )
 
     def test_fail_rotated(self):
         self.check_load_problem(
-            dict(standard_name=self.rotated_name, grid_mapping="latlon"),
+            dict(
+                standard_name=self.rotated_name,
+                grid_mapping="latlon",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
             "FAILED rotated coord with latlon cs",
         )
 
     def test_fail_projected(self):
         self.check_load_problem(
-            dict(standard_name="projection_x_coordinate"),
+            dict(
+                standard_name="projection_x_coordinate",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
             "FAILED projected coord with non-projected cs",
         )
 

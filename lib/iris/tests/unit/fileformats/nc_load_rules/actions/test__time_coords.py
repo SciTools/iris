@@ -14,7 +14,7 @@ from typing import ClassVar
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
-from iris.tests._shared_utils import get_latest_load_problem
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -218,7 +218,7 @@ netcdf test {{
             self.assertIsInstance(period_auxcos[0], AuxCoord)
 
         if load_problems_regex is not None:
-            load_problem = get_latest_load_problem()
+            load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
 
 
@@ -315,7 +315,10 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #     002 : fc_provides_coordinate_(time[[_period]])
         #     003 : fc_build_coordinate_(time[[_period]])
         msg = "must be.* monotonic"
-        result = self.run_testcase(values_all_zero=True)
+        result = self.run_testcase(
+            values_all_zero=True,
+            warning_regex="Not all file objects were parsed correctly.",
+        )
         self.check_result(result, "aux", load_problems_regex=msg)
 
     def test_dim_fails_typeident(self):

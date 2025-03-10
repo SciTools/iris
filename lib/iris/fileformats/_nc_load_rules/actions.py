@@ -40,14 +40,12 @@ longer useful, this can be considerably simplified.
 """
 
 from functools import wraps
-from pathlib import Path
-from traceback import TracebackException
 import warnings
 
 from iris.config import get_logger
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
-from iris.loading import LOAD_PROBLEMS, LoadProblemsEntry
+from iris.loading import LOAD_PROBLEMS
 import iris.warnings
 
 from . import helpers as hh
@@ -391,13 +389,10 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
         try:
             raise error
         except error.__class__ as error:
-            tb_exception = TracebackException.from_exception(error)
-            load_problems_entry = LoadProblemsEntry(
+            _ = LOAD_PROBLEMS.record(
+                filename=engine.filename,
                 loaded=hh.build_raw_cube(cf_var, engine.filename),
-                stack_trace=tb_exception,
-            )
-            LOAD_PROBLEMS.setdefault(Path(engine.filename), []).append(
-                load_problems_entry
+                exception=error,
             )
 
     return rule_name

@@ -30,11 +30,11 @@ from iris.fileformats.netcdf import Saver
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+from iris.loading import LOAD_PROBLEMS
 import iris.warnings
 
 nc = threadsafe_nc.netCDF4
 
-from iris.tests._shared_utils import get_latest_load_problem
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -361,7 +361,7 @@ data:
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
-        load_problem = get_latest_load_problem()
+        load_problem = LOAD_PROBLEMS.problems[-1]
         assert isinstance(load_problem.loaded, iris.coords.DimCoord)
         assert load_problem.loaded.name() == "latitude"
 

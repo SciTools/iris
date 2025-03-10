@@ -10,14 +10,13 @@ import iris.tests as tests  # isort:skip
 
 from iris.fileformats._nc_load_rules.helpers import build_and_add_names
 from iris.loading import LOAD_PROBLEMS
-from iris.tests._shared_utils import get_latest_load_problem
 
 from .test_build_cube_metadata import _make_engine
 
 
 class TestCubeName(tests.IrisTest):
     def setUp(self):
-        LOAD_PROBLEMS.clear()
+        LOAD_PROBLEMS.reset()
 
     def check_cube_names(self, inputs, expected):
         # Inputs - attributes on the fake CF Variable.
@@ -34,9 +33,9 @@ class TestCubeName(tests.IrisTest):
 
     def check_load_problems(self, invalid_standard_name=None):
         if invalid_standard_name is None:
-            self.assertEqual(LOAD_PROBLEMS, {})
+            self.assertEqual(LOAD_PROBLEMS.problems, [])
         else:
-            load_problem = get_latest_load_problem()
+            load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertEqual(
                 load_problem.loaded, {"standard_name": invalid_standard_name}
             )

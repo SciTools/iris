@@ -4,15 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers._add_or_capture`."""
 
-from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
 from iris.fileformats._nc_load_rules import helpers
 from iris.fileformats.cf import CFVariable
-from iris.loading import LOAD_PROBLEMS, LoadProblemsEntry
-from iris.tests._shared_utils import get_latest_load_problem
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 
 
 class Mixin:
@@ -50,7 +48,7 @@ class Mixin:
 class TestBuildProblems(Mixin):
     @pytest.fixture(autouse=True)
     def _setup(self, make_args):
-        LOAD_PROBLEMS.clear()
+        LOAD_PROBLEMS.reset()
         self.failure_string = "FAILED: BUILD"
         self.build_func.side_effect = ValueError(self.failure_string)
 
@@ -69,14 +67,11 @@ class TestBuildProblems(Mixin):
         result = self.call(attr_key=attr_key)
         self.build_func.assert_called_once()
 
-        assert isinstance(result, LoadProblemsEntry)
+        assert isinstance(result, LoadProblems.Problem)
+        assert result.filename == self.filename
         assert result.loaded == expected_loaded
-
-        # Confirm that LOAD_PROBLEMS is also being populated as expected.
-        assert Path(self.filename) in LOAD_PROBLEMS
-        latest_load_problem = get_latest_load_problem()
-        assert result is latest_load_problem
-        assert str(latest_load_problem.stack_trace) == self.failure_string
+        assert str(result.stack_trace) == self.failure_string
+        assert result is LOAD_PROBLEMS.problems[-1]
 
     def test_w_o_attr_can_build(self, patch_build_raw_cube):
         self.common_test(
@@ -103,16 +98,16 @@ class TestBuildProblems(Mixin):
 
     def test_multiple_problems_same_file(self):
         results = [self.call() for _ in range(3)]
-        assert list(LOAD_PROBLEMS.keys()) == [Path(self.filename)]
-        problem_file, problems = LOAD_PROBLEMS.popitem()
-        for ix, problem in enumerate(problems):
+        for ix, problem in enumerate(LOAD_PROBLEMS.problems):
+            assert problem.filename == self.filename
             assert problem is results[ix]
 
     def test_multiple_problems_diff_file(self):
         names = [f"test__add_or_capture_{ix}.nc" for ix in range(3)]
         results = [self.call(filename=name) for name in names]
-        for ix, (problem_file, problems) in enumerate(LOAD_PROBLEMS.items()):
-            assert problem_file == Path(names[ix])
+        problems_by_file = LOAD_PROBLEMS.problems_by_file
+        for ix, (problem_file, problems) in enumerate(problems_by_file.items()):
+            assert problem_file == names[ix]
             for jx, problem in enumerate(problems):
                 assert problem is results[ix]
 
@@ -120,7 +115,7 @@ class TestBuildProblems(Mixin):
 class TestAddProblems(Mixin):
     @pytest.fixture(autouse=True)
     def _setup(self, make_args):
-        LOAD_PROBLEMS.clear()
+        LOAD_PROBLEMS.reset()
         self.failure_string = "FAILED: ADD"
         self.add_method.side_effect = ValueError(self.failure_string)
 
@@ -137,27 +132,24 @@ class TestAddProblems(Mixin):
         else:
             expected_loaded = {attr_key: built}
 
-        assert isinstance(result, LoadProblemsEntry)
+        assert isinstance(result, LoadProblems.Problem)
+        assert result.filename == self.filename
         assert result.loaded == expected_loaded
-
-        # Confirm that LOAD_PROBLEMS is also being populated as expected.
-        assert Path(self.filename) in LOAD_PROBLEMS
-        latest_load_problem = get_latest_load_problem()
-        assert result is latest_load_problem
-        assert str(latest_load_problem.stack_trace) == self.failure_string
+        assert str(result.stack_trace) == self.failure_string
+        assert result is LOAD_PROBLEMS.problems[-1]
 
     def test_multiple_problems_same_file(self):
         results = [self.call() for _ in range(3)]
-        assert list(LOAD_PROBLEMS.keys()) == [Path(self.filename)]
-        problem_file, problems = LOAD_PROBLEMS.popitem()
-        for ix, problem in enumerate(problems):
+        for ix, problem in enumerate(LOAD_PROBLEMS.problems):
+            assert problem.filename == self.filename
             assert problem is results[ix]
 
     def test_multiple_problems_diff_file(self):
         names = [f"test__add_or_capture_{ix}.nc" for ix in range(3)]
         results = [self.call(filename=name) for name in names]
-        for ix, (problem_file, problems) in enumerate(LOAD_PROBLEMS.items()):
-            assert problem_file == Path(names[ix])
+        problems_by_file = LOAD_PROBLEMS.problems_by_file
+        for ix, (problem_file, problems) in enumerate(problems_by_file.items()):
+            assert problem_file == names[ix]
             for jx, problem in enumerate(problems):
                 assert problem is results[ix]
 
@@ -165,7 +157,7 @@ class TestAddProblems(Mixin):
 class TestSuccess(Mixin):
     @pytest.fixture(autouse=True)
     def _setup(self, make_args):
-        LOAD_PROBLEMS.clear()
+        LOAD_PROBLEMS.reset()
 
     @pytest.mark.parametrize(
         "attr_key", [None, Mixin.attr_key], ids=["w_o_attr", "w_attr"]
@@ -174,5 +166,5 @@ class TestSuccess(Mixin):
         result = self.call(attr_key=attr_key)
         self.build_func.assert_called_once()
         self.add_method.assert_called_once_with(self.build_func.return_value)
-        assert LOAD_PROBLEMS == {}
+        assert LOAD_PROBLEMS.problems == []
         assert result is None
