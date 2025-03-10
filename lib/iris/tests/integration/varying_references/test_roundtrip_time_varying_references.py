@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 import iris
-from iris import LOAD_POLICY
+from iris import COMBINE_POLICY
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coord_systems import GeogCS
 from iris.coords import AuxCoord, DimCoord
@@ -240,7 +240,7 @@ def zcoord_type(request):
     return request.param
 
 
-@pytest.fixture(params=[f"{name}_policy" for name in LOAD_POLICY.SETTINGS])
+@pytest.fixture(params=[f"{name}_policy" for name in COMBINE_POLICY.SETTINGS])
 def load_policy(request):
     return request.param
 
@@ -265,7 +265,7 @@ def test_roundtrip(file_extension, time_dependence, zcoord_type, load_policy, tm
     iris.save(data, filepath)
 
     policy_name = load_policy.split("_")[0]
-    with LOAD_POLICY.context(policy_name):
+    with COMBINE_POLICY.context(policy_name):
         # NOTE: this is default, but "legacy" mode would fail
         readback = iris.load(filepath)
 
@@ -309,7 +309,7 @@ def test_split_netcdf_roundtrip(zcoord_type, load_policy, tmp_path):
         iris.save(field_cube, path)
 
     # load back with the chosen policy.
-    with LOAD_POLICY.context(policy_name):
+    with COMBINE_POLICY.context(policy_name):
         readback = iris.load(result_paths)
 
     n_cubes = len(readback)

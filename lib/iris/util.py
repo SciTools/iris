@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import Literal
+from typing import TYPE_CHECKING, List, Literal
 from warnings import warn
 
 import cf_units
@@ -30,6 +30,9 @@ from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
 import iris.warnings
+
+if TYPE_CHECKING:
+    from iris.cube import Cube, CubeList
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
@@ -387,14 +390,58 @@ def rolling_window(
     return rw
 
 
-def array_equal(array1, array2, withnans=False):
+def _masked_array_equal(
+    array1: np.ndarray,
+    array2: np.ndarray,
+    equal_nan: bool,
+) -> np.ndarray:
+    """Return whether two, possibly masked, arrays are equal."""
+    mask1 = ma.getmask(array1)
+    mask2 = ma.getmask(array2)
+
+    # Compare mask equality.
+    if mask1 is ma.nomask and mask2 is ma.nomask:
+        eq = True
+    elif mask1 is ma.nomask:
+        eq = not mask2.any()
+    elif mask2 is ma.nomask:
+        eq = not mask1.any()
+    else:
+        eq = np.array_equal(mask1, mask2)
+
+    if not eq:
+        eqs = np.zeros(array1.shape, dtype=bool)
+    else:
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        eqs = ma.getdata(array1) == ma.getdata(array2)
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+
+    return eqs
+
+
+def array_equal(array1, array2, withnans: bool = False) -> bool:
     """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
     array1, array2 : arraylike
         Args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, default=False
+    withnans : default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -409,31 +456,42 @@ def array_equal(array1, array2, withnans=False):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    if withnans and (array1 is array2):
-        return True
 
     def normalise_array(array):
-        if not is_lazy_data(array):
-            if not ma.isMaskedArray(array):
-                array = np.asanyarray(array)
+        if not isinstance(array, np.ndarray | da.Array):
+            array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
+    floating_point_arrays = array1.dtype.kind == "f" or array2.dtype.kind == "f"
+    if (array1 is array2) and (withnans or not floating_point_arrays):
+        return True
+
+    if not floating_point_arrays:
+        withnans = False
+
     eq = array1.shape == array2.shape
     if eq:
-        array1_masked = ma.is_masked(array1)
-        eq = array1_masked == ma.is_masked(array2)
-    if eq and array1_masked:
-        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
-    if eq:
-        eqs = array1 == array2
-        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = np.all(eqs)
-        eq = bool(eq) or eq is ma.masked
+        if is_lazy_data(array1) or is_lazy_data(array2):
+            # Use a separate map and reduce operation to avoid running out of memory.
+            ndim = array1.ndim
+            indices = tuple(range(ndim))
+            eq = da.blockwise(
+                _masked_array_equal,
+                indices,
+                array1,
+                indices,
+                array2,
+                indices,
+                dtype=bool,
+                meta=np.empty((0,) * ndim, dtype=bool),
+                equal_nan=withnans,
+            ).all()
+        else:
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
-    return eq
+    return bool(eq)
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
@@ -2343,3 +2401,141 @@ def _print_xml(doc):
     """
     result = doc.toprettyxml(indent="  ")
     return result.replace("&#10;", "\n")
+
+
+def _combine_options_asdict(options: str | dict | None) -> dict:
+    """Convert any valid combine options into an options dictionary."""
+    from iris import COMBINE_POLICY
+
+    if options is None:
+        opts_dict = COMBINE_POLICY.settings()
+    elif isinstance(options, dict):
+        opts_dict = options
+    elif isinstance(options, str):
+        if options in COMBINE_POLICY.SETTINGS:
+            opts_dict = COMBINE_POLICY.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(COMBINE_POLICY.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    return opts_dict
+
+
+def combine_cubes(
+    cubes: List[Cube],
+    options: str | dict | None = None,
+    **kwargs,
+) -> CubeList:
+    """Combine cubes, according to "combine options".
+
+    Applies a combination of :meth:`~iris.util.equalise_cubes`,
+    :meth:`~iris.cube.CubeList.merge` and/or :meth:`~iris.cube.CubeList.concatenate`
+    steps to the given cubes, as determined by the given settings (from `options` and
+    `kwargs`).
+
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
+        A list of cubes to combine.
+
+    options : str or dict, optional
+        Either a standard "combine settings" name, i.e. one of the
+        :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+        settings options, as described for :class:`~iris.CombineOptions`.
+        Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+        :data:`iris.COMBINE_POLICY`.
+
+    kwargs : dict
+        Individual option setting values, i.e. values for keys named in
+        :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+        :meth:`~iris.CombineOptions.set`.  These take precedence over those set by the
+        `options` arg.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+
+    Notes
+    -----
+        A ``support_multiple_references`` option will be accepted as valid, but will
+        have *no* effect on :func:`combine_cubes` because this option only acts during
+        load operations.
+
+
+    Examples
+    --------
+    .. testsetup::
+
+        import numpy as np
+        from iris.cube import Cube, CubeList
+        from iris.coords import DimCoord
+        from iris.util import combine_cubes
+
+        def testcube(timepts):
+            cube = Cube(np.array(timepts))
+            cube.add_dim_coord(
+                DimCoord(timepts, standard_name="time", units="days since 1990-01-01"),
+                0
+            )
+            return cube
+
+        cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+        combinecubes_old_policysettings = iris.COMBINE_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore old state to avoid upsetting other tests
+        iris.COMBINE_POLICY.set(combinecubes_old_policysettings)
+
+    >>> # Take a pair of sample cubes which can concatenate together
+    >>> print(cubes)
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> print([cube.coord("time").points for cube in cubes])
+    [array([1., 2.]), array([13., 14., 15.])]
+
+    >>> # Show these do NOT combine with the "default" action, which only merges ..
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... however, they **do** combine if you enable concatenation
+    >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
+    0: unknown / (unknown)                 (time: 5)
+    >>> # ... which may be controlled by various means
+    >>> iris.COMBINE_POLICY.set("recommended")
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # Also, show how a differing attribute will block cube combination
+    >>> cubes[0].attributes["x"] = 3
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... which can then be fixed by enabling attribute equalisation
+    >>> with iris.COMBINE_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    ...     print(combine_cubes(cubes))
+    ...
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # .. BUT NOTE : this modifies the original input cubes
+    >>> print(cubes[0].attributes.get("x"))
+    None
+
+    """
+    from iris._combine import _combine_cubes
+
+    opts_dict = _combine_options_asdict(options)
+    if kwargs is not None:
+        opts_dict = opts_dict.copy()  # avoid changing original
+        opts_dict.update(kwargs)
+
+    return _combine_cubes(cubes, opts_dict)

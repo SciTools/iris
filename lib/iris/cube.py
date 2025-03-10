@@ -637,6 +637,66 @@ class CubeList(list):
             check_derived_coords=check_derived_coords,
         )
 
+    def combine(self, options: str | dict | None = None, **kwargs) -> CubeList:
+        """Combine cubes, as with :func:`iris.util.combine_cubes`.
+
+        Parameters
+        ----------
+        options : str or dict, optional
+            Either a standard "combine settings" name, i.e. one of the
+            :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+            settings options, as described for :class:`~iris.CombineOptions`.
+            Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+            :data:`iris.COMBINE_POLICY`.
+
+        kwargs : dict
+            Individual option setting values, i.e. values for keys named in
+            :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+            :meth:`~iris.CombineOptions.set`.
+            These take precedence over those set by the `options` arg.
+
+        Returns
+        -------
+        :class:`CubeList`
+
+        """
+        from iris.util import combine_cubes
+
+        return combine_cubes(self, options, **kwargs)
+
+    def combine_cube(self, options: str | dict | None = None, **kwargs) -> CubeList:
+        """Combine to a single cube, with :func:`iris.util.combine_cubes`.
+
+        As :meth:`combine`, but raises a ValueError if the result is not a single cube.
+
+        Parameters
+        ----------
+        options : str or dict, optional
+            Either a standard "combine settings" name, i.e. one of the
+            :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+            settings options, as described for :class:`~iris.CombineOptions`.
+            Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+            :data:`iris.COMBINE_POLICY`.
+
+        kwargs : dict
+            Individual option setting values, i.e. values for keys named in
+            :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+            :meth:`~iris.CombineOptions.set`.
+            These take precedence over those set by the `options` arg.
+
+        Returns
+        -------
+        :class:`Cube`
+
+        """
+        result = self.combine(options, **kwargs)
+        n_cubes = len(result)
+        if n_cubes != 1:
+            msg = f"'combine' operation yielded {n_cubes} cubes, expected exactly 1."
+            raise ValueError(msg)
+
+        return result[0]
+
     def realise_data(self):
         """Fetch 'real' data for all cubes, in a shared calculation.
 
@@ -1882,14 +1942,6 @@ class Cube(CFVariableMixin):
             if match is None:
                 dims_by_id.update(aux_dims_by_id)
 
-        if match is None and not name_provided:
-            # We may have an equivalent coordinate but not the actual
-            # cube coordinate instance - so forced to perform coordinate
-            # lookup to attempt to retrieve it
-            coord = self.coord(coord)
-            # Check for id match - faster than equality
-            match = dims_by_id.get(id(coord))
-
         # Search derived aux coordinates
         if match is None:
             target_metadata = coord.metadata
@@ -1901,6 +1953,14 @@ class Cube(CFVariableMixin):
             matches = [factory.derived_dims(self.coord_dims) for factory in factories]
             if matches:
                 match = matches[0]
+
+        if match is None and not name_provided:
+            # We may have an equivalent coordinate but not the actual
+            # cube coordinate instance - so forced to perform coordinate
+            # lookup to attempt to retrieve it
+            coord = self.coord(coord)
+            # Check for id match - faster than equality
+            match = dims_by_id.get(id(coord))
 
         if match is None:
             raise iris.exceptions.CoordinateNotFoundError(coord.name())
