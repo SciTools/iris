@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.12 (10 Mar 2025 [release candidate])
+***************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.12 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
@@ -15,7 +15,30 @@ This document explains the changes made to Iris for this release
 
    The highlights for this major/minor release of Iris include:
 
-   * N/A
+   * Iris now supports Python version 3.13, and has dropped support for Python 3.10,
+     as per the Scientific Python
+     `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ schedule.
+
+   * Data is now optional in a cube, which can simplify the regridding process and lay
+     the ground work for future features.  See :issue:`4447`.
+
+   * Added :data:`iris.loading.LOAD_PROBLEMS` to capture objects which could not be
+     loaded correctly, to assist in fixing loading problems via the Iris API. Several
+     loading operations no longer raise their own warnings; instead their loading
+     problems are captured in the common object, and a single generic warning is raised.
+     See :class:`iris.loading.LoadProblems`.
+
+   * Extended the features of :class:`iris.LoadPolicy` and :data:`iris.LOAD_POLICY`,
+     which are now renamed to :class:`iris.CombineOptions` and
+     :data:`iris.COMBINE_POLICY` respectively, and gave access to the mechanism in the
+     new :func:`iris.util.combine_cubes` utility.
+
+   * Added two new utility functions, :func:`iris.util.combine_cubes` and
+     :meth:`iris.util.equalise_cubes`, to assist with merge/concatenate, as well as
+     other features to improve loading control.
+
+   Checkout the performance enhancements section for an array of improvements to the
+   performance of Iris. Special thanks to the ESMValTool devs for these contributions.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
@@ -91,11 +114,11 @@ This document explains the changes made to Iris for this release
    older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
    32-bit. (:issue:`6178`, :pull:`6343`)
 
-# `@ukmo-ccbunney` added support for loading NetCDF variable-length string types
+#. `@ukmo-ccbunney`_ added support for loading NetCDF variable-length string types
    and size hinting for better lazy loading (:issue:`6149`, :pull:`6340`)
 
 #. `@bouweandela`_ fixed handling of masked Dask arrays in
-    :func:`~iris.util.array_equal`.
+   :func:`~iris.util.array_equal`.
 
 
 💣 Incompatible Changes
@@ -179,19 +202,18 @@ This document explains the changes made to Iris for this release
    :doc:`/developers_guide/release_do_nothing` to be more thorough and apply
    lessons learned from recent releases. (:pull:`6062`)
 
-#. `@schlunma`_ made lazy [smart
-   weights](https://github.com/SciTools/iris/pull/5084) used for cube
-   aggregations have the same chunks as their parent cube if broadcasting is
-   necessary. (:issue:`6285`, :pull:`6288`)
+#. `@schlunma`_ made lazy `smart weights <https://github.com/SciTools/iris/pull/5084>`_
+   used for cube aggregations have the same chunks as their parent cube if broadcasting
+   is necessary. (:issue:`6285`, :pull:`6288`)
 
 #. `@trexfeathers`_ improved the handling of benchmark environments, especially
    when working across Python versions. (:pull:`6329`)
 
-#. `@trexfeathers`_ temporarily pinned Sphinx to `<8.2`.
+#. `@trexfeathers`_ temporarily pinned Sphinx to < 8.2.
    (:pull:`6344`, :issue:`6345`)
 
 #. `@bouweandela`_ fixed a bug in the benchmarking code that caused all benchmarks
-    to be run with lazy data. (:pull:`6339`)
+   to be run with lazy data. (:pull:`6339`)
 
 
 .. comment
