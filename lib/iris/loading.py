@@ -411,9 +411,7 @@ class LoadProblems(threading.local):
 
     >>> print(last_problem.loaded)
     unknown / (unknown)                 (-- : 240)
-
-    Attributes
-    ----------
+        Attributes:...
             IRIS_RAW                    {'axis': 'T', ...}
 
     Using ``last_problem.loaded``, we can manually reconstruct the missing
