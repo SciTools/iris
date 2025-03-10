@@ -73,7 +73,7 @@ This document explains the changes made to Iris for this release
    render text in the bottom right of the plot figure.
    (:issue:`6247`, :pull:`6332`)
 
-#. `@trexfeathers`_ added the :class:`iris.loading.LOAD_PROBLEMS` dictionary to
+#. `@trexfeathers`_ and `@pp-mo`_ added :const:`iris.loading.LOAD_PROBLEMS` to
    capture objects that could not be loaded correctly, increasing transparency
    and helping users to fix loading problems via the Iris API. As a first pass,
    this is currently limited to ``standard_name`` and dimension coordinates from
@@ -104,6 +104,19 @@ This document explains the changes made to Iris for this release
 #. :class:`iris.tests.IrisTest` is being replaced by :mod:`iris.tests._shared_utils`.
    Once conversion from unittest to pytest is completed, :class:`iris.tests.IrisTest`
    class will be deprecated.
+
+#. `@trexfeathers`_ and `@pp-mo`_ significantly changed Iris' NetCDF loading
+   warnings as part of the :const:`~iris.loading.LOAD_PROBLEMS` work. Several
+   loading operations no longer raise their own warnings; instead their loading
+   problems are captured in :const:`~iris.loading.LOAD_PROBLEMS`. When
+   :const:`~iris.loading.LOAD_PROBLEMS` is populated, a single
+   :class:`~iris.warnings.IrisLoadWarning` is raised; see below.
+   As a first pass, this changed behaviour is currently limited to
+   ``standard_name`` and dimension coordinates from NetCDF files. (:pull:`6338`)
+
+   .. code-block:: none
+
+       IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
 
 
 🚀 Performance Enhancements
