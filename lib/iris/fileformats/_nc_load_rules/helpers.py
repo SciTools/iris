@@ -1346,7 +1346,7 @@ def _build_dimension_coordinate(
         coord_var_name = str(cf_coord_var.cf_name)
         dim_error.add_note(
             f"Failed to create {coord_var_name} dimension coordinate:\n"
-            f"Gracefully creating {coord_var_name} auxiliary coordinate instead."
+            f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
         )
         # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
         _ = LOAD_PROBLEMS.record(

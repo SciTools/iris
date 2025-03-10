@@ -240,7 +240,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
             load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertIn(
-                "creating wibble auxiliary coordinate instead",
+                "creating 'wibble' auxiliary coordinate instead",
                 "".join(load_problem.stack_trace.format()),
             )
 
