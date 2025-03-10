@@ -62,8 +62,13 @@ def load_problems_instance(problem_instance):
         loaded=problem_instance.loaded,
         stack_trace=problem_instance.stack_trace,
     )
+    problem3 = LoadProblems.Problem(
+        filename=problem_instance.filename,
+        loaded=None,
+        stack_trace=problem_instance.stack_trace,
+    )
     result = LoadProblems()
-    result._problems = [problem_instance, problem2]
+    result._problems = [problem_instance, problem2, problem3]
     return result
 
 
@@ -94,7 +99,12 @@ def test_problems_property(load_problems_instance):
 
 
 def test_problems_by_file_property(load_problems_instance):
-    expected = {p.filename: [p] for p in load_problems_instance._problems}
+    filenames = [p.filename for p in load_problems_instance._problems]
+    expected = dict.fromkeys(filenames)
+    for filename in filenames:
+        expected[filename] = [
+            p for p in load_problems_instance._problems if p.filename == filename
+        ]
     assert load_problems_instance.problems_by_file == expected
 
 
