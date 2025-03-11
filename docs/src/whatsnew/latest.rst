@@ -21,27 +21,6 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
-NOTE: section BELOW is a template for bugfix patches
-====================================================
-    (Please remove this section when creating an initial 'latest.rst')
-
-|iris_version| |build_date|
-===========================
-
-.. dropdown:: |iris_version| Patches
-   :color: primary
-   :icon: alert
-   :animate: fade-in
-
-   The patches in this release of Iris include:
-
-   #. N/A
-
-NOTE: section ABOVE is a template for bugfix patches
-====================================================
-    (Please remove this section when creating an initial 'latest.rst')
-
-
 📢 Announcements
 ================
 
