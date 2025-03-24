@@ -13,7 +13,7 @@ This document explains the changes made to Iris for this release
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
    * Iris now supports Python version 3.13, and has dropped support for Python 3.10,
      as per the Scientific Python
