@@ -1,7 +1,7 @@
 .. include:: ../common_links.inc
 
-v3.12 (10 Mar 2025 [release candidate])
-***************************************
+v3.12 (24 Mar 2025)
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
@@ -19,7 +19,7 @@ This document explains the changes made to Iris for this release
      as per the Scientific Python
      `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ schedule.
 
-   * Data is now optional in a cube, which can simplify the regridding process and lay
+   * Data is now optional in a cube, which can simplify the regridding process and lays
      the ground work for future features.  See :issue:`4447`.
 
    * Added :data:`iris.loading.LOAD_PROBLEMS` to capture objects which could not be
