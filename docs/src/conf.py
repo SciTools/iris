@@ -406,6 +406,7 @@ linkcheck_ignore = [
     "https://stackoverflow.com/questions/tagged/python-iris",
     "https://www.flaticon.com/",
     "https://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html",
+    "https://doi.org/10.3390/jmse2010194",
 ]
 
 # list of sources to exclude from the build.
