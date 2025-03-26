@@ -1,0 +1,33 @@
+# DEAD : legacy in various old whatsnews
+https://biggus.readthedocs.io
+
+# unkown problem, works in browser : used in further_topics/ugrid/data_model
+https://doi.org/10.3390/jmse2010194
+
+# DEAD, todo:remove, used in docs/src/userguide/plotting_a_cube.rst
+https://effbot.org
+
+# DEAD, todo:remove, used in docs/src/further_topics/ugrid/data_model.rst
+https://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
+
+# DEAD, legacy in whatsnew/1.4.rst
+https://geoport.whoi.edu/thredds/dodsC/bathy/gom15
+
+# catch (at least) github userids, of which many in whatsnews, too many --> "too many requests" failures
+https://github.com/[^/]*$
+
+# nonfunctional example, used in docs/src/developers_guide/gitwash/development_workflow.rst
+https://github.com/your-user-name/iris
+
+# problem with bad certificate (review sometime?)
+https://scitools.github.com/cartopy
+
+# legacy ref in whatsnew/3.0.rst
+https://stickler-ci.com
+
+# unkown problem, works in browser : used in docs/src/index.rst
+https://www.flaticon.com
+
+# DEAD, todo:remove, used in docs/src/userguide/plotting_a_cube.rst
+https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html
+
