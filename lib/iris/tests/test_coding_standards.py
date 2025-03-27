@@ -103,7 +103,7 @@ def test_python_versions():
             ci_tests_file,
             (
                 f'python-version: ["{latest_supported}"]\n'
-                f'{" " * 8}session: ["doctest", "gallery", "linkcheck"]'
+                f'{" " * 8}session: ["doctest", "gallery"]'
             ),
         ),
         (benchmark_runner_file, f'python_version = "{latest_supported}"'),
