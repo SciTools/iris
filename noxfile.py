@@ -240,32 +240,6 @@ def gallery(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
-def linkcheck(session: nox.sessions.Session):
-    """Perform iris doc link check.
-
-    Parameters
-    ----------
-    session : object
-        A `nox.sessions.Session` object.
-
-    """
-    prepare_venv(session)
-    session.install("--no-deps", "--editable", ".")
-    session.cd("docs")
-    session.run(
-        "make",
-        "clean",
-        "html",
-        external=True,
-    )
-    session.run(
-        "make",
-        "linkcheck",
-        external=True,
-    )
-
-
 @nox.session(python=PY_VER, venv_backend="conda")
 def wheel(session: nox.sessions.Session):
     """Perform iris local wheel install and import test.
