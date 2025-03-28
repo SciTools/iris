@@ -1,3 +1,6 @@
+# nonfunctional, found in some code examples
+file:///
+
 # DEAD : legacy in various old whatsnews
 https://biggus.readthedocs.io
 
@@ -7,11 +10,18 @@ https://doi.org/10.3390/jmse2010194
 # DEAD, todo:remove, used in docs/src/userguide/plotting_a_cube.rst
 https://effbot.org
 
+# nonfunctional, found in some code examples
+https://foo/
+
 # DEAD, todo:remove, used in docs/src/further_topics/ugrid/data_model.rst
 https://ibm-design-language.eu-de.mybluemix.net/design/language/resources/color-library
 
 # DEAD, legacy in whatsnew/1.4.rst
 https://geoport.whoi.edu/thredds/dodsC/bathy/gom15
+
+# exist, but bad certificates
+https://georepository.com
+https://geoport.whoi.edu:80/thredds/
 
 # catch (at least) github userids, of which many in whatsnews, too many --> "too many requests" failures
 https://github.com/[^/]*$
@@ -25,9 +35,18 @@ https://scitools.github.com/cartopy
 # legacy ref in whatsnew/3.0.rst
 https://stickler-ci.com
 
+# DEAD, todo:remove, used in lib/iris/symbols.py
+https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf
+
+# DEAD, todo:remove, used in docs/src/userguide/plotting_a_cube.rst
 # unkown problem, works in browser : used in docs/src/index.rst
 https://www.flaticon.com
+
+# nonfunctional example, used in lib/iris/io/__init__.py
+https://www.thing.com
 
 # DEAD, todo:remove, used in docs/src/userguide/plotting_a_cube.rst
 https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html
 
+# nonfunctional, found in some code examples
+https://www.somehost.com
