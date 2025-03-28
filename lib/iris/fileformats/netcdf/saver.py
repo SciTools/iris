@@ -512,8 +512,8 @@ class Saver:
             example, if `least_significant_digit=1`, data will be quantized
             using `numpy.around(scale*data)/scale`, where `scale = 2**bits`,
             and `bits` is determined so that a precision of 0.1 is retained (in
-            this case `bits=4`). From
-            `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__:
+            this case `bits=4`). From the
+            `metadata conventions <https://docs.unidata.ucar.edu/nug/current/attribute_conventions.html>`__:
             "least_significant_digit -- power of ten of the smallest decimal
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
@@ -2473,7 +2473,7 @@ def save(
         Used to manually specify the HDF5 chunksizes for each dimension of the
         variable. A detailed discussion of HDF chunking and I/O performance is
         available
-        `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__.
+        `here <https://docs.unidata.ucar.edu/nug/current/netcdf_perf_chunking.html>`__.
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
@@ -2502,8 +2502,8 @@ def save(
         describes a numpy integer dtype (i.e. 'i2', 'short', 'u4') or a dict
         of packing parameters as described below or an iterable of such types,
         strings, or dicts. This provides support for netCDF data packing as
-        described in
-        `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__
+        described in the
+        `metadata conventions <https://docs.unidata.ucar.edu/nug/current/attribute_conventions.html>`__
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with

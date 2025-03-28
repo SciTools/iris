@@ -46,7 +46,7 @@ __all__ = [
 ]
 
 
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
+# https://docs.unidata.ucar.edu/nug/current/netcdf_data_set_components.html#object_name
 
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 

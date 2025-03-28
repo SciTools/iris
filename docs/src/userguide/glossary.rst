@@ -188,7 +188,7 @@ Glossary
 
    Standard Name
         A name describing a :term:`phenomenon`,  one from a fixed list
-        defined at `CF Standard Names <https://cfconventions.org/standard-names.html>`_.
+        defined at `CF Standard Names <https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html>`_.
 
         | **Related:** :term:`Long Name` **|** :term:`Cube`
         | **More information:** :doc:`iris_cubes`

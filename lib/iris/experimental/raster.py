@@ -118,7 +118,7 @@ def export_geotiff(cube, fname):
     Notes
     -----
     For more details on GeoTiff specification and PixelIsArea, see:
-    https://www.remotesensing.org/geotiff/spec/geotiff2.5.html#2.5.2.2
+    https://docs.ogc.org/is/19-008r4/19-008r4.html#_pixelisarea_raster_space
 
     .. deprecated:: 3.2.0
 
