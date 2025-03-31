@@ -72,7 +72,9 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@pp-mo`_ replaced the PR-based linkchecks with a daily scheduled link checker based
+   on `lychee <https://github.com/lycheeverse/lychee-action>`__.
+   (:issue:`4140`, :pull:`6386`)
 
 
 .. comment
