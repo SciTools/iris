@@ -27,7 +27,7 @@ ROOT_DIR = BENCHMARKS_DIR.parent
 GH_REPORT_DIR = ROOT_DIR.joinpath(".github", "workflows", "benchmark_reports")
 
 # Common ASV arguments for all run_types except `custom`.
-ASV_HARNESS = "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
+ASV_HARNESS = "run {posargs} --attribute rounds=3 --interleave-rounds --show-stderr"
 
 
 def echo(echo_string: str):
@@ -66,7 +66,7 @@ def _check_requirements(package: str) -> None:
 
 def _prep_data_gen_env() -> None:
     """Create or access a separate, unchanging environment for generating test data."""
-    python_version = "3.12"
+    python_version = "3.13"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")

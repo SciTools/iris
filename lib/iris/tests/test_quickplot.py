@@ -4,36 +4,24 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Tests the high-level plotting interface."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris
+from iris.tests import _shared_utils
 import iris.tests.test_plot as test_plot
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
     import iris.plot as iplt
     import iris.quickplot as qplt
 
 
-# Caches _load_theta so subsequent calls are faster
-def cache(fn, cache={}):
-    def inner(*args, **kwargs):
-        key = "result"
-        if not cache:
-            cache[key] = fn(*args, **kwargs)
-        return cache[key]
-
-    return inner
-
-
-@cache
-def _load_theta():
-    path = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
+@pytest.fixture(scope="module")
+def load_theta():
+    path = _shared_utils.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
     theta = iris.load_cube(path, "air_potential_temperature")
 
     # Improve the unit
@@ -42,17 +30,11 @@ def _load_theta():
     return theta
 
 
-@tests.skip_data
-@tests.skip_plot
+@_shared_utils.skip_data
+@_shared_utils.skip_plot
 class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
-    def setUp(self):
-        tests.GraphicsTest.setUp(self)
-        filename = tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
-        self.cube = test_plot.load_cube_once(filename, "air_potential_temperature")
-        if self.cube.coord_dims("time") != (0,):
-            # A quick fix for data which has changed since we support time-varying orography
-            self.cube.transpose((1, 0, 2, 3))
-
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.draw_module = iris.quickplot
         self.contourf = test_plot.LambdaStr(
             "iris.quickplot.contourf",
@@ -105,12 +87,12 @@ class TestQuickplotCoordinatesGiven(test_plot.TestPlotCoordinatesGiven):
         }
 
 
-@tests.skip_data
-@tests.skip_plot
-class TestLabels(tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
-        self.theta = _load_theta()
+@_shared_utils.skip_data
+@_shared_utils.skip_plot
+class TestLabels(_shared_utils.GraphicsTest):
+    @pytest.fixture(autouse=True)
+    def _setup(self, load_theta):
+        self.theta = load_theta
 
     def _slice(self, coords):
         """Returns the first cube containing the requested coordinates."""
@@ -163,12 +145,12 @@ class TestLabels(tests.GraphicsTest):
         qplt.contourf(self._small(), axes=axes1)
 
         # Ensure that the correct axes got the appropriate title.
-        self.assertEqual(axes2.get_title(), "This should not be changed")
-        self.assertEqual(axes1.get_title(), "Air potential temperature")
+        assert axes2.get_title() == "This should not be changed"
+        assert axes1.get_title() == "Air potential temperature"
 
         # Check that the axes labels were set correctly.
-        self.assertEqual(axes1.get_xlabel(), "Grid longitude / degrees")
-        self.assertEqual(axes1.get_ylabel(), "Altitude / m")
+        assert axes1.get_xlabel() == "Grid longitude / degrees"
+        assert axes1.get_ylabel() == "Altitude / m"
 
     def test_contourf_nameless(self):
         cube = self._small()
@@ -231,12 +213,12 @@ class TestLabels(tests.GraphicsTest):
         self.check_graphic()
 
 
-@tests.skip_data
-@tests.skip_plot
-class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
-        path = tests.get_data_path(("PP", "aPProt1", "rotatedMHtimecube.pp"))
+@_shared_utils.skip_data
+@_shared_utils.skip_plot
+class TestTimeReferenceUnitsLabels(_shared_utils.GraphicsTest):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        path = _shared_utils.get_data_path(("PP", "aPProt1", "rotatedMHtimecube.pp"))
         self.cube = iris.load_cube(path)[:, 0, 0]
 
     def test_reference_time_units(self):
@@ -251,13 +233,13 @@ class TestTimeReferenceUnitsLabels(tests.GraphicsTest):
         self.check_graphic()
 
 
-@tests.skip_data
-@tests.skip_plot
-class TestSubplotColorbar(tests.IrisTest):
-    def setUp(self):
-        theta = _load_theta()
+@_shared_utils.skip_data
+@_shared_utils.skip_plot
+class TestSubplotColorbar:
+    @pytest.fixture(autouse=True)
+    def _setup(self, load_theta):
         coords = ["model_level_number", "grid_longitude"]
-        self.data = next(theta.slices(coords))
+        self.data = next(load_theta.slices(coords))
         spec = (1, 1, 1)
         self.figure1 = plt.figure()
         self.axes1 = self.figure1.add_subplot(*spec)
@@ -265,9 +247,9 @@ class TestSubplotColorbar(tests.IrisTest):
         self.axes2 = self.figure2.add_subplot(*spec)
 
     def _check(self, mappable, figure, axes):
-        self.assertIs(mappable.axes, axes)
-        self.assertIs(mappable.colorbar.mappable, mappable)
-        self.assertIs(mappable.colorbar.ax.get_figure(), figure)
+        assert mappable.axes is axes
+        assert mappable.colorbar.mappable is mappable
+        assert mappable.colorbar.ax.get_figure() is figure
 
     def test_with_axes1(self):
         # plot using the first figure subplot axes (explicit)
@@ -285,9 +267,9 @@ class TestSubplotColorbar(tests.IrisTest):
         self._check(mappable, self.figure2, self.axes2)
 
 
-@tests.skip_data
-@tests.skip_plot
-class TestPlotHist(tests.GraphicsTest):
+@_shared_utils.skip_data
+@_shared_utils.skip_plot
+class TestPlotHist(_shared_utils.GraphicsTest):
     def test_horizontal(self):
         cube = test_plot.simple_cube()[0]
         qplt.hist(cube, bins=np.linspace(287.7, 288.2, 11))
@@ -299,5 +281,13 @@ class TestPlotHist(tests.GraphicsTest):
         self.check_graphic()
 
 
-if __name__ == "__main__":
-    tests.main()
+@_shared_utils.skip_plot
+class TestFooter:
+    @pytest.mark.parametrize(
+        "text", [qplt.Classification.official_sensitive, "Example"]
+    )
+    def test__footer(self, text):
+        fig = plt.figure()
+        qplt._footer(text)
+        footer_text = fig.texts[0].get_text()
+        assert text == footer_text

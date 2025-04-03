@@ -141,7 +141,7 @@ rst_epilog = f"""
 .. |python_version| replace:: {build_python_version}
 .. |python_support| replace:: {python_support}
 .. |iris_version| replace:: v{version}
-.. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
+.. |build_date| replace:: ({datetime.datetime.now().strftime("%d %b %Y")})
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
@@ -206,7 +206,8 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": False,
     "special-members": False,
-    "inherited-members": True,
+    # Enums are most valuable when documented as concisely as possible.
+    "inherited-members": "Enum,IntEnum,ReprEnum,StrEnum",
     "show-inheritance": True,
 }
 
@@ -381,30 +382,6 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_style = "theme_override.css"
-
-# url link checker.  Some links work but report as broken, lets ignore them.
-# See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
-linkcheck_ignore = [
-    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
-    "https://cfconventions.org",
-    "https://code.google.com/p/msysgit/downloads/list",
-    "https://effbot.org",
-    "https://help.github.com",
-    "https://docs.github.com",
-    "https://github.com",
-    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "https://scitools.github.com/cartopy",
-    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
-    "https://software.ac.uk/how-cite-software",
-    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
-    "https://www.metoffice.gov.uk/",
-    "https://biggus.readthedocs.io/",
-    "https://stickler-ci.com/",
-    "https://twitter.com/scitools_iris",
-    "https://stackoverflow.com/questions/tagged/python-iris",
-    "https://www.flaticon.com/",
-]
 
 # list of sources to exclude from the build.
 exclude_patterns = []

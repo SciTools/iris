@@ -512,8 +512,8 @@ class Saver:
             example, if `least_significant_digit=1`, data will be quantized
             using `numpy.around(scale*data)/scale`, where `scale = 2**bits`,
             and `bits` is determined so that a precision of 0.1 is retained (in
-            this case `bits=4`). From
-            `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__:
+            this case `bits=4`). From the
+            `metadata conventions <https://docs.unidata.ucar.edu/nug/current/attribute_conventions.html>`__:
             "least_significant_digit -- power of ten of the smallest decimal
             place in unpacked data that is a reliable value". Default is
             `None`, or no quantization, or 'lossless' compression.
@@ -655,8 +655,7 @@ class Saver:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
-    @staticmethod
-    def check_attribute_compliance(container, data_dtype):
+    def check_attribute_compliance(self, container, data_dtype):
         """Check attributte complliance."""
 
         def _coerce_value(val_attr, val_attr_value, data_dtype):
@@ -672,8 +671,7 @@ class Saver:
             or container.attributes.get("valid_max") is not None
         ) and container.attributes.get("valid_range") is not None:
             msg = (
-                'Both "valid_range" and "valid_min" or "valid_max" '
-                "attributes present."
+                'Both "valid_range" and "valid_min" or "valid_max" attributes present.'
             )
             raise ValueError(msg)
 
@@ -682,6 +680,7 @@ class Saver:
             val_attr_value = container.attributes.get(val_attr)
             if val_attr_value is not None:
                 val_attr_value = np.asarray(val_attr_value)
+                self._ensure_valid_dtype(val_attr_value, val_attr, val_attr_value)
                 if data_dtype.itemsize == 1:
                     # Allow signed integral type
                     if val_attr_value.dtype.kind == "i":
@@ -2474,7 +2473,7 @@ def save(
         Used to manually specify the HDF5 chunksizes for each dimension of the
         variable. A detailed discussion of HDF chunking and I/O performance is
         available
-        `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__.
+        `here <https://docs.unidata.ucar.edu/nug/current/netcdf_perf_chunking.html>`__.
         Basically, you want the chunk size for each dimension to match as
         closely as possible the size of the data block that users will read
         from the file. `chunksizes` cannot be set if `contiguous=True`.
@@ -2503,8 +2502,8 @@ def save(
         describes a numpy integer dtype (i.e. 'i2', 'short', 'u4') or a dict
         of packing parameters as described below or an iterable of such types,
         strings, or dicts. This provides support for netCDF data packing as
-        described in
-        `here <https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml>`__
+        described in the
+        `metadata conventions <https://docs.unidata.ucar.edu/nug/current/attribute_conventions.html>`__
         If this argument is a type (or type string), appropriate values of
         scale_factor and add_offset will be automatically calculated based
         on `cube.data` and possible masking. For more control, pass a dict with

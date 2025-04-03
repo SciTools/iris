@@ -55,6 +55,27 @@ def test_realization():
     assert member_number == 42
 
 
+def test_stash_string():
+    cube = stock.lat_lon_cube()
+    cube.attributes["STASH"] = "m01s34i001"
+    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+        pp_field.lbuser = list(range(7))
+        verify(cube, pp_field)
+        stash_num = pp_field.lbuser[3]
+
+    assert stash_num == 34001
+
+
+def test_bad_stash_string():
+    cube = stock.lat_lon_cube()
+    cube.attributes["STASH"] = "ooovarvoo"
+    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+        with pytest.raises(
+            ValueError, match='Expected STASH code MSI string "mXXsXXiXXX"'
+        ):
+            verify(cube, pp_field)
+
+
 def _pp_save_ppfield_values(cube):
     """Emulate saving a cube as PP, and capture the resulting PP field values."""
     # Create a test object to stand in for a real PPField.

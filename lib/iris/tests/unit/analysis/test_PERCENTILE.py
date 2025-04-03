@@ -162,7 +162,7 @@ class ScipyAggregateMixin:
         for key in ["alphap", "betap"]:
             self.assertEqual(mocked_mquantiles.call_args.kwargs[key], 1)
 
-    @mock.patch("scipy.stats.mstats.mquantiles")
+    @mock.patch("scipy.stats.mstats.mquantiles", return_value=np.array([2, 4]))
     def test_chosen_kwargs_passed(self, mocked_mquantiles):
         data = np.arange(5)
         percent = [42, 75]
@@ -216,8 +216,7 @@ class Test_fast_aggregate(tests.IrisTest, AggregateMixin):
         data = ma.arange(np.prod(shape)).reshape(shape)
         data[0, ::2] = ma.masked
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             PERCENTILE.aggregate(data, axis=0, percent=50, fast_percentile_method=True)
@@ -324,8 +323,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
             data, axis=0, percent=50, fast_percentile_method=True
         )
         emsg = (
-            "Cannot use fast np.percentile method with masked array unless "
-            "mdtol is 0."
+            "Cannot use fast np.percentile method with masked array unless mdtol is 0."
         )
         with self.assertRaisesRegex(TypeError, emsg):
             as_concrete_data(actual)
@@ -358,7 +356,7 @@ class Test_lazy_fast_aggregate(tests.IrisTest, AggregateMixin, MultiAxisMixin):
         # Check we have left "method" keyword to numpy's default.
         self.assertNotIn("method", mocked_percentile.call_args.kwargs)
 
-    @mock.patch("numpy.percentile")
+    @mock.patch("numpy.percentile", return_value=np.array([2, 4]))
     def test_chosen_method_kwarg_passed(self, mocked_percentile):
         data = da.arange(5)
         percent = [42, 75]

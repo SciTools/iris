@@ -7,7 +7,7 @@
 import pytest
 
 import iris
-from iris import LOAD_POLICY, sample_data_path
+from iris import COMBINE_POLICY, sample_data_path
 
 
 @pytest.fixture(params=["default", "recommended", "legacy"])
@@ -18,7 +18,7 @@ def load_policy(request):
 def test_load_pp_timevarying_orography(load_policy):
     testdata_dirpath = sample_data_path("time_varying_hybrid_height", "*.pp")
 
-    with LOAD_POLICY.context(load_policy):
+    with COMBINE_POLICY.context(load_policy):
         cubes = iris.load(testdata_dirpath)
 
     n_cubes = len(cubes)

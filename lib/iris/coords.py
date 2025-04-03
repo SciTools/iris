@@ -589,21 +589,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if hasattr(other, "metadata"):
             # metadata comparison
             eq = self.metadata == other.metadata
+
+            # Also consider bounds, if we have them.
+            # (N.B. though only Coords can ever actually *have* bounds).
+            if eq and eq is not NotImplemented:
+                eq = self.has_bounds() is other.has_bounds()
+
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
                     self._core_values(), other._core_values(), withnans=True
                 )
-
-            # Also consider bounds, if we have them.
-            # (N.B. though only Coords can ever actually *have* bounds).
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(
                         self.core_bounds(), other.core_bounds(), withnans=True
                     )
-                else:
-                    eq = not self.has_bounds() and not other.has_bounds()
 
         return eq
 
@@ -2253,8 +2254,7 @@ class Coord(_DimensionalMetadata):
 
         if self.has_bounds():
             raise ValueError(
-                "Coord already has bounds. Remove the bounds "
-                "before guessing new ones."
+                "Coord already has bounds. Remove the bounds before guessing new ones."
             )
 
         if monthly or yearly:
@@ -2446,8 +2446,7 @@ class Coord(_DimensionalMetadata):
         bounds = self.bounds if self.has_bounds() else np.array([])
         if self.ndim != 1:
             raise ValueError(
-                "Nearest-neighbour is currently limited"
-                " to one-dimensional coordinates."
+                "Nearest-neighbour is currently limited to one-dimensional coordinates."
             )
         do_circular = getattr(self, "circular", False)
         if do_circular:
@@ -2958,7 +2957,7 @@ class AuxCoord(Coord):
             Descriptive name of the coordinate.
         var_name : optional
             The netCDF variable name for the coordinate.
-        unit : :class:`~cf_units.Unit`, optional
+        units : :class:`~cf_units.Unit`, optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         bounds : optional
