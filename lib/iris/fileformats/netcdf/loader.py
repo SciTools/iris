@@ -211,7 +211,6 @@ def _get_cf_var_data(cf_var, filename):
     unnecessarily slow + wasteful of memory.
 
     """
-    global CHUNK_CONTROL
     if hasattr(cf_var, "_data_array"):
         # The variable is not an actual netCDF4 file variable, but an emulating
         # object with an attached data array (either numpy or dask), which can be
@@ -353,8 +352,6 @@ class _OrderedAddableList(list):
 
 
 def _load_cube(engine, cf, cf_var, filename):
-    global CHUNK_CONTROL
-
     # Translate dimension chunk-settings specific to this cube (i.e. named by
     # it's data-var) into global ones, for the duration of this load.
     # Thus, by default, we will create any AuxCoords, CellMeasures et al with
