@@ -8,12 +8,15 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from copy import deepcopy
 import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
+from typing import TYPE_CHECKING, List, Literal, overload
+from warnings import warn
 
 import cf_units
 from dask import array as da
@@ -26,6 +29,10 @@ from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
+import iris.warnings
+
+if TYPE_CHECKING:
+    from iris.cube import Cube, CubeList
 
 
 def broadcast_to_shape(array, shape, dim_map, chunks=None):
@@ -252,7 +259,10 @@ def describe_diff(cube_a, cube_b, output_file=None):
             )
 
 
-def guess_coord_axis(coord):
+Axis = Literal["X", "Y", "Z", "T"]
+
+
+def guess_coord_axis(coord) -> Axis | None:
     """Return a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
@@ -276,7 +286,7 @@ def guess_coord_axis(coord):
     :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
-    axis = None
+    axis: Axis | None = None
 
     if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
         return axis
@@ -380,14 +390,58 @@ def rolling_window(
     return rw
 
 
-def array_equal(array1, array2, withnans=False):
+def _masked_array_equal(
+    array1: np.ndarray,
+    array2: np.ndarray,
+    equal_nan: bool,
+) -> np.ndarray:
+    """Return whether two, possibly masked, arrays are equal."""
+    mask1 = ma.getmask(array1)
+    mask2 = ma.getmask(array2)
+
+    # Compare mask equality.
+    if mask1 is ma.nomask and mask2 is ma.nomask:
+        eq = True
+    elif mask1 is ma.nomask:
+        eq = not mask2.any()
+    elif mask2 is ma.nomask:
+        eq = not mask1.any()
+    else:
+        eq = np.array_equal(mask1, mask2)
+
+    if not eq:
+        eqs = np.zeros(array1.shape, dtype=bool)
+    else:
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        eqs = ma.getdata(array1) == ma.getdata(array2)
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+
+    return eqs
+
+
+def array_equal(array1, array2, withnans: bool = False) -> bool:
     """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
     array1, array2 : arraylike
         Args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, default=False
+    withnans : default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -402,31 +456,42 @@ def array_equal(array1, array2, withnans=False):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    if withnans and (array1 is array2):
-        return True
 
     def normalise_array(array):
-        if not is_lazy_data(array):
-            if not ma.isMaskedArray(array):
-                array = np.asanyarray(array)
+        if not isinstance(array, np.ndarray | da.Array):
+            array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
+    floating_point_arrays = array1.dtype.kind == "f" or array2.dtype.kind == "f"
+    if (array1 is array2) and (withnans or not floating_point_arrays):
+        return True
+
+    if not floating_point_arrays:
+        withnans = False
+
     eq = array1.shape == array2.shape
     if eq:
-        array1_masked = ma.is_masked(array1)
-        eq = array1_masked == ma.is_masked(array2)
-    if eq and array1_masked:
-        eq = np.array_equal(ma.getmaskarray(array1), ma.getmaskarray(array2))
-    if eq:
-        eqs = array1 == array2
-        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = np.all(eqs)
-        eq = bool(eq) or eq is ma.masked
+        if is_lazy_data(array1) or is_lazy_data(array2):
+            # Use a separate map and reduce operation to avoid running out of memory.
+            ndim = array1.ndim
+            indices = tuple(range(ndim))
+            eq = da.blockwise(
+                _masked_array_equal,
+                indices,
+                array1,
+                indices,
+                array2,
+                indices,
+                dtype=bool,
+                meta=np.empty((0,) * ndim, dtype=bool),
+                equal_nan=withnans,
+            ).all()
+        else:
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
-    return eq
+    return bool(eq)
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
@@ -585,15 +650,13 @@ def reverse(cube_or_array, coords_or_dims):
                 axes.update(cube_or_array.coord_dims(coord_or_dim))
             except AttributeError:
                 raise TypeError(
-                    "coords_or_dims must be int, str, coordinate "
-                    "or sequence of these."
+                    "coords_or_dims must be int, str, coordinate or sequence of these."
                 )
 
     axes = np.array(list(axes), ndmin=1)
     if axes.ndim != 1 or axes.size == 0:
         raise ValueError(
-            "Reverse was expecting a single axis or a 1d array "
-            "of axes, got %r" % axes
+            "Reverse was expecting a single axis or a 1d array of axes, got %r" % axes
         )
     if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim - 1:
         raise ValueError(
@@ -938,8 +1001,7 @@ class _MetaOrderedHashable(ABCMeta):
             if "_init" not in namespace:
                 # Create a default _init method for the class
                 method_source = (
-                    "def _init(self, %s):\n "
-                    "self._init_from_tuple((%s,))" % (args, args)
+                    "def _init(self, %s):\n self._init_from_tuple((%s,))" % (args, args)
                 )
                 exec(method_source, namespace)
 
@@ -1411,10 +1473,16 @@ def regular_points(zeroth, step, count):
     This function does maintain laziness when called; it doesn't realise data.
     See more at :doc:`/userguide/real_and_lazy_data`.
     """
-    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+
+    def make_steps(dtype: np.dtype):
+        start = np.add(zeroth, step, dtype=dtype)
+        steps = np.multiply(step, np.arange(count), dtype=dtype)
+        return np.add(start, steps, dtype=dtype)
+
+    points = make_steps(np.float32)
     _, regular = iris.util.points_step(points)
     if not regular:
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+        points = make_steps(np.float64)
     return points
 
 
@@ -1634,10 +1702,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         return
 
     if aux_coord not in cube.aux_coords:
-        msg = (
-            "Attempting to promote an AuxCoord ({}) "
-            "which does not exist in the cube."
-        )
+        msg = "Attempting to promote an AuxCoord ({}) which does not exist in the cube."
         msg = msg.format(aux_coord.name())
         raise ValueError(msg)
 
@@ -2122,20 +2187,33 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
+@overload
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
-    shape_crs: cartopy.crs = None,
-    minimum_weight: float = 0.0,
+    shape_crs: cartopy.crs | CRS,
     in_place: bool = False,
+    all_touched: bool = False,
+    invert: bool = False,
+): ...
+def mask_cube_from_shapefile(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | CRS,
+    in_place: bool = False,
+    **kwargs,
 ):
-    """Take a shape object and masks all points not touching it in a cube.
+    """Mask all points in a cube that do not intersect a shapefile object.
 
-    This function allows masking a cube with any shape object,
-    (e.g. Natural Earth Shapefiles via cartopy).
-    Finds the overlap between the `shape` and the `cube` in 2D xy space and
-    masks out any cells with less % overlap with shape than set.
-    Default behaviour is to count any overlap between shape and cell as valid
+    Mask a :class:`~iris.cube.Cube` with any shapefile object, (e.g. Natural Earth Shapefiles via cartopy).
+    Finds the overlap between the `shapefile` shape and the :class:`~iris.cube.Cube` and
+    masks out any cells that __do not__ intersect the shape.
+
+    Shapes can be polygons, lines or points.
+
+    By default, only the only cells whose center is within the polygon or that are selected by
+    Bresenham’s line algorithm (for line type shape) are kept.  This behaviour can be changed by
+    using the `all_touched=True` keyword argument. Then all cells touched by geometries are kept.
 
     Parameters
     ----------
@@ -2147,12 +2225,14 @@ def mask_cube_from_shapefile(
         because you cannot compare the area of a 1D line and 2D Cell.
     shape_crs : cartopy.crs.CRS, default=None
         The coordinate reference system of the shape object.
-    minimum_weight : float , default=0.0
-        A number between 0-1 describing what % of a cube cell area must
-        the shape overlap to include it.
     in_place : bool, default=False
         Whether to mask the `cube` in-place or return a newly masked `cube`.
         Defaults to False.
+    **kwargs
+        Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
+        Valid keyword arguments are:
+        all_touched : bool, optional
+        invert : bool, optional
 
     Returns
     -------
@@ -2177,10 +2257,41 @@ def mask_cube_from_shapefile(
     Examples
     --------
     >>> import shapely
+    >>> from pyproj import CRS
     >>> from iris.util import mask_cube_from_shapefile
+
+    Extract a rectangular region covering the UK from a stereographic projection cube:
+
+    >>> cube = iris.load_cube(iris.sample_data_path("toa_brightness_stereographic.nc"))
+    >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
+    >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
+
+    Extract a trajectory by using a line shapefile:
+
+    >>> from shapely import LineString
+    >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
+    >>> masked_cube = mask_cube_from_shapefile(cube, line, wgs84)
+
+    Standard shapely manipulations can be applied.  For example, to extract a trajectory
+    with a 1 degree buffer around it:
+
+    >>> buffer = line.buffer(1)
+    >>> masked_cube = mask_cube_from_shapefile(cube, buffer, wgs84)
+
+    You can load more complex shapes from other libraries. For example, to extract the
+    Canadian provience of Ontario from a cube:
+
+    >>> import cartopy.io.shapereader as shpreader
+    >>> admin1 = shpreader.natural_earth(resolution='110m',
+                                         category='cultural',
+                                         name='admin_1_states_provinces_lakes')
+    >>> admin1shp = shpreader.Reader(admin1).geometries()
+
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
 
     Warning
     -------
@@ -2195,7 +2306,304 @@ def mask_cube_from_shapefile(
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
 
     """
-    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight, shape_crs)
+    shapefile_mask = create_shapefile_mask(
+        geometry=shape, geometry_crs=shape_crs, cube=cube, **kwargs
+    )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
+
+
+def equalise_cubes(
+    cubes,
+    apply_all=False,
+    normalise_names=False,
+    equalise_attributes=False,
+    unify_time_units=False,
+):
+    """Modify a set of cubes to assist merge/concatenate operations.
+
+    Various different adjustments can be applied to the input cubes, to remove
+    differences which may prevent them from combining into larger cubes.  The requested
+    "equalisation" operations are applied to each group of input cubes with matching
+    cube metadata (names, units, attributes and cell-methods).
+
+    Parameters
+    ----------
+    cubes : sequence of :class:`~iris.cube.Cube`
+        The input cubes, in a list or similar.
+
+    apply_all : bool, default=False
+        Enable *all* the equalisation operations.
+
+    normalise_names : bool, default=False
+        When True, remove any redundant ``var_name`` and ``long_name`` properties,
+        leaving only one ``standard_name``, ``long_name`` or ``var_name`` per cube.
+        In this case, the adjusted names are also used when selecting input groups.
+
+    equalise_attributes : bool, default=False
+        When ``True``, apply an :func:`equalise_attributes` operation to each input
+        group.  In this case, attributes are ignored when selecting input groups.
+
+    unify_time_units : bool, default=False
+        When True, apply the :func:`unify_time_units` operation to each input group.
+        Note : while this may convert units of time reference coordinates, it does
+        not affect the units of the cubes themselves.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+        A CubeList containing the original input cubes, modified as required (in-place)
+        ready for merge or concatenate operations.
+
+    Notes
+    -----
+    All the 'equalise' operations operate in a similar fashion, in that they identify
+    and remove differences in a specific metadata element, altering metadata so that
+    a merge or concatenate can potentially combine a group of cubes into a single
+    result cube.
+
+    The various 'equalise' operations are not applied to the entire input, but to
+    groups of input cubes with the same ``cube.metadata``.
+
+    The input cube groups also depend on the equalisation operation(s) selected :
+    Operations which equalise a specific cube metadata element (names, units,
+    attributes or cell-methods) exclude that element from the input grouping criteria.
+
+    """
+    from iris.common.metadata import CubeMetadata
+    from iris.cube import CubeList
+
+    if normalise_names or apply_all:
+        # Rationalise all the cube names
+        # Note: this option operates as a special case, independent of
+        #  and *in advance of* the group selection
+        # (hence, it affects the groups which other operations are applied to)
+        for cube in cubes:
+            if cube.standard_name:
+                cube.long_name = None
+                cube.var_name = None
+            elif cube.long_name:
+                cube.var_name = None
+
+    # Snapshot the cube metadata elements which we use to identify input groups
+    # TODO: we might want to sanitise practically comparable types here ?
+    #  (e.g. large object arrays ??)
+    cube_grouping_values = [
+        {
+            field: deepcopy(getattr(cube.metadata, field))
+            for field in CubeMetadata._fields
+        }
+        for cube in cubes
+    ]
+
+    # Collect the selected operations which we are going to apply.
+    equalisation_ops = []
+
+    if equalise_attributes or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["equalise_attributes"])
+        # Prevent attributes from distinguishing input groups
+        for grouping_values in cube_grouping_values:
+            grouping_values.pop("attributes")
+
+    if unify_time_units or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["unify_time_units"])
+
+    if not equalisation_ops:
+        if not normalise_names:
+            msg = (
+                "'equalise_cubes' call does nothing, as no equalisation operations "
+                "are enabled (neither `apply_all` nor any individual keywords set)."
+            )
+            warn(msg, category=iris.warnings.IrisUserWarning)
+
+    else:
+        # NOTE: if no "equalisation_ops", nothing more to do.
+        # However, if 'unify-names' was done, we *already* modified cubes in-place.
+
+        # Group the cubes into sets with the same 'grouping values'.
+        # N.B. we *can't* use sets, or dictionary key checking, as our 'values' are not
+        #  always hashable -- e.g. especially, array attributes.
+        # I fear this can be inefficient (repeated array compare), but maybe unavoidable
+        # TODO: might something nasty happen here if attributes contain weird stuff ??
+        cubegroup_values = []
+        cubegroup_cubes = []
+        for cube, grouping_values in zip(cubes, cube_grouping_values):
+            if grouping_values not in cubegroup_values:
+                cubegroup_values.append(grouping_values)
+                cubegroup_cubes.append([cube])
+            else:
+                i_at = cubegroup_values.index(grouping_values)
+                cubegroup_cubes[i_at].append(cube)
+
+        # Apply operations to the groups : in-place modifications on the cubes
+        for group_cubes in cubegroup_cubes:
+            for op in equalisation_ops:
+                op(group_cubes)
+
+    # Return a CubeList result = the *original* cubes, as modified
+    result = CubeList(cubes)
+    return result
+
+
+def _print_xml(doc):
+    """Print xml in a standard fashion.
+
+    Modifies :meth: `xml.dom.minidom.Document.toprettyxml` to maintain backwards
+    compatibilitiy with the way Iris expects arrays to be represented. Changes to
+    xml introduced with https://github.com/python/cpython/pull/107947 mean that
+    newlines in attributes are escaped by default. This reverts to the old behaviour
+    by replacing the escaped newlines with proper newlines.
+
+    Parameters
+    ----------
+    doc : :class: `xml.dom.minidom.Document`
+        The xml document to be printed.
+
+    Returns
+    -------
+    str
+        Standard string representation of xml document.
+    """
+    result = doc.toprettyxml(indent="  ")
+    return result.replace("&#10;", "\n")
+
+
+def _combine_options_asdict(options: str | dict | None) -> dict:
+    """Convert any valid combine options into an options dictionary."""
+    from iris import COMBINE_POLICY
+
+    if options is None:
+        opts_dict = COMBINE_POLICY.settings()
+    elif isinstance(options, dict):
+        opts_dict = options
+    elif isinstance(options, str):
+        if options in COMBINE_POLICY.SETTINGS:
+            opts_dict = COMBINE_POLICY.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(COMBINE_POLICY.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    return opts_dict
+
+
+def combine_cubes(
+    cubes: List[Cube],
+    options: str | dict | None = None,
+    **kwargs,
+) -> CubeList:
+    """Combine cubes, according to "combine options".
+
+    Applies a combination of :meth:`~iris.util.equalise_cubes`,
+    :meth:`~iris.cube.CubeList.merge` and/or :meth:`~iris.cube.CubeList.concatenate`
+    steps to the given cubes, as determined by the given settings (from `options` and
+    `kwargs`).
+
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
+        A list of cubes to combine.
+
+    options : str or dict, optional
+        Either a standard "combine settings" name, i.e. one of the
+        :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+        settings options, as described for :class:`~iris.CombineOptions`.
+        Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+        :data:`iris.COMBINE_POLICY`.
+
+    kwargs : dict
+        Individual option setting values, i.e. values for keys named in
+        :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+        :meth:`~iris.CombineOptions.set`.  These take precedence over those set by the
+        `options` arg.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+
+    Notes
+    -----
+        A ``support_multiple_references`` option will be accepted as valid, but will
+        have *no* effect on :func:`combine_cubes` because this option only acts during
+        load operations.
+
+
+    Examples
+    --------
+    .. testsetup::
+
+        import numpy as np
+        from iris.cube import Cube, CubeList
+        from iris.coords import DimCoord
+        from iris.util import combine_cubes
+
+        def testcube(timepts):
+            cube = Cube(np.array(timepts))
+            cube.add_dim_coord(
+                DimCoord(timepts, standard_name="time", units="days since 1990-01-01"),
+                0
+            )
+            return cube
+
+        cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+        combinecubes_old_policysettings = iris.COMBINE_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore old state to avoid upsetting other tests
+        iris.COMBINE_POLICY.set(combinecubes_old_policysettings)
+
+    >>> # Take a pair of sample cubes which can concatenate together
+    >>> print(cubes)
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> print([cube.coord("time").points for cube in cubes])
+    [array([1., 2.]), array([13., 14., 15.])]
+
+    >>> # Show these do NOT combine with the "default" action, which only merges ..
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... however, they **do** combine if you enable concatenation
+    >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
+    0: unknown / (unknown)                 (time: 5)
+    >>> # ... which may be controlled by various means
+    >>> iris.COMBINE_POLICY.set("recommended")
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # Also, show how a differing attribute will block cube combination
+    >>> cubes[0].attributes["x"] = 3
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... which can then be fixed by enabling attribute equalisation
+    >>> with iris.COMBINE_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    ...     print(combine_cubes(cubes))
+    ...
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # .. BUT NOTE : this modifies the original input cubes
+    >>> print(cubes[0].attributes.get("x"))
+    None
+
+    """
+    from iris._combine import _combine_cubes
+
+    opts_dict = _combine_options_asdict(options)
+    if kwargs is not None:
+        opts_dict = opts_dict.copy()  # avoid changing original
+        opts_dict.update(kwargs)
+
+    return _combine_cubes(cubes, opts_dict)

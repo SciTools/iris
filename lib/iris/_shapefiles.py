@@ -3,56 +3,71 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# Much of this code is originally based off the ASCEND library, developed in
-# the Met Office by Chris Kent, Emilie Vanvyve, David Bentley, Joana Mendes
-# many thanks to them. Converted for Iris by Alex Chamberlain-Clay with subsequent
-# additions from Hamish Steptoe.               
+from __future__ import annotations
 
-
+import importlib
 from itertools import product
+import sys
+from typing import overload
 import warnings
 
-import cartopy
+from affine import Affine
 import numpy as np
+from pyproj import CRS, Transformer
+import rasterio.features as rfeatures
+import rasterio.transform as rtransform
+import rasterio.warp as rwarp
 import shapely
 import shapely.errors
 import shapely.geometry as sgeom
-import shapely.ops
+import shapely.ops as sops
 
-from iris.cube import Cube, CubeList
-import iris.analysis.cartography
+import iris
 from iris.warnings import IrisDefaultingWarning, IrisUserWarning
 
+if "iris.cube" in sys.modules:
+    import iris.cube
+if "iris.analysis.cartography" in sys.modules:
+    import iris.analysis.cartography
 
+
+@overload
 def create_shapefile_mask(
     geometry: shapely.Geometry,
+    geometry_crs: cartopy.crs | CRS,
     cube: iris.cube.Cube,
-    minimum_weight: float = 0.0,
-    geometry_crs: cartopy.crs = None,
+    all_touched: bool = False,
+    invert: bool = False,
+) -> np.array: ...
+def create_shapefile_mask(
+    geometry: shapely.Geometry,
+    geometry_crs: cartopy.crs | CRS,
+    cube: iris.cube.Cube,
+    **kwargs,
 ) -> np.array:
     """Make a mask for a cube from a shape.
 
     Get the mask of the intersection between the
     given shapely geometry and cube with x/y DimCoords.
-    Can take a minimum weight and evaluate area overlaps instead
+    Can take a minimum weight and evaluate area overlaps instead.
+
+    Transforming is performed by GDAL warp.
 
     Parameters
     ----------
     geometry : :class:`shapely.Geometry`
-    cube : :class:`iris.cube.Cube`
-        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
-    minimum_weight : float, default 0.0
-        A float between 0 and 1 determining what % of a cell
-        a shape must cover for the cell to remain unmasked.
-        eg: 0.1 means that at least 10% of the shape overlaps the cell
-        to be unmasked.
-        Requires geometry to be a Polygon or MultiPolygon
-        Defaults to 0.0 (eg only test intersection).
     geometry_crs : :class:`cartopy.crs`, optional
         A :class:`~iris.coord_systems` object describing
         the coord_system of the shapefile. Defaults to None,
         in which case the geometry_crs is assumed to be the
-        same as the `cube`.
+        same as the :class:`iris.cube.Cube`.
+    cube : :class:`iris.cube.Cube`
+        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
+    **kwargs :
+        Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
+        Valid keyword arguments are:
+        all_touched : bool, optional
+        invert : bool, optional
 
     Returns
     -------
@@ -60,160 +75,217 @@ def create_shapefile_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
 
+    Raises
+    ------
+    TypeError
+        If the cube is not a :class:`~iris.cube.Cube`.
+    ValueError
+        If the :class:`~iris.cube.Cube` has a semi-structured model grid.
+
     Notes
     -----
-    For best masking results, both the cube _and_ masking geometry should have a
+    For best masking results, both the :class:`iris.cube.Cube` _and_ masking geometry should have a
     coordinate reference system (CRS) defined. Masking results will be most reliable
-    when the cube and masking geometry have the same CRS.
+    when the :class:`iris.cube.Cube` and masking geometry have the same CRS.
 
-    If the cube has no coord_system, the default GeogCS is used where
+    Where the :class:`iris.cube.Cube` CRS and the geometry CRS differ, the geometry will be
+    transformed to the cube CRS using the pyproj library. This is a best-effort
+    transformation and may not be perfect, especially for complex geometries and
+    non-standard coordinate referece systems. Consult the `pyproj documentation`_ for
+    more information.
+
+    If the :class:`iris.cube.Cube` has no :class:`~iris.coord_systems`, the default GeogCS is used where
     the coordinate units are degrees. For any other coordinate units,
-    the cube **must** have a coord_system defined.
+    the cube **must** have a :class:`~iris.coord_systems` defined.
 
-    If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
+    If a CRS is not provided for the the masking geometry, the CRS of the :class:`iris.cube.Cube` is assumed.
+
+    Warning
+    -------
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function to avoid unexpected masking behaviour.
+
+    Shape geometries can be checked prior to masking using the :func:`is_geometry_valid`.
+
+    See Also
+    --------
+    :func:`is_geometry_valid`
+
+    .. _`pyproj documentation`: https://pyproj4.github.io/pyproj/stable/api/transformer.html#pyproj-transformer
     """
-    try:
-        msg = "Geometry is not a valid Shapely object"
-        if not shapely.is_valid(geometry):
-            raise TypeError(msg)
-    except Exception:
-        raise TypeError(msg)
-    if not isinstance(cube, Cube):
-        if isinstance(cube, CubeList):
+    # Check validity of geometry CRS
+    is_geometry_valid(geometry, geometry_crs)
+
+    # Check cube is a Cube
+    if not isinstance(cube, iris.cube.Cube):
+        if isinstance(cube, iris.cube.CubeList):
             msg = "Received CubeList object rather than Cube - \
             to mask a CubeList iterate over each Cube"
             raise TypeError(msg)
         else:
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
-    if minimum_weight > 0.0 and isinstance(
-        geometry,
-        (
-            sgeom.Point,
-            sgeom.LineString,
-            sgeom.LinearRing,
-            sgeom.MultiPoint,
-            sgeom.MultiLineString,
-        ),
-    ):
-        minimum_weight = 0.0
-        warnings.warn(
-            """Shape is of invalid type for minimum weight masking,
-            must use a Polygon rather than Line shape.\n
-              Masking based off intersection instead. """,
-            category=IrisDefaultingWarning,
-        )
 
-    # prepare 2D cube
+    # Get cube coordinates
     y_name, x_name = _cube_primary_xy_coord_names(cube)
-    cube_2d = cube.slices([y_name, x_name]).next()
-    for coord in cube_2d.dim_coords:
-        if not coord.has_bounds():
-            coord.guess_bounds()
-    trans_geo = _transform_coord_system(geometry, cube_2d)
+    # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
+    if (cube.coord(x_name).units.origin == "degrees") and (
+        cube.coord(x_name).points.max() > 180
+    ):
+        # Convert to [-180, 180] domain
+        cube = cube.intersection(iris.coords.CoordExtent(x_name, -180, 180))
 
-    y_coord, x_coord = [cube_2d.coord(n) for n in (y_name, x_name)]
-    x_bounds = _get_mod_rebased_coord_bounds(x_coord)
-    y_bounds = _get_mod_rebased_coord_bounds(y_coord)
-    # prepare array for dark
-    box_template = [
-        sgeom.box(x[0], y[0], x[1], y[1]) for x, y in product(x_bounds, y_bounds)
-    ]
-    # shapely can do lazy evaluation of intersections if it's given a list of grid box shapes
-    # delayed lets us do it in parallel
-    intersect_template = shapely.intersects(trans_geo, box_template)
-    # we want areas not under shapefile to be True (to mask)
-    intersect_template = np.invert(intersect_template)
-    # now calc area overlaps if doing weights and adjust mask
-    if minimum_weight > 0.0:
-        intersections = np.array(box_template)[~intersect_template]
-        intersect_template[~intersect_template] = [
-            trans_geo.intersection(box).area / box.area <= minimum_weight
-            for box in intersections
-        ]
-    mask_template = np.reshape(intersect_template, cube_2d.shape[::-1]).T
+    # Check for CRS equality and transform if necessary
+    cube_crs = cube.coord_system().as_cartopy_projection()
+    if not geometry_crs.equals(cube_crs):
+        transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
+        warnings.warn(transform_warning_msg, category=iris.warnings.IrisUserWarning)
+        # Set-up transform via pyproj
+        t = Transformer.from_crs(
+            crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
+        ).transform
+        # Transform geometry
+        geometry = shapely.ops.transform(t, geometry)
+        # Recheck geometry validity
+        if not shapely.is_valid(geometry):
+            msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
+            raise TypeError(msg)
+
+    x_points = cube.coord(x_name).points
+    y_points = cube.coord(y_name).points
+    dx = iris.util.regular_step(cube.coord(x_name))
+    dy = iris.util.regular_step(cube.coord(y_name))
+    w = len(x_points)
+    h = len(y_points)
+
+    # Define raster transform based on cube
+    # This maps the geometry domain onto the cube domain
+    trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
+    scale = Affine.scale(dx, dy)
+    tr = trans * scale
+
+    # Generate mask from geometry
+    mask_template = rfeatures.geometry_mask(
+        geometries=shapely.get_parts(geometry),
+        out_shape=(h, w),
+        transform=tr,
+        **kwargs,
+    )
+
+    # If cube was on circular domain, then the transformed
+    # mask template needs shifting to match the cube domain
+    if cube.coord(x_name).circular:
+        mask_template = np.roll(mask_template, w // 2, axis=1)
+
     return mask_template
 
 
-def _transform_coord_system(
-    geometry: shapely.Geometry, cube: iris.cube.Cube, geometry_crs: cartopy.crs = None
-) -> shapely.Geometry:
-    """Project the shape onto another coordinate system.
+def is_geometry_valid(
+    geometry: shapely.Geometry,
+    geometry_crs: cartopy.crs,
+) -> None:
+    """Check the validity of the shape geometry.
+
+    This function checks that:
+    1) The geometry is a valid shapely geometry.
+    2) The geometry falls within bounds equivalent to
+       lon = [-180, 180] and lat = [-90, 90].
+    3) The geometry does not cross the antimeridian,
+        based on the assumption that the shape will
+        cross the antimeridian if the difference between
+        the shape bound longitudes is greater than 180.
+    4) The geometry does not cross the poles.
 
     Parameters
     ----------
-    geometry : :class:`shapely.Geometry`
-    cube : :class:`iris.cube.Cube`
-        :class:`~iris.cube.Cube` with the coord_system to be projected to and
-        a x coordinate.
-    geometry_crs : :class:`cartopy.crs`, optional
-        A :class:`cartopy.crs` object describing
-        the coord_system of the shapefile. Defaults to None,
-        in which case the geometry_crs is assumed to be the
-        same as the `cube`.
+    geometry : :class:`shapely.geometry.base.BaseGeometry`
+        The geometry to check.
+    geometry_crs : :class:`cartopy.crs`
+        The coordinate reference system of the geometry.
 
     Returns
     -------
-    :class:`shapely.Geometry`
-        A transformed copy of the provided :class:`shapely.Geometry`.
+    None if the geometry is valid.OSTN15_NTv2OSGBtoETRS.gsb
 
+    Raises
+    ------
+    TypeError
+        If the geometry is not a valid shapely geometry.
+    ValueError
+        If the geometry is not valid for the given coordinate system.
+        This most likely occurs when the geometry coordinates are not within the bounds of the
+        geometry coordinates reference system.
+    ValueError
+        If the geometry crosses the antimeridian.
+    ValueError
+        If the geometry crosses the poles.
+
+    Examples
+    --------
+    >>> from shapely.geometry import box
+    >>> from pyproj import CRS
+    >>> from iris._shapefiles import is_geometry_valid
+
+    Create a valid geometry covering Canada, and check
+    its validity for the WGS84 coordinate system:
+
+    >>> canada = box(-143.5,42.6,-37.8,84.0)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> is_geometry_valid(canada, wgs84)
+
+    The function returns silently as the geometry is valid.
+
+    Now create an invalid geometry covering the Bering Sea,
+    and check its validity for the WGS84 coordinate system.
+
+    >>> bering_sea = box(148.42,49.1,-138.74,73.12)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> is_geometry_valid(bering_sea, wgs84) # doctest: +IGNORE_EXCEPTION_DETAIL
+    Traceback (most recent call last)
+    ValueError: Geometry crossing the 180th meridian is not supported.
     """
-    _, x_name = _cube_primary_xy_coord_names(cube)
+    WGS84_crs = CRS.from_epsg(4326)
 
-    target_system = cube.coord_system().as_cartopy_projection()
-    if not target_system:
-        # If no cube coord_system do our best to guess...
-        if (
-            cube.coord(axis="x").units == "degrees"
-            and cube.coord(axis="y").units == "degrees"
-        ):
-            # If units of degrees assume GeogCS
-            target_system = iris.coord_systems.GeogCS(
-                iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-            )
-            warnings.warn(
-                "Cube has no coord_system; using default GeogCS lat/lon.",
-                category=IrisDefaultingWarning,
-            )
-        else:
-            # For any other units, don't guess and raise an error
-            target_system = iris.coord_systems.GeogCS(
-                iris.analysis.cartography.DEFAULT_SPHERICAL_EARTH_RADIUS
-            )
-            raise ValueError("Cube has no coord_system; cannot guess coord_system!")
+    # Check geometry is valid shapely geometry
+    if not shapely.is_valid(geometry):
+        msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
+        raise TypeError(msg)
 
-    if not geometry_crs:
-        # If no geometry_crs assume it has the cube coord_system
-        geometry_crs = target_system
-        warnings.warn(
-            "No geometry coordinate reference system specified; using cube coord_system instead.",
-            category=IrisDefaultingWarning,
-        )
+    # Check that the geometry is within the bounds of the coordinate system
+    # If the geometry is not in WGS84, transform the geometry to WGS84
+    # This is more reliable than transforming the lon_lat_bounds to the geometry CRS
+    lon_lat_bounds = shapely.geometry.Polygon.from_bounds(
+        xmin=-180.0, ymin=-90.0, xmax=180.0, ymax=90.0
+    )
+    if not geometry_crs.equals(WGS84_crs):
+        # Make pyproj transformer
+        # Transforms the input geometry to the WGS84 coordinate system
+        t = Transformer.from_crs(geometry_crs, WGS84_crs, always_xy=True).transform
+        geometry = shapely.ops.transform(t, geometry)
 
-    trans_geometry = target_proj.project_geometry(geometry, source_proj)
+    geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
+    if not geom_valid.all():
+        msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. \nCheck that your coordinates are correctly specified."
+        raise ValueError(msg)
 
-    # A GeogCS in iris can be either -180 to 180 or 0 to 360. If cube is 0-360, shift geom to match
-    if (
-        isinstance(target_system, iris.coord_systems.GeogCS)
-        and cube.coord(x_name).points[-1] > 180
-    ):
-        # chop geom at 0 degree line very finely then transform
-        prime_meridian_line = shapely.LineString([(0, 90), (0, -90)])
-        trans_geometry = trans_geometry.difference(prime_meridian_line.buffer(0.00001))
-        trans_geometry = shapely.transform(trans_geometry, _trans_func)
+    # Check if shape crosses the 180th meridian (or equivalent)
+    if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
+        msg = "Geometry crossing the antimeridian is not supported."
+        raise ValueError(msg)
 
-    return trans_geometry
+    # Check if the geometry crosses the poles
+    npole = sgeom.Point(0, 90)
+    spole = sgeom.Point(0, -90)
+    if geometry.intersects(npole) or geometry.intersects(spole):
+        msg = "Geometry crossing the poles is not supported."
+        raise ValueError(msg)
+
+    return
 
 
-def _trans_func(geometry):
-    """Pocket function for transforming the x coord of a geometry from -180 to 180 to 0-360."""
-    for point in geometry:
-        if point[0] < 0:
-            point[0] = 360 - np.abs(point[0])
-    return geometry
-
-
-def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple:
+def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     """Return the primary latitude and longitude coordinate names, or long names, from a cube.
 
     Parameters
@@ -244,27 +316,3 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
-
-
-def _get_mod_rebased_coord_bounds(coord: iris.coords.Coord) -> np.array:
-    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
-
-    Parameters
-    ----------
-    coord : :class:`iris.coords.Coord`
-        An Iris coordinate with a modulus.
-
-    Returns
-    -------
-    :class:`np.array`
-        A 1d Numpy array of [start,end] pairs for bounds of the coord.
-
-    """
-    modulus = coord.units.modulus
-    # Force realisation (rather than core_bounds) - more efficient for the
-    #  repeated indexing happening downstream.
-    result = np.array(coord.bounds)
-    if modulus:
-        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
-        result[np.isclose(result, modulus, 1e-10)] = 0.0
-    return result

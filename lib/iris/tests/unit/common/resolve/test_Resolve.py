@@ -4,17 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.common.resolve.Resolve`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from collections import namedtuple
 from copy import deepcopy
-import unittest.mock as mock
-from unittest.mock import Mock, sentinel
+from unittest import mock
 
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris.common.lenient import LENIENT
 from iris.common.metadata import CubeMetadata
@@ -32,137 +28,140 @@ from iris.coords import DimCoord
 from iris.cube import Cube
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         target = "iris.common.resolve.Resolve.__call__"
-        self.m_call = mock.MagicMock(return_value=sentinel.return_value)
-        _ = self.patch(target, new=self.m_call)
+        self.m_call = mocker.MagicMock(return_value=mocker.sentinel.return_value)
+        mocker.patch(target, new=self.m_call)
 
     def _assert_members_none(self, resolve):
-        self.assertIsNone(resolve.lhs_cube_resolved)
-        self.assertIsNone(resolve.rhs_cube_resolved)
-        self.assertIsNone(resolve.lhs_cube_category)
-        self.assertIsNone(resolve.rhs_cube_category)
-        self.assertIsNone(resolve.lhs_cube_category_local)
-        self.assertIsNone(resolve.rhs_cube_category_local)
-        self.assertIsNone(resolve.category_common)
-        self.assertIsNone(resolve.lhs_cube_dim_coverage)
-        self.assertIsNone(resolve.lhs_cube_aux_coverage)
-        self.assertIsNone(resolve.rhs_cube_dim_coverage)
-        self.assertIsNone(resolve.rhs_cube_aux_coverage)
-        self.assertIsNone(resolve.map_rhs_to_lhs)
-        self.assertIsNone(resolve.mapping)
-        self.assertIsNone(resolve.prepared_category)
-        self.assertIsNone(resolve.prepared_factories)
-        self.assertIsNone(resolve._broadcast_shape)
+        assert resolve.lhs_cube_resolved is None
+        assert resolve.rhs_cube_resolved is None
+        assert resolve.lhs_cube_category is None
+        assert resolve.rhs_cube_category is None
+        assert resolve.lhs_cube_category_local is None
+        assert resolve.rhs_cube_category_local is None
+        assert resolve.category_common is None
+        assert resolve.lhs_cube_dim_coverage is None
+        assert resolve.lhs_cube_aux_coverage is None
+        assert resolve.rhs_cube_dim_coverage is None
+        assert resolve.rhs_cube_aux_coverage is None
+        assert resolve.map_rhs_to_lhs is None
+        assert resolve.mapping is None
+        assert resolve.prepared_category is None
+        assert resolve.prepared_factories is None
+        assert resolve._broadcast_shape is None
 
     def test_lhs_rhs_default(self):
         resolve = Resolve()
-        self.assertIsNone(resolve.lhs_cube)
-        self.assertIsNone(resolve.rhs_cube)
+        assert resolve.lhs_cube is None
+        assert resolve.rhs_cube is None
         self._assert_members_none(resolve)
-        self.assertEqual(0, self.m_call.call_count)
+        assert self.m_call.call_count == 0
 
-    def test_lhs_rhs_provided(self):
-        m_lhs = sentinel.lhs
-        m_rhs = sentinel.rhs
+    def test_lhs_rhs_provided(self, mocker):
+        m_lhs = mocker.sentinel.lhs
+        m_rhs = mocker.sentinel.rhs
         resolve = Resolve(lhs=m_lhs, rhs=m_rhs)
         # The lhs_cube and rhs_cube are only None due
         # to __call__ being mocked. See Test___call__
         # for appropriate test coverage.
-        self.assertIsNone(resolve.lhs_cube)
-        self.assertIsNone(resolve.rhs_cube)
+        assert resolve.lhs_cube is None
+        assert resolve.rhs_cube is None
         self._assert_members_none(resolve)
-        self.assertEqual(1, self.m_call.call_count)
-        call_args = mock.call(m_lhs, m_rhs)
-        self.assertEqual(call_args, self.m_call.call_args)
+        assert self.m_call.call_count == 1
+        call_args = mocker.call(m_lhs, m_rhs)
+        assert self.m_call.call_args == call_args
 
 
-class Test___call__(tests.IrisTest):
-    def setUp(self):
-        self.m_lhs = mock.MagicMock(spec=Cube)
-        self.m_rhs = mock.MagicMock(spec=Cube)
+class Test___call__:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.m_lhs = mocker.MagicMock(spec=Cube)
+        self.m_rhs = mocker.MagicMock(spec=Cube)
         target = "iris.common.resolve.Resolve.{method}"
         method = target.format(method="_metadata_resolve")
-        self.m_metadata_resolve = self.patch(method)
+        self.m_metadata_resolve = mocker.patch(method)
         method = target.format(method="_metadata_coverage")
-        self.m_metadata_coverage = self.patch(method)
+        self.m_metadata_coverage = mocker.patch(method)
         method = target.format(method="_metadata_mapping")
-        self.m_metadata_mapping = self.patch(method)
+        self.m_metadata_mapping = mocker.patch(method)
         method = target.format(method="_metadata_prepare")
-        self.m_metadata_prepare = self.patch(method)
+        self.m_metadata_prepare = mocker.patch(method)
 
     def test_lhs_not_cube(self):
         emsg = "'LHS' argument to be a 'Cube'"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             _ = Resolve(rhs=self.m_rhs)
 
     def test_rhs_not_cube(self):
         emsg = "'RHS' argument to be a 'Cube'"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             _ = Resolve(lhs=self.m_lhs)
 
     def _assert_called_metadata_methods(self):
         call_args = mock.call()
-        self.assertEqual(1, self.m_metadata_resolve.call_count)
-        self.assertEqual(call_args, self.m_metadata_resolve.call_args)
-        self.assertEqual(1, self.m_metadata_coverage.call_count)
-        self.assertEqual(call_args, self.m_metadata_coverage.call_args)
-        self.assertEqual(1, self.m_metadata_mapping.call_count)
-        self.assertEqual(call_args, self.m_metadata_mapping.call_args)
-        self.assertEqual(1, self.m_metadata_prepare.call_count)
-        self.assertEqual(call_args, self.m_metadata_prepare.call_args)
+        assert self.m_metadata_resolve.call_count == 1
+        assert self.m_metadata_resolve.call_args == call_args
+        assert self.m_metadata_coverage.call_count == 1
+        assert self.m_metadata_coverage.call_args == call_args
+        assert self.m_metadata_mapping.call_count == 1
+        assert self.m_metadata_mapping.call_args == call_args
+        assert self.m_metadata_prepare.call_count == 1
+        assert self.m_metadata_prepare.call_args == call_args
 
     def test_map_rhs_to_lhs__less_than(self):
         self.m_lhs.ndim = 2
         self.m_rhs.ndim = 1
         resolve = Resolve(lhs=self.m_lhs, rhs=self.m_rhs)
-        self.assertEqual(self.m_lhs, resolve.lhs_cube)
-        self.assertEqual(self.m_rhs, resolve.rhs_cube)
-        self.assertTrue(resolve.map_rhs_to_lhs)
+        assert resolve.lhs_cube == self.m_lhs
+        assert resolve.rhs_cube == self.m_rhs
+        assert resolve.map_rhs_to_lhs
         self._assert_called_metadata_methods()
 
     def test_map_rhs_to_lhs__equal(self):
         self.m_lhs.ndim = 2
         self.m_rhs.ndim = 2
         resolve = Resolve(lhs=self.m_lhs, rhs=self.m_rhs)
-        self.assertEqual(self.m_lhs, resolve.lhs_cube)
-        self.assertEqual(self.m_rhs, resolve.rhs_cube)
-        self.assertTrue(resolve.map_rhs_to_lhs)
+        assert resolve.lhs_cube == self.m_lhs
+        assert resolve.rhs_cube == self.m_rhs
+        assert resolve.map_rhs_to_lhs
         self._assert_called_metadata_methods()
 
     def test_map_lhs_to_rhs(self):
         self.m_lhs.ndim = 2
         self.m_rhs.ndim = 3
         resolve = Resolve(lhs=self.m_lhs, rhs=self.m_rhs)
-        self.assertEqual(self.m_lhs, resolve.lhs_cube)
-        self.assertEqual(self.m_rhs, resolve.rhs_cube)
-        self.assertFalse(resolve.map_rhs_to_lhs)
+        assert resolve.lhs_cube == self.m_lhs
+        assert resolve.rhs_cube == self.m_rhs
+        assert not resolve.map_rhs_to_lhs
         self._assert_called_metadata_methods()
 
 
-class Test__categorise_items(tests.IrisTest):
-    def setUp(self):
+class Test__categorise_items:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.coord_dims = {}
         # configure dim coords
-        coord = mock.Mock(metadata=sentinel.dim_metadata1)
+        coord = mocker.Mock(metadata=mocker.sentinel.dim_metadata1)
         self.dim_coords = [coord]
-        self.coord_dims[coord] = sentinel.dims1
+        self.coord_dims[coord] = mocker.sentinel.dims1
         # configure aux and scalar coords
         self.aux_coords = []
         pairs = [
-            (sentinel.aux_metadata2, sentinel.dims2),
-            (sentinel.aux_metadata3, sentinel.dims3),
-            (sentinel.scalar_metadata4, None),
-            (sentinel.scalar_metadata5, None),
-            (sentinel.scalar_metadata6, None),
+            (mocker.sentinel.aux_metadata2, mocker.sentinel.dims2),
+            (mocker.sentinel.aux_metadata3, mocker.sentinel.dims3),
+            (mocker.sentinel.scalar_metadata4, None),
+            (mocker.sentinel.scalar_metadata5, None),
+            (mocker.sentinel.scalar_metadata6, None),
         ]
         for metadata, dims in pairs:
-            coord = mock.Mock(metadata=metadata)
+            coord = mocker.Mock(metadata=metadata)
             self.aux_coords.append(coord)
             self.coord_dims[coord] = dims
         func = lambda coord: self.coord_dims[coord]
-        self.cube = mock.Mock(
+        self.cube = mocker.Mock(
             aux_coords=self.aux_coords,
             dim_coords=self.dim_coords,
             coord_dims=func,
@@ -170,19 +169,19 @@ class Test__categorise_items(tests.IrisTest):
 
     def test(self):
         result = Resolve._categorise_items(self.cube)
-        self.assertIsInstance(result, _CategoryItems)
-        self.assertEqual(1, len(result.items_dim))
+        assert isinstance(result, _CategoryItems)
+        assert len(result.items_dim) == 1
         # check dim coords
         for item in result.items_dim:
-            self.assertIsInstance(item, _Item)
+            assert isinstance(item, _Item)
         (coord,) = self.dim_coords
         dims = self.coord_dims[coord]
         expected = [_Item(metadata=coord.metadata, coord=coord, dims=dims)]
-        self.assertEqual(expected, result.items_dim)
+        assert result.items_dim == expected
         # check aux coords
-        self.assertEqual(2, len(result.items_aux))
+        assert len(result.items_aux) == 2
         for item in result.items_aux:
-            self.assertIsInstance(item, _Item)
+            assert isinstance(item, _Item)
         expected_aux, expected_scalar = [], []
         for coord in self.aux_coords:
             dims = self.coord_dims[coord]
@@ -191,19 +190,20 @@ class Test__categorise_items(tests.IrisTest):
                 expected_aux.append(item)
             else:
                 expected_scalar.append(item)
-        self.assertEqual(expected_aux, result.items_aux)
+        assert result.items_aux == expected_aux
         # check scalar coords
-        self.assertEqual(3, len(result.items_scalar))
+        assert len(result.items_scalar) == 3
         for item in result.items_scalar:
-            self.assertIsInstance(item, _Item)
-        self.assertEqual(expected_scalar, result.items_scalar)
+            assert isinstance(item, _Item)
+        assert result.items_scalar == expected_scalar
 
 
-class Test__metadata_resolve(tests.IrisTest):
-    def setUp(self):
+class Test__metadata_resolve:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.target = "iris.common.resolve.Resolve._categorise_items"
-        self.m_lhs_cube = sentinel.lhs_cube
-        self.m_rhs_cube = sentinel.rhs_cube
+        self.m_lhs_cube = mocker.sentinel.lhs_cube
+        self.m_rhs_cube = mocker.sentinel.rhs_cube
 
     @staticmethod
     def _create_items(pairs):
@@ -219,72 +219,72 @@ class Test__metadata_resolve(tests.IrisTest):
             result.append(item)
         return result
 
-    def test_metadata_same(self):
+    def test_metadata_same(self, mocker):
         category = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # configure dim coords
-        pairs = [(sentinel.dim_metadata1, sentinel.dims1)]
+        pairs = [(mocker.sentinel.dim_metadata1, mocker.sentinel.dims1)]
         category.items_dim.extend(self._create_items(pairs))
         # configure aux coords
         pairs = [
-            (sentinel.aux_metadata1, sentinel.dims2),
-            (sentinel.aux_metadata2, sentinel.dims3),
+            (mocker.sentinel.aux_metadata1, mocker.sentinel.dims2),
+            (mocker.sentinel.aux_metadata2, mocker.sentinel.dims3),
         ]
         category.items_aux.extend(self._create_items(pairs))
         # configure scalar coords
         pairs = [
-            (sentinel.scalar_metadata1, None),
-            (sentinel.scalar_metadata2, None),
-            (sentinel.scalar_metadata3, None),
+            (mocker.sentinel.scalar_metadata1, None),
+            (mocker.sentinel.scalar_metadata2, None),
+            (mocker.sentinel.scalar_metadata3, None),
         ]
         category.items_scalar.extend(self._create_items(pairs))
 
         side_effect = (category, category)
-        mocker = self.patch(self.target, side_effect=side_effect)
+        patcher = mocker.patch(self.target, side_effect=side_effect)
 
         resolve = Resolve()
-        self.assertIsNone(resolve.lhs_cube)
-        self.assertIsNone(resolve.rhs_cube)
-        self.assertIsNone(resolve.lhs_cube_category)
-        self.assertIsNone(resolve.rhs_cube_category)
-        self.assertIsNone(resolve.lhs_cube_category_local)
-        self.assertIsNone(resolve.rhs_cube_category_local)
-        self.assertIsNone(resolve.category_common)
+        assert resolve.lhs_cube is None
+        assert resolve.rhs_cube is None
+        assert resolve.lhs_cube_category is None
+        assert resolve.rhs_cube_category is None
+        assert resolve.lhs_cube_category_local is None
+        assert resolve.rhs_cube_category_local is None
+        assert resolve.category_common is None
 
         # require to explicitly configure cubes
         resolve.lhs_cube = self.m_lhs_cube
         resolve.rhs_cube = self.m_rhs_cube
         resolve._metadata_resolve()
 
-        self.assertEqual(mocker.call_count, 2)
-        calls = [mock.call(self.m_lhs_cube), mock.call(self.m_rhs_cube)]
-        self.assertEqual(calls, mocker.call_args_list)
+        assert patcher.call_count == 2
+        calls = [mocker.call(self.m_lhs_cube), mocker.call(self.m_rhs_cube)]
+        assert patcher.call_args_list == calls
 
-        self.assertEqual(category, resolve.lhs_cube_category)
-        self.assertEqual(category, resolve.rhs_cube_category)
+        assert resolve.lhs_cube_category == category
+        assert resolve.rhs_cube_category == category
         expected = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
-        self.assertEqual(expected, resolve.lhs_cube_category_local)
-        self.assertEqual(expected, resolve.rhs_cube_category_local)
-        self.assertEqual(category, resolve.category_common)
+        assert resolve.lhs_cube_category_local == expected
+        assert resolve.rhs_cube_category_local == expected
+        assert resolve.category_common == category
 
-    def test_metadata_overlap(self):
+    def test_metadata_overlap(self, mocker):
         # configure the lhs cube category
         category_lhs = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # configure dim coords
         pairs = [
-            (sentinel.dim_metadata1, sentinel.dims1),
-            (sentinel.dim_metadata2, sentinel.dims2),
+            (mocker.sentinel.dim_metadata1, mocker.sentinel.dims1),
+            (mocker.sentinel.dim_metadata2, mocker.sentinel.dims2),
         ]
         category_lhs.items_dim.extend(self._create_items(pairs))
         # configure aux coords
         pairs = [
-            (sentinel.aux_metadata1, sentinel.dims3),
-            (sentinel.aux_metadata2, sentinel.dims4),
+            (mocker.sentinel.aux_metadata1, mocker.sentinel.dims3),
+            (mocker.sentinel.aux_metadata2, mocker.sentinel.dims4),
         ]
         category_lhs.items_aux.extend(self._create_items(pairs))
         # configure scalar coords
         pairs = [
-            (sentinel.scalar_metadata1, None),
-            (sentinel.scalar_metadata2, None),
+            (mocker.sentinel.scalar_metadata1, None),
+            (mocker.sentinel.scalar_metadata2, None),
         ]
         category_lhs.items_scalar.extend(self._create_items(pairs))
 
@@ -292,40 +292,40 @@ class Test__metadata_resolve(tests.IrisTest):
         category_rhs = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # configure dim coords
         category_rhs.items_dim.append(category_lhs.items_dim[0])
-        pairs = [(sentinel.dim_metadata200, sentinel.dims2)]
+        pairs = [(mocker.sentinel.dim_metadata200, mocker.sentinel.dims2)]
         category_rhs.items_dim.extend(self._create_items(pairs))
         # configure aux coords
         category_rhs.items_aux.append(category_lhs.items_aux[0])
-        pairs = [(sentinel.aux_metadata200, sentinel.dims4)]
+        pairs = [(mocker.sentinel.aux_metadata200, mocker.sentinel.dims4)]
         category_rhs.items_aux.extend(self._create_items(pairs))
         # configure scalar coords
         category_rhs.items_scalar.append(category_lhs.items_scalar[0])
-        pairs = [(sentinel.scalar_metadata200, None)]
+        pairs = [(mocker.sentinel.scalar_metadata200, None)]
         category_rhs.items_scalar.extend(self._create_items(pairs))
 
         side_effect = (category_lhs, category_rhs)
-        mocker = self.patch(self.target, side_effect=side_effect)
+        patcher = mocker.patch(self.target, side_effect=side_effect)
 
         resolve = Resolve()
-        self.assertIsNone(resolve.lhs_cube)
-        self.assertIsNone(resolve.rhs_cube)
-        self.assertIsNone(resolve.lhs_cube_category)
-        self.assertIsNone(resolve.rhs_cube_category)
-        self.assertIsNone(resolve.lhs_cube_category_local)
-        self.assertIsNone(resolve.rhs_cube_category_local)
-        self.assertIsNone(resolve.category_common)
+        assert resolve.lhs_cube is None
+        assert resolve.rhs_cube is None
+        assert resolve.lhs_cube_category is None
+        assert resolve.rhs_cube_category is None
+        assert resolve.lhs_cube_category_local is None
+        assert resolve.rhs_cube_category_local is None
+        assert resolve.category_common is None
 
         # require to explicitly configure cubes
         resolve.lhs_cube = self.m_lhs_cube
         resolve.rhs_cube = self.m_rhs_cube
         resolve._metadata_resolve()
 
-        self.assertEqual(2, mocker.call_count)
-        calls = [mock.call(self.m_lhs_cube), mock.call(self.m_rhs_cube)]
-        self.assertEqual(calls, mocker.call_args_list)
+        assert patcher.call_count == 2
+        calls = [mocker.call(self.m_lhs_cube), mocker.call(self.m_rhs_cube)]
+        assert patcher.call_args_list == calls
 
-        self.assertEqual(category_lhs, resolve.lhs_cube_category)
-        self.assertEqual(category_rhs, resolve.rhs_cube_category)
+        assert resolve.lhs_cube_category == category_lhs
+        assert resolve.rhs_cube_category == category_rhs
 
         items_dim = [category_lhs.items_dim[1]]
         items_aux = [category_lhs.items_aux[1]]
@@ -333,7 +333,7 @@ class Test__metadata_resolve(tests.IrisTest):
         expected = _CategoryItems(
             items_dim=items_dim, items_aux=items_aux, items_scalar=items_scalar
         )
-        self.assertEqual(expected, resolve.lhs_cube_category_local)
+        assert resolve.lhs_cube_category_local == expected
 
         items_dim = [category_rhs.items_dim[1]]
         items_aux = [category_rhs.items_aux[1]]
@@ -341,7 +341,7 @@ class Test__metadata_resolve(tests.IrisTest):
         expected = _CategoryItems(
             items_dim=items_dim, items_aux=items_aux, items_scalar=items_scalar
         )
-        self.assertEqual(expected, resolve.rhs_cube_category_local)
+        assert resolve.rhs_cube_category_local == expected
 
         items_dim = [category_lhs.items_dim[0]]
         items_aux = [category_lhs.items_aux[0]]
@@ -349,27 +349,27 @@ class Test__metadata_resolve(tests.IrisTest):
         expected = _CategoryItems(
             items_dim=items_dim, items_aux=items_aux, items_scalar=items_scalar
         )
-        self.assertEqual(expected, resolve.category_common)
+        assert resolve.category_common == expected
 
-    def test_metadata_different(self):
+    def test_metadata_different(self, mocker):
         # configure the lhs cube category
         category_lhs = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # configure dim coords
         pairs = [
-            (sentinel.dim_metadata1, sentinel.dims1),
-            (sentinel.dim_metadata2, sentinel.dims2),
+            (mocker.sentinel.dim_metadata1, mocker.sentinel.dims1),
+            (mocker.sentinel.dim_metadata2, mocker.sentinel.dims2),
         ]
         category_lhs.items_dim.extend(self._create_items(pairs))
         # configure aux coords
         pairs = [
-            (sentinel.aux_metadata1, sentinel.dims3),
-            (sentinel.aux_metadata2, sentinel.dims4),
+            (mocker.sentinel.aux_metadata1, mocker.sentinel.dims3),
+            (mocker.sentinel.aux_metadata2, mocker.sentinel.dims4),
         ]
         category_lhs.items_aux.extend(self._create_items(pairs))
         # configure scalar coords
         pairs = [
-            (sentinel.scalar_metadata1, None),
-            (sentinel.scalar_metadata2, None),
+            (mocker.sentinel.scalar_metadata1, None),
+            (mocker.sentinel.scalar_metadata2, None),
         ]
         category_lhs.items_scalar.extend(self._create_items(pairs))
 
@@ -377,62 +377,63 @@ class Test__metadata_resolve(tests.IrisTest):
         category_rhs = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # configure dim coords
         pairs = [
-            (sentinel.dim_metadata100, sentinel.dims1),
-            (sentinel.dim_metadata200, sentinel.dims2),
+            (mocker.sentinel.dim_metadata100, mocker.sentinel.dims1),
+            (mocker.sentinel.dim_metadata200, mocker.sentinel.dims2),
         ]
         category_rhs.items_dim.extend(self._create_items(pairs))
         # configure aux coords
         pairs = [
-            (sentinel.aux_metadata100, sentinel.dims3),
-            (sentinel.aux_metadata200, sentinel.dims4),
+            (mocker.sentinel.aux_metadata100, mocker.sentinel.dims3),
+            (mocker.sentinel.aux_metadata200, mocker.sentinel.dims4),
         ]
         category_rhs.items_aux.extend(self._create_items(pairs))
         # configure scalar coords
         pairs = [
-            (sentinel.scalar_metadata100, None),
-            (sentinel.scalar_metadata200, None),
+            (mocker.sentinel.scalar_metadata100, None),
+            (mocker.sentinel.scalar_metadata200, None),
         ]
         category_rhs.items_scalar.extend(self._create_items(pairs))
 
         side_effect = (category_lhs, category_rhs)
-        mocker = self.patch(self.target, side_effect=side_effect)
+        patcher = mocker.patch(self.target, side_effect=side_effect)
 
         resolve = Resolve()
-        self.assertIsNone(resolve.lhs_cube)
-        self.assertIsNone(resolve.rhs_cube)
-        self.assertIsNone(resolve.lhs_cube_category)
-        self.assertIsNone(resolve.rhs_cube_category)
-        self.assertIsNone(resolve.lhs_cube_category_local)
-        self.assertIsNone(resolve.rhs_cube_category_local)
-        self.assertIsNone(resolve.category_common)
+        assert resolve.lhs_cube is None
+        assert resolve.rhs_cube is None
+        assert resolve.lhs_cube_category is None
+        assert resolve.rhs_cube_category is None
+        assert resolve.lhs_cube_category_local is None
+        assert resolve.rhs_cube_category_local is None
+        assert resolve.category_common is None
 
         # first require to explicitly lhs/rhs configure cubes
         resolve.lhs_cube = self.m_lhs_cube
         resolve.rhs_cube = self.m_rhs_cube
         resolve._metadata_resolve()
 
-        self.assertEqual(2, mocker.call_count)
-        calls = [mock.call(self.m_lhs_cube), mock.call(self.m_rhs_cube)]
-        self.assertEqual(calls, mocker.call_args_list)
+        assert patcher.call_count == 2
+        calls = [mocker.call(self.m_lhs_cube), mocker.call(self.m_rhs_cube)]
+        assert patcher.call_args_list == calls
 
-        self.assertEqual(category_lhs, resolve.lhs_cube_category)
-        self.assertEqual(category_rhs, resolve.rhs_cube_category)
-        self.assertEqual(category_lhs, resolve.lhs_cube_category_local)
-        self.assertEqual(category_rhs, resolve.rhs_cube_category_local)
+        assert resolve.lhs_cube_category == category_lhs
+        assert resolve.rhs_cube_category == category_rhs
+        assert resolve.lhs_cube_category_local == category_lhs
+        assert resolve.rhs_cube_category_local == category_rhs
         expected = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
-        self.assertEqual(expected, resolve.category_common)
+        assert resolve.category_common == expected
 
 
-class Test__dim_coverage(tests.IrisTest):
-    def setUp(self):
+class Test__dim_coverage:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.ndim = 4
-        self.cube = mock.Mock(ndim=self.ndim)
+        self.cube = mocker.Mock(ndim=self.ndim)
         self.items = []
         parts = [
-            (sentinel.metadata0, sentinel.coord0, (0,)),
-            (sentinel.metadata1, sentinel.coord1, (1,)),
-            (sentinel.metadata2, sentinel.coord2, (2,)),
-            (sentinel.metadata3, sentinel.coord3, (3,)),
+            (mocker.sentinel.metadata0, mocker.sentinel.coord0, (0,)),
+            (mocker.sentinel.metadata1, mocker.sentinel.coord1, (1,)),
+            (mocker.sentinel.metadata2, mocker.sentinel.coord2, (2,)),
+            (mocker.sentinel.metadata3, mocker.sentinel.coord3, (3,)),
         ]
         column_parts = [x for x in zip(*parts)]
         self.metadata, self.coords, self.dims = [list(x) for x in column_parts]
@@ -445,70 +446,75 @@ class Test__dim_coverage(tests.IrisTest):
         items = []
         common = []
         result = Resolve._dim_coverage(self.cube, items, common)
-        self.assertIsInstance(result, _DimCoverage)
-        self.assertEqual(self.cube, result.cube)
+        assert isinstance(result, _DimCoverage)
+        assert result.cube == self.cube
         expected = [None] * self.ndim
-        self.assertEqual(expected, result.metadata)
-        self.assertEqual(expected, result.coords)
-        self.assertEqual([], result.dims_common)
-        self.assertEqual([], result.dims_local)
+        assert result.metadata == expected
+        assert result.coords == expected
+        assert result.dims_common == []
+        assert result.dims_local == []
         expected = list(range(self.ndim))
-        self.assertEqual(expected, result.dims_free)
+        assert result.dims_free == expected
 
     def test_coverage_all_local_no_common_no_free(self):
         common = []
         result = Resolve._dim_coverage(self.cube, self.items, common)
-        self.assertIsInstance(result, _DimCoverage)
-        self.assertEqual(self.cube, result.cube)
-        self.assertEqual(self.metadata, result.metadata)
-        self.assertEqual(self.coords, result.coords)
-        self.assertEqual([], result.dims_common)
-        self.assertEqual(self.dims, result.dims_local)
-        self.assertEqual([], result.dims_free)
+        assert isinstance(result, _DimCoverage)
+        assert result.cube == self.cube
+        assert result.metadata == self.metadata
+        assert result.coords == self.coords
+        assert result.dims_common == []
+        assert result.dims_local == self.dims
+        assert result.dims_free == []
 
     def test_coverage_no_local_all_common_no_free(self):
         result = Resolve._dim_coverage(self.cube, self.items, self.metadata)
-        self.assertIsInstance(result, _DimCoverage)
-        self.assertEqual(self.cube, result.cube)
-        self.assertEqual(self.metadata, result.metadata)
-        self.assertEqual(self.coords, result.coords)
-        self.assertEqual(self.dims, result.dims_common)
-        self.assertEqual([], result.dims_local)
-        self.assertEqual([], result.dims_free)
+        assert isinstance(result, _DimCoverage)
+        assert result.cube == self.cube
+        assert result.metadata == self.metadata
+        assert result.coords == self.coords
+        assert result.dims_common == self.dims
+        assert result.dims_local == []
+        assert result.dims_free == []
 
-    def test_coverage_mixed(self):
+    def test_coverage_mixed(self, mocker):
         common = [self.items[1].metadata, self.items[2].metadata]
         self.items.pop(0)
         self.items.pop(-1)
-        metadata, coord, dims = sentinel.metadata100, sentinel.coord100, (0,)
+        metadata, coord, dims = (
+            mocker.sentinel.metadata100,
+            mocker.sentinel.coord100,
+            (0,),
+        )
         self.items.append(_Item(metadata=metadata, coord=coord, dims=dims))
         result = Resolve._dim_coverage(self.cube, self.items, common)
-        self.assertIsInstance(result, _DimCoverage)
-        self.assertEqual(self.cube, result.cube)
+        assert isinstance(result, _DimCoverage)
+        assert result.cube == self.cube
         expected = [
             metadata,
             self.items[0].metadata,
             self.items[1].metadata,
             None,
         ]
-        self.assertEqual(expected, result.metadata)
+        assert result.metadata == expected
         expected = [coord, self.items[0].coord, self.items[1].coord, None]
-        self.assertEqual(expected, result.coords)
-        self.assertEqual([1, 2], result.dims_common)
-        self.assertEqual([0], result.dims_local)
-        self.assertEqual([3], result.dims_free)
+        assert result.coords == expected
+        assert result.dims_common == [1, 2]
+        assert result.dims_local == [0]
+        assert result.dims_free == [3]
 
 
-class Test__aux_coverage(tests.IrisTest):
-    def setUp(self):
+class Test__aux_coverage:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.ndim = 4
-        self.cube = mock.Mock(ndim=self.ndim)
+        self.cube = mocker.Mock(ndim=self.ndim)
         # configure aux coords
         self.items_aux = []
         aux_parts = [
-            (sentinel.aux_metadata0, sentinel.aux_coord0, (0,)),
-            (sentinel.aux_metadata1, sentinel.aux_coord1, (1,)),
-            (sentinel.aux_metadata23, sentinel.aux_coord23, (2, 3)),
+            (mocker.sentinel.aux_metadata0, mocker.sentinel.aux_coord0, (0,)),
+            (mocker.sentinel.aux_metadata1, mocker.sentinel.aux_coord1, (1,)),
+            (mocker.sentinel.aux_metadata23, mocker.sentinel.aux_coord23, (2, 3)),
         ]
         column_aux_parts = [x for x in zip(*aux_parts)]
         self.aux_metadata, self.aux_coords, self.aux_dims = [
@@ -520,9 +526,9 @@ class Test__aux_coverage(tests.IrisTest):
         # configure scalar coords
         self.items_scalar = []
         scalar_parts = [
-            (sentinel.scalar_metadata0, sentinel.scalar_coord0, ()),
-            (sentinel.scalar_metadata1, sentinel.scalar_coord1, ()),
-            (sentinel.scalar_metadata2, sentinel.scalar_coord2, ()),
+            (mocker.sentinel.scalar_metadata0, mocker.sentinel.scalar_coord0, ()),
+            (mocker.sentinel.scalar_metadata1, mocker.sentinel.scalar_coord1, ()),
+            (mocker.sentinel.scalar_metadata2, mocker.sentinel.scalar_coord2, ()),
         ]
         column_scalar_parts = [x for x in zip(*scalar_parts)]
         self.scalar_metadata, self.scalar_coords, self.scalar_dims = [
@@ -538,16 +544,16 @@ class Test__aux_coverage(tests.IrisTest):
         result = Resolve._aux_coverage(
             self.cube, items_aux, items_scalar, common_aux, common_scalar
         )
-        self.assertIsInstance(result, _AuxCoverage)
-        self.assertEqual(self.cube, result.cube)
-        self.assertEqual([], result.common_items_aux)
-        self.assertEqual([], result.common_items_scalar)
-        self.assertEqual([], result.local_items_aux)
-        self.assertEqual([], result.local_items_scalar)
-        self.assertEqual([], result.dims_common)
-        self.assertEqual([], result.dims_local)
+        assert isinstance(result, _AuxCoverage)
+        assert result.cube == self.cube
+        assert result.common_items_aux == []
+        assert result.common_items_scalar == []
+        assert result.local_items_aux == []
+        assert result.local_items_scalar == []
+        assert result.dims_common == []
+        assert result.dims_local == []
         expected = list(range(self.ndim))
-        self.assertEqual(expected, result.dims_free)
+        assert result.dims_free == expected
 
     def test_coverage_all_local_no_common_no_free(self):
         common_aux, common_scalar = [], []
@@ -558,17 +564,16 @@ class Test__aux_coverage(tests.IrisTest):
             common_aux,
             common_scalar,
         )
-        self.assertIsInstance(result, _AuxCoverage)
-        self.assertEqual(self.cube, result.cube)
-        expected = []
-        self.assertEqual(expected, result.common_items_aux)
-        self.assertEqual(expected, result.common_items_scalar)
-        self.assertEqual(self.items_aux, result.local_items_aux)
-        self.assertEqual(self.items_scalar, result.local_items_scalar)
-        self.assertEqual([], result.dims_common)
+        assert isinstance(result, _AuxCoverage)
+        assert result.cube == self.cube
+        assert result.common_items_aux == []
+        assert result.common_items_scalar == []
+        assert result.local_items_aux == self.items_aux
+        assert result.local_items_scalar == self.items_scalar
+        assert result.dims_common == []
         expected = list(range(self.ndim))
-        self.assertEqual(expected, result.dims_local)
-        self.assertEqual([], result.dims_free)
+        assert result.dims_local == expected
+        assert result.dims_free == []
 
     def test_coverage_no_local_all_common_no_free(self):
         result = Resolve._aux_coverage(
@@ -578,16 +583,16 @@ class Test__aux_coverage(tests.IrisTest):
             self.aux_metadata,
             self.scalar_metadata,
         )
-        self.assertIsInstance(result, _AuxCoverage)
-        self.assertEqual(self.cube, result.cube)
-        self.assertEqual(self.items_aux, result.common_items_aux)
-        self.assertEqual(self.items_scalar, result.common_items_scalar)
-        self.assertEqual([], result.local_items_aux)
-        self.assertEqual([], result.local_items_scalar)
+        assert isinstance(result, _AuxCoverage)
+        assert result.cube == self.cube
+        assert result.common_items_aux == self.items_aux
+        assert result.common_items_scalar == self.items_scalar
+        assert result.local_items_aux == []
+        assert result.local_items_scalar == []
         expected = list(range(self.ndim))
-        self.assertEqual(expected, result.dims_common)
-        self.assertEqual([], result.dims_local)
-        self.assertEqual([], result.dims_free)
+        assert result.dims_common == expected
+        assert result.dims_local == []
+        assert result.dims_free == []
 
     def test_coverage_mixed(self):
         common_aux = [self.items_aux[-1].metadata]
@@ -600,41 +605,42 @@ class Test__aux_coverage(tests.IrisTest):
             common_aux,
             common_scalar,
         )
-        self.assertIsInstance(result, _AuxCoverage)
-        self.assertEqual(self.cube, result.cube)
+        assert isinstance(result, _AuxCoverage)
+        assert result.cube == self.cube
         expected = [self.items_aux[-1]]
-        self.assertEqual(expected, result.common_items_aux)
+        assert result.common_items_aux == expected
         expected = [self.items_scalar[1]]
-        self.assertEqual(expected, result.common_items_scalar)
+        assert result.common_items_scalar == expected
         expected = [self.items_aux[0]]
-        self.assertEqual(expected, result.local_items_aux)
+        assert result.local_items_aux == expected
         expected = [self.items_scalar[0], self.items_scalar[2]]
-        self.assertEqual(expected, result.local_items_scalar)
-        self.assertEqual([2, 3], result.dims_common)
-        self.assertEqual([0], result.dims_local)
-        self.assertEqual([1], result.dims_free)
+        assert result.local_items_scalar == expected
+        assert result.dims_common == [2, 3]
+        assert result.dims_local == [0]
+        assert result.dims_free == [1]
 
 
-class Test__metadata_coverage(tests.IrisTest):
-    def setUp(self):
+class Test__metadata_coverage:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.m_lhs_cube = sentinel.lhs_cube
+        self.m_lhs_cube = mocker.sentinel.lhs_cube
         self.resolve.lhs_cube = self.m_lhs_cube
-        self.m_rhs_cube = sentinel.rhs_cube
+        self.m_rhs_cube = mocker.sentinel.rhs_cube
         self.resolve.rhs_cube = self.m_rhs_cube
-        self.m_items_dim_metadata = sentinel.items_dim_metadata
-        self.m_items_aux_metadata = sentinel.items_aux_metadata
-        self.m_items_scalar_metadata = sentinel.items_scalar_metadata
-        items_dim = [mock.Mock(metadata=self.m_items_dim_metadata)]
-        items_aux = [mock.Mock(metadata=self.m_items_aux_metadata)]
-        items_scalar = [mock.Mock(metadata=self.m_items_scalar_metadata)]
+        self.m_items_dim_metadata = mocker.sentinel.items_dim_metadata
+        self.m_items_aux_metadata = mocker.sentinel.items_aux_metadata
+        self.m_items_scalar_metadata = mocker.sentinel.items_scalar_metadata
+        items_dim = [mocker.Mock(metadata=self.m_items_dim_metadata)]
+        items_aux = [mocker.Mock(metadata=self.m_items_aux_metadata)]
+        items_scalar = [mocker.Mock(metadata=self.m_items_scalar_metadata)]
         category = _CategoryItems(
             items_dim=items_dim, items_aux=items_aux, items_scalar=items_scalar
         )
         self.resolve.category_common = category
-        self.m_items_dim = sentinel.items_dim
-        self.m_items_aux = sentinel.items_aux
-        self.m_items_scalar = sentinel.items_scalar
+        self.m_items_dim = mocker.sentinel.items_dim
+        self.m_items_aux = mocker.sentinel.items_aux
+        self.m_items_scalar = mocker.sentinel.items_scalar
         category = _CategoryItems(
             items_dim=self.m_items_dim,
             items_aux=self.m_items_aux,
@@ -643,40 +649,40 @@ class Test__metadata_coverage(tests.IrisTest):
         self.resolve.lhs_cube_category = category
         self.resolve.rhs_cube_category = category
         target = "iris.common.resolve.Resolve._dim_coverage"
-        self.m_lhs_cube_dim_coverage = sentinel.lhs_cube_dim_coverage
-        self.m_rhs_cube_dim_coverage = sentinel.rhs_cube_dim_coverage
+        self.m_lhs_cube_dim_coverage = mocker.sentinel.lhs_cube_dim_coverage
+        self.m_rhs_cube_dim_coverage = mocker.sentinel.rhs_cube_dim_coverage
         side_effect = (
             self.m_lhs_cube_dim_coverage,
             self.m_rhs_cube_dim_coverage,
         )
-        self.mocker_dim_coverage = self.patch(target, side_effect=side_effect)
+        self.mocker_dim_coverage = mocker.patch(target, side_effect=side_effect)
         target = "iris.common.resolve.Resolve._aux_coverage"
-        self.m_lhs_cube_aux_coverage = sentinel.lhs_cube_aux_coverage
-        self.m_rhs_cube_aux_coverage = sentinel.rhs_cube_aux_coverage
+        self.m_lhs_cube_aux_coverage = mocker.sentinel.lhs_cube_aux_coverage
+        self.m_rhs_cube_aux_coverage = mocker.sentinel.rhs_cube_aux_coverage
         side_effect = (
             self.m_lhs_cube_aux_coverage,
             self.m_rhs_cube_aux_coverage,
         )
-        self.mocker_aux_coverage = self.patch(target, side_effect=side_effect)
+        self.mocker_aux_coverage = mocker.patch(target, side_effect=side_effect)
 
-    def test(self):
+    def test(self, mocker):
         self.resolve._metadata_coverage()
-        self.assertEqual(2, self.mocker_dim_coverage.call_count)
+        assert self.mocker_dim_coverage.call_count == 2
         calls = [
-            mock.call(self.m_lhs_cube, self.m_items_dim, [self.m_items_dim_metadata]),
-            mock.call(self.m_rhs_cube, self.m_items_dim, [self.m_items_dim_metadata]),
+            mocker.call(self.m_lhs_cube, self.m_items_dim, [self.m_items_dim_metadata]),
+            mocker.call(self.m_rhs_cube, self.m_items_dim, [self.m_items_dim_metadata]),
         ]
-        self.assertEqual(calls, self.mocker_dim_coverage.call_args_list)
-        self.assertEqual(2, self.mocker_aux_coverage.call_count)
+        assert self.mocker_dim_coverage.call_args_list == calls
+        assert self.mocker_aux_coverage.call_count == 2
         calls = [
-            mock.call(
+            mocker.call(
                 self.m_lhs_cube,
                 self.m_items_aux,
                 self.m_items_scalar,
                 [self.m_items_aux_metadata],
                 [self.m_items_scalar_metadata],
             ),
-            mock.call(
+            mocker.call(
                 self.m_rhs_cube,
                 self.m_items_aux,
                 self.m_items_scalar,
@@ -684,26 +690,19 @@ class Test__metadata_coverage(tests.IrisTest):
                 [self.m_items_scalar_metadata],
             ),
         ]
-        self.assertEqual(calls, self.mocker_aux_coverage.call_args_list)
-        self.assertEqual(
-            self.m_lhs_cube_dim_coverage, self.resolve.lhs_cube_dim_coverage
-        )
-        self.assertEqual(
-            self.m_rhs_cube_dim_coverage, self.resolve.rhs_cube_dim_coverage
-        )
-        self.assertEqual(
-            self.m_lhs_cube_aux_coverage, self.resolve.lhs_cube_aux_coverage
-        )
-        self.assertEqual(
-            self.m_rhs_cube_aux_coverage, self.resolve.rhs_cube_aux_coverage
-        )
+        assert self.mocker_aux_coverage.call_args_list == calls
+        assert self.resolve.lhs_cube_dim_coverage == self.m_lhs_cube_dim_coverage
+        assert self.resolve.rhs_cube_dim_coverage == self.m_rhs_cube_dim_coverage
+        assert self.resolve.lhs_cube_aux_coverage == self.m_lhs_cube_aux_coverage
+        assert self.resolve.rhs_cube_aux_coverage == self.m_rhs_cube_aux_coverage
 
 
-class Test__dim_mapping(tests.IrisTest):
-    def setUp(self):
+class Test__dim_mapping:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.ndim = 3
         Wrapper = namedtuple("Wrapper", ("name",))
-        cube = Wrapper(name=lambda: sentinel.name)
+        cube = Wrapper(name=lambda: mocker.sentinel.name)
         self.src_coverage = _DimCoverage(
             cube=cube,
             metadata=[],
@@ -721,17 +720,21 @@ class Test__dim_mapping(tests.IrisTest):
             dims_free=None,
         )
         self.metadata = [
-            sentinel.metadata_0,
-            sentinel.metadata_1,
-            sentinel.metadata_2,
+            mocker.sentinel.metadata_0,
+            mocker.sentinel.metadata_1,
+            mocker.sentinel.metadata_2,
         ]
-        self.dummy = [sentinel.dummy_0, sentinel.dummy_1, sentinel.dummy_2]
+        self.dummy = [
+            mocker.sentinel.dummy_0,
+            mocker.sentinel.dummy_1,
+            mocker.sentinel.dummy_2,
+        ]
 
     def test_no_mapping(self):
         self.src_coverage.metadata.extend(self.metadata)
         self.tgt_coverage.metadata.extend(self.dummy)
         result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
-        self.assertEqual(dict(), result)
+        assert result == {}
 
     def test_full_mapping(self):
         self.src_coverage.metadata.extend(self.metadata)
@@ -740,7 +743,7 @@ class Test__dim_mapping(tests.IrisTest):
         self.tgt_coverage.dims_common.extend(dims_common)
         result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 0, 1: 1, 2: 2}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_transpose_mapping(self):
         self.src_coverage.metadata.extend(self.metadata[::-1])
@@ -749,34 +752,35 @@ class Test__dim_mapping(tests.IrisTest):
         self.tgt_coverage.dims_common.extend(dims_common)
         result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 2, 1: 1, 2: 0}
-        self.assertEqual(expected, result)
+        assert result == expected
 
-    def test_partial_mapping__transposed(self):
+    def test_partial_mapping__transposed(self, mocker):
         self.src_coverage.metadata.extend(self.metadata)
-        self.metadata[1] = sentinel.nope
+        self.metadata[1] = mocker.sentinel.nope
         self.tgt_coverage.metadata.extend(self.metadata[::-1])
         dims_common = [0, 2]
         self.tgt_coverage.dims_common.extend(dims_common)
         result = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 2, 2: 0}
-        self.assertEqual(expected, result)
+        assert result == expected
 
-    def test_bad_metadata_mapping(self):
+    def test_bad_metadata_mapping(self, mocker):
         self.src_coverage.metadata.extend(self.metadata)
-        self.metadata[0] = sentinel.bad
+        self.metadata[0] = mocker.sentinel.bad
         self.tgt_coverage.metadata.extend(self.metadata)
         dims_common = [0]
         self.tgt_coverage.dims_common.extend(dims_common)
         emsg = "Failed to map common dim coordinate metadata"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = Resolve._dim_mapping(self.src_coverage, self.tgt_coverage)
 
 
-class Test__aux_mapping(tests.IrisTest):
-    def setUp(self):
+class Test__aux_mapping:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.ndim = 3
         Wrapper = namedtuple("Wrapper", ("name",))
-        cube = Wrapper(name=lambda: sentinel.name)
+        cube = Wrapper(name=lambda: mocker.sentinel.name)
         self.src_coverage = _AuxCoverage(
             cube=cube,
             common_items_aux=[],
@@ -798,21 +802,33 @@ class Test__aux_mapping(tests.IrisTest):
             dims_free=None,
         )
         self.items = [
-            _Item(metadata=sentinel.metadata0, coord=sentinel.coord0, dims=[0]),
-            _Item(metadata=sentinel.metadata1, coord=sentinel.coord1, dims=[1]),
-            _Item(metadata=sentinel.metadata2, coord=sentinel.coord2, dims=[2]),
+            _Item(
+                metadata=mocker.sentinel.metadata0,
+                coord=mocker.sentinel.coord0,
+                dims=[0],
+            ),
+            _Item(
+                metadata=mocker.sentinel.metadata1,
+                coord=mocker.sentinel.coord1,
+                dims=[1],
+            ),
+            _Item(
+                metadata=mocker.sentinel.metadata2,
+                coord=mocker.sentinel.coord2,
+                dims=[2],
+            ),
         ]
 
     def test_no_mapping(self):
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
-        self.assertEqual(dict(), result)
+        assert result == {}
 
     def test_full_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
         self.tgt_coverage.common_items_aux.extend(self.items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 0, 1: 1, 2: 2}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_transpose_mapping(self):
         self.src_coverage.common_items_aux.extend(self.items)
@@ -822,7 +838,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.tgt_coverage.common_items_aux.extend(items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 2, 1: 1, 2: 0}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_partial_mapping__transposed(self):
         _ = self.items.pop(1)
@@ -833,7 +849,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.tgt_coverage.common_items_aux.extend(items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 2, 2: 0}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_mapping__match_multiple_src_metadata(self):
         items = deepcopy(self.items)
@@ -843,7 +859,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.tgt_coverage.common_items_aux.extend(items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 0, 2: 2}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_mapping__skip_match_multiple_src_metadata(self):
         items = deepcopy(self.items)
@@ -853,7 +869,7 @@ class Test__aux_mapping(tests.IrisTest):
         self.src_coverage.common_items_aux.extend(items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {2: 2}
-        self.assertEqual(expected, result)
+        assert result == expected
 
     def test_mapping__skip_different_rank(self):
         items = deepcopy(self.items)
@@ -862,57 +878,58 @@ class Test__aux_mapping(tests.IrisTest):
         self.tgt_coverage.common_items_aux.extend(items)
         result = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
         expected = {0: 0, 1: 1}
-        self.assertEqual(expected, result)
+        assert result == expected
 
-    def test_bad_metadata_mapping(self):
+    def test_bad_metadata_mapping(self, mocker):
         self.src_coverage.common_items_aux.extend(self.items)
         items = deepcopy(self.items)
-        items[0] = items[0]._replace(metadata=sentinel.bad)
+        items[0] = items[0]._replace(metadata=mocker.sentinel.bad)
         self.tgt_coverage.common_items_aux.extend(items)
         emsg = "Failed to map common aux coordinate metadata"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = Resolve._aux_mapping(self.src_coverage, self.tgt_coverage)
 
 
-class Test_mapped(tests.IrisTest):
+class Test_mapped:
     def test_mapping_none(self):
         resolve = Resolve()
-        self.assertIsNone(resolve.mapping)
-        self.assertIsNone(resolve.mapped)
+        assert resolve.mapping is None
+        assert resolve.mapped is None
 
-    def test_mapped__src_cube_lhs(self):
+    def test_mapped__src_cube_lhs(self, mocker):
         resolve = Resolve()
-        lhs = mock.Mock(ndim=2)
-        rhs = mock.Mock(ndim=3)
+        lhs = mocker.Mock(ndim=2)
+        rhs = mocker.Mock(ndim=3)
         resolve.lhs_cube = lhs
         resolve.rhs_cube = rhs
         resolve.map_rhs_to_lhs = False
         resolve.mapping = {0: 0, 1: 1}
-        self.assertTrue(resolve.mapped)
+        assert resolve.mapped
 
-    def test_mapped__src_cube_rhs(self):
+    def test_mapped__src_cube_rhs(self, mocker):
         resolve = Resolve()
-        lhs = mock.Mock(ndim=3)
-        rhs = mock.Mock(ndim=2)
+        lhs = mocker.Mock(ndim=3)
+        rhs = mocker.Mock(ndim=2)
         resolve.lhs_cube = lhs
         resolve.rhs_cube = rhs
         resolve.map_rhs_to_lhs = True
         resolve.mapping = {0: 0, 1: 1}
-        self.assertTrue(resolve.mapped)
+        assert resolve.mapped
 
-    def test_partial_mapping(self):
+    def test_partial_mapping(self, mocker):
         resolve = Resolve()
-        lhs = mock.Mock(ndim=3)
-        rhs = mock.Mock(ndim=2)
+        lhs = mocker.Mock(ndim=3)
+        rhs = mocker.Mock(ndim=2)
         resolve.lhs_cube = lhs
         resolve.rhs_cube = rhs
         resolve.map_rhs_to_lhs = True
         resolve.mapping = {0: 0}
-        self.assertFalse(resolve.mapped)
+        assert not resolve.mapped
 
 
-class Test__free_mapping(tests.IrisTest):
-    def setUp(self):
+class Test__free_mapping:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.Cube = namedtuple("Wrapper", ("name", "ndim", "shape"))
         self.src_dim_coverage = dict(
             cube=None,
@@ -955,7 +972,7 @@ class Test__free_mapping(tests.IrisTest):
         self.tgt_dim_coverage["cube"] = cube
         args = self._make_args()
         emsg = "Insufficient matching coordinate metadata"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.resolve._free_mapping(**args)
 
     def _make_coverage(self, name, shape, dims_free):
@@ -995,7 +1012,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_local__broadcast_src_first(self):
         # key: (state) c=common, f=free, l=local
@@ -1021,7 +1038,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_local__broadcast_src_last(self):
         # key: (state) c=common, f=free, l=local
@@ -1047,7 +1064,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_local__broadcast_src_both(self):
         # key: (state) c=common, f=free, l=local
@@ -1073,7 +1090,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 1, 1: 2, 2: 3}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_free(self):
         # key: (state) c=common, f=free, l=local
@@ -1098,7 +1115,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 0, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_free__broadcast_src_first(self):
         # key: (state) c=common, f=free, l=local
@@ -1124,7 +1141,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 0, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_free__broadcast_src_last(self):
         # key: (state) c=common, f=free, l=local
@@ -1150,7 +1167,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 0, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt_free__broadcast_src_both(self):
         # key: (state) c=common, f=free, l=local
@@ -1176,7 +1193,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 0, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_src_free_to_tgt__fail(self):
         # key: (state) c=common, f=free, l=local
@@ -1201,7 +1218,7 @@ class Test__free_mapping(tests.IrisTest):
         self.resolve.mapping = {1: 2}
         args = self._make_args()
         emsg = "Insufficient matching coordinate metadata to resolve cubes"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.resolve._free_mapping(**args)
 
     def test_mapping_tgt_free_to_src_local(self):
@@ -1227,7 +1244,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_tgt_free_to_src_local__broadcast_tgt_first(self):
         # key: (state) c=common, f=free, l=local
@@ -1253,7 +1270,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_tgt_free_to_src_local__broadcast_tgt_last(self):
         # key: (state) c=common, f=free, l=local
@@ -1279,7 +1296,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 3, 1: 2, 2: 1}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_tgt_free_to_src_local__broadcast_tgt_both(self):
         # key: (state) c=common, f=free, l=local
@@ -1305,7 +1322,7 @@ class Test__free_mapping(tests.IrisTest):
         args = self._make_args()
         self.resolve._free_mapping(**args)
         expected = {0: 1, 1: 2, 2: 3}
-        self.assertEqual(expected, self.resolve.mapping)
+        assert self.resolve.mapping == expected
 
     def test_mapping_tgt_free_to_src_no_free__fail(self):
         # key: (state) c=common, f=free, l=local
@@ -1330,179 +1347,189 @@ class Test__free_mapping(tests.IrisTest):
         self.resolve.mapping = {1: 2}
         args = self._make_args()
         emsg = "Insufficient matching coordinate metadata to resolve cubes"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.resolve._free_mapping(**args)
 
 
-class Test__src_cube(tests.IrisTest):
-    def setUp(self):
+class Test__src_cube:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve.rhs_cube = self.expected
-        self.assertEqual(self.expected, self.resolve._src_cube)
+        assert self.resolve._src_cube == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve.lhs_cube = self.expected
-        self.assertEqual(self.expected, self.resolve._src_cube)
+        assert self.resolve._src_cube == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._src_cube
 
 
-class Test__src_cube_position(tests.IrisTest):
-    def setUp(self):
+class Test__src_cube_position:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.resolve = Resolve()
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
-        self.assertEqual("RHS", self.resolve._src_cube_position)
+        assert self.resolve._src_cube_position == "RHS"
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
-        self.assertEqual("LHS", self.resolve._src_cube_position)
+        assert self.resolve._src_cube_position == "LHS"
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._src_cube_position
 
 
-class Test__src_cube_resolved__getter(tests.IrisTest):
-    def setUp(self):
+class Test__src_cube_resolved__getter:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve.rhs_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve._src_cube_resolved)
+        assert self.resolve._src_cube_resolved == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve.lhs_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve._src_cube_resolved)
+        assert self.resolve._src_cube_resolved == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._src_cube_resolved
 
 
-class Test__src_cube_resolved__setter(tests.IrisTest):
-    def setUp(self):
+class Test__src_cube_resolved__setter:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve._src_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve.rhs_cube_resolved)
+        assert self.resolve.rhs_cube_resolved == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve._src_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve.lhs_cube_resolved)
+        assert self.resolve.lhs_cube_resolved == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._src_cube_resolved = self.expected
 
 
-class Test__tgt_cube(tests.IrisTest):
-    def setUp(self):
+class Test__tgt_cube:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve.rhs_cube = self.expected
-        self.assertEqual(self.expected, self.resolve._tgt_cube)
+        assert self.resolve._tgt_cube == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve.lhs_cube = self.expected
-        self.assertEqual(self.expected, self.resolve._tgt_cube)
+        assert self.resolve._tgt_cube == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._tgt_cube
 
 
-class Test__tgt_cube_position(tests.IrisTest):
-    def setUp(self):
+class Test__tgt_cube_position:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.resolve = Resolve()
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
-        self.assertEqual("RHS", self.resolve._tgt_cube_position)
+        assert self.resolve._tgt_cube_position == "RHS"
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
-        self.assertEqual("LHS", self.resolve._tgt_cube_position)
+        assert self.resolve._tgt_cube_position == "LHS"
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._tgt_cube_position
 
 
-class Test__tgt_cube_resolved__getter(tests.IrisTest):
-    def setUp(self):
+class Test__tgt_cube_resolved__getter:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve.rhs_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve._tgt_cube_resolved)
+        assert self.resolve._tgt_cube_resolved == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve.lhs_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve._tgt_cube_resolved)
+        assert self.resolve._tgt_cube_resolved == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._tgt_cube_resolved
 
 
-class Test__tgt_cube_resolved__setter(tests.IrisTest):
-    def setUp(self):
+class Test__tgt_cube_resolved__setter:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.resolve = Resolve()
-        self.expected = sentinel.cube
+        self.expected = mocker.sentinel.cube
 
     def test_rhs_cube(self):
         self.resolve.map_rhs_to_lhs = False
         self.resolve._tgt_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve.rhs_cube_resolved)
+        assert self.resolve.rhs_cube_resolved == self.expected
 
     def test_lhs_cube(self):
         self.resolve.map_rhs_to_lhs = True
         self.resolve._tgt_cube_resolved = self.expected
-        self.assertEqual(self.expected, self.resolve.lhs_cube_resolved)
+        assert self.resolve.lhs_cube_resolved == self.expected
 
     def test_fail__no_map_rhs_to_lhs(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._tgt_cube_resolved = self.expected
 
 
-class Test_shape(tests.IrisTest):
-    def setUp(self):
+class Test_shape:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.resolve = Resolve()
 
     def test_no_shape(self):
-        self.assertIsNone(self.resolve.shape)
+        assert self.resolve.shape is None
 
-    def test_shape(self):
-        expected = sentinel.shape
+    def test_shape(self, mocker):
+        expected = mocker.sentinel.shape
         self.resolve._broadcast_shape = expected
-        self.assertEqual(expected, self.resolve.shape)
+        assert self.resolve.shape == expected
 
 
-class Test__as_compatible_cubes(tests.IrisTest):
-    def setUp(self):
+class Test__as_compatible_cubes:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Cube = namedtuple(
             "Wrapper",
             (
@@ -1520,7 +1547,7 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve = Resolve()
         self.resolve.map_rhs_to_lhs = True
         self.resolve.mapping = {}
-        self.mocker = self.patch("iris.cube.Cube")
+        self.mocker = mocker.patch("iris.cube.Cube")
         self.args = dict(
             name=None,
             ndim=None,
@@ -1539,8 +1566,8 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.args["ndim"] = ndim
         self.args["shape"] = shape
         if name == "src":
-            self.args["metadata"] = sentinel.metadata
-            self.reshape = sentinel.reshape
+            self.args["metadata"] = mock.sentinel.metadata
+            self.reshape = mock.sentinel.reshape
             m_reshape = mock.Mock(return_value=self.reshape)
             self.transpose = mock.Mock(shape=transpose_shape, reshape=m_reshape)
             m_transpose = mock.Mock(return_value=self.transpose)
@@ -1549,9 +1576,9 @@ class Test__as_compatible_cubes(tests.IrisTest):
             m_core_data = mock.Mock(copy=m_copy)
             self.args["core_data"] = mock.Mock(return_value=m_core_data)
             self.args["coord_dims"] = mock.Mock(side_effect=([0], [ndim - 1]))
-            self.dim_coord = sentinel.dim_coord
-            self.aux_coord = sentinel.aux_coord
-            self.aux_factory = sentinel.aux_factory
+            self.dim_coord = mock.sentinel.dim_coord
+            self.aux_coord = mock.sentinel.aux_coord
+            self.aux_factory = mock.sentinel.aux_factory
             self.args["dim_coords"] = [self.dim_coord]
             self.args["aux_coords"] = [self.aux_coord]
             self.args["aux_factories"] = [self.aux_factory]
@@ -1568,7 +1595,7 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self._make_cube("src", src_shape)
         tgt_shape = (3, 4)
         self._make_cube("tgt", tgt_shape)
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             self.resolve._as_compatible_cubes()
 
     def test_incompatible_shapes__fail(self):
@@ -1588,7 +1615,7 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self._make_cube("tgt", tgt_shape)
         self.resolve.mapping = {0: 1, 1: 2, 2: 3}
         emsg = "Cannot resolve cubes"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.resolve._as_compatible_cubes()
 
     def test_incompatible_shapes__fail_broadcast(self):
@@ -1608,37 +1635,32 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self._make_cube("tgt", tgt_shape)
         self.resolve.mapping = {0: 3, 1: 2, 2: 1}
         emsg = "Cannot resolve cubes"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.resolve._as_compatible_cubes()
 
     def _check_compatible(self, broadcast_shape):
-        self.assertEqual(self.resolve.lhs_cube, self.resolve._tgt_cube_resolved)
-        self.assertEqual(self.cube, self.resolve._src_cube_resolved)
-        self.assertEqual(broadcast_shape, self.resolve._broadcast_shape)
-        self.assertEqual(1, self.mocker.call_count)
-        self.assertEqual(self.args["metadata"], self.cube.metadata)
-        self.assertEqual(2, self.resolve.rhs_cube.coord_dims.call_count)
-        self.assertEqual(
-            [mock.call(self.dim_coord), mock.call(self.aux_coord)],
-            self.resolve.rhs_cube.coord_dims.call_args_list,
-        )
-        self.assertEqual(1, self.cube.add_dim_coord.call_count)
-        self.assertEqual(
-            [mock.call(self.dim_coord, [self.resolve.mapping[0]])],
-            self.cube.add_dim_coord.call_args_list,
-        )
-        self.assertEqual(1, self.cube.add_aux_coord.call_count)
-        self.assertEqual(
-            [mock.call(self.aux_coord, [self.resolve.mapping[2]])],
-            self.cube.add_aux_coord.call_args_list,
-        )
-        self.assertEqual(1, self.cube.add_aux_factory.call_count)
-        self.assertEqual(
-            [mock.call(self.aux_factory)],
-            self.cube.add_aux_factory.call_args_list,
-        )
+        assert self.resolve.lhs_cube == self.resolve._tgt_cube_resolved
+        assert self.resolve._src_cube_resolved == self.cube
+        assert self.resolve._broadcast_shape == broadcast_shape
+        assert self.mocker.call_count == 1
+        assert self.args["metadata"] == self.cube.metadata
+        assert self.resolve.rhs_cube.coord_dims.call_count == 2
+        assert self.resolve.rhs_cube.coord_dims.call_args_list == [
+            mock.call(self.dim_coord),
+            mock.call(self.aux_coord),
+        ]
+        assert self.cube.add_dim_coord.call_count == 1
+        assert self.cube.add_dim_coord.call_args_list == [
+            mock.call(self.dim_coord, [self.resolve.mapping[0]])
+        ]
+        assert self.cube.add_aux_coord.call_count == 1
+        assert self.cube.add_aux_coord.call_args_list == [
+            mock.call(self.aux_coord, [self.resolve.mapping[2]])
+        ]
+        assert self.cube.add_aux_factory.call_count == 1
+        assert self.cube.add_aux_factory.call_args_list == [mock.call(self.aux_factory)]
 
-    def test_compatible(self):
+    def test_compatible(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1658,9 +1680,9 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=tgt_shape)
-        self.assertEqual([mock.call(self.data)], self.mocker.call_args_list)
+        assert self.mocker.call_args_list == [mocker.call(self.data)]
 
-    def test_compatible__transpose(self):
+    def test_compatible__transpose(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1680,11 +1702,11 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=tgt_shape)
-        self.assertEqual(1, self.data.transpose.call_count)
-        self.assertEqual([mock.call([2, 1, 0])], self.data.transpose.call_args_list)
-        self.assertEqual([mock.call(self.transpose)], self.mocker.call_args_list)
+        assert self.data.transpose.call_count == 1
+        assert self.data.transpose.call_args_list == [mocker.call([2, 1, 0])]
+        assert self.mocker.call_args_list == [mocker.call(self.transpose)]
 
-    def test_compatible__reshape(self):
+    def test_compatible__reshape(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1704,13 +1726,11 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=tgt_shape)
-        self.assertEqual(1, self.data.reshape.call_count)
-        self.assertEqual(
-            [mock.call((1,) + src_shape)], self.data.reshape.call_args_list
-        )
-        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
+        assert self.data.reshape.call_count == 1
+        assert self.data.reshape.call_args_list == [mocker.call((1,) + src_shape)]
+        assert self.mocker.call_args_list == [mocker.call(self.reshape)]
 
-    def test_compatible__transpose_reshape(self):
+    def test_compatible__transpose_reshape(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1731,16 +1751,13 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=tgt_shape)
-        self.assertEqual(1, self.data.transpose.call_count)
-        self.assertEqual([mock.call([2, 1, 0])], self.data.transpose.call_args_list)
-        self.assertEqual(1, self.data.reshape.call_count)
-        self.assertEqual(
-            [mock.call((1,) + transpose_shape)],
-            self.data.reshape.call_args_list,
-        )
-        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
+        assert self.data.transpose.call_count == 1
+        assert self.data.transpose.call_args_list == [mocker.call([2, 1, 0])]
+        assert self.data.reshape.call_count == 1
+        assert self.data.reshape.call_args_list == [mocker.call((1,) + transpose_shape)]
+        assert self.mocker.call_args_list == [mocker.call(self.reshape)]
 
-    def test_compatible__broadcast(self):
+    def test_compatible__broadcast(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1761,9 +1778,9 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=(4, 3, 2))
-        self.assertEqual([mock.call(self.data)], self.mocker.call_args_list)
+        assert self.mocker.call_args_list == [mocker.call(self.data)]
 
-    def test_compatible__broadcast_transpose_reshape(self):
+    def test_compatible__broadcast_transpose_reshape(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1785,25 +1802,23 @@ class Test__as_compatible_cubes(tests.IrisTest):
         self.resolve.mapping = mapping
         self.resolve._as_compatible_cubes()
         self._check_compatible(broadcast_shape=(5, 4, 3, 2))
-        self.assertEqual(1, self.data.transpose.call_count)
-        self.assertEqual([mock.call([2, 1, 0])], self.data.transpose.call_args_list)
-        self.assertEqual(1, self.data.reshape.call_count)
-        self.assertEqual(
-            [mock.call((1,) + transpose_shape)],
-            self.data.reshape.call_args_list,
-        )
-        self.assertEqual([mock.call(self.reshape)], self.mocker.call_args_list)
+        assert self.data.transpose.call_count == 1
+        assert self.data.transpose.call_args_list == [mocker.call([2, 1, 0])]
+        assert self.data.reshape.call_count == 1
+        assert self.data.reshape.call_args_list == [mocker.call((1,) + transpose_shape)]
+        assert self.mocker.call_args_list == [mocker.call(self.reshape)]
 
 
-class Test__metadata_mapping(tests.IrisTest):
-    def setUp(self):
-        self.ndim = sentinel.ndim
-        self.src_cube = mock.Mock(ndim=self.ndim)
-        self.src_dim_coverage = mock.Mock(dims_free=[])
-        self.src_aux_coverage = mock.Mock(dims_free=[])
-        self.tgt_cube = mock.Mock(ndim=self.ndim)
-        self.tgt_dim_coverage = mock.Mock(dims_free=[])
-        self.tgt_aux_coverage = mock.Mock(dims_free=[])
+class Test__metadata_mapping:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.ndim = mocker.sentinel.ndim
+        self.src_cube = mocker.Mock(ndim=self.ndim)
+        self.src_dim_coverage = mocker.Mock(dims_free=[])
+        self.src_aux_coverage = mocker.Mock(dims_free=[])
+        self.tgt_cube = mocker.Mock(ndim=self.ndim)
+        self.tgt_dim_coverage = mocker.Mock(dims_free=[])
+        self.tgt_aux_coverage = mocker.Mock(dims_free=[])
         self.resolve = Resolve()
         self.map_rhs_to_lhs = True
         self.resolve.map_rhs_to_lhs = self.map_rhs_to_lhs
@@ -1814,23 +1829,23 @@ class Test__metadata_mapping(tests.IrisTest):
         self.resolve.lhs_cube_dim_coverage = self.tgt_dim_coverage
         self.resolve.lhs_cube_aux_coverage = self.tgt_aux_coverage
         self.resolve.mapping = {}
-        self.shape = sentinel.shape
+        self.shape = mocker.sentinel.shape
         self.resolve._broadcast_shape = self.shape
-        self.resolve._src_cube_resolved = mock.Mock(shape=self.shape)
-        self.resolve._tgt_cube_resolved = mock.Mock(shape=self.shape)
-        self.m_dim_mapping = self.patch(
+        self.resolve._src_cube_resolved = mocker.Mock(shape=self.shape)
+        self.resolve._tgt_cube_resolved = mocker.Mock(shape=self.shape)
+        self.m_dim_mapping = mocker.patch(
             "iris.common.resolve.Resolve._dim_mapping", return_value={}
         )
-        self.m_aux_mapping = self.patch(
+        self.m_aux_mapping = mocker.patch(
             "iris.common.resolve.Resolve._aux_mapping", return_value={}
         )
-        self.m_free_mapping = self.patch("iris.common.resolve.Resolve._free_mapping")
-        self.m_as_compatible_cubes = self.patch(
+        self.m_free_mapping = mocker.patch("iris.common.resolve.Resolve._free_mapping")
+        self.m_as_compatible_cubes = mocker.patch(
             "iris.common.resolve.Resolve._as_compatible_cubes"
         )
         self.mapping = {0: 1, 1: 2, 2: 3}
 
-    def test_mapped__dim_coords(self):
+    def test_mapped__dim_coords(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1845,15 +1860,15 @@ class Test__metadata_mapping(tests.IrisTest):
         self.src_cube.ndim = 3
         self.m_dim_mapping.return_value = self.mapping
         self.resolve._metadata_mapping()
-        self.assertEqual(self.mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(0, self.m_aux_mapping.call_count)
-        self.assertEqual(0, self.m_free_mapping.call_count)
-        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+        assert self.resolve.mapping == self.mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 0
+        assert self.m_free_mapping.call_count == 0
+        assert self.m_as_compatible_cubes.call_count == 1
 
-    def test_mapped__aux_coords(self):
+    def test_mapped__aux_coords(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1868,17 +1883,17 @@ class Test__metadata_mapping(tests.IrisTest):
         self.src_cube.ndim = 3
         self.m_aux_mapping.return_value = self.mapping
         self.resolve._metadata_mapping()
-        self.assertEqual(self.mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(1, self.m_aux_mapping.call_count)
-        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
-        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
-        self.assertEqual(0, self.m_free_mapping.call_count)
-        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+        assert self.resolve.mapping == self.mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 1
+        expected = [mocker.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        assert self.m_aux_mapping.call_args_list == expected
+        assert self.m_free_mapping.call_count == 0
+        assert self.m_as_compatible_cubes.call_count == 1
 
-    def test_mapped__dim_and_aux_coords(self):
+    def test_mapped__dim_and_aux_coords(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1896,17 +1911,17 @@ class Test__metadata_mapping(tests.IrisTest):
         self.m_dim_mapping.return_value = dim_mapping
         self.m_aux_mapping.return_value = aux_mapping
         self.resolve._metadata_mapping()
-        self.assertEqual(self.mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(1, self.m_aux_mapping.call_count)
-        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
-        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
-        self.assertEqual(0, self.m_free_mapping.call_count)
-        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+        assert self.resolve.mapping == self.mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 1
+        expected = [mocker.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        assert self.m_aux_mapping.call_args_list == expected
+        assert self.m_free_mapping.call_count == 0
+        assert self.m_as_compatible_cubes.call_count == 1
 
-    def test_mapped__dim_coords_and_free_dims(self):
+    def test_mapped__dim_coords_and_free_dims(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) a=aux, d=dim
         #
@@ -1925,26 +1940,26 @@ class Test__metadata_mapping(tests.IrisTest):
         side_effect = lambda a, b, c, d: self.resolve.mapping.update(free_mapping)
         self.m_free_mapping.side_effect = side_effect
         self.resolve._metadata_mapping()
-        self.assertEqual(self.mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(1, self.m_aux_mapping.call_count)
-        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
-        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
-        self.assertEqual(1, self.m_free_mapping.call_count)
+        assert self.resolve.mapping == self.mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 1
+        expected = [mocker.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        assert self.m_aux_mapping.call_args_list == expected
+        assert self.m_free_mapping.call_count == 1
         expected = [
-            mock.call(
+            mocker.call(
                 self.src_dim_coverage,
                 self.tgt_dim_coverage,
                 self.src_aux_coverage,
                 self.tgt_aux_coverage,
             )
         ]
-        self.assertEqual(expected, self.m_free_mapping.call_args_list)
-        self.assertEqual(1, self.m_as_compatible_cubes.call_count)
+        assert self.m_free_mapping.call_args_list == expected
+        assert self.m_as_compatible_cubes.call_count == 1
 
-    def test_mapped__dim_coords_with_broadcast_flip(self):
+    def test_mapped__dim_coords_with_broadcast_flip(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -1965,16 +1980,16 @@ class Test__metadata_mapping(tests.IrisTest):
         self.resolve._src_cube_resolved.shape = broadcast_shape
         self.resolve._tgt_cube_resolved.shape = (1, 4, 3, 2)
         self.resolve._metadata_mapping()
-        self.assertEqual(mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(0, self.m_aux_mapping.call_count)
-        self.assertEqual(0, self.m_free_mapping.call_count)
-        self.assertEqual(2, self.m_as_compatible_cubes.call_count)
-        self.assertEqual(not self.map_rhs_to_lhs, self.resolve.map_rhs_to_lhs)
+        assert self.resolve.mapping == mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 0
+        assert self.m_free_mapping.call_count == 0
+        assert self.m_as_compatible_cubes.call_count == 2
+        assert self.resolve.map_rhs_to_lhs != self.map_rhs_to_lhs
 
-    def test_mapped__dim_coords_free_flip_with_free_flip(self):
+    def test_mapped__dim_coords_free_flip_with_free_flip(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) a=aux, d=dim
         #
@@ -1997,28 +2012,29 @@ class Test__metadata_mapping(tests.IrisTest):
         self.tgt_dim_coverage.dims_free = [0, 1]
         self.tgt_aux_coverage.dims_free = [0, 1]
         self.resolve._metadata_mapping()
-        self.assertEqual(mapping, self.resolve.mapping)
-        self.assertEqual(1, self.m_dim_mapping.call_count)
-        expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_dim_mapping.call_args_list)
-        self.assertEqual(1, self.m_aux_mapping.call_count)
-        expected = [mock.call(self.src_aux_coverage, self.tgt_aux_coverage)]
-        self.assertEqual(expected, self.m_aux_mapping.call_args_list)
-        self.assertEqual(1, self.m_free_mapping.call_count)
+        assert self.resolve.mapping == mapping
+        assert self.m_dim_mapping.call_count == 1
+        expected = [mocker.call(self.src_dim_coverage, self.tgt_dim_coverage)]
+        assert self.m_dim_mapping.call_args_list == expected
+        assert self.m_aux_mapping.call_count == 1
+        expected = [mocker.call(self.src_aux_coverage, self.tgt_aux_coverage)]
+        assert self.m_aux_mapping.call_args_list == expected
+        assert self.m_free_mapping.call_count == 1
         expected = [
-            mock.call(
+            mocker.call(
                 self.src_dim_coverage,
                 self.tgt_dim_coverage,
                 self.src_aux_coverage,
                 self.tgt_aux_coverage,
             )
         ]
-        self.assertEqual(expected, self.m_free_mapping.call_args_list)
-        self.assertEqual(2, self.m_as_compatible_cubes.call_count)
+        assert self.m_free_mapping.call_args_list == expected
+        assert self.m_as_compatible_cubes.call_count == 2
 
 
-class Test__prepare_common_dim_payload(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_common_dim_payload:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -2031,26 +2047,30 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
         self.points = (
-            sentinel.points_0,
-            sentinel.points_1,
-            sentinel.points_2,
-            sentinel.points_3,
+            mocker.sentinel.points_0,
+            mocker.sentinel.points_1,
+            mocker.sentinel.points_2,
+            mocker.sentinel.points_3,
         )
-        self.bounds = sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2
+        self.bounds = (
+            mocker.sentinel.bounds_0,
+            mocker.sentinel.bounds_1,
+            mocker.sentinel.bounds_2,
+        )
         self.pb_0 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[0])),
-            mock.Mock(copy=mock.Mock(return_value=self.bounds[0])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[0])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.bounds[0])),
         )
         self.pb_1 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[1])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[1])),
             None,
         )
         self.pb_2 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[2])),
-            mock.Mock(copy=mock.Mock(return_value=self.bounds[2])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[2])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.bounds[2])),
         )
         side_effect = (self.pb_0, self.pb_1, self.pb_2)
-        self.m_prepare_points_and_bounds = self.patch(
+        self.m_prepare_points_and_bounds = mocker.patch(
             "iris.common.resolve.Resolve._prepare_points_and_bounds",
             side_effect=side_effect,
         )
@@ -2061,12 +2081,12 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         self.mapping = {0: 1, 1: 2, 2: 3}
         self.resolve.mapping = self.mapping
         self.metadata_combined = (
-            sentinel.combined_0,
-            sentinel.combined_1,
-            sentinel.combined_2,
+            mocker.sentinel.combined_0,
+            mocker.sentinel.combined_1,
+            mocker.sentinel.combined_2,
         )
-        self.src_metadata = mock.Mock(
-            combine=mock.Mock(side_effect=self.metadata_combined)
+        self.src_metadata = mocker.Mock(
+            combine=mocker.Mock(side_effect=self.metadata_combined)
         )
         metadata = [self.src_metadata] * len(self.mapping)
         self.src_coords = [
@@ -2074,9 +2094,9 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
             # be of a class which is not-a-MeshCoord.
             # NOTE: strictly, bounds should =above values, and support .copy().
             # For these tests, just omitting them works + is simpler.
-            Mock(spec=DimCoord, points=self.points[0], bounds=None),
-            Mock(spec=DimCoord, points=self.points[1], bounds=None),
-            Mock(spec=DimCoord, points=self.points[2], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[2], bounds=None),
         ]
         self.src_dims_common = [0, 1, 2]
         self.container = DimCoord
@@ -2089,20 +2109,20 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
             dims_free=[],
         )
         self.tgt_metadata = [
-            sentinel.tgt_metadata_0,
-            sentinel.tgt_metadata_1,
-            sentinel.tgt_metadata_2,
-            sentinel.tgt_metadata_3,
+            mocker.sentinel.tgt_metadata_0,
+            mocker.sentinel.tgt_metadata_1,
+            mocker.sentinel.tgt_metadata_2,
+            mocker.sentinel.tgt_metadata_3,
         ]
         self.tgt_coords = [
             # N.B. these need to mimic a Coord with points and bounds, and
             # be of a class which is not-a-MeshCoord.
             # NOTE: strictly, bounds should =above values, and support .copy().
             # For these tests, just omitting them works + is simpler.
-            Mock(spec=DimCoord, points=self.points[0], bounds=None),
-            Mock(spec=DimCoord, points=self.points[1], bounds=None),
-            Mock(spec=DimCoord, points=self.points[2], bounds=None),
-            Mock(spec=DimCoord, points=self.points[3], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[0], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[1], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[2], bounds=None),
+            mocker.Mock(spec=DimCoord, points=self.points[3], bounds=None),
         ]
         self.tgt_dims_common = [1, 2, 3]
         self.tgt_dim_coverage = _DimCoverage(
@@ -2122,10 +2142,10 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
             self.tgt_dim_coverage,
             ignore_mismatch=ignore_mismatch,
         )
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_aux) == 0
+        assert len(self.resolve.prepared_category.items_scalar) == 0
         if not bad_points:
-            self.assertEqual(3, len(self.resolve.prepared_category.items_dim))
+            assert len(self.resolve.prepared_category.items_dim) == 3
             expected = [
                 _PreparedItem(
                     metadata=_PreparedMetadata(
@@ -2161,10 +2181,10 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
                     container=self.container,
                 ),
             ]
-            self.assertEqual(expected, self.resolve.prepared_category.items_dim)
+            assert self.resolve.prepared_category.items_dim == expected
         else:
-            self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(3, self.m_prepare_points_and_bounds.call_count)
+            assert len(self.resolve.prepared_category.items_dim) == 0
+        assert self.m_prepare_points_and_bounds.call_count == 3
         if ignore_mismatch is None:
             ignore_mismatch = False
         expected = [
@@ -2190,11 +2210,11 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
                 ignore_mismatch=ignore_mismatch,
             ),
         ]
-        self.assertEqual(expected, self.m_prepare_points_and_bounds.call_args_list)
+        assert self.m_prepare_points_and_bounds.call_args_list == expected
         if not bad_points:
-            self.assertEqual(3, self.src_metadata.combine.call_count)
+            assert self.src_metadata.combine.call_count == 3
             expected = [mock.call(metadata) for metadata in self.tgt_metadata[1:]]
-            self.assertEqual(expected, self.src_metadata.combine.call_args_list)
+            assert self.src_metadata.combine.call_args_list == expected
 
     def test__default_ignore_mismatch(self):
         self._check()
@@ -2211,8 +2231,9 @@ class Test__prepare_common_dim_payload(tests.IrisTest):
         self._check(bad_points=True)
 
 
-class Test__prepare_common_aux_payload(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_common_aux_payload:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         # key: (state) c=common, f=free
         #      (coord) a=aux, d=dim
         #
@@ -2225,26 +2246,30 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         # src-to-tgt mapping:
         #   0->1, 1->2, 2->3
         self.points = (
-            sentinel.points_0,
-            sentinel.points_1,
-            sentinel.points_2,
-            sentinel.points_3,
+            mocker.sentinel.points_0,
+            mocker.sentinel.points_1,
+            mocker.sentinel.points_2,
+            mocker.sentinel.points_3,
         )
-        self.bounds = (sentinel.bounds_0, sentinel.bounds_1, sentinel.bounds_2)
+        self.bounds = (
+            mocker.sentinel.bounds_0,
+            mocker.sentinel.bounds_1,
+            mocker.sentinel.bounds_2,
+        )
         self.pb_0 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[0])),
-            mock.Mock(copy=mock.Mock(return_value=self.bounds[0])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[0])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.bounds[0])),
         )
         self.pb_1 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[1])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[1])),
             None,
         )
         self.pb_2 = (
-            mock.Mock(copy=mock.Mock(return_value=self.points[2])),
-            mock.Mock(copy=mock.Mock(return_value=self.bounds[2])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.points[2])),
+            mocker.Mock(copy=mocker.Mock(return_value=self.bounds[2])),
         )
         side_effect = (self.pb_0, self.pb_1, self.pb_2)
-        self.m_prepare_points_and_bounds = self.patch(
+        self.m_prepare_points_and_bounds = mocker.patch(
             "iris.common.resolve.Resolve._prepare_points_and_bounds",
             side_effect=side_effect,
         )
@@ -2256,14 +2281,14 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         self.resolve.mapping = self.mapping
         self.resolve.map_rhs_to_lhs = True
         self.metadata_combined = (
-            sentinel.combined_0,
-            sentinel.combined_1,
-            sentinel.combined_2,
+            mocker.sentinel.combined_0,
+            mocker.sentinel.combined_1,
+            mocker.sentinel.combined_2,
         )
         self.src_metadata = [
-            mock.Mock(combine=mock.Mock(return_value=self.metadata_combined[0])),
-            mock.Mock(combine=mock.Mock(return_value=self.metadata_combined[1])),
-            mock.Mock(combine=mock.Mock(return_value=self.metadata_combined[2])),
+            mocker.Mock(combine=mocker.Mock(return_value=self.metadata_combined[0])),
+            mocker.Mock(combine=mocker.Mock(return_value=self.metadata_combined[1])),
+            mocker.Mock(combine=mocker.Mock(return_value=self.metadata_combined[2])),
         ]
         self.src_coords = [
             # N.B. these need to mimic a Coord with points and bounds, but also
@@ -2279,7 +2304,7 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
             _Item(*item)
             for item in zip(self.src_metadata, self.src_coords, self.src_dims)
         ]
-        self.tgt_metadata = [sentinel.tgt_metadata_0] + self.src_metadata
+        self.tgt_metadata = [mocker.sentinel.tgt_metadata_0] + self.src_metadata
         self.tgt_coords = [
             # N.B. these need to mimic a Coord with points and bounds, but also
             # the type() defines the 'container' property of a prepared item.
@@ -2308,7 +2333,7 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
             ignore_mismatch=ignore_mismatch,
         )
         if not bad_points:
-            self.assertEqual(3, len(prepared_items))
+            assert len(prepared_items) == 3
             expected = [
                 _PreparedItem(
                     metadata=_PreparedMetadata(
@@ -2344,10 +2369,10 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
                     container=self.container,
                 ),
             ]
-            self.assertEqual(expected, prepared_items)
+            assert prepared_items == expected
         else:
-            self.assertEqual(0, len(prepared_items))
-        self.assertEqual(3, self.m_prepare_points_and_bounds.call_count)
+            assert len(prepared_items) == 0
+        assert self.m_prepare_points_and_bounds.call_count == 3
         if ignore_mismatch is None:
             ignore_mismatch = False
         expected = [
@@ -2373,14 +2398,14 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
                 ignore_mismatch=ignore_mismatch,
             ),
         ]
-        self.assertEqual(expected, self.m_prepare_points_and_bounds.call_args_list)
+        assert self.m_prepare_points_and_bounds.call_args_list == expected
         if not bad_points:
             for src_metadata, tgt_metadata in zip(
                 self.src_metadata, self.tgt_metadata[1:]
             ):
-                self.assertEqual(1, src_metadata.combine.call_count)
+                assert src_metadata.combine.call_count == 1
                 expected = [mock.call(tgt_metadata)]
-                self.assertEqual(expected, src_metadata.combine.call_args_list)
+                assert src_metadata.combine.call_args_list == expected
 
     def test__default_ignore_mismatch(self):
         self._check()
@@ -2403,7 +2428,7 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         self.resolve._prepare_common_aux_payload(
             self.src_common_items, tgt_common_items, prepared_items
         )
-        self.assertEqual(0, len(prepared_items))
+        assert len(prepared_items) == 0
 
     def test__multi_tgt_metadata_match(self):
         item = self.tgt_common_items[1]
@@ -2412,11 +2437,12 @@ class Test__prepare_common_aux_payload(tests.IrisTest):
         self.resolve._prepare_common_aux_payload(
             self.src_common_items, tgt_common_items, prepared_items
         )
-        self.assertEqual(0, len(prepared_items))
+        assert len(prepared_items) == 0
 
 
-class Test__prepare_points_and_bounds(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_points_and_bounds:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Coord = namedtuple(
             "Coord",
             [
@@ -2432,10 +2458,10 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         self.Cube = namedtuple("Cube", ["name", "shape"])
         self.resolve = Resolve()
         self.resolve.map_rhs_to_lhs = True
-        self.src_name = sentinel.src_name
-        self.src_points = sentinel.src_points
-        self.src_bounds = sentinel.src_bounds
-        self.src_metadata = sentinel.src_metadata
+        self.src_name = mocker.sentinel.src_name
+        self.src_points = mocker.sentinel.src_points
+        self.src_bounds = mocker.sentinel.src_bounds
+        self.src_metadata = mocker.sentinel.src_metadata
         self.src_items = dict(
             name=lambda: self.src_name,
             points=self.src_points,
@@ -2445,10 +2471,10 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
             shape=None,
             has_bounds=None,
         )
-        self.tgt_name = sentinel.tgt_name
-        self.tgt_points = sentinel.tgt_points
-        self.tgt_bounds = sentinel.tgt_bounds
-        self.tgt_metadata = sentinel.tgt_metadata
+        self.tgt_name = mocker.sentinel.tgt_name
+        self.tgt_points = mocker.sentinel.tgt_points
+        self.tgt_bounds = mocker.sentinel.tgt_bounds
+        self.tgt_metadata = mocker.sentinel.tgt_metadata
         self.tgt_items = dict(
             name=lambda: self.tgt_name,
             points=self.tgt_points,
@@ -2458,7 +2484,7 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
             shape=None,
             has_bounds=None,
         )
-        self.m_array_equal = self.patch(
+        self.m_array_equal = mocker.patch(
             "iris.util.array_equal", side_effect=(True, True)
         )
 
@@ -2470,8 +2496,8 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             src_coord, tgt_coord, src_dims=None, tgt_dims=None
         )
-        self.assertEqual(self.tgt_points, points)
-        self.assertEqual(self.tgt_bounds, bounds)
+        assert points == self.tgt_points
+        assert bounds == self.tgt_bounds
 
     def test_coord_ndim_unequal__src_ndim_greater(self):
         self.src_items["ndim"] = 10
@@ -2481,8 +2507,8 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             src_coord, tgt_coord, src_dims=None, tgt_dims=None
         )
-        self.assertEqual(self.src_points, points)
-        self.assertEqual(self.src_bounds, bounds)
+        assert points == self.src_points
+        assert bounds == self.src_bounds
 
     def test_coord_ndim_equal__shape_unequal_with_src_broadcasting(self):
         # key: (state) c=common, f=free
@@ -2517,8 +2543,8 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             src_coord, tgt_coord, src_dims, tgt_dims
         )
-        self.assertEqual(self.tgt_points, points)
-        self.assertEqual(self.tgt_bounds, bounds)
+        assert points == self.tgt_points
+        assert bounds == self.tgt_bounds
 
     def test_coord_ndim_equal__shape_unequal_with_tgt_broadcasting(self):
         # key: (state) c=common, f=free
@@ -2553,11 +2579,12 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             src_coord, tgt_coord, src_dims, tgt_dims
         )
-        self.assertEqual(self.src_points, points)
-        self.assertEqual(self.src_bounds, bounds)
+        assert points == self.src_points
+        assert bounds == self.src_bounds
 
     def test_coord_ndim_equal__shape_unequal_with_unsupported_broadcasting(
         self,
+        mocker,
     ):
         # key: (state) c=common, f=free
         #      (coord) x=coord
@@ -2579,7 +2606,7 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         src_shape = (9, 1)
         src_dims = tuple(mapping.keys())
         self.resolve.rhs_cube = self.Cube(
-            name=lambda: sentinel.src_cube, shape=src_shape
+            name=lambda: mocker.sentinel.src_cube, shape=src_shape
         )
         self.src_items["ndim"] = ndim
         self.src_items["shape"] = src_shape
@@ -2587,13 +2614,13 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         tgt_shape = (1, 9)
         tgt_dims = tuple(mapping.values())
         self.resolve.lhs_cube = self.Cube(
-            name=lambda: sentinel.tgt_cube, shape=tgt_shape
+            name=lambda: mocker.sentinel.tgt_cube, shape=tgt_shape
         )
         self.tgt_items["ndim"] = ndim
         self.tgt_items["shape"] = tgt_shape
         tgt_coord = self.Coord(**self.tgt_items)
         emsg = "Cannot broadcast"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve._prepare_points_and_bounds(
                 src_coord, tgt_coord, src_dims, tgt_dims
             )
@@ -2614,8 +2641,12 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         mapping = {0: 0, 1: 1}
         self.resolve.mapping = mapping
         self.resolve.map_rhs_to_lhs = True
-        self.resolve.rhs_cube = self.Cube(name=lambda: sentinel.src_cube, shape=None)
-        self.resolve.lhs_cube = self.Cube(name=lambda: sentinel.tgt_cube, shape=None)
+        self.resolve.rhs_cube = self.Cube(
+            name=lambda: mock.sentinel.src_cube, shape=None
+        )
+        self.resolve.lhs_cube = self.Cube(
+            name=lambda: mock.sentinel.tgt_cube, shape=None
+        )
         ndim = 1
         src_dims = 1
         self.src_items["ndim"] = ndim
@@ -2639,40 +2670,42 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         )
         return args
 
-    def test_coord_ndim_and_shape_equal__points_equal_with_no_bounds(self):
+    def test_coord_ndim_and_shape_equal__points_equal_with_no_bounds(self, mocker):
         args = self._populate(self.src_points, self.src_points)
         points, bounds = self.resolve._prepare_points_and_bounds(**args)
-        self.assertEqual(self.src_points, points)
-        self.assertIsNone(bounds)
-        self.assertEqual(1, self.m_array_equal.call_count)
-        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
-        self.assertEqual(expected, self.m_array_equal.call_args_list)
+        assert points == self.src_points
+        assert bounds is None
+        assert self.m_array_equal.call_count == 1
+        expected = [mocker.call(self.src_points, self.src_points, withnans=True)]
+        assert self.m_array_equal.call_args_list == expected
 
     def test_coord_ndim_and_shape_equal__points_equal_with_src_bounds_only(
         self,
+        mocker,
     ):
         args = self._populate(
             self.src_points, self.src_points, src_bounds=self.src_bounds
         )
         points, bounds = self.resolve._prepare_points_and_bounds(**args)
-        self.assertEqual(self.src_points, points)
-        self.assertEqual(self.src_bounds, bounds)
-        self.assertEqual(1, self.m_array_equal.call_count)
-        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
-        self.assertEqual(expected, self.m_array_equal.call_args_list)
+        assert points == self.src_points
+        assert bounds == self.src_bounds
+        assert self.m_array_equal.call_count == 1
+        expected = [mocker.call(self.src_points, self.src_points, withnans=True)]
+        assert self.m_array_equal.call_args_list == expected
 
     def test_coord_ndim_and_shape_equal__points_equal_with_tgt_bounds_only(
         self,
+        mocker,
     ):
         args = self._populate(
             self.src_points, self.src_points, tgt_bounds=self.tgt_bounds
         )
         points, bounds = self.resolve._prepare_points_and_bounds(**args)
-        self.assertEqual(self.src_points, points)
-        self.assertEqual(self.tgt_bounds, bounds)
-        self.assertEqual(1, self.m_array_equal.call_count)
-        expected = [mock.call(self.src_points, self.src_points, withnans=True)]
-        self.assertEqual(expected, self.m_array_equal.call_args_list)
+        assert points == self.src_points
+        assert bounds == self.tgt_bounds
+        assert self.m_array_equal.call_count == 1
+        expected = [mocker.call(self.src_points, self.src_points, withnans=True)]
+        assert self.m_array_equal.call_args_list == expected
 
     def test_coord_ndim_and_shape_equal__points_equal_with_src_bounds_only_strict(
         self,
@@ -2682,7 +2715,7 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         )
         with LENIENT.context(maths=False):
             emsg = f"Coordinate {self.src_name} has bounds"
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 _ = self.resolve._prepare_points_and_bounds(**args)
 
     def test_coord_ndim_and_shape_equal__points_equal_with_tgt_bounds_only_strict(
@@ -2693,10 +2726,10 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         )
         with LENIENT.context(maths=False):
             emsg = f"Coordinate {self.tgt_name} has bounds"
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 _ = self.resolve._prepare_points_and_bounds(**args)
 
-    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_equal(self):
+    def test_coord_ndim_and_shape_equal__points_equal_with_bounds_equal(self, mocker):
         args = self._populate(
             self.src_points,
             self.src_points,
@@ -2704,14 +2737,14 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
             tgt_bounds=self.src_bounds,
         )
         points, bounds = self.resolve._prepare_points_and_bounds(**args)
-        self.assertEqual(self.src_points, points)
-        self.assertEqual(self.src_bounds, bounds)
-        self.assertEqual(2, self.m_array_equal.call_count)
+        assert points == self.src_points
+        assert bounds == self.src_bounds
+        assert self.m_array_equal.call_count == 2
         expected = [
-            mock.call(self.src_points, self.src_points, withnans=True),
-            mock.call(self.src_bounds, self.src_bounds, withnans=True),
+            mocker.call(self.src_points, self.src_points, withnans=True),
+            mocker.call(self.src_bounds, self.src_bounds, withnans=True),
         ]
-        self.assertEqual(expected, self.m_array_equal.call_args_list)
+        assert self.m_array_equal.call_args_list == expected
 
     def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different(
         self,
@@ -2724,11 +2757,12 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
             tgt_bounds=self.tgt_bounds,
         )
         emsg = f"Coordinate {self.src_name} has different bounds"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve._prepare_points_and_bounds(**args)
 
     def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different_ignore_mismatch(
         self,
+        mocker,
     ):
         self.m_array_equal.side_effect = (True, False)
         args = self._populate(
@@ -2740,14 +2774,14 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             **args, ignore_mismatch=True
         )
-        self.assertEqual(self.src_points, points)
-        self.assertIsNone(bounds)
-        self.assertEqual(2, self.m_array_equal.call_count)
+        assert points == self.src_points
+        assert bounds is None
+        assert self.m_array_equal.call_count == 2
         expected = [
-            mock.call(self.src_points, self.src_points, withnans=True),
-            mock.call(self.src_bounds, self.tgt_bounds, withnans=True),
+            mocker.call(self.src_points, self.src_points, withnans=True),
+            mocker.call(self.src_bounds, self.tgt_bounds, withnans=True),
         ]
-        self.assertEqual(expected, self.m_array_equal.call_args_list)
+        assert self.m_array_equal.call_args_list == expected
 
     def test_coord_ndim_and_shape_equal__points_equal_with_bounds_different_strict(
         self,
@@ -2761,14 +2795,14 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         )
         with LENIENT.context(maths=False):
             emsg = f"Coordinate {self.src_name} has different bounds"
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 _ = self.resolve._prepare_points_and_bounds(**args)
 
     def test_coord_ndim_and_shape_equal__points_different(self):
         self.m_array_equal.side_effect = (False,)
         args = self._populate(self.src_points, self.tgt_points)
         emsg = f"Coordinate {self.src_name} has different points"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve._prepare_points_and_bounds(**args)
 
     def test_coord_ndim_and_shape_equal__points_different_ignore_mismatch(
@@ -2779,30 +2813,31 @@ class Test__prepare_points_and_bounds(tests.IrisTest):
         points, bounds = self.resolve._prepare_points_and_bounds(
             **args, ignore_mismatch=True
         )
-        self.assertIsNone(points)
-        self.assertIsNone(bounds)
+        assert points is None
+        assert bounds is None
 
     def test_coord_ndim_and_shape_equal__points_different_strict(self):
         self.m_array_equal.side_effect = (False,)
         args = self._populate(self.src_points, self.tgt_points)
         with LENIENT.context(maths=False):
             emsg = f"Coordinate {self.src_name} has different points"
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 _ = self.resolve._prepare_points_and_bounds(**args)
 
 
-class Test__create_prepared_item(tests.IrisTest):
-    def setUp(self):
+class Test__create_prepared_item:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         Coord = namedtuple("Coord", ["points", "bounds"])
-        self.points_value = sentinel.points
-        self.points = mock.Mock(copy=mock.Mock(return_value=self.points_value))
-        self.bounds_value = sentinel.bounds
-        self.bounds = mock.Mock(copy=mock.Mock(return_value=self.bounds_value))
+        self.points_value = mocker.sentinel.points
+        self.points = mocker.Mock(copy=mocker.Mock(return_value=self.points_value))
+        self.bounds_value = mocker.sentinel.bounds
+        self.bounds = mocker.Mock(copy=mocker.Mock(return_value=self.bounds_value))
         self.coord = Coord(points=self.points, bounds=self.bounds)
         self.container = type(self.coord)
-        self.combined = sentinel.combined
-        self.src = mock.Mock(combine=mock.Mock(return_value=self.combined))
-        self.tgt = sentinel.tgt
+        self.combined = mocker.sentinel.combined
+        self.src = mocker.Mock(combine=mocker.Mock(return_value=self.combined))
+        self.tgt = mocker.sentinel.tgt
 
     def _check(self, src=None, tgt=None):
         dims = 0
@@ -2813,18 +2848,18 @@ class Test__create_prepared_item(tests.IrisTest):
         result = Resolve._create_prepared_item(
             self.coord, dims, src_metadata=src, tgt_metadata=tgt
         )
-        self.assertIsInstance(result, _PreparedItem)
-        self.assertIsInstance(result.metadata, _PreparedMetadata)
+        assert isinstance(result, _PreparedItem)
+        assert isinstance(result.metadata, _PreparedMetadata)
         expected = _PreparedMetadata(combined=combined, src=src, tgt=tgt)
-        self.assertEqual(expected, result.metadata)
-        self.assertEqual(self.points_value, result.points)
-        self.assertEqual(1, self.points.copy.call_count)
-        self.assertEqual([mock.call()], self.points.copy.call_args_list)
-        self.assertEqual(self.bounds_value, result.bounds)
-        self.assertEqual(1, self.bounds.copy.call_count)
-        self.assertEqual([mock.call()], self.bounds.copy.call_args_list)
-        self.assertEqual((dims,), result.dims)
-        self.assertEqual(self.container, result.container)
+        assert result.metadata == expected
+        assert result.points == self.points_value
+        assert self.points.copy.call_count == 1
+        assert self.points.copy.call_args_list == [mock.call()]
+        assert result.bounds == self.bounds_value
+        assert self.bounds.copy.call_count == 1
+        assert self.bounds.copy.call_args_list == [mock.call()]
+        assert result.dims == (dims,)
+        assert result.container == self.container
 
     def test__no_metadata(self):
         self._check()
@@ -2839,8 +2874,9 @@ class Test__create_prepared_item(tests.IrisTest):
         self._check(src=self.src, tgt=self.tgt)
 
 
-class Test__prepare_local_payload_dim(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_local_payload_dim:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Cube = namedtuple("Cube", ["ndim"])
         self.resolve = Resolve()
         self.resolve.prepared_category = _CategoryItems(
@@ -2856,8 +2892,8 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
             dims_free=None,
         )
         self.tgt_coverage = deepcopy(self.src_coverage)
-        self.prepared_item = sentinel.prepared_item
-        self.m_create_prepared_item = self.patch(
+        self.prepared_item = mocker.sentinel.prepared_item
+        self.m_create_prepared_item = mocker.patch(
             "iris.common.resolve.Resolve._create_prepared_item",
             return_value=self.prepared_item,
         )
@@ -2880,7 +2916,7 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
     def test_src_no_local_with_tgt_no_local__strict(self):
         # key: (state) c=common, f=free, l=local
@@ -2901,7 +2937,7 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
     def test_src_local_with_tgt_local(self):
         # key: (state) c=common, f=free, l=local
@@ -2923,7 +2959,7 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
     def test_src_local_with_tgt_local__strict(self):
         # key: (state) c=common, f=free, l=local
@@ -2946,9 +2982,9 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
-    def test_src_local_with_tgt_free(self):
+    def test_src_local_with_tgt_free(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -2964,23 +3000,21 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.resolve.mapping = mapping
         src_dim = 1
         self.src_coverage["dims_local"] = (src_dim,)
-        src_metadata = sentinel.src_metadata
+        src_metadata = mocker.sentinel.src_metadata
         self.src_coverage["metadata"] = [None, src_metadata]
-        src_coord = sentinel.src_coord
+        src_coord = mocker.sentinel.src_coord
         self.src_coverage["coords"] = [None, src_coord]
         src_coverage = _DimCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(
-            self.prepared_item, self.resolve.prepared_category.items_dim[0]
-        )
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
-        expected = [mock.call(src_coord, mapping[src_dim], src_metadata=src_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert len(self.resolve.prepared_category.items_dim) == 1
+        assert self.resolve.prepared_category.items_dim[0] == self.prepared_item
+        assert self.m_create_prepared_item.call_count == 1
+        expected = [mocker.call(src_coord, mapping[src_dim], src_metadata=src_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_free__strict(self):
+    def test_src_local_with_tgt_free__strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -2996,18 +3030,18 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.resolve.mapping = mapping
         src_dim = 1
         self.src_coverage["dims_local"] = (src_dim,)
-        src_metadata = sentinel.src_metadata
+        src_metadata = mocker.sentinel.src_metadata
         self.src_coverage["metadata"] = [None, src_metadata]
-        src_coord = sentinel.src_coord
+        src_coord = mocker.sentinel.src_coord
         self.src_coverage["coords"] = [None, src_coord]
         src_coverage = _DimCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
-    def test_src_free_with_tgt_local(self):
+    def test_src_free_with_tgt_local(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3025,21 +3059,19 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_dim = 1
         self.tgt_coverage["dims_local"] = (tgt_dim,)
-        tgt_metadata = sentinel.tgt_metadata
+        tgt_metadata = mocker.sentinel.tgt_metadata
         self.tgt_coverage["metadata"] = [None, tgt_metadata]
-        tgt_coord = sentinel.tgt_coord
+        tgt_coord = mocker.sentinel.tgt_coord
         self.tgt_coverage["coords"] = [None, tgt_coord]
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(
-            self.prepared_item, self.resolve.prepared_category.items_dim[0]
-        )
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
-        expected = [mock.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert len(self.resolve.prepared_category.items_dim) == 1
+        assert self.prepared_item == self.resolve.prepared_category.items_dim[0]
+        assert self.m_create_prepared_item.call_count == 1
+        expected = [mocker.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_free_with_tgt_local__strict(self):
+    def test_src_free_with_tgt_local__strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3057,16 +3089,16 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_dim = 1
         self.tgt_coverage["dims_local"] = (tgt_dim,)
-        tgt_metadata = sentinel.tgt_metadata
+        tgt_metadata = mocker.sentinel.tgt_metadata
         self.tgt_coverage["metadata"] = [None, tgt_metadata]
-        tgt_coord = sentinel.tgt_coord
+        tgt_coord = mocker.sentinel.tgt_coord
         self.tgt_coverage["coords"] = [None, tgt_coord]
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_dim))
+        assert len(self.resolve.prepared_category.items_dim) == 0
 
-    def test_src_no_local_with_tgt_local__extra_dims(self):
+    def test_src_no_local_with_tgt_local__extra_dims(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3084,21 +3116,19 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=3)
         tgt_dim = 0
         self.tgt_coverage["dims_local"] = (tgt_dim,)
-        tgt_metadata = sentinel.tgt_metadata
+        tgt_metadata = mocker.sentinel.tgt_metadata
         self.tgt_coverage["metadata"] = [tgt_metadata, None, None]
-        tgt_coord = sentinel.tgt_coord
+        tgt_coord = mocker.sentinel.tgt_coord
         self.tgt_coverage["coords"] = [tgt_coord, None, None]
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(
-            self.prepared_item, self.resolve.prepared_category.items_dim[0]
-        )
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
-        expected = [mock.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert len(self.resolve.prepared_category.items_dim) == 1
+        assert self.resolve.prepared_category.items_dim[0] == self.prepared_item
+        assert self.m_create_prepared_item.call_count == 1
+        expected = [mocker.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_no_local_with_tgt_local__extra_dims_strict(self):
+    def test_src_no_local_with_tgt_local__extra_dims_strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3116,24 +3146,23 @@ class Test__prepare_local_payload_dim(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=3)
         tgt_dim = 0
         self.tgt_coverage["dims_local"] = (tgt_dim,)
-        tgt_metadata = sentinel.tgt_metadata
+        tgt_metadata = mocker.sentinel.tgt_metadata
         self.tgt_coverage["metadata"] = [tgt_metadata, None, None]
-        tgt_coord = sentinel.tgt_coord
+        tgt_coord = mocker.sentinel.tgt_coord
         self.tgt_coverage["coords"] = [tgt_coord, None, None]
         tgt_coverage = _DimCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_dim(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(
-            self.prepared_item, self.resolve.prepared_category.items_dim[0]
-        )
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
-        expected = [mock.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert len(self.resolve.prepared_category.items_dim) == 1
+        assert self.resolve.prepared_category.items_dim[0] == self.prepared_item
+        assert self.m_create_prepared_item.call_count == 1
+        expected = [mocker.call(tgt_coord, tgt_dim, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
 
-class Test__prepare_local_payload_aux(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_local_payload_aux:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Cube = namedtuple("Cube", ["ndim"])
         self.resolve = Resolve()
         self.resolve.prepared_category = _CategoryItems(
@@ -3151,9 +3180,9 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
             dims_free=None,
         )
         self.tgt_coverage = deepcopy(self.src_coverage)
-        self.src_prepared_item = sentinel.src_prepared_item
-        self.tgt_prepared_item = sentinel.tgt_prepared_item
-        self.m_create_prepared_item = self.patch(
+        self.src_prepared_item = mocker.sentinel.src_prepared_item
+        self.tgt_prepared_item = mocker.sentinel.tgt_prepared_item
+        self.m_create_prepared_item = mocker.patch(
             "iris.common.resolve.Resolve._create_prepared_item",
             side_effect=(self.src_prepared_item, self.tgt_prepared_item),
         )
@@ -3176,7 +3205,7 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 0
 
     def test_src_no_local_with_tgt_no_local__strict(self):
         # key: (state) c=common, f=free, l=local
@@ -3197,9 +3226,9 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 0
 
-    def test_src_local_with_tgt_local(self):
+    def test_src_local_with_tgt_local(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3213,30 +3242,30 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         #   0->0, 1->1
         mapping = {0: 0, 1: 1}
         self.resolve.mapping = mapping
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_dims = (1,)
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
         self.src_coverage["local_items_aux"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (1,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 2
         expected = [self.src_prepared_item, self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
+        assert self.resolve.prepared_category.items_aux == expected
         expected = [
-            mock.call(src_coord, tgt_dims, src_metadata=src_metadata),
-            mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata),
+            mocker.call(src_coord, tgt_dims, src_metadata=src_metadata),
+            mocker.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata),
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_local__strict(self):
+    def test_src_local_with_tgt_local__strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3250,24 +3279,24 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         #   0->0, 1->1
         mapping = {0: 0, 1: 1}
         self.resolve.mapping = mapping
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_dims = (1,)
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
         self.src_coverage["local_items_aux"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (1,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 0
 
-    def test_src_local_with_tgt_free(self):
+    def test_src_local_with_tgt_free(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3281,8 +3310,8 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         #   0->0, 1->1
         mapping = {0: 0, 1: 1}
         self.resolve.mapping = mapping
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_dims = (1,)
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
         self.src_coverage["local_items_aux"].append(src_item)
@@ -3291,13 +3320,13 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 1
         expected = [self.src_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
-        expected = [mock.call(src_coord, src_dims, src_metadata=src_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_aux == expected
+        expected = [mocker.call(src_coord, src_dims, src_metadata=src_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_free__strict(self):
+    def test_src_local_with_tgt_free__strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3311,8 +3340,8 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         #   0->0, 1->1
         mapping = {0: 0, 1: 1}
         self.resolve.mapping = mapping
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_dims = (1,)
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=src_dims)
         self.src_coverage["local_items_aux"].append(src_item)
@@ -3322,9 +3351,9 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 0
 
-    def test_src_free_with_tgt_local(self):
+    def test_src_free_with_tgt_local(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3341,21 +3370,21 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.resolve.mapping = mapping
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (1,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
         self.tgt_coverage["dims_local"].extend(tgt_dims)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
-        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_aux == expected
+        expected = [mocker.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_free_with_tgt_local__strict(self):
+    def test_src_free_with_tgt_local__strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3372,8 +3401,8 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.resolve.mapping = mapping
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=2)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (1,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
@@ -3381,9 +3410,9 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 0
 
-    def test_src_no_local_with_tgt_local__extra_dims(self):
+    def test_src_no_local_with_tgt_local__extra_dims(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3400,21 +3429,21 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.resolve.mapping = mapping
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=3)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (0,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
         self.tgt_coverage["dims_local"].extend(tgt_dims)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
-        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_aux == expected
+        expected = [mocker.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_no_local_with_tgt_local__extra_dims_strict(self):
+    def test_src_no_local_with_tgt_local__extra_dims_strict(self, mocker):
         # key: (state) c=common, f=free, l=local
         #      (coord) d=dim
         #
@@ -3431,8 +3460,8 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         self.resolve.mapping = mapping
         src_coverage = _AuxCoverage(**self.src_coverage)
         self.tgt_coverage["cube"] = self.Cube(ndim=3)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_dims = (0,)
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=tgt_dims)
         self.tgt_coverage["local_items_aux"].append(tgt_item)
@@ -3440,15 +3469,16 @@ class Test__prepare_local_payload_aux(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=True):
             self.resolve._prepare_local_payload_aux(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_aux))
+        assert len(self.resolve.prepared_category.items_aux) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux)
-        expected = [mock.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_aux == expected
+        expected = [mocker.call(tgt_coord, tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
 
-class Test__prepare_local_payload_scalar(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_local_payload_scalar:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Cube = namedtuple("Cube", ["ndim"])
         self.resolve = Resolve()
         self.resolve.prepared_category = _CategoryItems(
@@ -3465,9 +3495,9 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
             dims_free=None,
         )
         self.tgt_coverage = deepcopy(self.src_coverage)
-        self.src_prepared_item = sentinel.src_prepared_item
-        self.tgt_prepared_item = sentinel.tgt_prepared_item
-        self.m_create_prepared_item = self.patch(
+        self.src_prepared_item = mocker.sentinel.src_prepared_item
+        self.tgt_prepared_item = mocker.sentinel.tgt_prepared_item
+        self.m_create_prepared_item = mocker.patch(
             "iris.common.resolve.Resolve._create_prepared_item",
             side_effect=(self.src_prepared_item, self.tgt_prepared_item),
         )
@@ -3480,7 +3510,7 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
     def test_src_no_local_with_tgt_no_local__strict(self):
         ndim = 2
@@ -3489,7 +3519,7 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
     def test_src_no_local_with_tgt_no_local__src_scalar_cube(self):
         ndim = 0
@@ -3497,7 +3527,7 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
     def test_src_no_local_with_tgt_no_local__src_scalar_cube_strict(self):
         ndim = 0
@@ -3506,223 +3536,223 @@ class Test__prepare_local_payload_scalar(tests.IrisTest):
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
-    def test_src_local_with_tgt_no_local(self):
+    def test_src_local_with_tgt_no_local(self, mocker):
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 1
         expected = [self.src_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
-        expected = [mock.call(src_coord, self.src_dims, src_metadata=src_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_scalar == expected
+        expected = [mocker.call(src_coord, self.src_dims, src_metadata=src_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_no_local__strict(self):
+    def test_src_local_with_tgt_no_local__strict(self, mocker):
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
-    def test_src_local_with_tgt_no_local__src_scalar_cube(self):
+    def test_src_local_with_tgt_no_local__src_scalar_cube(self, mocker):
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 1
         expected = [self.src_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
-        expected = [mock.call(src_coord, self.src_dims, src_metadata=src_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_scalar == expected
+        expected = [mocker.call(src_coord, self.src_dims, src_metadata=src_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_no_local__src_scalar_cube_strict(self):
+    def test_src_local_with_tgt_no_local__src_scalar_cube_strict(self, mocker):
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
-    def test_src_no_local_with_tgt_local(self):
+    def test_src_no_local_with_tgt_local(self, mocker):
         self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
-        expected = [mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_scalar == expected
+        expected = [mocker.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_no_local_with_tgt_local__strict(self):
+    def test_src_no_local_with_tgt_local__strict(self, mocker):
         self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
-    def test_src_no_local_with_tgt_local__src_scalar_cube(self):
+    def test_src_no_local_with_tgt_local__src_scalar_cube(self, mocker):
         self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
-        expected = [mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_scalar == expected
+        expected = [mocker.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_no_local_with_tgt_local__src_scalar_cube_strict(self):
+    def test_src_no_local_with_tgt_local__src_scalar_cube_strict(self, mocker):
         self.m_create_prepared_item.side_effect = (self.tgt_prepared_item,)
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(1, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 1
         expected = [self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
-        expected = [mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.resolve.prepared_category.items_scalar == expected
+        expected = [mocker.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata)]
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_local(self):
+    def test_src_local_with_tgt_local(self, mocker):
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 2
         expected = [self.src_prepared_item, self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        assert self.resolve.prepared_category.items_scalar == expected
         expected = [
-            mock.call(src_coord, self.src_dims, src_metadata=src_metadata),
-            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
+            mocker.call(src_coord, self.src_dims, src_metadata=src_metadata),
+            mocker.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_local__strict(self):
+    def test_src_local_with_tgt_local__strict(self, mocker):
         ndim = 2
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
-    def test_src_local_with_tgt_local__src_scalar_cube(self):
+    def test_src_local_with_tgt_local__src_scalar_cube(self, mocker):
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 2
         expected = [self.src_prepared_item, self.tgt_prepared_item]
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar)
+        assert self.resolve.prepared_category.items_scalar == expected
         expected = [
-            mock.call(src_coord, self.src_dims, src_metadata=src_metadata),
-            mock.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
+            mocker.call(src_coord, self.src_dims, src_metadata=src_metadata),
+            mocker.call(tgt_coord, self.tgt_dims, tgt_metadata=tgt_metadata),
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_src_local_with_tgt_local__src_scalar_cube_strict(self):
+    def test_src_local_with_tgt_local__src_scalar_cube_strict(self, mocker):
         ndim = 0
         self.src_coverage["cube"] = self.Cube(ndim=ndim)
-        src_metadata = sentinel.src_metadata
-        src_coord = sentinel.src_coord
+        src_metadata = mocker.sentinel.src_metadata
+        src_coord = mocker.sentinel.src_coord
         src_item = _Item(metadata=src_metadata, coord=src_coord, dims=self.src_dims)
         self.src_coverage["local_items_scalar"].append(src_item)
         src_coverage = _AuxCoverage(**self.src_coverage)
-        tgt_metadata = sentinel.tgt_metadata
-        tgt_coord = sentinel.tgt_coord
+        tgt_metadata = mocker.sentinel.tgt_metadata
+        tgt_coord = mocker.sentinel.tgt_coord
         tgt_item = _Item(metadata=tgt_metadata, coord=tgt_coord, dims=self.tgt_dims)
         self.tgt_coverage["local_items_scalar"].append(tgt_item)
         tgt_coverage = _AuxCoverage(**self.tgt_coverage)
         with LENIENT.context(maths=False):
             self.resolve._prepare_local_payload_scalar(src_coverage, tgt_coverage)
-        self.assertEqual(0, len(self.resolve.prepared_category.items_scalar))
+        assert len(self.resolve.prepared_category.items_scalar) == 0
 
 
-class Test__prepare_local_payload(tests.IrisTest):
-    def test(self):
-        src_dim_coverage = sentinel.src_dim_coverage
-        src_aux_coverage = sentinel.src_aux_coverage
-        tgt_dim_coverage = sentinel.tgt_dim_coverage
-        tgt_aux_coverage = sentinel.tgt_aux_coverage
+class Test__prepare_local_payload:
+    def test(self, mocker):
+        src_dim_coverage = mocker.sentinel.src_dim_coverage
+        src_aux_coverage = mocker.sentinel.src_aux_coverage
+        tgt_dim_coverage = mocker.sentinel.tgt_dim_coverage
+        tgt_aux_coverage = mocker.sentinel.tgt_aux_coverage
         root = "iris.common.resolve.Resolve"
-        m_prepare_dim = self.patch(f"{root}._prepare_local_payload_dim")
-        m_prepare_aux = self.patch(f"{root}._prepare_local_payload_aux")
-        m_prepare_scalar = self.patch(f"{root}._prepare_local_payload_scalar")
+        m_prepare_dim = mocker.patch(f"{root}._prepare_local_payload_dim")
+        m_prepare_aux = mocker.patch(f"{root}._prepare_local_payload_aux")
+        m_prepare_scalar = mocker.patch(f"{root}._prepare_local_payload_scalar")
         resolve = Resolve()
         resolve._prepare_local_payload(
             src_dim_coverage,
@@ -3730,55 +3760,58 @@ class Test__prepare_local_payload(tests.IrisTest):
             tgt_dim_coverage,
             tgt_aux_coverage,
         )
-        self.assertEqual(1, m_prepare_dim.call_count)
-        expected = [mock.call(src_dim_coverage, tgt_dim_coverage)]
-        self.assertEqual(expected, m_prepare_dim.call_args_list)
-        self.assertEqual(1, m_prepare_aux.call_count)
-        expected = [mock.call(src_aux_coverage, tgt_aux_coverage)]
-        self.assertEqual(expected, m_prepare_aux.call_args_list)
-        self.assertEqual(1, m_prepare_scalar.call_count)
-        expected = [mock.call(src_aux_coverage, tgt_aux_coverage)]
-        self.assertEqual(expected, m_prepare_scalar.call_args_list)
+        assert m_prepare_dim.call_count == 1
+        expected = [mocker.call(src_dim_coverage, tgt_dim_coverage)]
+        assert m_prepare_dim.call_args_list == expected
+        assert m_prepare_aux.call_count == 1
+        expected = [mocker.call(src_aux_coverage, tgt_aux_coverage)]
+        assert m_prepare_aux.call_args_list == expected
+        assert m_prepare_scalar.call_count == 1
+        expected = [mocker.call(src_aux_coverage, tgt_aux_coverage)]
+        assert m_prepare_scalar.call_args_list == expected
 
 
-class Test__metadata_prepare(tests.IrisTest):
-    def setUp(self):
-        self.src_cube = sentinel.src_cube
-        self.src_category_local = sentinel.src_category_local
-        self.src_dim_coverage = sentinel.src_dim_coverage
-        self.src_aux_coverage = mock.Mock(
-            common_items_aux=sentinel.src_aux_coverage_common_items_aux,
-            common_items_scalar=sentinel.src_aux_coverage_common_items_scalar,
+class Test__metadata_prepare:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.src_cube = mocker.sentinel.src_cube
+        self.src_category_local = mocker.sentinel.src_category_local
+        self.src_dim_coverage = mocker.sentinel.src_dim_coverage
+        self.src_aux_coverage = mocker.Mock(
+            common_items_aux=mocker.sentinel.src_aux_coverage_common_items_aux,
+            common_items_scalar=mocker.sentinel.src_aux_coverage_common_items_scalar,
         )
-        self.tgt_cube = sentinel.tgt_cube
-        self.tgt_category_local = sentinel.tgt_category_local
-        self.tgt_dim_coverage = sentinel.tgt_dim_coverage
-        self.tgt_aux_coverage = mock.Mock(
-            common_items_aux=sentinel.tgt_aux_coverage_common_items_aux,
-            common_items_scalar=sentinel.tgt_aux_coverage_common_items_scalar,
+        self.tgt_cube = mocker.sentinel.tgt_cube
+        self.tgt_category_local = mocker.sentinel.tgt_category_local
+        self.tgt_dim_coverage = mocker.sentinel.tgt_dim_coverage
+        self.tgt_aux_coverage = mocker.Mock(
+            common_items_aux=mocker.sentinel.tgt_aux_coverage_common_items_aux,
+            common_items_scalar=mocker.sentinel.tgt_aux_coverage_common_items_scalar,
         )
         self.resolve = Resolve()
         root = "iris.common.resolve.Resolve"
-        self.m_prepare_common_dim_payload = self.patch(
+        self.m_prepare_common_dim_payload = mocker.patch(
             f"{root}._prepare_common_dim_payload"
         )
-        self.m_prepare_common_aux_payload = self.patch(
+        self.m_prepare_common_aux_payload = mocker.patch(
             f"{root}._prepare_common_aux_payload"
         )
-        self.m_prepare_local_payload = self.patch(f"{root}._prepare_local_payload")
-        self.m_prepare_factory_payload = self.patch(f"{root}._prepare_factory_payload")
+        self.m_prepare_local_payload = mocker.patch(f"{root}._prepare_local_payload")
+        self.m_prepare_factory_payload = mocker.patch(
+            f"{root}._prepare_factory_payload"
+        )
 
     def _check(self):
-        self.assertIsNone(self.resolve.prepared_category)
-        self.assertIsNone(self.resolve.prepared_factories)
+        assert self.resolve.prepared_category is None
+        assert self.resolve.prepared_factories is None
         self.resolve._metadata_prepare()
         expected = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
-        self.assertEqual(expected, self.resolve.prepared_category)
-        self.assertEqual([], self.resolve.prepared_factories)
-        self.assertEqual(1, self.m_prepare_common_dim_payload.call_count)
+        assert self.resolve.prepared_category == expected
+        assert self.resolve.prepared_factories == []
+        assert self.m_prepare_common_dim_payload.call_count == 1
         expected = [mock.call(self.src_dim_coverage, self.tgt_dim_coverage)]
-        self.assertEqual(expected, self.m_prepare_common_dim_payload.call_args_list)
-        self.assertEqual(2, self.m_prepare_common_aux_payload.call_count)
+        assert self.m_prepare_common_dim_payload.call_args_list == expected
+        assert self.m_prepare_common_aux_payload.call_count == 2
         expected = [
             mock.call(
                 self.src_aux_coverage.common_items_aux,
@@ -3792,8 +3825,8 @@ class Test__metadata_prepare(tests.IrisTest):
                 ignore_mismatch=True,
             ),
         ]
-        self.assertEqual(expected, self.m_prepare_common_aux_payload.call_args_list)
-        self.assertEqual(1, self.m_prepare_local_payload.call_count)
+        assert self.m_prepare_common_aux_payload.call_args_list == expected
+        assert self.m_prepare_local_payload.call_count == 1
         expected = [
             mock.call(
                 self.src_dim_coverage,
@@ -3802,13 +3835,13 @@ class Test__metadata_prepare(tests.IrisTest):
                 self.tgt_aux_coverage,
             )
         ]
-        self.assertEqual(expected, self.m_prepare_local_payload.call_args_list)
-        self.assertEqual(2, self.m_prepare_factory_payload.call_count)
+        assert self.m_prepare_local_payload.call_args_list == expected
+        assert self.m_prepare_factory_payload.call_count == 2
         expected = [
             mock.call(self.tgt_cube, self.tgt_category_local, from_src=False),
             mock.call(self.src_cube, self.src_category_local),
         ]
-        self.assertEqual(expected, self.m_prepare_factory_payload.call_args_list)
+        assert self.m_prepare_factory_payload.call_args_list == expected
 
     def test_map_rhs_to_lhs__true(self):
         self.resolve.map_rhs_to_lhs = True
@@ -3835,8 +3868,9 @@ class Test__metadata_prepare(tests.IrisTest):
         self._check()
 
 
-class Test__prepare_factory_payload(tests.IrisTest):
-    def setUp(self):
+class Test__prepare_factory_payload:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.Cube = namedtuple("Cube", ["aux_factories"])
         self.Coord = namedtuple("Coord", ["metadata"])
         self.Factory_T1 = namedtuple(
@@ -3850,16 +3884,16 @@ class Test__prepare_factory_payload(tests.IrisTest):
         self.resolve = Resolve()
         self.resolve.map_rhs_to_lhs = True
         self.resolve.prepared_factories = []
-        self.m_get_prepared_item = self.patch(
+        self.m_get_prepared_item = mocker.patch(
             "iris.common.resolve.Resolve._get_prepared_item"
         )
-        self.category_local = sentinel.category_local
-        self.from_src = sentinel.from_src
+        self.category_local = mocker.sentinel.category_local
+        self.from_src = mocker.sentinel.from_src
 
     def test_no_factory(self):
         cube = self.Cube(aux_factories=[])
         self.resolve._prepare_factory_payload(cube, self.category_local)
-        self.assertEqual(0, len(self.resolve.prepared_factories))
+        assert len(self.resolve.prepared_factories) == 0
 
     def test_skip_factory__already_prepared(self):
         aux_factory = self.Factory_T1(dependencies=None)
@@ -3871,12 +3905,12 @@ class Test__prepare_factory_payload(tests.IrisTest):
         ]
         self.resolve.prepared_factories.extend(prepared_factories)
         self.resolve._prepare_factory_payload(cube, self.category_local)
-        self.assertEqual(prepared_factories, self.resolve.prepared_factories)
+        assert self.resolve.prepared_factories == prepared_factories
 
-    def test_factory__dependency_already_prepared(self):
-        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
-        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
-        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+    def test_factory__dependency_already_prepared(self, mocker):
+        coord_a = self.Coord(metadata=mocker.sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=mocker.sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=mocker.sentinel.coord_c_metadata)
         side_effect = (coord_a, coord_b, coord_c)
         self.m_get_prepared_item.side_effect = side_effect
         dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
@@ -3886,7 +3920,7 @@ class Test__prepare_factory_payload(tests.IrisTest):
         self.resolve._prepare_factory_payload(
             cube, self.category_local, from_src=self.from_src
         )
-        self.assertEqual(1, len(self.resolve.prepared_factories))
+        assert len(self.resolve.prepared_factories) == 1
         prepared_dependencies = {
             name: coord.metadata for name, coord in dependencies.items()
         }
@@ -3895,21 +3929,21 @@ class Test__prepare_factory_payload(tests.IrisTest):
                 container=self.container_T1, dependencies=prepared_dependencies
             )
         ]
-        self.assertEqual(expected, self.resolve.prepared_factories)
-        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        assert self.resolve.prepared_factories == expected
+        assert self.m_get_prepared_item.call_count == len(side_effect)
         expected = [
-            mock.call(coord_a.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_b.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_c.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_a.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_b.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_c.metadata, self.category_local, from_src=self.from_src),
         ]
         actual = self.m_get_prepared_item.call_args_list
         for call in expected:
-            self.assertIn(call, actual)
+            assert call in actual
 
-    def test_factory__dependency_local_not_prepared(self):
-        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
-        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
-        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+    def test_factory__dependency_local_not_prepared(self, mocker):
+        coord_a = self.Coord(metadata=mocker.sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=mocker.sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=mocker.sentinel.coord_c_metadata)
         side_effect = (None, coord_a, None, coord_b, None, coord_c)
         self.m_get_prepared_item.side_effect = side_effect
         dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
@@ -3919,7 +3953,7 @@ class Test__prepare_factory_payload(tests.IrisTest):
         self.resolve._prepare_factory_payload(
             cube, self.category_local, from_src=self.from_src
         )
-        self.assertEqual(1, len(self.resolve.prepared_factories))
+        assert len(self.resolve.prepared_factories) == 1
         prepared_dependencies = {
             name: coord.metadata for name, coord in dependencies.items()
         }
@@ -3928,25 +3962,25 @@ class Test__prepare_factory_payload(tests.IrisTest):
                 container=self.container_T1, dependencies=prepared_dependencies
             )
         ]
-        self.assertEqual(expected, self.resolve.prepared_factories)
-        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        assert self.resolve.prepared_factories == expected
+        assert self.m_get_prepared_item.call_count == len(side_effect)
         expected = [
-            mock.call(coord_a.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_b.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_c.metadata, self.category_local, from_src=self.from_src),
-            mock.call(
+            mocker.call(coord_a.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_b.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_c.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(
                 coord_a.metadata,
                 self.category_local,
                 from_src=self.from_src,
                 from_local=True,
             ),
-            mock.call(
+            mocker.call(
                 coord_b.metadata,
                 self.category_local,
                 from_src=self.from_src,
                 from_local=True,
             ),
-            mock.call(
+            mocker.call(
                 coord_c.metadata,
                 self.category_local,
                 from_src=self.from_src,
@@ -3955,12 +3989,12 @@ class Test__prepare_factory_payload(tests.IrisTest):
         ]
         actual = self.m_get_prepared_item.call_args_list
         for call in expected:
-            self.assertIn(call, actual)
+            assert call in actual
 
-    def test_factory__dependency_not_found(self):
-        coord_a = self.Coord(metadata=sentinel.coord_a_metadata)
-        coord_b = self.Coord(metadata=sentinel.coord_b_metadata)
-        coord_c = self.Coord(metadata=sentinel.coord_c_metadata)
+    def test_factory__dependency_not_found(self, mocker):
+        coord_a = self.Coord(metadata=mocker.sentinel.coord_a_metadata)
+        coord_b = self.Coord(metadata=mocker.sentinel.coord_b_metadata)
+        coord_c = self.Coord(metadata=mocker.sentinel.coord_c_metadata)
         side_effect = (None, None)
         self.m_get_prepared_item.side_effect = side_effect
         dependencies = dict(name_a=coord_a, name_b=coord_b, name_c=coord_c)
@@ -3970,25 +4004,25 @@ class Test__prepare_factory_payload(tests.IrisTest):
         self.resolve._prepare_factory_payload(
             cube, self.category_local, from_src=self.from_src
         )
-        self.assertEqual(0, len(self.resolve.prepared_factories))
-        self.assertEqual(len(side_effect), self.m_get_prepared_item.call_count)
+        assert len(self.resolve.prepared_factories) == 0
+        assert self.m_get_prepared_item.call_count == len(side_effect)
         expected = [
-            mock.call(coord_a.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_b.metadata, self.category_local, from_src=self.from_src),
-            mock.call(coord_c.metadata, self.category_local, from_src=self.from_src),
-            mock.call(
+            mocker.call(coord_a.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_b.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(coord_c.metadata, self.category_local, from_src=self.from_src),
+            mocker.call(
                 coord_a.metadata,
                 self.category_local,
                 from_src=self.from_src,
                 from_local=True,
             ),
-            mock.call(
+            mocker.call(
                 coord_b.metadata,
                 self.category_local,
                 from_src=self.from_src,
                 from_local=True,
             ),
-            mock.call(
+            mocker.call(
                 coord_c.metadata,
                 self.category_local,
                 from_src=self.from_src,
@@ -3997,15 +4031,16 @@ class Test__prepare_factory_payload(tests.IrisTest):
         ]
         actual = self.m_get_prepared_item.call_args_list
         for call in actual:
-            self.assertIn(call, expected)
+            assert call in expected
 
 
-class Test__get_prepared_item(tests.IrisTest):
-    def setUp(self):
+class Test__get_prepared_item:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         PreparedItem = namedtuple("PreparedItem", ["metadata"])
         self.resolve = Resolve()
-        self.prepared_dim_metadata_src = sentinel.prepared_dim_metadata_src
-        self.prepared_dim_metadata_tgt = sentinel.prepared_dim_metadata_tgt
+        self.prepared_dim_metadata_src = mocker.sentinel.prepared_dim_metadata_src
+        self.prepared_dim_metadata_tgt = mocker.sentinel.prepared_dim_metadata_tgt
         self.prepared_items_dim = PreparedItem(
             metadata=_PreparedMetadata(
                 combined=None,
@@ -4013,8 +4048,8 @@ class Test__get_prepared_item(tests.IrisTest):
                 tgt=self.prepared_dim_metadata_tgt,
             )
         )
-        self.prepared_aux_metadata_src = sentinel.prepared_aux_metadata_src
-        self.prepared_aux_metadata_tgt = sentinel.prepared_aux_metadata_tgt
+        self.prepared_aux_metadata_src = mocker.sentinel.prepared_aux_metadata_src
+        self.prepared_aux_metadata_tgt = mocker.sentinel.prepared_aux_metadata_tgt
         self.prepared_items_aux = PreparedItem(
             metadata=_PreparedMetadata(
                 combined=None,
@@ -4022,8 +4057,8 @@ class Test__get_prepared_item(tests.IrisTest):
                 tgt=self.prepared_aux_metadata_tgt,
             )
         )
-        self.prepared_scalar_metadata_src = sentinel.prepared_scalar_metadata_src
-        self.prepared_scalar_metadata_tgt = sentinel.prepared_scalar_metadata_tgt
+        self.prepared_scalar_metadata_src = mocker.sentinel.prepared_scalar_metadata_src
+        self.prepared_scalar_metadata_tgt = mocker.sentinel.prepared_scalar_metadata_tgt
         self.prepared_items_scalar = PreparedItem(
             metadata=_PreparedMetadata(
                 combined=None,
@@ -4037,13 +4072,13 @@ class Test__get_prepared_item(tests.IrisTest):
             items_scalar=[self.prepared_items_scalar],
         )
         self.resolve.mapping = {0: 10}
-        self.m_create_prepared_item = self.patch(
+        self.m_create_prepared_item = mocker.patch(
             "iris.common.resolve.Resolve._create_prepared_item"
         )
-        self.local_dim_metadata = sentinel.local_dim_metadata
-        self.local_aux_metadata = sentinel.local_aux_metadata
-        self.local_scalar_metadata = sentinel.local_scalar_metadata
-        self.local_coord = sentinel.local_coord
+        self.local_dim_metadata = mocker.sentinel.local_dim_metadata
+        self.local_aux_metadata = mocker.sentinel.local_aux_metadata
+        self.local_scalar_metadata = mocker.sentinel.local_scalar_metadata
+        self.local_coord = mocker.sentinel.local_coord
         self.local_coord_dims = (0,)
         self.local_items_dim = _Item(
             metadata=self.local_dim_metadata,
@@ -4066,25 +4101,25 @@ class Test__get_prepared_item(tests.IrisTest):
             items_scalar=[self.local_items_scalar],
         )
 
-    def test_missing_prepared_coord__from_src(self):
-        metadata = sentinel.missing
+    def test_missing_prepared_coord__from_src(self, mocker):
+        metadata = mocker.sentinel.missing
         category_local = None
         result = self.resolve._get_prepared_item(metadata, category_local)
-        self.assertIsNone(result)
+        assert result is None
 
-    def test_missing_prepared_coord__from_tgt(self):
-        metadata = sentinel.missing
+    def test_missing_prepared_coord__from_tgt(self, mocker):
+        metadata = mocker.sentinel.missing
         category_local = None
         result = self.resolve._get_prepared_item(
             metadata, category_local, from_src=False
         )
-        self.assertIsNone(result)
+        assert result is None
 
     def test_get_prepared_dim_coord__from_src(self):
         metadata = self.prepared_dim_metadata_src
         category_local = None
         result = self.resolve._get_prepared_item(metadata, category_local)
-        self.assertEqual(self.prepared_items_dim, result)
+        assert result == self.prepared_items_dim
 
     def test_get_prepared_dim_coord__from_tgt(self):
         metadata = self.prepared_dim_metadata_tgt
@@ -4092,13 +4127,13 @@ class Test__get_prepared_item(tests.IrisTest):
         result = self.resolve._get_prepared_item(
             metadata, category_local, from_src=False
         )
-        self.assertEqual(self.prepared_items_dim, result)
+        assert result == self.prepared_items_dim
 
     def test_get_prepared_aux_coord__from_src(self):
         metadata = self.prepared_aux_metadata_src
         category_local = None
         result = self.resolve._get_prepared_item(metadata, category_local)
-        self.assertEqual(self.prepared_items_aux, result)
+        assert result == self.prepared_items_aux
 
     def test_get_prepared_aux_coord__from_tgt(self):
         metadata = self.prepared_aux_metadata_tgt
@@ -4106,13 +4141,13 @@ class Test__get_prepared_item(tests.IrisTest):
         result = self.resolve._get_prepared_item(
             metadata, category_local, from_src=False
         )
-        self.assertEqual(self.prepared_items_aux, result)
+        assert result == self.prepared_items_aux
 
     def test_get_prepared_scalar_coord__from_src(self):
         metadata = self.prepared_scalar_metadata_src
         category_local = None
         result = self.resolve._get_prepared_item(metadata, category_local)
-        self.assertEqual(self.prepared_items_scalar, result)
+        assert result == self.prepared_items_scalar
 
     def test_get_prepared_scalar_coord__from_tgt(self):
         metadata = self.prepared_scalar_metadata_tgt
@@ -4120,163 +4155,164 @@ class Test__get_prepared_item(tests.IrisTest):
         result = self.resolve._get_prepared_item(
             metadata, category_local, from_src=False
         )
-        self.assertEqual(self.prepared_items_scalar, result)
+        assert result == self.prepared_items_scalar
 
-    def test_missing_local_coord__from_src(self):
-        metadata = sentinel.missing
+    def test_missing_local_coord__from_src(self, mocker):
+        metadata = mocker.sentinel.missing
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_local=True
         )
-        self.assertIsNone(result)
+        assert result is None
 
-    def test_missing_local_coord__from_tgt(self):
-        metadata = sentinel.missing
+    def test_missing_local_coord__from_tgt(self, mocker):
+        metadata = mocker.sentinel.missing
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_src=False, from_local=True
         )
-        self.assertIsNone(result)
+        assert result is None
 
-    def test_get_local_dim_coord__from_src(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_dim_coord__from_src(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_dim_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(expected, self.resolve.prepared_category.items_dim[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_dim) == 2
+        assert self.resolve.prepared_category.items_dim[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = (self.resolve.mapping[self.local_coord_dims[0]],)
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=metadata,
                 tgt_metadata=None,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_get_local_dim_coord__from_tgt(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_dim_coord__from_tgt(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_dim_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_src=False, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_dim))
-        self.assertEqual(expected, self.resolve.prepared_category.items_dim[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_dim) == 2
+        assert self.resolve.prepared_category.items_dim[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = self.local_coord_dims
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=None,
                 tgt_metadata=metadata,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_get_local_aux_coord__from_src(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_aux_coord__from_src(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_aux_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_aux) == 2
+        assert self.resolve.prepared_category.items_aux[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = (self.resolve.mapping[self.local_coord_dims[0]],)
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=metadata,
                 tgt_metadata=None,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_get_local_aux_coord__from_tgt(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_aux_coord__from_tgt(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_aux_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_src=False, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_aux))
-        self.assertEqual(expected, self.resolve.prepared_category.items_aux[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_aux) == 2
+        assert self.resolve.prepared_category.items_aux[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = self.local_coord_dims
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=None,
                 tgt_metadata=metadata,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_get_local_scalar_coord__from_src(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_scalar_coord__from_src(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_scalar_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_scalar) == 2
+        assert self.resolve.prepared_category.items_scalar[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = (self.resolve.mapping[self.local_coord_dims[0]],)
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=metadata,
                 tgt_metadata=None,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
-    def test_get_local_scalar_coord__from_tgt(self):
-        created_local_item = sentinel.created_local_item
+    def test_get_local_scalar_coord__from_tgt(self, mocker):
+        created_local_item = mocker.sentinel.created_local_item
         self.m_create_prepared_item.return_value = created_local_item
         metadata = self.local_scalar_metadata
         result = self.resolve._get_prepared_item(
             metadata, self.category_local, from_src=False, from_local=True
         )
         expected = created_local_item
-        self.assertEqual(expected, result)
-        self.assertEqual(2, len(self.resolve.prepared_category.items_scalar))
-        self.assertEqual(expected, self.resolve.prepared_category.items_scalar[1])
-        self.assertEqual(1, self.m_create_prepared_item.call_count)
+        assert result == expected
+        assert len(self.resolve.prepared_category.items_scalar) == 2
+        assert self.resolve.prepared_category.items_scalar[1] == expected
+        assert self.m_create_prepared_item.call_count == 1
         dims = self.local_coord_dims
         expected = [
-            mock.call(
+            mocker.call(
                 self.local_coord,
                 dims,
                 src_metadata=None,
                 tgt_metadata=metadata,
             )
         ]
-        self.assertEqual(expected, self.m_create_prepared_item.call_args_list)
+        assert self.m_create_prepared_item.call_args_list == expected
 
 
-class Test_cube(tests.IrisTest):
-    def setUp(self):
+class Test_cube:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.shape = (2, 3)
         self.data = np.zeros(np.multiply(*self.shape), dtype=np.int8).reshape(
             self.shape
@@ -4299,25 +4335,25 @@ class Test_cube(tests.IrisTest):
         rhs_cube = Cube(self.data)
         rhs_cube.metadata = self.cube_metadata
         self.resolve.rhs_cube = rhs_cube
-        self.m_add_dim_coord = self.patch("iris.cube.Cube.add_dim_coord")
-        self.m_add_aux_coord = self.patch("iris.cube.Cube.add_aux_coord")
-        self.m_add_aux_factory = self.patch("iris.cube.Cube.add_aux_factory")
-        self.m_coord = self.patch("iris.cube.Cube.coord")
+        self.m_add_dim_coord = mocker.patch("iris.cube.Cube.add_dim_coord")
+        self.m_add_aux_coord = mocker.patch("iris.cube.Cube.add_aux_coord")
+        self.m_add_aux_factory = mocker.patch("iris.cube.Cube.add_aux_factory")
+        self.m_coord = mocker.patch("iris.cube.Cube.coord")
         #
         # prepared coordinates
         #
         prepared_category = _CategoryItems(items_dim=[], items_aux=[], items_scalar=[])
         # prepared dim coordinates
         self.prepared_dim_0_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_dim_0_metadata_combined,
+            combined=mocker.sentinel.prepared_dim_0_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_dim_0_points = sentinel.prepared_dim_0_points
-        self.prepared_dim_0_bounds = sentinel.prepared_dim_0_bounds
+        self.prepared_dim_0_points = mocker.sentinel.prepared_dim_0_points
+        self.prepared_dim_0_bounds = mocker.sentinel.prepared_dim_0_bounds
         self.prepared_dim_0_dims = (0,)
-        self.prepared_dim_0_coord = mock.Mock(metadata=None)
-        self.prepared_dim_0_container = mock.Mock(
+        self.prepared_dim_0_coord = mocker.Mock(metadata=None)
+        self.prepared_dim_0_container = mocker.Mock(
             return_value=self.prepared_dim_0_coord
         )
         self.prepared_dim_0 = _PreparedItem(
@@ -4329,15 +4365,15 @@ class Test_cube(tests.IrisTest):
         )
         prepared_category.items_dim.append(self.prepared_dim_0)
         self.prepared_dim_1_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_dim_1_metadata_combined,
+            combined=mocker.sentinel.prepared_dim_1_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_dim_1_points = sentinel.prepared_dim_1_points
-        self.prepared_dim_1_bounds = sentinel.prepared_dim_1_bounds
+        self.prepared_dim_1_points = mocker.sentinel.prepared_dim_1_points
+        self.prepared_dim_1_bounds = mocker.sentinel.prepared_dim_1_bounds
         self.prepared_dim_1_dims = (1,)
-        self.prepared_dim_1_coord = mock.Mock(metadata=None)
-        self.prepared_dim_1_container = mock.Mock(
+        self.prepared_dim_1_coord = mocker.Mock(metadata=None)
+        self.prepared_dim_1_container = mocker.Mock(
             return_value=self.prepared_dim_1_coord
         )
         self.prepared_dim_1 = _PreparedItem(
@@ -4351,15 +4387,15 @@ class Test_cube(tests.IrisTest):
 
         # prepared auxiliary coordinates
         self.prepared_aux_0_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_aux_0_metadata_combined,
+            combined=mocker.sentinel.prepared_aux_0_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_aux_0_points = sentinel.prepared_aux_0_points
-        self.prepared_aux_0_bounds = sentinel.prepared_aux_0_bounds
+        self.prepared_aux_0_points = mocker.sentinel.prepared_aux_0_points
+        self.prepared_aux_0_bounds = mocker.sentinel.prepared_aux_0_bounds
         self.prepared_aux_0_dims = (0,)
-        self.prepared_aux_0_coord = mock.Mock(metadata=None)
-        self.prepared_aux_0_container = mock.Mock(
+        self.prepared_aux_0_coord = mocker.Mock(metadata=None)
+        self.prepared_aux_0_container = mocker.Mock(
             return_value=self.prepared_aux_0_coord
         )
         self.prepared_aux_0 = _PreparedItem(
@@ -4371,15 +4407,15 @@ class Test_cube(tests.IrisTest):
         )
         prepared_category.items_aux.append(self.prepared_aux_0)
         self.prepared_aux_1_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_aux_1_metadata_combined,
+            combined=mocker.sentinel.prepared_aux_1_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_aux_1_points = sentinel.prepared_aux_1_points
-        self.prepared_aux_1_bounds = sentinel.prepared_aux_1_bounds
+        self.prepared_aux_1_points = mocker.sentinel.prepared_aux_1_points
+        self.prepared_aux_1_bounds = mocker.sentinel.prepared_aux_1_bounds
         self.prepared_aux_1_dims = (1,)
-        self.prepared_aux_1_coord = mock.Mock(metadata=None)
-        self.prepared_aux_1_container = mock.Mock(
+        self.prepared_aux_1_coord = mocker.Mock(metadata=None)
+        self.prepared_aux_1_container = mocker.Mock(
             return_value=self.prepared_aux_1_coord
         )
         self.prepared_aux_1 = _PreparedItem(
@@ -4393,15 +4429,15 @@ class Test_cube(tests.IrisTest):
 
         # prepare scalar coordinates
         self.prepared_scalar_0_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_scalar_0_metadata_combined,
+            combined=mocker.sentinel.prepared_scalar_0_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_scalar_0_points = sentinel.prepared_scalar_0_points
-        self.prepared_scalar_0_bounds = sentinel.prepared_scalar_0_bounds
+        self.prepared_scalar_0_points = mocker.sentinel.prepared_scalar_0_points
+        self.prepared_scalar_0_bounds = mocker.sentinel.prepared_scalar_0_bounds
         self.prepared_scalar_0_dims = ()
-        self.prepared_scalar_0_coord = mock.Mock(metadata=None)
-        self.prepared_scalar_0_container = mock.Mock(
+        self.prepared_scalar_0_coord = mocker.Mock(metadata=None)
+        self.prepared_scalar_0_container = mocker.Mock(
             return_value=self.prepared_scalar_0_coord
         )
         self.prepared_scalar_0 = _PreparedItem(
@@ -4413,15 +4449,15 @@ class Test_cube(tests.IrisTest):
         )
         prepared_category.items_scalar.append(self.prepared_scalar_0)
         self.prepared_scalar_1_metadata = _PreparedMetadata(
-            combined=sentinel.prepared_scalar_1_metadata_combined,
+            combined=mocker.sentinel.prepared_scalar_1_metadata_combined,
             src=None,
             tgt=None,
         )
-        self.prepared_scalar_1_points = sentinel.prepared_scalar_1_points
-        self.prepared_scalar_1_bounds = sentinel.prepared_scalar_1_bounds
+        self.prepared_scalar_1_points = mocker.sentinel.prepared_scalar_1_points
+        self.prepared_scalar_1_bounds = mocker.sentinel.prepared_scalar_1_bounds
         self.prepared_scalar_1_dims = ()
-        self.prepared_scalar_1_coord = mock.Mock(metadata=None)
-        self.prepared_scalar_1_container = mock.Mock(
+        self.prepared_scalar_1_coord = mocker.Mock(metadata=None)
+        self.prepared_scalar_1_container = mocker.Mock(
             return_value=self.prepared_scalar_1_coord
         )
         self.prepared_scalar_1 = _PreparedItem(
@@ -4436,20 +4472,20 @@ class Test_cube(tests.IrisTest):
         # prepared factories
         #
         prepared_factories = []
-        self.aux_factory = sentinel.aux_factory
-        self.prepared_factory_container = mock.Mock(return_value=self.aux_factory)
+        self.aux_factory = mocker.sentinel.aux_factory
+        self.prepared_factory_container = mocker.Mock(return_value=self.aux_factory)
         self.prepared_factory_metadata_a = _PreparedMetadata(
-            combined=sentinel.prepared_factory_metadata_a_combined,
+            combined=mocker.sentinel.prepared_factory_metadata_a_combined,
             src=None,
             tgt=None,
         )
         self.prepared_factory_metadata_b = _PreparedMetadata(
-            combined=sentinel.prepared_factory_metadata_b_combined,
+            combined=mocker.sentinel.prepared_factory_metadata_b_combined,
             src=None,
             tgt=None,
         )
         self.prepared_factory_metadata_c = _PreparedMetadata(
-            combined=sentinel.prepared_factory_metadata_c_combined,
+            combined=mocker.sentinel.prepared_factory_metadata_c_combined,
             src=None,
             tgt=None,
         )
@@ -4464,125 +4500,121 @@ class Test_cube(tests.IrisTest):
         )
         prepared_factories.append(self.prepared_factory)
         self.prepared_factory_side_effect = (
-            sentinel.prepared_factory_coord_a,
-            sentinel.prepared_factory_coord_b,
-            sentinel.prepared_factory_coord_c,
+            mocker.sentinel.prepared_factory_coord_a,
+            mocker.sentinel.prepared_factory_coord_b,
+            mocker.sentinel.prepared_factory_coord_c,
         )
         self.m_coord.side_effect = self.prepared_factory_side_effect
         self.resolve.prepared_category = prepared_category
         self.resolve.prepared_factories = prepared_factories
 
         # Required to stop mock 'containers' failing in an 'issubclass' call.
-        self.patch("iris.common.resolve.issubclass", mock.Mock(return_value=False))
+        mocker.patch("iris.common.resolve.issubclass", mocker.Mock(return_value=False))
 
     def test_no_resolved_shape(self):
         self.resolve._broadcast_shape = None
         data = None
         emsg = "Cannot resolve resultant cube, as no candidate cubes have been provided"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve.cube(data)
 
     def test_bad_data_shape(self):
         emsg = "Cannot resolve resultant cube, as the provided data must have shape"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve.cube(self.bad_data)
 
     def test_bad_data_shape__inplace(self):
         self.resolve.lhs_cube = Cube(self.bad_data)
         emsg = "Cannot resolve resultant cube in-place"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             _ = self.resolve.cube(self.data, in_place=True)
 
     def _check(self):
         # check dim coordinate 0
-        self.assertEqual(1, self.prepared_dim_0.container.call_count)
+        assert self.prepared_dim_0.container.call_count == 1
         expected = [
             mock.call(self.prepared_dim_0_points, bounds=self.prepared_dim_0_bounds)
         ]
-        self.assertEqual(expected, self.prepared_dim_0.container.call_args_list)
-        self.assertEqual(
-            self.prepared_dim_0_coord.metadata,
-            self.prepared_dim_0_metadata.combined,
+        assert self.prepared_dim_0.container.call_args_list == expected
+        assert (
+            self.prepared_dim_0_metadata.combined == self.prepared_dim_0_coord.metadata
         )
         # check dim coordinate 1
-        self.assertEqual(1, self.prepared_dim_1.container.call_count)
+        assert self.prepared_dim_1.container.call_count == 1
         expected = [
             mock.call(self.prepared_dim_1_points, bounds=self.prepared_dim_1_bounds)
         ]
-        self.assertEqual(expected, self.prepared_dim_1.container.call_args_list)
-        self.assertEqual(
-            self.prepared_dim_1_coord.metadata,
-            self.prepared_dim_1_metadata.combined,
+        assert self.prepared_dim_1.container.call_args_list == expected
+        assert (
+            self.prepared_dim_1_metadata.combined == self.prepared_dim_1_coord.metadata
         )
         # check add_dim_coord
-        self.assertEqual(2, self.m_add_dim_coord.call_count)
+        assert self.m_add_dim_coord.call_count == 2
         expected = [
             mock.call(self.prepared_dim_0_coord, self.prepared_dim_0_dims),
             mock.call(self.prepared_dim_1_coord, self.prepared_dim_1_dims),
         ]
-        self.assertEqual(expected, self.m_add_dim_coord.call_args_list)
+        assert self.m_add_dim_coord.call_args_list == expected
 
         # check aux coordinate 0
-        self.assertEqual(1, self.prepared_aux_0.container.call_count)
+        assert self.prepared_aux_0.container.call_count == 1
         expected = [
             mock.call(self.prepared_aux_0_points, bounds=self.prepared_aux_0_bounds)
         ]
-        self.assertEqual(expected, self.prepared_aux_0.container.call_args_list)
-        self.assertEqual(
-            self.prepared_aux_0_coord.metadata,
-            self.prepared_aux_0_metadata.combined,
+        assert self.prepared_aux_0.container.call_args_list == expected
+        assert (
+            self.prepared_aux_0_metadata.combined == self.prepared_aux_0_coord.metadata
         )
         # check aux coordinate 1
-        self.assertEqual(1, self.prepared_aux_1.container.call_count)
+        assert self.prepared_aux_1.container.call_count == 1
         expected = [
             mock.call(self.prepared_aux_1_points, bounds=self.prepared_aux_1_bounds)
         ]
-        self.assertEqual(expected, self.prepared_aux_1.container.call_args_list)
-        self.assertEqual(
-            self.prepared_aux_1_coord.metadata,
-            self.prepared_aux_1_metadata.combined,
+        assert self.prepared_aux_1.container.call_args_list == expected
+        assert (
+            self.prepared_aux_1_metadata.combined == self.prepared_aux_1_coord.metadata
         )
         # check scalar coordinate 0
-        self.assertEqual(1, self.prepared_scalar_0.container.call_count)
+        assert self.prepared_scalar_0.container.call_count == 1
         expected = [
             mock.call(
                 self.prepared_scalar_0_points,
                 bounds=self.prepared_scalar_0_bounds,
             )
         ]
-        self.assertEqual(expected, self.prepared_scalar_0.container.call_args_list)
-        self.assertEqual(
-            self.prepared_scalar_0_coord.metadata,
-            self.prepared_scalar_0_metadata.combined,
+        assert self.prepared_scalar_0.container.call_args_list == expected
+        assert (
+            self.prepared_scalar_0_metadata.combined
+            == self.prepared_scalar_0_coord.metadata
         )
         # check scalar coordinate 1
-        self.assertEqual(1, self.prepared_scalar_1.container.call_count)
+        assert self.prepared_scalar_1.container.call_count == 1
         expected = [
             mock.call(
                 self.prepared_scalar_1_points,
                 bounds=self.prepared_scalar_1_bounds,
             )
         ]
-        self.assertEqual(expected, self.prepared_scalar_1.container.call_args_list)
-        self.assertEqual(
-            self.prepared_scalar_1_coord.metadata,
-            self.prepared_scalar_1_metadata.combined,
+        assert self.prepared_scalar_1.container.call_args_list == expected
+        assert (
+            self.prepared_scalar_1_metadata.combined
+            == self.prepared_scalar_1_coord.metadata
         )
         # check add_aux_coord
-        self.assertEqual(4, self.m_add_aux_coord.call_count)
+        assert self.m_add_aux_coord.call_count == 4
         expected = [
             mock.call(self.prepared_aux_0_coord, self.prepared_aux_0_dims),
             mock.call(self.prepared_aux_1_coord, self.prepared_aux_1_dims),
             mock.call(self.prepared_scalar_0_coord, self.prepared_scalar_0_dims),
             mock.call(self.prepared_scalar_1_coord, self.prepared_scalar_1_dims),
         ]
-        self.assertEqual(expected, self.m_add_aux_coord.call_args_list)
+        assert self.m_add_aux_coord.call_args_list == expected
 
         # check auxiliary factories
-        self.assertEqual(1, self.m_add_aux_factory.call_count)
+        assert self.m_add_aux_factory.call_count == 1
         expected = [mock.call(self.aux_factory)]
-        self.assertEqual(expected, self.m_add_aux_factory.call_args_list)
-        self.assertEqual(1, self.prepared_factory_container.call_count)
+        assert self.m_add_aux_factory.call_args_list == expected
+        assert self.prepared_factory_container.call_count == 1
         expected = [
             mock.call(
                 **{
@@ -4594,27 +4626,23 @@ class Test_cube(tests.IrisTest):
                 }
             )
         ]
-        self.assertEqual(expected, self.prepared_factory_container.call_args_list)
-        self.assertEqual(3, self.m_coord.call_count)
+        assert self.prepared_factory_container.call_args_list == expected
+        assert self.m_coord.call_count == 3
         expected = [
             mock.call(self.prepared_factory_metadata_a.combined),
             mock.call(self.prepared_factory_metadata_b.combined),
             mock.call(self.prepared_factory_metadata_c.combined),
         ]
-        self.assertEqual(expected, self.m_coord.call_args_list)
+        assert self.m_coord.call_args_list == expected
 
     def test_resolve(self):
         result = self.resolve.cube(self.data)
-        self.assertEqual(self.cube_metadata, result.metadata)
+        assert result.metadata == self.cube_metadata
         self._check()
-        self.assertIsNot(self.resolve.lhs_cube, result)
+        assert self.resolve.lhs_cube is not result
 
     def test_resolve__inplace(self):
         result = self.resolve.cube(self.data, in_place=True)
-        self.assertEqual(self.cube_metadata, result.metadata)
+        assert result.metadata == self.cube_metadata
         self._check()
-        self.assertIs(self.resolve.lhs_cube, result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert self.resolve.lhs_cube is result

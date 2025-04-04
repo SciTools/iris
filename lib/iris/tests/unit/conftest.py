@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests fixture infra-structure."""
 
+from pyproj import CRS
 import pytest
 
 import iris

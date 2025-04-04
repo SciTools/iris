@@ -69,8 +69,8 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.12"
-    all_supported = ["3.10", "3.11", latest_supported]
+    latest_supported = "3.13"
+    all_supported = ["3.11", "3.12", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
@@ -82,7 +82,6 @@ def test_python_versions():
     nox_file = root_dir / "noxfile.py"
     ci_wheels_file = workflows_dir / "ci-wheels.yml"
     ci_tests_file = workflows_dir / "ci-tests.yml"
-    asv_config_file = benchmarks_dir / "asv.conf.json"
     benchmark_runner_file = benchmarks_dir / "bm_runner.py"
 
     text_searches: List[Tuple[Path, str]] = [
@@ -104,10 +103,9 @@ def test_python_versions():
             ci_tests_file,
             (
                 f'python-version: ["{latest_supported}"]\n'
-                f'{" " * 8}session: ["doctest", "gallery", "linkcheck"]'
+                f'{" " * 8}session: ["doctest", "gallery"]'
             ),
         ),
-        (asv_config_file, f"PY_VER={latest_supported}"),
         (benchmark_runner_file, f'python_version = "{latest_supported}"'),
     ]
 
@@ -172,13 +170,13 @@ def test_categorised_warnings():
                 warns_with_user_warning.append(warn_ref)
 
     # This avoids UserWarnings being raised by unwritten default behaviour.
-    assert (
-        warns_without_category == []
-    ), "All warnings raised by Iris must be raised with the category kwarg."
+    assert warns_without_category == [], (
+        "All warnings raised by Iris must be raised with the category kwarg."
+    )
 
-    assert (
-        warns_with_user_warning == []
-    ), "No warnings raised by Iris can be the base UserWarning class."
+    assert warns_with_user_warning == [], (
+        "No warnings raised by Iris can be the base UserWarning class."
+    )
 
 
 class TestLicenseHeaders(tests.IrisTest):

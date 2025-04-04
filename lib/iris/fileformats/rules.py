@@ -5,6 +5,7 @@
 """Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
+import threading
 import warnings
 
 import cf_units
@@ -143,7 +144,11 @@ class _ReferenceError(Exception):
 
 
 def _dereference_args(factory, reference_targets, regrid_cache, cube):
-    """Convert all the arguments for a factory into concrete coordinates."""
+    """Convert all the arguments for a factory into concrete coordinates.
+
+    Note: where multiple reference fields define an additional dimension, this routine
+    returns a modified 'cube', with the necessary additional dimensions.
+    """
     args = []
     for arg in factory.args:
         if isinstance(arg, Reference):
@@ -151,7 +156,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                 src = reference_targets[arg.name].as_cube()
                 # If necessary, regrid the reference cube to
                 # match the grid of this cube.
-                src = _ensure_aligned(regrid_cache, src, cube)
+                src, cube = _ensure_aligned(regrid_cache, src, cube)
                 if src is not None:
                     new_coord = iris.coords.AuxCoord(
                         src.data,
@@ -178,7 +183,8 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
             # If it wasn't a Reference, then arg is a dictionary
             # of keyword arguments for cube.coord(...).
             args.append(cube.coord(**arg))
-    return args
+
+    return args, cube
 
 
 def _regrid_to_target(src_cube, target_coords, target_cube):
@@ -211,9 +217,9 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
     # Check that each of src_cube's dim_coords matches up with a single
     # coord on target_cube.
     try:
-        target_coords = []
+        target_dimcoords = []
         for dim_coord in src_cube.dim_coords:
-            target_coords.append(target_cube.coord(dim_coord))
+            target_dimcoords.append(target_cube.coord(dim_coord))
     except iris.exceptions.CoordinateNotFoundError:
         # One of the src_cube's dim_coords didn't exist on the
         # target_cube... so we can't regrid (i.e. just return None).
@@ -222,7 +228,32 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
         # So we can use `iris.analysis.interpolate.linear()` later,
         # ensure each target coord is either a scalar or maps to a
         # single, distinct dimension.
-        target_dims = [target_cube.coord_dims(coord) for coord in target_coords]
+        # PP-MOD: first promote any scalar coords when needed as dims
+        for target_coord in target_dimcoords:
+            from iris import COMBINE_POLICY
+
+            if (
+                not target_cube.coord_dims(target_coord)
+                and COMBINE_POLICY.support_multiple_references
+            ):
+                # The chosen coord is not a dimcoord in the target (yet)
+                # Make it one with 'new_axis'
+                from iris.util import new_axis
+
+                _MULTIREF_DETECTION.found_multiple_refs = True
+                # Include the other coords on that dim in the src : this means the
+                # src merge identifies which belong on that dim
+                # (e.g. 'forecast_period' along with 'time')
+                (src_dim,) = src_cube.coord_dims(target_coord)  # should have 1 dim
+                promote_other_coords = [
+                    target_cube.coord(src_coord)
+                    for src_coord in src_cube.coords(contains_dimension=src_dim)
+                    if src_coord.name() != target_coord.name()
+                ]
+                target_cube = new_axis(
+                    target_cube, target_coord, expand_extras=promote_other_coords
+                )
+        target_dims = [target_cube.coord_dims(coord) for coord in target_dimcoords]
         target_dims = list(filter(None, target_dims))
         unique_dims = set()
         for dims in target_dims:
@@ -236,19 +267,19 @@ def _ensure_aligned(regrid_cache, src_cube, target_cube):
             grids, cubes = regrid_cache[cache_key]
             # 'grids' is a list of tuples of coordinates, so convert
             # the 'target_coords' list into a tuple to be consistent.
-            target_coords = tuple(target_coords)
+            target_dimcoords = tuple(target_dimcoords)
             try:
                 # Look for this set of target coordinates in the cache.
-                i = grids.index(target_coords)
+                i = grids.index(target_dimcoords)
                 result_cube = cubes[i]
             except ValueError:
                 # Not already cached, so do the hard work of interpolating.
-                result_cube = _regrid_to_target(src_cube, target_coords, target_cube)
+                result_cube = _regrid_to_target(src_cube, target_dimcoords, target_cube)
                 # Add it to the cache.
-                grids.append(target_coords)
+                grids.append(target_dimcoords)
                 cubes.append(result_cube)
 
-    return result_cube
+    return result_cube, target_cube
 
 
 class Loader(
@@ -331,7 +362,7 @@ def _resolve_factory_references(
     # across multiple result cubes.
     for factory in factories:
         try:
-            args = _dereference_args(
+            args, cube = _dereference_args(
                 factory, concrete_reference_targets, regrid_cache, cube
             )
         except _ReferenceError as e:
@@ -345,6 +376,34 @@ def _resolve_factory_references(
             aux_factory = factory.factory_class(*args)
             cube.add_aux_factory(aux_factory)
 
+    # In the case of multiple references which vary on a new dimension
+    # (such as time-dependent orography or surface-pressure), the cube may get replaced
+    # by one with a new dimension.
+    # In that case we must update the factory so its dependencies are coords of the
+    # new cube.
+    cube_coord_ids = [
+        id(coord) for coord, _ in cube._dim_coords_and_dims + cube._aux_coords_and_dims
+    ]
+    for factory in cube.aux_factories:
+        for name, dep in list(factory.dependencies.items()):
+            if dep and id(dep) not in cube_coord_ids:
+                factory.update(dep, cube.coord(dep))
+
+    return cube
+
+
+class MultipleReferenceFieldDetector(threading.local):
+    def __init__(self):
+        self.found_multiple_refs = False
+
+
+# A single global object (per thread) to record whether multiple reference fields
+# (e.g. time-dependent orography, or surface pressure fields) have been detected during
+# the latest load operation.
+# This is used purely to implement the iris.COMBINE_POLICY.multiref_triggers_concatenate
+# functionality.
+_MULTIREF_DETECTION = MultipleReferenceFieldDetector()
+
 
 def _load_pairs_from_fields_and_filenames(
     fields_and_filenames, converter, user_callback_wrapper=None
@@ -355,6 +414,7 @@ def _load_pairs_from_fields_and_filenames(
     # needs a filename associated with each field to support the load callback.
     concrete_reference_targets = {}
     results_needing_reference = []
+
     for field, filename in fields_and_filenames:
         # Convert the field to a Cube, passing down the 'converter' function.
         cube, factories, references = _make_cube(field, converter)
@@ -383,7 +443,7 @@ def _load_pairs_from_fields_and_filenames(
 
     regrid_cache = {}
     for cube, factories, field in results_needing_reference:
-        _resolve_factory_references(
+        cube = _resolve_factory_references(
             cube, factories, concrete_reference_targets, regrid_cache
         )
         yield (cube, field)

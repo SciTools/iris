@@ -388,7 +388,9 @@ class _CubeSignature(
                 diff_attrs = [
                     repr(key[1])
                     for key in attrs_1
-                    if np.all(attrs_1[key] != attrs_2[key])
+                    if not np.array_equal(
+                        np.array(attrs_1[key], ndmin=1), np.array(attrs_2[key], ndmin=1)
+                    )
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
@@ -1107,6 +1109,8 @@ class ProtoCube:
         source-cube.
 
         """
+        if cube.is_dataless():
+            raise iris.exceptions.DatalessError("merge")
         # Default hint ordering for candidate dimension coordinates.
         self._hints = [
             "time",
@@ -1287,6 +1291,8 @@ class ProtoCube:
             this :class:`ProtoCube`.
 
         """
+        if cube.is_dataless():
+            raise iris.exceptions.DatalessError("merge")
         cube_signature = self._cube_signature
         other = self._build_signature(cube)
         match = cube_signature.match(other, error_on_mismatch)

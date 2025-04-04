@@ -13,7 +13,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from typing import Iterable
+from typing import Iterable, Literal
 import warnings
 
 from cf_units import Unit
@@ -180,8 +180,7 @@ class Connectivity(_DimensionalMetadata):
         def validate_arg_vs_list(arg_name, arg, valid_list):
             if arg not in valid_list:
                 error_msg = (
-                    f"Invalid {arg_name} . Got: {arg} . Must be one of: "
-                    f"{valid_list} ."
+                    f"Invalid {arg_name} . Got: {arg} . Must be one of: {valid_list} ."
                 )
                 raise ValueError(error_msg)
 
@@ -847,7 +846,7 @@ class MeshXY(Mesh):
                 raise ValueError(message)
             shapes = [array.shape for array in arrays]
             if shapes.count(shapes[0]) != len(shapes):
-                message = f"{array_name} shapes are not identical for all " f"coords."
+                message = f"{array_name} shapes are not identical for all coords."
                 raise ValueError(message)
 
         for array in ("points", "bounds"):
@@ -865,7 +864,7 @@ class MeshXY(Mesh):
         bounds_dim1 = bounds_shape[1]
         if bounds_dim1 < 2:
             message = (
-                f"Expected coordinate bounds.shape (n, >" f"=2), got: {bounds_shape} ."
+                f"Expected coordinate bounds.shape (n, >=2), got: {bounds_shape} ."
             )
             raise ValueError(message)
         elif bounds_dim1 == 2:
@@ -2450,8 +2449,7 @@ class _MeshConnectivityManagerBase(ABC):
             # Check is list values are identical.
             if not counts.count(counts[0]) == len(counts):
                 message = (
-                    f"Invalid Connectivities provided - inconsistent "
-                    f"{element} counts."
+                    f"Invalid Connectivities provided - inconsistent {element} counts."
                 )
                 raise ValueError(message)
 
@@ -2477,8 +2475,7 @@ class _MeshConnectivityManagerBase(ABC):
                     _name = item.name()
             bad_name = _name or kwargs["standard_name"] or kwargs["long_name"] or ""
             message = (
-                f"Expected to find exactly 1 {bad_name} connectivity, "
-                f"but found none."
+                f"Expected to find exactly 1 {bad_name} connectivity, but found none."
             )
             raise ConnectivityNotFoundError(message)
 
@@ -2649,6 +2646,9 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
         return self._members["face_node_connectivity"]
 
 
+Location = Literal["edge", "node", "face"]
+
+
 class MeshCoord(AuxCoord):
     """Geographic coordinate values of data on an unstructured mesh.
 
@@ -2687,19 +2687,17 @@ class MeshCoord(AuxCoord):
 
     def __init__(
         self,
-        mesh,
-        location,
-        axis,
+        mesh: MeshXY,
+        location: Location,
+        axis: Literal["x", "y"],
     ):
         # Setup the metadata.
         self._metadata_manager = metadata_manager_factory(MeshCoordMetadata)
 
         # Validate and record the class-specific constructor args.
         if not isinstance(mesh, MeshXY):
-            msg = (
-                "'mesh' must be an "
-                f"{MeshXY.__module__}.{MeshXY.__name__}, "
-                f"got {mesh}."
+            msg = (  # type: ignore[unreachable]
+                f"'mesh' must be an {MeshXY.__module__}.{MeshXY.__name__}, got {mesh}."
             )
             raise TypeError(msg)
         # Handled as a readonly ".mesh" property.
@@ -2801,7 +2799,7 @@ class MeshCoord(AuxCoord):
         return self._mesh
 
     @property
-    def location(self):
+    def location(self) -> Location:
         return self._metadata_manager.location
 
     @property

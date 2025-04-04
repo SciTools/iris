@@ -405,9 +405,8 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
         If False, return a lazy dask array. If True, return a numpy array.
     chunks : tuple, optional
         If compute is False and a value is provided, then the result will use
-        these chunks instead of the same chunks as the cube data. The values
-        provided here will only be used along dimensions that are not latitude
-        or longitude.
+        these chunks. The values provided here will only be used along
+        dimensions that are not latitude or longitude.
 
     Returns
     -------
@@ -1078,8 +1077,9 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     """
     if x.shape != y.shape:
         raise ValueError(
-            "Arrays do not have matching shapes. "
-            "x.shape is {}, y.shape is {}.".format(x.shape, y.shape)
+            "Arrays do not have matching shapes. x.shape is {}, y.shape is {}.".format(
+                x.shape, y.shape
+            )
         )
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
@@ -1128,7 +1128,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     Returns
     -------
-    (u', v') tuple of :class:`iris.cube.Cube`
+    tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.

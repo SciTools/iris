@@ -4,17 +4,23 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides the infrastructure to support the common metadata API."""
 
+from __future__ import annotations
+
 from abc import ABCMeta
 from collections import namedtuple
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from functools import lru_cache, wraps
 import re
+from typing import TYPE_CHECKING, Any
 
+import cf_units
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
+if TYPE_CHECKING:
+    from iris.coords import CellMethod
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -40,7 +46,7 @@ __all__ = [
 ]
 
 
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
+# https://docs.unidata.ucar.edu/nug/current/netcdf_data_set_components.html#object_name
 
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
@@ -152,6 +158,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     )
 
     __slots__ = ()
+
+    standard_name: str | None
+    long_name: str | None
+    var_name: str | None
+    units: cf_units.Unit
+    attributes: Any
 
     @lenient_service
     def __eq__(self, other):
@@ -683,7 +695,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 result = cls(**kwargs)
         return result
 
-    def name(self, default=None, token=False):
+    def name(self, default: str | None = None, token: bool = False) -> str:
         """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
@@ -692,10 +704,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         Parameters
         ----------
-        default : optional
+        default :
             The fall-back string representing the default name. Defaults to
             the string 'unknown'.
-        token : bool, default=False
+        token :
             If True, ensures that the name returned satisfies the criteria for
             the characters required by a valid NetCDF name. If it is not
             possible to return a valid name, then a ValueError exception is
@@ -1038,6 +1050,8 @@ class CubeMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.cube.Cube`."""
 
     _members = "cell_methods"
+
+    cell_methods: tuple[CellMethod, ...]
 
     __slots__ = ()
 

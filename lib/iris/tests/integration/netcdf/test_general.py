@@ -30,6 +30,7 @@ from iris.fileformats.netcdf import Saver
 # Get the netCDF4 module, but in a sneaky way that avoids triggering the "do not import
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+from iris.loading import LOAD_PROBLEMS
 import iris.warnings
 
 nc = threadsafe_nc.netCDF4
@@ -145,8 +146,7 @@ class TestCellMethod_unknown(tests.IrisTest):
             self.assertEqual(len(warning_messages), 1)
             message = warning_messages[0].args[0]
             msg = (
-                "NetCDF variable 'odd_phenomenon' contains unknown cell "
-                "method 'oddity'"
+                "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
             )
             self.assertIn(msg, message)
         finally:
@@ -320,7 +320,7 @@ class TestConstrainedLoad(tests.IrisTest):
 
 class TestSkippedCoord:
     # If a coord/cell measure/etcetera cannot be added to the loaded Cube, a
-    #  Warning is raised and the coord is skipped.
+    #  Warning is raised and the coord is stored in iris.loading.LOAD_PROBLEMS.
     # This 'catching' is generic to all CannotAddErrors, but currently the only
     #  such problem that can exist in a NetCDF file is a mismatch of dimensions
     #  between phenomenon and coord.
@@ -357,12 +357,13 @@ data:
         self.nc_path.unlink()
 
     def test_lat_not_loaded(self):
-        # iris#5068 includes discussion of possible retention of the skipped
-        #  coords in the future.
-        with pytest.warns(match="Missing data dimensions for multi-valued DimCoord"):
+        with pytest.warns(match="Not all file objects were parsed correctly"):
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert isinstance(load_problem.loaded, iris.coords.DimCoord)
+        assert load_problem.loaded.name() == "latitude"
 
 
 @tests.skip_data

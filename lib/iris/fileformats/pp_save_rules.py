@@ -13,6 +13,7 @@ import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
+import iris.fileformats.pp
 from iris.fileformats.rules import (
     aux_factory,
     has_aux_factory,
@@ -96,6 +97,8 @@ def _stash_rules(cube, pp):
     """
     if "STASH" in cube.attributes:
         stash = cube.attributes["STASH"]
+        if isinstance(stash, str):
+            stash = iris.fileformats.pp.STASH.from_msi(stash)
         if isinstance(stash, iris.fileformats.pp.STASH):
             pp.lbuser[3] = 1000 * (stash.section or 0) + (stash.item or 0)
             pp.lbuser[6] = stash.model or 0
@@ -663,7 +666,7 @@ def _lbproc_rules(cube, pp):
     return pp
 
 
-def _vertical_rules(cube, pp):
+def _vertical_rules(cube, pp, label_surface_fields=False):
     """Rule for setting vertical levels for the PP field.
 
     Parameters
@@ -772,6 +775,22 @@ def _vertical_rules(cube, pp):
         pp.blev = depth_coord.points[0]
         pp.brsvd[0] = depth_coord.bounds[0, 0]
         pp.brlev = depth_coord.bounds[0, 1]
+
+    # Surface field.
+    if (
+        height_coord is None
+        and depth_coord is None
+        and pressure_coord is None
+        and soil_mln_coord is None
+        and apt_coord is None
+        and air_pres_coord is None
+        and level_height_coord is None
+        and mln_coord is None
+        and sigma_coord is None
+        and label_surface_fields
+    ):
+        pp.lbvc = 129
+        pp.lblev = 9999
 
     # Single potential-temperature level.
     if (
@@ -883,7 +902,7 @@ def _all_other_rules(cube, pp):
     return pp
 
 
-def verify(cube, field):
+def verify(cube, field, label_surface_fields=False):
     # Rules functions.
     field = _basic_coord_system_rules(cube, field)
     field = _um_version_rules(cube, field)
@@ -893,7 +912,7 @@ def verify(cube, field):
     field = _grid_and_pole_rules(cube, field)
     field = _non_std_cross_section_rules(cube, field)
     field = _lbproc_rules(cube, field)
-    field = _vertical_rules(cube, field)
+    field = _vertical_rules(cube, field, label_surface_fields=label_surface_fields)
     field = _all_other_rules(cube, field)
 
     return field
