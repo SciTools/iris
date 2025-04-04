@@ -60,15 +60,17 @@ class TestBasicCubeMasking:
             bounds=[[0, 0.5], [0.5, 1]],
             units="1",
         )
+
     basic_cube.add_dim_coord(coord, 0)
     coord = DimCoord(
-            np.array([0, 1.0, 1.5]),
-            standard_name="projection_x_coordinate",
-            bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
-            units="1",
-        )
+        np.array([0, 1.0, 1.5]),
+        standard_name="projection_x_coordinate",
+        bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
+        units="1",
+    )
     basic_cube.add_dim_coord(coord, 1)
     yield basic_cube
+
 
 class TestBasicCubeMasking(tests.IrisTest):
     """Unit tests for mask_cube_from_shapefile function."""
