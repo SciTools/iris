@@ -86,6 +86,7 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+MIN_PICKLE_PROTOCOL = 4
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")
@@ -562,7 +563,7 @@ class IrisTest(unittest.TestCase):
         # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
         # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
         doc = iris.cube.Cube._sort_xml_attrs(doc)
-        pretty_xml = doc.toprettyxml(indent="  ")
+        pretty_xml = iris.util._print_xml(doc)
         reference_path = self.get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, type_comparison_name="XML")
 

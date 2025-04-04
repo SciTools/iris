@@ -15,7 +15,7 @@ from nox.logger import logger
 nox.options.reuse_existing_virtualenvs = True
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
+_PY_VERSIONS_ALL = ["3.11", "3.12", "3.13"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -237,32 +237,6 @@ def gallery(session: nox.sessions.Session):
         "-n",
         "auto",
         "docs/gallery_tests",
-    )
-
-
-@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
-def linkcheck(session: nox.sessions.Session):
-    """Perform iris doc link check.
-
-    Parameters
-    ----------
-    session : object
-        A `nox.sessions.Session` object.
-
-    """
-    prepare_venv(session)
-    session.install("--no-deps", "--editable", ".")
-    session.cd("docs")
-    session.run(
-        "make",
-        "clean",
-        "html",
-        external=True,
-    )
-    session.run(
-        "make",
-        "linkcheck",
-        external=True,
     )
 
 

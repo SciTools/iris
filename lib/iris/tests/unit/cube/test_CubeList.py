@@ -719,3 +719,52 @@ class TestHtmlRepr:
             # "CubeListRepresentation(cubelist).repr_html()" was called exactly once, with no args
             mock.call()
         ]
+
+
+class Test_combine__apis:
+    """Confirm that CubeList.combine/combine_cube just call combine_cubes."""
+
+    def mock_combine_cubes(self):
+        def mock_call(cubes, options=None, **kwargs):
+            self.call_params = [cubes, options, kwargs]
+            return cubes  # used to test effect of different cases
+
+        return mock_call
+
+    def test_combine(self):
+        cubelist = CubeList([])
+        arg = mock.sentinel.options_arg
+        kwargs = dict(
+            key_test_1=1,
+            key_test_2=2,
+        )
+        with mock.patch("iris.util.combine_cubes", self.mock_combine_cubes()):
+            result = cubelist.combine(arg, **kwargs)
+        assert self.call_params == [cubelist, arg, kwargs]
+        assert result == cubelist
+
+    @pytest.mark.parametrize("ncubes", [0, 1, 2], ids=["nocubes", "onecube", "ncubes"])
+    def test_combine_cube(self, ncubes):
+        """In this case, also check behaviour for result of <1 =1 >1 cubes."""
+        cubelist = CubeList(
+            [Cube([0], long_name=f"cube_{i_cube})") for i_cube in range(ncubes)]
+        )
+        arg = mock.sentinel.options_arg
+        kwargs = dict(
+            key_test_1=1,
+            key_test_2=2,
+        )
+        if ncubes == 1:
+            with mock.patch("iris.util.combine_cubes", self.mock_combine_cubes()):
+                result = cubelist.combine_cube(arg, **kwargs)
+            assert self.call_params == [cubelist, arg, kwargs]
+            assert result == cubelist[0]
+        else:
+            if ncubes == 0:
+                msg = "'combine' operation yielded 0 cubes, expected exactly 1"
+            else:
+                msg = f"'combine' operation yielded {ncubes} cubes, expected exactly 1"
+
+            with mock.patch("iris.util.combine_cubes", self.mock_combine_cubes()):
+                with pytest.raises(ValueError, match=msg):
+                    result = cubelist.combine_cube(arg, **kwargs)

@@ -19,6 +19,10 @@ used in :meth:`iris.fileformats.netcdf._actions_activation_stats`.
 
 """
 
+from iris.coords import _DimensionalMetadata
+from iris.cube import Cube
+from iris.fileformats.cf import CFDataVariable
+
 from .actions import run_actions
 
 
@@ -73,6 +77,11 @@ class Engine:
     -- at present, in practice, those are all strings too.
 
     """
+
+    cf_var: CFDataVariable | None
+    cube: Cube | None
+    cube_parts: dict[str, list[tuple[_DimensionalMetadata, str]]] | None
+    filename: str | None
 
     def __init__(self):
         """Init new engine."""

@@ -2,10 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test function :func:`iris.fileformats._nc_load_rules.helpers.\
-build_dimension_coordinate`.
-
-"""
+"""Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_dimension_coordinate`."""
 
 # import iris tests first so that some things can be initialised before
 # importing anything else
@@ -19,7 +16,8 @@ import pytest
 
 from iris.coords import AuxCoord, DimCoord
 from iris.exceptions import CannotAddError
-from iris.fileformats._nc_load_rules.helpers import build_dimension_coordinate
+from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coordinate
+from iris.loading import LOAD_PROBLEMS
 
 
 def _make_bounds_var(bounds, dimensions, units):
@@ -108,6 +106,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             shape=points.shape,
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
+            cf_attrs=lambda: [("foo", "a"), ("bar", "b")],
         )
 
     def check_case_dim_coord_construction(self, climatology=False):
@@ -127,10 +126,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
     def test_dim_coord_construction(self):
         self.check_case_dim_coord_construction(climatology=False)
@@ -159,10 +158,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_dimension_coordinate(self.engine, self.cf_coord_var)
+                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert warning is raised
             assert len(w) == 1
@@ -188,10 +187,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_dimension_coordinate(self.engine, self.cf_coord_var)
+                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -212,10 +211,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Asserts must lie within context manager because of deferred
             # loading.
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_dimension_coordinate(self.engine, self.cf_coord_var)
+                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
                 # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -233,17 +232,16 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             bounds=self.bounds,
         )
 
-        warning_patch = mock.patch("warnings.warn")
-
         # Asserts must lie within context manager because of deferred loading.
-        with warning_patch, self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(self.engine, self.cf_coord_var)
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
             self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
+            load_problem = LOAD_PROBLEMS.problems[-1]
             self.assertIn(
                 "creating 'wibble' auxiliary coordinate instead",
-                warnings.warn.call_args[0][0],
+                "".join(load_problem.stack_trace.format()),
             )
 
     def test_dimcoord_not_added(self):
@@ -258,9 +256,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             self._set_cf_coord_var(np.arange(6))
 
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                with pytest.warns(match="coordinate not added to Cube: foo"):
-                    build_dimension_coordinate(self.engine, self.cf_coord_var)
+                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
     def test_auxcoord_not_added(self):
@@ -275,9 +274,10 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
 
             with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                with pytest.warns(match="coordinate not added to Cube: foo"):
-                    build_dimension_coordinate(self.engine, self.cf_coord_var)
+                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
 
@@ -319,10 +319,10 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
@@ -344,10 +344,10 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
@@ -372,10 +372,10 @@ class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
 
         # Asserts must lie within context manager because of deferred loading.
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
             # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, [0])
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Test that engine.cube_parts container is correctly populated.
             expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
@@ -414,7 +414,7 @@ class TestCircular(tests.IrisTest, RulesTestMixin):
             coord_name = "longitude"
         self._make_vars(*args, **kwargs)
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(
+            build_and_add_dimension_coordinate(
                 self.engine, self.cf_coord_var, coord_name=coord_name
             )
             self.assertEqual(self.engine.cube.add_dim_coord.call_count, 1)
@@ -506,7 +506,7 @@ class TestCircularScalar(tests.IrisTest, RulesTestMixin):
 
     def _assert_circular(self, value):
         with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_dimension_coordinate(
+            build_and_add_dimension_coordinate(
                 self.engine, self.cf_coord_var, coord_name="longitude"
             )
             self.assertEqual(self.engine.cube.add_aux_coord.call_count, 1)
