@@ -5,18 +5,21 @@
 
 # Much of this code is originally based off the ASCEND library, developed in
 # the Met Office by Chris Kent, Emilie Vanvyve, David Bentley, Joana Mendes
-# many thanks to them. Converted to iris by Alex Chamberlain-Clay
+# many thanks to them. Converted for Iris by Alex Chamberlain-Clay with subsequent
+# additions from Hamish Steptoe.               
 
 
 from itertools import product
 import warnings
 
+import cartopy
 import numpy as np
 import shapely
 import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops
 
+from iris.cube import Cube, CubeList
 import iris.analysis.cartography
 from iris.warnings import IrisDefaultingWarning, IrisUserWarning
 
@@ -69,8 +72,6 @@ def create_shapefile_mask(
 
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
     """
-    from iris.cube import Cube, CubeList
-
     try:
         msg = "Geometry is not a valid Shapely object"
         if not shapely.is_valid(geometry):
@@ -185,7 +186,7 @@ def _transform_coord_system(
         # If no geometry_crs assume it has the cube coord_system
         geometry_crs = target_system
         warnings.warn(
-            "No geometry coordinate reference system supplied; using cube coord_system instead.",
+            "No geometry coordinate reference system specified; using cube coord_system instead.",
             category=IrisDefaultingWarning,
         )
 
@@ -212,7 +213,7 @@ def _trans_func(geometry):
     return geometry
 
 
-def _cube_primary_xy_coord_names(cube):
+def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple:
     """Return the primary latitude and longitude coordinate names, or long names, from a cube.
 
     Parameters
@@ -221,7 +222,7 @@ def _cube_primary_xy_coord_names(cube):
 
     Returns
     -------
-    tuple of str
+    tuple
         The names of the primary latitude and longitude coordinates.
 
     """
@@ -245,7 +246,7 @@ def _cube_primary_xy_coord_names(cube):
     return latitude, longitude
 
 
-def _get_mod_rebased_coord_bounds(coord):
+def _get_mod_rebased_coord_bounds(coord: iris.coords.Coord) -> np.array:
     """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
 
     Parameters
