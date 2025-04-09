@@ -841,6 +841,7 @@ class MeshXY(Mesh):
         # Validate points and bounds shape match.
         def check_shape(array_name):
             attr_name = f"core_{array_name}"
+            coords
             arrays = [getattr(coord, attr_name)() for coord in coords]
             if any(a is None for a in arrays):
                 message = f"{array_name} missing from coords[{arrays.index(None)}] ."
@@ -2834,6 +2835,7 @@ class MeshCoord(AuxCoord):
     def _metadata_manager(self):
         # An explanatory comment.
         use_metadict = self._load_metadata()
+
         self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
         self._metadata_manager_temp.long_name = use_metadict["long_name"]
         self._metadata_manager_temp.var_name = use_metadict["var_name"]
@@ -3117,7 +3119,7 @@ class MeshCoord(AuxCoord):
                         f"instead of {bounds_value}."
                     )
                     raise ValueError(msg)
-            return use_metadict
+        return use_metadict
 
     def _construct_access_arrays(self):
         """Build lazy points and bounds arrays.
