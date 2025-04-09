@@ -2785,7 +2785,7 @@ class Cube(CFVariableMixin):
 
     @property
     def dtype(self):
-        """The data type of the values in the data array of this :class:`~iris.cube.Cube`."""
+        """The dtype of the values in the data array of this :class:`~iris.cube.Cube`."""
         return self._data_manager.dtype
 
     @property
