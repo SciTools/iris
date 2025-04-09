@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.10
+  - python =3.13
 
 # Setup dependencies.
   - setuptools >=64
@@ -14,7 +14,7 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2022.9.0,!=2024.8.0, <2024.9
+  - dask-core >=2025.1.0  # github.com/SciTools/iris/issues/6264
   - libnetcdf !=4.9.1
   - matplotlib-base >=3.5, !=3.9.1
   - netcdf4
@@ -49,7 +49,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
-  - sphinx
+  - sphinx <8.2
   - sphinxcontrib-apidoc
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0

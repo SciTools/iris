@@ -1,4 +1,4 @@
-"""Addind a citation for a plot using iris.plot.citation()."""
+"""Adding a citation for a plot using iris.plot.citation()."""
 
 import matplotlib.pyplot as plt
 

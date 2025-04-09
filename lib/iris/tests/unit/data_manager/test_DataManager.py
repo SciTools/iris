@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris._data_manager.DataManager`."""
 
+import pytest
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -16,6 +18,27 @@ import numpy.ma as ma
 
 from iris._data_manager import DataManager
 from iris._lazy_data import as_lazy_data
+
+
+class Test__init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.data = np.array([1])
+
+    def test_data_same_shape(self):
+        msg = '"shape" should only be provided if "data" is None'
+        with pytest.raises(ValueError, match=msg):
+            DataManager(self.data, self.data.shape)
+
+    def test_data_conflicting_shape(self):
+        msg = '"shape" should only be provided if "data" is None'
+        with pytest.raises(ValueError, match=msg):
+            DataManager(self.data, ())
+
+    def test_no_data_no_shape(self):
+        msg = 'one of "shape" or "data" should be provided; both are None'
+        with pytest.raises(ValueError, match=msg):
+            DataManager(None, None)
 
 
 class Test___copy__(tests.IrisTest):
@@ -85,6 +108,21 @@ class Test___eq__(tests.IrisTest):
     def test_lazy_with_lazy__dtype_failure(self):
         dm1 = DataManager(as_lazy_data(self.real_array))
         dm2 = DataManager(as_lazy_data(self.real_array).astype(int))
+        self.assertFalse(dm1 == dm2)
+
+    def test_dataless(self):
+        dm1 = DataManager(data=None, shape=(1,))
+        dm2 = DataManager(data=None, shape=(1,))
+        self.assertTrue(dm1 == dm2)
+
+    def test_dataless_failure(self):
+        dm1 = DataManager(data=None, shape=(1,))
+        dm2 = DataManager(data=None, shape=(2,))
+        self.assertTrue(dm1 != dm2)
+
+    def test_dataless_with_real(self):
+        dm1 = DataManager(data=None, shape=(1,))
+        dm2 = DataManager(self.real_array)
         self.assertFalse(dm1 == dm2)
 
     def test_non_DataManager_failure(self):
@@ -158,6 +196,12 @@ class Test___repr__(tests.IrisTest):
         expected = "{}({!r})".format(self.name, self.lazy_array)
         self.assertEqual(result, expected)
 
+    def test_dataless(self):
+        dm = DataManager(None, self.real_array.shape)
+        result = repr(dm)
+        expected = "{}({!r}), shape={}".format(self.name, None, self.real_array.shape)
+        self.assertEqual(result, expected)
+
 
 class Test__assert_axioms(tests.IrisTest):
     def setUp(self):
@@ -167,14 +211,15 @@ class Test__assert_axioms(tests.IrisTest):
 
     def test_array_none(self):
         self.dm._real_array = None
-        emsg = "Unexpected data state, got no lazy and no real data"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        self.dm._shape = None
+        emsg = "Unexpected data state, got no lazy or real data, and no shape."
+        with self.assertRaisesRegex(ValueError, emsg):
             self.dm._assert_axioms()
 
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
-        emsg = "Unexpected data state, got lazy and real data"
-        with self.assertRaisesRegex(AssertionError, emsg):
+        emsg = "Unexpected data state, got both lazy and real data."
+        with self.assertRaisesRegex(ValueError, emsg):
             self.dm._assert_axioms()
 
 
@@ -452,6 +497,46 @@ class Test_data__setter(tests.IrisTest):
         self.assertTrue(dm.has_lazy_data())
         self.assertArrayEqual(dm.data, lazy_array.compute())
 
+    def test_nd_lazy_to_dataless(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        lazy_array = as_lazy_data(real_array)
+        dm = DataManager(lazy_array * 10)
+        self.assertTrue(dm.has_lazy_data())
+        dm.data = None
+        self.assertIsNone(dm.core_data())
+
+    def test_nd_real_to_dataless(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        dm = DataManager(real_array)
+        self.assertFalse(dm.has_lazy_data())
+        dm.data = None
+        self.assertIsNone(dm.core_data())
+
+    def test_dataless_to_nd_lazy(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        lazy_array = as_lazy_data(real_array)
+        dm = DataManager(None, shape)
+        self.assertTrue(dm.shape == shape)
+        dm.data = lazy_array
+        self.assertTrue(dm.has_lazy_data())
+        self.assertArrayEqual(dm.data, lazy_array.compute())
+
+    def test_dataless_to_nd_real(self):
+        shape = (2, 3, 4)
+        size = np.prod(shape)
+        real_array = np.arange(size).reshape(shape)
+        dm = DataManager(None, shape)
+        self.assertIsNone(dm.core_data())
+        dm.data = real_array
+        self.assertFalse(dm.has_lazy_data())
+        self.assertArrayEqual(dm.data, real_array)
+
     def test_coerce_to_ndarray(self):
         shape = (2, 3)
         size = np.prod(shape)
@@ -501,10 +586,10 @@ class Test_ndim(tests.IrisTest):
         shape = (2, 3, 4)
         real_array = np.arange(24).reshape(shape)
         dm = DataManager(real_array)
-        self.assertEqual(dm.ndim, len(shape))
+        self.assertEqual(dm.ndim, 3)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array)
-        self.assertEqual(dm.ndim, len(shape))
+        self.assertEqual(dm.ndim, 3)
 
 
 class Test_shape(tests.IrisTest):
@@ -523,6 +608,22 @@ class Test_shape(tests.IrisTest):
         self.assertEqual(dm.shape, shape)
         lazy_array = as_lazy_data(real_array)
         dm = DataManager(lazy_array)
+        self.assertEqual(dm.shape, shape)
+
+    def test_shape_data_to_dataless(self):
+        shape = (2, 3, 4)
+        real_array = np.arange(24).reshape(shape)
+        dm = DataManager(None, shape)
+        self.assertEqual(dm.shape, shape)
+        dm.data = real_array
+        self.assertEqual(dm.shape, shape)
+
+    def test_shape_dataless_to_data(self):
+        shape = (2, 3, 4)
+        real_array = np.arange(24).reshape(shape)
+        dm = DataManager(real_array)
+        self.assertEqual(dm.shape, shape)
+        dm.data = None
         self.assertEqual(dm.shape, shape)
 
 
@@ -588,6 +689,20 @@ class Test_lazy_data(tests.IrisTest):
         result = dm.lazy_data()
         self.assertTrue(dm.has_lazy_data())
         self.assertIs(result, dm._lazy_array)
+
+
+class Test_is_dataless(tests.IrisTest):
+    def setUp(self):
+        self.data = np.array(0)
+        self.shape = (0,)
+
+    def test_with_data(self):
+        dm = DataManager(self.data)
+        self.assertFalse(dm.is_dataless())
+
+    def test_without_data(self):
+        dm = DataManager(None, self.shape)
+        self.assertTrue(dm.is_dataless())
 
 
 if __name__ == "__main__":
