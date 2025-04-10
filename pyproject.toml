@@ -22,9 +22,9 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -50,7 +50,7 @@ keywords = [
 ]
 license = {text = "BSD-3-Clause"}
 name = "scitools-iris"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"

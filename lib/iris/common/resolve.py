@@ -2592,9 +2592,9 @@ class Resolve:
                     source                      'Data from Met Office Unified Model 6.05'
             >>> Resolve().shape is None
             True
-            >>> Resolve(cube1, cube2).shape  # doctest: +SKIP
+            >>> Resolve(cube1, cube2).shape
             (240, 37, 49)
-            >>> Resolve(cube2, cube1).shape  # doctest: +SKIP
+            >>> Resolve(cube2, cube1).shape
             (240, 37, 49)
 
         """  # noqa: D214, D406, D407, D410, D411

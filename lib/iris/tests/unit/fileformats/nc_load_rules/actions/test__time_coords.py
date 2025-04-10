@@ -14,6 +14,7 @@ from typing import ClassVar
 import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -161,7 +162,9 @@ netcdf test {{
 """
         return cdl_string
 
-    def check_result(self, cube, time_is="dim", period_is="missing"):
+    def check_result(
+        self, cube, time_is="dim", period_is="missing", load_problems_regex=None
+    ):
         """Check presence of expected dim/aux-coords in the result cube.
 
         Both of 'time_is' and 'period_is' can take values 'dim', 'aux' or
@@ -214,6 +217,10 @@ netcdf test {{
         elif period_is == "aux":
             self.assertIsInstance(period_auxcos[0], AuxCoord)
 
+        if load_problems_regex is not None:
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
+
 
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
     # Coordinate tests to be run for both 'time' and 'period' coordinate vars.
@@ -251,7 +258,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
 
         return result
 
-    def check_result(self, cube, coord_is="dim"):
+    def check_result(self, cube, coord_is="dim", load_problems_regex=None):
         """Specialise 'check_result' for single-coord 'time' or 'period' testing."""
         # Pass generic 'coord_is' option to parent as time/period options.
         which = self.which
@@ -264,7 +271,12 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
             period_is = coord_is
             time_is = "missing"
 
-        super().check_result(cube, time_is=time_is, period_is=period_is)
+        super().check_result(
+            cube,
+            time_is=time_is,
+            period_is=period_is,
+            load_problems_regex=load_problems_regex,
+        )
 
     #
     # Generic single-coordinate testcases.
@@ -302,9 +314,12 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #     001 : fc_default
         #     002 : fc_provides_coordinate_(time[[_period]])
         #     003 : fc_build_coordinate_(time[[_period]])
-        msg = "Failed to create.* dimension coordinate"
-        result = self.run_testcase(values_all_zero=True, warning_regex=msg)
-        self.check_result(result, "aux")
+        msg = "must be.* monotonic"
+        result = self.run_testcase(
+            values_all_zero=True,
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(result, "aux", load_problems_regex=msg)
 
     def test_dim_fails_typeident(self):
         # Provide a coord variable, identified as a CFDimensionCoordinate by

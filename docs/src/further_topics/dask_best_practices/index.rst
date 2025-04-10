@@ -44,13 +44,13 @@ CPU available. This interacts badly with Dask:
 * NumPy will generate enough threads to use all available CPUs even
   if Dask is deliberately configured to only use a subset of CPUs. The
   resulting sharing of CPUs between threads greatly reduces performance.
-* `Dask is already designed to parallelise with NumPy arrays <https://docs
-  .dask.org/en/latest/array.html>`_, so adding NumPy's 'competing' layer of
-  parallelisation could cause unpredictable performance.
+* `Dask is already designed to parallelise with NumPy arrays
+  <https://docs.dask.org/en/latest/array.html>`_, so adding NumPy's 'competing' layer
+  of parallelisation could cause unpredictable performance.
 
 Therefore it is best to prevent NumPy performing its own parallelisation, `a
-suggestion made in Dask's own documentation <https://docs.dask
-.org/en/stable/array-best-practices.html#avoid-oversubscribing-threads>`_.
+suggestion made in Dask's own documentation
+<https://docs.dask.org/en/stable/array-best-practices.html#avoid-oversubscribing-threads>`_.
 The following commands will ensure this in all scenarios:
 
 in Python...
@@ -158,8 +158,8 @@ NetCDF Files
 
 NetCDF files can include their own chunking specification. This is either
 specified when creating the file, or is automatically assigned if one or
-more of the dimensions is `unlimited <https://www.unidata.ucar
-.edu/software/netcdf/docs/unlimited_dims.html>`_.
+more of the dimensions is
+`unlimited <https://www.unidata.ucar.edu/software/netcdf/docs/unlimited_dims.html>`_.
 Importantly, netCDF chunk shapes are **not optimised for Dask
 performance**.
 

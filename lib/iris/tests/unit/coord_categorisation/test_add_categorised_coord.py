@@ -110,7 +110,7 @@ class Test_add_day_of_year(tests.IrisTest):
     def test_calendars(self):
         for calendar in calendars:
             # Skip the Julian calendar due to
-            # https://github.com/Unidata/netcdftime/issues/13
+            # https://github.com/Unidata/cftime/issues/13
             # Remove this if block once the issue is resolved.
             if calendar == "julian":
                 continue

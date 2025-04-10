@@ -11,6 +11,7 @@ exclude .git-blame-ignore-revs
 exclude .git_archival.txt
 exclude .gitattributes
 exclude .gitignore
+exclude .lycheeignore
 exclude .mailmap
 exclude .pre-commit-config.yaml
 exclude .readthedocs.yml

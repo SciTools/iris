@@ -227,7 +227,7 @@ def _load_palette():
 
     """
     # Reference these module level namespace variables.
-    global CMAP_BREWER, _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
+    global _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
 
     _CMAP_BY_SCHEME = {}
     _CMAP_BY_KEYWORD = {}

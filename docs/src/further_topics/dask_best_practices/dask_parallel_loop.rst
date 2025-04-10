@@ -42,7 +42,7 @@ We start out by loading cubes of pressure, temperature, dewpoint temperature and
 We set up the NumPy arrays we will be filling with the output data::
 
     output_arrays = [np.zeros(pressure.shape[0]) for _ in range(6)]
-    cape, cin, lcl, lfc, el, tpw = output_data
+    cape, cin, lcl, lfc, el, tpw = output_arrays
 
 Now we loop over the columns in the data to calculate the soundings::
 

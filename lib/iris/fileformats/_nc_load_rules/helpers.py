@@ -16,8 +16,10 @@ build routines, and which it does not use.
 
 from __future__ import annotations
 
+import contextlib
+from functools import partial
 import re
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 import warnings
 
 import cf_units
@@ -28,13 +30,15 @@ import pyproj
 import iris
 from iris._deprecation import warn_deprecated
 import iris.aux_factory
-from iris.common.mixin import _get_valid_standard_name
+from iris.common.mixin import LimitedAttributeDict, _get_valid_standard_name
 import iris.coord_systems
 import iris.coords
+from iris.cube import Cube
 import iris.exceptions
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.std_names
 import iris.util
 import iris.warnings
@@ -43,6 +47,8 @@ if TYPE_CHECKING:
     from numpy.ma import MaskedArray
 
     from iris.fileformats.cf import CFBoundaryVariable
+
+    from .engine import Engine
 
 # TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
@@ -453,26 +459,194 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
     return tuple(cell_methods)
 
 
+def _add_or_capture(
+    build_func: partial,
+    add_method: partial,
+    filename: str,
+    cf_var: iris.fileformats.cf.CFVariable,
+    attr_key: Optional[str] = None,
+) -> Optional[LoadProblems.Problem]:
+    """Build & add objects to the Cube, capturing problem objects - common code.
+
+    Problems are captured in :const:`iris.loading.LOAD_PROBLEMS`.
+
+    Parameters
+    ----------
+    build_func : ``functools.partial``
+        A function that builds the object-to-be-added. Passed as a
+        :class:`~functools.partial` instance so
+        that argument complexities can be handled by the caller, while execution
+        is deferred until the appropriate time within :func:`_add_or_capture`.
+        The passed :class:`~functools.partial` instance must have ALL arguments
+        already bound, and when called it must return the object that will be
+        added to the Cube.
+    add_method : ``functools.partial``
+        A function that takes the object returned by `build_func` and adds it to
+        the Cube. Passed as a :class:`~functools.partial` instance to allow
+        further arguments to be bound by the caller.
+    filename : str
+        The ``filename`` attribute of the
+        :class:`iris.fileformats._nc_load_rules.engine.Engine` that is handling
+        the loading. This is the name of the file being loaded.
+    cf_var : iris.fileformats.cf.CFVariable
+        The CFVariable object that provides the info for building the
+        object-to-be-added. Used in case of an error, to build the most basic
+        :class:`~iris.cube.Cube` possible - for adding to
+        :const:`iris.loading.LOAD_PROBLEMS`.
+    attr_key : str, optional
+        The attribute-of-interest on `cf_var`, if applicable. For example: in
+        some cases we are building a coordinate using the entire of `cf_var` -
+        no `attr_key` needed - but in other cases we are 'building' a
+        standard_name by getting this key from `cf_var`.
+
+    Returns
+    -------
+    iris.loading.LoadProblems.Problem or None
+        The captured problem, if any; the same object that is added to
+        :const:`iris.loading.LOAD_PROBLEMS`.
+
+    See Also
+    --------
+    iris.loading.LoadProblems.Problem: The type of the returned object.
+    iris.loading.LOAD_PROBLEMS: The destination for captured problems.
+    """
+    captured: Cube | dict[str, Any] | None = None
+    load_problems_entry: LoadProblems.Problem | None = None
+
+    try:
+        built = build_func()
+
+    except Exception as exc_build:
+        # Problems CREATING the desired object.
+        # Fully suppress further problems since we're just trying to do our
+        #  best to capture objects IF possible.
+        if attr_key is not None:
+            captured_attr = None
+            with contextlib.suppress(AttributeError):
+                captured_attr = getattr(cf_var, attr_key)
+            captured = {attr_key: captured_attr}
+        else:
+            with contextlib.suppress(Exception):
+                captured = build_raw_cube(cf_var, filename)
+
+        load_problems_entry = LOAD_PROBLEMS.record(
+            filename=filename,
+            loaded=captured,
+            exception=exc_build,
+        )
+
+    else:
+        try:
+            add_method(built)
+        except Exception as exc_add:
+            # Problems ADDING the built object to the Cube.
+            if attr_key is not None:
+                captured = {attr_key: built}
+            else:
+                captured = built
+
+            load_problems_entry = LOAD_PROBLEMS.record(
+                filename=filename, loaded=captured, exception=exc_add
+            )
+
+    return load_problems_entry
+
+
+################################################################################
+def build_raw_cube(cf_var: cf.CFVariable, filename: str) -> Cube:
+    """Build the most basic Cube possible - used as a 'last resort' fallback."""
+    # TODO: dataless Cubes might be an opportunity for _get_cf_var_data() to return None?
+    data = _get_cf_var_data(cf_var, filename)
+    raw_attributes = {key: value for key, value in cf_var.cf_attrs()}
+    # Not a real attribute, but this is 'Iris language'.
+    raw_attributes["var_name"] = cf_var.cf_name
+    attributes = {LimitedAttributeDict.IRIS_RAW: raw_attributes}
+    return Cube(data=data, attributes=attributes)
+
+
+################################################################################
+# TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
+
+
+def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
+    value = getattr(cf_var, CF_ATTR_STD_NAME, None)
+    if value is not None:
+        standard_name = _get_valid_standard_name(value)
+    else:
+        standard_name = value
+    return standard_name
+
+
+def _build_name_long(cf_var: cf.CFVariable) -> str | None:
+    return getattr(cf_var, CF_ATTR_LONG_NAME, None)
+
+
+def _build_name_var(cf_var: cf.CFVariable) -> str | None:
+    return cf_var.cf_name
+
+
+def build_and_add_names(engine: Engine) -> None:
+    """Add standard_, long_, var_name to the cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.filename is not None
+
+    def setter(attr_name):
+        return partial(setattr, engine.cube, attr_name)
+
+    problem = _add_or_capture(
+        build_func=partial(_build_name_standard, engine.cf_var),
+        add_method=setter("standard_name"),
+        filename=engine.filename,
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_STD_NAME,
+    )
+    if problem is not None and hasattr(problem.loaded, "get"):
+        assert isinstance(problem.loaded, dict)
+        invalid_std_name = problem.loaded.get(CF_ATTR_STD_NAME)
+    else:
+        invalid_std_name = None
+
+    long_name_kwargs = dict(
+        add_method=setter("long_name"),
+        filename=engine.filename,
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_LONG_NAME,
+    )
+    _ = _add_or_capture(
+        build_func=partial(_build_name_long, engine.cf_var),
+        **long_name_kwargs,
+    )
+
+    # Store as long_name is there is space, or as attribute if not.
+    if invalid_std_name is not None:
+        if engine.cube.long_name is None:
+            _ = _add_or_capture(
+                build_func=partial(lambda: invalid_std_name),
+                **long_name_kwargs,
+            )
+        else:
+            # TODO: should this be reserved for the attributes builder (iris#6319)?
+            engine.cube.attributes["invalid_standard_name"] = invalid_std_name
+
+    _ = _add_or_capture(
+        build_func=partial(_build_name_var, engine.cf_var),
+        add_method=setter("var_name"),
+        filename=engine.filename,
+        cf_var=engine.cf_var,
+        attr_key="cf_name",
+    )
+
+
 ################################################################################
 def build_cube_metadata(engine):
     """Add the standard meta data to the cube."""
     cf_var = engine.cf_var
     cube = engine.cube
 
-    # Determine the cube's name attributes
-    cube.var_name = cf_var.cf_name
-    standard_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
-    long_name = getattr(cf_var, CF_ATTR_LONG_NAME, None)
-    cube.long_name = long_name
-
-    if standard_name is not None:
-        try:
-            cube.standard_name = _get_valid_standard_name(standard_name)
-        except ValueError:
-            if cube.long_name is not None:
-                cube.attributes["invalid_standard_name"] = standard_name
-            else:
-                cube.long_name = standard_name
+    # Note: name building has been moved to the build_name_* functions.
+    # So `action_default` now calls both this *and* the new `build_and_add_names`.
+    #  All other code will follow in future (iris#6319).
 
     # Determine the cube units.
     attr_units = get_attr_units(cf_var, cube.attributes)
@@ -1094,13 +1268,14 @@ def _normalise_bounds_units(
 
 
 ################################################################################
-def build_dimension_coordinate(
-    engine, cf_coord_var, coord_name=None, coord_system=None
-):
+def _build_dimension_coordinate(
+    filename: str,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+) -> iris.coords.Coord:
     """Create a dimension coordinate (DimCoord) and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+    attributes: dict[str, Any] = {}
 
     attr_units = get_attr_units(cf_coord_var, attributes)
     points_data = cf_coord_var[:]
@@ -1148,22 +1323,11 @@ def build_dimension_coordinate(
             points_data, modulus_value, bounds=bounds_data
         )
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_coord_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
-
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
-    coord_skipped_msg = f"{cf_coord_var.cf_name} coordinate not added to Cube: "
-    coord_skipped_msg += "{error}"
-    coord_skipped = False
-
     # Create the coordinate.
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord
     try:
         coord = iris.coords.DimCoord(
             points_data,
@@ -1177,16 +1341,20 @@ def build_dimension_coordinate(
             circular=circular,
             climatological=climatological,
         )
-    except ValueError as e_msg:
+    except ValueError as dim_error:
         # Attempt graceful loading.
-        msg = (
-            "Failed to create {name!r} dimension coordinate: {error}\n"
-            "Gracefully creating {name!r} auxiliary coordinate instead."
+        coord_var_name = str(cf_coord_var.cf_name)
+        dim_error.add_note(
+            f"Failed to create {coord_var_name} dimension coordinate:\n"
+            f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
         )
-        warnings.warn(
-            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=_WarnComboDefaultingCfLoad,
+        # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
+        _ = LOAD_PROBLEMS.record(
+            filename=filename,
+            loaded=build_raw_cube(cf_coord_var, filename),
+            exception=dim_error,
         )
+
         coord = iris.coords.AuxCoord(
             points_data,
             standard_name=standard_name,
@@ -1198,32 +1366,71 @@ def build_dimension_coordinate(
             coord_system=coord_system,
             climatological=climatological,
         )
-        try:
-            cube.add_aux_coord(coord, data_dims)
-        except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(
-                coord_skipped_msg.format(error=e_msg),
-                category=iris.warnings.IrisCannotAddWarning,
-            )
-            coord_skipped = True
-    else:
-        # Add the dimension coordinate to the cube.
-        try:
-            if data_dims:
-                cube.add_dim_coord(coord, data_dims)
-            else:
-                # Scalar coords are placed in the aux_coords container.
-                cube.add_aux_coord(coord, data_dims)
-        except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(
-                coord_skipped_msg.format(error=e_msg),
-                category=iris.warnings.IrisCannotAddWarning,
-            )
-            coord_skipped = True
 
-    if not coord_skipped:
-        # Update the coordinate to CF-netCDF variable mapping.
-        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+    return coord
+
+
+def _add_dimension_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    # Determine the name of the dimension/s shared between the CF-netCDF
+    #  data variable and the coordinate being built.
+    common_dims = [
+        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
+    ]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [int(engine.cf_var.dimensions.index(dim)) for dim in common_dims]
+
+    if hasattr(coord, "circular") and data_dims is not None:
+        # Appease MyPy. The check itself uses duck typing to avoid any
+        #  silent errors when Mocking.
+        assert isinstance(coord, iris.coords.DimCoord)
+        try:
+            (data_dim,) = data_dims
+        except ValueError:
+            message = (
+                "Expected single dimension for dimension coordinate "
+                f"{coord.var_name}, got: {data_dims}."
+            )
+            raise ValueError(message)
+        engine.cube.add_dim_coord(coord, data_dim)
+    else:
+        # Should work fine for scalar coords - data_dims passed as None.
+        engine.cube.add_aux_coord(coord, data_dims)
+
+    # Update the coordinate to CF-netCDF variable mapping.
+    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+
+# TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
+def build_and_add_dimension_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+):
+    assert engine.filename is not None
+
+    _ = _add_or_capture(
+        build_func=partial(
+            _build_dimension_coordinate,
+            engine.filename,
+            cf_coord_var,
+            coord_name,
+            coord_system,
+        ),
+        add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
+        filename=engine.filename,
+        cf_var=cf_coord_var,
+    )
 
 
 ################################################################################

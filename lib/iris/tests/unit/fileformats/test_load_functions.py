@@ -20,6 +20,7 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+import iris.loading
 
 _time_unit = "days since 2001-01-01"
 
@@ -64,14 +65,14 @@ def loadfunc_name(request):
 
 
 def run_testcase(input_cubes, loadfunc_name, constraints=None):
-    loadfunc = getattr(iris, loadfunc_name)
+    loadfunc = getattr(iris.loading, loadfunc_name)
 
     def mock_generate_cubes(uris, callback, constraints):
         for cube in input_cubes:
             yield cube
 
     try:
-        with mock.patch("iris._generate_cubes", mock_generate_cubes):
+        with mock.patch("iris.loading._generate_cubes", mock_generate_cubes):
             result = loadfunc(input_cubes, constraints)
     except Exception as e:
         result = e
