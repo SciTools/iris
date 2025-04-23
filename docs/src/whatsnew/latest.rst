@@ -42,8 +42,9 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
-
+#. `@bouweandela`_ changed the ``convert_units`` method on cubes and coordinates
+   so it also converts the values of the attributes ``"actual_range"``,
+   ``"valid_max"``, ``"valid_min"``, and ``"valid_range"``. (:pull:`6416`)
 
 🚀 Performance Enhancements
 ===========================
