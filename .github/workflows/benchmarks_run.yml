@@ -21,6 +21,8 @@ on:
 
 jobs:
   pre-checks:
+    # This workflow supports two different scenarios (overnight and branch).
+    #  The pre-checks job determines which scenario is being run.
     runs-on: ubuntu-latest
     if: github.repository == 'SciTools/iris'
     outputs:
@@ -36,9 +38,11 @@ jobs:
           # SEE ALSO .github/labeler.yml .
           paths: requirements/locks/*.lock setup.py
       - id: overnight
+        name: Check overnight scenario
         if: github.event_name != 'pull_request'
         run: echo "check=true" >> "$GITHUB_OUTPUT"
       - id: branch
+        name: Check branch scenario
         if: >
           github.event_name == 'pull_request'
           &&
@@ -67,7 +71,8 @@ jobs:
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -107,6 +112,8 @@ jobs:
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
 
       - name: Benchmark this pull request
+        # If the 'branch' condition(s) are met: use the bm_runner to compare
+        #  the proposed merge with the base branch.
         if: needs.pre-checks.outputs.branch == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -115,10 +122,14 @@ jobs:
           nox -s benchmarks -- branch origin/${{ github.base_ref }}
 
       - name: Run overnight benchmarks
+        # If the 'overnight' condition(s) are met: use the bm_runner to compare
+        #  each of the last 24 hours' commits to their parents.
         id: overnight
         if: needs.pre-checks.outputs.overnight == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The first_commit argument allows a custom starting point - useful
+        #  for manual re-running.
         run: |
           first_commit=${{ inputs.first_commit }}
           if [ "$first_commit" == "" ]
@@ -132,6 +143,8 @@ jobs:
           fi
 
       - name: Warn of failure
+        # The overnight run is not on a pull request, so a failure could go
+        #  unnoticed without being actively advertised.
         if: >
           failure() &&
           steps.overnight.outcome == 'failure'
@@ -143,6 +156,7 @@ jobs:
           gh issue create --title "$title" --body "$body" --label "Bot" --label "Type: Performance" --repo $GITHUB_REPOSITORY
 
       - name: Upload any benchmark reports
+        # Uploading enables more downstream processing e.g. posting a PR comment.
         if: success() || steps.overnight.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
@@ -150,6 +164,7 @@ jobs:
           path: .github/workflows/benchmark_reports
 
       - name: Archive asv results
+        # Store the raw ASV database(s) to help manual investigations.
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:

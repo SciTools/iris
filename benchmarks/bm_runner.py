@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the BSD license.
@@ -85,9 +86,8 @@ def _prep_data_gen_env() -> None:
         )
         # Find the environment built above, set it to be the data generation
         #  environment.
-        data_gen_python = next(
-            (ROOT_DIR / ".nox").rglob(f"tests*/bin/python{python_version}")
-        ).resolve()
+        env_directory: Path = next((ROOT_DIR / ".nox").rglob(f"tests*"))
+        data_gen_python = (env_directory / "bin" / "python").resolve()
         environ[data_gen_var] = str(data_gen_python)
 
         def clone_resource(name: str, clone_source: str) -> Path:
@@ -133,7 +133,11 @@ def _setup_common() -> None:
     echo("Setup complete.")
 
 
-def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
+def _asv_compare(
+    *commits: str,
+    overnight_mode: bool = False,
+    fail_on_regression: bool = False,
+) -> None:
     """Run through a list of commits comparing each one to the next."""
     commits = tuple(commit[:8] for commit in commits)
     for i in range(len(commits) - 1):
@@ -150,6 +154,13 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
         if shifts or (not overnight_mode):
             # For the overnight run: only post if there are shifts.
             _gh_create_reports(after, comparison, shifts)
+
+        if shifts and fail_on_regression:
+            # fail_on_regression supports setups that expect CI failures.
+            message = (
+                f"Performance shifts detected between commits {before} and {after}.\n"
+            )
+            raise RuntimeError(message)
 
 
 def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) -> None:
@@ -396,14 +407,15 @@ class Overnight(_SubParserGenerator):
 class Branch(_SubParserGenerator):
     name = "branch"
     description = (
-        "Performs the same operations as ``overnight``, but always on two commits "
-        "only - ``HEAD``, and ``HEAD``'s merge-base with the input "
-        "**base_branch**. If running on GitHub Actions: HEAD will be GitHub's "
+        "Performs the same operations as ``overnight``, but always on two "
+        "commits only - ``HEAD``, and ``HEAD``'s merge-base with the input "
+        "**base_branch**.\n"
+        "If running on GitHub Actions: HEAD will be GitHub's "
         "merge commit and merge-base will be the merge target. Performance "
         "comparisons will be posted in a comment on the relevant pull request.\n"
-        "Designed "
-        "for testing if the active branch's changes cause performance shifts - "
-        "anticipating what would be caught by ``overnight`` once merged.\n\n"
+        "Designed for testing if the active branch's changes cause performance "
+        "shifts - anticipating what would be caught by ``overnight`` once "
+        "merged.\n\n"
         "**For maximum accuracy, avoid using the machine that is running this "
         "session. Run time could be >1 hour for the full benchmark suite.**\n"
         "Uses `asv run`."
@@ -631,7 +643,9 @@ class GhPost(_SubParserGenerator):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Run the Iris performance benchmarks (using Airspeed Velocity).",
+        description=(
+            "Run the repository performance benchmarks (using Airspeed Velocity)."
+        ),
         epilog=(
             "More help is available within each sub-command."
             "\n\nNOTE(1): a separate python environment is created to "
@@ -649,7 +663,17 @@ def main():
     )
     subparsers = parser.add_subparsers(required=True)
 
-    for gen in (Overnight, Branch, CPerf, SPerf, Custom, TrialRun, GhPost):
+    parser_generators: tuple[type(_SubParserGenerator), ...] = (
+        Overnight,
+        Branch,
+        CPerf,
+        SPerf,
+        Custom,
+        TrialRun,
+        GhPost,
+    )
+
+    for gen in parser_generators:
         _ = gen(subparsers).subparser
 
     parsed = parser.parse_args()
