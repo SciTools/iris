@@ -1,13 +1,10 @@
-# Copyright Iris contributors
+# Copyright SciTools contributors
 #
-# This file is part of Iris and is released under the BSD license.
+# This file is part of SciTools and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Common code for benchmarks."""
 
 from os import environ
-import tracemalloc
-
-import numpy as np
 
 
 def disable_repeat_between_setup(benchmark_object):

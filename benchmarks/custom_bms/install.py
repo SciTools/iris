@@ -1,8 +1,8 @@
-# Copyright Iris contributors
+# Copyright SciTools contributors
 #
-# This file is part of Iris and is released under the BSD license.
+# This file is part of SciTools and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Install Iris' custom benchmarks for detection by ASV.
+"""Install the SciTools custom benchmarks for detection by ASV.
 
 See the requirements for being detected as an ASV plugin:
 https://asv.readthedocs.io/projects/asv-runner/en/latest/development/benchmark_plugins.html
@@ -17,17 +17,17 @@ this_dir = Path(__file__).parent
 
 
 def package_files(new_dir: Path) -> None:
-    """Package Iris' custom benchmarks for detection by ASV.
+    """Package SciTools' custom benchmarks for detection by ASV.
 
     Parameters
     ----------
     new_dir : Path
         The directory to package the custom benchmarks in.
     """
-    asv_bench_iris = new_dir / "asv_bench_iris"
-    benchmarks = asv_bench_iris / "benchmarks"
+    asv_bench_scitools = new_dir / "asv_bench_scitools"
+    benchmarks = asv_bench_scitools / "benchmarks"
     benchmarks.mkdir(parents=True)
-    (asv_bench_iris / "__init__.py").touch()
+    (asv_bench_scitools / "__init__.py").touch()
 
     for py_file in this_dir.glob("*.py"):
         if py_file != Path(__file__):
@@ -39,7 +39,7 @@ def package_files(new_dir: Path) -> None:
     py_project.write_text(
         """
         [project]
-        name = "asv_bench_iris"
+        name = "asv_bench_scitools"
         version = "0.1"
         """
     )
