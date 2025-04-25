@@ -1,6 +1,6 @@
-# Copyright SciTools contributors
+# Copyright Iris contributors
 #
-# This file is part of SciTools and is released under the BSD license.
+# This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Repository-specific adaptation of :mod:`_asv_delegated_abc`."""
 
