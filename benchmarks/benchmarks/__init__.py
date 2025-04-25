@@ -5,9 +5,6 @@
 """Common code for benchmarks."""
 
 from os import environ
-import tracemalloc
-
-import numpy as np
 
 
 def disable_repeat_between_setup(benchmark_object):
