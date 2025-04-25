@@ -11,8 +11,9 @@ from os.path import getmtime
 from pathlib import Path
 import re
 
-from _asv_delegated_abc import _DelegatedABC
 from asv import util as asv_util
+
+from _asv_delegated_abc import _DelegatedABC
 
 
 class Delegated(_DelegatedABC):
@@ -39,24 +40,6 @@ class Delegated(_DelegatedABC):
         """
         # The project checkout.
         build_dir = Path(self._build_root) / self._repo_subdir
-
-        # Older iterations of setup.py are incompatible with setuptools>=80.
-        #  (Most dependencies are protected by lock-files, but build
-        #   dependencies in pyproject.toml are independent).
-        setup_py = build_dir / "setup.py"
-        pyproject = build_dir / "pyproject.toml"
-        if setup_py.is_file() and "setuptools.command.develop" in setup_py.read_text():
-            with pyproject.open("r+") as file_write:
-                lines = file_write.readlines()
-                for i, line in enumerate(lines):
-                    if line == "requires = [\n":
-                        next_line = lines[i + 1]
-                        indent = next_line[: len(next_line) - len(next_line.lstrip())]
-
-                        lines.insert(i + 1, f'{indent}"setuptools<80",\n')
-                        break
-                file_write.seek(0)
-                file_write.writelines(lines)
 
         class Mode(enum.Enum):
             """The scenarios where the correct env setup script is known."""
