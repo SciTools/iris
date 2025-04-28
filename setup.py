@@ -5,7 +5,6 @@ import sys
 
 from setuptools import Command, setup
 from setuptools.command.build_py import build_py
-from setuptools.command.develop import develop
 
 
 class BaseCommand(Command):
@@ -49,8 +48,7 @@ def custom_command(cmd, help=""):
             cmd.finalize_options(self)
 
             if not hasattr(self, "editable_mode") or self.editable_mode is None:
-                # Default to editable i.e., applicable to "std_names" and
-                # and "develop" commands.
+                # Default to editable i.e., applicable to "std_names".
                 self.editable_mode = True
 
         def run(self):
@@ -76,7 +74,6 @@ def custom_command(cmd, help=""):
 
 
 custom_commands = {
-    "develop": custom_command(develop),
     "build_py": custom_command(build_py),
     "std_names": custom_command(BaseCommand, help="generate CF standard names"),
 }
