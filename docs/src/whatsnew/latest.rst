@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ removed the custom ``setup.py develop`` command, since
+   Setuptools are deprecating ``develop``; developers should instead
+   use ``pip install -e .``. See `Running setuptools commands`_ for more.
+   (:pull:`6424`)
 
 
 💣 Incompatible Changes
@@ -86,3 +89,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _Running setuptools commands: https://setuptools.pypa.io/en/latest/deprecated/commands.html
