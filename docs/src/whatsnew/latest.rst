@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ removed the custom ``setup.py develop`` command, since
+   Setuptools are deprecating ``develop``; developers should instead
+   use ``pip install -e .``. See `Running setuptools commands`_ for more.
+   (:pull:`6424`)
 
 
 💣 Incompatible Changes
@@ -75,11 +78,6 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ replaced the PR-based linkchecks with a daily scheduled link checker based
    on `lychee <https://github.com/lycheeverse/lychee-action>`__.
    (:issue:`4140`, :pull:`6386`)
-
-#. `@trexfeathers`_ removed the custom ``setup.py develop`` command, since
-   Setuptools are deprecating ``develop``; developers should instead
-   use ``pip install -e .``. See `Running setuptools commands`_ for more.
-   (:pull:`6424`)
 
 
 .. comment
