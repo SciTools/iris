@@ -57,7 +57,7 @@ v3.12.1 (30 Apr 2025)
 
    #. Iris no longer supports the ``setup.py develop`` command, due to an
       incompatibility with the latest version of Setuptools.
-      ``setup.py`` commands if this sort are deprecated, and the recommended
+      ``setup.py`` commands of this sort are deprecated, and the recommended
       replacement for ``develop`` has been ``pip install -e`` for several years
       now. See `Running setuptools commands`_ for more.
 
