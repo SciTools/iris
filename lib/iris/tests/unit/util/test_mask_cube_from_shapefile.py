@@ -4,15 +4,47 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
+from cartopy.feature import ShapelyFeature
 import numpy as np
+from pyproj import CRS
 import pytest
 import shapely
+from shapely import LineString, MultiPoint, Point
+from shapely.geometry import box
 
 from iris.coord_systems import RotatedGeogCS
 from iris.coords import DimCoord
 import iris.cube
 from iris.util import mask_cube_from_shapefile
 from iris.warnings import IrisUserWarning
+
+# def _apply_WGS84_crs(geometry):
+#     """Apply a WGS84 CRS to a geometry."""
+#     crs = CRS.from_epsg(4326)
+#     return ShapelyFeature(geom
+
+# def _apply_OSGB36_crs(geometry):
+#     """Apply an OSGB36 CRS to a geometry."""
+#     crs = CRS.from_epsg(27700)
+#     geometry = geometry.__geo_interface__
+#     geometry["crs"] = crs
+#     return geometry
+
+# Fixtures retrieved from _shapefiles/test_is_geometry_valid.py
+
+# def _apply_WGS84_crs(geometry):
+#     """Apply a WGS84 CRS to a geometry."""
+#     crs = CRS.from_epsg(4326)
+#     return ShapelyFeature(geom
+
+# def _apply_OSGB36_crs(geometry):
+#     """Apply an OSGB36 CRS to a geometry."""
+#     crs = CRS.from_epsg(27700)
+#     geometry = geometry.__geo_interface__
+#     geometry["crs"] = crs
+#     return geometry
+
+# Fixtures retrieved from _shapefiles/test_is_geometry_valid.py
 
 
 class TestBasicCubeMasking:
@@ -28,23 +60,29 @@ class TestBasicCubeMasking:
             bounds=[[0, 0.5], [0.5, 1]],
             units="1",
         )
-        self.basic_cube.add_dim_coord(coord, 0)
-        coord = DimCoord(
-            np.array([0, 1.0, 1.5]),
-            standard_name="projection_x_coordinate",
-            bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
-            units="1",
-        )
-        self.basic_cube.add_dim_coord(coord, 1)
 
-    def test_basic_cube_intersect(self):
+    basic_cube.add_dim_coord(coord, 0)
+    coord = DimCoord(
+        np.array([0, 1.0, 1.5]),
+        standard_name="projection_x_coordinate",
+        bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
+        units="1",
+    )
+    basic_cube.add_dim_coord(coord, 1)
+    yield basic_cube
+
+
+class TestBasicCubeMasking(tests.IrisTest):
+    """Unit tests for mask_cube_from_shapefile function."""
+
+    def test_basic_cube_intersect(self, basic_cube):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
         masked_cube = mask_cube_from_shapefile(self.basic_cube, shape)
         assert np.sum(masked_cube.data) == 8, (
             f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
         )
 
-    def test_basic_cube_intersect_in_place(self):
+    def test_basic_cube_intersect_in_place(self, basic_cube):
         shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
         cube = self.basic_cube.copy()
         mask_cube_from_shapefile(cube, shape, in_place=True)
@@ -52,7 +90,7 @@ class TestBasicCubeMasking:
             f"basic cube masking failed test - expected 8 got {np.sum(cube.data)}"
         )
 
-    def test_basic_cube_intersect_low_weight(self):
+    def test_basic_cube_intersect_low_weight(self, basic_cube):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
             self.basic_cube, shape, minimum_weight=0.2
@@ -61,7 +99,7 @@ class TestBasicCubeMasking:
             f"basic cube masking weighting failed test - expected 12 got {np.sum(masked_cube.data)}"
         )
 
-    def test_basic_cube_intersect_high_weight(self):
+    def test_basic_cube_intersect_high_weight(self, basic_cube):
         shape = shapely.geometry.box(0.1, 0.6, 1, 1)
         masked_cube = mask_cube_from_shapefile(
             self.basic_cube, shape, minimum_weight=0.7
@@ -70,8 +108,8 @@ class TestBasicCubeMasking:
             f"basic cube masking weighting failed test- expected 8 got {np.sum(masked_cube.data)}"
         )
 
-    def test_cube_list_error(self):
-        cubelist = iris.cube.CubeList([self.basic_cube])
+    def test_cube_list_error(self, basic_cube):
+        cubelist = iris.cube.CubeList([basic_cube])
         shape = shapely.geometry.box(1, 1, 2, 2)
         with pytest.raises(TypeError, match="CubeList object rather than Cube"):
             mask_cube_from_shapefile(cubelist, shape)
@@ -119,3 +157,6 @@ class TestBasicCubeMasking:
         shape = shapely.box(0, 1, 1, 1)
         with pytest.raises(TypeError, match="valid Shapely"):
             mask_cube_from_shapefile(self.basic_cube, shape)
+
+    def test_missing_cube_coord_system(self):
+        pass
