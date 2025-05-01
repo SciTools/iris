@@ -44,6 +44,24 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 
+v3.12.1 (30 Apr 2025)
+=====================
+
+.. dropdown:: v3.12.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Iris no longer supports the ``setup.py develop`` command, due to an
+      incompatibility with the latest version of Setuptools.
+      ``setup.py`` commands of this sort are deprecated, and the recommended
+      replacement for ``develop`` has been ``pip install -e`` for several years
+      now. See `Running setuptools commands`_ for more.
+
+
 📢 Announcements
 ================
 
@@ -119,6 +137,11 @@ This document explains the changes made to Iris for this release
 
 #. `@bouweandela`_ fixed handling of masked Dask arrays in
    :func:`~iris.util.array_equal`.
+
+#. `@trexfeathers`_ removed the custom ``setup.py develop`` command, since
+   Setuptools are deprecating ``develop``; developers should instead
+   use ``pip install -e .``. See `Running setuptools commands`_ for more.
+   (:pull:`6424`)
 
 
 💣 Incompatible Changes
@@ -230,3 +253,4 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _SPEC 0: https://scientific-python.org/specs/spec-0000/
+.. _Running setuptools commands: https://setuptools.pypa.io/en/latest/deprecated/commands.html
