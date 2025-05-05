@@ -8,11 +8,13 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
+import contextlib
 from copy import deepcopy
 from unittest import mock
 
 import numpy as np
 
+import iris
 import iris.fileformats.pp as pp
 
 
@@ -89,6 +91,53 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         list(pp._interpret_fields([f1, mask]))
         self.assertEqual(f1.lbrow, 3)
         self.assertEqual(f1.lbnpt, 4)
+
+    def test_landsea_unpacking_uses_dask(self):
+        # Ensure that the graph of the (lazy) landsea-masked data contains an
+        # explicit reference to a (lazy) landsea-mask field.
+        # Otherwise its compute() will need to invoke another compute().
+        # See https://github.com/SciTools/iris/issues/3237
+
+        # This is too complex to explore in a mock-ist way, so let's load a
+        # tiny bit of real data ...
+        testfile_path = tests.get_data_path(
+            ["FF", "landsea_masked", "testdata_mini_lsm.ff"]
+        )
+        landsea_mask, soil_temp = iris.load_cubes(
+            testfile_path, ("land_binary_mask", "soil_temperature")
+        )
+
+        # Now check that the soil-temp dask graph correctly references the
+        # landsea mask, in its dask graph.
+        lazy_mask_array = landsea_mask.core_data()
+        lazy_soildata_array = soil_temp.core_data()
+
+        def is_pp_layer(obj):
+            result = False
+            if hasattr(obj, "values"):
+                if len(obj) == 1:
+                    (result,) = [hasattr(v, "_lbpack") for v in obj.values()]
+            return result
+
+        # Find the single reference to the PPDataProxy within the dask graph.
+        (layer,) = [
+            lay for lay in lazy_mask_array.dask.layers.values() if is_pp_layer(lay)
+        ]
+        ((layer_key, proxy),) = layer.items()
+        # Replace the PPDataProxy with a mock.
+        #  By replacing directly within the dask graph, we can prove whether an
+        #   operation is relying on the graph in the expected way.
+        mock_proxy = mock.MagicMock(spec=pp.PPDataProxy, wraps=proxy)
+        layer.mapping[layer_key] = mock_proxy
+
+        self.assertFalse(mock_proxy.__getitem__.called)
+        with contextlib.suppress(TypeError):
+            # Expect this to crash - data realisation is complex, and it is not
+            #  worth mocking this fully.
+            _ = lazy_soildata_array.compute()
+        # Proves that the soil data graph includes the mask graph - computing
+        #  the soil data has accessed the mask graph object which we mocked.
+        self.assertTrue(mock_proxy.__getitem__.called)
 
 
 if __name__ == "__main__":
