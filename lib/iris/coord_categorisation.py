@@ -439,7 +439,7 @@ def add_season_membership(cube, coord, season, name="season_membership"):
             "The 'season_membership' coordinate is a boolean and will not be"
             "saveable to a NetCDF file. If you need to save the file you can"
             "convert them to integers using coord.points = coord.points.astype(int)",
-            category=iris.warnings.IrisCfSaveWarning,
+            category=iris.warnings.IrisSaveWarning,
         )
         return value.month in months
 
