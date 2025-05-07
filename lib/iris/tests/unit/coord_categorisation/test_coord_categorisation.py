@@ -16,6 +16,7 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 from iris.tests import IrisTest
+from iris.warnings import IrisSaveWarning
 
 
 @pytest.fixture(
@@ -240,3 +241,9 @@ def test_add_season_membership_invalid_spec(cube):
     season = "maj"  # not a season!
     with pytest.raises(ValueError):
         ccat.add_season_membership(cube, "time", season, name="maj_season")
+
+
+def test_season_membership_save_warning(cube):
+    season = "djf"
+    with pytest.warns(IrisSaveWarning):
+        ccat.add_season_membership(cube, "time", season, name="in_season")
