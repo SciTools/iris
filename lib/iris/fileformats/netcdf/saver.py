@@ -1742,7 +1742,7 @@ class Saver:
             if len(element_dims) == 1:
                 data_first = data[0]
                 if is_lazy_data(data_first):
-                    data_first = data_first.compute()
+                    data_first = dask.compute(data_first)
                 data = list("%- *s" % (string_dimension_depth, data_first))
             else:
                 orig_shape = data.shape
@@ -2380,7 +2380,7 @@ class Saver:
             raise ValueError(msg)
 
         # Complete the saves now
-        self.delayed_completion().compute()
+        dask.compute(self.delayed_completion())
 
 
 def save(
