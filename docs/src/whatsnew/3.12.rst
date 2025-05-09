@@ -11,7 +11,6 @@ This document explains the changes made to Iris for this release
    :color: primary
    :icon: info
    :animate: fade-in
-   :open:
 
    The highlights for this minor release of Iris include:
 
@@ -51,7 +50,6 @@ v3.12.1 (30 Apr 2025)
    :color: primary
    :icon: alert
    :animate: fade-in
-   :open:
 
    The patches in this release of Iris include:
 
@@ -60,6 +58,22 @@ v3.12.1 (30 Apr 2025)
       ``setup.py`` commands of this sort are deprecated, and the recommended
       replacement for ``develop`` has been ``pip install -e`` for several years
       now. See `Running setuptools commands`_ for more.
+
+
+v3.12.2 (09 May 2025)
+=====================
+
+.. dropdown:: v3.12.2 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Iris is now compatible with Dask versions ``2025.4.0`` and above. We are
+      aware that previous incompatibilities had been affecting load and save
+      operations for many users.
 
 
 📢 Announcements
@@ -197,6 +211,9 @@ v3.12.1 (30 Apr 2025)
 #. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
    versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
    to avoid this bug. (:pull:`6342`)
+
+#. `@trexfeathers`_ refactored Iris loading and saving to make it compatible
+   with Dask version ``2025.4.0`` and above. (:pull:`6451`)
 
 
 📚 Documentation

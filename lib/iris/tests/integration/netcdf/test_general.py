@@ -16,6 +16,7 @@ import tempfile
 from unittest import mock
 import warnings
 
+import dask
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -456,7 +457,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         ds.close()
 
         # Complete the delayed saves.
-        result.compute()
+        dask.compute(result)
 
         # Check that data now *is* written.
         ds = nc.Dataset(filepath_indirect)
