@@ -747,6 +747,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             else:
                 new_bounds = self.units.convert(self.bounds, unit)
             self.bounds = new_bounds
+        for key in "actual_range", "valid_max", "valid_min", "valid_range":
+            if key in self.attributes:
+                self.attributes[key] = self.units.convert(self.attributes[key], unit)
         self.units = unit
 
     def is_compatible(self, other, ignore=None):
