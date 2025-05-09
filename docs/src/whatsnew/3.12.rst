@@ -198,6 +198,9 @@ v3.12.1 (30 Apr 2025)
    versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
    to avoid this bug. (:pull:`6342`)
 
+#. `@trexfeathers`_ refactored Iris loading and saving to make it compatible
+   with Dask version ``2025.4.0`` and above. (:pull:`6451`)
+
 
 📚 Documentation
 ================
