@@ -32,6 +32,9 @@ https://github.com/your-user-name/iris
 # problem with bad certificate (review sometime?)
 https://scitools.github.com/cartopy
 
+# returns 403 when accessed from GitHub Actions
+https://stackoverflow.com
+
 # legacy ref in whatsnew/3.0.rst
 https://stickler-ci.com
 
