@@ -19,7 +19,7 @@ jobs:
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           fail: false
-          args: "--verbose './docs/**/*.rst' './docs/**/*.inc' './lib/**/*.py'"
+          args: "--verbose --max-concurrency 1 './docs/**/*.rst' './docs/**/*.inc' './lib/**/*.py'"
 
       - name: Create Issue From File
         if: steps.lychee.outputs.exit_code != 0
