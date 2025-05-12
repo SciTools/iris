@@ -26,6 +26,10 @@ https://geoport.whoi.edu:80/thredds/
 # catch (at least) github userids, of which many in whatsnews, too many --> "too many requests" failures
 https://github.com/[^/]*$
 
+# GitHub seems especially keen to rate-limit "blob" URLs.
+#  (maybe because these are especially associated with abuse?)
+https://github.com/[^/]*/[^/]*/blob/.*
+
 # nonfunctional example, used in docs/src/developers_guide/gitwash/development_workflow.rst
 https://github.com/your-user-name/iris
 
