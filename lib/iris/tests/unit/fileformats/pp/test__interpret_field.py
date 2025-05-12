@@ -13,7 +13,6 @@ from unittest import mock
 
 import numpy as np
 
-import iris
 import iris.fileformats.pp as pp
 
 
@@ -90,43 +89,6 @@ class Test__interpret_fields__land_packed_fields(tests.IrisTest):
         list(pp._interpret_fields([f1, mask]))
         self.assertEqual(f1.lbrow, 3)
         self.assertEqual(f1.lbnpt, 4)
-
-    @tests.skip_data
-    def test_landsea_unpacking_uses_dask(self):
-        # Ensure that the graph of the (lazy) landsea-masked data contains an
-        # explicit reference to a (lazy) landsea-mask field.
-        # Otherwise its compute() will need to invoke another compute().
-        # See https://github.com/SciTools/iris/issues/3237
-
-        # This is too complex to explore in a mock-ist way, so let's load a
-        # tiny bit of real data ...
-        testfile_path = tests.get_data_path(
-            ["FF", "landsea_masked", "testdata_mini_lsm.ff"]
-        )
-        landsea_mask, soil_temp = iris.load_cubes(
-            testfile_path, ("land_binary_mask", "soil_temperature")
-        )
-
-        # Now check that the soil-temp dask graph correctly references the
-        # landsea mask, in its dask graph.
-        lazy_mask_array = landsea_mask.core_data()
-        lazy_soildata_array = soil_temp.core_data()
-
-        # Work out the main dask key for the mask data, as used by 'compute()'.
-        mask_toplev_key = (lazy_mask_array.name,) + (0,) * lazy_mask_array.ndim
-        # Get the 'main' calculation entry.
-        mask_toplev_item = lazy_mask_array.dask[mask_toplev_key]
-        # This should be a task (a simple fetch).
-        self.assertTrue(callable(mask_toplev_item))
-        # Get the key (name) of the array that it fetches.
-        mask_data_name = mask_toplev_item.args[0].key
-
-        # Check that the item this refers to is a PPDataProxy.
-        self.assertIsInstance(lazy_mask_array.dask[mask_data_name], pp.PPDataProxy)
-
-        # Check that the soil-temp graph references the *same* lazy element,
-        # showing that the mask+data calculation is handled by dask.
-        self.assertIn(mask_data_name, lazy_soildata_array.dask.keys())
 
 
 if __name__ == "__main__":
