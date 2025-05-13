@@ -280,6 +280,18 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
         assert load_problem.stack_trace.exc_type is CannotAddError
         assert self.engine.cube_parts["coordinates"] == []
 
+    def test_unhandlable_error(self):
+        # Confirm that the code can redirect an error to LOAD_PROBLEMS even
+        #  when there is no specific handling code for it.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cf_var", "foo")
+            n_problems = len(LOAD_PROBLEMS.problems)
+            self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            self.assertTrue(len(LOAD_PROBLEMS.problems) > n_problems)
+
+        assert self.engine.cube_parts["coordinates"] == []
+
 
 class TestBoundsVertexDim(tests.IrisTest, RulesTestMixin):
     def setUp(self):
