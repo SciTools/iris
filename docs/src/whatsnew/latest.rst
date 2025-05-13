@@ -24,7 +24,8 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. `@bjlittle`_ migrated the ``SciTools`` social community from ``X`` (formally ``Twitter``)
+   to `Bluesky <https://bsky.app/profile/scitools.bsky.social>`__ 🦋. (:pull:`6237`)
 
 
 ✨ Features

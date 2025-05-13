@@ -58,7 +58,7 @@ class IrisRelease(Progress):
             cls.check_pypi,
             cls.update_conda_forge,
             cls.update_links,
-            cls.twitter_announce,
+            cls.bluesky_announce,
             cls.merge_back,
         ]
 
@@ -845,13 +845,13 @@ class IrisRelease(Progress):
         )
         self.wait_for_done(message)
 
-    def twitter_announce(self):
+    def bluesky_announce(self):
         message = (
-            "Announce the release via https://twitter.com/scitools_iris, "
+            "Announce the release via https://bsky.app/profile/scitools.bsky.social, "
             "and any "
             "other appropriate message boards (e.g. Viva Engage).\n"
             "Any content used for the announcement should be stored in the "
-            "SciTools/twitter-scitools-iris GitHub repo.\n"
+            "SciTools/bluesky-scitools GitHub repo.\n"
         )
         if not self.first_in_series:
             message += (
