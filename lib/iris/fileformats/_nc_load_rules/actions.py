@@ -431,7 +431,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
         rule_name += f"_{coord_type}"
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
-    hh.build_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
+    hh.build_and_add_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
 
     return rule_name
 
@@ -503,7 +503,7 @@ def action_build_label_coordinate(engine, label_fact):
     """Convert a CFLabelVariable into a cube string-type aux-coord."""
     (var_name,) = label_fact
     var = engine.cf_var.cf_group.labels[var_name]
-    hh.build_auxiliary_coordinate(engine, var)
+    hh.build_and_add_auxiliary_coordinate(engine, var)
 
 
 @action_function

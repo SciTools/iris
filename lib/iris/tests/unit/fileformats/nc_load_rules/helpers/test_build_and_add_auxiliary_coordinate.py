@@ -19,9 +19,10 @@ import pytest
 
 from iris.coords import AuxCoord
 from iris.exceptions import CannotAddError
-from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
+from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
 from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
+from iris.loading import LOAD_PROBLEMS
 
 
 class TestBoundsVertexDim(tests.IrisTest):
@@ -136,7 +137,7 @@ class TestBoundsVertexDim(tests.IrisTest):
         )
 
         # Asserts must lie within context manager because of deferred loading.
-        build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
         self.engine.cube.add_aux_coord.assert_called_with(self.expected_coord, [0, 1])
@@ -209,7 +210,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.add_offset = 5
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "i")
@@ -218,7 +219,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.scale_factor = 3.0
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "f")
@@ -227,7 +228,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.add_offset = 5.0
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "f")
@@ -329,7 +330,7 @@ class TestCoordConstruction(tests.IrisTest):
             climatological=climatology,
         )
 
-        build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
         self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
@@ -348,8 +349,21 @@ class TestCoordConstruction(tests.IrisTest):
 
         with self.monkeypatch.context() as m:
             m.setattr(self.engine.cube, "add_aux_coord", mock_add_aux_coord)
-            with pytest.warns(match="coordinate not added to Cube: foo"):
-                build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            assert load_problem.stack_trace.exc_type is CannotAddError
+
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_unhandlable_error(self):
+        # Confirm that the code can redirect an error to LOAD_PROBLEMS even
+        #  when there is no specific handling code for it.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cf_var", "foo")
+            n_problems = len(LOAD_PROBLEMS.problems)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            self.assertTrue(len(LOAD_PROBLEMS.problems) > n_problems)
 
         assert self.engine.cube_parts["coordinates"] == []
 
