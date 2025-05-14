@@ -393,6 +393,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 filename=engine.filename,
                 loaded=hh.build_raw_cube(cf_var, engine.filename),
                 exception=error,
+                handled=False,
             )
 
     return rule_name

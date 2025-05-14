@@ -382,6 +382,14 @@ class LoadProblems(threading.local):
       .../E1_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
       .../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
 
+    The :attr:`Problem.handled` flag can be useful to filter for only the most
+    (or least) impactful :class:`Problem` instances:
+
+    >>> for problem in iris.loading.LOAD_PROBLEMS.problems:
+    ...     if not problem.handled:
+    ...         print(problem)
+    /.../A1B_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+    /.../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
 
     Below demonstrates how to explore the captured stack traces in detail:
 
@@ -502,6 +510,17 @@ class LoadProblems(threading.local):
           :class:`ValueError`.
         """
 
+        handled: bool = False
+        """Whether Iris can still load this object, working around the problem.
+
+        Examples where this is ``True`` include: storing invalid standard names
+        directly on their parent objects, or automatically demoting
+        non-monotonic coordinates to be auxiliary coordinates.
+
+        If this is ``False``: the :attr:`loaded` object will be entirely
+        missing from its parent object.
+        """
+
         def __str__(self):
             if hasattr(self.loaded, "summary"):
                 loaded = self.loaded.summary(shorten=True)
@@ -547,6 +566,7 @@ class LoadProblems(threading.local):
         filename: str,
         loaded: CFVariableMixin | dict[str, Any] | None,
         exception: BaseException,
+        handled: bool = False,
     ) -> Problem:
         """Record a problem object that could not be loaded correctly.
 
@@ -563,6 +583,8 @@ class LoadProblems(threading.local):
             :attr:`LoadProblems.Problem.loaded` for details on possible values.
         exception : Exception
             The traceback exception that was raised during loading.
+        handled : bool, default=False
+            Whether Iris can still load this object, working around the problem.
 
         Returns
         -------
@@ -570,7 +592,12 @@ class LoadProblems(threading.local):
             The recorded load problem.
         """
         stack_trace = TracebackException.from_exception(exception)
-        problem = LoadProblems.Problem(filename, loaded, stack_trace)
+        problem = LoadProblems.Problem(
+            filename=filename,
+            loaded=loaded,
+            stack_trace=stack_trace,
+            handled=handled,
+        )
         self._problems.append(problem)
 
         # Python's default warning behaviour means this will only be raised

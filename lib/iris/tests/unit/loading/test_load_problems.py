@@ -108,11 +108,13 @@ def test_problems_by_file_property(load_problems_instance):
     assert load_problems_instance.problems_by_file == expected
 
 
-def test_record(load_problems_instance, loaded_object, error, stack_trace):
+@pytest.mark.parametrize("handled", [True, False], ids=["handled", "not_handled"])
+def test_record(load_problems_instance, loaded_object, error, stack_trace, handled):
     def check_equality(problem: LoadProblems.Problem, expected: LoadProblems.Problem):
         assert problem.filename == expected.filename
         assert problem.loaded == expected.loaded
         assert str(problem.stack_trace) == str(expected.stack_trace)
+        assert problem.handled == expected.handled
 
     file_names = ["test3.nc", "test4.nc"]
 
@@ -121,6 +123,7 @@ def test_record(load_problems_instance, loaded_object, error, stack_trace):
             filename=filename,
             loaded=loaded_object,
             stack_trace=stack_trace,
+            handled=handled,
         )
         for filename in file_names
     ]
@@ -131,6 +134,7 @@ def test_record(load_problems_instance, loaded_object, error, stack_trace):
             filename=filename,
             loaded=loaded_object,
             exception=error,
+            handled=handled,
         )
         check_equality(result, expected_additions[ix])
 

@@ -39,6 +39,7 @@ class TestCubeName(tests.IrisTest):
             self.assertEqual(
                 load_problem.loaded, {"standard_name": invalid_standard_name}
             )
+            self.assertTrue(load_problem.handled)
 
     def test_standard_name_none_long_name_none(self):
         inputs = (None, None)

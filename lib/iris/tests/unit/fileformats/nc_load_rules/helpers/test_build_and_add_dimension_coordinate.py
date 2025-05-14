@@ -243,6 +243,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
                 "creating 'wibble' auxiliary coordinate instead",
                 "".join(load_problem.stack_trace.format()),
             )
+            self.assertTrue(load_problem.handled)
 
     def test_dimcoord_not_added(self):
         # Confirm that the coord will be skipped if a CannotAddError is raised

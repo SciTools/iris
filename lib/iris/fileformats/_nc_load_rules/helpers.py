@@ -533,6 +533,7 @@ def _add_or_capture(
             filename=filename,
             loaded=captured,
             exception=exc_build,
+            handled=False,
         )
 
     else:
@@ -546,7 +547,7 @@ def _add_or_capture(
                 captured = built
 
             load_problems_entry = LOAD_PROBLEMS.record(
-                filename=filename, loaded=captured, exception=exc_add
+                filename=filename, loaded=captured, exception=exc_add, handled=False
             )
 
     return load_problems_entry
@@ -604,6 +605,7 @@ def build_and_add_names(engine: Engine) -> None:
     if problem is not None and hasattr(problem.loaded, "get"):
         assert isinstance(problem.loaded, dict)
         invalid_std_name = problem.loaded.get(CF_ATTR_STD_NAME)
+        problem.handled = True
     else:
         invalid_std_name = None
 
@@ -1353,6 +1355,7 @@ def _build_dimension_coordinate(
             filename=filename,
             loaded=build_raw_cube(cf_coord_var, filename),
             exception=dim_error,
+            handled=True,
         )
 
         coord = iris.coords.AuxCoord(
