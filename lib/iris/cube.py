@@ -1478,6 +1478,11 @@ class Cube(CFVariableMixin):
         else:
             new_data = self.units.convert(self.data, unit)
         self.data = new_data
+        for key in "actual_range", "valid_max", "valid_min", "valid_range":
+            if key in self.attributes.locals:
+                self.attributes.locals[key] = self.units.convert(
+                    self.attributes.locals[key], unit
+                )
         self.units = unit
 
     def add_cell_method(self, cell_method: CellMethod) -> None:
