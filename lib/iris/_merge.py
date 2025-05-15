@@ -1406,10 +1406,20 @@ class ProtoCube:
                     # TODO: Consider appropriate sort order (ascending,
                     # descending) i.e. use CF positive attribute.
                     cells = sorted(indexes[name])
-                    points = np.array(
-                        [cell.point for cell in cells],
-                        dtype=metadata[name].points_dtype,
-                    )
+                    points = [cell.point for cell in cells]
+
+                    # If any points are masked then create a masked array type,
+                    # otherwise create a standard ndarray.
+                    if np.ma.masked in points:
+                        # Need to explicitly specify fill_type for list with `masked` elements to
+                        # avoid numpy raising warning about "converting masked element to NaN":
+                        dtype = metadata[name].points_dtype
+                        fill_value = np.ma.default_fill_value(dtype)
+                        points = np.ma.masked_array(
+                            points, dtype=dtype, fill_value=fill_value
+                        )
+                    else:
+                        points = np.array(points, dtype=metadata[name].points_dtype)
                     if cells[0].bound is not None:
                         bounds = np.array(
                             [cell.bound for cell in cells],
@@ -1613,22 +1623,34 @@ class ProtoCube:
             # Attempt to build a DimCoord and add it to the cube. If this
             # fails e.g it's non-monontic or multi-dimensional or non-numeric,
             # then build an AuxCoord.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                if len(template.dims) == 1 and template.dims[0] not in covered_dims:
-                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-                    covered_dims.append(template.dims[0])
-                else:
-                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
+
+            # Check here whether points are masked? If so then it has to be an AuxCoord
+            if np.ma.is_masked(template.points):
+                print("[CB] Masked data - forcing AuxCoord")
+                # Masked data can only ever be an AuxDim
                 # kwarg not applicable to AuxCoord.
                 template.kwargs.pop("circular", None)
                 coord = iris.coords.AuxCoord(
                     template.points, bounds=template.bounds, **template.kwargs
                 )
                 aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    if len(template.dims) == 1 and template.dims[0] not in covered_dims:
+                        dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                        covered_dims.append(template.dims[0])
+                    else:
+                        aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except (ValueError, TypeError):
+                    # kwarg not applicable to AuxCoord.
+                    template.kwargs.pop("circular", None)
+                    coord = iris.coords.AuxCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
 
         # Mix in the vector coordinates.
         for item, dims in zip(

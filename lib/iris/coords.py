@@ -1234,6 +1234,9 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
     # Make this class's comparison operators override those of numpy
     __array_priority__ = 100
 
+    # pre-computed hash for un-hashable `np.ma.masked` value
+    _MASKED_VALUE_HASH = hash("<<##MASKED_VALUE##>>")
+
     def __new__(cls, point=None, bound=None):
         """Construct a Cell from point or point-and-bound information."""
         if point is None:
@@ -1274,13 +1277,17 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
     def __hash__(self):
         # See __eq__ for the definition of when two cells are equal.
+        point = self.point
+        if np.ma.is_masked(point):
+            # `np.ma.masked` is unhashable
+            point = Cell._MASKED_VALUE_HASH
         if self.bound is None:
-            return hash(self.point)
+            return hash(point)
         bound = self.bound
         rbound = bound[::-1]
         if rbound < bound:
             bound = rbound
-        return hash((self.point, bound))
+        return hash((point, bound))
 
     def __eq__(self, other):
         """Compare Cell equality depending on the type of the object to be compared."""
@@ -2083,7 +2090,8 @@ class Coord(_DimensionalMetadata):
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
-        point = tuple(np.array(self.core_points()[index], ndmin=1).flatten())
+        # Use `np.asanyaray` to preserve any masked values:
+        point = tuple(np.asanyarray(self.core_points()[index]).flatten())
         if len(point) != 1:
             raise IndexError(
                 "The index %s did not uniquely identify a single "
@@ -2806,7 +2814,11 @@ class DimCoord(Coord):
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
         # Cast to a numpy array for masked arrays with no mask.
+
+        # TODO: This is the point where any mask is lost on a coordinate if none of the
+        # values are actually masked. What if we wanted this to be an AuxCoord with a mask?
         points = np.array(points)
+        # points = np.ma.array(points)
 
         super(DimCoord, self.__class__)._values.fset(self, points)
 
