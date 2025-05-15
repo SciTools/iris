@@ -1415,11 +1415,24 @@ class ProtoCube:
                         # avoid numpy raising warning about "converting masked element to NaN":
                         dtype = metadata[name].points_dtype
                         fill_value = np.ma.default_fill_value(dtype)
-                        points = np.ma.masked_array(
-                            points, dtype=dtype, fill_value=fill_value
-                        )
+
+                        try:
+                            points = np.ma.masked_array(
+                                points, dtype=dtype, fill_value=fill_value
+                            )
+                        except np.ma.MaskError:
+                            # Fails for integer types as cannot convert a np.ma.masked to int type.
+                            # Need to loop over list and add points manually to a pre-masked array:
+                            arr_points = np.ma.masked_all(len(points), dtype=dtype)
+
+                            # slow! :(
+                            for i, p in enumerate(points):
+                                if p is not np.ma.masked:
+                                    arr_points[i] = p
+                            points = arr_points
                     else:
                         points = np.array(points, dtype=metadata[name].points_dtype)
+
                     if cells[0].bound is not None:
                         bounds = np.array(
                             [cell.bound for cell in cells],
@@ -1604,13 +1617,19 @@ class ProtoCube:
             # the bounds are not monotonic, so try building the coordinate,
             # and if it fails make the coordinate into an auxiliary coordinate.
             # This will ultimately make an anonymous dimension.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
+
+            # If the points contain masked values, if definitely cannot be built
+            # as a dim coord, so add it to the _aux_templates immediately
+            if np.ma.is_masked(template.points):
                 self._aux_templates.append(template)
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    self._aux_templates.append(template)
 
         # There is the potential that there are still anonymous dimensions.
         # Get a list of the dimensions which are not anonymous at this stage.
@@ -1626,7 +1645,6 @@ class ProtoCube:
 
             # Check here whether points are masked? If so then it has to be an AuxCoord
             if np.ma.is_masked(template.points):
-                print("[CB] Masked data - forcing AuxCoord")
                 # Masked data can only ever be an AuxDim
                 # kwarg not applicable to AuxCoord.
                 template.kwargs.pop("circular", None)
