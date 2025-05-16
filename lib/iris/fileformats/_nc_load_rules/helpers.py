@@ -464,6 +464,7 @@ def _add_or_capture(
     add_method: partial,
     filename: str,
     cf_var: iris.fileformats.cf.CFVariable,
+    destination: LoadProblems.Problem.Destination,
     attr_key: Optional[str] = None,
 ) -> Optional[LoadProblems.Problem]:
     """Build & add objects to the Cube, capturing problem objects - common code.
@@ -493,6 +494,11 @@ def _add_or_capture(
         object-to-be-added. Used in case of an error, to build the most basic
         :class:`~iris.cube.Cube` possible - for adding to
         :const:`iris.loading.LOAD_PROBLEMS`.
+    destination : LoadProblems.Problem.Destination
+        Info about where the object will be added, e.g. a ``standard_name``
+        might be added to :class:`~iris.cube.Cube`,
+        :class:`~iris.coords.DimCoord`, etcetera. Used to provide the maximum
+        information if a problem gets captured.
     attr_key : str, optional
         The attribute-of-interest on `cf_var`, if applicable. For example: in
         some cases we are building a coordinate using the entire of `cf_var` -
@@ -533,6 +539,7 @@ def _add_or_capture(
             filename=filename,
             loaded=captured,
             exception=exc_build,
+            destination=destination,
             handled=False,
         )
 
@@ -547,7 +554,11 @@ def _add_or_capture(
                 captured = built
 
             load_problems_entry = LOAD_PROBLEMS.record(
-                filename=filename, loaded=captured, exception=exc_add, handled=False
+                filename=filename,
+                loaded=captured,
+                exception=exc_add,
+                destination=destination,
+                handled=False,
             )
 
     return load_problems_entry
@@ -592,6 +603,11 @@ def build_and_add_names(engine: Engine) -> None:
     assert engine.cube is not None
     assert engine.filename is not None
 
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
+
     def setter(attr_name):
         return partial(setattr, engine.cube, attr_name)
 
@@ -601,6 +617,7 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_STD_NAME,
+        destination=destination,
     )
     if problem is not None and hasattr(problem.loaded, "get"):
         assert isinstance(problem.loaded, dict)
@@ -614,6 +631,7 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_LONG_NAME,
+        destination=destination,
     )
     _ = _add_or_capture(
         build_func=partial(_build_name_long, engine.cf_var),
@@ -637,6 +655,7 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key="cf_name",
+        destination=destination,
     )
 
 
@@ -1273,6 +1292,7 @@ def _normalise_bounds_units(
 def _build_dimension_coordinate(
     filename: str,
     cf_coord_var: cf.CFCoordinateVariable,
+    destination: LoadProblems.Problem.Destination,
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.Coord:
@@ -1355,6 +1375,7 @@ def _build_dimension_coordinate(
             filename=filename,
             loaded=build_raw_cube(cf_coord_var, filename),
             exception=dim_error,
+            destination=destination,
             handled=True,
         )
 
@@ -1420,19 +1441,27 @@ def build_and_add_dimension_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
+    assert engine.cf_var is not None
     assert engine.filename is not None
+
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
 
     _ = _add_or_capture(
         build_func=partial(
             _build_dimension_coordinate,
             engine.filename,
             cf_coord_var,
+            destination,
             coord_name,
             coord_system,
         ),
         add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
         filename=engine.filename,
         cf_var=cf_coord_var,
+        destination=destination,
     )
 
 
@@ -1525,6 +1554,7 @@ def build_and_add_auxiliary_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
+    assert engine.cf_var is not None
     assert engine.filename is not None
 
     _ = _add_or_capture(
@@ -1538,6 +1568,10 @@ def build_and_add_auxiliary_coordinate(
         add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
         filename=engine.filename,
         cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
     )
 
 

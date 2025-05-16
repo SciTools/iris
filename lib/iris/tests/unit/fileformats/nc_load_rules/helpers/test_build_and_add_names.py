@@ -8,6 +8,7 @@
 # importing anything else
 import iris.tests as tests  # isort:skip
 
+from iris.cube import Cube
 from iris.fileformats._nc_load_rules.helpers import build_and_add_names
 from iris.loading import LOAD_PROBLEMS
 
@@ -15,6 +16,8 @@ from .test_build_cube_metadata import _make_engine
 
 
 class TestCubeName(tests.IrisTest):
+    cf_name: str
+
     def setUp(self):
         LOAD_PROBLEMS.reset()
 
@@ -26,6 +29,7 @@ class TestCubeName(tests.IrisTest):
 
         engine = _make_engine(standard_name=standard_name, long_name=long_name)
         build_and_add_names(engine)
+        self.cf_name = engine.cf_var.cf_name
 
         # Check the cube's standard name and long name are as expected.
         self.assertEqual(engine.cube.standard_name, exp_standard_name)
@@ -40,6 +44,10 @@ class TestCubeName(tests.IrisTest):
                 load_problem.loaded, {"standard_name": invalid_standard_name}
             )
             self.assertTrue(load_problem.handled)
+
+            destination = load_problem.destination
+            self.assertEqual(destination.iris_class, Cube)
+            self.assertEqual(destination.identifier, self.cf_name)
 
     def test_standard_name_none_long_name_none(self):
         inputs = (None, None)

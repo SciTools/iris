@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 
 from iris.coords import AuxCoord
+from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
@@ -360,10 +361,22 @@ class TestCoordConstruction(tests.IrisTest):
         # Confirm that the code can redirect an error to LOAD_PROBLEMS even
         #  when there is no specific handling code for it.
         with self.monkeypatch.context() as m:
-            m.setattr(self.engine, "cf_var", "foo")
+            m.setattr(self.engine, "cube", "foo")
             n_problems = len(LOAD_PROBLEMS.problems)
             build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
             self.assertTrue(len(LOAD_PROBLEMS.problems) > n_problems)
+
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_problem_destination(self):
+        # Confirm that the destination of the problem is set correctly.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cube", "foo")
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+            destination = LOAD_PROBLEMS.problems[-1].destination
+            assert destination.iris_class is Cube
+            assert destination.identifier == self.engine.cf_var.cf_name
 
         assert self.engine.cube_parts["coordinates"] == []
 

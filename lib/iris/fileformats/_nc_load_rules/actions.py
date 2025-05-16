@@ -43,9 +43,10 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
+from iris.cube import Cube
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
-from iris.loading import LOAD_PROBLEMS
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.warnings
 
 from . import helpers as hh
@@ -393,6 +394,10 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 filename=engine.filename,
                 loaded=hh.build_raw_cube(cf_var, engine.filename),
                 exception=error,
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=Cube,
+                    identifier=engine.cf_var.cf_name,
+                ),
                 handled=False,
             )
 
