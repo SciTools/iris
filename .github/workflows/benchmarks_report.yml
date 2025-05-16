@@ -80,4 +80,4 @@ jobs:
       - name: Post reports
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python benchmarks/bm_runner.py _gh_post
+        run: benchmarks/bm_runner.py _gh_post

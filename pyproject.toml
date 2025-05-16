@@ -1,8 +1,8 @@
 [build-system]
 # Defined by PEP 518
 requires = [
-  "setuptools>=64",
-  "setuptools_scm[toml]>=7.0",
+  "setuptools>=77.0.3",
+  "setuptools_scm[toml]>=8",
   "wheel",
 ]
 # Defined by PEP 517
@@ -15,7 +15,6 @@ authors = [
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: BSD License",
     "Operating System :: MacOS",
     "Operating System :: POSIX",
     "Operating System :: POSIX :: Linux",
@@ -48,7 +47,8 @@ keywords = [
     "ugrid",
     "visualisation",
 ]
-license = {text = "BSD-3-Clause"}
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
 name = "scitools-iris"
 requires-python = ">=3.11"
 
@@ -119,7 +119,6 @@ known-first-party = ["iris"]
 convention = "numpy"
 
 [tool.setuptools]
-license-files = ["LICENSE"]
 zip-safe = false
 
 [tool.setuptools.dynamic]
