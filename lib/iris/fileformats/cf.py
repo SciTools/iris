@@ -1459,14 +1459,15 @@ class CFReader:
 
                     if cf_root not in self.cf_group.bounds:
                         cf_name = cf_var.cf_name
-                        if cf_var.cf_name not in self.cf_group:
+                        if cf_name not in self.cf_group:
                             new_var = CFAuxiliaryCoordinateVariable(
                                 cf_name, cf_var.cf_data
                             )
                             if hasattr(cf_var, "bounds"):
                                 new_var.bounds = cf_var.bounds
-                            new_var.add_formula_term(cf_root, cf_term)
                             self.cf_group[cf_name] = new_var
+
+                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         else:
             for cf_var in formula_terms.values():

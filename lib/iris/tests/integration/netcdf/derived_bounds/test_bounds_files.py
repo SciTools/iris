@@ -41,9 +41,11 @@ def test_load_legacy_hh(derived_bounds):
         print(f"\n{i_cube:02d} : {cube.summary(shorten=True)}:")
         print(cube)
 
-    return
-
     main_cube = cubes.extract_cube("air_potential_temperature")
+    print("---\nmain cube coords...")
+    for coord in main_cube.coords():
+        print(f'  {coord.var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
+
     assert len(cubes) == 2
     (other_cube,) = [cube for cube in cubes if cube != main_cube]
 
@@ -54,20 +56,20 @@ def test_load_legacy_hh(derived_bounds):
     else:
         assert not main_cube.coords("altitude")
 
+        # #
+        # # OK, confirm for now
+        # #   but ***THIS BIT*** is surely wrong ????
+        # #
+        # assert other_cube.name() == "level_height_bnds"
         #
-        # OK, confirm for now
-        #   but ***THIS BIT*** is surely wrong ????
-        #
-        assert other_cube.name() == "level_height_bnds"
-
-        # FOR NOW: fix our "problem" by adding a factory "manually"
-        sigma = main_cube.coord("sigma")
-        delta = main_cube.coord("atmosphere_hybrid_height_coordinate")
-        orog = main_cube.coord("surface_altitude")
-        fact = HybridHeightFactory(sigma=sigma, delta=delta, orography=orog)
-        main_cube.add_aux_factory(fact)
-        assert main_cube.coords("altitude")
-        altitude_coord = main_cube.coord("altitude")
+        # # FOR NOW: fix our "problem" by adding a factory "manually"
+        # sigma = main_cube.coord("sigma")
+        # delta = main_cube.coord("atmosphere_hybrid_height_coordinate")
+        # orog = main_cube.coord("surface_altitude")
+        # fact = HybridHeightFactory(sigma=sigma, delta=delta, orography=orog)
+        # main_cube.add_aux_factory(fact)
+        # assert main_cube.coords("altitude")
+        # altitude_coord = main_cube.coord("altitude")
 
     assert altitude_coord.has_bounds()
     assert altitude_coord.has_lazy_bounds()
