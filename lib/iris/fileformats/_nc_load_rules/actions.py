@@ -43,9 +43,10 @@ from functools import wraps
 import warnings
 
 from iris.config import get_logger
+from iris.cube import Cube
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
-from iris.loading import LOAD_PROBLEMS
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.warnings
 
 from . import helpers as hh
@@ -393,6 +394,11 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 filename=engine.filename,
                 loaded=hh.build_raw_cube(cf_var, engine.filename),
                 exception=error,
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=Cube,
+                    identifier=engine.cf_var.cf_name,
+                ),
+                handled=False,
             )
 
     return rule_name
@@ -431,7 +437,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
         rule_name += f"_{coord_type}"
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
-    hh.build_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
+    hh.build_and_add_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
 
     return rule_name
 
@@ -503,7 +509,7 @@ def action_build_label_coordinate(engine, label_fact):
     """Convert a CFLabelVariable into a cube string-type aux-coord."""
     (var_name,) = label_fact
     var = engine.cf_var.cf_group.labels[var_name]
-    hh.build_auxiliary_coordinate(engine, var)
+    hh.build_and_add_auxiliary_coordinate(engine, var)
 
 
 @action_function

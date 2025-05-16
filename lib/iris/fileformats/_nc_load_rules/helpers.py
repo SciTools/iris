@@ -464,6 +464,7 @@ def _add_or_capture(
     add_method: partial,
     filename: str,
     cf_var: iris.fileformats.cf.CFVariable,
+    destination: LoadProblems.Problem.Destination,
     attr_key: Optional[str] = None,
 ) -> Optional[LoadProblems.Problem]:
     """Build & add objects to the Cube, capturing problem objects - common code.
@@ -493,6 +494,11 @@ def _add_or_capture(
         object-to-be-added. Used in case of an error, to build the most basic
         :class:`~iris.cube.Cube` possible - for adding to
         :const:`iris.loading.LOAD_PROBLEMS`.
+    destination : LoadProblems.Problem.Destination
+        Info about where the object will be added, e.g. a ``standard_name``
+        might be added to :class:`~iris.cube.Cube`,
+        :class:`~iris.coords.DimCoord`, etcetera. Used to provide the maximum
+        information if a problem gets captured.
     attr_key : str, optional
         The attribute-of-interest on `cf_var`, if applicable. For example: in
         some cases we are building a coordinate using the entire of `cf_var` -
@@ -533,6 +539,8 @@ def _add_or_capture(
             filename=filename,
             loaded=captured,
             exception=exc_build,
+            destination=destination,
+            handled=False,
         )
 
     else:
@@ -546,7 +554,11 @@ def _add_or_capture(
                 captured = built
 
             load_problems_entry = LOAD_PROBLEMS.record(
-                filename=filename, loaded=captured, exception=exc_add
+                filename=filename,
+                loaded=captured,
+                exception=exc_add,
+                destination=destination,
+                handled=False,
             )
 
     return load_problems_entry
@@ -591,6 +603,11 @@ def build_and_add_names(engine: Engine) -> None:
     assert engine.cube is not None
     assert engine.filename is not None
 
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
+
     def setter(attr_name):
         return partial(setattr, engine.cube, attr_name)
 
@@ -600,10 +617,12 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_STD_NAME,
+        destination=destination,
     )
     if problem is not None and hasattr(problem.loaded, "get"):
         assert isinstance(problem.loaded, dict)
         invalid_std_name = problem.loaded.get(CF_ATTR_STD_NAME)
+        problem.handled = True
     else:
         invalid_std_name = None
 
@@ -612,6 +631,7 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_LONG_NAME,
+        destination=destination,
     )
     _ = _add_or_capture(
         build_func=partial(_build_name_long, engine.cf_var),
@@ -635,6 +655,7 @@ def build_and_add_names(engine: Engine) -> None:
         filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key="cf_name",
+        destination=destination,
     )
 
 
@@ -1271,10 +1292,11 @@ def _normalise_bounds_units(
 def _build_dimension_coordinate(
     filename: str,
     cf_coord_var: cf.CFCoordinateVariable,
+    destination: LoadProblems.Problem.Destination,
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.Coord:
-    """Create a dimension coordinate (DimCoord) and add it to the cube."""
+    """Create a dimension coordinate (DimCoord) from the CF coordinate variable."""
     attributes: dict[str, Any] = {}
 
     attr_units = get_attr_units(cf_coord_var, attributes)
@@ -1353,6 +1375,8 @@ def _build_dimension_coordinate(
             filename=filename,
             loaded=build_raw_cube(cf_coord_var, filename),
             exception=dim_error,
+            destination=destination,
+            handled=True,
         )
 
         coord = iris.coords.AuxCoord(
@@ -1417,37 +1441,49 @@ def build_and_add_dimension_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
+    assert engine.cf_var is not None
     assert engine.filename is not None
+
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
 
     _ = _add_or_capture(
         build_func=partial(
             _build_dimension_coordinate,
             engine.filename,
             cf_coord_var,
+            destination,
             coord_name,
             coord_system,
         ),
         add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
         filename=engine.filename,
         cf_var=cf_coord_var,
+        destination=destination,
     )
 
 
 ################################################################################
-def build_auxiliary_coordinate(
-    engine, cf_coord_var, coord_name=None, coord_system=None
-):
-    """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+) -> iris.coords.AuxCoord:
+    """Create an auxiliary coordinate (AuxCoord) from the CF coordinate variable."""
+    assert engine.cf_var is not None
+    assert engine.filename is not None
+
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_coord_var, attributes)
 
     # Get any coordinate point data.
     if isinstance(cf_coord_var, cf.CFLabelVariable):
-        points_data = cf_coord_var.cf_label_data(cf_var)
+        points_data = cf_coord_var.cf_label_data(engine.cf_var)
     else:
         points_data = _get_cf_var_data(cf_coord_var, engine.filename)
 
@@ -1469,14 +1505,6 @@ def build_auxiliary_coordinate(
     else:
         bounds_data = None
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_coord_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
-
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
@@ -1492,19 +1520,59 @@ def build_auxiliary_coordinate(
         coord_system=coord_system,
         climatological=climatological,
     )
+    return coord
 
-    # Add it to the cube
-    try:
-        cube.add_aux_coord(coord, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} coordinate not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+def _add_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data variable
+    # and the coordinate being built.
+    common_dims = [
+        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
+    ]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [engine.cf_var.dimensions.index(dim) for dim in common_dims]
+
+    engine.cube.add_aux_coord(coord, data_dims)
+
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+
+def build_and_add_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+):
+    assert engine.cf_var is not None
+    assert engine.filename is not None
+
+    _ = _add_or_capture(
+        build_func=partial(
+            _build_auxiliary_coordinate,
+            engine,
+            cf_coord_var,
+            coord_name,
+            coord_system,
+        ),
+        add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
+        filename=engine.filename,
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
