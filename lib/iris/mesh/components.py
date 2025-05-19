@@ -2828,8 +2828,8 @@ class MeshCoord(AuxCoord):
             if len(value) != 0:  # or not(value is None) and self.bounds:
                 msg = "Cannot set 'bounds' on a MeshCoord."
                 raise ValueError(msg)
-            else:
-                super(MeshCoord, self.__class__).bounds.fset(self, value)
+        else:
+            super(MeshCoord, self.__class__).bounds.fset(self, value)
 
     @property
     def _metadata_manager(self):
