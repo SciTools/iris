@@ -36,15 +36,14 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
-
+#. `@bouweandela`_ changed the ``convert_units`` method on cubes and coordinates
+   so it also converts the values of the attributes ``"actual_range"``,
+   ``"valid_max"``, ``"valid_min"``, and ``"valid_range"``. (:pull:`6416`)
 
 💣 Incompatible Changes
 =======================
 
-#. `@bouweandela`_ changed the ``convert_units`` method on cubes and coordinates
-   so it also converts the values of the attributes ``"actual_range"``,
-   ``"valid_max"``, ``"valid_min"``, and ``"valid_range"``. (:pull:`6416`)
+#. N/A
 
 🚀 Performance Enhancements
 ===========================
