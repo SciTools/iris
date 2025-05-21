@@ -1645,7 +1645,6 @@ class ProtoCube:
 
             # Check here whether points are masked? If so then it has to be an AuxCoord
             if np.ma.is_masked(template.points):
-                # Masked data can only ever be an AuxDim
                 # kwarg not applicable to AuxCoord.
                 template.kwargs.pop("circular", None)
                 coord = iris.coords.AuxCoord(

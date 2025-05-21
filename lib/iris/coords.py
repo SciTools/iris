@@ -2818,7 +2818,6 @@ class DimCoord(Coord):
         # TODO: This is the point where any mask is lost on a coordinate if none of the
         # values are actually masked. What if we wanted this to be an AuxCoord with a mask?
         points = np.array(points)
-        # points = np.ma.array(points)
 
         super(DimCoord, self.__class__)._values.fset(self, points)
 
