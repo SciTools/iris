@@ -82,17 +82,20 @@ class CFVariable(metaclass=ABCMeta):
         # quite a bit faster.
         self._nc_attrs = data.ncattrs()
 
-        #: NetCDF variable name.
         self.cf_name = name
+        """NetCDF variable name."""
 
-        #: NetCDF4 Variable data instance.
         self.cf_data = data
+        """NetCDF4 Variable data instance."""
 
-        #: Collection of CF-netCDF variables associated with this variable.
+        self.filename = data.group().filepath()
+        """File source of the NetCDF content."""
+
         self.cf_group = None
+        """Collection of CF-netCDF variables associated with this variable."""
 
-        #: CF-netCDF formula terms that his variable participates in.
         self.cf_terms_by_root = {}
+        """CF-netCDF formula terms that his variable participates in."""
 
         self.cf_attrs_reset()
 

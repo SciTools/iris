@@ -32,6 +32,7 @@ class Mixin:
         self.build_func.return_value = "BUILT"
         self.add_method = mocker.MagicMock()
         self.cf_var = mocker.MagicMock(spec=CFVariable)
+        self.cf_var.filename = self.filename
         setattr(self.cf_var, self.attr_key, self.attr_value)
 
     def call(
@@ -39,10 +40,12 @@ class Mixin:
         filename=None,
         attr_key=None,
     ):
+        if filename is not None:
+            self.cf_var.filename = filename
+
         result = helpers._add_or_capture(
             build_func=self.build_func,
             add_method=self.add_method,
-            filename=filename or self.filename,
             cf_var=self.cf_var,
             destination=self.destination,
             attr_key=attr_key,

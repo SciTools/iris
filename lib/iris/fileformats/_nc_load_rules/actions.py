@@ -392,7 +392,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
         except error.__class__ as error:
             _ = LOAD_PROBLEMS.record(
                 filename=engine.filename,
-                loaded=hh.build_raw_cube(cf_var, engine.filename),
+                loaded=hh.build_raw_cube(cf_var),
                 exception=error,
                 destination=LoadProblems.Problem.Destination(
                     iris_class=Cube,

@@ -254,6 +254,7 @@ class TestCoordConstruction(tests.IrisTest):
             add_offset=0,
             cf_name="wibble",
             cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units=units,

@@ -462,7 +462,6 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
 def _add_or_capture(
     build_func: partial,
     add_method: partial,
-    filename: str,
     cf_var: iris.fileformats.cf.CFVariable,
     destination: LoadProblems.Problem.Destination,
     attr_key: Optional[str] = None,
@@ -485,10 +484,6 @@ def _add_or_capture(
         A function that takes the object returned by `build_func` and adds it to
         the Cube. Passed as a :class:`~functools.partial` instance to allow
         further arguments to be bound by the caller.
-    filename : str
-        The ``filename`` attribute of the
-        :class:`iris.fileformats._nc_load_rules.engine.Engine` that is handling
-        the loading. This is the name of the file being loaded.
     cf_var : iris.fileformats.cf.CFVariable
         The CFVariable object that provides the info for building the
         object-to-be-added. Used in case of an error, to build the most basic
@@ -533,10 +528,10 @@ def _add_or_capture(
             captured = {attr_key: captured_attr}
         else:
             with contextlib.suppress(Exception):
-                captured = build_raw_cube(cf_var, filename)
+                captured = build_raw_cube(cf_var)
 
         load_problems_entry = LOAD_PROBLEMS.record(
-            filename=filename,
+            filename=cf_var.filename,
             loaded=captured,
             exception=exc_build,
             destination=destination,
@@ -554,7 +549,7 @@ def _add_or_capture(
                 captured = built
 
             load_problems_entry = LOAD_PROBLEMS.record(
-                filename=filename,
+                filename=cf_var.filename,
                 loaded=captured,
                 exception=exc_add,
                 destination=destination,
@@ -565,10 +560,10 @@ def _add_or_capture(
 
 
 ################################################################################
-def build_raw_cube(cf_var: cf.CFVariable, filename: str) -> Cube:
+def build_raw_cube(cf_var: cf.CFVariable) -> Cube:
     """Build the most basic Cube possible - used as a 'last resort' fallback."""
     # TODO: dataless Cubes might be an opportunity for _get_cf_var_data() to return None?
-    data = _get_cf_var_data(cf_var, filename)
+    data = _get_cf_var_data(cf_var, cf_var.filename)
     raw_attributes = {key: value for key, value in cf_var.cf_attrs()}
     # Not a real attribute, but this is 'Iris language'.
     raw_attributes["var_name"] = cf_var.cf_name
@@ -601,7 +596,6 @@ def build_and_add_names(engine: Engine) -> None:
     """Add standard_, long_, var_name to the cube."""
     assert engine.cf_var is not None
     assert engine.cube is not None
-    assert engine.filename is not None
 
     destination = LoadProblems.Problem.Destination(
         iris_class=Cube,
@@ -614,7 +608,6 @@ def build_and_add_names(engine: Engine) -> None:
     problem = _add_or_capture(
         build_func=partial(_build_name_standard, engine.cf_var),
         add_method=setter("standard_name"),
-        filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_STD_NAME,
         destination=destination,
@@ -628,7 +621,6 @@ def build_and_add_names(engine: Engine) -> None:
 
     long_name_kwargs = dict(
         add_method=setter("long_name"),
-        filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key=CF_ATTR_LONG_NAME,
         destination=destination,
@@ -652,7 +644,6 @@ def build_and_add_names(engine: Engine) -> None:
     _ = _add_or_capture(
         build_func=partial(_build_name_var, engine.cf_var),
         add_method=setter("var_name"),
-        filename=engine.filename,
         cf_var=engine.cf_var,
         attr_key="cf_name",
         destination=destination,
@@ -1290,7 +1281,6 @@ def _normalise_bounds_units(
 
 ################################################################################
 def _build_dimension_coordinate(
-    filename: str,
     cf_coord_var: cf.CFCoordinateVariable,
     destination: LoadProblems.Problem.Destination,
     coord_name: Optional[str] = None,
@@ -1372,8 +1362,8 @@ def _build_dimension_coordinate(
         )
         # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
         _ = LOAD_PROBLEMS.record(
-            filename=filename,
-            loaded=build_raw_cube(cf_coord_var, filename),
+            filename=cf_coord_var.filename,
+            loaded=build_raw_cube(cf_coord_var),
             exception=dim_error,
             destination=destination,
             handled=True,
@@ -1442,7 +1432,6 @@ def build_and_add_dimension_coordinate(
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
     assert engine.cf_var is not None
-    assert engine.filename is not None
 
     destination = LoadProblems.Problem.Destination(
         iris_class=Cube,
@@ -1452,14 +1441,12 @@ def build_and_add_dimension_coordinate(
     _ = _add_or_capture(
         build_func=partial(
             _build_dimension_coordinate,
-            engine.filename,
             cf_coord_var,
             destination,
             coord_name,
             coord_system,
         ),
         add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
-        filename=engine.filename,
         cf_var=cf_coord_var,
         destination=destination,
     )
@@ -1566,7 +1553,6 @@ def build_and_add_auxiliary_coordinate(
             coord_system,
         ),
         add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
-        filename=engine.filename,
         cf_var=cf_coord_var,
         destination=LoadProblems.Problem.Destination(
             iris_class=Cube,
