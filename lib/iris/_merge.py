@@ -1652,6 +1652,14 @@ class ProtoCube:
         ]
 
         # Build the auxiliary coordinates.
+        def _build_aux_coord_from_template(template):
+            # kwarg not applicable to AuxCoord.
+            template.kwargs.pop("circular", None)
+            coord = iris.coords.AuxCoord(
+                template.points, bounds=template.bounds, **template.kwargs
+            )
+            aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+
         for template in self._aux_templates:
             # Attempt to build a DimCoord and add it to the cube. If this
             # fails e.g it's non-monontic or multi-dimensional or non-numeric,
@@ -1659,12 +1667,7 @@ class ProtoCube:
 
             # Check here whether points are masked? If so then it has to be an AuxCoord
             if np.ma.is_masked(template.points):
-                # kwarg not applicable to AuxCoord.
-                template.kwargs.pop("circular", None)
-                coord = iris.coords.AuxCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                _build_aux_coord_from_template(template)
             else:
                 try:
                     coord = iris.coords.DimCoord(
@@ -1675,13 +1678,8 @@ class ProtoCube:
                         covered_dims.append(template.dims[0])
                     else:
                         aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-                except (ValueError, TypeError):
-                    # kwarg not applicable to AuxCoord.
-                    template.kwargs.pop("circular", None)
-                    coord = iris.coords.AuxCoord(
-                        template.points, bounds=template.bounds, **template.kwargs
-                    )
-                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    _build_aux_coord_from_template(template)
 
         # Mix in the vector coordinates.
         for item, dims in zip(
