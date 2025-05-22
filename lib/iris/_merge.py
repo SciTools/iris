@@ -1411,27 +1411,39 @@ class ProtoCube:
                     # If any points are masked then create a masked array type,
                     # otherwise create a standard ndarray.
                     if np.ma.masked in points:
+                        # Create an empty numpy masked array and fill it manually.
+                        # This avoids the following problems when trying to do `np.ma.masked_array(points, dtype...)`:
+                        #   - Can't convert a np.ma.masked to an integer type
+                        #   - For floating point arrays, numpy raises a warning about "converting masked elements to NaN"
                         dtype = metadata[name].points_dtype
+                        arr_points = np.ma.masked_all(len(points), dtype=dtype)
+                        # Is the below potentially slow? Perhaps no slower than the list comprehension used to
+                        # build the `points`` list above though...?
+                        for i, p in enumerate(points):
+                            if p is not np.ma.masked:
+                                arr_points[i] = p
+                        points = arr_points
 
-                        try:
-                            # This will always raise a numpy warning about "converting masked elements to Nan"
-                            # TODO: Can we pre-fill masked data in `points`? Would require
-                            #       generation of separate mask array...
-                            points = np.ma.masked_array(points, dtype=dtype)
-                        except np.ma.MaskError:
-                            # Fails for integer types as cannot convert a np.ma.masked to int type.
-                            # Need to loop over list and add points manually to a pre-masked array:
+                        if None:
+                            try:
+                                # This will always raise a numpy warning about "converting masked elements to Nan"
+                                # TODO: Can we pre-fill masked data in `points`? Would require
+                                #       generation of separate mask array...
+                                points = np.ma.masked_array(points, dtype=dtype)
+                            except np.ma.MaskError:
+                                # Fails for integer types as cannot convert a np.ma.masked to int type.
+                                # Need to loop over list and add points manually to a pre-masked array:
 
-                            # TODO: Perhaps use this method for all arrays, not just integer typea?
-                            # This will avoid numpy warnings about converting masked values to NaN
-                            # and also remove the need for this try..except block.
-                            arr_points = np.ma.masked_all(len(points), dtype=dtype)
+                                # TODO: Perhaps use this method for all arrays, not just integer typea?
+                                # This will avoid numpy warnings about converting masked values to NaN
+                                # and also remove the need for this try..except block.
+                                arr_points = np.ma.masked_all(len(points), dtype=dtype)
 
-                            # slow! :(
-                            for i, p in enumerate(points):
-                                if p is not np.ma.masked:
-                                    arr_points[i] = p
-                            points = arr_points
+                                # slow! :(
+                                for i, p in enumerate(points):
+                                    if p is not np.ma.masked:
+                                        arr_points[i] = p
+                                points = arr_points
                     else:
                         points = np.array(points, dtype=metadata[name].points_dtype)
 
