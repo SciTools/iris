@@ -12,6 +12,7 @@ import datetime
 
 import cftime
 import numpy as np
+import pytest
 
 from iris.coords import Cell
 from iris.time import PartialDateTime
@@ -268,6 +269,32 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n != cell)
         except:  # noqa
             self.fail("Result of comparison could not be used as a truth value")
+
+
+class Test_hashing:
+    @pytest.mark.parametrize(
+        "point",
+        (
+            pytest.param(np.float32(1.0), id="float32"),
+            pytest.param(np.float64(1.0), id="float64"),
+            pytest.param(np.int16(1), id="int16"),
+            pytest.param(np.int32(1), id="int32"),
+            pytest.param(np.int64(1), id="int64"),
+            pytest.param(np.uint16(1), id="uint16"),
+            pytest.param(np.uint32(1), id="uint32"),
+            pytest.param(np.uint64(1), id="uint64"),
+            pytest.param(True, id="bool"),
+            pytest.param(np.ma.masked, id="masked"),
+            pytest.param(datetime.datetime(2001, 1, 1), id="datetime"),
+        ),
+    )
+    def test_cell_is_hashable(self, point):
+        """Test a Cell object is hashable with various point/bound types."""
+        cell = Cell(point=point, bound=None)
+        hash(cell)
+
+        if isinstance(point, np.number):
+            cell = Cell(point=input, bound=((point - 1, point + 1)))
 
 
 if __name__ == "__main__":
