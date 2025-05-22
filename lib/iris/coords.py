@@ -2815,7 +2815,7 @@ class DimCoord(Coord):
         self._new_points_requirements(points)
         # Cast to a numpy array for masked arrays with no mask.
 
-        # TODO: This is the point where any mask is lost on a coordinate if none of the
+        # NOTE: This is the point where any mask is lost on a coordinate if none of the
         # values are actually masked. What if we wanted this to be an AuxCoord with a mask?
         points = np.array(points)
 

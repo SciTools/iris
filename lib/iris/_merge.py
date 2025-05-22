@@ -1411,18 +1411,20 @@ class ProtoCube:
                     # If any points are masked then create a masked array type,
                     # otherwise create a standard ndarray.
                     if np.ma.masked in points:
-                        # Need to explicitly specify fill_type for list with `masked` elements to
-                        # avoid numpy raising warning about "converting masked element to NaN":
                         dtype = metadata[name].points_dtype
-                        fill_value = np.ma.default_fill_value(dtype)
 
                         try:
-                            points = np.ma.masked_array(
-                                points, dtype=dtype, fill_value=fill_value
-                            )
+                            # This will always raise a numpy warning about "converting masked elements to Nan"
+                            # TODO: Can we pre-fill masked data in `points`? Would require
+                            #       generation of separate mask array...
+                            points = np.ma.masked_array(points, dtype=dtype)
                         except np.ma.MaskError:
                             # Fails for integer types as cannot convert a np.ma.masked to int type.
                             # Need to loop over list and add points manually to a pre-masked array:
+
+                            # TODO: Perhaps use this method for all arrays, not just integer typea?
+                            # This will avoid numpy warnings about converting masked values to NaN
+                            # and also remove the need for this try..except block.
                             arr_points = np.ma.masked_all(len(points), dtype=dtype)
 
                             # slow! :(
