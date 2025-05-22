@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.Cell` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import datetime
 
 import cftime
@@ -18,18 +14,18 @@ from iris.coords import Cell
 from iris.time import PartialDateTime
 
 
-class Test___common_cmp__(tests.IrisTest):
+class Test___common_cmp__:
     def assert_raises_on_comparison(self, cell, other, exception_type, regexp):
-        with self.assertRaisesRegex(exception_type, regexp):
+        with pytest.raises(exception_type, match=regexp):
             cell < other
-        with self.assertRaisesRegex(exception_type, regexp):
+        with pytest.raises(exception_type, match=regexp):
             cell <= other
-        with self.assertRaisesRegex(exception_type, regexp):
+        with pytest.raises(exception_type, match=regexp):
             cell > other
-        with self.assertRaisesRegex(exception_type, regexp):
+        with pytest.raises(exception_type, match=regexp):
             cell >= other
 
-    def test_PartialDateTime_bounded_cell(self):
+    def test_partial_date_time_bounded_cell(self):
         # Check bounded cell comparisons to a PartialDateTime
         dt = PartialDateTime(month=6)
         cell = Cell(
@@ -39,10 +35,10 @@ class Test___common_cmp__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assertGreater(dt, cell)
-        self.assertGreaterEqual(dt, cell)
-        self.assertLess(cell, dt)
-        self.assertLessEqual(cell, dt)
+        assert dt > cell
+        assert dt >= cell
+        assert cell < dt
+        assert cell <= dt
 
     def test_cftime_calender_bounded_cell(self):
         # Check that cell comparisons fail with different calendars
@@ -56,46 +52,46 @@ class Test___common_cmp__(tests.IrisTest):
         )
         self.assert_raises_on_comparison(cell, dt, TypeError, "different calendars")
 
-    def test_PartialDateTime_unbounded_cell(self):
+    def test_partial_date_time_unbounded_cell(self):
         # Check that cell comparison works with PartialDateTimes.
         dt = PartialDateTime(month=6)
         cell = Cell(cftime.datetime(2010, 3, 1))
-        self.assertLess(cell, dt)
-        self.assertGreater(dt, cell)
-        self.assertLessEqual(cell, dt)
-        self.assertGreaterEqual(dt, cell)
+        assert cell < dt
+        assert dt > cell
+        assert cell <= dt
+        assert dt >= cell
 
     def test_datetime_unbounded_cell(self):
         # Check that cell comparison works with datetimes & cftimes.
         dt = datetime.datetime(2000, 6, 15)
         cell = Cell(cftime.datetime(2000, 1, 1))
-        self.assertGreater(dt, cell)
-        self.assertGreaterEqual(dt, cell)
-        self.assertLess(cell, dt)
-        self.assertLessEqual(cell, dt)
+        assert dt > cell
+        assert dt >= cell
+        assert cell < dt
+        assert cell <= dt
 
-    def test_0D_numpy_array(self):
+    def test_0_d_numpy_array(self):
         # Check that cell comparison works with 0D numpy arrays
 
         cell = Cell(1.3)
 
-        self.assertGreater(np.array(1.5), cell)
-        self.assertLess(np.array(1.1), cell)
-        self.assertGreaterEqual(np.array(1.3), cell)
-        self.assertLessEqual(np.array(1.3), cell)
+        assert np.array(1.5) > cell
+        assert np.array(1.1) < cell
+        assert np.array(1.3) >= cell
+        assert np.array(1.3) <= cell
 
     def test_len_1_numpy_array(self):
         # Check that cell comparison works with numpy arrays of len=1
 
         cell = Cell(1.3)
 
-        self.assertGreater(np.array([1.5]), cell)
-        self.assertLess(np.array([1.1]), cell)
-        self.assertGreaterEqual(np.array([1.3]), cell)
-        self.assertLessEqual(np.array([1.3]), cell)
+        assert np.array([1.5]) > cell
+        assert np.array([1.1]) < cell
+        assert np.array([1.3]) >= cell
+        assert np.array([1.3]) <= cell
 
 
-class Test___eq__(tests.IrisTest):
+class Test___eq__:
     def test_datetimelike(self):
         # Check that cell equality works with different datetime objects
         # using the same calendar
@@ -104,7 +100,7 @@ class Test___eq__(tests.IrisTest):
             datetime.datetime(2010, 1, 1),
             bound=None,
         )
-        self.assertEqual(cell, point)
+        assert cell == point
 
     def test_datetimelike_bounded_cell(self):
         # Check that cell equality works with bounded cells using different datetime objects
@@ -116,7 +112,7 @@ class Test___eq__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assertEqual(cell, point)
+        assert cell == point
 
     def test_datetimelike_calenders_cell(self):
         # Check that equality with a cell with a different calendar
@@ -129,24 +125,24 @@ class Test___eq__(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        with self.assertRaisesRegex(TypeError, "different calendars"):
+        with pytest.raises(TypeError, match="different calendars"):
             cell >= point
 
-    def test_PartialDateTime_other(self):
+    def test_partial_date_time_other(self):
         cell = Cell(datetime.datetime(2010, 3, 2))
         # A few simple cases.
-        self.assertEqual(cell, PartialDateTime(month=3))
-        self.assertNotEqual(cell, PartialDateTime(month=3, hour=12))
-        self.assertNotEqual(cell, PartialDateTime(month=4))
+        assert cell == PartialDateTime(month=3)
+        assert cell != PartialDateTime(month=3, hour=12)
+        assert cell != PartialDateTime(month=4)
 
 
-class Test_contains_point(tests.IrisTest):
+class Test_contains_point:
     """Test that contains_point works for combinations.
 
     Combinations of datetime, cf.datatime, and PartialDateTime objects.
     """
 
-    def test_datetime_PartialDateTime_point(self):
+    def test_datetime_partial_date_time_point(self):
         point = PartialDateTime(month=6)
         cell = Cell(
             datetime.datetime(2010, 1, 1),
@@ -155,7 +151,7 @@ class Test_contains_point(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assertFalse(cell.contains_point(point))
+        assert not cell.contains_point(point)
 
     def test_datetime_cftime_standard_point(self):
         point = cftime.datetime(2010, 6, 15)
@@ -166,7 +162,7 @@ class Test_contains_point(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        self.assertTrue(cell.contains_point(point))
+        assert cell.contains_point(point)
 
     def test_datetime_cftime_360day_point(self):
         point = cftime.datetime(2010, 6, 15, calendar="360_day")
@@ -177,10 +173,10 @@ class Test_contains_point(tests.IrisTest):
                 datetime.datetime(2011, 1, 1),
             ],
         )
-        with self.assertRaisesRegex(TypeError, "different calendars"):
+        with pytest.raises(TypeError, match="different calendars"):
             cell.contains_point(point)
 
-    def test_cftime_standard_PartialDateTime_point(self):
+    def test_cftime_standard_partial_date_time_point(self):
         point = PartialDateTime(month=6)
         cell = Cell(
             cftime.datetime(2010, 1, 1),
@@ -189,9 +185,9 @@ class Test_contains_point(tests.IrisTest):
                 cftime.datetime(2011, 1, 1),
             ],
         )
-        self.assertFalse(cell.contains_point(point))
+        assert not cell.contains_point(point)
 
-    def test_cftime_360day_PartialDateTime_point(self):
+    def test_cftime_360day_partial_date_time_point(self):
         point = PartialDateTime(month=6)
         cell = Cell(
             cftime.datetime(2010, 1, 1, calendar="360_day"),
@@ -200,7 +196,7 @@ class Test_contains_point(tests.IrisTest):
                 cftime.datetime(2011, 1, 1, calendar="360_day"),
             ],
         )
-        self.assertFalse(cell.contains_point(point))
+        assert not cell.contains_point(point)
 
     def test_cftime_standard_datetime_point(self):
         point = datetime.datetime(2010, 6, 1)
@@ -211,7 +207,7 @@ class Test_contains_point(tests.IrisTest):
                 cftime.datetime(2011, 1, 1),
             ],
         )
-        self.assertTrue(cell.contains_point(point))
+        assert cell.contains_point(point)
 
     def test_cftime_360day_datetime_point(self):
         point = datetime.datetime(2010, 6, 1)
@@ -222,7 +218,7 @@ class Test_contains_point(tests.IrisTest):
                 cftime.datetime(2011, 1, 1, calendar="360_day"),
             ],
         )
-        with self.assertRaisesRegex(TypeError, "different calendars"):
+        with pytest.raises(TypeError, match="different calendars"):
             cell.contains_point(point)
 
     def test_cftime_360_day_cftime_360day_point(self):
@@ -234,10 +230,10 @@ class Test_contains_point(tests.IrisTest):
                 cftime.datetime(2011, 1, 1, calendar="360_day"),
             ],
         )
-        self.assertTrue(cell.contains_point(point))
+        assert cell.contains_point(point)
 
 
-class Test_numpy_comparison(tests.IrisTest):
+class Test_numpy_comparison:
     """Unit tests to check that the results of comparisons with numpy types can be
     used as truth values.
     """
@@ -254,7 +250,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(cell == n)
             bool(cell != n)
         except:  # noqa
-            self.fail("Result of comparison could not be used as a truth value")
+            pytest.fail("Result of comparison could not be used as a truth value")
 
     def test_cell_rhs(self):
         cell = Cell(point=1.5)
@@ -268,7 +264,7 @@ class Test_numpy_comparison(tests.IrisTest):
             bool(n == cell)
             bool(n != cell)
         except:  # noqa
-            self.fail("Result of comparison could not be used as a truth value")
+            pytest.fail("Result of comparison could not be used as a truth value")
 
 
 class Test_hashing:
@@ -298,4 +294,4 @@ class Test_hashing:
 
 
 if __name__ == "__main__":
-    tests.main()
+    pytest.main()
