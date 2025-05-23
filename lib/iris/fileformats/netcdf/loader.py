@@ -255,9 +255,9 @@ def _get_cf_var_data(cf_var, filename):
             result = cf_var[:]
 
             # Special handling of masked scalar value; this will be returned as
-            # an `np.ma.masked` instance which will loose the original dtype.
+            # an `np.ma.masked` instance which will lose the original dtype.
             # Workaround for this it return a 1-element masked array of the
-            # correct dtype. Note - this is not an ussue for masked arrays,
+            # correct dtype. Note: this is not an issue for masked arrays,
             # only masked scalar values.
             if result is np.ma.masked:
                 result = np.ma.masked_all(1, dtype=cf_var.datatype)
