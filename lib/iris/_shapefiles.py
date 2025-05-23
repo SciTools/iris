@@ -31,19 +31,13 @@ if "iris.analysis.cartography" in sys.modules:
     import iris.analysis.cartography
 
 
-@overload
-def create_shapefile_mask(
-    geometry: shapely.Geometry,
-    geometry_crs: cartopy.crs | CRS,
-    cube: iris.cube.Cube,
-    all_touched: bool = False,
-    invert: bool = False,
-) -> np.array: ...
 def create_shapefile_mask(
     geometry: shapely.Geometry,
     geometry_crs: cartopy.crs | CRS,
     cube: iris.cube.Cube,
     minimum_weight: float = 0.0,
+    all_touched: bool = False,
+    invert: bool = False,
 ) -> np.array:
     """Make a mask for a cube from a shape.
 
@@ -134,6 +128,11 @@ def create_shapefile_mask(
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
 
+    # Check minimum_weight is within range
+    if minimum_weight < 0.0 or minimum_weight > 1.0:
+        msg = "Minimum weight must be between 0.0 and 1.0"
+        raise ValueError(msg)
+
     # Get cube coordinates
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
@@ -204,6 +203,7 @@ def create_shapefile_mask(
         geometries=shapely.get_parts(geometry),
         out_shape=(h, w),
         transform=tr,
+        all_touched=all_touched
     )
 
     # If cube was on circular domain, then the transformed
@@ -211,7 +211,7 @@ def create_shapefile_mask(
     if cube.coord(x_name).circular:
         mask_template = np.roll(mask_template, w // 2, axis=1)
 
-    if weighted_mask_template:
+    if minimum_weight > 0:
         # Combine the two masks
         mask_template = np.logical_or(mask_template, weighted_mask_template)
 

@@ -2187,22 +2187,14 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-@overload
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
     shape_crs: cartopy.crs | CRS,
     in_place: bool = False,
     all_touched: bool = False,
-    invert: bool = False,
-): ...
-def mask_cube_from_shapefile(
-    cube: iris.cube.Cube,
-    shape: shapely.Geometry,
-    shape_crs: cartopy.crs | CRS,
-    in_place: bool = False,
     minimum_weight: float = 0.0,
-    **kwargs,
+    invert: bool = False
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 
@@ -2232,11 +2224,6 @@ def mask_cube_from_shapefile(
     minimum_weight : float, default=0.0
         A number between 0-1 describing what % of a cube cell area must the shape overlap to be masked.
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
-    **kwargs
-        Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
-        Valid keyword arguments are:
-        all_touched : bool, optional
-        invert : bool, optional
 
     Returns
     -------
@@ -2311,7 +2298,8 @@ def mask_cube_from_shapefile(
 
     """
     shapefile_mask = create_shapefile_mask(
-        geometry=shape, geometry_crs=shape_crs, cube=cube, **kwargs
+        geometry=shape, geometry_crs=shape_crs, cube=cube, 
+        minimum_weight=minimum_weight, invert=invert, all_touched=all_touched
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
