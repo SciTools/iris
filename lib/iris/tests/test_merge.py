@@ -1138,7 +1138,7 @@ class TestCubeMerge_masked_scalar:
         merged = cubes.merge_cube()
         c = merged.coord("realization")
         assert np.ma.isMaskedArray(c.points)
-        assert np.any(c.points.mask) and not np.all(c.points.mask)
+        assert all([c.points.mask[i] == i % 2 for i in range(n)])
         assert c.points.dtype.type is dtype
 
 
