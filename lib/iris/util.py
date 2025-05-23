@@ -2201,6 +2201,7 @@ def mask_cube_from_shapefile(
     shape: shapely.Geometry,
     shape_crs: cartopy.crs | CRS,
     in_place: bool = False,
+    minimum_weight: float = 0.0,
     **kwargs,
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
@@ -2228,6 +2229,9 @@ def mask_cube_from_shapefile(
     in_place : bool, default=False
         Whether to mask the `cube` in-place or return a newly masked `cube`.
         Defaults to False.
+    minimum_weight : float, default=0.0
+        A number between 0-1 describing what % of a cube cell area must the shape overlap to be masked.
+        Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
     **kwargs
         Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
         Valid keyword arguments are:

@@ -43,7 +43,7 @@ def create_shapefile_mask(
     geometry: shapely.Geometry,
     geometry_crs: cartopy.crs | CRS,
     cube: iris.cube.Cube,
-    **kwargs,
+    minimum_weight: float = 0.0,
 ) -> np.array:
     """Make a mask for a cube from a shape.
 
@@ -63,11 +63,17 @@ def create_shapefile_mask(
         same as the :class:`iris.cube.Cube`.
     cube : :class:`iris.cube.Cube`
         A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
-    **kwargs :
-        Additional keyword arguments to pass to `rasterio.features.geometry_mask`.
-        Valid keyword arguments are:
-        all_touched : bool, optional
-        invert : bool, optional
+    minimum_weight : float, optional
+        The minimum weight of the geometry to be included in the mask.
+        If the weight is less than this value, the geometry will not be
+        included in the mask. Defaults to 0.0.
+    all_touched : bool, optional
+        If True, all pixels touched by the geometry will be included in the mask.
+        If False, only pixels fully covered by the geometry will be included in the mask.
+        Defaults to False.
+    invert : bool, optional
+        If True, the mask will be inverted, so that pixels not covered by the geometry
+        will be included in the mask. Defaults to False.
 
     Returns
     -------
@@ -159,6 +165,33 @@ def create_shapefile_mask(
     dy = iris.util.regular_step(cube.coord(y_name))
     w = len(x_points)
     h = len(y_points)
+    # Mask by weight if minimum_weight > 0.0
+    if minimum_weight > 0:
+        if not cube.coord(x_name).has_bounds():
+            cube.coord(x_name).guess_bounds()
+        if not cube.coord(y_name).has_bounds():
+            cube.coord(y_name).guess_bounds()
+        # Get the bounds of the cube
+        x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
+        y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
+        # Generate STRtree of bounding boxes
+        grid_boxes = [
+            sgeom.box(x[0], y[0], x[1], y[1]) for x, y in product(y_bounds, x_bounds)
+        ]
+        grid_tree = shapely.STRtree(grid_boxes)
+        # Find grid boxes indexes that intersect with the geometry
+        idxs = grid_tree.query(geometry, predicate="intersects")
+        # Get grid box indexes that intersect with the minimum weight criteria
+        mask_idxs_bool = [grid_boxes[idx].intersection(geometry).area
+            / grid_boxes[idx].area
+            <= minimum_weight for idx in idxs]
+        mask_idxs = idxs[mask_idxs_bool]
+        mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
+        # Create mask from grid box indexes
+        weighted_mask_template = np.zeros((h, w), dtype=bool)
+        # Set mask = True for grid box indexes identified above
+        for xy in mask_xy:
+            weighted_mask_template[xy] = True
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
@@ -171,13 +204,20 @@ def create_shapefile_mask(
         geometries=shapely.get_parts(geometry),
         out_shape=(h, w),
         transform=tr,
-        **kwargs,
     )
 
     # If cube was on circular domain, then the transformed
     # mask template needs shifting to match the cube domain
     if cube.coord(x_name).circular:
         mask_template = np.roll(mask_template, w // 2, axis=1)
+
+    if weighted_mask_template:
+        # Combine the two masks
+        mask_template = np.logical_or(mask_template, weighted_mask_template)
+
+    if invert:
+        # Invert the mask
+        mask_template = np.logical_not(mask_template)
 
     return mask_template
 
@@ -316,3 +356,27 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     latitude = latc.name()
     longitude = lonc.name()
     return latitude, longitude
+
+
+def _get_mod_rebased_coord_bounds(coord):
+    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
+
+    Parameters
+    ----------
+    coord : :class:`iris.coords.Coord`
+        An Iris coordinate with a modulus.
+
+    Returns
+    -------
+    :class:`np.array`
+        A 1d Numpy array of [start,end] pairs for bounds of the coord.
+
+    """
+    modulus = coord.units.modulus
+    # Force realisation (rather than core_bounds) - more efficient for the
+    #  repeated indexing happening downstream.
+    result = np.array(coord.bounds)
+    if modulus:
+        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
+        result[np.isclose(result, modulus, 1e-10)] = 0.0
+    return result
