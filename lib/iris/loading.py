@@ -334,17 +334,17 @@ class LoadProblems(threading.local):
         ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
         >>> warnings.showwarning = custom_warn
 
-        >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
+        >>> get_names_original = helpers.get_names
 
-        >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
+        >>> def raise_example_error_names(cf_coord_var, coord_name, attributes):
         ...     if cf_coord_var.cf_name == "time":
-        ...         raise ValueError("Example dimension coordinate error")
+        ...         raise ValueError("Example coordinate error")
         ...     else:
-        ...         return build_dimension_coordinate_original(
-        ...             filename, cf_coord_var, coord_name, coord_system
+        ...         return get_names_original(
+        ...             cf_coord_var, coord_name, attributes
         ...         )
 
-        >>> helpers._build_dimension_coordinate = raise_example_error_dim
+        >>> helpers.get_names = raise_example_error_names
         >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
         >>> iris.FUTURE.date_microseconds = True
 
@@ -378,9 +378,9 @@ class LoadProblems(threading.local):
     >>> print(iris.loading.LOAD_PROBLEMS)
     <iris.loading.LoadProblems object at ...>:
       .../A1B_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
-      .../A1B_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+      .../A1B_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
       .../E1_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
-      .../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+      .../E1_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
 
     Below demonstrates how to explore the captured stack traces in detail:
 
@@ -393,14 +393,17 @@ class LoadProblems(threading.local):
     ...     print(problem.stack_trace.exc_type_str)
     ValueError
     ValueError
+    ValueError
 
     >>> last_problem = A1B[-1]
     >>> print("".join(last_problem.stack_trace.format()))
     Traceback (most recent call last):
       File ..., in _add_or_capture
         built = build_func()
-      File ..., in raise_example_error_dim
-    ValueError: Example dimension coordinate error
+      File ..., in _build_auxiliary_coordinate
+        ...
+      File ..., in raise_example_error_names
+    ValueError: Example coordinate error
     <BLANKLINE>
 
     :const:`LOAD_PROBLEMS` also captures the 'raw' information in the object
@@ -464,8 +467,8 @@ class LoadProblems(threading.local):
     >>> for problem in iris.loading.LOAD_PROBLEMS.problems:
     ...     if not problem.handled:
     ...         print(problem)
-    /.../A1B_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
-    /.../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+    /.../A1B_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
+    /.../E1_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
 
     .. dropdown:: (expand to see cleanup)
 
@@ -478,7 +481,7 @@ class LoadProblems(threading.local):
 
         >>> warnings.showwarning = showwarning_original
         >>> warnings.filterwarnings("ignore")
-        >>> helpers._build_dimension_coordinate = build_dimension_coordinate_original
+        >>> helpers.get_names = get_names_original
         >>> std_names.STD_NAMES["air_temperature"] = air_temperature
 
     """
