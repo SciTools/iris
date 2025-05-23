@@ -13,6 +13,7 @@ import itertools
 
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 from iris._lazy_data import as_lazy_data
@@ -1096,6 +1097,49 @@ class TestCubeMerge__split_attributes__error_messages(tests.IrisTest):
             attrs_2=CubeAttrsDict(globals=dict(a=2), locals=dict(a=3)),
             expected_message="cube.attributes values differ for keys: 'a'",
         )
+
+
+@pytest.mark.parametrize(
+    "dtype", [np.int16, np.int32, np.int64, np.float32, np.float64]
+)
+class TestCubeMerge_masked_scalar:
+    """Test for merging of scalar coordinates containing masked data."""
+
+    def _build_cube(self, scalar_data):
+        return iris.cube.Cube(
+            np.arange(5),
+            standard_name="air_pressure",
+            aux_coords_and_dims=[
+                (AuxCoord(points=scalar_data, standard_name="realization"), None)
+            ],
+        )
+
+    def test_merge_scalar_coords_all_masked(self, dtype):
+        """Test merging of scalar aux coords all with masked data."""
+        n = 5
+        cubes = iris.cube.CubeList(
+            [self._build_cube(np.ma.masked_all(1, dtype=dtype)) for i in range(n)]
+        )
+        merged = cubes.merge_cube()
+        c = merged.coord("realization")
+        assert np.ma.isMaskedArray(c.points)
+        assert np.all(c.points.mask)
+        assert c.points.dtype.type is dtype
+
+    def test_merge_scalar_coords_some_masked(self, dtype):
+        """Test merging of scalar aux coords with mix of masked and unmasked data."""
+        n = 5
+        cubes = iris.cube.CubeList(
+            [
+                self._build_cube(np.ma.masked_array(i, dtype=dtype, mask=i % 2))
+                for i in range(n)
+            ]
+        )
+        merged = cubes.merge_cube()
+        c = merged.coord("realization")
+        assert np.ma.isMaskedArray(c.points)
+        assert np.any(c.points.mask) and not np.all(c.points.mask)
+        assert c.points.dtype.type is dtype
 
 
 if __name__ == "__main__":
