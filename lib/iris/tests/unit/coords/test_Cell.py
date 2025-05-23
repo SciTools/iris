@@ -286,8 +286,11 @@ class Test_hashing:
     )
     def test_cell_is_hashable(self, point):
         """Test a Cell object is hashable with various point/bound types."""
+        # test with no bounds:
         cell = Cell(point=point, bound=None)
         hash(cell)
 
+        # if a numerical type, then test with bounds based on point:
         if isinstance(point, np.number):
             cell = Cell(point=input, bound=((point - 1, point + 1)))
+            hash(cell)
