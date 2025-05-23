@@ -493,7 +493,7 @@ def action_build_cell_measure(engine, cellm_fact):
     """Convert a CFCellMeasureVariable into a cube cell-measure."""
     (var_name,) = cellm_fact
     var = engine.cf_var.cf_group.cell_measures[var_name]
-    hh.build_cell_measures(engine, var)
+    hh.build_and_add_cell_measure(engine, var)
 
 
 @action_function

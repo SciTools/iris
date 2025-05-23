@@ -41,11 +41,20 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Create coordinate cf variables and pyke engine.
         dimension_names = ("foo", "bar")
         points, cf_data = self._make_array_and_cf_data(dimension_names)
+
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
+
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=dimension_names,
             cf_name="wibble",
             cf_data=cf_data,
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units="km",
@@ -64,13 +73,6 @@ class TestBoundsVertexDim(tests.IrisTest):
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
             bounds=expected_bounds,
-        )
-
-        self.engine = mock.Mock(
-            cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
-            filename="DUMMY",
-            cube_parts=dict(coordinates=[]),
         )
 
         # Patch the deferred loading that prevents attempted file access.
@@ -123,6 +125,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             dimensions=dimension_names,
             cf_name="wibble_bnds",
             cf_data=cf_data,
+            filename=self.engine.filename,
             units="m",
             shape=bounds.shape,
             size=np.prod(bounds.shape),
@@ -169,11 +172,19 @@ class TestDtype(tests.IrisTest):
         cf_data = mock.MagicMock(_FillValue=None)
         cf_data.chunking = mock.MagicMock(return_value=points.shape)
 
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
+
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=("foo", "bar"),
             cf_name="wibble",
             cf_data=cf_data,
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units="m",
@@ -181,13 +192,6 @@ class TestDtype(tests.IrisTest):
             size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
-        )
-
-        self.engine = mock.Mock(
-            cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar")),
-            filename="DUMMY",
-            cube_parts=dict(coordinates=[]),
         )
 
     @contextlib.contextmanager

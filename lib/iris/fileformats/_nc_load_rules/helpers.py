@@ -1453,7 +1453,6 @@ def _build_auxiliary_coordinate(
 ) -> iris.coords.AuxCoord:
     """Create an auxiliary coordinate (AuxCoord) from the CF coordinate variable."""
     assert engine.cf_var is not None
-    assert engine.filename is not None
 
     attributes: dict[str, Any] = {}
 
@@ -1464,12 +1463,12 @@ def _build_auxiliary_coordinate(
     if isinstance(cf_coord_var, cf.CFLabelVariable):
         points_data = cf_coord_var.cf_label_data(engine.cf_var)
     else:
-        points_data = _get_cf_var_data(cf_coord_var, engine.filename)
+        points_data = _get_cf_var_data(cf_coord_var, cf_coord_var.filename)
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
     if cf_bounds_var is not None:
-        bounds_data = _get_cf_var_data(cf_bounds_var, engine.filename)
+        bounds_data = _get_cf_var_data(cf_bounds_var, cf_coord_var.filename)
 
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
@@ -1534,7 +1533,6 @@ def build_and_add_auxiliary_coordinate(
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
     assert engine.cf_var is not None
-    assert engine.filename is not None
 
     _ = _add_or_capture(
         build_func=partial(
@@ -1554,25 +1552,15 @@ def build_and_add_auxiliary_coordinate(
 
 
 ################################################################################
-def build_cell_measures(engine, cf_cm_var):
-    """Create a CellMeasure instance and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_cell_measure(cf_cm_var: cf.CFMeasureVariable) -> iris.coords.CellMeasure:
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_cm_var, attributes)
 
     # Get (lazy) content array
-    data = _get_cf_var_data(cf_cm_var, engine.filename)
-
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_cm_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    # TODO: go the whole way and remove the 2nd parameter from _get_cf_var_data?
+    data = _get_cf_var_data(cf_cm_var, cf_cm_var.filename)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_cm_var, None, attributes)
@@ -1591,18 +1579,50 @@ def build_cell_measures(engine, cf_cm_var):
         measure=measure,
     )
 
-    # Add it to the cube
-    try:
-        cube.add_cell_measure(cell_measure, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} cell measure not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_cm_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["cell_measures"].append((cell_measure, cf_cm_var.cf_name))
+    return cell_measure
+
+
+def _add_cell_measure(
+    engine: Engine,
+    cf_cm_var: cf.CFMeasureVariable,
+    cell_measure: iris.coords.CellMeasure,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    cf_var = engine.cf_var
+    cube = engine.cube
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data
+    #  variable and the coordinate being built.
+    common_dims = [dim for dim in cf_cm_var.dimensions if dim in cf_var.dimensions]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
+    cube.add_cell_measure(cell_measure, data_dims)
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["cell_measures"].append((cell_measure, cf_cm_var.cf_name))
+
+
+def build_and_add_cell_measure(
+    engine: Engine,
+    cf_cm_var: cf.CFMeasureVariable,
+) -> None:
+    """Create a CellMeasure instance and add it to the cube."""
+    assert engine.cf_var is not None
+
+    _ = _add_or_capture(
+        build_func=partial(_build_cell_measure, cf_cm_var),
+        add_method=partial(_add_cell_measure, engine, cf_cm_var),
+        cf_var=cf_cm_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
