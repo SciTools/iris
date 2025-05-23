@@ -1282,7 +1282,6 @@ def _normalise_bounds_units(
 ################################################################################
 def _build_dimension_coordinate(
     cf_coord_var: cf.CFCoordinateVariable,
-    destination: LoadProblems.Problem.Destination,
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.Coord:
@@ -1338,48 +1337,18 @@ def _build_dimension_coordinate(
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
-    # Create the coordinate.
-    coord: iris.coords.DimCoord | iris.coords.AuxCoord
-    try:
-        coord = iris.coords.DimCoord(
-            points_data,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            units=attr_units,
-            bounds=bounds_data,
-            attributes=attributes,
-            coord_system=coord_system,
-            circular=circular,
-            climatological=climatological,
-        )
-    except ValueError as dim_error:
-        # Attempt graceful loading.
-        coord_var_name = str(cf_coord_var.cf_name)
-        dim_error.add_note(
-            f"Failed to create {coord_var_name} dimension coordinate:\n"
-            f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
-        )
-        # NOTE: add entry directly - does not fit the pattern for `_add_or_capture`.
-        _ = LOAD_PROBLEMS.record(
-            filename=cf_coord_var.filename,
-            loaded=build_raw_cube(cf_coord_var),
-            exception=dim_error,
-            destination=destination,
-            handled=True,
-        )
-
-        coord = iris.coords.AuxCoord(
-            points_data,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            units=attr_units,
-            bounds=bounds_data,
-            attributes=attributes,
-            coord_system=coord_system,
-            climatological=climatological,
-        )
+    coord = iris.coords.DimCoord(
+        points_data,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        bounds=bounds_data,
+        attributes=attributes,
+        coord_system=coord_system,
+        circular=circular,
+        climatological=climatological,
+    )
 
     return coord
 
@@ -1438,11 +1407,10 @@ def build_and_add_dimension_coordinate(
         identifier=engine.cf_var.cf_name,
     )
 
-    _ = _add_or_capture(
+    problem = _add_or_capture(
         build_func=partial(
             _build_dimension_coordinate,
             cf_coord_var,
-            destination,
             coord_name,
             coord_system,
         ),
@@ -1450,12 +1418,36 @@ def build_and_add_dimension_coordinate(
         cf_var=cf_coord_var,
         destination=destination,
     )
+    if problem is not None:
+        coord_var_name = str(cf_coord_var.cf_name)
+        stack_notes = problem.stack_trace.__notes__
+        if stack_notes is None:
+            stack_notes = []
+        stack_notes.append(
+            f"Failed to create {coord_var_name} dimension coordinate:\n"
+            f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
+        )
+        problem.stack_trace.__notes__ = stack_notes
+        problem.handled = True
+
+        _ = _add_or_capture(
+            build_func=partial(
+                _build_auxiliary_coordinate,
+                engine,
+                cf_coord_var,
+                coord_name,
+                coord_system,
+            ),
+            add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
+            cf_var=cf_coord_var,
+            destination=destination,
+        )
 
 
 ################################################################################
 def _build_auxiliary_coordinate(
     engine: Engine,
-    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    cf_coord_var: cf.CFCoordinateVariable | cf.CFAuxiliaryCoordinateVariable,
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.AuxCoord:
@@ -1512,7 +1504,7 @@ def _build_auxiliary_coordinate(
 
 def _add_auxiliary_coordinate(
     engine: Engine,
-    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    cf_coord_var: cf.CFCoordinateVariable | cf.CFAuxiliaryCoordinateVariable,
     coord: iris.coords.DimCoord | iris.coords.AuxCoord,
 ) -> None:
     assert engine.cf_var is not None

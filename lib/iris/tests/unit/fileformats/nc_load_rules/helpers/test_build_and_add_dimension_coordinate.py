@@ -29,16 +29,19 @@ def _make_bounds_var(bounds, dimensions, units):
     del cf_data.flag_values
     del cf_data.flag_masks
     del cf_data.flag_meanings
-    return mock.Mock(
+    result = mock.Mock(
         dimensions=dimensions,
         cf_name="wibble_bnds",
         cf_data=cf_data,
         units=units,
         calendar=None,
         shape=bounds.shape,
+        size=np.prod(bounds.shape),
         dtype=bounds.dtype,
         __getitem__=lambda self, key: bounds[key],
     )
+    delattr(result, "_data_array")
+    return result
 
 
 class RulesTestMixin:
@@ -105,10 +108,12 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             units="days since 1970-01-01",
             calendar=None,
             shape=points.shape,
+            size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
             cf_attrs=lambda: [("foo", "a"), ("bar", "b")],
         )
+        delattr(self.cf_coord_var, "_data_array")
 
     def check_case_dim_coord_construction(self, climatology=False):
         # Test a generic dimension coordinate, with or without
@@ -262,7 +267,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
-        assert self.engine.cube_parts["coordinates"] == []
+        assert isinstance(load_problem.loaded, DimCoord)
+        assert [type(i[0]) for i in self.engine.cube_parts["coordinates"]] == [AuxCoord]
 
     def test_auxcoord_not_added(self):
         # Confirm that a gracefully-created auxiliary coord will also be

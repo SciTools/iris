@@ -336,12 +336,12 @@ class LoadProblems(threading.local):
 
         >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
 
-        >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system, destination):
+        >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
         ...     if cf_coord_var.cf_name == "time":
         ...         raise ValueError("Example dimension coordinate error")
         ...     else:
         ...         return build_dimension_coordinate_original(
-        ...             filename, cf_coord_var, coord_name, coord_system, destination
+        ...             filename, cf_coord_var, coord_name, coord_system
         ...         )
 
         >>> helpers._build_dimension_coordinate = raise_example_error_dim
