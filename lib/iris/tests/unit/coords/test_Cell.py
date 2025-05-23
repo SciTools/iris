@@ -291,7 +291,3 @@ class Test_hashing:
 
         if isinstance(point, np.number):
             cell = Cell(point=input, bound=((point - 1, point + 1)))
-
-
-if __name__ == "__main__":
-    pytest.main()
