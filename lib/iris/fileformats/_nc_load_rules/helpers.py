@@ -1602,6 +1602,7 @@ def _add_cell_measure(
         # Calculate the offset of each common dimension.
         data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
 
+    # Add it to the cube
     cube.add_cell_measure(cell_measure, data_dims)
     # Make a list with names, stored on the engine, so we can find them all later.
     engine.cube_parts["cell_measures"].append((cell_measure, cf_cm_var.cf_name))
@@ -1626,25 +1627,16 @@ def build_and_add_cell_measure(
 
 
 ################################################################################
-def build_ancil_var(engine, cf_av_var):
-    """Create an AncillaryVariable instance and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_ancil_var(
+    cf_av_var: cf.CFAncillaryDataVariable,
+) -> iris.coords.AncillaryVariable:
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_av_var, attributes)
 
     # Get (lazy) content array
-    data = _get_cf_var_data(cf_av_var, engine.filename)
-
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the AV being built.
-    common_dims = [dim for dim in cf_av_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    data = _get_cf_var_data(cf_av_var, cf_av_var.filename)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_av_var, None, attributes)
@@ -1659,18 +1651,51 @@ def build_ancil_var(engine, cf_av_var):
         attributes=attributes,
     )
 
+    return av
+
+
+def _add_ancil_var(
+    engine: Engine,
+    cf_av_var: cf.CFAncillaryDataVariable,
+    av: iris.coords.AncillaryVariable,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    cf_var = engine.cf_var
+    cube = engine.cube
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data variable
+    #  and the AV being built.
+    common_dims = [dim for dim in cf_av_var.dimensions if dim in cf_var.dimensions]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
     # Add it to the cube
-    try:
-        cube.add_ancillary_variable(av, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} ancillary variable not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_av_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["ancillary_variables"].append((av, cf_av_var.cf_name))
+    cube.add_ancillary_variable(av, data_dims)
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["ancillary_variables"].append((av, cf_av_var.cf_name))
+
+
+def build_and_add_ancil_var(
+    engine: Engine,
+    cf_av_var: cf.CFAncillaryDataVariable,
+) -> None:
+    """Create an AncillaryVariable instance and add it to the cube."""
+    assert engine.cf_var is not None
+
+    _ = _add_or_capture(
+        build_func=partial(_build_ancil_var, cf_av_var),
+        add_method=partial(_add_ancil_var, engine, cf_av_var),
+        cf_var=cf_av_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################

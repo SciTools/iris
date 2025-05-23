@@ -501,7 +501,7 @@ def action_build_ancil_var(engine, ancil_fact):
     """Convert a CFAncillaryVariable into a cube ancil-var."""
     (var_name,) = ancil_fact
     var = engine.cf_var.cf_group.ancillary_variables[var_name]
-    hh.build_ancil_var(engine, var)
+    hh.build_and_add_ancil_var(engine, var)
 
 
 @action_function
