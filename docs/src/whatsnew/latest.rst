@@ -44,6 +44,9 @@ This document explains the changes made to Iris for this release
    so it also converts the values of the attributes ``"actual_range"``,
    ``"valid_max"``, ``"valid_min"``, and ``"valid_range"``. (:pull:`6416`)
 
+#. `@ukmo-ccbunney`_ fixed loading and merging of masked data in scalar ``AuxCoords``.
+   (:issue:`3584`, :pull:`6468`)
+
 💣 Incompatible Changes
 =======================
 
