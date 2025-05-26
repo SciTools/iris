@@ -232,20 +232,26 @@ class CubeRepresentation:
                         if item.extra:
                             # TODO:
                             pass
-                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                        elements.extend(
+                            self._make_row(title, body=body, col_span=self.ndims)
+                        )
                 elif st in ("attributes:", "cell methods:", "mesh:"):
                     for title, body in zip(sect.names, sect.values):
                         body = escape(body)  # TODO: escape everything
-                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                        elements.extend(
+                            self._make_row(title, body=body, col_span=self.ndims)
+                        )
                         pass
                 elif st in (
-                        "scalar ancillary variables:",
-                        "scalar cell measures:",
+                    "scalar ancillary variables:",
+                    "scalar cell measures:",
                 ):
                     body = ""
                     # These are just strings: nothing in the 'value' column.
                     for title in sect.contents:
-                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                        elements.extend(
+                            self._make_row(title, body=body, col_span=self.ndims)
+                        )
                         pass
                 else:
                     msg = f"Unknown section type : {type(sect)}"
