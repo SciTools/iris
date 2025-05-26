@@ -8,6 +8,8 @@
 from html import escape
 import re
 
+from iris._representation.cube_summary import CubeSummary
+
 
 class CubeRepresentation:
     """Produce representations of a :class:`~iris.cube.Cube`.
@@ -77,34 +79,8 @@ class CubeRepresentation:
 
     def __init__(self, cube):
         self.cube = cube
+        self.summary = CubeSummary(cube)
         self.cube_id = id(self.cube)
-        self.cube_str = escape(str(self.cube))
-
-        # Define the expected vector and scalar sections in output, in expected
-        # order of appearance.
-        # NOTE: if we recoded this to use a CubeSummary, these section titles
-        # would be available from that.
-        self.vector_section_names = [
-            "Dimension coordinates:",
-            "Mesh coordinates:",
-            "Auxiliary coordinates:",
-            "Derived coordinates:",
-            "Cell measures:",
-            "Ancillary variables:",
-        ]
-        self.scalar_section_names = [
-            "Mesh:",
-            "Scalar coordinates:",
-            "Scalar cell measures:",
-            "Cell methods:",
-            "Attributes:",
-        ]
-        self.sections_data = {
-            name: None for name in self.vector_section_names + self.scalar_section_names
-        }
-        # 'Scalar-cell-measures' is currently alone amongst the scalar sections,
-        # in displaying only a 'name' and no 'value' field.
-        self.single_cell_section_names = ["Scalar cell measures:"]
 
         # Important content that summarises a cube is defined here.
         self.shapes = self.cube.shape
@@ -143,40 +119,6 @@ class CubeRepresentation:
         else:
             dim_names = self._get_dim_names()
         return dim_names
-
-    def _get_lines(self):
-        return self.cube_str.split("\n")
-
-    def _get_bits(self, bits):
-        """Parse the body content (`bits`) of the cube string.
-
-        Parse the body content (`bits`) of the cube string in preparation for
-        being converted into table rows.
-
-        """
-        left_indent = re.split(r"\w+", bits[1])[0]
-
-        # Get heading indices within the printout.
-        start_inds = []
-        for hdg in self.sections_data.keys():
-            heading = "{}{}".format(left_indent, hdg)
-            try:
-                start_ind = bits.index(heading)
-            except ValueError:
-                continue
-            else:
-                start_inds.append(start_ind)
-        # Mark the end of the file.
-        start_inds.append(0)
-
-        # Retrieve info for each heading from the printout.
-        for i0, i1 in zip(start_inds[:-1], start_inds[1:]):
-            str_heading_name = bits[i0].strip()
-            if i1 != 0:
-                content = bits[i0 + 1 : i1]
-            else:
-                content = bits[i0 + 1 :]
-            self.sections_data[str_heading_name] = content
 
     def _make_header(self):
         """Make the table header.
@@ -269,28 +211,45 @@ class CubeRepresentation:
 
     def _make_content(self):
         elements = []
-        for k, v in self.sections_data.items():
-            if v is not None:
-                # Add the sub-heading title.
-                elements.extend(self._make_row(k))
-                for line in v:
-                    # Add every other row in the sub-heading.
-                    if k in self.vector_section_names:
-                        body = re.findall(r"[\w-]+", line)
-                        title = body.pop(0)
-                        colspan = 0
-                    else:
-                        colspan = self.ndims
-                        if k in self.single_cell_section_names:
-                            title = line.strip()
-                            body = ""
-                        else:
-                            line = line.strip()
-                            split_point = line.index(" ")
-                            title = line[:split_point].strip()
-                            body = line[split_point + 2 :].strip()
+        for sect in self.summary.vector_sections.values():
+            if sect.contents:
+                sect_title = sect.title
+                elements.extend(self._make_row(sect_title))
 
-                    elements.extend(self._make_row(title, body=body, col_span=colspan))
+            for content in sect.contents:
+                body = content.dim_chars
+                title = content.name
+                elements.extend(self._make_row(title, body=body, col_span=0))
+        for sect in self.summary.scalar_sections.values():
+            if sect.contents:
+                sect_title = sect.title
+                elements.extend(self._make_row(sect_title))
+                st = sect_title.lower()
+                if st == "scalar coordinates:":
+                    for item in sect.contents:
+                        body = item.content
+                        title = item.name
+                        if item.extra:
+                            # TODO:
+                            pass
+                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                elif st in ("attributes:", "cell methods:", "mesh:"):
+                    for title, body in zip(sect.names, sect.values):
+                        body = escape(body)  # TODO: escape everything
+                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                        pass
+                elif st in (
+                        "scalar ancillary variables:",
+                        "scalar cell measures:",
+                ):
+                    body = ""
+                    # These are just strings: nothing in the 'value' column.
+                    for title in sect.contents:
+                        elements.extend(self._make_row(title, body=body, col_span=self.ndims))
+                        pass
+                else:
+                    msg = f"Unknown section type : {type(sect)}"
+                    raise ValueError(msg)
         return "\n".join(element for element in elements)
 
     def repr_html(self):
@@ -305,16 +264,7 @@ class CubeRepresentation:
             self.ndims = 1
         else:
             shape = self._make_shapes_row()
-
-        # Now deal with the rest of the content.
-        lines = self._get_lines()
-        # If we only have a single line `cube_str` we have no coords / attrs!
-        # We need to handle this case specially.
-        if len(lines) == 1:
-            content = ""
-        else:
-            self._get_bits(lines)
-            content = self._make_content()
+        content = self._make_content()
 
         return self._template.format(
             header=header, id=self.cube_id, shape=shape, content=content
