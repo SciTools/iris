@@ -5,6 +5,8 @@
 
 from __future__ import annotations
 
+import pdb
+
 import importlib
 from itertools import product
 import sys
@@ -175,22 +177,24 @@ def create_shapefile_mask(
         y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
         # Generate STRtree of bounding boxes
         grid_boxes = [
-            sgeom.box(x[0], y[0], x[1], y[1]) for x, y in product(y_bounds, x_bounds)
+            sgeom.box(x[0], y[0], x[1], y[1]) for y, x in product(y_bounds, x_bounds)
         ]
         grid_tree = shapely.STRtree(grid_boxes)
         # Find grid boxes indexes that intersect with the geometry
         idxs = grid_tree.query(geometry, predicate="intersects")
         # Get grid box indexes that intersect with the minimum weight criteria
-        mask_idxs_bool = [grid_boxes[idx].intersection(geometry).area
-            / grid_boxes[idx].area
-            <= minimum_weight for idx in idxs]
+        mask_idxs_bool = [
+            grid_boxes[idx].intersection(geometry).area / grid_boxes[idx].area
+            >= minimum_weight
+            for idx in idxs
+        ]
         mask_idxs = idxs[mask_idxs_bool]
         mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
         # Create mask from grid box indexes
-        weighted_mask_template = np.zeros((h, w), dtype=bool)
+        weighted_mask_template = np.ones((h, w), dtype=bool)
         # Set mask = True for grid box indexes identified above
         for xy in mask_xy:
-            weighted_mask_template[xy] = True
+            weighted_mask_template[xy] = False
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
@@ -203,7 +207,7 @@ def create_shapefile_mask(
         geometries=shapely.get_parts(geometry),
         out_shape=(h, w),
         transform=tr,
-        all_touched=all_touched
+        all_touched=all_touched,
     )
 
     # If cube was on circular domain, then the transformed
@@ -213,7 +217,7 @@ def create_shapefile_mask(
 
     if minimum_weight > 0:
         # Combine the two masks
-        mask_template = np.logical_or(mask_template, weighted_mask_template)
+        mask_template = np.logical_and(mask_template, weighted_mask_template)
 
     if invert:
         # Invert the mask
