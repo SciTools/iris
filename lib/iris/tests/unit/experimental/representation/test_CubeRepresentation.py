@@ -14,7 +14,7 @@ import numpy as np
 
 from iris.coords import CellMethod
 from iris.cube import Cube
-from iris.experimental.representation import CubeRepresentation, CubeSummary
+from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
 from iris.tests.stock.mesh import sample_mesh
 
