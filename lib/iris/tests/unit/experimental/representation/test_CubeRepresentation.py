@@ -12,7 +12,7 @@ from html import escape
 
 import numpy as np
 
-from iris.coords import AncillaryVariable, CellMeasure, CellMethod
+from iris.coords import CellMethod
 from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation, CubeSummary
 import iris.tests.stock as stock
