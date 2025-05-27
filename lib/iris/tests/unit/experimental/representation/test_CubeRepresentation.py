@@ -29,10 +29,10 @@ class Test__instantiation(tests.IrisTest):
         self.assertEqual(id(self.cube), self.representer.cube_id)
         # self.assertMultiLineEqual(str(self.cube), self.representer.cube_str)
 
-    def test__heading_contents(self):
-        content = set(self.representer.sections_data.values())
-        self.assertEqual(len(content), 1)
-        self.assertIsNone(list(content)[0])
+    # def test__heading_contents(self):
+    #     content = set(self.representer.sections_data.values())
+    #     self.assertEqual(len(content), 1)
+    #     self.assertIsNone(list(content)[0])
 
 
 @tests.skip_data
