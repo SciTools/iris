@@ -17,6 +17,7 @@ from unittest import mock
 import numpy as np
 import pytest
 
+from iris.coord_systems import RotatedGeogCS
 from iris.coords import AuxCoord
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
@@ -346,6 +347,55 @@ class TestCoordConstruction(tests.IrisTest):
 
     def test_aux_coord_construction__climatology(self):
         self.check_case_aux_coord_construction(climatology=True)
+
+    def test_with_coord_system(self):
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        expected_coord = AuxCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds,
+            coord_system=coord_system,
+        )
+
+        build_and_add_auxiliary_coordinate(
+            self.engine, self.cf_coord_var, coord_system=coord_system
+        )
+
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
+
+    def test_bad_coord_system(self):
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        def mock_setter(self, value):
+            # Currently coord_system is not validated during setting, but we
+            #  want to ensure that any problems _would_ be handled, so fake
+            #  an error.
+            if value is not None:
+                raise ValueError("test_bad_coord_system")
+            else:
+                self._metadata_manager.coord_system = value
+
+        with mock.patch.object(
+            AuxCoord,
+            "coord_system",
+            new=property(AuxCoord.coord_system.fget, mock_setter),
+        ):
+            build_and_add_auxiliary_coordinate(
+                self.engine, self.cf_coord_var, coord_system=coord_system
+            )
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            self.assertIn(
+                "test_bad_coord_system",
+                "".join(load_problem.stack_trace.format()),
+            )
 
     def test_not_added(self):
         # Confirm that the coord will be skipped if a CannotAddError is raised

@@ -373,8 +373,12 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # One of very few cases where activation may encounter an error.
         # N.B. doesn't really test rules-activation, but maybe worth doing.
         # (no rules trigger)
-        with self.assertRaisesRegex(ValueError, "No ellipsoid"):
-            self.run_testcase(mapping_missingradius=True)
+        # with self.assertRaisesRegex(ValueError, "No ellipsoid"):
+        result = self.run_testcase(
+            mapping_missingradius=True,
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(result, cube_no_cs=True, load_problems_regex="No ellipsoid")
 
     def test_bad_gridmapping_nameproperty(self):
         # Fix the 'grid' var so it does not register as a grid-mapping.
@@ -389,8 +393,15 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * grid-mapping identified :  NONE  (thus, no coord-system)
         #     * dim-coords identified : lat+lon
         #     * coords built : lat+lon coords, with NO coord-system
-        result = self.run_testcase(gridmapvar_mappropertyname="mappy")
-        self.check_result(result, cube_no_cs=True)
+        result = self.run_testcase(
+            gridmapvar_mappropertyname="mappy",
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(
+            result,
+            cube_no_cs=True,
+            load_problems_regex="no grid-mapping attr",
+        )
 
     def test_latlon_bad_gridmapping_varname(self):
         # rename the grid-mapping variable so it is effectively 'missing'

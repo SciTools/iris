@@ -39,10 +39,11 @@ longer useful, this can be considerably simplified.
 
 """
 
-from functools import wraps
+from functools import partial, wraps
 import warnings
 
 from iris.config import get_logger
+from iris.coords import Coord
 from iris.cube import Cube
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
@@ -200,14 +201,48 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
             rule_name += f" --(FAILED check {checker.__name__})"
 
     if succeed:
-        coordinate_system = builder(engine, cf_var)
-        engine.cube_parts["coordinate_system"] = coordinate_system
+
+        def build_outer(engine_, cf_var_):
+            coordinate_system = builder(engine_, cf_var_)
+            engine_.cube_parts["coordinate_system"] = coordinate_system
+
+        _ = hh._add_or_capture(
+            build_func=partial(build_outer, engine, cf_var),
+            # Addition happens downstream instead.
+            add_method=partial(lambda coord_system: None),
+            cf_var=cf_var,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=Coord,
+                # The coordinate(s) have not been determined at this stage.
+                identifier="NOT_KNOWN",
+            ),
+        )
 
         # Check there is not an existing one.
         # ATM this is guaranteed by the caller, "run_actions".
         assert engine.fact_list("grid-type") == []
 
         engine.add_fact("grid-type", (grid_mapping_type,))
+
+    else:
+        message = "Coordinate system not created. Debug info:\n"
+        message += rule_name
+        error = ValueError(message)
+
+        try:
+            raise error
+        except error.__class__ as error:
+            _ = LOAD_PROBLEMS.record(
+                filename=engine.filename,
+                loaded=hh.build_raw_cube(cf_var),
+                exception=error,
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=Coord,
+                    # The coordinate(s) have not been determined at this stage.
+                    identifier="NOT_KNOWN",
+                ),
+                handled=False,
+            )
 
     return rule_name
 

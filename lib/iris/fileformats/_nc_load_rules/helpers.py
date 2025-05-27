@@ -1345,9 +1345,22 @@ def _build_dimension_coordinate(
         units=attr_units,
         bounds=bounds_data,
         attributes=attributes,
-        coord_system=coord_system,
         circular=circular,
         climatological=climatological,
+    )
+
+    assert coord.var_name is not None
+    _ = _add_or_capture(
+        build_func=partial(lambda: coord_system),
+        add_method=partial(setattr, coord, "coord_system"),
+        # cf_var is usually the variable for the thing we are building.
+        #  In this case coord_system was built earlier; cf_coord_var is here
+        #  only to provide the filename.
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=iris.coords.DimCoord,
+            identifier=coord.var_name,
+        ),
     )
 
     return coord
@@ -1495,9 +1508,23 @@ def _build_auxiliary_coordinate(
         units=attr_units,
         bounds=bounds_data,
         attributes=attributes,
-        coord_system=coord_system,
         climatological=climatological,
     )
+
+    assert coord.var_name is not None
+    _ = _add_or_capture(
+        build_func=partial(lambda: coord_system),
+        add_method=partial(setattr, coord, "coord_system"),
+        # cf_var is usually the variable for the thing we are building.
+        #  In this case coord_system was built earlier; cf_coord_var is here
+        #  only to provide the filename.
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=iris.coords.AuxCoord,
+            identifier=coord.var_name,
+        ),
+    )
+
     return coord
 
 
