@@ -651,6 +651,29 @@ def build_and_add_names(engine: Engine) -> None:
 
 
 ################################################################################
+def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMethod]:
+    nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
+    return parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
+
+
+def build_and_add_cell_methods(engine: Engine):
+    """Add cell methods to the cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    _add_or_capture(
+        build_func=partial(_build_cell_methods, engine.cf_var),
+        add_method=partial(setattr, engine.cube, "cell_methods"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_CELL_METHODS,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
+
+
+################################################################################
 def build_cube_metadata(engine):
     """Add the standard meta data to the cube."""
     cf_var = engine.cf_var
@@ -663,10 +686,6 @@ def build_cube_metadata(engine):
     # Determine the cube units.
     attr_units = get_attr_units(cf_var, cube.attributes)
     cube.units = attr_units
-
-    # Incorporate cell methods
-    nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-    cube.cell_methods = parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
 
     # Set the cube global attributes.
     for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
