@@ -651,6 +651,36 @@ def build_and_add_names(engine: Engine) -> None:
 
 
 ################################################################################
+def _add_global_attribute(cube: Cube, attr_name: Any, attr_value: Any):
+    cube.attributes.globals[str(attr_name)] = attr_value
+
+
+def build_and_add_global_attributes(engine: Engine):
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    for attr_name, attr_value in engine.cf_var.cf_group.global_attributes.items():
+        problem = _add_or_capture(
+            build_func=partial(lambda: attr_value),
+            add_method=partial(_add_global_attribute, engine.cube, attr_name),
+            cf_var=engine.cf_var,
+            attr_key=attr_name,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=Cube,
+                identifier=engine.cf_var.cf_name,
+            ),
+        )
+        if problem is not None:
+            stack_notes = problem.stack_trace.__notes__
+            if stack_notes is None:
+                stack_notes = []
+            stack_notes.append(
+                f"Skipping disallowed global attribute '{attr_name}' (see above error)"
+            )
+            problem.stack_trace.__notes__ = stack_notes
+
+
+################################################################################
 def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMethod]:
     nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
     return parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
@@ -686,17 +716,6 @@ def build_cube_metadata(engine):
     # Determine the cube units.
     attr_units = get_attr_units(cf_var, cube.attributes)
     cube.units = attr_units
-
-    # Set the cube global attributes.
-    for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
-        try:
-            cube.attributes.globals[str(attr_name)] = attr_value
-        except ValueError as e:
-            msg = "Skipping disallowed global attribute {!r}: {}"
-            warnings.warn(
-                msg.format(attr_name, str(e)),
-                category=_WarnComboIgnoringLoad,
-            )
 
 
 ################################################################################

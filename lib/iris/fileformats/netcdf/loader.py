@@ -15,6 +15,7 @@ from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
+from functools import partial
 import threading
 import warnings
 
@@ -165,6 +166,8 @@ def _add_unused_attributes(iris_object, cf_var):
     reserved terms.
 
     """
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
+    from iris.loading import LoadProblems
 
     def attribute_predicate(item):
         return item[0] not in _CF_ATTRS
@@ -175,8 +178,18 @@ def _add_unused_attributes(iris_object, cf_var):
         # Treat cube attributes (i.e. a CubeAttrsDict) as a special case.
         # These attrs are "local" (i.e. on the variable), so record them as such.
         attrs_dict = attrs_dict.locals
+
     for attr_name, attr_value in tmpvar:
-        _set_attributes(attrs_dict, attr_name, attr_value)
+        _add_or_capture(
+            build_func=partial(lambda: attr_value),
+            add_method=partial(_set_attributes, attrs_dict, attr_name),
+            cf_var=cf_var,
+            attr_key=attr_name,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=iris_object.__class__,
+                identifier=cf_var.cf_name,
+            ),
+        )
 
 
 def _get_actual_dtype(cf_var):

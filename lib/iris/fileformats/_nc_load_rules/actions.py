@@ -108,6 +108,7 @@ def action_function(func):
 def action_default(engine):
     """Perform standard operations for every cube."""
     # Future pattern (iris#6319).
+    hh.build_and_add_global_attributes(engine)
     hh.build_and_add_names(engine)
     hh.build_and_add_cell_methods(engine)
 
