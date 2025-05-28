@@ -44,46 +44,33 @@ def test_load_legacy_hh(derived_bounds):
     main_cube = cubes.extract_cube("air_potential_temperature")
     print("---\nmain cube coords...")
     for coord in main_cube.coords():
-        print(f'  {coord.var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
+        var_name = coord.var_name or "-"
+        print(f'  {var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
 
-    assert len(cubes) == 2
-    (other_cube,) = [cube for cube in cubes if cube != main_cube]
-
-    if not derived_bounds:
-        assert other_cube.name() == "surface_altitude"
-        altitude_coord = main_cube.coord("altitude")
-        assert np.all(other_cube.data == main_cube.coord("surface_altitude").points)
+    cube_names = sorted([cube.name() for cube in cubes])
+    if derived_bounds:
+        # get an extra promoted cube for the lost 'level-height bounds"
+        assert cube_names == ["air_potential_temperature", "level_height_bnds", "surface_altitude"]
     else:
-        assert not main_cube.coords("altitude")
+        assert cube_names == ["air_potential_temperature", "surface_altitude"]
 
-        # #
-        # # OK, confirm for now
-        # #   but ***THIS BIT*** is surely wrong ????
-        # #
-        # assert other_cube.name() == "level_height_bnds"
-        #
-        # # FOR NOW: fix our "problem" by adding a factory "manually"
-        # sigma = main_cube.coord("sigma")
-        # delta = main_cube.coord("atmosphere_hybrid_height_coordinate")
-        # orog = main_cube.coord("surface_altitude")
-        # fact = HybridHeightFactory(sigma=sigma, delta=delta, orography=orog)
-        # main_cube.add_aux_factory(fact)
-        # assert main_cube.coords("altitude")
-        # altitude_coord = main_cube.coord("altitude")
-
+    altitude_coord = main_cube.coord("altitude")
     assert altitude_coord.has_bounds()
     assert altitude_coord.has_lazy_bounds()
     assert altitude_coord.shape == main_cube.shape
 
-    # Also confirm what we expect from the other factory components (dependencies)
-    (factory,) = main_cube.aux_factories
-    for coord in factory.dependencies.values():
-        assert coord in main_cube.coords()
-        if coord.name() in ("atmosphere_hybrid_height_coordinate", "sigma"):
-            assert coord.has_bounds()
-        else:
-            assert coord.name() == "surface_altitude"
-            assert not coord.has_bounds()
+    level_height_coord = main_cube.coord("atmosphere_hybrid_height_coordinate")
+    sigma_coord = main_cube.coord("sigma")
+    surface_altitude_coord = main_cube.coord("surface_altitude")
+    assert sigma_coord.has_bounds()
+    assert not surface_altitude_coord.has_bounds()
+
+    if not derived_bounds:
+        other_cube = cubes.extract_cube("surface_altitude")
+        assert np.all(other_cube.data == surface_altitude_coord.points)
+        assert level_height_coord.has_bounds()
+    else:
+        assert not level_height_coord.has_bounds()
 
 
 def test_load_primary_cf_style(derived_bounds):
@@ -92,6 +79,11 @@ def test_load_primary_cf_style(derived_bounds):
     print(cubes)
     main_cube = cubes.extract_cube("air_temperature")
     print(main_cube)
+    print("---\nmain cube coords...")
+    for coord in main_cube.coords():
+        var_name = coord.var_name or "-"
+        print(f'  {var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
+
     pressure_coord = main_cube.coord("air_pressure")
     if not derived_bounds:
         # We don't expect this case to work "properly"
