@@ -34,26 +34,15 @@ def derived_bounds(request):
 def test_load_legacy_hh(derived_bounds):
     cubes = iris.load(legacy_filepath)
 
-    # DEBUG, for now
-    print("")
-    print(cubes)
-    for i_cube, cube in enumerate(cubes):
-        print(f"\n{i_cube:02d} : {cube.summary(shorten=True)}:")
-        print(cube)
-
-    main_cube = cubes.extract_cube("air_potential_temperature")
-    print("---\nmain cube coords...")
-    for coord in main_cube.coords():
-        var_name = coord.var_name or "-"
-        print(f'  {var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
-
     cube_names = sorted([cube.name() for cube in cubes])
     if derived_bounds:
         # get an extra promoted cube for the lost 'level-height bounds"
-        assert cube_names == ["air_potential_temperature", "level_height_bnds", "surface_altitude"]
+        expected_cube_names = ["air_potential_temperature", "level_height_bnds", "surface_altitude"]
     else:
-        assert cube_names == ["air_potential_temperature", "surface_altitude"]
+        expected_cube_names = ["air_potential_temperature", "surface_altitude"]
+    assert cube_names == expected_cube_names
 
+    main_cube = cubes.extract_cube("air_potential_temperature")
     altitude_coord = main_cube.coord("altitude")
     assert altitude_coord.has_bounds()
     assert altitude_coord.has_lazy_bounds()
@@ -64,10 +53,10 @@ def test_load_legacy_hh(derived_bounds):
     surface_altitude_coord = main_cube.coord("surface_altitude")
     assert sigma_coord.has_bounds()
     assert not surface_altitude_coord.has_bounds()
+    surface_altitude_cube = cubes.extract_cube("surface_altitude")
+    assert np.all(surface_altitude_cube.data == surface_altitude_coord.points)
 
     if not derived_bounds:
-        other_cube = cubes.extract_cube("surface_altitude")
-        assert np.all(other_cube.data == surface_altitude_coord.points)
         assert level_height_coord.has_bounds()
     else:
         assert not level_height_coord.has_bounds()
@@ -75,58 +64,64 @@ def test_load_legacy_hh(derived_bounds):
 
 def test_load_primary_cf_style(derived_bounds):
     cubes = iris.load(db_testfile_path)
-    print("")
-    print(cubes)
-    main_cube = cubes.extract_cube("air_temperature")
-    print(main_cube)
-    print("---\nmain cube coords...")
-    for coord in main_cube.coords():
-        var_name = coord.var_name or "-"
-        print(f'  {var_name.rjust(20)!s} : {coord.summary(shorten=True)}')
 
-    pressure_coord = main_cube.coord("air_pressure")
-    if not derived_bounds:
-        # We don't expect this case to work "properly"
-        assert not pressure_coord.has_bounds()
-        other_cubes = [cube for cube in cubes if cube != main_cube]
-        assert len(other_cubes) == 3
-        assert set(cube.name() for cube in other_cubes) == {"PS", "A_bnds", "B_bnds"}
-        # TODO: what happened to other 'bits', i.e. a/b (we have only the bounds) ??
-
+    cube_names = sorted([cube.name() for cube in cubes])
+    if derived_bounds:
+        expected_cube_names = ["PS", "air_temperature"]
     else:
-        assert pressure_coord.has_bounds()
-        # We expect to get an extra "promoted" surface-pressure cube
-        assert len(cubes) == 2
-        (other_cube,) = [cube for cube in cubes if cube != main_cube]
-        assert other_cube.name() == "PS"
-        assert other_cube.units == "Pa"
-        # It should match the reference coord in the main cube
-        assert np.all(main_cube.coord("PS").points == other_cube.data)
+        # In this case, the bounds are not properly connected
+        expected_cube_names = ["A_bnds", "B_bnds", "PS", "air_temperature"]
+    assert cube_names == expected_cube_names
 
-        # Check all the dependency coords
-        (factory,) = main_cube.aux_factories
-        assert isinstance(factory, iris.aux_factory.HybridPressureFactory)
+    # Check all the coords on the cube, including whether they have bounds
+    main_cube = cubes.extract_cube("air_temperature")
+    assert set(co.name() for co in main_cube.coords()) == set([
+        "a coefficient for vertical coordinate at full levels",
+        "b coefficient for vertical coordinate at full levels",
+        "atmosphere_hybrid_sigma_pressure_coordinate",
+        "vertical pressure",
+        "PS",
+        "air_pressure",
+        "P0",
+    ])
 
-        # #
-        # # Fix this : ***something here is wrong*** ???
-        # #
-        # a_coord = main_cube.coord("vertical pressure")
-        # a_coord.rename("a coefficient for vertical coordinate at full levels")
+    # First, the main hybrid coord
+    pressure_coord = main_cube.coord("air_pressure")
+    assert pressure_coord.has_bounds() == derived_bounds
+    assert pressure_coord.var_name is None
+    assert main_cube.coord_dims(pressure_coord) == (0, 1, 2)
 
-        dep_ids = {
-            dep_name: coord.name()
-            for dep_name, coord in factory.dependencies.items()
-        }
-        assert dep_ids == {
-            #
-            # TODO: ***FIX THIS???*** something seems wrong
-            #
-            # "delta": "a coefficient for vertical coordinate at full levels",
-            "delta": "vertical pressure",
-            "sigma": "b coefficient for vertical coordinate at full levels",
-            "surface_air_pressure": "PS"
-        }
-        for dep_name, coord in factory.dependencies.items():
-            assert coord in main_cube.coords()
-            assert coord.has_bounds() == (dep_name != "surface_air_pressure")
+    co_a = main_cube.coord("a coefficient for vertical coordinate at full levels")
+    assert co_a.var_name == "A"
+    assert co_a.has_bounds() == derived_bounds
+    assert main_cube.coord_dims(co_a) == (0,)
+
+    co_b = main_cube.coord("b coefficient for vertical coordinate at full levels")
+    assert co_b.var_name == "B"
+    assert co_b.has_bounds() == derived_bounds
+    assert main_cube.coord_dims(co_b) == (0,)
+
+    co_eta = main_cube.coord("atmosphere_hybrid_sigma_pressure_coordinate")
+    assert co_eta.var_name == "eta"
+    assert co_eta.has_bounds()
+    assert main_cube.coord_dims(co_eta) == (0,)
+
+    # N.B. this coord is 'made up' by the factory, and does *not* come from a variable
+    co_VP = main_cube.coord("vertical pressure")
+    assert co_VP.var_name == "ap"
+    assert co_VP.has_bounds() == derived_bounds
+    assert main_cube.coord_dims(co_VP) == (0,)
+
+    # This is the surface pressure
+    co_PS = main_cube.coord("PS")
+    assert co_PS.var_name == "PS"
+    assert not co_PS.has_bounds()
+    assert main_cube.coord_dims(co_PS) == (1, 2)
+
+    # The scalar reference
+    co_P0 = main_cube.coord("P0")
+    assert co_P0.var_name == "P0"
+    assert not co_P0.has_bounds()
+    assert main_cube.coord_dims(co_P0) == ()
+
 
