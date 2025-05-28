@@ -18,10 +18,13 @@ import tempfile
 from typing import TYPE_CHECKING, List, Literal, overload
 from warnings import warn
 
+import cartopy
 import cf_units
 from dask import array as da
 import numpy as np
 import numpy.ma as ma
+import pyproj
+import shapely
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
@@ -2190,7 +2193,7 @@ def _strip_metadata_from_dims(cube, dims):
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
-    shape_crs: cartopy.crs | CRS,
+    shape_crs: cartopy.crs | pyproj.CRS,
     in_place: bool = False,
     all_touched: bool = False,
     minimum_weight: float = 0.0,
@@ -2298,8 +2301,12 @@ def mask_cube_from_shapefile(
 
     """
     shapefile_mask = create_shapefile_mask(
-        geometry=shape, geometry_crs=shape_crs, cube=cube, 
-        minimum_weight=minimum_weight, invert=invert, all_touched=all_touched
+        geometry=shape,
+        geometry_crs=shape_crs,
+        cube=cube,
+        minimum_weight=minimum_weight,
+        invert=invert,
+        all_touched=all_touched,
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:

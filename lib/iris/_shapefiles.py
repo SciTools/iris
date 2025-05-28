@@ -5,22 +5,18 @@
 
 from __future__ import annotations
 
-import pdb
-
-import importlib
 from itertools import product
 import sys
-from typing import overload
 import warnings
 
 from affine import Affine
+import cartopy.crs as ccrs
 import numpy as np
 from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
 import rasterio.transform as rtransform
 import rasterio.warp as rwarp
 import shapely
-import shapely.errors
 import shapely.geometry as sgeom
 import shapely.ops as sops
 
@@ -35,7 +31,7 @@ if "iris.analysis.cartography" in sys.modules:
 
 def create_shapefile_mask(
     geometry: shapely.Geometry,
-    geometry_crs: cartopy.crs | CRS,
+    geometry_crs: ccrs | CRS,
     cube: iris.cube.Cube,
     minimum_weight: float = 0.0,
     all_touched: bool = False,
@@ -81,8 +77,20 @@ def create_shapefile_mask(
     ------
     TypeError
         If the cube is not a :class:`~iris.cube.Cube`.
+    TypeError
+        If the geometry is not a valid shapely geometry.
     ValueError
         If the :class:`~iris.cube.Cube` has a semi-structured model grid.
+    ValueError
+        If the minimum_weight is not between 0.0 and 1.0.
+    ValueError
+        If the minimum_weight is greater than 0.0 and all_touched is True.
+
+    Warns
+    -----
+    IrisUserWarning
+        If the geometry CRS does not match the cube CRS, and the geometry is transformed
+        to the cube CRS using pyproj.
 
     Notes
     -----
@@ -101,6 +109,10 @@ def create_shapefile_mask(
     the cube **must** have a :class:`~iris.coord_systems` defined.
 
     If a CRS is not provided for the the masking geometry, the CRS of the :class:`iris.cube.Cube` is assumed.
+
+    Note that `minimum_weight` and `all_touched` are mutually exclusive options: an error will be raised if
+    a `minimum_weight` > 0 *and* `all_touched` is set to `True`. This is because
+    `all_touched=True` is equivalent to `minimum_weight=0`.
 
     Warning
     -------
@@ -135,6 +147,12 @@ def create_shapefile_mask(
         msg = "Minimum weight must be between 0.0 and 1.0"
         raise ValueError(msg)
 
+    # Check compatibility of function arguments
+    # all_touched and minimum_weight are mutually exclusive
+    if minimum_weight > 0 & all_touched is True:
+        msg = "Cannot use minimum_weight > 0.0 with all_touched=True.  "
+        raise ValueError(msg)
+
     # Get cube coordinates
     y_name, x_name = _cube_primary_xy_coord_names(cube)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
@@ -149,58 +167,29 @@ def create_shapefile_mask(
     if not geometry_crs.equals(cube_crs):
         transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
         warnings.warn(transform_warning_msg, category=iris.warnings.IrisUserWarning)
-        # Set-up transform via pyproj
-        t = Transformer.from_crs(
-            crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
-        ).transform
-        # Transform geometry
-        geometry = shapely.ops.transform(t, geometry)
-        # Recheck geometry validity
-        if not shapely.is_valid(geometry):
-            msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
-            raise TypeError(msg)
+        geometry = _transform_geometry(
+            geometry=geometry,
+            geometry_crs=geometry_crs,
+            cube_crs=cube_crs,
+        )
 
     x_points = cube.coord(x_name).points
     y_points = cube.coord(y_name).points
-    dx = iris.util.regular_step(cube.coord(x_name))
-    dy = iris.util.regular_step(cube.coord(y_name))
     w = len(x_points)
     h = len(y_points)
     # Mask by weight if minimum_weight > 0.0
     if minimum_weight > 0:
-        if not cube.coord(x_name).has_bounds():
-            cube.coord(x_name).guess_bounds()
-        if not cube.coord(y_name).has_bounds():
-            cube.coord(y_name).guess_bounds()
-        # Get the bounds of the cube
-        x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
-        y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
-        # Generate STRtree of bounding boxes
-        grid_boxes = [
-            sgeom.box(x[0], y[0], x[1], y[1]) for y, x in product(y_bounds, x_bounds)
-        ]
-        grid_tree = shapely.STRtree(grid_boxes)
-        # Find grid boxes indexes that intersect with the geometry
-        idxs = grid_tree.query(geometry, predicate="intersects")
-        # Get grid box indexes that intersect with the minimum weight criteria
-        mask_idxs_bool = [
-            grid_boxes[idx].intersection(geometry).area / grid_boxes[idx].area
-            >= minimum_weight
-            for idx in idxs
-        ]
-        mask_idxs = idxs[mask_idxs_bool]
-        mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
-        # Create mask from grid box indexes
-        weighted_mask_template = np.ones((h, w), dtype=bool)
-        # Set mask = True for grid box indexes identified above
-        for xy in mask_xy:
-            weighted_mask_template[xy] = False
+        weighted_mask_template = _get_weighted_mask(
+            geometry=geometry,
+            cube=cube,
+            x_name=x_name,
+            y_name=y_name,
+            minimum_weight=minimum_weight,
+        )
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
-    trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
-    scale = Affine.scale(dx, dy)
-    tr = trans * scale
+    tr = _make_raster_cube__transform(cube, x_name, y_name)
 
     # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
@@ -228,7 +217,7 @@ def create_shapefile_mask(
 
 def is_geometry_valid(
     geometry: shapely.Geometry,
-    geometry_crs: cartopy.crs,
+    geometry_crs: ccrs | CRS,
 ) -> None:
     """Check the validity of the shape geometry.
 
@@ -362,12 +351,12 @@ def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
     return latitude, longitude
 
 
-def _get_mod_rebased_coord_bounds(coord):
+def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
     """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
 
     Parameters
     ----------
-    coord : :class:`iris.coords.Coord`
+    coord : :class:`iris.coords.DimCoord`
         An Iris coordinate with a modulus.
 
     Returns
@@ -384,3 +373,130 @@ def _get_mod_rebased_coord_bounds(coord):
         result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
         result[np.isclose(result, modulus, 1e-10)] = 0.0
     return result
+
+
+def _transform_geometry(
+    geometry: shapely.Geometry,
+    geometry_crs: ccrs | CRS,
+    cube_crs: ccrs
+) -> shapely.Geometry:
+    """Transform a geometry to the cube CRS using pyproj.
+
+    Parameters
+    ----------
+    geometry : :class:`shapely.Geometry`
+        The geometry to transform.
+    geometry_crs : :class:`cartopy.crs`, :class:`pyproj.CRS`
+        The coordinate reference system of the geometry.
+    cube_crs : :class:`cartopy.crs`, :class:`pyproj.CRS`
+        The coordinate reference system of the cube.
+
+    Returns
+    -------
+    :class:`shapely.Geometry`
+        The transformed geometry.
+
+    Raises
+    ------
+    TypeError
+        If the geometry is not a valid shapely geometry.
+
+    """
+    # Set-up transform via pyproj
+    t = Transformer.from_crs(
+        crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
+    ).transform
+    # Transform geometry
+    geometry = shapely.ops.transform(t, geometry)
+    # Recheck geometry validity
+    if not shapely.is_valid(geometry):
+        msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
+        raise TypeError(msg)
+    return geometry
+
+
+def _get_weighted_mask(
+    cube: iris.cube.Cube,
+    x_name: str,
+    y_name: str,
+    geometry: shapely.Geometry,
+    minimum_weight: float,
+) -> np.array:
+    """Get a mask based on the geometry and minimum weight.
+
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        The cube to mask.
+    x_name : str
+        The name of the x coordinate in the cube.
+    y_name : str
+        The name of the y coordinate in the cube.
+    geometry : :class:`shapely.Geometry`
+        The geometry to use for masking.
+    minimum_weight : float
+        The minimum weight of the geometry to be included in the mask.
+        If the weight is less than this value, the geometry will not be
+        included in the mask.
+
+    Returns
+    -------
+    :class:`np.array`
+        An array of the shape of the x & y coordinates of the cube, with points
+        to mask equal to True.
+    """
+    if not cube.coord(x_name).has_bounds():
+        cube.coord(x_name).guess_bounds()
+    if not cube.coord(y_name).has_bounds():
+        cube.coord(y_name).guess_bounds()
+    # Get the shape of the cube
+    w = len(cube.coord(x_name).points)
+    h = len(cube.coord(y_name).points)
+    # Get the bounds of the cube
+    x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
+    y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
+    # Generate STRtree of bounding boxes
+    grid_boxes = [
+        sgeom.box(x[0], y[0], x[1], y[1]) for y, x in product(y_bounds, x_bounds)
+    ]
+    grid_tree = shapely.STRtree(grid_boxes)
+    # Find grid boxes indexes that intersect with the geometry
+    idxs = grid_tree.query(geometry, predicate="intersects")
+    # Get grid box indexes that intersect with the minimum weight criteria
+    mask_idxs_bool = [
+        grid_boxes[idx].intersection(geometry).area / grid_boxes[idx].area
+        >= minimum_weight
+        for idx in idxs
+    ]
+    mask_idxs = idxs[mask_idxs_bool]
+    mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
+    # Create mask from grid box indexes
+    
+    weighted_mask_template = np.ones((h, w), dtype=bool)
+    # Set mask = True for grid box indexes identified above
+    for xy in mask_xy:
+        weighted_mask_template[xy] = False
+    return weighted_mask_template
+
+
+def _make_raster_cube__transform(
+    cube: iris.cube.Cube,
+    x_name: str,
+    y_name: str,
+) -> Affine:
+    """Create a rasterio transform for the cube.
+
+    Returns
+    -------
+    :class:`affine.Affine`
+        An affine transform object that maps the geometry domain onto the cube domain.
+    """
+    x_points = cube.coord(x_name).points
+    y_points = cube.coord(y_name).points
+    dx = iris.util.regular_step(cube.coord(x_name))
+    dy = iris.util.regular_step(cube.coord(y_name))
+    # Create a rasterio transform based on the cube
+    # This maps the geometry domain onto the cube domain
+    trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
+    scale = Affine.scale(dx, dy)
+    return trans * scale
