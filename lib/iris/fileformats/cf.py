@@ -1421,9 +1421,11 @@ class CFReader:
 
         if iris.FUTURE.derived_bounds:
             # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
+            all_roots = set()
             for cf_var in formula_terms.values():
                 # eg. eta:'a' | cf_root = eta and cf_term = a. cf_var.cf_terms_by_root = {'eta': 'a'} (looking at all appearances in formula terms)
                 for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+                    all_roots.add(cf_root)
                     # gets set to the bounds of the coord from cf_root_coord
                     bounds_name = None
                     # cf_root_coord = CFCoordinateVariable of the coordinate relating to the root
@@ -1468,6 +1470,16 @@ class CFReader:
                             self.cf_group[cf_name] = new_var
 
                         self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+
+
+            for cf_root in all_roots:
+                # Invalidate "broken" bounds connections
+                root_var = self.cf_group[cf_root]
+                if all(key in root_var.ncattrs() for key in ("bounds", "formula_terms")):
+                    bounds_var = self.cf_group.get(root_var.bounds)
+                    if bounds_var is not None and "formula_terms" not in bounds_var.ncattrs():
+                        # This means it is *not* a valid bounds var
+                        root_var.bounds = None
 
         else:
             for cf_var in formula_terms.values():
@@ -1555,10 +1567,11 @@ class CFReader:
             if iris.FUTURE.derived_bounds:
                 if hasattr(cf_variable, "bounds"):
                     if cf_variable.bounds not in cf_group:
-                        bounds_var = self.cf_group[cf_variable.bounds]
-                        # TODO: warning if span fails
-                        if bounds_var.spans(cf_variable):
-                            cf_group[cf_variable.bounds] = bounds_var
+                        bounds_var = self.cf_group.get(cf_variable.bounds)
+                        if bounds_var:
+                            # TODO: warning if span fails
+                            if bounds_var.spans(cf_variable):
+                                cf_group[cf_variable.bounds] = bounds_var
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
