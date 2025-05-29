@@ -17,6 +17,7 @@ import pytest
 import iris
 from iris import sample_data_path, load, FUTURE
 from iris.aux_factory import HybridHeightFactory
+from iris.tests.stock.netcdf import ncgen_from_cdl
 
 from pathlib import Path
 db_testfile_path = Path(__file__).parent / "temp_nc_sources" / "a_new_file.nc"
@@ -29,6 +30,56 @@ def derived_bounds(request):
     with FUTURE.context(derived_bounds=db):
         yield db
 
+@pytest.fixture()
+def cf_primary_sample_path(tmp_path_factory):
+    cdl = """
+        netcdf a_new_file {
+        dimensions:
+            eta = 1 ;
+            lat = 1 ;
+            lon = 1 ;
+            bnds = 2 ;
+        variables:
+            double eta(eta) ;
+                eta:long_name = "eta at full levels" ;
+                eta:positive = "down" ;
+                eta:standard_name = "atmosphere_hybrid_sigma_pressure_coordinate" ;
+                eta:formula_terms = "a: A b: B ps: PS p0: P0" ;
+                eta:bounds = "eta_bnds" ;
+            double eta_bnds(eta, bnds) ;
+                eta_bnds:formula_terms = "a: A_bnds b: B_bnds ps: PS p0: P0" ;
+            double A(eta) ;
+                A:long_name = "a coefficient for vertical coordinate at full levels" ;
+                A:units = "1" ;
+            double A_bnds(eta, bnds) ;
+            double B(eta) ;
+                B:long_name = "b coefficient for vertical coordinate at full levels" ;
+                B:units = "1" ;
+            double B_bnds(eta, bnds) ;
+            double PS(lat, lon) ;
+                PS:units = "Pa" ;
+            double P0 ;
+                P0:units = "Pa" ;
+            float temp(eta, lat, lon) ;
+                temp:standard_name = "air_temperature" ;
+                temp:units = "K" ;
+        
+        data:
+         eta = 1 ;
+         eta_bnds = 0.5, 1.5 ;
+         A = 1000 ;
+         A_bnds = 500, 1500 ;
+         B = 2 ;
+         B_bnds = 1, 3 ;
+         PS = 2000 ;
+         P0 = 3000 ;
+         temp = 300 ;
+        }
+    """
+    dirpath = tmp_path_factory.mktemp("tmp")
+    filepath = dirpath / "tmp.nc"
+    ncgen_from_cdl(cdl_str=cdl, cdl_path=None, nc_path=filepath)
+    return filepath
 
 
 def test_load_legacy_hh(derived_bounds):
@@ -62,8 +113,8 @@ def test_load_legacy_hh(derived_bounds):
         assert not level_height_coord.has_bounds()
 
 
-def test_load_primary_cf_style(derived_bounds):
-    cubes = iris.load(db_testfile_path)
+def test_load_primary_cf_style(derived_bounds, cf_primary_sample_path):
+    cubes = iris.load(cf_primary_sample_path)
 
     cube_names = sorted([cube.name() for cube in cubes])
     if derived_bounds:
