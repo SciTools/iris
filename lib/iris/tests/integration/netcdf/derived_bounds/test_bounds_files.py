@@ -15,8 +15,7 @@ import numpy as np
 import pytest
 
 import iris
-from iris import sample_data_path, load, FUTURE
-from iris.aux_factory import HybridHeightFactory
+from iris import sample_data_path, FUTURE
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 from pathlib import Path
