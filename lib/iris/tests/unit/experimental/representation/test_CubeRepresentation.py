@@ -12,7 +12,7 @@ from html import escape
 
 import numpy as np
 
-from iris.coords import CellMethod
+from iris.coords import AuxCoord, CellMethod
 from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
@@ -425,6 +425,138 @@ class Test__make_content__string_attrs(tests.IrisTest):
         attr = ["vector", "of", "strings"]
         html = self._cube_stringattribute_html("multi-string", attr)
         self.assertString(html)
+
+    def test_coord_distinguishing_attributes(self):
+        # Printout of differing attributes to differentiate same-named coords.
+        # include : vector + scalar
+        cube = Cube([0, 1], long_name="name", units=1)
+        # Add a pair of vector coords with same name but different attributes.
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=1)), 0)
+        cube.add_aux_coord(AuxCoord([0, 1], long_name="co1", attributes=dict(a=2)), 0)
+        # Likewise for scalar coords with same name but different attributes.
+        cube.add_aux_coord(AuxCoord([0], long_name="co2", attributes=dict(a=10, b=12)))
+        cube.add_aux_coord(AuxCoord([1], long_name="co2", attributes=dict(a=10, b=11)))
+
+        rep = CubeRepresentation(cube)
+        result = rep._make_content()
+        expected = (
+            '<tr class="iris">\n'
+            '    <td class="iris-title iris-word-cell">Auxiliary coordinates</td>\n'
+            '    <td class="iris-title"></td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=1</td>\n'
+            '    <td class="iris-inclusion-cell">x</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=2</td>\n'
+            '    <td class="iris-inclusion-cell">x</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+            '    <td class="iris-title"></td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=12</td>\n'
+            '    <td class="iris-word-cell" colspan="1">0</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=11</td>\n'
+            '    <td class="iris-word-cell" colspan="1">1</td>\n'
+            '</tr>'
+        )
+        self.assertEqual(result, expected)
+    def test_coord_extra_attributes__array(self):
+        cube = Cube(0, long_name="name", units=1)
+        # Add a pair of vector coords with same name but different attributes.
+        array1 = np.arange(0, 3)
+        array2 = np.arange(10, 13)
+        cube.add_aux_coord(
+            AuxCoord([1.2], long_name="co1", attributes=dict(a=1, arr=array1))
+        )
+        cube.add_aux_coord(
+            AuxCoord([3.4], long_name="co1", attributes=dict(a=1, arr=array2))
+        )
+
+        rep = CubeRepresentation(cube)
+        result = rep._make_content()
+        expected = (
+            '<tr class="iris">\n'
+             '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+             '</tr>\n'
+             '<tr class="iris">\n'
+             '    <td class="iris-word-cell iris-subheading-cell">\t'
+             'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([0, 1, 2])</td>\n'
+             '    <td class="iris-word-cell" colspan="0">1.2</td>\n'
+             '</tr>\n'
+             '<tr class="iris">\n'
+             '    <td class="iris-word-cell iris-subheading-cell">\t'
+             'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([10, 11, 12])</td>\n'
+             '    <td class="iris-word-cell" colspan="0">3.4</td>\n'
+             '</tr>'
+        )
+        self.assertEqual(result, expected)
+
+    def test_coord_extra_attributes__array__long(self):
+        # Also test with a long array representation.
+        array = 10 + np.arange(24.0).reshape((2, 3, 4))
+        cube = Cube(0, long_name="name", units=1)
+        cube.add_aux_coord(AuxCoord([1], long_name="co"))
+        cube.add_aux_coord(
+            AuxCoord([2], long_name="co", attributes=dict(a=array + 1.0))
+        )
+
+        rep = CubeRepresentation(cube)
+        result = rep._make_content()
+        expected = (
+            '<tr class="iris">\n'
+            '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\tco</td>\n'
+            '    <td class="iris-word-cell" colspan="0">1</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co<br>&nbsp;&nbsp;&nbsp;&nbsp;a=array([[[11., 12., 13., 14.], [15., 16., '
+            '17., 18.], [19., 20., 21., 22.]],...</td>\n'
+            '    <td class="iris-word-cell" colspan="0">2</td>\n'
+            '</tr>'
+        )
+        self.assertEqual(result, expected)
+
+    def test_coord_extra_attributes__string_escaped(self):
+        cube = Cube(0, long_name="name", units=1)
+        cube.add_aux_coord(AuxCoord([1], long_name="co"))
+        cube.add_aux_coord(
+            AuxCoord(
+                [2],
+                long_name="co",
+                attributes=dict(note="line 1\nline 2\t& ends."),
+            )
+        )
+        rep = CubeRepresentation(cube)
+        result = rep._make_content()
+        expected = (
+            '<tr class="iris">\n'
+            '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\tco</td>\n'
+            '    <td class="iris-word-cell" colspan="0">1</td>\n'
+            '</tr>\n'
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            'co<br>&nbsp;&nbsp;&nbsp;&nbsp;note=&#x27;line 1\\nline 2\\t&amp; '
+ 'ends.&#x27;</td>\n'
+            '    <td class="iris-word-cell" colspan="0">2</td>\n'
+            '</tr>'
+        )
+        self.assertEqual(result, expected)
 
 
 @tests.skip_data

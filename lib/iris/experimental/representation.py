@@ -192,8 +192,7 @@ class CubeRepresentation:
                     content=sub_title,
                 )
             )
-            # One further item or more than that?
-            if col_span != 0:
+            if not isinstance(body, list):
                 html_cls = ' class="{}" colspan="{}"'.format("iris-word-cell", col_span)
                 row.append(template.format(html_cls=html_cls, content=body))
             else:
@@ -217,7 +216,10 @@ class CubeRepresentation:
 
             for content in sect.contents:
                 body = content.dim_chars
-                title = content.name
+
+                title = escape(content.name)
+                if content.extra:
+                    title = title + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + escape(content.extra)
                 elements.extend(self._make_row(title, body=body, col_span=0))
         for sect in self.summary.scalar_sections.values():
             if sect.contents:
@@ -226,17 +228,17 @@ class CubeRepresentation:
                 st = sect_title.lower()
                 if st == "scalar coordinates:":
                     for item in sect.contents:
-                        body = item.content
-                        title = item.name
+                        body = escape(item.content)
+                        title = escape(item.name)
                         if item.extra:
-                            # TODO:
-                            pass
+                            title = title + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + escape(item.extra)
                         elements.extend(
                             self._make_row(title, body=body, col_span=self.ndims)
                         )
                 elif st in ("attributes:", "cell methods:", "mesh:"):
                     for title, body in zip(sect.names, sect.values):
-                        body = escape(body)  # TODO: escape everything
+                        title = escape(title)
+                        body = escape(body)
                         elements.extend(
                             self._make_row(title, body=body, col_span=self.ndims)
                         )
@@ -248,10 +250,10 @@ class CubeRepresentation:
                     body = ""
                     # These are just strings: nothing in the 'value' column.
                     for title in sect.contents:
+                        title = escape(title)
                         elements.extend(
                             self._make_row(title, body=body, col_span=self.ndims)
                         )
-                        pass
                 else:
                     msg = f"Unknown section type : {type(sect)}"
                     raise ValueError(msg)
