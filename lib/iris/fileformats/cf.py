@@ -1420,27 +1420,35 @@ class CFReader:
         formula_terms = _CFFormulaTermsVariable.identify(variables)
 
         if iris.FUTURE.derived_bounds:
-            # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
+            # Keep track of all the root vars so we can unpick invalid bounds
             all_roots = set()
-            for cf_var in formula_terms.values():
-                # eg. eta:'a' | cf_root = eta and cf_term = a. cf_var.cf_terms_by_root = {'eta': 'a'} (looking at all appearances in formula terms)
-                for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+
+        # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
+        for cf_var in formula_terms.values():
+            # eg. eta:'a' | cf_root = eta and cf_term = a. cf_var.cf_terms_by_root = {'eta': 'a'} (looking at all appearances in formula terms)
+            for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+
+                if iris.FUTURE.derived_bounds:
                     all_roots.add(cf_root)
-                    # gets set to the bounds of the coord from cf_root_coord
-                    bounds_name = None
+
+                    # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
+                    #  and turn them into bounds vars (though they don't appear in a "bounds" attribute)
+
                     # cf_root_coord = CFCoordinateVariable of the coordinate relating to the root
                     cf_root_coord = self.cf_group.coordinates.get(cf_root)
                     if cf_root_coord is None:
                         cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
-                    with contextlib.suppress(AttributeError):
-                        # Copes with cf_root_coord not existing, OR not having
-                        #  `bounds` attribute.
-                        bounds_name = cf_root_coord.bounds
 
-                    if bounds_name is not None:
+                    bounds_name = getattr(cf_root_coord, "bounds", None)
+                    # TODO: rename to "root_bounds_name" ?
+                    # N.B. cf_root_coord may here be None, if the root var was not a
+                    #  coord - that is ok, it will not have a 'bounds', we will skip it.
+                    if bounds_name in self.cf_group:
+                        # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable
                         try:
                             # This will error if more or less than 1 variable is found.
                             # TODO: try a try/except here or logical alternative
+                            # TODO: rename as "root_bounds_var" ?
                             (bounds_var,) = [
                                 # loop through all formula terms and add them if they have a cf_term_by_root
                                 # where (bounds of cf_root): cf_term (same as before)
@@ -1459,19 +1467,21 @@ class CFReader:
                             # Modify the boundary_variable set _to_be_promoted to True
                             self.cf_group.get(bounds_name)._to_be_promoted = True
 
-                    if cf_root not in self.cf_group.bounds:
-                        cf_name = cf_var.cf_name
-                        if cf_name not in self.cf_group:
-                            new_var = CFAuxiliaryCoordinateVariable(
-                                cf_name, cf_var.cf_data
-                            )
-                            if hasattr(cf_var, "bounds"):
-                                new_var.bounds = cf_var.bounds
-                            self.cf_group[cf_name] = new_var
+                if cf_root not in self.cf_group.bounds:
+                    # TODO: explain this section ?
+                    cf_name = cf_var.cf_name
+                    if cf_name not in self.cf_group:
+                        new_var = CFAuxiliaryCoordinateVariable(
+                            cf_name, cf_var.cf_data
+                        )
+                        if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
+                            # Implement "new-style" derived bounds link
+                            new_var.bounds = cf_var.bounds
+                        self.cf_group[cf_name] = new_var
 
-                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+                    self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
-
+        if iris.FUTURE.derived_bounds:
             for cf_root in all_roots:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
@@ -1480,18 +1490,6 @@ class CFReader:
                     if bounds_var is not None and "formula_terms" not in bounds_var.ncattrs():
                         # This means it is *not* a valid bounds var
                         root_var.bounds = None
-
-        else:
-            for cf_var in formula_terms.values():
-                for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-                    # Ignore formula terms owned by a bounds variable.
-                    if cf_root not in self.cf_group.bounds:
-                        cf_name = cf_var.cf_name
-                        if cf_var.cf_name not in self.cf_group:
-                            self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
-                                cf_name, cf_var.cf_data
-                            )
-                        self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
 
         # Determine the CF data variables.
         data_variable_names = (
@@ -1565,6 +1563,7 @@ class CFReader:
                     _span_check(cf_name)
 
             if iris.FUTURE.derived_bounds:
+                # TODO: explain this section
                 if hasattr(cf_variable, "bounds"):
                     if cf_variable.bounds not in cf_group:
                         bounds_var = self.cf_group.get(cf_variable.bounds)
@@ -1614,42 +1613,26 @@ class CFReader:
         # Determine whether there are any formula terms that
         # may be promoted to a CFDataVariable and restrict promotion to only
         # those formula terms that are reference surface/phenomenon.
-        if iris.FUTURE.derived_bounds:
-            for cf_var in self.cf_group.formula_terms.values():
+        for cf_var in self.cf_group.formula_terms.values():
+            if iris.FUTURE.derived_bounds:
                 if self.cf_group[cf_var.cf_name] is CFBoundaryVariable:
                     continue
-                else:
-                    for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-                        cf_root_var = self.cf_group[cf_root]
-                        if not hasattr(cf_root_var, "standard_name"):
-                            continue
-                        name = cf_root_var.standard_name or cf_root_var.long_name
-                        terms = reference_terms.get(name, [])
-                        if isinstance(terms, str) or not isinstance(terms, Iterable):
-                            terms = [terms]
-                        cf_var_name = cf_var.cf_name
-                        if (
-                            cf_term in terms
-                            and cf_var_name not in self.cf_group.promoted
-                        ):
-                            data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
-                            self.cf_group.promoted[cf_var_name] = data_var
-                            _build(data_var)
-                            break
-        else:
-            for cf_var in self.cf_group.formula_terms.values():
-                for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-                    cf_root_var = self.cf_group[cf_root]
-                    name = cf_root_var.standard_name or cf_root_var.long_name
-                    terms = reference_terms.get(name, [])
-                    if isinstance(terms, str) or not isinstance(terms, Iterable):
-                        terms = [terms]
-                    cf_var_name = cf_var.cf_name
-                    if cf_term in terms and cf_var_name not in self.cf_group.promoted:
-                        data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
-                        self.cf_group.promoted[cf_var_name] = data_var
-                        _build(data_var)
-                        break
+            for cf_root, cf_term in cf_var.cf_terms_by_root.items():
+                cf_root_var = self.cf_group[cf_root]
+                if iris.FUTURE.derived_bounds:
+                    if not hasattr(cf_root_var, "standard_name"):
+                        continue
+                name = cf_root_var.standard_name or cf_root_var.long_name
+                terms = reference_terms.get(name, [])
+                if isinstance(terms, str) or not isinstance(terms, Iterable):
+                    terms = [terms]
+                cf_var_name = cf_var.cf_name
+                if cf_term in terms and cf_var_name not in self.cf_group.promoted:
+                    data_var = CFDataVariable(cf_var_name, cf_var.cf_data)
+                    self.cf_group.promoted[cf_var_name] = data_var
+                    _build(data_var)
+                    break
+
         # Promote any ignored variables.
         promoted = set()
         not_promoted = ignored.difference(promoted)
