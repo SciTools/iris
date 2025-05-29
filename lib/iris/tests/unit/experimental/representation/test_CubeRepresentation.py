@@ -443,33 +443,34 @@ class Test__make_content__string_attrs(tests.IrisTest):
             '<tr class="iris">\n'
             '    <td class="iris-title iris-word-cell">Auxiliary coordinates</td>\n'
             '    <td class="iris-title"></td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=1</td>\n'
+            "co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=1</td>\n"
             '    <td class="iris-inclusion-cell">x</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=2</td>\n'
+            "co1<br>&nbsp;&nbsp;&nbsp;&nbsp;a=2</td>\n"
             '    <td class="iris-inclusion-cell">x</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
             '    <td class="iris-title"></td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=12</td>\n'
+            "co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=12</td>\n"
             '    <td class="iris-word-cell" colspan="1">0</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=11</td>\n'
+            "co2<br>&nbsp;&nbsp;&nbsp;&nbsp;b=11</td>\n"
             '    <td class="iris-word-cell" colspan="1">1</td>\n'
-            '</tr>'
+            "</tr>"
         )
         self.assertEqual(result, expected)
+
     def test_coord_extra_attributes__array(self):
         cube = Cube(0, long_name="name", units=1)
         # Add a pair of vector coords with same name but different attributes.
@@ -486,18 +487,18 @@ class Test__make_content__string_attrs(tests.IrisTest):
         result = rep._make_content()
         expected = (
             '<tr class="iris">\n'
-             '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
-             '</tr>\n'
-             '<tr class="iris">\n'
-             '    <td class="iris-word-cell iris-subheading-cell">\t'
-             'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([0, 1, 2])</td>\n'
-             '    <td class="iris-word-cell" colspan="0">1.2</td>\n'
-             '</tr>\n'
-             '<tr class="iris">\n'
-             '    <td class="iris-word-cell iris-subheading-cell">\t'
-             'co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([10, 11, 12])</td>\n'
-             '    <td class="iris-word-cell" colspan="0">3.4</td>\n'
-             '</tr>'
+            '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+            "</tr>\n"
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            "co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([0, 1, 2])</td>\n"
+            '    <td class="iris-word-cell" colspan="0">1.2</td>\n'
+            "</tr>\n"
+            '<tr class="iris">\n'
+            '    <td class="iris-word-cell iris-subheading-cell">\t'
+            "co1<br>&nbsp;&nbsp;&nbsp;&nbsp;arr=array([10, 11, 12])</td>\n"
+            '    <td class="iris-word-cell" colspan="0">3.4</td>\n'
+            "</tr>"
         )
         self.assertEqual(result, expected)
 
@@ -515,17 +516,17 @@ class Test__make_content__string_attrs(tests.IrisTest):
         expected = (
             '<tr class="iris">\n'
             '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\tco</td>\n'
             '    <td class="iris-word-cell" colspan="0">1</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co<br>&nbsp;&nbsp;&nbsp;&nbsp;a=array([[[11., 12., 13., 14.], [15., 16., '
-            '17., 18.], [19., 20., 21., 22.]],...</td>\n'
+            "co<br>&nbsp;&nbsp;&nbsp;&nbsp;a=array([[[11., 12., 13., 14.], [15., 16., "
+            "17., 18.], [19., 20., 21., 22.]],...</td>\n"
             '    <td class="iris-word-cell" colspan="0">2</td>\n'
-            '</tr>'
+            "</tr>"
         )
         self.assertEqual(result, expected)
 
@@ -544,17 +545,17 @@ class Test__make_content__string_attrs(tests.IrisTest):
         expected = (
             '<tr class="iris">\n'
             '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\tco</td>\n'
             '    <td class="iris-word-cell" colspan="0">1</td>\n'
-            '</tr>\n'
+            "</tr>\n"
             '<tr class="iris">\n'
             '    <td class="iris-word-cell iris-subheading-cell">\t'
-            'co<br>&nbsp;&nbsp;&nbsp;&nbsp;note=&#x27;line 1\\nline 2\\t&amp; '
- 'ends.&#x27;</td>\n'
+            "co<br>&nbsp;&nbsp;&nbsp;&nbsp;note=&#x27;line 1\\nline 2\\t&amp; "
+            "ends.&#x27;</td>\n"
             '    <td class="iris-word-cell" colspan="0">2</td>\n'
-            '</tr>'
+            "</tr>"
         )
         self.assertEqual(result, expected)
 
