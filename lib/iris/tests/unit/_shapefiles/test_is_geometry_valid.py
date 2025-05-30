@@ -10,7 +10,14 @@ import iris.tests as tests  # isort:skip
 
 from pyproj import CRS
 import pytest
-from shapely.geometry import LineString, MultiPoint, Point, box
+from shapely.geometry import (
+    LineString,
+    MultiLineString,
+    MultiPoint,
+    MultiPolygon,
+    Point,
+    box,
+)
 
 from iris._shapefiles import is_geometry_valid
 
@@ -29,18 +36,7 @@ def osgb_crs():
 
 
 @pytest.fixture(scope="session")
-def basic_circular_geometry():
-    # Define geometry of a basic circle with center at (0, 0) and radius 10
-    center = (0, 0)
-    radius = 10
-
-    circle = Point(center).buffer(radius)
-
-    return circle
-
-
-@pytest.fixture(scope="session")
-def basic_rectangular_geometry():
+def basic_polygon_geometry():
     # Define the coordinates of a basic rectangle
     min_lon = -90
     min_lat = -45
@@ -49,6 +45,23 @@ def basic_rectangular_geometry():
 
     # Create the rectangular geometry
     return box(min_lon, min_lat, max_lon, max_lat)
+
+
+@pytest.fixture(scope="session")
+def basic_multipolygon_geometry():
+    # Define the coordinates of a basic rectangle
+    min_lon = 0
+    min_lat = 0
+    max_lon = 8
+    max_lat = 8
+
+    # Create the rectangular geometry
+    return MultiPolygon(
+        [
+            box(min_lon, min_lat, max_lon, max_lat),
+            box(min_lon + 10, min_lat + 10, max_lon + 10, max_lat + 10),
+        ]
+    )
 
 
 @pytest.fixture(scope="session")
@@ -61,6 +74,12 @@ def basic_point_geometry():
 def basic_line_geometry():
     # Define the coordinates of a basic line
     return LineString([(0, 0), (10, 10)])
+
+
+@pytest.fixture(scope="session")
+def basic_multiline_geometry():
+    # Define the coordinates of a basic line
+    return MultiLineString([[(0, 0), (10, 10)], [(20, 20), (30, 30)]])
 
 
 @pytest.fixture(scope="session")
@@ -122,11 +141,12 @@ def not_a_valid_geometry():
 @pytest.mark.parametrize(
     "test_input",
     [
-        "basic_circular_geometry",
-        "basic_rectangular_geometry",
+        "basic_polygon_geometry",
+        "basic_multipolygon_geometry",
         "basic_point_geometry",
-        "basic_line_geometry",
         "basic_point_collection",
+        "basic_line_geometry",
+        "basic_multiline_geometry",
         "canada_geometry",
     ],
 )
