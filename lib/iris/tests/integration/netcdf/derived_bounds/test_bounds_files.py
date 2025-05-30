@@ -76,7 +76,7 @@ def cf_primary_sample_path(tmp_path_factory):
          P0 = 3000 ;
          temp = 300 ;
         }
-    """
+    """  # noqa: W293
     dirpath = tmp_path_factory.mktemp("tmp")
     filepath = dirpath / "tmp.nc"
     ncgen_from_cdl(cdl_str=cdl, cdl_path=None, nc_path=filepath)
