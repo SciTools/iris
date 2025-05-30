@@ -15,13 +15,16 @@ Extension functions for Iris NetCDF loading, to construct
 
 """
 
+from functools import partial
 from itertools import groupby
 from pathlib import Path
 import warnings
 
+from iris.common.mixin import CFVariableMixin
 from iris.config import get_logger
 from iris.coords import AuxCoord
 from iris.io import decode_uri, expand_filespecs
+from iris.loading import LoadProblems
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
 from iris.warnings import IrisCfWarning, IrisDefaultingWarning, IrisIgnoringWarning
@@ -56,13 +59,25 @@ def _meshes_from_cf(cf_reader):
     # Mesh instances are shared between file phenomena.
     # TODO: more sophisticated Mesh sharing between files.
     # TODO: access external Mesh cache?
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
+
     meshes = {}
+
     if cf_reader._with_ugrid:
         mesh_vars = cf_reader.cf_group.meshes
-        meshes = {
-            name: _build_mesh(cf_reader, var, cf_reader.filename)
-            for name, var in mesh_vars.items()
-        }
+        for name, var in mesh_vars.items():
+            _ = _add_or_capture(
+                build_func=partial(_build_mesh, cf_reader, var, cf_reader.filename),
+                add_method=partial(meshes.__setitem__, name),
+                cf_var=var,
+                # Meshes are 'linked' to zero or more Cubes; they do not have
+                #  a destination in the same way as other Cube components.
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=CFVariableMixin,
+                    identifier="NOT_APPLICABLE",
+                ),
+            )
+
     return meshes
 
 

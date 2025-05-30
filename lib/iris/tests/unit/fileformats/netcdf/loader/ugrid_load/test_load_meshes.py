@@ -13,7 +13,9 @@ from shutil import rmtree
 import tempfile
 from uuid import uuid4
 
+from iris.common.mixin import CFVariableMixin
 from iris.fileformats.netcdf.ugrid_load import load_meshes, logger
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
@@ -178,6 +180,20 @@ class TestLoadErrors(tests.IrisTest):
         with self.assertLogs(logger, level="INFO", msg_regex=log_regex):
             meshes = load_meshes(tests.get_data_path(["PP", "simple_pp", "global.pp"]))
         self.assertDictEqual({}, meshes)
+
+    def test_not_built(self):
+        cdl = self.ref_cdl.replace("node_coordinates", "foo_coordinates")
+        nc_path = cdl_to_nc(cdl)
+        _ = load_meshes(nc_path)
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        self.assertIn(
+            "could not be identified from the mesh node coordinates",
+            "".join(load_problem.stack_trace.format()),
+        )
+        destination = load_problem.destination
+        self.assertIs(destination.iris_class, CFVariableMixin)
+        self.assertEqual(destination.identifier, "NOT_APPLICABLE")
 
 
 class TestsHttp(tests.IrisTest):

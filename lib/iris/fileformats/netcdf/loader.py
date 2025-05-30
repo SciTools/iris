@@ -180,7 +180,7 @@ def _add_unused_attributes(iris_object, cf_var):
         attrs_dict = attrs_dict.locals
 
     for attr_name, attr_value in tmpvar:
-        _add_or_capture(
+        _ = _add_or_capture(
             build_func=partial(lambda: attr_value),
             add_method=partial(_set_attributes, attrs_dict, attr_name),
             cf_var=cf_var,
@@ -625,8 +625,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     """
     # Deferred import to avoid circular imports.
+    from iris.cube import Cube
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
     from iris.fileformats.cf import CFReader
     from iris.io import run_callback
+    from iris.loading import LoadProblems
 
     from .ugrid_load import (
         _build_mesh_coords,
@@ -669,18 +672,52 @@ def load_cubes(file_sources, callback=None, constraints=None):
                         mesh = meshes[mesh_name]
                     except KeyError:
                         message = (
-                            f"File does not contain mesh: '{mesh_name}' - "
-                            f"referenced by variable: '{cf_var.cf_name}' ."
+                            f"Mesh '{mesh_name}' - "
+                            f"referenced by variable: '{cf_var.cf_name}' - "
+                            "could not be found in file."
                         )
                         logger.debug(message)
+
                 if mesh is not None:
-                    mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+                    # Unconventional 'split' usage of _add_or_capture -
+                    #  attribute handling means MeshCoords need to be built
+                    #  BEFORE loading the Cube.
+                    capture_kwargs = dict(
+                        cf_var=cf.cf_group.meshes[mesh_name],
+                        # MeshCoords are an Iris concept; the best fallback we
+                        #  have is to capture the CF Mesh.
+                        destination=LoadProblems.Problem.Destination(
+                            iris_class=Cube,
+                            identifier=cf_var.cf_name,
+                        ),
+                    )
+
+                    def _build_mesh_coords_inner():
+                        nonlocal mesh_coords
+                        nonlocal mesh_dim
+                        mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
+                    def _add_mesh_coords(coords_and_dim):
+                        coords, dim = coords_and_dim
+                        for coord in coords:
+                            cube.add_aux_coord(coord, dim)
+
+                    # MeshCoords part 1.
+                    _ = _add_or_capture(
+                        build_func=partial(_build_mesh_coords_inner),
+                        add_method=partial(lambda built: None),
+                        **capture_kwargs,
+                    )
 
                 cube = _load_cube(engine, cf, cf_var, cf.filename)
 
-                # Attach the mesh (if present) to the cube.
-                for mesh_coord in mesh_coords:
-                    cube.add_aux_coord(mesh_coord, mesh_dim)
+                if mesh is not None:
+                    # MeshCoords part 2.
+                    _ = _add_or_capture(
+                        build_func=partial(lambda: (mesh_coords, mesh_dim)),
+                        add_method=partial(_add_mesh_coords),
+                        **capture_kwargs,
+                    )
 
                 # Process any associated formula terms and attach
                 # the corresponding AuxCoordFactory.

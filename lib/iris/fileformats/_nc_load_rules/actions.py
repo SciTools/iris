@@ -43,8 +43,6 @@ from functools import partial, wraps
 import warnings
 
 from iris.config import get_logger
-from iris.coords import Coord
-from iris.cube import Cube
 import iris.fileformats.cf
 import iris.fileformats.pp as pp
 from iris.loading import LOAD_PROBLEMS, LoadProblems
@@ -174,6 +172,8 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
 @action_function
 def action_provides_grid_mapping(engine, gridmapping_fact):
     """Convert a CFGridMappingVariable into a cube coord-system."""
+    from iris.coords import Coord
+
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
@@ -424,6 +424,8 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
         try:
             raise error
         except error.__class__ as error:
+            from iris.cube import Cube
+
             _ = LOAD_PROBLEMS.record(
                 filename=engine.filename,
                 loaded=hh.build_raw_cube(cf_var),

@@ -713,7 +713,7 @@ def build_and_add_cell_methods(engine: Engine):
     assert engine.cf_var is not None
     assert engine.cube is not None
 
-    _add_or_capture(
+    _ = _add_or_capture(
         build_func=partial(_build_cell_methods, engine.cf_var),
         add_method=partial(setattr, engine.cube, "cell_methods"),
         cf_var=engine.cf_var,
