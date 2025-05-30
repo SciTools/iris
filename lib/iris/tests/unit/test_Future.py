@@ -141,6 +141,5 @@ class Test__str_repr:
         self._check_content(future, text)
 
 
-
 if __name__ == "__main__":
     tests.main()
