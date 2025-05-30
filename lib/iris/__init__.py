@@ -236,16 +236,9 @@ class Future(threading.local):
         #  DeprecationWarning instead of UserWarning.
 
     def __repr__(self):
-        # msg = ('Future(example_future_flag={})')
-        # return msg.format(self.example_future_flag)
-        msg = "Future(datum_support={}, pandas_ndim={}, save_split_attrs={})"
-        return msg.format(
-            self.datum_support,
-            self.pandas_ndim,
-            self.save_split_attrs,
-            self.date_microseconds,
-            self.derived_bounds,
-        )
+        content = ", ".join(f"{key}={value}" for key, value in self.__dict__.items())
+        msg = f"Future({content})"
+        return msg
 
     # deprecated_options = {'example_future_flag': 'warning',}
     deprecated_options: dict[str, Literal["error", "warning"]] = {}
