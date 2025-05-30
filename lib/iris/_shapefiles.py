@@ -21,7 +21,7 @@ import shapely.geometry as sgeom
 import shapely.ops as sops
 
 import iris
-from iris.warnings import IrisDefaultingWarning, IrisUserWarning
+from iris.warnings import IrisUserWarning
 
 if "iris.cube" in sys.modules:
     import iris.cube
@@ -166,7 +166,7 @@ def create_shapefile_mask(
     cube_crs = cube.coord_system().as_cartopy_projection()
     if not geometry_crs.equals(cube_crs):
         transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
-        warnings.warn(transform_warning_msg, category=iris.warnings.IrisUserWarning)
+        warnings.warn(transform_warning_msg, category=IrisUserWarning)
         geometry = _transform_geometry(
             geometry=geometry,
             geometry_crs=geometry_crs,
@@ -240,7 +240,7 @@ def is_geometry_valid(
 
     Returns
     -------
-    None if the geometry is valid.OSTN15_NTv2OSGBtoETRS.gsb
+    None if the geometry is valid.
 
     Raises
     ------
@@ -268,7 +268,7 @@ def is_geometry_valid(
     >>> wgs84 = CRS.from_epsg(4326)
     >>> is_geometry_valid(canada, wgs84)
 
-    The function returns silently as the geometry is valid.
+    The function returns silently if the geometry is valid.
 
     Now create an invalid geometry covering the Bering Sea,
     and check its validity for the WGS84 coordinate system.
@@ -282,8 +282,8 @@ def is_geometry_valid(
     WGS84_crs = CRS.from_epsg(4326)
 
     # Check geometry is valid shapely geometry
-    if not shapely.is_valid(geometry):
-        msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
+    if not shapely.is_valid_input(geometry):
+        msg = f"Shape geometry is not a valid shape (not well formed)."
         raise TypeError(msg)
 
     # Check that the geometry is within the bounds of the coordinate system
@@ -304,9 +304,12 @@ def is_geometry_valid(
         raise ValueError(msg)
 
     # Check if shape crosses the 180th meridian (or equivalent)
-    if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
-        msg = "Geometry crossing the antimeridian is not supported."
-        raise ValueError(msg)
+    # Exception for MultiPoint geometries where sequential points
+    # may be separated by more than 180 degrees
+    if not isinstance(geometry, sgeom.MultiPoint):
+        if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
+            msg = "Geometry crossing the antimeridian is not supported."
+            raise ValueError(msg)
 
     # Check if the geometry crosses the poles
     npole = sgeom.Point(0, 90)
@@ -453,8 +456,10 @@ def _get_weighted_mask(
     w = len(cube.coord(x_name).points)
     h = len(cube.coord(y_name).points)
     # Get the bounds of the cube
-    x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
-    y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
+    # x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
+    # y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
+    x_bounds = cube.coord(x_name).bounds
+    y_bounds = cube.coord(y_name).bounds
     # Generate STRtree of bounding boxes
     grid_boxes = [
         sgeom.box(x[0], y[0], x[1], y[1]) for y, x in product(y_bounds, x_bounds)
@@ -471,7 +476,7 @@ def _get_weighted_mask(
     mask_idxs = idxs[mask_idxs_bool]
     mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
     # Create mask from grid box indexes
-    
+
     weighted_mask_template = np.ones((h, w), dtype=bool)
     # Set mask = True for grid box indexes identified above
     for xy in mask_xy:

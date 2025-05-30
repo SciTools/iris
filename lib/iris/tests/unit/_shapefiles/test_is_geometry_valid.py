@@ -10,7 +10,7 @@ import iris.tests as tests  # isort:skip
 
 from pyproj import CRS
 import pytest
-from shapely.geometry import box
+from shapely.geometry import LineString, MultiPoint, Point, box
 
 from iris._shapefiles import is_geometry_valid
 
@@ -111,50 +111,59 @@ def invalid_geometry_bounds():
     return box(-200, -100, 200, 100)
 
 
-class TestGeometry(tests.IrisTest):
-    # Test validity of different geometries
-    @pytest.mark.parametrize(
-        "test_input",
-        [
-            "basic_circular_geometry",
-            "basic_rectangular_geometry",
-            "basic_point_geometry",
-            "basic_line_geometry",
-            "basic_point_collection",
-            "canada_geometry",
-        ],
-    )
-    def test_valid_geometry(test_input, expected):
-        # Assert that all valid geometries are return None
-        assert is_geometry_valid(request.getfixturevalue(test_input), wgs84) is None
+@pytest.fixture(scope="session")
+def not_a_valid_geometry():
+    # Return an invalid geometry type
+    # This is not a valid geometry, e.g., a string
+    return "This is not a valid geometry"
 
-    # Fixtures retrieved from conftest.py
-    @pytest.mark.parametrize(
-        "test_input, errortype, errormessage",
-        [
-            (
-                "bering_sea_geometry",
-                ValueError,
-                "Geometry crossing the antimeridian is not supported.",
-            ),
-            (
-                "invalid_geometry_poles",
-                ValueError,
-                "Geometry crossing the poles is not supported.",
-            ),
-            (
-                "invalid_geometry_bounds",
-                ValueError,
-                "Geometry [<POLYGON ((200 -100, 200 100, -200 100, -200 -100, 200 -100))>] is not valid for the given coordinate system EPSG:4326. Check that your coordinates are correctly specified.",
-            ),
-            (
-                "not a valid geometry",
-                TypeError,
-                "Geometry is not a valid Shapely object",
-            ),
-        ],
-    )
-    def test_invalid_geometry(test_input, errortype, errormessage):
-        # Assert that all invalid geometries raise the expected error
-        with pytest.raises(errortype, match=errormessage):
-            is_geometry_valid(request.getfixturevalue(test_input), wgs84)
+
+# Test validity of different geometries
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        "basic_circular_geometry",
+        "basic_rectangular_geometry",
+        "basic_point_geometry",
+        "basic_line_geometry",
+        "basic_point_collection",
+        "canada_geometry",
+    ],
+)
+def test_valid_geometry(test_input, request, wgs84_crs):
+    # Assert that all valid geometries are return None
+    assert is_geometry_valid(request.getfixturevalue(test_input), wgs84_crs) is None
+
+
+# Fixtures retrieved from conftest.py
+# N.B. error message comparison is done with regex so
+# any parentheses in the error message must be escaped (\)
+@pytest.mark.parametrize(
+    "test_input, errortype, errormessage",
+    [
+        (
+            "bering_sea_geometry",
+            ValueError,
+            "Geometry crossing the antimeridian is not supported.",
+        ),
+        (
+            "invalid_geometry_poles",
+            ValueError,
+            "Geometry crossing the poles is not supported.",
+        ),
+        (
+            "invalid_geometry_bounds",
+            ValueError,
+            r"Geometry \[<POLYGON \(\(200 -100, 200 100, -200 100, -200 -100, 200 -100\)\)>\] is not valid for the given coordinate system EPSG:4326. \nCheck that your coordinates are correctly specified.",
+        ),
+        (
+            "not_a_valid_geometry",
+            TypeError,
+            r"Shape geometry is not a valid shape \(not well formed\).",
+        ),
+    ],
+)
+def test_invalid_geometry(test_input, errortype, errormessage, request, wgs84_crs):
+    # Assert that all invalid geometries raise the expected error
+    with pytest.raises(errortype, match=errormessage):
+        is_geometry_valid(request.getfixturevalue(test_input), wgs84_crs)
