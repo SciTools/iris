@@ -373,7 +373,6 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # One of very few cases where activation may encounter an error.
         # N.B. doesn't really test rules-activation, but maybe worth doing.
         # (no rules trigger)
-        # with self.assertRaisesRegex(ValueError, "No ellipsoid"):
         result = self.run_testcase(
             mapping_missingradius=True,
             warning_regex="Not all file objects were parsed correctly.",
