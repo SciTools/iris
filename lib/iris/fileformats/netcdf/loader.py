@@ -215,7 +215,7 @@ _LAZYVAR_MIN_BYTES = 5000
 _MEAN_VL_ARRAY_LEN = 10
 
 
-def _get_cf_var_data(cf_var, filename):
+def _get_cf_var_data(cf_var):
     """Get an array representing the data of a CF variable.
 
     This is typically a lazy array based around a NetCDFDataProxy, but if the variable
@@ -282,7 +282,7 @@ def _get_cf_var_data(cf_var, filename):
                 _thread_safe_nc.default_fillvals[fill_dtype],
             )
             proxy = NetCDFDataProxy(
-                cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
+                cf_var.shape, dtype, cf_var.filename, cf_var.cf_name, fill_value
             )
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
@@ -378,7 +378,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    data = _get_cf_var_data(cf_var, filename)
+    data = _get_cf_var_data(cf_var)
     cube = Cube(data)
 
     # Reset the actions engine.

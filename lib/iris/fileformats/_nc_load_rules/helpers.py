@@ -563,7 +563,7 @@ def _add_or_capture(
 def build_raw_cube(cf_var: cf.CFVariable) -> Cube:
     """Build the most basic Cube possible - used as a 'last resort' fallback."""
     # TODO: dataless Cubes might be an opportunity for _get_cf_var_data() to return None?
-    data = _get_cf_var_data(cf_var, cf_var.filename)
+    data = _get_cf_var_data(cf_var)
     raw_attributes = {key: value for key, value in cf_var.cf_attrs()}
     # Not a real attribute, but this is 'Iris language'.
     raw_attributes["var_name"] = cf_var.cf_name
@@ -1536,12 +1536,12 @@ def _build_auxiliary_coordinate(
     if isinstance(cf_coord_var, cf.CFLabelVariable):
         points_data = cf_coord_var.cf_label_data(engine.cf_var)
     else:
-        points_data = _get_cf_var_data(cf_coord_var, cf_coord_var.filename)
+        points_data = _get_cf_var_data(cf_coord_var)
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
     if cf_bounds_var is not None:
-        bounds_data = _get_cf_var_data(cf_bounds_var, cf_coord_var.filename)
+        bounds_data = _get_cf_var_data(cf_bounds_var)
 
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
@@ -1647,8 +1647,7 @@ def _build_cell_measure(cf_cm_var: cf.CFMeasureVariable) -> iris.coords.CellMeas
     attr_units = get_attr_units(cf_cm_var, attributes)
 
     # Get (lazy) content array
-    # TODO: go the whole way and remove the 2nd parameter from _get_cf_var_data?
-    data = _get_cf_var_data(cf_cm_var, cf_cm_var.filename)
+    data = _get_cf_var_data(cf_cm_var)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_cm_var, None, attributes)
@@ -1724,7 +1723,7 @@ def _build_ancil_var(
     attr_units = get_attr_units(cf_av_var, attributes)
 
     # Get (lazy) content array
-    data = _get_cf_var_data(cf_av_var, cf_av_var.filename)
+    data = _get_cf_var_data(cf_av_var)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_av_var, None, attributes)

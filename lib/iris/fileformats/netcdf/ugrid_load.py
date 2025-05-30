@@ -67,7 +67,7 @@ def _meshes_from_cf(cf_reader):
         mesh_vars = cf_reader.cf_group.meshes
         for name, var in mesh_vars.items():
             _ = _add_or_capture(
-                build_func=partial(_build_mesh, cf_reader, var, cf_reader.filename),
+                build_func=partial(_build_mesh, cf_reader, var),
                 add_method=partial(meshes.__setitem__, name),
                 cf_var=var,
                 # Meshes are 'linked' to zero or more Cubes; they do not have
@@ -182,7 +182,7 @@ def load_meshes(uris, var_name=None):
     return result
 
 
-def _build_aux_coord(coord_var, file_path):
+def _build_aux_coord(coord_var):
     """Construct a :class:`~iris.coords.AuxCoord`.
 
     Construct a :class:`~iris.coords.AuxCoord` from a given
@@ -198,7 +198,7 @@ def _build_aux_coord(coord_var, file_path):
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
-    points_data = nc_loader._get_cf_var_data(coord_var, file_path)
+    points_data = nc_loader._get_cf_var_data(coord_var)
 
     # Bounds will not be loaded:
     # Bounds may be present, but the UGRID conventions state this would
@@ -239,7 +239,7 @@ def _build_aux_coord(coord_var, file_path):
     return coord, axis
 
 
-def _build_connectivity(connectivity_var, file_path, element_dims):
+def _build_connectivity(connectivity_var, element_dims):
     """Construct a :class:`~iris.mesh.Connectivity`.
 
     Construct a :class:`~iris.mesh.Connectivity` from a
@@ -255,7 +255,7 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
-    indices_data = nc_loader._get_cf_var_data(connectivity_var, file_path)
+    indices_data = nc_loader._get_cf_var_data(connectivity_var)
 
     cf_role = connectivity_var.cf_role
     start_index = connectivity_var.start_index
@@ -285,7 +285,7 @@ def _build_connectivity(connectivity_var, file_path, element_dims):
     return connectivity, dim_names[0]
 
 
-def _build_mesh(cf, mesh_var, file_path):
+def _build_mesh(cf, mesh_var):
     """Construct a :class:`~iris.mesh.MeshXY`.
 
     Construct a :class:`~iris.mesh.MeshXY` from a given
@@ -357,7 +357,7 @@ def _build_mesh(cf, mesh_var, file_path):
     edge_coord_args = []
     face_coord_args = []
     for coord_var in mesh_var.cf_group.ugrid_coords.values():
-        coord_and_axis = _build_aux_coord(coord_var, file_path)
+        coord_and_axis = _build_aux_coord(coord_var)
         coord = coord_and_axis[0]
 
         if coord.var_name in mesh_var.node_coordinates.split():
@@ -384,7 +384,7 @@ def _build_mesh(cf, mesh_var, file_path):
     connectivity_args = []
     for connectivity_var in mesh_var.cf_group.connectivities.values():
         connectivity, first_dim_name = _build_connectivity(
-            connectivity_var, file_path, element_dims
+            connectivity_var, element_dims
         )
         assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
         connectivity_args.append(connectivity)
