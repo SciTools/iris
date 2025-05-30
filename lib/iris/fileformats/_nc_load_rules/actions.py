@@ -107,13 +107,10 @@ def action_function(func):
 @action_function
 def action_default(engine):
     """Perform standard operations for every cube."""
-    # Future pattern (iris#6319).
     hh.build_and_add_global_attributes(engine)
     hh.build_and_add_names(engine)
+    hh.build_and_add_units(engine)
     hh.build_and_add_cell_methods(engine)
-
-    # Legacy pattern.
-    hh.build_cube_metadata(engine)
 
 
 # Lookup table used by 'action_provides_grid_mapping'.

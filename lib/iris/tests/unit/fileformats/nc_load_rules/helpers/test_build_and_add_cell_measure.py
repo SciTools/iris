@@ -13,7 +13,7 @@ from iris.coords import CellMeasure
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_cell_measure
-from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
+from iris.fileformats.cf import CFMeasureVariable
 from iris.loading import LOAD_PROBLEMS
 
 
@@ -31,7 +31,7 @@ def mock_engine():
 def mock_cf_cm_var(monkeypatch, mock_engine):
     data = np.arange(6)
     output = mock.Mock(
-        spec=threadsafe_nc.VariableWrapper,
+        spec=CFMeasureVariable,
         dimensions=("foo",),
         scale_factor=1,
         add_offset=0,

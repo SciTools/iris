@@ -681,6 +681,28 @@ def build_and_add_global_attributes(engine: Engine):
 
 
 ################################################################################
+def build_and_add_units(engine: Engine):
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    _ = _add_or_capture(
+        build_func=partial(
+            get_attr_units,
+            engine.cf_var,
+            getattr(engine.cube, "attributes", None),
+            capture_invalid=True,
+        ),
+        add_method=partial(setattr, engine.cube, "units"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_UNITS,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
+
+
+################################################################################
 def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMethod]:
     nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
     return parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
@@ -701,21 +723,6 @@ def build_and_add_cell_methods(engine: Engine):
             identifier=engine.cf_var.cf_name,
         ),
     )
-
-
-################################################################################
-def build_cube_metadata(engine):
-    """Add the standard meta data to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-
-    # Note: name building has been moved to the build_name_* functions.
-    # So `action_default` now calls both this *and* the new `build_and_add_names`.
-    #  All other code will follow in future (iris#6319).
-
-    # Determine the cube units.
-    attr_units = get_attr_units(cf_var, cube.attributes)
-    cube.units = attr_units
 
 
 ################################################################################
@@ -1120,7 +1127,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
 
 
 ################################################################################
-def get_attr_units(cf_var, attributes):
+def get_attr_units(cf_var, attributes, capture_invalid=False):
     attr_units = getattr(cf_var, CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
     if not attr_units:
         attr_units = UNKNOWN_UNIT_STRING
@@ -1130,18 +1137,37 @@ def get_attr_units(cf_var, attributes):
         attr_units = "degrees"
 
     # Graceful loading of invalid units.
+    invalid_units_message = (
+        f"{{prefix}} units '{attr_units}' on netCDF variable '{cf_var.cf_name}'."
+    )
     try:
         cf_units.as_unit(attr_units)
-    except ValueError:
-        # Using converted unicode message. Can be reverted with Python 3.
-        msg = (
-            f"Ignoring invalid units {attr_units!r} on netCDF variable "
-            f"{cf_var.cf_name!r}."
-        )
-        warnings.warn(
-            msg,
-            category=_WarnComboIgnoringCfLoad,
-        )
+    except ValueError as invalid_units_error:
+        if capture_invalid:
+            # This block is only expected when getting Cube units.
+            assert isinstance(cf_var, cf.CFDataVariable)
+            try:
+                raise invalid_units_error.__class__(
+                    invalid_units_message.format(prefix="Invalid")
+                ) from invalid_units_error
+            except invalid_units_error.__class__ as error:
+                _ = LOAD_PROBLEMS.record(
+                    filename=cf_var.filename,
+                    loaded={CF_ATTR_UNITS: attr_units},
+                    exception=error,
+                    destination=LoadProblems.Problem.Destination(
+                        iris_class=Cube,
+                        identifier=cf_var.cf_name,
+                    ),
+                    handled=True,
+                )
+
+        else:
+            warnings.warn(
+                invalid_units_message.format(prefix="Ignoring invalid"),
+                category=_WarnComboIgnoringCfLoad,
+            )
+
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
 
