@@ -1427,7 +1427,6 @@ class CFReader:
         for cf_var in formula_terms.values():
             # eg. eta:'a' | cf_root = eta and cf_term = a. cf_var.cf_terms_by_root = {'eta': 'a'} (looking at all appearances in formula terms)
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-
                 if iris.FUTURE.derived_bounds:
                     # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
                     #  and turn them into bounds vars (though they don't appear in a "bounds" attribute)
@@ -1470,9 +1469,7 @@ class CFReader:
                     # TODO: explain this section ?
                     cf_name = cf_var.cf_name
                     if cf_name not in self.cf_group:
-                        new_var = CFAuxiliaryCoordinateVariable(
-                            cf_name, cf_var.cf_data
-                        )
+                        new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
                         if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
                             # Implement "new-style" derived bounds link
                             new_var.bounds = cf_var.bounds
@@ -1484,9 +1481,14 @@ class CFReader:
             for cf_root in all_roots:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
-                if all(key in root_var.ncattrs() for key in ("bounds", "formula_terms")):
+                if all(
+                    key in root_var.ncattrs() for key in ("bounds", "formula_terms")
+                ):
                     root_bounds_var = self.cf_group.get(root_var.bounds)
-                    if root_bounds_var is not None and "formula_terms" not in root_bounds_var.ncattrs():
+                    if (
+                        root_bounds_var is not None
+                        and "formula_terms" not in root_bounds_var.ncattrs()
+                    ):
                         # This means it is *not* a valid bounds var, according to CF
                         root_var.bounds = None
 
