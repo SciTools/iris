@@ -1420,7 +1420,7 @@ class CFReader:
         formula_terms = _CFFormulaTermsVariable.identify(variables)
 
         if iris.FUTURE.derived_bounds:
-            # Keep track of all the root vars so we can unpick invalid bounds
+            # Keep track of all the root vars so we can unpick invalid bounds vars
             all_roots = set()
 
         # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
@@ -1429,43 +1429,42 @@ class CFReader:
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
 
                 if iris.FUTURE.derived_bounds:
-                    all_roots.add(cf_root)
-
                     # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
                     #  and turn them into bounds vars (though they don't appear in a "bounds" attribute)
+                    all_roots.add(cf_root)
 
                     # cf_root_coord = CFCoordinateVariable of the coordinate relating to the root
                     cf_root_coord = self.cf_group.coordinates.get(cf_root)
                     if cf_root_coord is None:
                         cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
 
-                    bounds_name = getattr(cf_root_coord, "bounds", None)
-                    # TODO: rename to "root_bounds_name" ?
+                    root_bounds_name = getattr(cf_root_coord, "bounds", None)
                     # N.B. cf_root_coord may here be None, if the root var was not a
                     #  coord - that is ok, it will not have a 'bounds', we will skip it.
-                    if bounds_name in self.cf_group:
+                    if root_bounds_name in self.cf_group:
                         # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable
-                        try:
-                            # This will error if more or less than 1 variable is found.
-                            # TODO: try a try/except here or logical alternative
-                            # TODO: rename as "root_bounds_var" ?
-                            (bounds_var,) = [
-                                # loop through all formula terms and add them if they have a cf_term_by_root
-                                # where (bounds of cf_root): cf_term (same as before)
-                                f
-                                for f in formula_terms.values()
-                                if f.cf_terms_by_root.get(bounds_name) == cf_term
-                            ]
-                            if bounds_var != cf_var:
-                                cf_var.bounds = bounds_var.cf_name
+                        term_bounds_vars = [
+                            # loop through all formula terms and add them if they have a cf_term_by_root
+                            # where (bounds of cf_root): cf_term (same as before)
+                            f
+                            for f in formula_terms.values()
+                            if f.cf_terms_by_root.get(root_bounds_name) == cf_term
+                        ]
+                        if len(term_bounds_vars) == 1:
+                            (term_bounds_var,) = term_bounds_vars
+                            if term_bounds_var != cf_var:
+                                # N.B. bounds==main-var is valid CF for *no* bounds
+                                cf_var.bounds = term_bounds_var.cf_name
                                 new_var = CFBoundaryVariable(
-                                    bounds_var.cf_name, bounds_var.cf_data
+                                    term_bounds_var.cf_name, term_bounds_var.cf_data
                                 )
-                                new_var.add_formula_term(bounds_name, cf_term)
-                                self.cf_group[bounds_var.cf_name] = new_var
-                        except ValueError:
+                                new_var.add_formula_term(root_bounds_name, cf_term)
+                                # "Reclassify" this var as a bounds variable
+                                self.cf_group[term_bounds_var.cf_name] = new_var
+                        else:
+                            # Found 0 term bounds, or >1 : discard the term
                             # Modify the boundary_variable set _to_be_promoted to True
-                            self.cf_group.get(bounds_name)._to_be_promoted = True
+                            self.cf_group.get(root_bounds_name)._to_be_promoted = True
 
                 if cf_root not in self.cf_group.bounds:
                     # TODO: explain this section ?
@@ -1486,9 +1485,9 @@ class CFReader:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
                 if all(key in root_var.ncattrs() for key in ("bounds", "formula_terms")):
-                    bounds_var = self.cf_group.get(root_var.bounds)
-                    if bounds_var is not None and "formula_terms" not in bounds_var.ncattrs():
-                        # This means it is *not* a valid bounds var
+                    root_bounds_var = self.cf_group.get(root_var.bounds)
+                    if root_bounds_var is not None and "formula_terms" not in root_bounds_var.ncattrs():
+                        # This means it is *not* a valid bounds var, according to CF
                         root_var.bounds = None
 
         # Determine the CF data variables.
