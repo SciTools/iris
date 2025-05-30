@@ -12,7 +12,7 @@ from html import escape
 
 import numpy as np
 
-from iris.coords import AuxCoord, CellMethod
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod
 from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
 import iris.tests.stock as stock
@@ -27,12 +27,7 @@ class Test__instantiation(tests.IrisTest):
 
     def test_cube_attributes(self):
         self.assertEqual(id(self.cube), self.representer.cube_id)
-        # self.assertMultiLineEqual(str(self.cube), self.representer.cube_str)
 
-    # def test__heading_contents(self):
-    #     content = set(self.representer.sections_data.values())
-    #     self.assertEqual(len(content), 1)
-    #     self.assertIsNone(list(content)[0])
 
 
 @tests.skip_data
@@ -111,96 +106,172 @@ class Test__summary_content(tests.IrisTest):
         self.assertEqual(expected, result)
 
 
-# @tests.skip_data
-# class Test__get_bits(tests.IrisTest):
-#     def setUp(self):
-#         self.cube = stock.realistic_4d()
-#         cmth = CellMethod("mean", "time", "6hr")
-#         self.cube.add_cell_method(cmth)
-#         cms = CellMeasure([0, 1, 2, 3, 4, 5], long_name="foo")
-#         self.cube.add_cell_measure(cms, 0)
-#         avr = AncillaryVariable([0, 1, 2, 3, 4, 5], long_name="bar")
-#         self.cube.add_ancillary_variable(avr, 0)
-#         scms = CellMeasure([0], long_name="baz")
-#         self.cube.add_cell_measure(scms)
-#         self.representer = CubeRepresentation(self.cube)
-#         self.representer._get_bits(self.representer._get_lines())
-#
-#     def test_population(self):
-#         nonmesh_values = [
-#             value
-#             for key, value in self.representer.sections_data.items()
-#             if "Mesh" not in key
-#         ]
-#         for v in nonmesh_values:
-#             self.assertIsNotNone(v)
-#
-#     def test_headings__dimcoords(self):
-#         contents = self.representer.sections_data["Dimension coordinates:"]
-#         content_str = ",".join(content for content in contents)
-#         dim_coords = [c.name() for c in self.cube.dim_coords]
-#         for coord in dim_coords:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__auxcoords(self):
-#         contents = self.representer.sections_data["Auxiliary coordinates:"]
-#         content_str = ",".join(content for content in contents)
-#         aux_coords = [c.name() for c in self.cube.aux_coords if c.shape != (1,)]
-#         for coord in aux_coords:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__derivedcoords(self):
-#         contents = self.representer.sections_data["Derived coordinates:"]
-#         content_str = ",".join(content for content in contents)
-#         derived_coords = [c.name() for c in self.cube.derived_coords]
-#         for coord in derived_coords:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__cellmeasures(self):
-#         contents = self.representer.sections_data["Cell measures:"]
-#         content_str = ",".join(content for content in contents)
-#         cell_measures = [c.name() for c in self.cube.cell_measures() if c.shape != (1,)]
-#         for coord in cell_measures:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__ancillaryvars(self):
-#         contents = self.representer.sections_data["Ancillary variables:"]
-#         content_str = ",".join(content for content in contents)
-#         ancillary_variables = [c.name() for c in self.cube.ancillary_variables()]
-#         for coord in ancillary_variables:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__scalarcellmeasures(self):
-#         contents = self.representer.sections_data["Scalar cell measures:"]
-#         content_str = ",".join(content for content in contents)
-#         scalar_cell_measures = [
-#             c.name() for c in self.cube.cell_measures() if c.shape == (1,)
-#         ]
-#         for coord in scalar_cell_measures:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__scalarcoords(self):
-#         contents = self.representer.sections_data["Scalar coordinates:"]
-#         content_str = ",".join(content for content in contents)
-#         scalar_coords = [c.name() for c in self.cube.coords() if c.shape == (1,)]
-#         for coord in scalar_coords:
-#             self.assertIn(coord, content_str)
-#
-#     def test_headings__attributes(self):
-#         contents = self.representer.sections_data["Attributes:"]
-#         content_str = ",".join(content for content in contents)
-#         for attr_name, attr_value in self.cube.attributes.items():
-#             self.assertIn(attr_name, content_str)
-#             self.assertIn(attr_value, content_str)
-#
-#     def test_headings__cellmethods(self):
-#         contents = self.representer.sections_data["Cell methods:"]
-#         content_str = ",".join(content for content in contents)
-#         for method in self.cube.cell_methods:
-#             name = method.method
-#             value = str(method)[len(name + ": ") :]
-#             self.assertIn(name, content_str)
-#             self.assertIn(value, content_str)
+@tests.skip_data
+def test_realistic():
+    cube = stock.realistic_4d()
+    cmth = CellMethod("mean", "time", "6hr")
+    cube.add_cell_method(cmth)
+    cms = CellMeasure([0, 1, 2, 3, 4, 5], long_name="foo")
+    cube.add_cell_measure(cms, 0)
+    avr = AncillaryVariable([0, 1, 2, 3, 4, 5], long_name="bar")
+    cube.add_ancillary_variable(avr, 0)
+    scms = CellMeasure([0], long_name="baz")
+    cube.add_cell_measure(scms)
+    representer = CubeRepresentation(cube)
+    result = representer._make_content()
+    expected = (
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Dimension coordinates</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\ttime</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\t'
+        'model_level_number</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tgrid_latitude</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tgrid_longitude</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Auxiliary coordinates</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tlevel_height</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tsigma</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tsurface_altitude</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Derived coordinates</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\taltitude</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Cell measures</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tfoo</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Ancillary variables</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tbar</td>\n'
+        '    <td class="iris-inclusion-cell">x</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '    <td class="iris-inclusion-cell">-</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tforecast_period</td>\n'
+        '    <td class="iris-word-cell" colspan="4">0.0 hours</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Scalar cell measures</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tbaz</td>\n'
+        '    <td class="iris-word-cell" colspan="4"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Cell methods</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\t0</td>\n'
+        '    <td class="iris-word-cell" colspan="4">time: mean (interval: 6hr)</td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-title iris-word-cell">Attributes</td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '    <td class="iris-title"></td>\n'
+        '</tr>\n'
+        '<tr class="iris">\n'
+        '    <td class="iris-word-cell iris-subheading-cell">\tsource</td>\n'
+        '    <td class="iris-word-cell" colspan="4">&#x27;Iris test case&#x27;</td>\n'
+        '</tr>'
+    )
+    assert expected == result
 
 
 @tests.skip_data
@@ -208,7 +279,6 @@ class Test__make_header(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        # self.representer._get_bits(self.representer._get_lines())
         self.header_emts = self.representer._make_header().split("\n")
 
     def test_name_and_units(self):
@@ -241,7 +311,6 @@ class Test__make_shapes_row(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        # self.representer._get_bits(self.representer._get_lines())
         self.result = self.representer._make_shapes_row().split("\n")
 
     def test_row_title(self):
@@ -262,7 +331,6 @@ class Test__make_row(tests.IrisTest):
         cm = CellMethod("mean", "time", "6hr")
         self.cube.add_cell_method(cm)
         self.representer = CubeRepresentation(self.cube)
-        # self.representer._get_bits(self.representer._get_lines())
 
     def test__title_row(self):
         title = "Wibble:"
@@ -323,7 +391,6 @@ class Test__make_content(tests.IrisTest):
     def setUp(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
-        # self.representer._get_bits(self.representer._get_lines())
         self.result = self.representer._make_content()
         self.sections_keys = [
             "Dimension coordinates:",
@@ -347,7 +414,6 @@ class Test__make_content(tests.IrisTest):
         mesh_cube.add_aux_coord(meshco_y, (0,))
         self.mesh_cube = mesh_cube
         self.mesh_representer = CubeRepresentation(self.mesh_cube)
-        # self.mesh_representer._get_bits(self.mesh_representer._get_lines())
         self.mesh_result = self.mesh_representer._make_content()
 
     def test_included(self):
