@@ -188,7 +188,7 @@ class TestLoadErrors(tests.IrisTest):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         self.assertIn(
-            "could not be identified from the mesh node coordinates",
+            "could not be identified from mesh node coordinates",
             "".join(load_problem.stack_trace.format()),
         )
         destination = load_problem.destination
