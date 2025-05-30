@@ -572,9 +572,6 @@ def build_raw_cube(cf_var: cf.CFVariable) -> Cube:
 
 
 ################################################################################
-# TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
-
-
 def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
     value = getattr(cf_var, CF_ATTR_STD_NAME, None)
     if value is not None:
@@ -593,7 +590,7 @@ def _build_name_var(cf_var: cf.CFVariable) -> str | None:
 
 
 def build_and_add_names(engine: Engine) -> None:
-    """Add standard_, long_, var_name to the cube."""
+    """Add standard_, long_, var_name to the Cube."""
     assert engine.cf_var is not None
     assert engine.cube is not None
 
@@ -638,7 +635,6 @@ def build_and_add_names(engine: Engine) -> None:
                 **long_name_kwargs,
             )
         else:
-            # TODO: should this be reserved for the attributes builder (iris#6319)?
             engine.cube.attributes["invalid_standard_name"] = invalid_std_name
 
     _ = _add_or_capture(
@@ -656,6 +652,7 @@ def _add_global_attribute(cube: Cube, attr_name: Any, attr_value: Any):
 
 
 def build_and_add_global_attributes(engine: Engine):
+    """Create global attributes for the Cube then add them to the Cube."""
     assert engine.cf_var is not None
     assert engine.cube is not None
 
@@ -682,6 +679,7 @@ def build_and_add_global_attributes(engine: Engine):
 
 ################################################################################
 def build_and_add_units(engine: Engine):
+    """Create a Units instance and add it to the Cube."""
     assert engine.cf_var is not None
     assert engine.cube is not None
 
@@ -709,7 +707,7 @@ def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMetho
 
 
 def build_and_add_cell_methods(engine: Engine):
-    """Add cell methods to the cube."""
+    """Create CellMethod instances and add them to the Cube."""
     assert engine.cf_var is not None
     assert engine.cube is not None
 
@@ -1349,7 +1347,6 @@ def _build_dimension_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.Coord:
-    """Create a dimension coordinate (DimCoord) from the CF coordinate variable."""
     attributes: dict[str, Any] = {}
 
     attr_units = get_attr_units(cf_coord_var, attributes)
@@ -1470,13 +1467,13 @@ def _add_dimension_coordinate(
     engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
 
 
-# TODO: propagate the the build-and-add pattern to all other objects (iris#6319).
 def build_and_add_dimension_coordinate(
     engine: Engine,
     cf_coord_var: cf.CFCoordinateVariable,
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
+    """Create a DimCoord instance and add it to the Cube."""
     assert engine.cf_var is not None
 
     destination = LoadProblems.Problem.Destination(
@@ -1528,7 +1525,6 @@ def _build_auxiliary_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ) -> iris.coords.AuxCoord:
-    """Create an auxiliary coordinate (AuxCoord) from the CF coordinate variable."""
     assert engine.cf_var is not None
 
     attributes: dict[str, Any] = {}
@@ -1623,6 +1619,7 @@ def build_and_add_auxiliary_coordinate(
     coord_name: Optional[str] = None,
     coord_system: Optional[iris.coord_systems.CoordSystem] = None,
 ):
+    """Create a AuxCoord instance and add it to the Cube."""
     assert engine.cf_var is not None
 
     _ = _add_or_capture(
@@ -1703,7 +1700,7 @@ def build_and_add_cell_measure(
     engine: Engine,
     cf_cm_var: cf.CFMeasureVariable,
 ) -> None:
-    """Create a CellMeasure instance and add it to the cube."""
+    """Create a CellMeasure instance and add it to the Cube."""
     assert engine.cf_var is not None
 
     _ = _add_or_capture(
@@ -1775,7 +1772,7 @@ def build_and_add_ancil_var(
     engine: Engine,
     cf_av_var: cf.CFAncillaryDataVariable,
 ) -> None:
-    """Create an AncillaryVariable instance and add it to the cube."""
+    """Create an AncillaryVariable instance and add it to the Cube."""
     assert engine.cf_var is not None
 
     _ = _add_or_capture(
