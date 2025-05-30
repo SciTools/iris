@@ -7,6 +7,7 @@
 import pytest
 
 import iris
+from iris.loading import LOAD_PROBLEMS
 
 from .test_load_meshes import (
     _TEST_CDL_HEAD,
@@ -76,5 +77,6 @@ class TestMeshLoad:
         else:
             raise ValueError(f"unexpected param: {param}")
 
-        with pytest.raises(ValueError, match=match_msg):
-            iris.load(failnc)
+        _ = iris.load(failnc)
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert match_msg in "".join(load_problem.stack_trace.format())

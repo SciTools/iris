@@ -19,10 +19,13 @@ import tempfile
 
 from cf_units import as_unit
 import numpy as np
+import pytest
 
 from iris.coords import AncillaryVariable, CellMeasure
+from iris.cube import Cube
 from iris.fileformats.netcdf import logger
 from iris.fileformats.netcdf.loader import load_cubes
+from iris.loading import LOAD_PROBLEMS
 from iris.mesh import MeshCoord
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
@@ -263,6 +266,11 @@ class TestsMesh(tests.IrisTest):
         cls.nc_path = cdl_to_nc(cls.ref_cdl)
         cls.mesh_cubes = list(load_cubes(cls.nc_path))
 
+    def setUp(self):
+        # Interim measure to allow pytest-style patching in the absence of
+        #  full-scale pytest conversion.
+        self.monkeypatch = pytest.MonkeyPatch()
+
     def test_standard_dims(self):
         for cube in self.mesh_cubes:
             self.assertIsNotNone(cube.coords("levels"))
@@ -296,6 +304,47 @@ class TestsMesh(tests.IrisTest):
         # No error when mesh handling not activated.
         _ = list(load_cubes(nc_path))
 
-        log_regex = r"File does not contain mesh.*"
+        log_regex = r".*could not be found in file."
         with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
             _ = list(load_cubes(nc_path))
+
+    def test_mesh_coord_not_built(self):
+        def mock_build_mesh_coords(mesh, cf_var):
+            raise RuntimeError("Mesh coords not built")
+
+        with self.monkeypatch.context() as m:
+            m.setattr(
+                "iris.fileformats.netcdf.ugrid_load._build_mesh_coords",
+                mock_build_mesh_coords,
+            )
+            _ = list(load_cubes(self.nc_path))
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert "Mesh coords not built" in "".join(load_problem.stack_trace.format())
+
+    def test_mesh_coord_not_added(self):
+        def mock_add_aux_coord(self, coord, data_dims=None):
+            raise RuntimeError("Mesh coord not added")
+
+        with self.monkeypatch.context() as m:
+            m.setattr("iris.cube.Cube.add_aux_coord", mock_add_aux_coord)
+            _ = list(load_cubes(self.nc_path))
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert "Mesh coord not added" in "".join(load_problem.stack_trace.format())
+
+    def test_mesh_coord_capture_destination(self):
+        def mock_build_mesh_coords(mesh, cf_var):
+            raise RuntimeError("Mesh coords not built")
+
+        with self.monkeypatch.context() as m:
+            m.setattr(
+                "iris.fileformats.netcdf.ugrid_load._build_mesh_coords",
+                mock_build_mesh_coords,
+            )
+            _ = list(load_cubes(self.nc_path))
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        destination = load_problem.destination
+        assert destination.iris_class is Cube
+        assert destination.identifier in ("node_data", "face_data")

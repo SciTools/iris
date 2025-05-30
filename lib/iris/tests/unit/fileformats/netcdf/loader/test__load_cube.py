@@ -15,6 +15,12 @@ import numpy as np
 from iris.coords import DimCoord
 import iris.fileformats.cf
 from iris.fileformats.netcdf.loader import _load_cube
+from iris.loading import LOAD_PROBLEMS
+
+
+class NoStr:
+    def __str__(self):
+        raise RuntimeError("No string representation")
 
 
 class TestCoordAttributes(tests.IrisTest):
@@ -109,6 +115,20 @@ class TestCoordAttributes(tests.IrisTest):
             attributes = cube.coord(name).attributes
             self.assertEqual(set(attributes.items()), set(expect))
 
+    def test_load_problems(self):
+        key_and_val = (NoStr(), "wibble")
+
+        cf, cf_var = self._make(["foo"], [[key_and_val]])
+        _ = _load_cube(self.engine, cf, cf_var, self.filename)
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        self.assertIn(
+            "No string representation", "".join(load_problem.stack_trace.format())
+        )
+        destination = load_problem.destination
+        self.assertIs(destination.iris_class, DimCoord)
+        # Note: cannot test destination.identifier without large increase in
+        #  complexity. Rely on TestCubeAttributes.test_load_problems for this.
+
 
 class TestCubeAttributes(tests.IrisTest):
     def setUp(self):
@@ -136,6 +156,7 @@ class TestCubeAttributes(tests.IrisTest):
             dtype=np.dtype("i4"),
             cf_data=cf_data,
             cf_name="DUMMY_VAR",
+            filename="DUMMY",
             cf_group=mock.Mock(),
             cf_attrs_unused=cf_attrs_unused,
             shape=shape,
@@ -176,6 +197,19 @@ class TestCubeAttributes(tests.IrisTest):
         cube = _load_cube(self.engine, self.cf, cf_var, self.filename)
         self.assertEqual(len(cube.attributes), len(expected))
         self.assertEqual(set(cube.attributes.items()), expected)
+
+    def test_load_problems(self):
+        key_and_val = (NoStr(), "wibble")
+
+        cf_var = self._make([key_and_val])
+        _ = _load_cube(self.engine, self.cf, cf_var, self.filename)
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        self.assertIn(
+            "No string representation", "".join(load_problem.stack_trace.format())
+        )
+        destination = load_problem.destination
+        self.assertIs(destination.iris_class, self.engine.cube.__class__)
+        self.assertEqual(destination.identifier, cf_var.cf_name)
 
 
 if __name__ == "__main__":

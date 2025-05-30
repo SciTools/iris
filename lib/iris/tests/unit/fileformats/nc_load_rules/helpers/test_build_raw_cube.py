@@ -45,6 +45,7 @@ def cf_variable(mocker):
         # Minimum attributes to enable data getting.
         dimensions=list(dim_lens.keys()),
         cf_data=cf_data,
+        filename="foo.nc",
         shape=data.shape,
         size=data.size,
         dtype=data.dtype,
@@ -67,5 +68,5 @@ def expected_cube(mocker, cf_variable):
 
 
 def test(cf_variable, expected_cube):
-    result = build_raw_cube(cf_variable, "foo.nc")
+    result = build_raw_cube(cf_variable)
     assert result == expected_cube

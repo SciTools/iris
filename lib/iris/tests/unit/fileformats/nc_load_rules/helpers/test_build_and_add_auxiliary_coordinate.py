@@ -17,11 +17,13 @@ from unittest import mock
 import numpy as np
 import pytest
 
+from iris.coord_systems import RotatedGeogCS
 from iris.coords import AuxCoord
+from iris.cube import Cube
 from iris.exceptions import CannotAddError
-from iris.fileformats._nc_load_rules.helpers import build_auxiliary_coordinate
+from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
 from iris.fileformats.cf import CFVariable
-from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
+from iris.loading import LOAD_PROBLEMS
 
 
 class TestBoundsVertexDim(tests.IrisTest):
@@ -39,11 +41,20 @@ class TestBoundsVertexDim(tests.IrisTest):
         # Create coordinate cf variables and pyke engine.
         dimension_names = ("foo", "bar")
         points, cf_data = self._make_array_and_cf_data(dimension_names)
+
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
+
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=dimension_names,
             cf_name="wibble",
             cf_data=cf_data,
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units="km",
@@ -62,13 +73,6 @@ class TestBoundsVertexDim(tests.IrisTest):
             var_name=self.cf_coord_var.cf_name,
             units=self.cf_coord_var.units,
             bounds=expected_bounds,
-        )
-
-        self.engine = mock.Mock(
-            cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
-            filename="DUMMY",
-            cube_parts=dict(coordinates=[]),
         )
 
         # Patch the deferred loading that prevents attempted file access.
@@ -121,6 +125,7 @@ class TestBoundsVertexDim(tests.IrisTest):
             dimensions=dimension_names,
             cf_name="wibble_bnds",
             cf_data=cf_data,
+            filename=self.engine.filename,
             units="m",
             shape=bounds.shape,
             size=np.prod(bounds.shape),
@@ -136,7 +141,7 @@ class TestBoundsVertexDim(tests.IrisTest):
         )
 
         # Asserts must lie within context manager because of deferred loading.
-        build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
         self.engine.cube.add_aux_coord.assert_called_with(self.expected_coord, [0, 1])
@@ -167,11 +172,19 @@ class TestDtype(tests.IrisTest):
         cf_data = mock.MagicMock(_FillValue=None)
         cf_data.chunking = mock.MagicMock(return_value=points.shape)
 
+        self.engine = mock.Mock(
+            cube=mock.Mock(),
+            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            filename="DUMMY",
+            cube_parts=dict(coordinates=[]),
+        )
+
         self.cf_coord_var = mock.Mock(
             spec=CFVariable,
             dimensions=("foo", "bar"),
             cf_name="wibble",
             cf_data=cf_data,
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units="m",
@@ -179,13 +192,6 @@ class TestDtype(tests.IrisTest):
             size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
-        )
-
-        self.engine = mock.Mock(
-            cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar")),
-            filename="DUMMY",
-            cube_parts=dict(coordinates=[]),
         )
 
     @contextlib.contextmanager
@@ -209,7 +215,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.add_offset = 5
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "i")
@@ -218,7 +224,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.scale_factor = 3.0
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "f")
@@ -227,7 +233,7 @@ class TestDtype(tests.IrisTest):
         self.cf_coord_var.add_offset = 5.0
 
         with self.deferred_load_patch():
-            build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         self.assertEqual(coord.dtype.kind, "f")
@@ -246,12 +252,13 @@ class TestCoordConstruction(tests.IrisTest):
         points = np.arange(6)
         units = "days since 1970-01-01"
         self.cf_coord_var = mock.Mock(
-            spec=threadsafe_nc.VariableWrapper,
+            spec=CFVariable,
             dimensions=("foo",),
             scale_factor=1,
             add_offset=0,
             cf_name="wibble",
             cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
+            filename=self.engine.filename,
             standard_name=None,
             long_name="wibble",
             units=units,
@@ -270,7 +277,7 @@ class TestCoordConstruction(tests.IrisTest):
         del cf_data.flag_masks
         del cf_data.flag_meanings
         self.cf_bounds_var = mock.Mock(
-            spec=threadsafe_nc.VariableWrapper,
+            spec=CFVariable,
             dimensions=("x", "nv"),
             scale_factor=1,
             add_offset=0,
@@ -329,7 +336,7 @@ class TestCoordConstruction(tests.IrisTest):
             climatological=climatology,
         )
 
-        build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         # Test that expected coord is built and added to cube.
         self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
@@ -340,6 +347,55 @@ class TestCoordConstruction(tests.IrisTest):
     def test_aux_coord_construction__climatology(self):
         self.check_case_aux_coord_construction(climatology=True)
 
+    def test_with_coord_system(self):
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        expected_coord = AuxCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds,
+            coord_system=coord_system,
+        )
+
+        build_and_add_auxiliary_coordinate(
+            self.engine, self.cf_coord_var, coord_system=coord_system
+        )
+
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
+
+    def test_bad_coord_system(self):
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        def mock_setter(self, value):
+            # Currently coord_system is not validated during setting, but we
+            #  want to ensure that any problems _would_ be handled, so fake
+            #  an error.
+            if value is not None:
+                raise ValueError("test_bad_coord_system")
+            else:
+                self._metadata_manager.coord_system = value
+
+        with mock.patch.object(
+            AuxCoord,
+            "coord_system",
+            new=property(AuxCoord.coord_system.fget, mock_setter),
+        ):
+            build_and_add_auxiliary_coordinate(
+                self.engine, self.cf_coord_var, coord_system=coord_system
+            )
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            self.assertIn(
+                "test_bad_coord_system",
+                "".join(load_problem.stack_trace.format()),
+            )
+
     def test_not_added(self):
         # Confirm that the coord will be skipped if a CannotAddError is raised
         #  when attempting to add.
@@ -348,8 +404,33 @@ class TestCoordConstruction(tests.IrisTest):
 
         with self.monkeypatch.context() as m:
             m.setattr(self.engine.cube, "add_aux_coord", mock_add_aux_coord)
-            with pytest.warns(match="coordinate not added to Cube: foo"):
-                build_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            assert load_problem.stack_trace.exc_type is CannotAddError
+
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_unhandlable_error(self):
+        # Confirm that the code can redirect an error to LOAD_PROBLEMS even
+        #  when there is no specific handling code for it.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cube", "foo")
+            n_problems = len(LOAD_PROBLEMS.problems)
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+            self.assertTrue(len(LOAD_PROBLEMS.problems) > n_problems)
+
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_problem_destination(self):
+        # Confirm that the destination of the problem is set correctly.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cube", "foo")
+            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+
+            destination = LOAD_PROBLEMS.problems[-1].destination
+            assert destination.iris_class is Cube
+            assert destination.identifier == self.engine.cf_var.cf_name
 
         assert self.engine.cube_parts["coordinates"] == []
 

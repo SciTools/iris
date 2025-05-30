@@ -14,7 +14,9 @@ import warnings
 import numpy as np
 import pytest
 
+from iris.coord_systems import RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coordinate
 from iris.loading import LOAD_PROBLEMS
@@ -28,16 +30,19 @@ def _make_bounds_var(bounds, dimensions, units):
     del cf_data.flag_values
     del cf_data.flag_masks
     del cf_data.flag_meanings
-    return mock.Mock(
+    result = mock.Mock(
         dimensions=dimensions,
         cf_name="wibble_bnds",
         cf_data=cf_data,
         units=units,
         calendar=None,
         shape=bounds.shape,
+        size=np.prod(bounds.shape),
         dtype=bounds.dtype,
         __getitem__=lambda self, key: bounds[key],
     )
+    delattr(result, "_data_array")
+    return result
 
 
 class RulesTestMixin:
@@ -104,10 +109,12 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             units="days since 1970-01-01",
             calendar=None,
             shape=points.shape,
+            size=np.prod(points.shape),
             dtype=points.dtype,
             __getitem__=lambda self, key: points[key],
             cf_attrs=lambda: [("foo", "a"), ("bar", "b")],
         )
+        delattr(self.cf_coord_var, "_data_array")
 
     def check_case_dim_coord_construction(self, climatology=False):
         # Test a generic dimension coordinate, with or without
@@ -219,6 +226,60 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
             # Assert no warning is raised
             assert len(w) == 0
 
+    def test_with_coord_system(self):
+        self._set_cf_coord_var(np.arange(6))
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        expected_coord = DimCoord(
+            self.cf_coord_var[:],
+            long_name=self.cf_coord_var.long_name,
+            var_name=self.cf_coord_var.cf_name,
+            units=self.cf_coord_var.units,
+            bounds=self.bounds,
+            coord_system=coord_system,
+        )
+
+        # Asserts must lie within context manager because of deferred loading.
+        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+            build_and_add_dimension_coordinate(
+                self.engine, self.cf_coord_var, coord_system=coord_system
+            )
+
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+
+    def test_bad_coord_system(self):
+        self._set_cf_coord_var(np.arange(6))
+        coord_system = RotatedGeogCS(
+            grid_north_pole_latitude=45.0, grid_north_pole_longitude=45.0
+        )
+
+        def mock_setter(self, value):
+            # Currently coord_system is not validated during setting, but we
+            #  want to ensure that any problems _would_ be handled, so fake
+            #  an error.
+            if value is not None:
+                raise ValueError("test_bad_coord_system")
+            else:
+                self._metadata_manager.coord_system = value
+
+        with mock.patch.object(
+            DimCoord,
+            "coord_system",
+            new=property(DimCoord.coord_system.fget, mock_setter),
+        ):
+            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
+                build_and_add_dimension_coordinate(
+                    self.engine, self.cf_coord_var, coord_system=coord_system
+                )
+                load_problem = LOAD_PROBLEMS.problems[-1]
+                self.assertIn(
+                    "test_bad_coord_system",
+                    "".join(load_problem.stack_trace.format()),
+                )
+
     def test_aux_coord_construction(self):
         # Use non monotonically increasing coordinates to force aux coord
         # construction.
@@ -243,6 +304,7 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
                 "creating 'wibble' auxiliary coordinate instead",
                 "".join(load_problem.stack_trace.format()),
             )
+            self.assertTrue(load_problem.handled)
 
     def test_dimcoord_not_added(self):
         # Confirm that the coord will be skipped if a CannotAddError is raised
@@ -260,7 +322,8 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
-        assert self.engine.cube_parts["coordinates"] == []
+        assert isinstance(load_problem.loaded, DimCoord)
+        assert [type(i[0]) for i in self.engine.cube_parts["coordinates"]] == [AuxCoord]
 
     def test_auxcoord_not_added(self):
         # Confirm that a gracefully-created auxiliary coord will also be
@@ -278,6 +341,31 @@ class TestCoordConstruction(tests.IrisTest, RulesTestMixin):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_unhandlable_error(self):
+        # Confirm that the code can redirect an error to LOAD_PROBLEMS even
+        #  when there is no specific handling code for it.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cube", "foo")
+            n_problems = len(LOAD_PROBLEMS.problems)
+            self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            self.assertTrue(len(LOAD_PROBLEMS.problems) > n_problems)
+
+        assert self.engine.cube_parts["coordinates"] == []
+
+    def test_problem_destination(self):
+        # Confirm that the destination of the problem is set correctly.
+        with self.monkeypatch.context() as m:
+            m.setattr(self.engine, "cube", "foo")
+            self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+
+            destination = LOAD_PROBLEMS.problems[-1].destination
+            assert destination.iris_class is Cube
+            assert destination.identifier == self.engine.cf_var.cf_name
+
         assert self.engine.cube_parts["coordinates"] == []
 
 

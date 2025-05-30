@@ -40,6 +40,7 @@ class Test__get_cf_var_data(tests.IrisTest):
             spec=iris.fileformats.cf.CFVariable,
             dtype=dtype,
             cf_data=cf_data,
+            filename=self.filename,
             cf_name="DUMMY_VAR",
             shape=shape,
             size=np.prod(shape),
@@ -51,14 +52,14 @@ class Test__get_cf_var_data(tests.IrisTest):
     def test_cf_data_type(self):
         chunks = [1, 12, 100]
         cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var, self.filename)
+        lazy_data = _get_cf_var_data(cf_var)
         self.assertIsInstance(lazy_data, da.Array)
         self.assertIsInstance(da.utils.meta_from_array(lazy_data), np.ma.MaskedArray)
 
     def test_cf_data_chunks(self):
         chunks = [2500, 240, 200]
         cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var, self.filename)
+        lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         expected_chunks = _optimum_chunksize(chunks, self.shape)
         self.assertArrayEqual(lazy_data_chunks, expected_chunks)
@@ -68,7 +69,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         chunks = [2500, 240, 200]
         cf_var = self._make(shape=(2500, 240, 200), chunksizes=chunks)
         with CHUNK_CONTROL.set(dim_0=25, dim_1=24, dim_2=20):
-            lazy_data = _get_cf_var_data(cf_var, self.filename)
+            lazy_data = _get_cf_var_data(cf_var)
             lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         expected_chunks = (25, 24, 20)
         self.assertArrayEqual(lazy_data_chunks, expected_chunks)
@@ -78,7 +79,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         # `iris._lazy_data._optimum_chunksize()`.
         chunks = None
         cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var, self.filename)
+        lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         self.assertArrayEqual(lazy_data_chunks, self.expected_chunks)
 
@@ -86,30 +87,30 @@ class Test__get_cf_var_data(tests.IrisTest):
         # Chunks 'contiguous' is equivalent to no chunks.
         chunks = "contiguous"
         cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var, self.filename)
+        lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         self.assertArrayEqual(lazy_data_chunks, self.expected_chunks)
 
     def test_type__1kf8_is_lazy(self):
         cf_var = self._make(shape=(1000,), dtype="f8")
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIsInstance(var_data, da.Array)
 
     def test_arraytype__1ki2_is_real(self):
         cf_var = self._make(shape=(1000,), dtype="i2")
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_arraytype__100f8_is_real(self):
         cf_var = self._make(shape=(100,), dtype="f8")
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_vltype__1000str_is_lazy(self):
         # Variable length string type
         mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
         cf_var = self._make(shape=(1000,), dtype=str, datatype=mock_vltype)
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIsInstance(var_data, da.Array)
 
     def test_vltype__1000str_is_real_with_hint(self):
@@ -117,14 +118,14 @@ class Test__get_cf_var_data(tests.IrisTest):
         mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
         cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=1):
-            var_data = _get_cf_var_data(cf_var, self.filename)
+            var_data = _get_cf_var_data(cf_var)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_vltype__100str_is_real(self):
         # Variable length string type
         mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
         cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_vltype__100str_is_lazy_with_hint(self):
@@ -132,14 +133,14 @@ class Test__get_cf_var_data(tests.IrisTest):
         mock_vltype = mock.Mock(spec=VLType, dtype=str, name="varlen string type")
         cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=50):
-            var_data = _get_cf_var_data(cf_var, self.filename)
+            var_data = _get_cf_var_data(cf_var)
         self.assertIsInstance(var_data, da.Array)
 
     def test_vltype__100f8_is_lazy(self):
         # Variable length float64 type
         mock_vltype = mock.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
         cf_var = self._make(shape=(1000,), dtype="f8", datatype=mock_vltype)
-        var_data = _get_cf_var_data(cf_var, self.filename)
+        var_data = _get_cf_var_data(cf_var)
         self.assertIsInstance(var_data, da.Array)
 
     def test_vltype__100f8_is_real_with_hint(self):
@@ -147,7 +148,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         mock_vltype = mock.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
         cf_var = self._make(shape=(100,), dtype="f8", datatype=mock_vltype)
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=2):
-            var_data = _get_cf_var_data(cf_var, self.filename)
+            var_data = _get_cf_var_data(cf_var)
         self.assertIs(var_data, mock.sentinel.real_data_accessed)
 
     def test_cf_data_emulation(self):
@@ -155,7 +156,7 @@ class Test__get_cf_var_data(tests.IrisTest):
         emulated_data = mock.Mock()
         # Make a cf_var with a special extra '_data_array' property.
         cf_var = self._make(chunksizes=None, _data_array=emulated_data)
-        result = _get_cf_var_data(cf_var, self.filename)
+        result = _get_cf_var_data(cf_var)
         # This should get directly returned.
         self.assertIs(emulated_data, result)
 
