@@ -589,21 +589,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if hasattr(other, "metadata"):
             # metadata comparison
             eq = self.metadata == other.metadata
+
+            # Also consider bounds, if we have them.
+            # (N.B. though only Coords can ever actually *have* bounds).
+            if eq and eq is not NotImplemented:
+                eq = self.has_bounds() is other.has_bounds()
+
             # data values comparison
             if eq and eq is not NotImplemented:
                 eq = iris.util.array_equal(
                     self._core_values(), other._core_values(), withnans=True
                 )
-
-            # Also consider bounds, if we have them.
-            # (N.B. though only Coords can ever actually *have* bounds).
             if eq and eq is not NotImplemented:
                 if self.has_bounds() and other.has_bounds():
                     eq = iris.util.array_equal(
                         self.core_bounds(), other.core_bounds(), withnans=True
                     )
-                else:
-                    eq = not self.has_bounds() and not other.has_bounds()
 
         return eq
 
@@ -746,6 +747,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             else:
                 new_bounds = self.units.convert(self.bounds, unit)
             self.bounds = new_bounds
+        for key in "actual_range", "valid_max", "valid_min", "valid_range":
+            if key in self.attributes:
+                self.attributes[key] = self.units.convert(self.attributes[key], unit)
         self.units = unit
 
     def is_compatible(self, other, ignore=None):
@@ -1233,6 +1237,9 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
     # Make this class's comparison operators override those of numpy
     __array_priority__ = 100
 
+    # pre-computed hash for un-hashable `np.ma.masked` value
+    _MASKED_VALUE_HASH = hash("<<##MASKED_VALUE##>>")
+
     def __new__(cls, point=None, bound=None):
         """Construct a Cell from point or point-and-bound information."""
         if point is None:
@@ -1273,13 +1280,17 @@ class Cell(namedtuple("Cell", ["point", "bound"])):
 
     def __hash__(self):
         # See __eq__ for the definition of when two cells are equal.
+        point = self.point
+        if np.ma.is_masked(point):
+            # `np.ma.masked` is unhashable
+            point = Cell._MASKED_VALUE_HASH
         if self.bound is None:
-            return hash(self.point)
+            return hash(point)
         bound = self.bound
         rbound = bound[::-1]
         if rbound < bound:
             bound = rbound
-        return hash((self.point, bound))
+        return hash((point, bound))
 
     def __eq__(self, other):
         """Compare Cell equality depending on the type of the object to be compared."""
@@ -2082,7 +2093,8 @@ class Coord(_DimensionalMetadata):
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
 
-        point = tuple(np.array(self.core_points()[index], ndmin=1).flatten())
+        # Use `np.asanyaray` to preserve any masked values:
+        point = tuple(np.asanyarray(self.core_points()[index]).flatten())
         if len(point) != 1:
             raise IndexError(
                 "The index %s did not uniquely identify a single "
@@ -2805,6 +2817,9 @@ class DimCoord(Coord):
         # Check validity requirements for dimension-coordinate points.
         self._new_points_requirements(points)
         # Cast to a numpy array for masked arrays with no mask.
+
+        # NOTE: This is the point where any mask is lost on a coordinate if none of the
+        # values are actually masked. What if we wanted this to be an AuxCoord with a mask?
         points = np.array(points)
 
         super(DimCoord, self.__class__)._values.fset(self, points)
@@ -2956,7 +2971,7 @@ class AuxCoord(Coord):
             Descriptive name of the coordinate.
         var_name : optional
             The netCDF variable name for the coordinate.
-        unit : :class:`~cf_units.Unit`, optional
+        units : :class:`~cf_units.Unit`, optional
             The :class:`~cf_units.Unit` of the coordinate's values.
             Can be a string, which will be converted to a Unit object.
         bounds : optional

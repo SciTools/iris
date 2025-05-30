@@ -188,7 +188,7 @@ to Iris utilities). Iris tends to cover more of and be stricter about CF.
     * `Xarray notes on other NetCDF libraries`_
 
 .. _Xarray IO notes on Iris: https://docs.xarray.dev/en/stable/user-guide/io.html#iris
-.. _Xarray notes on other NetCDF libraries: https://docs.xarray.dev/en/stable/getting-started-guide/faq.html#what-other-netcdf-related-python-libraries-should-i-know-about
+.. _Xarray notes on other NetCDF libraries: https://docs.xarray.dev/en/stable/get-help/faq.html#what-other-netcdf-related-python-libraries-should-i-know-about
 .. _loading keywords: https://docs.xarray.dev/en/stable/generated/xarray.open_dataset.html#xarray.open_dataset
 .. _encoding: https://docs.xarray.dev/en/stable/user-guide/io.html#writing-encoded-data
 .. _xESMF: https://github.com/pangeo-data/xESMF/

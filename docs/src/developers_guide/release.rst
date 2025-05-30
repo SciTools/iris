@@ -180,7 +180,7 @@ conda package on the `conda-forge Anaconda channel`_.
 Announcement
 ~~~~~~~~~~~~
 
-Iris uses Twitter (`@scitools_iris`_) to announce new releases, as well as any
+Iris uses Bluesky (`@scitools.bsky.social`_) to announce new releases, as well as any
 internal message boards that are accessible (e.g. at the UK Met Office).
 Announcements usually include a highlighted feature to hook readers' attention.
 
@@ -284,6 +284,6 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
 .. _Semantic Versioning: https://semver.org/
 .. _PEP 440: https://peps.python.org/pep-0440/
-.. _@scitools_iris: https://twitter.com/scitools_iris
+.. _@scitools.bsky.social: https://bsky.app/profile/scitools.bsky.social
 .. _GitHub Projects: https://github.com/SciTools/iris/projects
 .. _Zenodo DOI: https://doi.org/10.5281/zenodo.595182

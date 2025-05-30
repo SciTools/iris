@@ -1406,10 +1406,37 @@ class ProtoCube:
                     # TODO: Consider appropriate sort order (ascending,
                     # descending) i.e. use CF positive attribute.
                     cells = sorted(indexes[name])
-                    points = np.array(
-                        [cell.point for cell in cells],
-                        dtype=metadata[name].points_dtype,
-                    )
+                    points = [cell.point for cell in cells]
+
+                    # If any points are masked then create a masked array type,
+                    # otherwise create a standard ndarray.
+                    if np.ma.masked in points:
+                        dtype = metadata[name].points_dtype
+
+                        # Create a pre-filled array with all elements set to `fill_value` for dtype
+                        # This avoids the following problems when trying to do `np.ma.masked_array(points, dtype...)`:
+                        #   - Underlying data of masked elements is arbitrary
+                        #   - Can't convert a np.ma.masked to an integer type
+                        #   - For floating point arrays, numpy raises a warning about "converting masked elements to NaN"
+                        fill_value = np.trunc(
+                            np.ma.default_fill_value(dtype), dtype=dtype
+                        )  # truncation needed to deal with silly default fill values in Numpy
+
+                        # create array of fill values; ensures we have consistent data under mask
+                        arr_points = np.ma.repeat(dtype.type(fill_value), len(points))
+
+                        # get mask index and filtered data then store in new array:
+                        mask = np.array([p is np.ma.masked for p in points])
+                        arr_points.mask = mask
+
+                        # Need another list comprehension to avoid numpy warning "converting masked elements to NaN":
+                        arr_points[~mask] = np.array(
+                            [p for p in points if p is not np.ma.masked]
+                        )
+                        points = arr_points
+                    else:
+                        points = np.array(points, dtype=metadata[name].points_dtype)
+
                     if cells[0].bound is not None:
                         bounds = np.array(
                             [cell.bound for cell in cells],
@@ -1594,13 +1621,19 @@ class ProtoCube:
             # the bounds are not monotonic, so try building the coordinate,
             # and if it fails make the coordinate into an auxiliary coordinate.
             # This will ultimately make an anonymous dimension.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
+
+            # If the points contain masked values, if definitely cannot be built
+            # as a dim coord, so add it to the _aux_templates immediately
+            if np.ma.is_masked(template.points):
                 self._aux_templates.append(template)
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    self._aux_templates.append(template)
 
         # There is the potential that there are still anonymous dimensions.
         # Get a list of the dimensions which are not anonymous at this stage.
@@ -1609,26 +1642,34 @@ class ProtoCube:
         ]
 
         # Build the auxiliary coordinates.
+        def _build_aux_coord_from_template(template):
+            # kwarg not applicable to AuxCoord.
+            template.kwargs.pop("circular", None)
+            coord = iris.coords.AuxCoord(
+                template.points, bounds=template.bounds, **template.kwargs
+            )
+            aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+
         for template in self._aux_templates:
             # Attempt to build a DimCoord and add it to the cube. If this
             # fails e.g it's non-monontic or multi-dimensional or non-numeric,
             # then build an AuxCoord.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                if len(template.dims) == 1 and template.dims[0] not in covered_dims:
-                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-                    covered_dims.append(template.dims[0])
-                else:
-                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
-                # kwarg not applicable to AuxCoord.
-                template.kwargs.pop("circular", None)
-                coord = iris.coords.AuxCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+
+            # Check here whether points are masked? If so then it has to be an AuxCoord
+            if np.ma.is_masked(template.points):
+                _build_aux_coord_from_template(template)
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    if len(template.dims) == 1 and template.dims[0] not in covered_dims:
+                        dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                        covered_dims.append(template.dims[0])
+                    else:
+                        aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    _build_aux_coord_from_template(template)
 
         # Mix in the vector coordinates.
         for item, dims in zip(

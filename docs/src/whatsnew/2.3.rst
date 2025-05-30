@@ -29,8 +29,7 @@ Features
 .. admonition:: Climatological Coordinate Support
 
   Iris can now load, store and save `NetCDF climatological coordinates
-  <https://cfconventions.org/Data/cf-conventions/cf-conventions-1
-  .7/cf-conventions.html#climatological-statistics>`_. Any cube time
+  <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#climatological-statistics>`_. Any cube time
   coordinate can be marked as a climatological time axis using the boolean
   property: ``climatological``. The climatological bounds are stored in the
   coordinate's ``bounds`` property.
@@ -41,9 +40,8 @@ Features
   coordinate's ``bounds`` property are written to a NetCDF boundary variable
   called '<coordinate-name>_bounds'.  These are in place of a standard
   'bounds' attribute and accompanying boundary variable. See below
-  for an `example adapted from CF conventions <https://cfconventions
-  .org/Data/cf-conventions/cf-conventions-1.7/cf-conventions
-  .html#climatological-statistics>`_:
+  for an
+  `example adapted from CF conventions <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#climatological-statistics>`_:
 
     .. code-block:: none
 
@@ -116,8 +114,7 @@ Features
 
 * New coordinate system: :class:`iris.coord_systems.Geostationary`,
   including load and save support, based on the `CF Geostationary projection
-  definition <https://cfconventions
-  .org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
+  definition <https://cfconventions.org/cf-conventions/cf-conventions.html#_geostationary_projection>`_.
 
 * :class:`iris.coord_systems.VerticalPerspective` can now be saved to and
   loaded from NetCDF files.
@@ -164,8 +161,7 @@ Bugs Fixed
   points.
 
 * :class:`iris.coord_systems.VerticalPerspective` coordinate system now uses
-  the `CF Vertical perspective definition <https://cfconventions
-  .org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
+  the `CF Vertical perspective definition <https://cfconventions.org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
   erroneously using Geostationary.
 
 * :class:`~iris.coords.CellMethod` will now only use valid 
@@ -227,8 +223,7 @@ Internal
 ========
 
 * Iris now supports Proj4 up to version 5, but not yet 6 or beyond, pending
-  `fixes to some cartopy tests <https://github
-  .com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
+  `fixes to some cartopy tests <https://github.com/SciTools/cartopy/pull/1289#pullrequestreview-272774087>`_.
 
 * Iris now requires Dask >= 1.2 to allow for improved coordinate equality
   checks.
@@ -238,7 +233,7 @@ Documentation
 =============
 
 * Adopted a
-  `new colour logo for Iris <https://github.com/SciTools/iris/blob/main/docs/src/_static/Iris7_1_trim_100.png>`_
+  `new colour logo for Iris <https://github.com/SciTools/iris/blob/v2.3.0/docs/iris/src/_static/Iris7_1_trim_100.png>`_
 
 * Added a gallery example showing how to concatenate NEMO ocean model data,
   see :ref:`sphx_glr_generated_gallery_oceanography_plot_load_nemo.py`.

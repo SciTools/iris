@@ -1,0 +1,275 @@
+.. include:: ../common_links.inc
+
+v3.12 (24 Mar 2025)
+*******************
+
+This document explains the changes made to Iris for this release
+(:doc:`View all changes <index>`.)
+
+
+.. dropdown:: v3.12 Release Highlights
+   :color: primary
+   :icon: info
+   :animate: fade-in
+   :open:
+
+   The highlights for this minor release of Iris include:
+
+   * Iris now supports Python version 3.13, and has dropped support for Python 3.10,
+     as per the Scientific Python
+     `SPEC 0 <https://scientific-python.org/specs/spec-0000/>`_ schedule.
+
+   * Data is now optional in a cube, which can simplify the regridding process and lays
+     the ground work for future features.  See :issue:`4447`.
+
+   * Added :data:`iris.loading.LOAD_PROBLEMS` to capture objects which could not be
+     loaded correctly, to assist in fixing loading problems via the Iris API. Several
+     loading operations no longer raise their own warnings; instead their loading
+     problems are captured in the common object, and a single generic warning is raised.
+     See :class:`iris.loading.LoadProblems`.
+
+   * Extended the features of :class:`iris.LoadPolicy` and :data:`iris.LOAD_POLICY`,
+     which are now renamed to :class:`iris.CombineOptions` and
+     :data:`iris.COMBINE_POLICY` respectively, and gave access to the mechanism in the
+     new :func:`iris.util.combine_cubes` utility.
+
+   * Added two new utility functions, :func:`iris.util.combine_cubes` and
+     :meth:`iris.util.equalise_cubes`, to assist with merge/concatenate, as well as
+     other features to improve loading control.
+
+   Checkout the performance enhancements section for an array of improvements to the
+   performance of Iris. Special thanks to the ESMValTool devs for these contributions.
+
+   And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
+   any issues or feature requests for improving Iris. Enjoy!
+
+
+v3.12.1 (30 Apr 2025)
+=====================
+
+.. dropdown:: v3.12.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Iris no longer supports the ``setup.py develop`` command, due to an
+      incompatibility with the latest version of Setuptools.
+      ``setup.py`` commands of this sort are deprecated, and the recommended
+      replacement for ``develop`` has been ``pip install -e`` for several years
+      now. See `Running setuptools commands`_ for more.
+
+
+v3.12.2 (09 May 2025)
+=====================
+
+.. dropdown:: v3.12.2 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Iris is now compatible with Dask versions ``2025.4.0`` and above. We are
+      aware that previous incompatibilities had been affecting load and save
+      operations for many users.
+
+
+📢 Announcements
+================
+
+#. N/A
+
+
+✨ Features
+===========
+
+#. `@pp-mo`_ renamed the :class:`iris.LoadPolicy` as :class:`iris.CombineOptions` and
+   :data:`iris.LOAD_POLICY` as :data:`iris.COMBINE_POLICY`, though the original names
+   remain functional (and refer to the same things) for now.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ added new :meth:`~iris.cube.CubeList.combine` and
+   :meth:`~iris.cube.CubeList.combine_cube` methods of a :class:`~iris.cube.CubeList`
+   as an alternative way of accessing the :func:`~iris.util.combine_cubes` mechanism.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.combine_cubes`, to give
+   general public access to the combine merge/concatenate mechanism introduced for
+   generalised loading support via :class:`iris.LoadPolicy` in the Iris 3.11 release.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ overhauled the :class:`iris.LoadPolicy` facility by adding a new
+   ``equalise_cubes_kwarg`` keyword, enabling it to call the
+   :func:`~iris.util.equalise_cubes` utility function as one of its processing stages.
+   (:issue:`6203`, :pull:`6334`)
+
+#. `@pp-mo`_ added a new utility function :func:`~iris.util.equalise_cubes`, to help
+   with aligning cubes so they can merge / concatenate.
+   (:issue:`6248`, :pull:`6257`)
+
+#. `@fnattino`_ added the lazy median aggregator :class:`iris.analysis.MEDIAN`
+   based on the implementation discussed by `@rcomer`_ and `@stefsmeets`_ in
+   :issue:`4039` (:pull:`6167`).
+
+#. `@ESadek-MO`_ made :attr:`~iris.cube.Cube.data` optional in a
+   :class:`~iris.cube.Cube`, when :attr:`~iris.cube.Cube.shape` is provided. A
+   `dataless cube` may be used as a target in regridding, or as a template cube
+   to add data to at a later time.
+
+   This is the first step in providing `dataless cube` support. Currently, most
+   cube methods won't work with a `dataless cube` and will raise an exception.
+   However, :meth:`~iris.cube.Cube.transpose` will work, as will
+   :meth:`~iris.cube.Cube.copy`. Note that, ``cube.copy(data=iris.DATALESS)``
+   will provide a dataless copy of a cube. (:issue:`4447`, :pull:`6253`)
+
+#. `@ESadek-MO`_ added the :mod:`iris.quickplot` ``footer`` kwarg to
+   render text in the bottom right of the plot figure.
+   (:issue:`6247`, :pull:`6332`)
+
+#. `@trexfeathers`_ and `@pp-mo`_ added :const:`iris.loading.LOAD_PROBLEMS` to
+   capture objects that could not be loaded correctly, increasing transparency
+   and helping users to fix loading problems via the Iris API. As a first pass,
+   this is currently limited to ``standard_name`` and dimension coordinates from
+   NetCDF files. (:issue:`6317`, :pull:`6338`)
+
+
+🐛 Bugs Fixed
+=============
+
+#. `@rcomer`_ added handling for string stash codes when saving pp files.
+   (:issue:`6239`, :pull:`6289`)
+
+#. `@trexfeathers`_ and `@jrackham-mo`_ added a check for dtype castability when
+   saving NetCDF ``valid_range``, ``valid_min`` and ``valid_max`` attributes -
+   older NetCDF formats e.g. ``NETCDF4_CLASSIC`` support a maximum precision of
+   32-bit. (:issue:`6178`, :pull:`6343`)
+
+#. `@ukmo-ccbunney`_ added support for loading NetCDF variable-length string types
+   and size hinting for better lazy loading (:issue:`6149`, :pull:`6340`)
+
+#. `@bouweandela`_ fixed handling of masked Dask arrays in
+   :func:`~iris.util.array_equal`.
+
+#. `@trexfeathers`_ removed the custom ``setup.py develop`` command, since
+   Setuptools are deprecating ``develop``; developers should instead
+   use ``pip install -e .``. See `Running setuptools commands`_ for more.
+   (:pull:`6424`)
+
+
+💣 Incompatible Changes
+=======================
+
+#. :class:`iris.tests.IrisTest` is being replaced by :mod:`iris.tests._shared_utils`.
+   Once conversion from unittest to pytest is completed, :class:`iris.tests.IrisTest`
+   class will be deprecated.
+
+#. `@trexfeathers`_ and `@pp-mo`_ significantly changed Iris' NetCDF loading
+   warnings as part of the :const:`~iris.loading.LOAD_PROBLEMS` work. Several
+   loading operations no longer raise their own warnings; instead their loading
+   problems are captured in :const:`~iris.loading.LOAD_PROBLEMS`. When
+   :const:`~iris.loading.LOAD_PROBLEMS` is populated, a single
+   :class:`~iris.warnings.IrisLoadWarning` is raised; see below.
+   As a first pass, this changed behaviour is currently limited to
+   ``standard_name`` and dimension coordinates from NetCDF files. (:pull:`6338`)
+
+   .. code-block:: none
+
+       IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
+
+
+🚀 Performance Enhancements
+===========================
+
+#. `@bouweandela`_ made loading :class:`~iris.cube.Cube`\s from NetCDF files
+   faster. (:pull:`6229` and :pull:`6252`)
+
+#. `@fnattino`_ enabled lazy cube interpolation using the linear and
+   nearest-neighbour interpolators (:class:`iris.analysis.Linear` and
+   :class:`iris.analysis.Nearest`). Note that this implementation removes
+   performance benefits linked to caching an interpolator object. While this does
+   not break previously suggested code (instantiating and re-using an interpolator
+   object remains possible), this is no longer an advertised feature. (:pull:`6084`)
+
+#. `@bouweandela`_ made coordinate dimension lookups faster for derived
+   coordinates. (:pull:`6337`)
+
+
+🔥 Deprecations
+===============
+
+#. N/A
+
+
+🔗 Dependencies
+===============
+
+#. `@stephenworsley`_ dropped support for ``py310`` and adopted support for ``py313``
+   as per the `SPEC 0`_ schedule. (:pull:`6195`)
+
+#. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
+   versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
+   to avoid this bug. (:pull:`6342`)
+
+#. `@trexfeathers`_ refactored Iris loading and saving to make it compatible
+   with Dask version ``2025.4.0`` and above. (:pull:`6451`)
+
+
+📚 Documentation
+================
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created :ref:`contributing_pytest_conversions`
+   as a guide for converting from ``unittest`` to ``pytest``. (:pull:`5785`)
+
+#. `@ESadek-MO`_ and `@trexfeathers`_ created a style guide for ``pytest`` tests,
+   and consolidated ``Test Categories`` and ``Testing Tools`` into
+   :ref:`contributing_tests`. (:issue:`5574`, :pull:`5785`)
+
+#. `@jfrost-mo`_ corrected ``unit`` to ``units`` in the docstring for
+   :class:`iris.coords.AuxCoord`. (:issue:`6347`, :pull:`6348`)
+
+
+💼 Internal
+===========
+
+#. `@ESadek-MO`_ `@pp-mo`_ `@bjlittle`_ `@trexfeathers`_ and `@HGWright`_ have
+   converted around a third of Iris' ``unittest`` style tests to ``pytest``. This is
+   part of an ongoing effort to move from ``unittest`` to ``pytest``. (:pull:`6207`,
+   part of :issue:`6212`)
+
+#. `@trexfeathers`_, `@ESadek-MO`_ and `@HGWright`_ heavily re-worked
+   :doc:`/developers_guide/release_do_nothing` to be more thorough and apply
+   lessons learned from recent releases. (:pull:`6062`)
+
+#. `@schlunma`_ made lazy `smart weights <https://github.com/SciTools/iris/pull/5084>`_
+   used for cube aggregations have the same chunks as their parent cube if broadcasting
+   is necessary. (:issue:`6285`, :pull:`6288`)
+
+#. `@trexfeathers`_ improved the handling of benchmark environments, especially
+   when working across Python versions. (:pull:`6329`)
+
+#. `@trexfeathers`_ temporarily pinned Sphinx to < 8.2.
+   (:pull:`6344`, :issue:`6345`)
+
+#. `@bouweandela`_ fixed a bug in the benchmarking code that caused all benchmarks
+   to be run with lazy data. (:pull:`6339`)
+
+
+.. comment
+    Whatsnew author names (@github name) in alphabetical order. Note that,
+    core dev names are automatically included by the common_links.inc:
+
+.. _@fnattino: https://github.com/fnattino
+.. _@jfrost-mo: https://github.com/jfrost-mo
+.. _@jrackham-mo: https://github.com/jrackham-mo
+.. _@stefsmeets: https://github.com/stefsmeets
+.. _@valeriupredoi: https://github.com/valeriupredoi
+
+.. comment
+    Whatsnew resources in alphabetical order:
+
+.. _SPEC 0: https://scientific-python.org/specs/spec-0000/
+.. _Running setuptools commands: https://setuptools.pypa.io/en/latest/deprecated/commands.html

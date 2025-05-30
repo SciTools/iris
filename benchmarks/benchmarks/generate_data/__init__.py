@@ -4,8 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Scripts for generating supporting data for benchmarking.
 
-Data generated using Iris should use :func:`run_function_elsewhere`, which
-means that data is generated using a fixed version of Iris and a fixed
+Data generated using this repo should use :func:`run_function_elsewhere`, which
+means that data is generated using a fixed version of this repo and a fixed
 environment, rather than those that get changed when the benchmarking run
 checks out a new commit.
 
@@ -28,7 +28,7 @@ from iris.fileformats import netcdf
 
 #: Python executable used by :func:`run_function_elsewhere`, set via env
 #:  variable of same name. Must be path of Python within an environment that
-#:  includes Iris (including dependencies and test modules) and Mule.
+#:  includes this repo (including dependencies and test modules) and Mule.
 try:
     DATA_GEN_PYTHON = environ["DATA_GEN_PYTHON"]
     _ = check_output([DATA_GEN_PYTHON, "-c", "a = True"])
@@ -106,11 +106,14 @@ def load_realised():
     file loading, but some benchmarks are only meaningful if starting with real
     arrays.
     """
+    from iris.fileformats._nc_load_rules import helpers
     from iris.fileformats.netcdf.loader import _get_cf_var_data as pre_patched
 
     def patched(cf_var, filename):
         return as_concrete_data(pre_patched(cf_var, filename))
 
-    netcdf._get_cf_var_data = patched
-    yield netcdf
-    netcdf._get_cf_var_data = pre_patched
+    netcdf.loader._get_cf_var_data = patched
+    helpers._get_cf_var_data = patched
+    yield
+    netcdf.loader._get_cf_var_data = pre_patched
+    helpers._get_cf_var_data = pre_patched
