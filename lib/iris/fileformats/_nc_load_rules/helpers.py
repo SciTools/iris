@@ -1411,6 +1411,8 @@ def _build_dimension_coordinate(
     )
 
     assert coord.var_name is not None
+    # Part 2 - only adding - following on from building in
+    #  actions.action_provides_grid_mapping()
     _ = _add_or_capture(
         build_func=partial(lambda: coord_system),
         add_method=partial(setattr, coord, "coord_system"),
@@ -1572,6 +1574,8 @@ def _build_auxiliary_coordinate(
     )
 
     assert coord.var_name is not None
+    # Part 2 - only adding - following on from building in
+    #  actions.action_provides_grid_mapping()
     _ = _add_or_capture(
         build_func=partial(lambda: coord_system),
         add_method=partial(setattr, coord, "coord_system"),

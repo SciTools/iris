@@ -205,9 +205,10 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
             coordinate_system = builder(engine_, cf_var_)
             engine_.cube_parts["coordinate_system"] = coordinate_system
 
+        # Part 1 - only building - adding takes place downstream in
+        #  helpers.build_and_add_dimension/auxiliary_coordinate().
         _ = hh._add_or_capture(
             build_func=partial(build_outer, engine, cf_var),
-            # Addition happens downstream instead.
             add_method=partial(lambda coord_system: None),
             cf_var=cf_var,
             destination=LoadProblems.Problem.Destination(
