@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Integration tests for loading of data with bounds of derived coordinates.
+"""Integration tests for loading of data with bounds of derived coordinates.
 
 This includes both out "legacy" sample data (which was wrongly recorded), and more
 modern testdata (which does not load bounds fully prior to Iris 3.13).
@@ -11,14 +10,16 @@ modern testdata (which does not load bounds fully prior to Iris 3.13).
 Both "legacy" and "newstyle" loading behaviour needs to be tested, which depends on the
 "FUTURE.derived_bounds" flag setting.
 """
+
+from pathlib import Path
+
 import numpy as np
 import pytest
 
 import iris
-from iris import sample_data_path, FUTURE
+from iris import FUTURE, sample_data_path
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
-from pathlib import Path
 db_testfile_path = Path(__file__).parent / "temp_nc_sources" / "a_new_file.nc"
 legacy_filepath = sample_data_path("hybrid_height.nc")
 
@@ -28,6 +29,7 @@ def derived_bounds(request):
     db = request.param
     with FUTURE.context(derived_bounds=db):
         yield db
+
 
 @pytest.fixture()
 def cf_primary_sample_path(tmp_path_factory):
@@ -87,7 +89,11 @@ def test_load_legacy_hh(derived_bounds):
     cube_names = sorted([cube.name() for cube in cubes])
     if derived_bounds:
         # get an extra promoted cube for the lost 'level-height bounds"
-        expected_cube_names = ["air_potential_temperature", "level_height_bnds", "surface_altitude"]
+        expected_cube_names = [
+            "air_potential_temperature",
+            "level_height_bnds",
+            "surface_altitude",
+        ]
     else:
         expected_cube_names = ["air_potential_temperature", "surface_altitude"]
     assert cube_names == expected_cube_names
@@ -125,15 +131,17 @@ def test_load_primary_cf_style(derived_bounds, cf_primary_sample_path):
 
     # Check all the coords on the cube, including whether they have bounds
     main_cube = cubes.extract_cube("air_temperature")
-    assert set(co.name() for co in main_cube.coords()) == set([
-        "a coefficient for vertical coordinate at full levels",
-        "b coefficient for vertical coordinate at full levels",
-        "atmosphere_hybrid_sigma_pressure_coordinate",
-        "vertical pressure",
-        "PS",
-        "air_pressure",
-        "P0",
-    ])
+    assert set(co.name() for co in main_cube.coords()) == set(
+        [
+            "a coefficient for vertical coordinate at full levels",
+            "b coefficient for vertical coordinate at full levels",
+            "atmosphere_hybrid_sigma_pressure_coordinate",
+            "vertical pressure",
+            "PS",
+            "air_pressure",
+            "P0",
+        ]
+    )
 
     # First, the main hybrid coord
     pressure_coord = main_cube.coord("air_pressure")
@@ -173,5 +181,3 @@ def test_load_primary_cf_style(derived_bounds, cf_primary_sample_path):
     assert co_P0.var_name == "P0"
     assert not co_P0.has_bounds()
     assert main_cube.coord_dims(co_P0) == ()
-
-
