@@ -16,7 +16,6 @@ References
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, MutableMapping
-import contextlib
 import os
 import re
 from typing import ClassVar, Optional
@@ -1430,9 +1429,11 @@ class CFReader:
                 if iris.FUTURE.derived_bounds:
                     # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
                     #  and turn them into bounds vars (though they don't appear in a "bounds" attribute)
+
+                    # Adds each root only once
                     all_roots.add(cf_root)
 
-                    # cf_root_coord = CFCoordinateVariable of the coordinate relating to the root
+                    # cf_root_coord = CFCoordinateVariable or CFAuxiliaryCoordinateVariable of the coordinate relating to the root
                     cf_root_coord = self.cf_group.coordinates.get(cf_root)
                     if cf_root_coord is None:
                         cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
@@ -1443,10 +1444,11 @@ class CFReader:
                     if root_bounds_name in self.cf_group:
                         root_bounds_var = self.cf_group.get(root_bounds_name)
                         if not hasattr(root_bounds_var, "formula_terms"):
-                            # this is an invalid root bounds, according to CF
+                            # this is an invalid root bounds, according to CF, and therefore should be promoted into a cube
                             root_bounds_var._to_be_promoted = True
                         else:
-                            # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable
+                            # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable,
+                            # while filtering out all of the variables that are defined as their own bounds.
                             term_bounds_vars = [
                                 # loop through all formula terms and add them if they have a cf_term_by_root
                                 # where (bounds of cf_root): cf_term (same as before)
@@ -1490,7 +1492,8 @@ class CFReader:
                         root_bounds_var is not None
                         and "formula_terms" not in root_bounds_var.ncattrs()
                     ):
-                        # This means it is *not* a valid bounds var, according to CF
+                        # This means it is *not* a valid bounds var, according to CF, and so therefore we are
+                        # invalidating the bounds.
                         root_var.bounds = None
 
         # Determine the CF data variables.
