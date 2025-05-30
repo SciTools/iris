@@ -1424,7 +1424,9 @@ class CFReader:
 
         # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
         for cf_var in formula_terms.values():
-            # eg. eta:'a' | cf_root = eta and cf_term = a. cf_var.cf_terms_by_root = {'eta': 'a'} (looking at all appearances in formula terms)
+            # Example of a formula term:
+            # Suppose in the file eta:formula_terms contains "a: var_A"
+            # cf_var = var_A, cf_root = eta and cf_term = 'a'. cf_var.cf_terms_by_root = {eta: 'a'}
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 if iris.FUTURE.derived_bounds:
                     # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
@@ -1448,7 +1450,6 @@ class CFReader:
                             root_bounds_var._to_be_promoted = True
                         else:
                             # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable,
-                            # while filtering out all of the variables that are defined as their own bounds.
                             term_bounds_vars = [
                                 # loop through all formula terms and add them if they have a cf_term_by_root
                                 # where (bounds of cf_root): cf_term (same as before)
@@ -1458,8 +1459,8 @@ class CFReader:
                             ]
                             if len(term_bounds_vars) == 1:
                                 (term_bounds_var,) = term_bounds_vars
+                                # N.B. bounds==main-var is valid CF for *no* bounds
                                 if term_bounds_var != cf_var:
-                                    # N.B. bounds==main-var is valid CF for *no* bounds
                                     cf_var.bounds = term_bounds_var.cf_name
                                     new_var = CFBoundaryVariable(
                                         term_bounds_var.cf_name, term_bounds_var.cf_data
@@ -1469,12 +1470,13 @@ class CFReader:
                                     self.cf_group[term_bounds_var.cf_name] = new_var
 
                 if cf_root not in self.cf_group.bounds:
-                    # TODO: explain this section ?
+                    # This records all formula terms in the main cf_group that were previously only stored in the formula_terms dictionary.
                     cf_name = cf_var.cf_name
                     if cf_name not in self.cf_group:
+                        # If the formula term variable is not already in the group, add it as a coordinate.
                         new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
                         if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
-                            # Implement "new-style" derived bounds link
+                            # Copy "old-style" derived bounds link
                             new_var.bounds = cf_var.bounds
                         self.cf_group[cf_name] = new_var
 
@@ -1568,7 +1570,7 @@ class CFReader:
                     _span_check(cf_name)
 
             if iris.FUTURE.derived_bounds:
-                # TODO: explain this section
+                # Include bounds of every variable, within cf_group attached to the variable.
                 if hasattr(cf_variable, "bounds"):
                     if cf_variable.bounds not in cf_group:
                         bounds_var = self.cf_group.get(cf_variable.bounds)
