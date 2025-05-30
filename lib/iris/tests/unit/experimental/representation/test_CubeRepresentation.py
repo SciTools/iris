@@ -29,7 +29,6 @@ class Test__instantiation(tests.IrisTest):
         self.assertEqual(id(self.cube), self.representer.cube_id)
 
 
-
 @tests.skip_data
 class Test__get_dim_names(tests.IrisTest):
     def setUp(self):
@@ -126,150 +125,150 @@ def test_realistic():
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\ttime</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\t'
-        'model_level_number</td>\n'
+        "model_level_number</td>\n"
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tgrid_latitude</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tgrid_longitude</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Auxiliary coordinates</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tlevel_height</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tsigma</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tsurface_altitude</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Derived coordinates</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\taltitude</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Cell measures</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tfoo</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Ancillary variables</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tbar</td>\n'
         '    <td class="iris-inclusion-cell">x</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
         '    <td class="iris-inclusion-cell">-</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Scalar coordinates</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tforecast_period</td>\n'
         '    <td class="iris-word-cell" colspan="4">0.0 hours</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Scalar cell measures</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tbaz</td>\n'
         '    <td class="iris-word-cell" colspan="4"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Cell methods</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\t0</td>\n'
         '    <td class="iris-word-cell" colspan="4">time: mean (interval: 6hr)</td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-title iris-word-cell">Attributes</td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
         '    <td class="iris-title"></td>\n'
-        '</tr>\n'
+        "</tr>\n"
         '<tr class="iris">\n'
         '    <td class="iris-word-cell iris-subheading-cell">\tsource</td>\n'
         '    <td class="iris-word-cell" colspan="4">&#x27;Iris test case&#x27;</td>\n'
-        '</tr>'
+        "</tr>"
     )
     assert expected == result
 
