@@ -1486,14 +1486,9 @@ class CFReader:
             for cf_root in all_roots:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
-                if all(
-                    key in root_var.ncattrs() for key in ("bounds", "formula_terms")
-                ):
+                if getattr(root_var, "formula_terms", None) and getattr(root_var, "bounds", None):
                     root_bounds_var = self.cf_group.get(root_var.bounds)
-                    if (
-                        root_bounds_var is not None
-                        and "formula_terms" not in root_bounds_var.ncattrs()
-                    ):
+                    if not getattr(root_bounds_var, "formula_terms", None):
                         # This means it is *not* a valid bounds var, according to CF, and so therefore we are
                         # invalidating the bounds.
                         root_var.bounds = None
