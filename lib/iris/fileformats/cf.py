@@ -1442,29 +1442,30 @@ class CFReader:
                     # N.B. cf_root_coord may here be None, if the root var was not a
                     #  coord - that is ok, it will not have a 'bounds', we will skip it.
                     if root_bounds_name in self.cf_group:
-                        # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable
-                        term_bounds_vars = [
-                            # loop through all formula terms and add them if they have a cf_term_by_root
-                            # where (bounds of cf_root): cf_term (same as before)
-                            f
-                            for f in formula_terms.values()
-                            if f.cf_terms_by_root.get(root_bounds_name) == cf_term
-                        ]
-                        if len(term_bounds_vars) == 1:
-                            (term_bounds_var,) = term_bounds_vars
-                            if term_bounds_var != cf_var:
-                                # N.B. bounds==main-var is valid CF for *no* bounds
-                                cf_var.bounds = term_bounds_var.cf_name
-                                new_var = CFBoundaryVariable(
-                                    term_bounds_var.cf_name, term_bounds_var.cf_data
-                                )
-                                new_var.add_formula_term(root_bounds_name, cf_term)
-                                # "Reclassify" this var as a bounds variable
-                                self.cf_group[term_bounds_var.cf_name] = new_var
+                        root_bounds_var = self.cf_group.get(root_bounds_name)
+                        if not hasattr(root_bounds_var, "formula_terms"):
+                            # this is an invalid root bounds, according to CF
+                            root_bounds_var._to_be_promoted = True
                         else:
-                            # Found 0 term bounds, or >1 : discard the term
-                            # Modify the boundary_variable set _to_be_promoted to True
-                            self.cf_group.get(root_bounds_name)._to_be_promoted = True
+                            # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable
+                            term_bounds_vars = [
+                                # loop through all formula terms and add them if they have a cf_term_by_root
+                                # where (bounds of cf_root): cf_term (same as before)
+                                f
+                                for f in formula_terms.values()
+                                if f.cf_terms_by_root.get(root_bounds_name) == cf_term
+                            ]
+                            if len(term_bounds_vars) == 1:
+                                (term_bounds_var,) = term_bounds_vars
+                                if term_bounds_var != cf_var:
+                                    # N.B. bounds==main-var is valid CF for *no* bounds
+                                    cf_var.bounds = term_bounds_var.cf_name
+                                    new_var = CFBoundaryVariable(
+                                        term_bounds_var.cf_name, term_bounds_var.cf_data
+                                    )
+                                    new_var.add_formula_term(root_bounds_name, cf_term)
+                                    # "Reclassify" this var as a bounds variable
+                                    self.cf_group[term_bounds_var.cf_name] = new_var
 
                 if cf_root not in self.cf_group.bounds:
                     # TODO: explain this section ?
