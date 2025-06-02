@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
+import pytest
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
@@ -105,9 +106,8 @@ class Test__summary_content(tests.IrisTest):
         result = self.representer.ndims
         self.assertEqual(expected, result)
 
-
-@tests.skip_data
-def test_realistic():
+@pytest.fixture
+def realistic_4d():
     cube = stock.realistic_4d()
     cmth = CellMethod("mean", "time", "6hr")
     cube.add_cell_method(cmth)
@@ -117,7 +117,12 @@ def test_realistic():
     cube.add_ancillary_variable(avr, 0)
     scms = CellMeasure([0], long_name="baz")
     cube.add_cell_measure(scms)
-    representer = CubeRepresentation(cube)
+    return cube
+
+
+@tests.skip_data
+def test_realistic(realistic_4d):
+    representer = CubeRepresentation(realistic_4d)
     result = representer._make_content()
     expected = (
         '<tr class="iris">\n'

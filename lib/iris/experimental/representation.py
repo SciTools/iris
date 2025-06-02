@@ -209,6 +209,7 @@ class CubeRepresentation:
 
     def _make_content(self):
         elements = []
+        INDENT = 4 * "&nbsp;"
         for sect in self.summary.vector_sections.values():
             if sect.contents:
                 sect_title = sect.title
@@ -220,7 +221,7 @@ class CubeRepresentation:
                 title = escape(content.name)
                 if content.extra:
                     title = (
-                        title + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + escape(content.extra)
+                        title + "<br>" + INDENT + escape(content.extra)
                     )
                 elements.extend(self._make_row(title, body=body, col_span=0))
         for sect in self.summary.scalar_sections.values():
@@ -233,11 +234,7 @@ class CubeRepresentation:
                         body = escape(item.content)
                         title = escape(item.name)
                         if item.extra:
-                            title = (
-                                title
-                                + "<br>&nbsp;&nbsp;&nbsp;&nbsp;"
-                                + escape(item.extra)
-                            )
+                            title = title + "<br>" + INDENT + escape(item.extra)
                         elements.extend(
                             self._make_row(title, body=body, col_span=self.ndims)
                         )
