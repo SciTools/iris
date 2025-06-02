@@ -47,6 +47,9 @@ This document explains the changes made to Iris for this release
 #. `@ukmo-ccbunney`_ fixed loading and merging of masked data in scalar ``AuxCoords``.
    (:issue:`3584`, :pull:`6468`)
 
+#. `@stephenworsley`_ fixed the html representation of cubes in Jupyter when coordinates
+   share the same name. (:pull:`6476`)
+
 💣 Incompatible Changes
 =======================
 
