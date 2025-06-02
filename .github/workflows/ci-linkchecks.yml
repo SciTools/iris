@@ -13,20 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: "Generate token"
-        uses: actions/create-github-app-token@v2
-        id: generate-token
-        with:
-          app-id: ${{ secrets.AUTH_APP_ID }}
-          private-key: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
-
       - name: Link Checker
         id: lychee
-        uses: lycheeverse/lychee-action@1d97d84f0bc547f7b25f4c2170d87d810dc2fb2c
+        uses: lycheeverse/lychee-action@82202e5e9c2f4ef1a55a3d02563e1cb6041e5332
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{secrets.GITHUB_TOKEN}}
           fail: false
-          args: "--verbose './docs/**/*.rst' './docs/**/*.inc' './lib/**/*.py'"
+          args: "--verbose --max-concurrency 1 './docs/**/*.rst' './docs/**/*.inc' './lib/**/*.py'"
 
       - name: Create Issue From File
         if: steps.lychee.outputs.exit_code != 0

@@ -253,6 +253,14 @@ def _get_cf_var_data(cf_var, filename):
         if total_bytes < _LAZYVAR_MIN_BYTES:
             # Don't make a lazy array, as it will cost more memory AND more time to access.
             result = cf_var[:]
+
+            # Special handling of masked scalar value; this will be returned as
+            # an `np.ma.masked` instance which will lose the original dtype.
+            # Workaround for this it return a 1-element masked array of the
+            # correct dtype. Note: this is not an issue for masked arrays,
+            # only masked scalar values.
+            if result is np.ma.masked:
+                result = np.ma.masked_all(1, dtype=cf_var.datatype)
         else:
             # Get lazy chunked data out of a cf variable.
             # Creates Dask wrappers around data arrays for any cube components which
