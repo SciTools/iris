@@ -220,9 +220,7 @@ class CubeRepresentation:
 
                 title = escape(content.name)
                 if content.extra:
-                    title = (
-                        title + "<br>" + INDENT + escape(content.extra)
-                    )
+                    title = title + "<br>" + INDENT + escape(content.extra)
                 elements.extend(self._make_row(title, body=body, col_span=0))
         for sect in self.summary.scalar_sections.values():
             if sect.contents:
