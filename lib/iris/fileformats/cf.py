@@ -97,6 +97,8 @@ class CFVariable(metaclass=ABCMeta):
         self.cf_terms_by_root = {}
         """CF-netCDF formula terms that his variable participates in."""
 
+        self._to_be_promoted = False
+
         self.cf_attrs_reset()
 
     @staticmethod
@@ -1419,16 +1421,82 @@ class CFReader:
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(variables)
 
+        if iris.FUTURE.derived_bounds:
+            # Keep track of all the root vars so we can unpick invalid bounds vars
+            all_roots = set()
+
+        # cf_var = CFFormulaTermsVariable (loops through everything that appears in formula terms)
         for cf_var in formula_terms.values():
+            # Example of a formula term:
+            # Suppose in the file eta:formula_terms contains "a: var_A"
+            # cf_var = var_A, cf_root = eta and cf_term = 'a'. cf_var.cf_terms_by_root = {eta: 'a'}
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
-                # Ignore formula terms owned by a bounds variable.
+                if iris.FUTURE.derived_bounds:
+                    # For the "newstyle" derived-bounds implementation, find vars which appear in derived bounds terms
+                    #  and turn them into bounds vars (though they don't appear in a "bounds" attribute)
+
+                    # Adds each root only once
+                    all_roots.add(cf_root)
+
+                    # cf_root_coord = CFCoordinateVariable or CFAuxiliaryCoordinateVariable of the coordinate relating to the root
+                    cf_root_coord = self.cf_group.coordinates.get(cf_root)
+                    if cf_root_coord is None:
+                        cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
+
+                    root_bounds_name = getattr(cf_root_coord, "bounds", None)
+                    # N.B. cf_root_coord may here be None, if the root var was not a
+                    #  coord - that is ok, it will not have a 'bounds', we will skip it.
+                    if root_bounds_name in self.cf_group:
+                        root_bounds_var = self.cf_group.get(root_bounds_name)
+                        if not hasattr(root_bounds_var, "formula_terms"):
+                            # this is an invalid root bounds, according to CF, and therefore should be promoted into a cube
+                            root_bounds_var._to_be_promoted = True
+                        else:
+                            # Found a valid *root* bounds variable : search for a corresponding *term* bounds variable,
+                            term_bounds_vars = [
+                                # loop through all formula terms and add them if they have a cf_term_by_root
+                                # where (bounds of cf_root): cf_term (same as before)
+                                f
+                                for f in formula_terms.values()
+                                if f.cf_terms_by_root.get(root_bounds_name) == cf_term
+                            ]
+                            if len(term_bounds_vars) == 1:
+                                (term_bounds_var,) = term_bounds_vars
+                                # N.B. bounds==main-var is valid CF for *no* bounds
+                                if term_bounds_var != cf_var:
+                                    cf_var.bounds = term_bounds_var.cf_name
+                                    new_var = CFBoundaryVariable(
+                                        term_bounds_var.cf_name, term_bounds_var.cf_data
+                                    )
+                                    new_var.add_formula_term(root_bounds_name, cf_term)
+                                    # "Reclassify" this var as a bounds variable
+                                    self.cf_group[term_bounds_var.cf_name] = new_var
+
                 if cf_root not in self.cf_group.bounds:
+                    # This records all formula terms in the main cf_group that were previously only stored in the formula_terms dictionary.
                     cf_name = cf_var.cf_name
-                    if cf_var.cf_name not in self.cf_group:
-                        self.cf_group[cf_name] = CFAuxiliaryCoordinateVariable(
-                            cf_name, cf_var.cf_data
-                        )
+                    if cf_name not in self.cf_group:
+                        # If the formula term variable is not already in the group, add it as a coordinate.
+                        new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
+                        if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
+                            # Copy "old-style" derived bounds link
+                            new_var.bounds = cf_var.bounds
+                        self.cf_group[cf_name] = new_var
+
                     self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
+
+        if iris.FUTURE.derived_bounds:
+            for cf_root in all_roots:
+                # Invalidate "broken" bounds connections
+                root_var = self.cf_group[cf_root]
+                if getattr(root_var, "formula_terms", None) and getattr(
+                    root_var, "bounds", None
+                ):
+                    root_bounds_var = self.cf_group.get(root_var.bounds)
+                    if not getattr(root_bounds_var, "formula_terms", None):
+                        # This means it is *not* a valid bounds var, according to CF, and so therefore we are
+                        # invalidating the bounds.
+                        root_var.bounds = None
 
         # Determine the CF data variables.
         data_variable_names = (
@@ -1457,7 +1525,7 @@ class CFReader:
                 """Sanity check dimensionality."""
                 var = self.cf_group[var_name]
                 # No span check is necessary if variable is attached to a mesh.
-                if is_mesh_var or var.spans(cf_variable):
+                if (is_mesh_var or var.spans(cf_variable)) and not var._to_be_promoted:
                     cf_group[var_name] = var
                 else:
                     # Register the ignored variable.
@@ -1501,6 +1569,16 @@ class CFReader:
                 for cf_name in match:
                     _span_check(cf_name)
 
+            if iris.FUTURE.derived_bounds:
+                # Include bounds of every variable, within cf_group attached to the variable.
+                if hasattr(cf_variable, "bounds"):
+                    if cf_variable.bounds not in cf_group:
+                        bounds_var = self.cf_group.get(cf_variable.bounds)
+                        if bounds_var:
+                            # TODO: warning if span fails
+                            if bounds_var.spans(cf_variable):
+                                cf_group[cf_variable.bounds] = bounds_var
+
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
                 # Add global netCDF attributes.
@@ -1543,8 +1621,14 @@ class CFReader:
         # may be promoted to a CFDataVariable and restrict promotion to only
         # those formula terms that are reference surface/phenomenon.
         for cf_var in self.cf_group.formula_terms.values():
+            if iris.FUTURE.derived_bounds:
+                if self.cf_group[cf_var.cf_name] is CFBoundaryVariable:
+                    continue
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 cf_root_var = self.cf_group[cf_root]
+                if iris.FUTURE.derived_bounds:
+                    if not hasattr(cf_root_var, "standard_name"):
+                        continue
                 name = cf_root_var.standard_name or cf_root_var.long_name
                 terms = reference_terms.get(name, [])
                 if isinstance(terms, str) or not isinstance(terms, Iterable):
@@ -1555,6 +1639,7 @@ class CFReader:
                     self.cf_group.promoted[cf_var_name] = data_var
                     _build(data_var)
                     break
+
         # Promote any ignored variables.
         promoted = set()
         not_promoted = ignored.difference(promoted)
