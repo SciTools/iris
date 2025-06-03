@@ -154,13 +154,14 @@ def create_shapefile_mask(
         raise ValueError(msg)
 
     # Get cube coordinates
-    y_name, x_name = _cube_primary_xy_coord_names(cube)
+    x_coord = cube.coord(axis='x', dim_coords=True)
+    y_coord = cube.coord(axis='y', dim_coords=True)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
-    if (cube.coord(x_name).units.origin == "degrees") and (
-        cube.coord(x_name).points.max() > 180
+    if (x_coord.units.origin == "degrees") and (
+        x_coord.points.max() > 180
     ):
         # Convert to [-180, 180] domain
-        cube = cube.intersection(iris.coords.CoordExtent(x_name, -180, 180))
+        cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
 
     # Check for CRS equality and transform if necessary
     cube_crs = cube.coord_system().as_cartopy_projection()
@@ -173,23 +174,21 @@ def create_shapefile_mask(
             cube_crs=cube_crs,
         )
 
-    x_points = cube.coord(x_name).points
-    y_points = cube.coord(y_name).points
-    w = len(x_points)
-    h = len(y_points)
+    w = len(x_coord.points)
+    h = len(y_coord.points)
     # Mask by weight if minimum_weight > 0.0
     if minimum_weight > 0:
         weighted_mask_template = _get_weighted_mask(
             geometry=geometry,
             cube=cube,
-            x_name=x_name,
-            y_name=y_name,
+            x_name=x_coord.name(),
+            y_name=y_coord.name(),
             minimum_weight=minimum_weight,
         )
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
-    tr = _make_raster_cube__transform(cube, x_name, y_name)
+    tr = _make_raster_cube_transform(cube, x_coord.name(), y_coord.name())
 
     # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
@@ -201,7 +200,7 @@ def create_shapefile_mask(
 
     # If cube was on circular domain, then the transformed
     # mask template needs shifting to match the cube domain
-    if cube.coord(x_name).circular:
+    if x_coord.circular:
         mask_template = np.roll(mask_template, w // 2, axis=1)
 
     if minimum_weight > 0:
@@ -321,37 +320,6 @@ def is_geometry_valid(
     return
 
 
-def _cube_primary_xy_coord_names(cube: iris.cube.Cube) -> tuple[str, str]:
-    """Return the primary latitude and longitude coordinate names, or long names, from a cube.
-
-    Parameters
-    ----------
-    cube : :class:`iris.cube.Cube`
-
-    Returns
-    -------
-    tuple
-        The names of the primary latitude and longitude coordinates.
-
-    """
-    latc = (
-        cube.coords(axis="y", dim_coords=True)[0]
-        if cube.coords(axis="y", dim_coords=True)
-        else -1
-    )
-    lonc = (
-        cube.coords(axis="x", dim_coords=True)[0]
-        if cube.coords(axis="x", dim_coords=True)
-        else -1
-    )
-
-    if -1 in (latc, lonc):
-        msg = "Error retrieving 1d xy coordinates in cube: {!r}"
-        raise ValueError(msg.format(cube))
-
-    latitude = latc.name()
-    longitude = lonc.name()
-    return latitude, longitude
 
 
 def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
@@ -398,24 +366,13 @@ def _transform_geometry(
     -------
     :class:`shapely.Geometry`
         The transformed geometry.
-
-    Raises
-    ------
-    TypeError
-        If the geometry is not a valid shapely geometry.
-
     """
     # Set-up transform via pyproj
     t = Transformer.from_crs(
         crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
     ).transform
     # Transform geometry
-    geometry = shapely.ops.transform(t, geometry)
-    # Recheck geometry validity
-    if not shapely.is_valid(geometry):
-        msg = f"Shape geometry is invalid (not well formed): {shapely.is_valid_reason(geometry)}."
-        raise TypeError(msg)
-    return geometry
+    return shapely.ops.transform(t, geometry)
 
 
 def _get_weighted_mask(
@@ -484,7 +441,7 @@ def _get_weighted_mask(
     return weighted_mask_template
 
 
-def _make_raster_cube__transform(
+def _make_raster_cube_transform(
     cube: iris.cube.Cube,
     x_name: str,
     y_name: str,
