@@ -16,6 +16,9 @@ from unittest import mock
 import numpy as np
 
 from iris.fileformats._nc_load_rules.helpers import get_attr_units
+from iris.fileformats.cf import CFDataVariable
+from iris.loading import LOAD_PROBLEMS
+from iris.warnings import IrisCfLoadWarning
 
 
 class TestGetAttrUnits(tests.IrisTest):
@@ -27,8 +30,10 @@ class TestGetAttrUnits(tests.IrisTest):
         cf_group = mock.Mock(global_attributes=global_attributes)
 
         cf_var = mock.MagicMock(
+            spec=CFDataVariable,
             cf_name="sound_frequency",
             cf_data=mock.Mock(spec=[]),
+            filename="DUMMY",
             standard_name=None,
             long_name=None,
             units="\u266b",
@@ -45,6 +50,27 @@ class TestGetAttrUnits(tests.IrisTest):
         attr_units = get_attr_units(cf_var, attributes)
         self.assertEqual(attr_units, "?")
         self.assertEqual(attributes, expected_attributes)
+
+    def test_warn(self):
+        attributes = {}
+        expected_attributes = {"invalid_units": "\u266b"}
+        cf_var = self._make_cf_var()
+        with self.assertWarns(IrisCfLoadWarning, msg="Ignoring invalid units"):
+            attr_units = get_attr_units(cf_var, attributes)
+        self.assertEqual(attr_units, "?")
+        self.assertEqual(attributes, expected_attributes)
+
+    def test_capture(self):
+        attributes = {}
+        expected_attributes = {"invalid_units": "\u266b"}
+        cf_var = self._make_cf_var()
+        with self.assertNoWarningsRegexp("Ignoring invalid units"):
+            attr_units = get_attr_units(cf_var, attributes, capture_invalid=True)
+        self.assertEqual(attr_units, "?")
+        self.assertEqual(attributes, expected_attributes)
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        self.assertEqual(load_problem.loaded, {"units": "\u266b"})
 
 
 if __name__ == "__main__":

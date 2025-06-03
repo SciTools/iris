@@ -109,8 +109,8 @@ def load_realised():
     from iris.fileformats._nc_load_rules import helpers
     from iris.fileformats.netcdf.loader import _get_cf_var_data as pre_patched
 
-    def patched(cf_var, filename):
-        return as_concrete_data(pre_patched(cf_var, filename))
+    def patched(*args, **kwargs):
+        return as_concrete_data(pre_patched(*args, **kwargs))
 
     netcdf.loader._get_cf_var_data = patched
     helpers._get_cf_var_data = patched
