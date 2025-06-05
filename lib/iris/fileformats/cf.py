@@ -88,8 +88,12 @@ class CFVariable(metaclass=ABCMeta):
         self.cf_data = data
         """NetCDF4 Variable data instance."""
 
-        self.filename = data.group().filepath()
+        self.filename: str
         """File source of the NetCDF content."""
+        try:
+            self.filename = data.group().filepath()
+        except AttributeError:
+            self.filename = "<unknown_filename>"
 
         self.cf_group = None
         """Collection of CF-netCDF variables associated with this variable."""
