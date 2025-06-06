@@ -2197,7 +2197,7 @@ def mask_cube_from_shapefile(
     in_place: bool = False,
     all_touched: bool = False,
     minimum_weight: float = 0.0,
-    invert: bool = False
+    invert: bool = False,
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 

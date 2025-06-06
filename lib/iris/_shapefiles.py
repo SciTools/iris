@@ -154,12 +154,10 @@ def create_shapefile_mask(
         raise ValueError(msg)
 
     # Get cube coordinates
-    x_coord = cube.coord(axis='x', dim_coords=True)
-    y_coord = cube.coord(axis='y', dim_coords=True)
+    x_coord = cube.coord(axis="x", dim_coords=True)
+    y_coord = cube.coord(axis="y", dim_coords=True)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
-    if (x_coord.units.origin == "degrees") and (
-        x_coord.points.max() > 180
-    ):
+    if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
 
@@ -320,8 +318,6 @@ def is_geometry_valid(
     return
 
 
-
-
 def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
     """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
 
@@ -347,9 +343,7 @@ def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
 
 
 def _transform_geometry(
-    geometry: shapely.Geometry,
-    geometry_crs: ccrs | CRS,
-    cube_crs: ccrs
+    geometry: shapely.Geometry, geometry_crs: ccrs | CRS, cube_crs: ccrs
 ) -> shapely.Geometry:
     """Transform a geometry to the cube CRS using pyproj.
 
