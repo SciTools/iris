@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Nox
         run: |
-          pip install nox
+          pip install nox!=2025.05.01
 
       - name: Cache environment directories
         id: cache-env-dir
