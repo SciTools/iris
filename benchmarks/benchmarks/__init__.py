@@ -6,6 +6,11 @@
 
 from os import environ
 
+import iris
+
+from . import generate_data
+from .generate_data.um_files import create_um_files
+
 
 def disable_repeat_between_setup(benchmark_object):
     """Benchmark where object persistence would be inappropriate (decorator).
@@ -50,3 +55,22 @@ def on_demand_benchmark(benchmark_object):
     """
     if "ON_DEMAND_BENCHMARKS" in environ:
         return benchmark_object
+
+
+@on_demand_benchmark
+class ValidateSetup:
+    """Simple benchmarks that exercise all elements of our setup."""
+
+    params = [1, 2]
+
+    def setup(self, param):
+        generate_data.REUSE_DATA = False
+        (self.file_path,) = create_um_files(
+            param, param, param, param, False, ["NetCDF"]
+        ).values()
+
+    def time_validate(self, param):
+        _ = iris.load(self.file_path)
+
+    def tracemalloc_validate(self, param):
+        _ = iris.load(self.file_path)
