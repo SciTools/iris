@@ -92,6 +92,9 @@ This document explains the changes made to Iris for this release
    on `lychee <https://github.com/lycheeverse/lychee-action>`__.
    (:issue:`4140`, :pull:`6386`)
 
+#. `@trexfeathers`_ added a CI workflow to quickly validate that the
+   benchmarking setup is still working. (:pull:`6496`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
