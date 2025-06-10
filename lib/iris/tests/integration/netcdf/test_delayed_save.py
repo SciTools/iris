@@ -143,7 +143,7 @@ class Test__lazy_stream_data:
         # NOTE: it might be nicer to use assertCDL, but unfortunately importing
         # unittest.TestCase seems to lose us the ability to use fixtures.
 
-    @classmethod
+    @staticmethod
     @pytest.fixture(
         params=[
             "ThreadedScheduler",
@@ -151,7 +151,7 @@ class Test__lazy_stream_data:
             "SingleThreadScheduler",
         ]
     )
-    def scheduler_type(cls, request):
+    def scheduler_type(request):
         sched_typename = request.param
         if sched_typename == "ThreadedScheduler":
             config_name = "threads"
