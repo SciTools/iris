@@ -1802,7 +1802,7 @@ def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
     is_valid = False
     attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
 
-    if attr_units is not None:
+    if isinstance(attr_units, str):
         attr_units = attr_units.lower()
         is_valid = attr_units in ud_units
 
