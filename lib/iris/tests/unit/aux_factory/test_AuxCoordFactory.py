@@ -177,6 +177,7 @@ class Test_rechunk:
             self.y = make_co("y", (1, ny, 1))
             self.z = make_co("z", (1, 1, nz))
 
+        @property
         def dependencies(self):
             return {'x': self.x, "y": self.y, "z": self.z}
 

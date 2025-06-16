@@ -121,7 +121,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         # The dims of all the given components should be the same and, **presumably**,
         #  the same as the result ??
-        for i_dep, (dep, name) in enumerate(zip(dep_arrays, self.dependencies().keys())):
+        for i_dep, (dep, name) in enumerate(zip(dep_arrays, self.dependencies.keys())):
             if dep.ndim != result.ndim:
                 msg = (
                     f"Dependency #{i_dep}, '{name}' has ndims={dep.ndim}, "
