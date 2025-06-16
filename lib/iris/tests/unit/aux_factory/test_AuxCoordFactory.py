@@ -6,6 +6,9 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+import dask.array as da
+import dask.config
+import dask.utils
 import numpy as np
 import pytest
 
@@ -158,3 +161,69 @@ class Test_lazy_aux_coords:
         # Test that points and bounds arrays stay lazy after cube printing.
         _ = str(sample_cube)
         self._check_lazy(sample_cube)
+
+
+class Test_rechunk:
+    class TestAuxFact(AuxCoordFactory):
+        # A minimal AuxCoordFactory that enables us to test the re-chunking logic.
+        def __init__(self, nx, ny, nz):
+            def make_co(name, dims):
+                dims = tuple(dims)
+                pts = da.ones(dims, dtype=np.int32, chunks=dims)
+                bds = np.stack([pts-0.5, pts+0.5], axis=-1)
+                co = AuxCoord(pts, bounds=bds, long_name=name)
+                return co
+            self.x = make_co("x", (nx, 1, 1))
+            self.y = make_co("y", (1, ny, 1))
+            self.z = make_co("z", (1, 1, nz))
+
+        def dependencies(self):
+            return {'x': self.x, "y": self.y, "z": self.z}
+
+        def _calculate_array(self, *dep_arrays, **other_args):
+            x, y, z = dep_arrays
+            return x * y * z
+
+        def make_coord(self, coord_dims_func):
+            # N.B. don't bother with dim remapping, we know it is not needed.
+            points = self._derive_array(
+                *(getattr(self, name).core_points() for name in ("x", "y", "z"))
+            )
+            bounds = self._derive_array(
+                *(getattr(self, name).core_bounds() for name in ("x", "y", "z"))
+            )
+            result = AuxCoord(
+                points,
+                bounds=bounds,
+                long_name="testco",
+            )
+            return result
+
+    @pytest.mark.parametrize('nz', [10, 100, 1000])
+    def test_rechunk(self, nz):
+        # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
+        #  at different NZ sizes eventually needing to rechunk on both Y and X
+        nx, ny = 10, 10
+        chunksize = 4000 * 4  # *4 for np.int32 element size
+        # Summary  of expectation:
+        # (10, 10, 10) = 1,000: ok
+        # (10, 10, 100) = 10,000 --> (3, 10, 100) = 3000 --> rechunk, dividing X by 3
+        # (10, 10, 1000) = 100,1000 --> (1, 3, 1000) --> rechunk both X and Y
+        aux_co = self.TestAuxFact(nx, ny, nz)
+        daskformat_chunksize = f"{chunksize}b"
+
+        with dask.config.set({"array.chunk-size": daskformat_chunksize}):
+            result = aux_co.make_coord(None)
+
+        assert result.has_lazy_points()
+        assert result.has_lazy_bounds()
+        chunksize_points_bounds = (
+            result.core_points().chunksize,
+            result.core_bounds().chunksize,
+        )
+        expect_chunks_points_bounds = {
+            10: ((10, 10, 10), (10, 10, 10, 1)),  # no rechunk
+            100: ((3, 10, 100), (2, 10, 100, 1)),  # divide x by 3 (bounds: 5)
+            1000: ((1, 3, 1000), (1, 2, 1000, 1)),  # divide x,y by 10,3 (bounds: 10,5)
+        }[nz]
+        assert chunksize_points_bounds == expect_chunks_points_bounds
