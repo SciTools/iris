@@ -8,6 +8,7 @@ from abc import ABCMeta, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 import copy
+from datetime import datetime
 from functools import lru_cache
 from itertools import zip_longest
 import operator
@@ -97,6 +98,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         # Configure the metadata manager.
         if not hasattr(self, "_metadata_manager"):
             self._metadata_manager = metadata_manager_factory(BaseMetadata)
+
+        self._mesh_parents = []
 
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
@@ -568,6 +571,23 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         add_output(f"{name}: {val!r}", section=name)
 
         return "\n".join(output_lines)
+
+    def __setattr__(self, key, value):
+        if getattr(self, "_mesh_parents", None) is not None:
+            # This should not run every time
+            # Should this be set in the coord manager?
+            # Alternatively, could make a _mesh_parents property, but that's ugly
+            # self.points.flags.writeable = False
+            # self.bounds.flags.writeable = False
+
+            for parent in self._mesh_parents:
+                parent.timestamp = datetime.now()
+
+        prop = getattr(type(self), key, None)
+        if isinstance(prop, property):
+            prop.__set__(self, value)
+        else:
+            super.__setattr__(self, key, value)
 
     def __str__(self):
         return self.summary()

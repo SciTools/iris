@@ -2011,6 +2011,14 @@ class _Mesh1DCoordinateManager:
         # ensuring MeshCoords are up to date
         self.timestamp = datetime.now()
 
+        # add the coordinate manager to the coord
+        self.node_x._mesh_parents.append(self)
+        self.node_y._mesh_parents.append(self)
+        if self.edge_x:
+            self.edge_x._mesh_parents.append(self)
+        if self.edge_y:
+            self.edge_y._mesh_parents.append(self)
+
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)
@@ -2049,6 +2057,10 @@ class _Mesh1DCoordinateManager:
                 dmsg = f"Ignoring request to remove required coordinate {member!r}"
                 logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
             else:
+                try:
+                    member._mesh_parents.remove(self)
+                except ValueError:
+                    pass
                 result[member] = members[member]
                 setattr(self, member, None)
 
@@ -2084,7 +2096,8 @@ class _Mesh1DCoordinateManager:
                     f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
                 )
                 raise ValueError(emsg)
-
+            if self not in coord._mesh_parents:
+                coord._mesh_parents.append(self)
         self._members[member] = coord
 
     def _shape(self, element):
@@ -2171,7 +2184,9 @@ class _Mesh1DCoordinateManager:
 
             try:
                 setattr(self, member_x, coords[0])
+                coords[0]._mesh_parents.append(self)
                 setattr(self, member_y, coords[1])
+                coords[1]._mesh_parents.append(self)
             except (TypeError, ValueError):
                 # restore previous valid state
                 self._members[member_x] = cache_x
@@ -2182,8 +2197,10 @@ class _Mesh1DCoordinateManager:
             # deal with the case where one or no member is changing
             if coords[0] is not None:
                 setattr(self, member_x, coords[0])
+                coords[0]._mesh_parents.append(self)
             if coords[1] is not None:
                 setattr(self, member_y, coords[1])
+                coords[1]._mesh_parents.append(self)
 
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
         """Use self.remove(edge_x=True) to remove a coordinate.
@@ -2322,6 +2339,10 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         # optional coordinates
         self.face_x = face_x
         self.face_y = face_y
+        if self.face_x:
+            self.face_x._mesh_parents.append(self)
+        if self.face_y:
+            self.face_y._mesh_parents.append(self)
 
     @property
     def _face_shape(self):
@@ -2801,7 +2822,7 @@ class MeshCoord(AuxCoord):
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
-        if self.timestamp < self.mesh.timestamp or self.timestamp is None:
+        if self.timestamp is None or self.timestamp < self.mesh.timestamp:
             points, bounds = self._load_points_and_bounds()
             super(MeshCoord, self.__class__).points.fset(self, points)
             super(MeshCoord, self.__class__).bounds.fset(self, bounds)
@@ -2833,7 +2854,7 @@ class MeshCoord(AuxCoord):
 
     @property
     def _metadata_manager(self):
-        # An explanatory comment.
+        # sets the metadata
         use_metadict = self._load_metadata()
 
         self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
@@ -2966,6 +2987,10 @@ class MeshCoord(AuxCoord):
         # as the original (not a copy).
         new_coord = MeshCoord(mesh=self.mesh, location=self.location, axis=self.axis)
         return new_coord
+
+    def rename(self, name: str | None) -> None:
+        """Ensure you can't rename MeshCoords."""
+        self.mesh.coord(location=self.location, axis=self.axis).rename(name)
 
     def __deepcopy__(self, memo):
         """Make this equivalent to "shallow" copy.

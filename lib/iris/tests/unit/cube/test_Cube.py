@@ -2342,6 +2342,7 @@ class Test__init__mesh:
         meshco_2 = sample_meshcoord(axis="x", mesh=self.mesh)
         # Can't make these different at creation, owing to the limited
         # constructor args, but we can adjust common metadata afterwards.
+
         meshco_2.rename("junk_name")
 
         n_faces = meshco_1.shape[0]

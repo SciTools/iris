@@ -327,10 +327,17 @@ class Test__str_repr(tests.IrisTest):
 
     def test_repr_lazy(self):
         # Displays lazy content (and does not realise!).
-        self.meshcoord.points = as_lazy_data(self.meshcoord.points)
-        self.meshcoord.bounds = as_lazy_data(self.meshcoord.bounds)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
+        print(self.meshcoord.mesh.timestamp)
+        meshco = self.meshcoord.mesh.coord(
+            location=self.meshcoord.location, axis=self.meshcoord.axis
+        )
+        meshco.points = as_lazy_data(self.meshcoord.points)
+        meshco.bounds = as_lazy_data(self.meshcoord.bounds)
+        print(self.meshcoord.mesh.timestamp)
+        self.assertTrue(meshco.has_lazy_points())
+        self.assertTrue(meshco.has_lazy_bounds())
+
+        print(self.meshcoord.mesh.timestamp)
 
         result = repr(self.meshcoord)
         self.assertTrue(self.meshcoord.has_lazy_points())

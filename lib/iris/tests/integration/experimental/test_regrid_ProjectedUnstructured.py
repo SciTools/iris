@@ -31,7 +31,7 @@ class TestProjectedUnstructured(tests.IrisTest):
             ("NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc")
         )
         self.src = iris.load_cube(path, "Potential Temperature")
-
+        print(self.src)
         src_lat = self.src.coord("latitude")
         src_lon = self.src.coord("longitude")
         src_lat.coord_system = src_lon.coord_system = GeogCS(6370000)
