@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
+import iris.coords
+
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -349,6 +351,50 @@ class TestTimeMean(tests.IrisTest):
         actual = pp_field.lbproc
 
         self.assertEqual(expected, actual)
+
+
+class TestPoleLocation:
+    def test_lam_standard_pole(self):
+        cube = stock.lat_lon_cube()
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+            verify(cube, pp_field)
+
+        # LAM domains on regular pole should have bplon set to 180.0
+        assert pp_field.bplon == 180.0
+        assert pp_field.bplat == 90.0
+
+    def test_global_standard_pole(self):
+        # construct a "global" domain cube:
+        x_coord = iris.coords.DimCoord(
+            np.arange(0, 360, 10), standard_name="longitude", circular=True
+        )
+        y_coord = iris.coords.DimCoord(
+            np.arange(-90, 90, 10), standard_name="latitude", circular=True
+        )
+        cube = iris.cube.Cube(
+            data=np.zeros((len(x_coord.points), len(y_coord.points))),
+            dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
+        )
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+            verify(cube, pp_field)
+
+        # Global domains should have bplon set to 0.0
+        assert pp_field.bplon == 0.0
+        assert pp_field.bplat == 90.0
+
+    def test_lam_rotated_pole(self):
+        cube = (
+            _get_single_time_cube()
+        )  # stock.realistic_3d returns a cube on a rotated pole grid
+        coord_system = cube.coord_system()
+        bplon = coord_system.grid_north_pole_longitude
+        bplat = coord_system.grid_north_pole_latitude
+        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
+            verify(cube, pp_field)
+
+        assert pp_field.lbcode == 101
+        assert pp_field.bplon == bplon
+        assert pp_field.bplat == bplat
 
 
 def _get_single_time_cube(set_time_mean=False):
