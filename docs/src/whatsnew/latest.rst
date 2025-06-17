@@ -39,6 +39,9 @@ This document explains the changes made to Iris for this release
    converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
    now preserved when it was not previously.
 
+#. `@wjbenfold`_ added `crs_wkt` to the attributes saved out to a netCDF file.
+   (:issue:`3796`, :pull:`4719`)
+
 
 🐛 Bugs Fixed
 =============

@@ -847,6 +847,21 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
     def test_rotated_geog_cs(self):
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
         expected = {
+            "crs_wkt": (
+                'GEOGCRS["unnamed",BASEGEOGCRS["unknown",DATUM["unknown",'
+                'ELLIPSOID["unknown",6371229,0,LENGTHUNIT["metre",1,ID['
+                '"EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8901]]],DERIVINGCONVERSION['
+                '"unknown",METHOD["PROJ ob_tran o_proj=latlon"],PARAMETER['
+                '"o_lon_p",0,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG"'
+                ',9122]]],PARAMETER["o_lat_p",37.5,ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],PARAMETER["lon_0",357.5'
+                ',ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]],CS['
+                'ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT['
+                '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
+                ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
+                '"EPSG",9122]]]]'
+            ),
             "grid_mapping_name": b"rotated_latitude_longitude",
             "north_pole_grid_longitude": 0.0,
             "grid_north_pole_longitude": 177.5,
@@ -859,6 +874,15 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
     def test_spherical_geog_cs(self):
         coord_system = GeogCS(6371229.0)
         expected = {
+            "crs_wkt": (
+                'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",6371229'
+                ',0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PRIMEM["Greenwich"'
+                ',0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8901]],CS'
+                '[ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT['
+                '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
+                ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
+                '"EPSG",9122]]]]'
+            ),
             "grid_mapping_name": b"latitude_longitude",
             "longitude_of_prime_meridian": 0.0,
             "earth_radius": 6371229.0,
@@ -868,6 +892,16 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
     def test_elliptic_geog_cs(self):
         coord_system = GeogCS(637, 600)
         expected = {
+            "crs_wkt": (
+                'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",637,'
+                '17.2162162162162,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],'
+                'PRIMEM["Reference meridian",0,ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],CS[ellipsoidal,2],AXIS'
+                '["longitude",east,ORDER[1],ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude",north,'
+                'ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",'
+                "9122]]]]"
+            ),
             "grid_mapping_name": b"latitude_longitude",
             "longitude_of_prime_meridian": 0.0,
             "semi_minor_axis": 600.0,
@@ -885,6 +919,25 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6371000),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",'
+                'ELLIPSOID["unknown",6371000,0,LENGTHUNIT["metre",1,ID["EPSG"'
+                ',9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Lambert Conic Conformal (2SP)",ID["EPSG",9802]],'
+                'PARAMETER["Latitude of false origin",44,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8821]],PARAMETER["Longitude of '
+                'false origin",2,ANGLEUNIT["degree",0.0174532925199433],ID['
+                '"EPSG",8822]],PARAMETER["Latitude of 1st standard parallel",'
+                '38,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8823]],'
+                'PARAMETER["Latitude of 2nd standard parallel",50,ANGLEUNIT'
+                '["degree",0.0174532925199433],ID["EPSG",8824]],PARAMETER['
+                '"Easting at false origin",-2,LENGTHUNIT["metre",1],ID["EPSG",'
+                '8826]],PARAMETER["Northing at false origin",-5,LENGTHUNIT['
+                '"metre",1],ID["EPSG",8827]]],CS[Cartesian,2],AXIS["(E)",east,'
+                'ORDER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],AXIS["(N)",'
+                'north,ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"lambert_conformal_conic",
             "latitude_of_projection_origin": 44,
             "longitude_of_central_meridian": 2,
@@ -905,6 +958,21 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6377563.396, 6356256.909),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Lambert Azimuthal Equal Area",ID["EPSG",9820]],PARAME'
+                'TER["Latitude of natural origin",52,ANGLEUNIT["degree",0.0174'
+                '532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natura'
+                'l origin",10,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG"'
+                ',8802]],PARAMETER["False easting",100,LENGTHUNIT["metre",1],I'
+                'D["EPSG",8806]],PARAMETER["False northing",200,LENGTHUNIT["me'
+                'tre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORD'
+                'ER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],AXIS["(N)",north'
+                ',ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"lambert_azimuthal_equal_area",
             "latitude_of_projection_origin": 52,
             "longitude_of_projection_origin": 10,
@@ -926,6 +994,25 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6377563.396, 6356256.909),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Albers Equal Area",ID["EPSG",9822]],PARAMETER["Latitu'
+                'de of false origin",52,ANGLEUNIT["degree",0.0174532925199433]'
+                ',ID["EPSG",8821]],PARAMETER["Longitude of false origin",10,AN'
+                'GLEUNIT["degree",0.0174532925199433],ID["EPSG",8822]],PARAMET'
+                'ER["Latitude of 1st standard parallel",38,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8823]],PARAMETER["Latitude of 2'
+                'nd standard parallel",50,ANGLEUNIT["degree",0.017453292519943'
+                '3],ID["EPSG",8824]],PARAMETER["Easting at false origin",100,L'
+                'ENGTHUNIT["metre",1],ID["EPSG",8826]],PARAMETER["Northing at '
+                'false origin",200,LENGTHUNIT["metre",1],ID["EPSG",8827]]],CS['
+                'Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1,ID'
+                '["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",'
+                '1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"albers_conical_equal_area",
             "latitude_of_projection_origin": 52,
             "longitude_of_central_meridian": 10,
@@ -958,6 +1045,24 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=ellipsoid,
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Vertical Perspective",ID["EPSG",9838]],PARAMETER["Lat'
+                'itude of topocentric origin",1,ANGLEUNIT["degree",0.017453292'
+                '5199433],ID["EPSG",8834]],PARAMETER["Longitude of topocentric'
+                ' origin",2,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8'
+                '835]],PARAMETER["Ellipsoidal height of topocentric origin",0,'
+                'LENGTHUNIT["metre",1],ID["EPSG",8836]],PARAMETER["Viewpoint h'
+                'eight",2000000,LENGTHUNIT["metre",1],ID["EPSG",8840]],PARAMET'
+                'ER["False easting",100,LENGTHUNIT["metre",1],ID["EPSG",8806]]'
+                ',PARAMETER["False northing",200,LENGTHUNIT["metre",1],ID["EPS'
+                'G",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNI'
+                'T["metre",1,ID["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGT'
+                'HUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"vertical_perspective",
             "latitude_of_projection_origin": latitude_of_projection_origin,
             "longitude_of_projection_origin": longitude_of_projection_origin,
@@ -992,6 +1097,23 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=ellipsoid,
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Geostationary Satellite (Sweep X)"],PARAMETER["Longit'
+                'ude of natural origin",2,ANGLEUNIT["degree",0.017453292519943'
+                '3],ID["EPSG",8802]],PARAMETER["Satellite Height",2000000,LENG'
+                'THUNIT["metre",1,ID["EPSG",9001]]],PARAMETER["False easting",'
+                '100,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False n'
+                'orthing",200,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Carte'
+                'sian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1,ID["EPS'
+                'G",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1,ID['
+                '"EPSG",9001]]],REMARK["PROJ CRS string: +proj=geos +a=6377563'
+                ".396 +b=6356256.909 +lon_0=2.0 +lat_0=0.0 +h=2000000.0 +x_0=1"
+                '00.0 +y_0=200.0 +units=m +sweep=x +no_defs"]]'
+            ),
             "grid_mapping_name": b"geostationary",
             "latitude_of_projection_origin": latitude_of_projection_origin,
             "longitude_of_projection_origin": longitude_of_projection_origin,
