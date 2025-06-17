@@ -1131,8 +1131,30 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         # Some none-default settings to confirm all parameters are being
         #  handled.
 
+        wkt_template = (
+            'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+            'SOID["unknown",1,0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PR'
+            'IMEM["Reference meridian",0,ANGLEUNIT["degree",0.017453292519'
+            '9433,ID["EPSG",9122]]]],CONVERSION["unknown",METHOD["Hotine O'
+            'blique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Lati'
+            'tude of projection centre",89.9,ANGLEUNIT["degree",0.01745329'
+            '25199433],ID["EPSG",8811]],PARAMETER["Longitude of projection'
+            ' centre",45,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",'
+            '8812]],PARAMETER["Azimuth at projection centre",{angle},ANGLEUNIT['
+            '"degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angl'
+            'e from Rectified to Skew Grid",{angle},ANGLEUNIT["degree",0.017453'
+            '2925199433],ID["EPSG",8814]],PARAMETER["Scale factor at proje'
+            'ction centre",0.939692620786,SCALEUNIT["unity",1],ID["EPSG",8'
+            '815]],PARAMETER["Easting at projection centre",1000000,LENGTH'
+            'UNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at proje'
+            'ction centre",-2000000,LENGTHUNIT["metre",1],ID["EPSG",8817]]'
+            '],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre"'
+            ',1,ID["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["me'
+            'tre",1,ID["EPSG",9001]]]]'
+        )
+
         kwargs_rotated = dict(
-            latitude_of_projection_origin=90.0,
+            latitude_of_projection_origin=89.9,
             longitude_of_projection_origin=45.0,
             false_easting=1000000.0,
             false_northing=-2000000.0,
@@ -1147,8 +1169,9 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         expected_rotated = dict(
             # Automatically converted to oblique_mercator in line with CF 1.11 .
             grid_mapping_name=b"oblique_mercator",
-            # Azimuth should be automatically populated.
+            # Azimuth and crs_wkt should be automatically populated.
             azimuth_of_central_line=90.0,
+            crs_wkt=wkt_template.format(angle="89.999"),
             **kwargs_rotated,
         )
         # Convert the ellipsoid
@@ -1161,6 +1184,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
         # Same as rotated, but different azimuth.
         expected_oblique = dict(expected_rotated, **oblique_azimuth)
+        expected_oblique["crs_wkt"] = wkt_template.format(angle="45")
 
         oblique = ObliqueMercator(**kwargs_oblique)
         rotated = RotatedMercator(**kwargs_rotated)
