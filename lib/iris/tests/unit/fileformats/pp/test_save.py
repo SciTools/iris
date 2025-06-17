@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-import iris.coords
-
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
 import iris.tests as tests  # isort:skip
@@ -18,6 +16,7 @@ import numpy as np
 import pytest
 
 from iris.coords import CellMethod, DimCoord
+from iris.cube import Cube
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
@@ -365,13 +364,13 @@ class TestPoleLocation:
 
     def test_global_standard_pole(self):
         # construct a "global" domain cube:
-        x_coord = iris.coords.DimCoord(
+        x_coord = DimCoord(
             np.arange(0, 360, 10), standard_name="longitude", circular=True
         )
-        y_coord = iris.coords.DimCoord(
+        y_coord = DimCoord(
             np.arange(-90, 90, 10), standard_name="latitude", circular=True
         )
-        cube = iris.cube.Cube(
+        cube = Cube(
             data=np.zeros((len(x_coord.points), len(y_coord.points))),
             dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
         )
