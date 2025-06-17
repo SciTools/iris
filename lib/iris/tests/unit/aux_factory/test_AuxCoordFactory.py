@@ -165,21 +165,23 @@ class Test_lazy_aux_coords:
 
 class Test_rechunk:
     class TestAuxFact(AuxCoordFactory):
-        # A minimal AuxCoordFactory that enables us to test the re-chunking logic.
+        """A minimal AuxCoordFactory that enables us to test the re-chunking logic."""
+
         def __init__(self, nx, ny, nz):
             def make_co(name, dims):
                 dims = tuple(dims)
                 pts = da.ones(dims, dtype=np.int32, chunks=dims)
-                bds = np.stack([pts-0.5, pts+0.5], axis=-1)
+                bds = np.stack([pts - 0.5, pts + 0.5], axis=-1)
                 co = AuxCoord(pts, bounds=bds, long_name=name)
                 return co
+
             self.x = make_co("x", (nx, 1, 1))
             self.y = make_co("y", (1, ny, 1))
             self.z = make_co("z", (1, 1, nz))
 
         @property
         def dependencies(self):
-            return {'x': self.x, "y": self.y, "z": self.z}
+            return {"x": self.x, "y": self.y, "z": self.z}
 
         def _calculate_array(self, *dep_arrays, **other_args):
             x, y, z = dep_arrays
@@ -200,7 +202,7 @@ class Test_rechunk:
             )
             return result
 
-    @pytest.mark.parametrize('nz', [10, 100, 1000])
+    @pytest.mark.parametrize("nz", [10, 100, 1000])
     def test_rechunk(self, nz):
         # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
         #  at different NZ sizes eventually needing to rechunk on both Y and X

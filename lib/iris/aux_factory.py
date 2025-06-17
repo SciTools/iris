@@ -11,7 +11,7 @@ import cf_units
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import concatenate
+from iris._lazy_data import _optimum_chunksize, concatenate, is_lazy_data
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.warnings import IrisIgnoringBoundsWarning
@@ -83,18 +83,18 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         Parameters
         ----------
         * dep_arrays : tuple of array-like
-            arrays of data for each dependency.
+            Arrays of data for each dependency.
             Must match the number of declared dependencies.  All pre-aligned to the
             same number of dimensions, and matching in dimensions,
             i.e. all dimensions are == N(i) or 1, for each dim(i).
 
         * other_args
-            dict of keys providing class-specific additional arguments.
+            Dict of keys providing class-specific additional arguments.
 
         Returns
         -------
         array-like
-            result (normally lazy) with same dimensions as the dependencies,
+            A result (normally lazy) with same dimensions as the dependencies,
             i.e. == N(i) for all i.
 
         This is the basic derived calculation, defined by each hybrid class, which
@@ -117,50 +117,65 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         This routine is itself typically called by :meth:`make_coord`, to make both
         points and bounds.
         """
+
+        def chunkslike(array):
+            return array.chunksize if is_lazy_data(array) else array.shape
+
         result = self._calculate_array(*dep_arrays, **other_args)
 
-        # The dims of all the given components should be the same and, **presumably**,
-        #  the same as the result ??
-        for i_dep, (dep, name) in enumerate(zip(dep_arrays, self.dependencies.keys())):
-            if dep.ndim != result.ndim:
-                msg = (
-                    f"Dependency #{i_dep}, '{name}' has ndims={dep.ndim}, "
-                    "not matching result {result.ndim!r}"
-                    " (shapes {dep.shape}/{result.shape})."
-                )
-                raise ValueError(msg)
-
         # See if we need to improve on the chunking of the result
-        from iris._lazy_data import _optimum_chunksize
+        result_chunks = chunkslike(result)
         adjusted_chunks = _optimum_chunksize(
-            chunks=result.chunksize,
+            chunks=result_chunks,
             shape=result.shape,
             dtype=result.dtype,
         )
 
-        if adjusted_chunks != result.chunksize:
+        # Does optimum_chunksize say we should have smaller chunks in some dimensions?
+        if np.any(adjusted_chunks < result_chunks):
+            # co-broadcast all the deps to get same dimensions for each
+            dep_arrays = np.broadcast_arrays(*dep_arrays)
+
+            # The dims of all the given components should now be the same and, *presumably*,
+            #  the same as the result ??
+            for i_dep, (dep, name) in enumerate(
+                zip(dep_arrays, self.dependencies.keys())
+            ):
+                if dep.ndim != result.ndim:
+                    msg = (
+                        f"Dependency #{i_dep}, '{name}' has ndims={dep.ndim}, "
+                        f"not matching result {result.ndim!r}"
+                        f" : respective shapes {dep.shape}, {result.shape}."
+                    )
+                    raise ValueError(msg)
+
             # Re-do the result calculation, re-chunking the inputs along dimensions
             #  which it is suggested to reduce.
             # First make a (writable) copy of the inputs.....
             new_deps = []
             for i_dep, dep in enumerate(dep_arrays):
                 # Reduce each dependency chunksize to the result chunksize if smaller.
-                dep_chunks = dep.chunksize
-                new_chunks = tuple([
-                    min(dep_chunk, adj_chunk)
-                    for dep_chunk, adj_chunk in zip(dep_chunks, adjusted_chunks)
-                ])
+                dep_chunks = chunkslike(dep)
+                new_chunks = tuple(
+                    [
+                        min(dep_chunk, adj_chunk)
+                        for dep_chunk, adj_chunk in zip(dep_chunks, adjusted_chunks)
+                    ]
+                )
                 # If the dep chunksize was reduced, replace with a rechunked version.
                 if new_chunks != dep_chunks:
+                    if not is_lazy_data(dep):
+                        # I guess this is possible ?
+                        # TODO: needs a test
+                        dep = da.from_array(dep)
                     dep = dep.rechunk(new_chunks)
                 new_deps.append(dep)
 
             # Finally, re-do the calculation, which hopefully results in a better
             #  overall chunking for the result
-            result = self._calculate_array(*new_deps)
+            result = self._calculate_array(*new_deps, **other_args)
 
         return result
-
 
     @abstractmethod
     def make_coord(self, coord_dims_func):
@@ -1108,7 +1123,9 @@ class OceanSigmaZFactory(AuxCoordFactory):
             zlev=self.zlev,
         )
 
-    def _calculate_array(self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func):
+    def _calculate_array(
+        self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func
+    ):
         # Calculate the index of the 'z' dimension in the input arrays.
         # First find the cube 'z' dimension ...
         [cube_z_dim] = coord_dims_func(self.dependencies["zlev"])
