@@ -84,9 +84,9 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         ----------
         * dep_arrays : tuple of array-like
             Arrays of data for each dependency.
-            Must match the number of declared dependencies.  All pre-aligned to the
-            same number of dimensions, and matching in dimensions,
-            i.e. all dimensions are == N(i) or 1, for each dim(i).
+            Must match the number of declared dependencies, in the standard order.
+            All are aligned with the leading result dimensions, but may have fewer
+            than the full number of dimensions.  They can be lazy or real data.
 
         * other_args
             Dict of keys providing class-specific additional arguments.
@@ -94,11 +94,10 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         Returns
         -------
         array-like
-            A result (normally lazy) with same dimensions as the dependencies,
-            i.e. == N(i) for all i.
+            The lazy result array.
 
         This is the basic derived calculation, defined by each hybrid class, which
-        defines how dependencies are combined to make the derived result.
+        defines how the dependency values are combined to make the derived result.
         """
         pass
 
@@ -107,77 +106,59 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
 
         Call arguments as for :meth:`_calculate_array`.
 
-        This routine calls :meth:`_calculate_array` to construct a derived result array,
-        which is normally a lazy array.
+        This routine calls :meth:`_calculate_array` to construct a derived result array.
 
         It then checks the chunk size of the result and, if this exceeds the current
         Dask chunksize, it will then re-chunk some of the input arrays and re-calculate
         the result to reduce the memory cost.
 
-        This routine is itself typically called by :meth:`make_coord`, to make both
-        points and bounds.
+        This routine is itself usually called once by :meth:`make_coord`, to make a
+        points array, and then again to make the bounds.
         """
-        # Make an initial call to determine whether the result has unmanageably large
-        #  chunks.  But use lazy versions of all dependencies, to ensure a lazy
-        #  calculation and avoid potentially spending a lot of time + memory.
+        # Make an initial result calculation.
+        # First make all dependencies lazy, to ensure a lazy calculation and avoid
+        #  potentially spending a lot of time + memory.
         lazy_deps = [
+            # Note: no attempt to make clever chunking choices here.  If needed it
+            #  should get fixed later.  Plus, single chunks keeps graph overhead small.
             dep if is_lazy_data(dep) else da.from_array(dep, chunks=-1)
             for dep in dep_arrays
         ]
-        test_result = self._calculate_array(*lazy_deps, **other_args)
+        result = self._calculate_array(*lazy_deps, **other_args)
 
-        # See if we need to improve on the chunking of the result
+        # Now check if we need to improve on the chunking of the result.
         adjusted_chunks = _optimum_chunksize(
-            chunks=test_result.chunksize,
-            shape=test_result.shape,
-            dtype=test_result.dtype,
+            chunks=result.chunksize,
+            shape=result.shape,
+            dtype=result.dtype,
         )
 
         # Does optimum_chunksize say we should have smaller chunks in some dimensions?
-        if all(a >= b for a, b in zip(adjusted_chunks, test_result.chunksize)):
-            # Just do the direct calculation, with the original deps.
-            result = self._calculate_array(*dep_arrays, **other_args)
-        else:
-            # co-broadcast original deps, to get same dimensions for all.
-            # N.B. this uses views, so no performance hit for large real data.
-            dep_arrays = np.broadcast_arrays(*dep_arrays)
-
-            # The dims of all the given components should now be the same and, *presumably*,
-            #  the same as the result ??
-            for i_dep, (dep, name) in enumerate(
-                zip(dep_arrays, self.dependencies.keys())
-            ):
-                if dep.ndim != test_result.ndim:
-                    msg = (
-                        f"Dependency #{i_dep}, '{name}' has ndims={dep.ndim}, "
-                        f"not matching result {test_result.ndim!r}"
-                        f" : respective shapes {dep.shape}, {test_result.shape}."
-                    )
-                    raise ValueError(msg)
-
-            # Re-do the result calculation, re-chunking the inputs along dimensions
-            #  which it is suggested to reduce.
+        if not all(a >= b for a, b in zip(adjusted_chunks, result.chunksize)):
+            # Re-do the result calculation, but first re-chunking each dep in the
+            #  dimensions which it is suggested to reduce.
             new_deps = []
-            for i_dep, dep in enumerate(dep_arrays):
-                # Rechunk each dependency to the new result chunksize, if smaller.
-                dep_chunks = dep.chunksize if is_lazy_data(dep) else dep.shape
+            for dep, original_dep in zip(lazy_deps, dep_arrays):
+                # For each dependency, reduce chunksize in each dim to the new result
+                #  chunksize, if smaller.
+                dep_chunks = dep.chunksize
                 new_chunks = tuple(
                     [
                         min(dep_chunk, adj_chunk)
                         for dep_chunk, adj_chunk in zip(dep_chunks, adjusted_chunks)
                     ]
                 )
-                # If the dep chunksize was reduced, replace with a rechunked version.
                 if new_chunks != dep_chunks:
-                    if is_lazy_data(dep):
-                        dep = dep.rechunk(new_chunks)
+                    # When dep chunksize needs to change, produce a rechunked version.
+                    if is_lazy_data(original_dep):
+                        dep = original_dep.rechunk(new_chunks)
                     else:
-                        # Lazify a real dep, splitting it into multiple chunks.
-                        dep = da.from_array(dep, chunks=dep_chunks)
+                        # Make new lazy array from real original, rather than re-chunk.
+                        dep = da.from_array(original_dep, chunks=new_chunks)
                 new_deps.append(dep)
 
             # Finally, re-do the calculation, which hopefully results in a better
-            #  overall chunking for the result
+            #  overall chunksize for the result
             result = self._calculate_array(*new_deps, **other_args)
 
         return result
