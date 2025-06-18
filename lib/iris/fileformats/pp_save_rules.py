@@ -46,7 +46,10 @@ def _basic_coord_system_rules(cube, pp):
         pp.bplon = 0
         try:
             # LAMs should have bplon of 180
-            if not cube.coord(axis="x").circular or not cube.coord(axis="x").circular:
+            if (
+                not cube.coord(axis="x", dim_coords=True).circular
+                or not cube.coord(axis="y", dim_coords=True).circular
+            ):
                 pp.bplon = 180.0
         except iris.exceptions.CoordinateNotFoundError:
             pass
