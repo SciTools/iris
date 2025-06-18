@@ -170,8 +170,11 @@ class Test_rechunk:
         def __init__(self, nx, ny, nz):
             def make_co(name, dims):
                 dims = tuple(dims)
-                pts = da.ones(dims, dtype=np.int32, chunks=dims)
+                # Create simple points + bounds arrays
+                pts = np.ones(dims, dtype=np.int32)
                 bds = np.stack([pts - 0.5, pts + 0.5], axis=-1)
+                # Make them lazy with a single chunk in both cases
+                pts, bds = (da.from_array(x, chunks=-1) for x in (pts, bds))
                 co = AuxCoord(pts, bounds=bds, long_name=name)
                 return co
 
@@ -203,61 +206,41 @@ class Test_rechunk:
             return result
 
     @pytest.mark.parametrize("nz", [10, 100, 1000])
-    def test_rechunk(self, nz):
+    @pytest.mark.parametrize("lazydeps", [True, False], ids=["lazydeps", "realdeps"])
+    def test_rechunk(self, nz, lazydeps):
         # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
         #  at different NZ sizes eventually needing to rechunk on both Y and X
         nx, ny = 10, 10
-        chunksize = 4000 * 4  # *4 for np.int32 element size
-        # Summary  of expectation:
-        # (10, 10, 10) = 1,000: ok
-        # (10, 10, 100) = 10,000 --> (3, 10, 100) = 3000 --> rechunk, dividing X by 3
-        # (10, 10, 1000) = 100,1000 --> (1, 3, 1000) --> rechunk both X and Y
+        chunksize = 9000 * 4  # *4 for np.int32 element size
+        # Rough summary  of expectation with different nz (detail below):
+        #   (10, 10, 10) = 1,000: ok
+        #   (10, 10, 100) = 10,000 --> (5, 10, 100) = 5000 --> rechunk, dividing X by 2
+        #   (10, 10, 1000) = 100,000 --> (1, 5, 1000) --> rechunk both X and Y
         aux_co = self.TestAuxFact(nx, ny, nz)
+
+        if not lazydeps:
+            # Touch all dependencies to realise
+            for name in ("x", "y", "z"):
+                co = getattr(aux_co, name)
+                co.points = co.points
+                co.bounds = co.bounds
 
         daskformat_chunksize = f"{chunksize}b"
         with dask.config.set({"array.chunk-size": daskformat_chunksize}):
             result = aux_co.make_coord(None)
 
+        # Results should *always* be lazy, even when dependencies are all real.
         assert result.has_lazy_points()
         assert result.has_lazy_bounds()
-        chunksize_points_bounds = (
+
+        # Check the expected chunking of the result.
+        chunksize_points_and_bounds = (
             result.core_points().chunksize,
             result.core_bounds().chunksize,
         )
-        expect_chunks_points_bounds = {
-            10: ((10, 10, 10), (10, 10, 10, 1)),  # no rechunk
-            100: ((3, 10, 100), (2, 10, 100, 1)),  # divide x by 3 (bounds: 5)
-            1000: ((1, 3, 1000), (1, 2, 1000, 1)),  # divide x,y by 10,3 (bounds: 10,5)
+        expected_chunksize_points_and_bounds = {
+            10: ((10, 10, 10), (10, 10, 10, 2)),  # no rechunk
+            100: ((5, 10, 100), (2, 10, 100, 2)),  # divide x by 2 (bounds: 5)
+            1000: ((1, 5, 1000), (1, 2, 1000, 2)),  # divide x,y by 10,2 (bounds: 10,5)
         }[nz]
-        assert chunksize_points_bounds == expect_chunks_points_bounds
-
-    @pytest.mark.parametrize("nz", [10, 100, 1000])
-    def test_rechunk_allreal(self, nz):
-        # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
-        #  at different NZ sizes eventually needing to rechunk on both Y and X
-        nx, ny = 10, 10
-        chunksize = 4000 * 4  # *4 for np.int32 element size
-        # Summary  of expectation:
-        # (10, 10, 10) = 1,000: ok
-        # (10, 10, 100) = 10,000 --> (3, 10, 100) = 3000 --> rechunk, dividing X by 3
-        # (10, 10, 1000) = 100,1000 --> (1, 3, 1000) --> rechunk both X and Y
-        aux_co = self.TestAuxFact(nx, ny, nz)
-        for name in ("x", "y", "z"):
-            # Touch all dependencies to realise
-            getattr(aux_co, name).points
-            getattr(aux_co, name).bounds
-
-        daskformat_chunksize = f"{chunksize}b"
-        with dask.config.set({"array.chunk-size": daskformat_chunksize}):
-            result = aux_co.make_coord(None)
-
-        chunksize_points_bounds = (
-            result.lazy_points().chunksize,
-            result.lazy_bounds().chunksize,
-        )
-        expect_chunks_points_bounds = {
-            10: ((10, 10, 10), (10, 10, 10, 1)),  # no rechunk
-            100: ((3, 10, 100), (2, 10, 100, 1)),  # divide x by 3 (bounds: 5)
-            1000: ((1, 3, 1000), (1, 2, 1000, 1)),  # divide x,y by 10,3 (bounds: 10,5)
-        }[nz]
-        assert chunksize_points_bounds == expect_chunks_points_bounds
+        assert chunksize_points_and_bounds == expected_chunksize_points_and_bounds
