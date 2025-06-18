@@ -117,23 +117,29 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         This routine is itself typically called by :meth:`make_coord`, to make both
         points and bounds.
         """
-
-        def chunkslike(array):
-            return array.chunksize if is_lazy_data(array) else array.shape
-
-        result = self._calculate_array(*dep_arrays, **other_args)
+        # Make an initial call to determine whether the result has unmanageably large
+        #  chunks.  But use lazy versions of all dependencies, to ensure a lazy
+        #  calculation and avoid potentially spending a lot of time + memory.
+        lazy_deps = [
+            dep if is_lazy_data(dep) else da.from_array(dep, chunks=-1)
+            for dep in dep_arrays
+        ]
+        test_result = self._calculate_array(*lazy_deps, **other_args)
 
         # See if we need to improve on the chunking of the result
-        result_chunks = chunkslike(result)
         adjusted_chunks = _optimum_chunksize(
-            chunks=result_chunks,
-            shape=result.shape,
-            dtype=result.dtype,
+            chunks=test_result.chunksize,
+            shape=test_result.shape,
+            dtype=test_result.dtype,
         )
 
         # Does optimum_chunksize say we should have smaller chunks in some dimensions?
-        if np.any(adjusted_chunks < result_chunks):
-            # co-broadcast all the deps to get same dimensions for each
+        if all(a >= b for a, b in zip(adjusted_chunks, test_result.chunksize)):
+            # Just do the direct calculation, with the original deps.
+            result = self._calculate_array(*dep_arrays, **other_args)
+        else:
+            # co-broadcast original deps, to get same dimensions for all.
+            # N.B. this uses views, so no performance hit for large real data.
             dep_arrays = np.broadcast_arrays(*dep_arrays)
 
             # The dims of all the given components should now be the same and, *presumably*,
@@ -141,21 +147,20 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
             for i_dep, (dep, name) in enumerate(
                 zip(dep_arrays, self.dependencies.keys())
             ):
-                if dep.ndim != result.ndim:
+                if dep.ndim != test_result.ndim:
                     msg = (
                         f"Dependency #{i_dep}, '{name}' has ndims={dep.ndim}, "
-                        f"not matching result {result.ndim!r}"
-                        f" : respective shapes {dep.shape}, {result.shape}."
+                        f"not matching result {test_result.ndim!r}"
+                        f" : respective shapes {dep.shape}, {test_result.shape}."
                     )
                     raise ValueError(msg)
 
             # Re-do the result calculation, re-chunking the inputs along dimensions
             #  which it is suggested to reduce.
-            # First make a (writable) copy of the inputs.....
             new_deps = []
             for i_dep, dep in enumerate(dep_arrays):
-                # Reduce each dependency chunksize to the result chunksize if smaller.
-                dep_chunks = chunkslike(dep)
+                # Rechunk each dependency to the new result chunksize, if smaller.
+                dep_chunks = dep.chunksize if is_lazy_data(dep) else dep.shape
                 new_chunks = tuple(
                     [
                         min(dep_chunk, adj_chunk)
@@ -164,11 +169,11 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
                 )
                 # If the dep chunksize was reduced, replace with a rechunked version.
                 if new_chunks != dep_chunks:
-                    if not is_lazy_data(dep):
-                        # I guess this is possible ?
-                        # TODO: needs a test
-                        dep = da.from_array(dep)
-                    dep = dep.rechunk(new_chunks)
+                    if is_lazy_data(dep):
+                        dep = dep.rechunk(new_chunks)
+                    else:
+                        # Lazify a real dep, splitting it into multiple chunks.
+                        dep = da.from_array(dep, chunks=dep_chunks)
                 new_deps.append(dep)
 
             # Finally, re-do the calculation, which hopefully results in a better

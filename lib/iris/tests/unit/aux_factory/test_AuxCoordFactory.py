@@ -213,8 +213,8 @@ class Test_rechunk:
         # (10, 10, 100) = 10,000 --> (3, 10, 100) = 3000 --> rechunk, dividing X by 3
         # (10, 10, 1000) = 100,1000 --> (1, 3, 1000) --> rechunk both X and Y
         aux_co = self.TestAuxFact(nx, ny, nz)
-        daskformat_chunksize = f"{chunksize}b"
 
+        daskformat_chunksize = f"{chunksize}b"
         with dask.config.set({"array.chunk-size": daskformat_chunksize}):
             result = aux_co.make_coord(None)
 
@@ -223,6 +223,37 @@ class Test_rechunk:
         chunksize_points_bounds = (
             result.core_points().chunksize,
             result.core_bounds().chunksize,
+        )
+        expect_chunks_points_bounds = {
+            10: ((10, 10, 10), (10, 10, 10, 1)),  # no rechunk
+            100: ((3, 10, 100), (2, 10, 100, 1)),  # divide x by 3 (bounds: 5)
+            1000: ((1, 3, 1000), (1, 2, 1000, 1)),  # divide x,y by 10,3 (bounds: 10,5)
+        }[nz]
+        assert chunksize_points_bounds == expect_chunks_points_bounds
+
+    @pytest.mark.parametrize("nz", [10, 100, 1000])
+    def test_rechunk_allreal(self, nz):
+        # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
+        #  at different NZ sizes eventually needing to rechunk on both Y and X
+        nx, ny = 10, 10
+        chunksize = 4000 * 4  # *4 for np.int32 element size
+        # Summary  of expectation:
+        # (10, 10, 10) = 1,000: ok
+        # (10, 10, 100) = 10,000 --> (3, 10, 100) = 3000 --> rechunk, dividing X by 3
+        # (10, 10, 1000) = 100,1000 --> (1, 3, 1000) --> rechunk both X and Y
+        aux_co = self.TestAuxFact(nx, ny, nz)
+        for name in ("x", "y", "z"):
+            # Touch all dependencies to realise
+            getattr(aux_co, name).points
+            getattr(aux_co, name).bounds
+
+        daskformat_chunksize = f"{chunksize}b"
+        with dask.config.set({"array.chunk-size": daskformat_chunksize}):
+            result = aux_co.make_coord(None)
+
+        chunksize_points_bounds = (
+            result.lazy_points().chunksize,
+            result.lazy_bounds().chunksize,
         )
         expect_chunks_points_bounds = {
             10: ((10, 10, 10), (10, 10, 10, 1)),  # no rechunk
