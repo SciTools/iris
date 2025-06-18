@@ -44,16 +44,17 @@ def _basic_coord_system_rules(cube, pp):
     if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
         pp.bplat = 90
         pp.bplon = 0
-        try:
-            # LAMs should have bplon of 180
-            if (
-                not cube.coord(axis="x", dim_coords=True).circular
-                or not cube.coord(axis="y", dim_coords=True).circular
-            ):
-                pp.bplon = 180.0
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
 
+        if iris.FUTURE.lam_pole_offset:
+            try:
+                # LAMs should have bplon of 180
+                if (
+                    not cube.coord(axis="x", dim_coords=True).circular
+                    or not cube.coord(axis="y", dim_coords=True).circular
+                ):
+                    pp.bplon = 180.0
+            except iris.exceptions.CoordinateNotFoundError:
+                pass
     elif cube.coord_system("RotatedGeogCS") is not None:
         pp.bplat = cube.coord_system("RotatedGeogCS").grid_north_pole_latitude
         pp.bplon = cube.coord_system("RotatedGeogCS").grid_north_pole_longitude

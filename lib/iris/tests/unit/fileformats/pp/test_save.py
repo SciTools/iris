@@ -11,6 +11,7 @@ import cftime
 import numpy as np
 import pytest
 
+from iris import FUTURE
 from iris.coords import CellMethod, DimCoord
 from iris.cube import Cube
 from iris.fileformats._ff_cross_references import STASH_TRANS
@@ -349,7 +350,8 @@ class TestPoleLocation:
     def test_lam_standard_pole(self, mocker):
         cube = stock.lat_lon_cube()
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        with FUTURE.context(lam_pole_offset=True):
+            verify(cube, pp_field)
 
         # LAM domains on regular pole should have bplon set to 180.0
         assert pp_field.bplon == 180.0
@@ -368,7 +370,8 @@ class TestPoleLocation:
             dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
         )
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        with FUTURE.context(lam_pole_offset=True):
+            verify(cube, pp_field)
 
         # Global domains should have bplon set to 0.0
         assert pp_field.bplon == 0.0
@@ -382,7 +385,9 @@ class TestPoleLocation:
         bplon = coord_system.grid_north_pole_longitude
         bplat = coord_system.grid_north_pole_latitude
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+
+        with FUTURE.context(lam_pole_offset=True):
+            verify(cube, pp_field)
 
         assert pp_field.lbcode == 101
         assert pp_field.bplon == bplon
