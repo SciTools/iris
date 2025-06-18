@@ -5,7 +5,6 @@
 """Unit tests for the :class:`iris.coord_systems.ObliqueMercator` class."""
 
 from typing import List, NamedTuple
-from unittest.mock import Mock
 
 from cartopy import crs as ccrs
 import pytest
@@ -130,18 +129,20 @@ class TestArgs:
     def instance(self):
         return self.make_instance()
 
+    @pytest.fixture()
+    def mock_ccrs(self, mocker):
+        return mocker.patch("cartopy.crs.ObliqueMercator", autospec=True)
+
     def test_instantiate(self):
         _ = self.make_instance()
 
-    def test_cartopy_crs(self, instance):
-        ccrs.ObliqueMercator = Mock()
+    def test_cartopy_crs(self, instance, mock_ccrs):
         instance.as_cartopy_crs()
-        ccrs.ObliqueMercator.assert_called_with(**self.cartopy_kwargs_expected)
+        mock_ccrs.assert_called_with(**self.cartopy_kwargs_expected)
 
-    def test_cartopy_projection(self, instance):
-        ccrs.ObliqueMercator = Mock()
+    def test_cartopy_projection(self, instance, mock_ccrs):
         instance.as_cartopy_projection()
-        ccrs.ObliqueMercator.assert_called_with(**self.cartopy_kwargs_expected)
+        mock_ccrs.assert_called_with(**self.cartopy_kwargs_expected)
 
     @pytest.fixture()
     def label_class(self, instance):

@@ -39,6 +39,18 @@ This document explains the changes made to Iris for this release
    converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
    now preserved when it was not previously.
 
+#. `@wjbenfold`_ and `@trexfeathers`_ added ``crs_wkt`` to the attributes when
+   saving a :class:`~iris.coord_systems.CoordSystem` to a NetCDF file. Note that
+   ``crs_wkt`` is considered *supplementary* by the CF conventions, with
+   ``grid_mapping`` being the primary source of information, and ``crs_wkt`` not
+   expected to contain conflicting information. Because of this, Iris generates
+   :class:`~iris.coord_systems.CoordSystem` exclusively from ``grid_mapping``
+   when loading, and writes a fresh ``crs_wkt`` whenever a
+   :class:`~iris.coord_systems.CoordSystem` is saved. If your use case goes
+   beyond the CF conventions, you can modify the save and load process for your
+   needs by using the `Ncdata`_ package.
+   See `CRS WKT in the CF Conventions`_ for more. (:issue:`3796`, :pull:`6519`)
+
 
 🐛 Bugs Fixed
 =============
@@ -105,3 +117,6 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _CRS WKT in the CF Conventions: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
+.. _Ncdata: https://github.com/pp-mo/ncdata
