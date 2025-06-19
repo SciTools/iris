@@ -8,6 +8,7 @@ import os
 from types import GeneratorType
 
 import cftime
+import numpy as np
 from numpy.testing import assert_array_equal
 import pytest
 
@@ -63,7 +64,8 @@ class IrisPPTest:
         for pp_field in pp_fields:
             pp_field.data
 
-        test_string = str(pp_fields)
+        with np.printoptions(legacy="2.2"):
+            test_string = str(pp_fields)
         reference_path = _shared_utils.get_result_path(reference_filename)
         if os.path.isfile(reference_path):
             with open(reference_path, "r") as reference_fh:
