@@ -47,10 +47,11 @@ def _basic_coord_system_rules(cube, pp):
 
         try:
             # LAMs should have bplon of 180
-            if (
-                not cube.coord(axis="x", dim_coords=True).circular
-                or not cube.coord(axis="y", dim_coords=True).circular
-            ):
+            x_coord = cube.coord(axis="x", dim_coords=True)
+            y_coord = cube.coord(axis="y", dim_coords=True)
+            if not iris.util._is_circular(
+                x_coord.points, 360.0, x_coord.bounds
+            ) or not iris.util._is_circular(y_coord.points, 180.0, y_coord.bounds):
                 if iris.FUTURE.lam_pole_offset:
                     pp.bplon = 180.0
                 else:
