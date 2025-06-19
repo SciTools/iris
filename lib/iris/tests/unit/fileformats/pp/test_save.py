@@ -338,14 +338,25 @@ class TestTimeMean:
 
 
 class TestPoleLocation:
-    def test_lam_standard_pole(self, mocker):
+    @pytest.mark.parametrize(
+        "future_enabled",
+        [
+            pytest.param(True, id="with_lam_pole_offset_future"),
+            pytest.param(False, id="default"),
+        ],
+    )
+    def test_lam_standard_pole(self, mocker, future_enabled):
         cube = stock.lat_lon_cube()
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        with FUTURE.context(lam_pole_offset=True):
-            verify(cube, pp_field)
+        with FUTURE.context(lam_pole_offset=future_enabled):
+            if future_enabled:
+                verify(cube, pp_field)
+                assert pp_field.bplon == 180.0
+            else:
+                with pytest.warns(FutureWarning, match="iris.FUTURE.lam_pole_offset"):
+                    verify(cube, pp_field)
+                assert pp_field.bplon == 0.0
 
-        # LAM domains on regular pole should have bplon set to 180.0
-        assert pp_field.bplon == 180.0
         assert pp_field.bplat == 90.0
 
     def test_global_standard_pole(self, mocker, global_cube):
