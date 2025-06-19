@@ -346,6 +346,20 @@ class TestTimeMean:
         assert expected == actual
 
 
+@pytest.fixture()
+def global_cube():
+    x_coord = DimCoord(
+        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
+    )
+    y_coord = DimCoord(
+        np.arange(-90, 90, 10), standard_name="latitude", units="degrees", circular=True
+    )
+    return Cube(
+        data=np.zeros((len(x_coord.points), len(y_coord.points))),
+        dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
+    )
+
+
 class TestPoleLocation:
     def test_lam_standard_pole(self, mocker):
         cube = stock.lat_lon_cube()
@@ -357,21 +371,10 @@ class TestPoleLocation:
         assert pp_field.bplon == 180.0
         assert pp_field.bplat == 90.0
 
-    def test_global_standard_pole(self, mocker):
-        # construct a "global" domain cube:
-        x_coord = DimCoord(
-            np.arange(0, 360, 10), standard_name="longitude", circular=True
-        )
-        y_coord = DimCoord(
-            np.arange(-90, 90, 10), standard_name="latitude", circular=True
-        )
-        cube = Cube(
-            data=np.zeros((len(x_coord.points), len(y_coord.points))),
-            dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
-        )
+    def test_global_standard_pole(self, mocker, global_cube):
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
         with FUTURE.context(lam_pole_offset=True):
-            verify(cube, pp_field)
+            verify(global_cube, pp_field)
 
         # Global domains should have bplon set to 0.0
         assert pp_field.bplon == 0.0
