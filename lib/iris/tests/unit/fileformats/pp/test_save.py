@@ -244,120 +244,97 @@ class TestTimeMean:
 
     """
 
-    def test_t1_time_mean(self, mocker):
-        cube = _get_single_time_cube(set_time_mean=True)
-        tc = cube.coord(axis="t")
+    def test_t1_time_mean(self, mocker, single_mean_time_cube):
+        tc = single_mean_time_cube.coord(axis="t")
         expected = tc.units.num2date(0)
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.t1
 
         assert expected == actual
 
-    def test_t1_no_time_mean(self, mocker):
-        cube = _get_single_time_cube()
-        tc = cube.coord(axis="t")
+    def test_t1_no_time_mean(self, mocker, single_time_cube):
+        tc = single_time_cube.coord(axis="t")
         expected = tc.units.num2date(15)
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_time_cube, pp_field)
         actual = pp_field.t1
 
         assert expected == actual
 
-    def test_t2_time_mean(self, mocker):
-        cube = _get_single_time_cube(set_time_mean=True)
-        tc = cube.coord(axis="t")
+    def test_t2_time_mean(self, mocker, single_mean_time_cube):
+        tc = single_mean_time_cube.coord(axis="t")
         expected = tc.units.num2date(30)
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.t2
 
         assert expected == actual
 
-    def test_t2_no_time_mean(self, mocker):
-        cube = _get_single_time_cube(set_time_mean=False)
+    def test_t2_no_time_mean(self, mocker, single_time_cube):
         expected = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_time_cube, pp_field)
         actual = pp_field.t2
         assert expected == actual
 
-    def test_lbft_no_forecast_time(self, mocker):
+    def test_lbft_no_forecast_time(self, mocker, single_time_cube):
         # Different pattern here: checking that lbft hasn't been changed from
         # the default value.
-        cube = _get_single_time_cube()
         mock_lbft = mocker.sentinel.lbft
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
         pp_field.lbft = mock_lbft
-        verify(cube, pp_field)
+        verify(single_time_cube, pp_field)
         actual = pp_field.lbft
 
         assert mock_lbft is actual
 
-    def test_lbtim_no_time_mean(self, mocker):
-        cube = _get_single_time_cube()
+    def test_lbtim_no_time_mean(self, mocker, single_time_cube):
         expected_ib = 0
         expected_ic = 2  # 360 day calendar
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_time_cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
 
         assert expected_ib == actual_ib
         assert expected_ic == actual_ic
 
-    def test_lbtim_time_mean(self, mocker):
-        cube = _get_single_time_cube(set_time_mean=True)
+    def test_lbtim_time_mean(self, mocker, single_mean_time_cube):
         expected_ib = 2  # Time mean
         expected_ic = 2  # 360 day calendar
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_mean_time_cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
 
         assert expected_ib == actual_ib
         assert expected_ic == actual_ic
 
-    def test_lbproc_no_time_mean(self, mocker):
-        cube = _get_single_time_cube()
+    def test_lbproc_no_time_mean(self, mocker, single_time_cube):
         expected = 0
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_time_cube, pp_field)
         actual = pp_field.lbproc
 
         assert expected == actual
 
-    def test_lbproc_time_mean(self, mocker):
-        cube = _get_single_time_cube(set_time_mean=True)
+    def test_lbproc_time_mean(self, mocker, single_mean_time_cube):
         expected = 128
 
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
-        verify(cube, pp_field)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.lbproc
 
         assert expected == actual
-
-
-@pytest.fixture()
-def global_cube():
-    x_coord = DimCoord(
-        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
-    )
-    y_coord = DimCoord(
-        np.arange(-90, 90, 10), standard_name="latitude", units="degrees", circular=True
-    )
-    return Cube(
-        data=np.zeros((len(x_coord.points), len(y_coord.points))),
-        dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
-    )
 
 
 class TestPoleLocation:
@@ -380,24 +357,23 @@ class TestPoleLocation:
         assert pp_field.bplon == 0.0
         assert pp_field.bplat == 90.0
 
-    def test_lam_rotated_pole(self, mocker):
-        cube = (
-            _get_single_time_cube()
-        )  # stock.realistic_3d returns a cube on a rotated pole grid
-        coord_system = cube.coord_system()
+    def test_lam_rotated_pole(self, mocker, single_time_cube):
+        coord_system = single_time_cube.coord_system()
         bplon = coord_system.grid_north_pole_longitude
         bplat = coord_system.grid_north_pole_latitude
         pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
 
         with FUTURE.context(lam_pole_offset=True):
-            verify(cube, pp_field)
+            verify(single_time_cube, pp_field)
 
         assert pp_field.lbcode == 101
         assert pp_field.bplon == bplon
         assert pp_field.bplat == bplat
 
 
-def _get_single_time_cube(set_time_mean=False):
+@pytest.fixture
+def single_time_cube():
+    # stock.realistic_3d returns a cube on a rotated pole grid
     cube = stock.realistic_3d()[0:1, :, :]
     cube.remove_coord("time")
     cube.remove_coord("forecast_period")
@@ -408,6 +384,24 @@ def _get_single_time_cube(set_time_mean=False):
         bounds=[[0, 30]],
     )
     cube.add_dim_coord(tc, 0)
-    if set_time_mean:
-        cube.cell_methods = (CellMethod("mean", coords="time"),)
     return cube
+
+
+@pytest.fixture
+def single_mean_time_cube(single_time_cube):
+    single_time_cube.cell_methods = (CellMethod("mean", coords="time"),)
+    return single_time_cube
+
+
+@pytest.fixture()
+def global_cube():
+    x_coord = DimCoord(
+        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
+    )
+    y_coord = DimCoord(
+        np.arange(-90, 90, 10), standard_name="latitude", units="degrees", circular=True
+    )
+    return Cube(
+        data=np.zeros((len(x_coord.points), len(y_coord.points))),
+        dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
+    )
