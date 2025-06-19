@@ -2058,7 +2058,7 @@ class _Mesh1DCoordinateManager:
                 logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
             else:
                 try:
-                    member._mesh_parents.remove(self)
+                    members[member]._mesh_parents.remove(self)
                 except ValueError:
                     pass
                 result[member] = members[member]
@@ -2750,6 +2750,8 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
+        self.timestamp = None
+        self._updating = None
         self._read_only_points_and_bounds = True
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
@@ -2790,10 +2792,21 @@ class MeshCoord(AuxCoord):
         use_metadict.pop("coord_system")
         with self._writable_points_and_bounds():
             super().__init__(points, bounds=bounds, **use_metadict)
+        self.updating = False
+
+    def __getattribute__(self, item):
+        updating = object.__getattribute__(self, "_updating")
+        if updating is False:
+            object.__setattr__(self, "_updating", True)
+            if self.timestamp is None or self.timestamp < self.mesh.timestamp:
+                points, bounds = self._load_points_and_bounds()
+                super(MeshCoord, self.__class__).points.fset(self, points)
+                super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+            self._updating = False
+        return super().__getattribute__(item)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
     # These are all read-only.
-
     @property
     def mesh(self):
         return self._mesh
@@ -2822,10 +2835,6 @@ class MeshCoord(AuxCoord):
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
-        if self.timestamp is None or self.timestamp < self.mesh.timestamp:
-            points, bounds = self._load_points_and_bounds()
-            super(MeshCoord, self.__class__).points.fset(self, points)
-            super(MeshCoord, self.__class__).bounds.fset(self, bounds)
         return super().points
 
     @points.setter
@@ -2837,10 +2846,6 @@ class MeshCoord(AuxCoord):
 
     @property
     def bounds(self):
-        if self.timestamp < self.mesh.timestamp or self.timestamp is None:
-            points, bounds = self._load_points_and_bounds()
-            super(MeshCoord, self.__class__).points.fset(self, points)
-            super(MeshCoord, self.__class__).bounds.fset(self, bounds)
         return super().bounds
 
     @bounds.setter
