@@ -22,8 +22,8 @@ def _create_um_files(
     from tempfile import NamedTemporaryFile
 
     from mule import ArrayDataProvider, Field3, FieldsFile
-    from mule.pp import fields_to_pp_file
     import mule.ff
+    from mule.pp import fields_to_pp_file
     import numpy as np
 
     from iris import load_cube
