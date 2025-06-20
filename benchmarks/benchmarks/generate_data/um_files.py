@@ -35,6 +35,7 @@ def _create_um_files(
         data = data.astype(dtype)
         return data.tobytes(), data.size
 
+    # TODO: remove this patch when fixed in mule, see https://github.com/MetOffice/simulation-systems/discussions/389
     mule.ff._WriteFFOperatorUnpacked.to_bytes = to_bytes_patch
 
     template = {
