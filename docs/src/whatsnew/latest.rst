@@ -59,6 +59,11 @@ This document explains the changes made to Iris for this release
 #. `@schlunma`_ fixed loading of netCDF files with coordinates that have
    non-string units. (:issue:`6505`, :pull:`6506`)
 
+#. `@ukmo-ccbunney`_ correctly set the ``bplon`` PP field parameter when saving
+   a cube defined on Limited Area Model (LAM) grid to PP format. Activate this
+   behaviour with the new Futures flag ``iris.FUTURE.lam_pole_offset=True``.
+   (:issue:`3560`, :pull:`6520`)
+
 💣 Incompatible Changes
 =======================
 
