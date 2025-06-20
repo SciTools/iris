@@ -59,6 +59,12 @@ elif not BENCHMARK_DATA.is_dir():
 REUSE_DATA = True
 
 
+class DataGenerationError(Exception):
+    """Exception raised for errors during data generation."""
+
+    pass
+
+
 def run_function_elsewhere(func_to_run, *args, **kwargs):
     """Run a given function using the :const:`DATA_GEN_PYTHON` executable.
 
@@ -92,10 +98,22 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
         f"{func_to_run.__name__}(" + ",".join(func_call_term_strings) + ")"
     )
     python_string = "\n".join([func_string, func_call_string])
-    result = run(
-        [DATA_GEN_PYTHON, "-c", python_string], capture_output=True, check=True
-    )
-    return result.stdout
+
+    result = None
+    data_gen_traceback = None
+    try:
+        result = run(
+            [DATA_GEN_PYTHON, "-c", python_string], capture_output=True, check=True
+        )
+    except CalledProcessError as error_:
+        data_gen_traceback = error_.stderr.decode()
+
+    # Raise the error outside the original error chain - don't want the original
+    #  traceback since it is long and confusing.
+    if data_gen_traceback:
+        raise DataGenerationError(data_gen_traceback)
+    else:
+        return result.stdout
 
 
 @contextmanager
