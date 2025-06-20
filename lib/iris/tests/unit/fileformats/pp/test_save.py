@@ -368,6 +368,15 @@ class TestPoleLocation:
         assert pp_field.bplon == 0.0
         assert pp_field.bplat == 90.0
 
+    def test_zonal_slice(self, mocker, zonal_slice_cube):
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        with FUTURE.context(lam_pole_offset=True):
+            verify(zonal_slice_cube, pp_field)
+
+        # Zonal slice doesn't have lat coord, so is not a LAM:
+        assert pp_field.bplon == 0.0
+        assert pp_field.bplat == 90.0
+
     def test_lam_rotated_pole(self, mocker, single_time_cube):
         coord_system = single_time_cube.coord_system()
         bplon = coord_system.grid_north_pole_longitude
@@ -396,6 +405,20 @@ def single_time_cube():
     )
     cube.add_dim_coord(tc, 0)
     return cube
+
+
+@pytest.fixture
+def zonal_slice_cube():
+    x_coord = DimCoord(
+        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
+    )
+    t_coord = DimCoord(
+        np.arange(5), standard_name="time", units="hours since 2020-01-01T00:00:00"
+    )
+    return Cube(
+        data=np.zeros((len(t_coord.points), len(x_coord.points))),
+        dim_coords_and_dims=[(t_coord, 0), (x_coord, 1)],
+    )
 
 
 @pytest.fixture
