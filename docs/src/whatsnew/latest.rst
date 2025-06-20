@@ -59,6 +59,9 @@ This document explains the changes made to Iris for this release
 #. `@schlunma`_ fixed loading of netCDF files with coordinates that have
    non-string units. (:issue:`6505`, :pull:`6506`)
 
+#. `@stephenworsley`_ fixed incompatibilities with numpy v2.3 affecting arrays of dates and
+   array printing. (:pull:`6518`)
+
 💣 Incompatible Changes
 =======================
 

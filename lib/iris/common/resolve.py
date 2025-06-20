@@ -2358,7 +2358,7 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            np.float32(124652160.0)
+            np.float32(1.2465214e+08)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
