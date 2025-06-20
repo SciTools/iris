@@ -33,7 +33,7 @@ def _create_um_files(
         data = field.get_data()
         dtype = mule.ff._DATA_DTYPES[self.WORD_SIZE][field.lbuser1]
         data = data.astype(dtype)
-        return data.tosbytes(), data.size
+        return data.tobytes(), data.size
 
     mule.ff._WriteFFOperatorUnpacked.to_bytes = to_bytes_patch
 
