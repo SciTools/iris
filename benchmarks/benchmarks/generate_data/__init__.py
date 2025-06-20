@@ -99,8 +99,6 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
     )
     python_string = "\n".join([func_string, func_call_string])
 
-    result = None
-    data_gen_traceback = None
     try:
         result = run(
             [DATA_GEN_PYTHON, "-c", python_string],
@@ -109,14 +107,11 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
             text=True,
         )
     except CalledProcessError as error_:
-        data_gen_traceback = error_.stderr
+        # From None 'breaks' the error chain - we don't want the original
+        #  traceback since it is long and confusing.
+        raise DataGenerationError(error_.stderr) from None
 
-    # Raise the error outside the original error chain - don't want the original
-    #  traceback since it is long and confusing.
-    if data_gen_traceback:
-        raise DataGenerationError(data_gen_traceback)
-    else:
-        return result.stdout
+    return result.stdout
 
 
 @contextmanager
