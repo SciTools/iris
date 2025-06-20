@@ -332,8 +332,9 @@ class Test__str_repr(tests.IrisTest):
             axis=self.meshcoord.axis,
             location=self.meshcoord.location,
         )
+        coord_on_mesh.points[0] = 2
         coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
-        # self.meshcoord.bounds
+        self.meshcoord._load_points_and_bounds()
         # coord_on_mesh.bounds = as_lazy_data(self.meshcoord.bounds)
         self.assertTrue(self.meshcoord.has_lazy_points())
         # self.assertTrue(self.meshcoord.has_lazy_bounds())

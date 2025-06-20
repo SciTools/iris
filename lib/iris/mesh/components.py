@@ -2798,11 +2798,19 @@ class MeshCoord(AuxCoord):
         updating = object.__getattribute__(self, "_updating")
         if updating is False:
             object.__setattr__(self, "_updating", True)
-            if self.timestamp is None or self.timestamp < self.mesh.timestamp:
-                points, bounds = self._load_points_and_bounds()
-                super(MeshCoord, self.__class__).points.fset(self, points)
-                super(MeshCoord, self.__class__).bounds.fset(self, bounds)
-            self._updating = False
+            try:
+                # print("t", self.timestamp, "ms", self.mesh.timestamp)
+                if self.timestamp is None or self.timestamp < self.mesh.timestamp:
+                    # print("entered")
+                    points, bounds = self._load_points_and_bounds()
+                    # print("2")
+                    # print(type(points))
+                    super(MeshCoord, self.__class__).points.fset(self, points)
+                    super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+            except Exception as e:
+                raise e
+            finally:
+                self._updating = False
         return super().__getattribute__(item)
 
     # Define accessors for MeshCoord-specific properties mesh/location/axis.
