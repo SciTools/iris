@@ -45,7 +45,7 @@ def _create_file__xios_common(func_name, **kwargs):
             temp_file_dir=str(BENCHMARK_DATA),
             **kwargs,
         )
-        Path(actual_path.decode()).replace(save_path)
+        Path(actual_path).replace(save_path)
     return save_path
 
 

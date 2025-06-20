@@ -103,10 +103,13 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
     data_gen_traceback = None
     try:
         result = run(
-            [DATA_GEN_PYTHON, "-c", python_string], capture_output=True, check=True
+            [DATA_GEN_PYTHON, "-c", python_string],
+            capture_output=True,
+            check=True,
+            text=True,
         )
     except CalledProcessError as error_:
-        data_gen_traceback = error_.stderr.decode()
+        data_gen_traceback = error_.stderr
 
     # Raise the error outside the original error chain - don't want the original
     #  traceback since it is long and confusing.
