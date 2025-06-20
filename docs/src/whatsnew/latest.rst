@@ -64,6 +64,10 @@ This document explains the changes made to Iris for this release
    behaviour with the new Futures flag ``iris.FUTURE.lam_pole_offset=True``.
    (:issue:`3560`, :pull:`6520`)
 
+#. `@stephenworsley`_ fixed incompatibilities with numpy v2.3 affecting arrays of dates and
+   array printing. (:pull:`6518`)
+
+
 💣 Incompatible Changes
 =======================
 
