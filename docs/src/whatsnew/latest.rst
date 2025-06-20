@@ -98,6 +98,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ added a CI workflow to quickly validate that the
    benchmarking setup is still working. (:pull:`6496`)
 
+#. `@trexfeathers`_ improved the stack trace for errors that occur during
+   benchmark data generation, showing developers the root problem at-a-glance
+   without needing local replication. (:pull:`6524`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
