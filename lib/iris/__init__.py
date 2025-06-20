@@ -182,6 +182,7 @@ class Future(threading.local):
         save_split_attrs=False,
         date_microseconds=False,
         derived_bounds=False,
+        lam_pole_offset=False,
     ):
         """Container for run-time options controls.
 
@@ -217,6 +218,11 @@ class Future(threading.local):
             you didn't need to before.
         derived_bounds : bool, default=False
             When True, uses the new form for deriving bounds with the load.
+        lam_pole_offset : bool, default=False
+            When True, saving a cube on a "Limited Area Model" (LAM) domain
+            to a PP file will set the pole longitude (PP field ``bplon``) to
+            180.0 degrees if the grid is defined on a standard pole. Does not
+            affect global or rotated-pole domains.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -231,6 +237,7 @@ class Future(threading.local):
         self.__dict__["save_split_attrs"] = save_split_attrs
         self.__dict__["date_microseconds"] = date_microseconds
         self.__dict__["derived_bounds"] = derived_bounds
+        self.__dict__["lam_pole_offset"] = lam_pole_offset
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
