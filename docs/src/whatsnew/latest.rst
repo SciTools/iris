@@ -56,6 +56,9 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ fixed the html representation of cubes in Jupyter when coordinates
    share the same name. (:pull:`6476`)
 
+#. `@schlunma`_ fixed loading of netCDF files with coordinates that have
+   non-string units. (:issue:`6505`, :pull:`6506`)
+
 💣 Incompatible Changes
 =======================
 
