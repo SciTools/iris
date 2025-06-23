@@ -574,12 +574,6 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     def __setattr__(self, key, value):
         if getattr(self, "_mesh_parents", None) is not None:
-            # This should not run every time
-            # Should this be set in the coord manager?
-            # Alternatively, could make a _mesh_parents property, but that's ugly
-            # self.points.flags.writeable = False
-            # self.bounds.flags.writeable = False
-
             for parent in self._mesh_parents:
                 parent.timestamp = datetime.now()
 

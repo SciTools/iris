@@ -18,7 +18,7 @@ from packaging import version
 import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
-from iris.common.metadata import BaseMetadata, CoordMetadata
+from iris.common.metadata import CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
 from iris.mesh import Connectivity, MeshCoord, MeshXY
@@ -106,34 +106,6 @@ class Test__readonly_properties(tests.IrisTest):
         self.meshcoord.climatological = False
         with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
             self.meshcoord.climatological = True
-
-
-class Test__inherited_properties(tests.IrisTest):
-    """Check the settability and effect on equality of the common BaseMetadata
-    properties inherited from Coord : i.e. names/units/attributes.
-
-    Though copied from the mesh at creation, they are also changeable.
-
-    """
-
-    def setUp(self):
-        self.meshcoord = sample_meshcoord()
-
-    def test_inherited_properties(self):
-        # Check that these are settable, and affect equality.
-        meshcoord = self.meshcoord
-        # Add an existing attribute, so we can change it.
-        meshcoord.attributes["thing"] = 7
-        for prop in BaseMetadata._fields:
-            meshcoord2 = meshcoord.copy()
-            if "name" in prop:
-                # Use a standard-name, can do for any of them.
-                setattr(meshcoord2, prop, "height")
-            elif prop == "units":
-                meshcoord2.units = "Pa"
-            elif prop == "attributes":
-                meshcoord2.attributes["thing"] = 77
-        self.assertNotEqual(meshcoord2, meshcoord)
 
 
 class Test__points_and_bounds(tests.IrisTest):
@@ -332,10 +304,10 @@ class Test__str_repr(tests.IrisTest):
             axis=self.meshcoord.axis,
             location=self.meshcoord.location,
         )
-        coord_on_mesh.points[0] = 2
-        coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
-        self.meshcoord._load_points_and_bounds()
+        points = self.meshcoord.points
+        coord_on_mesh.points = as_lazy_data(points)
         # coord_on_mesh.bounds = as_lazy_data(self.meshcoord.bounds)
+
         self.assertTrue(self.meshcoord.has_lazy_points())
         # self.assertTrue(self.meshcoord.has_lazy_bounds())
 

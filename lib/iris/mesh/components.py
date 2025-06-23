@@ -2098,6 +2098,10 @@ class _Mesh1DCoordinateManager:
                 raise ValueError(emsg)
             if self not in coord._mesh_parents:
                 coord._mesh_parents.append(self)
+                if coord.points is not None:
+                    coord.core_points().flags.writeable = False
+                if coord.bounds is not None:
+                    coord.core_bounds().flags.writeable = False
         self._members[member] = coord
 
     def _shape(self, element):
@@ -2420,9 +2424,6 @@ class _MeshConnectivityManagerBase(ABC):
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members_dict = {member: None for member in self.ALL}
         self.add(*connectivities)
-        # makes a note of when the mesh connectivities were last edited, for use in
-        # ensuring MeshCoords are up to date
-        self.timestamp = datetime.now()
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2512,6 +2513,9 @@ class _MeshConnectivityManagerBase(ABC):
                 raise ValueError(message)
 
         self._members = proposed_members
+        for c in self._members.values():
+            if c is not None:
+                c._mesh_parents.append(self)
 
     def filter(self, **kwargs):
         # TODO: rationalise commonality with MeshCoordManager.filter and Cube.coord.
@@ -2792,19 +2796,15 @@ class MeshCoord(AuxCoord):
         use_metadict.pop("coord_system")
         with self._writable_points_and_bounds():
             super().__init__(points, bounds=bounds, **use_metadict)
-        self.updating = False
+        self._updating = False
 
     def __getattribute__(self, item):
         updating = object.__getattribute__(self, "_updating")
         if updating is False:
-            object.__setattr__(self, "_updating", True)
             try:
-                # print("t", self.timestamp, "ms", self.mesh.timestamp)
-                if self.timestamp is None or self.timestamp < self.mesh.timestamp:
-                    # print("entered")
+                object.__setattr__(self, "_updating", True)
+                if (self.timestamp is None) or (self.timestamp != self.mesh.timestamp):
                     points, bounds = self._load_points_and_bounds()
-                    # print("2")
-                    # print(type(points))
                     super(MeshCoord, self.__class__).points.fset(self, points)
                     super(MeshCoord, self.__class__).bounds.fset(self, bounds)
             except Exception as e:
