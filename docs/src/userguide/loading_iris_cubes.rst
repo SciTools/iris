@@ -298,3 +298,115 @@ these two cubes into separate variables.
         >>> print(number_two)
         2
 
+.. _load-problems:
+
+Load Problems
+-------------
+
+The Iris data model - see :ref:`iris_data_structures` - is highly flexible, but
+there are many examples of file content that will not be loaded into the data
+model. These fall into two categories:
+
+1. Malformations in the file.
+    - For example: a variable that is referenced, but is missing.
+2. Content not conformant with the standard for that file type.
+    - Most commonly :term:`NetCDF<NetCDF Format>` file content that is not
+      compliant with the :term:`CF conventions` - the basis for the Iris
+      data model. But Iris also relies on standards for other file
+      formats such as :term:`GRIB Format` and :term:`Post Processing (PP) Format`.
+    - Content in a non-NetCDF file that Iris does not know how to map onto CF
+      concepts.
+    - :term:`CF conventions` concepts that Iris does not support yet.
+
+.. note::
+
+    The below approach was introduced in Iris 3.12, and widely used in
+    CF-NetCDF loading by Iris 3.13. We hope to continue spreading it to
+    other file formats, and overlooked corner cases, in future releases.
+
+When Iris encounters problem content in a file, it will not make 'best efforts'
+to parse the content, but will instead redirect it to
+:data:`iris.loading.LOAD_PROBLEMS`, as well as issuing a warning to the user.
+The user is then free to add any operations to their script(s) for
+incorporating :data:`~iris.loading.LOAD_PROBLEMS` content into the Iris data
+model, as they see fit.
+
+.. todo:: flesh out with examples/code.
+
+Why this approach?
+^^^^^^^^^^^^^^^^^^
+
+.. todo:: figure out the best order for these headings.
+
+In many cases, a sensible workaround for loading 'problem content' would be
+obvious, especially given the flexibility of the Iris data model. But instead,
+this stricter approach from Iris on file quality has several benefits:
+
+Diversity
+"""""""""
+
+Several less 'opinionated' libraries are already available for those users that
+want to load all content from their file, regardless of quality or meaning.
+These libraries give the user the freedom to customise the handling of their
+files as they see fit, but also put the onus on the user to understand the file
+content and write code to handle it. Iris would be adding little new to the
+ecosystem if it had an identical philosophy.
+
+Examples include: :term:`netCDF4<NetCDF Format>`, :term:`Xarray`, `ecCodes`_.
+
+Instead, when working with the Iris data model, users can be confident in
+the validity, and precise meaning (from the :term:`CF conventions`) of this
+information.
+
+Maintainability
+"""""""""""""""
+
+Well written standards allow the loading code to be written with assumptions
+about what file content to expect. This code is much simpler than either fully
+'agnostic' code which can load anything, or code which embeds various
+workarounds for known problems. Simpler code takes less resource/expertise to
+maintain, increasing the long-term sustainability of Iris.
+
+User Discretion
+"""""""""""""""
+
+File malformations/non-conformances are by-definition not covered by any
+standard for that file type - there is no consensus on the correct way to
+represent this information. By avoiding encoding workarounds into Iris'
+codebase, we avoid imposing one party's opinion onto other Iris users, who may
+believe the problem should be handled differently.
+
+Raised Awareness
+""""""""""""""""
+
+The Iris developers are keen for a world with maximum file compatibility - where
+files can be correctly parsed by different parties and even different
+software, without the need for caveats, notes, or workarounds. This is why Iris
+conforms to file standards wherever they are available:
+:term:`CF conventions`, :ref:`UGRID<ugrid>`, :term:`GRIB Format`,
+etcetera.
+
+Iris makes users aware of any non-compliance with a file standard by not
+loading it directly into the data model (instead redirecting to
+:data:`iris.loading.LOAD_PROBLEMS`). Awareness gives data consumers and
+providers the opportunity to collaborate on improving file quality, increasing
+the ease with which the file can be loaded by ANY appropriate software.
+
+(Any workarounds or 'agnosticism' would only increase the ease of *Iris*
+loading the file, hiding the fact that other software and other collaborators
+might not understand it).
+
+Robustness
+""""""""""
+
+Redirecting problem content to :data:`iris.loading.LOAD_PROBLEMS` occurs in
+places where Iris would otherwise raise an exception. This means that
+Iris can continue to load all the valid parts of the file, and the user has
+a way to fix problems **within Iris**, rather than learning a NetCDF tool or
+similar.
+
+This will not only handle file problems, but also any current or future bugs in
+the Iris codebase, until they are fixed in the next release.
+
+
+.. _ecCodes: https://github.com/ecmwf/eccodes
