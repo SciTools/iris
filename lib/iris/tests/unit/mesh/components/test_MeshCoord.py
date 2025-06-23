@@ -306,14 +306,16 @@ class Test__str_repr(tests.IrisTest):
         )
         points = self.meshcoord.points
         coord_on_mesh.points = as_lazy_data(points)
-        # coord_on_mesh.bounds = as_lazy_data(self.meshcoord.bounds)
+        # Node coords are used to calculate the meshcoord bounds
+        for nc in self.meshcoord.mesh.node_coords:
+            nc.points = as_lazy_data(nc.points)
 
         self.assertTrue(self.meshcoord.has_lazy_points())
-        # self.assertTrue(self.meshcoord.has_lazy_bounds())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
 
         result = repr(self.meshcoord)
         self.assertTrue(self.meshcoord.has_lazy_points())
-        # self.assertTrue(self.meshcoord.has_lazy_bounds())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
 
         expected = (
             "<MeshCoord: longitude / (unknown)  "

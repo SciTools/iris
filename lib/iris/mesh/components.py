@@ -2098,10 +2098,10 @@ class _Mesh1DCoordinateManager:
                 raise ValueError(emsg)
             if self not in coord._mesh_parents:
                 coord._mesh_parents.append(self)
-                if coord.points is not None:
-                    coord.core_points().flags.writeable = False
-                if coord.bounds is not None:
-                    coord.core_bounds().flags.writeable = False
+                if coord.core_points() is not None and not coord.has_lazy_points():
+                    coord.points.flags.writeable = False
+                if coord.core_bounds() is not None and not coord.has_lazy_bounds():
+                    coord.bounds.flags.writeable = False
         self._members[member] = coord
 
     def _shape(self, element):
