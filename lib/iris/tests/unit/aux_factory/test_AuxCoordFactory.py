@@ -163,24 +163,25 @@ class Test_lazy_aux_coords:
         self._check_lazy(sample_cube)
 
 
+def make_dimco(name, dims):
+    dims = tuple(dims)
+    # Create simple points + bounds arrays
+    pts = np.ones(dims, dtype=np.int32)
+    bds = np.stack([pts - 0.5, pts + 0.5], axis=-1)
+    # Make them lazy with a single chunk in both cases
+    pts, bds = (da.from_array(x, chunks=-1) for x in (pts, bds))
+    co = AuxCoord(pts, bounds=bds, long_name=name)
+    return co
+
+
 class Test_rechunk:
     class TestAuxFact(AuxCoordFactory):
         """A minimal AuxCoordFactory that enables us to test the re-chunking logic."""
 
         def __init__(self, nx, ny, nz):
-            def make_co(name, dims):
-                dims = tuple(dims)
-                # Create simple points + bounds arrays
-                pts = np.ones(dims, dtype=np.int32)
-                bds = np.stack([pts - 0.5, pts + 0.5], axis=-1)
-                # Make them lazy with a single chunk in both cases
-                pts, bds = (da.from_array(x, chunks=-1) for x in (pts, bds))
-                co = AuxCoord(pts, bounds=bds, long_name=name)
-                return co
-
-            self.x = make_co("x", (nx, 1, 1))
-            self.y = make_co("y", (1, ny, 1))
-            self.z = make_co("z", (1, 1, nz))
+            self.x = make_dimco("x", (nx, 1, 1))
+            self.y = make_dimco("y", (1, ny, 1))
+            self.z = make_dimco("z", (1, 1, nz))
 
         @property
         def dependencies(self):
@@ -188,15 +189,18 @@ class Test_rechunk:
 
         def _calculate_array(self, *dep_arrays, **other_args):
             x, y, z = dep_arrays
-            return x * y * z
+            return x + y + z
+            # arrays = np.broadcast_arrays(*dep_arrays)
+            # arraystack = np.stack(arrays, axis=0)# x, y, z = dep_arrays
+            # return np.sum(arraystack, axis=0)
 
         def make_coord(self, coord_dims_func):
             # N.B. don't bother with dim remapping, we know it is not needed.
             points = self._derive_array(
-                *(getattr(self, name).core_points() for name in ("x", "y", "z"))
+                *(getattr(self, name).core_points() for name in self.dependencies)
             )
             bounds = self._derive_array(
-                *(getattr(self, name).core_bounds() for name in ("x", "y", "z"))
+                *(getattr(self, name).core_bounds() for name in self.dependencies)
             )
             result = AuxCoord(
                 points,
@@ -206,8 +210,8 @@ class Test_rechunk:
             return result
 
     @pytest.mark.parametrize("nz", [10, 100, 1000])
-    @pytest.mark.parametrize("lazydeps", [True, False], ids=["lazydeps", "realdeps"])
-    def test_rechunk(self, nz, lazydeps):
+    @pytest.mark.parametrize("deptypes", ["all_lazy", "mixed_real_lazy", "all_real"])
+    def test_rechunk(self, nz, deptypes):
         # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
         #  at different NZ sizes eventually needing to rechunk on both Y and X
         nx, ny = 10, 10
@@ -218,9 +222,10 @@ class Test_rechunk:
         #   (10, 10, 1000) = 100,000 --> (1, 5, 1000) --> rechunk both X and Y
         aux_co = self.TestAuxFact(nx, ny, nz)
 
-        if not lazydeps:
+        if deptypes != "all_lazy":
             # Touch all dependencies to realise
-            for name in ("x", "y", "z"):
+            names = ["x", "y", "z"] if deptypes == "all_real" else ["y"]
+            for name in names:
                 co = getattr(aux_co, name)
                 co.points = co.points
                 co.bounds = co.bounds
@@ -244,3 +249,29 @@ class Test_rechunk:
             1000: ((1, 5, 1000), (1, 2, 1000, 2)),  # divide x,y by 10,2 (bounds: 10,5)
         }[nz]
         assert chunksize_points_and_bounds == expected_chunksize_points_and_bounds
+
+    class MultiDimTestFactory(TestAuxFact):
+        """A test factory with an added multidimensional term."""
+
+        # Use fixed test dimensions, for simplicity.
+        _MULTDIM_TEST_DIMS = {"nt": 10, "nz": 7, "ny": 4, "nx": 5}
+
+        def __init__(self):
+            nx, ny, nz = (self._MULTDIM_TEST_DIMS[name] for name in "xyz")
+            super().__init__(nx=nx, ny=ny, nz=nz)
+            mm_data = da.from_array(np.ones((nz, ny, nx)))
+            self.mm = AuxCoord(mm_data, long_name="mm")
+
+        @property
+        def dependencies(self):
+            return super().dependencies.copy().update(mm=self.mm)
+
+        def _calculate_array(self, *dep_arrays, **other_args):
+            x, y, z, mm = dep_arrays
+            return x + y + z + mm
+
+    @pytest.mark.parametrize("rechunk", ["unrechunked", "rechunked"])
+    def test_multidim(self, rechunk):
+        # More-or-less duplicate test_rechunk, but use the 'multidim' test factory.
+        # Apply 2 different chunksizes to check the rechunking behaviour.
+        aux_co = self.MultiDimTestFactory()
