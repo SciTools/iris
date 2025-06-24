@@ -2645,6 +2645,10 @@ class _MeshConnectivityManagerBase(ABC):
                 logger.debug(message, extra=dict(cls=self.__class__.__name__))
 
         for cf_role in removal_dict.keys():
+            try:
+                self._members[cf_role]._mesh_parents.remove(self)
+            except ValueError:
+                pass
             self._members[cf_role] = None
 
         return removal_dict
@@ -2755,7 +2759,7 @@ class MeshCoord(AuxCoord):
         axis,
     ):
         self.timestamp = None
-        self._updating = None
+        self._updating = True
         self._read_only_points_and_bounds = True
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
@@ -2794,8 +2798,13 @@ class MeshCoord(AuxCoord):
         # MeshCoords it is deduced from the mesh.
         # (Otherwise a non-None coord_system breaks the 'copy' operation)
         use_metadict.pop("coord_system")
-        with self._writable_points_and_bounds():
+        try:
+            self._read_only_points_and_bounds = False
             super().__init__(points, bounds=bounds, **use_metadict)
+        except Exception as e:
+            raise e
+        finally:
+            self._read_only_points_and_bounds = True
         self._updating = False
 
     def __getattribute__(self, item):
