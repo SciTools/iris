@@ -2096,12 +2096,9 @@ class _Mesh1DCoordinateManager:
                     f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
                 )
                 raise ValueError(emsg)
+            # if the coordinate attached to the mesh hasn't been linked
             if self not in coord._mesh_parents:
                 coord._mesh_parents.append(self)
-                if coord.core_points() is not None and not coord.has_lazy_points():
-                    coord.points.flags.writeable = False
-                if coord.core_bounds() is not None and not coord.has_lazy_bounds():
-                    coord.bounds.flags.writeable = False
         self._members[member] = coord
 
     def _shape(self, element):
@@ -2809,20 +2806,12 @@ class MeshCoord(AuxCoord):
 
     def __getattribute__(self, item):
         updating = object.__getattribute__(self, "_updating")
-        if updating is False:
-            try:
-                object.__setattr__(self, "_updating", True)
-                if (self.timestamp is None) or (self.timestamp != self.mesh.timestamp):
-                    points, bounds = self._load_points_and_bounds()
-                    super(MeshCoord, self.__class__).points.fset(self, points)
-                    super(MeshCoord, self.__class__).bounds.fset(self, bounds)
-            except Exception as e:
-                raise e
-            finally:
-                self._updating = False
+        if updating is False and item != "update_from_mesh":
+            object.__getattribute__(self, "update_from_mesh")()
         return super().__getattribute__(item)
 
-    # Define accessors for MeshCoord-specific properties mesh/location/axis.
+        # Define accessors for MeshCoord-specific properties mesh/location/axis.
+
     # These are all read-only.
     @property
     def mesh(self):
@@ -2852,7 +2841,7 @@ class MeshCoord(AuxCoord):
     @property
     def points(self):
         """The coordinate points values as a NumPy array."""
-        return super().points
+        return super().core_points().compute()
 
     @points.setter
     def points(self, value):
@@ -2863,7 +2852,7 @@ class MeshCoord(AuxCoord):
 
     @property
     def bounds(self):
-        return super().bounds
+        return super().core_bounds().compute()
 
     @bounds.setter
     def bounds(self, value):
@@ -2944,6 +2933,18 @@ class MeshCoord(AuxCoord):
         # Translate "self[:,]" as "self.copy()".
         return self.copy()
 
+    def update_from_mesh(self):
+        try:
+            object.__setattr__(self, "_updating", True)
+            if (self.timestamp is None) or (self.timestamp != self.mesh.timestamp):
+                points, bounds = self._load_points_and_bounds()
+                super(MeshCoord, self.__class__).points.fset(self, points)
+                super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+        except Exception as e:
+            raise e
+        finally:
+            self._updating = False
+
     def collapsed(self, dims_to_collapse=None):
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
 
@@ -3011,7 +3012,7 @@ class MeshCoord(AuxCoord):
         return new_coord
 
     def rename(self, name: str | None) -> None:
-        """Ensure you can't rename MeshCoords."""
+        """Ensure you that renaming MeshCoords is done via the Coord attached to the Mesh."""
         self.mesh.coord(location=self.location, axis=self.axis).rename(name)
 
     def __deepcopy__(self, memo):
