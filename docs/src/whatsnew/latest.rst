@@ -38,7 +38,7 @@ This document explains the changes made to Iris for this release
    includes an improvement to how :class:`~iris.coords.DimCoord` is 'gracefully'
    converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
    now preserved when it was not previously. See also: :ref:`load-problems`.
-   (:pull:`6465`, pull:`6529`)
+   (:pull:`6465`, :pull:`6529`)
 
 
 🐛 Bugs Fixed
