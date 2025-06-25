@@ -8,6 +8,8 @@ Since Iris cannot predict your specific needs, it by default raises Warnings
 for anything that might be a problem for **any** user, and is designed to work with
 you to ``ignore`` Warnings which you do not find helpful.
 
+Find out more about *why* we chose this approach: :ref:`filtering-warnings-explanation`.
+
 .. testsetup:: filtering_warnings
 
     from pathlib import Path
@@ -230,38 +232,6 @@ viewing the :mod:`iris.warnings` module.
     If you have ideas for adding/altering Iris' warning categories, please
     :ref:`get in touch<development_where_to_start>`! The categories exist to
     make your life easier, and it is simple to make modifications.
-
-
-More Detail
------------
-
-Different people use Iris for very different purposes, from quick file
-visualisation to extract-transform-load to statistical analysis. These
-contrasting priorities mean disagreement on which Iris problems can be ignored
-and which are critically important.
-
-For problems that prevent Iris functioning: **Concrete Exceptions** are raised, which
-stop code from running any further - no debate here. For less catastrophic
-problems: **Warnings** are raised,
-which notify you (in ``stderr``) but allow code to continue running. The Warnings are
-there because Iris may **OR may not** function in the way you expect,
-depending on what you need - e.g. a problem might prevent data being saved to
-NetCDF, but statistical analysis will still work fine.
-
-Examples of Iris Warnings
-~~~~~~~~~~~~~~~~~~~~~~~~~
-
-- If you attempt to plot un-bounded point data as a ``pcolormesh``: Iris will
-  guess appropriate bounds around each point so that quadrilaterals can be
-  plotted. This permanently modifies the relevant coordinates, so the you are
-  warned in case downstream operations assume un-bounded coordinates.
-- If you load a NetCDF file where a CF variable references another variable -
-  e.g. ``my_var:coordinates = "depth_var" ;`` - but the referenced variable
-  (``depth_var``) is not in the file: Iris will still construct
-  its data model, but without this reference relationship. You are warned since
-  the file includes an error and the loaded result might therefore not be as
-  expected.
-
 
 .. testcleanup:: filtering_warnings
 

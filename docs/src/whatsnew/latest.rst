@@ -95,7 +95,14 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added :ref:`load-problems` to the user
+   guide. (:pull:`6529`)
+
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added a new user guide page:
+   :ref:`iris-philosophy`, for readers who are interested in why Iris is
+   designed/maintained the way it is. Initial content: :ref:`code-maintenance`,
+   :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
+   (:pull:`6529`)
 
 
 💼 Internal
