@@ -410,45 +410,9 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
 Why this approach?
 ^^^^^^^^^^^^^^^^^^
 
-.. todo:: figure out the best order for these headings.
-
 In many cases, a sensible workaround for loading 'problem content' would be
 obvious, especially given the flexibility of the Iris data model. But instead,
 this stricter approach from Iris on file quality has several benefits:
-
-Diversity
-"""""""""
-
-Several less 'opinionated' libraries are already available for those users that
-want to load all content from their file, regardless of quality or meaning.
-These libraries give the user the freedom to customise the handling of their
-files as they see fit, but also put the onus on the user to understand the file
-content and write code to handle it. Iris would be adding little new to the
-ecosystem if it had an identical philosophy.
-
-Examples include: :term:`netCDF4<NetCDF Format>`, :term:`Xarray`, `ecCodes`_.
-
-Instead, when working with the Iris data model, users can be confident in
-the validity, and precise meaning (from the :term:`CF conventions`) of this
-information.
-
-Maintainability
-"""""""""""""""
-
-Well written standards allow the loading code to be written with assumptions
-about what file content to expect. This code is much simpler than either fully
-'agnostic' code which can load anything, or code which embeds various
-workarounds for known problems. Simpler code takes less resource/expertise to
-maintain, increasing the long-term sustainability of Iris.
-
-User Discretion
-"""""""""""""""
-
-File malformations/non-conformances are by-definition not covered by any
-standard for that file type - there is no consensus on the correct way to
-represent this information. By avoiding encoding workarounds into Iris'
-codebase, we avoid imposing one party's opinion onto other Iris users, who may
-believe the problem should be handled differently.
 
 Raised Awareness
 """"""""""""""""
@@ -470,6 +434,15 @@ the ease with which the file can be loaded by ANY appropriate software.
 loading the file, hiding the fact that other software and other collaborators
 might not understand it).
 
+Maintainability
+"""""""""""""""
+
+Well written standards allow the loading code to be written with assumptions
+about what file content to expect. This code is much simpler than either fully
+'agnostic' code which can load anything, or code which embeds various
+workarounds for known problems. Simpler code takes less resource/expertise to
+maintain, increasing the long-term sustainability of Iris.
+
 Robustness
 """"""""""
 
@@ -482,5 +455,29 @@ similar.
 This will not only handle file problems, but also any current or future bugs in
 the Iris codebase, until they are fixed in the next release.
 
+User Discretion
+"""""""""""""""
+
+File malformations/non-conformances are by-definition not covered by any
+standard for that file type - there is no consensus on the correct way to
+represent this information. By avoiding encoding workarounds into Iris'
+codebase, we avoid imposing one party's opinion onto other Iris users, who may
+believe the problem should be handled differently.
+
+Diversity
+"""""""""
+
+Several less 'opinionated' libraries are already available for those users that
+want to load all content from their file, regardless of quality or meaning.
+These libraries give the user the freedom to customise the handling of their
+files as they see fit, but also put the onus on the user to understand the file
+content and write code to handle it. Iris would be adding little new to the
+ecosystem if it had an identical philosophy.
+
+Examples include: :term:`netCDF4<NetCDF Format>`, :term:`Xarray`, `ecCodes`_.
+
+Instead, when working with the Iris data model, users can be confident in
+the validity, and precise meaning (from the :term:`CF conventions`) of this
+information.
 
 .. _ecCodes: https://github.com/ecmwf/eccodes
