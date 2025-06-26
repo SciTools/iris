@@ -67,6 +67,9 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ fixed incompatibilities with numpy v2.3 affecting arrays of dates and
    array printing. (:pull:`6518`)
 
+#. `@stephenworsley`_ fixed a bug which caused :meth:`~iris.cube.CubeList.concatenate_cube`
+   to fail when concatenating over multiple axes. (:pull:`6533`)
+
 
 💣 Incompatible Changes
 =======================
