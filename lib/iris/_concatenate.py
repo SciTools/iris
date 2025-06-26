@@ -1121,7 +1121,7 @@ class _ProtoCube:
         check_cell_measures: bool = False,
         check_ancils: bool = False,
         check_derived_coords: bool = False,
-    ) -> bool:
+    ) -> tuple[bool, str | None]:
         """Determine if  the given source-cube is suitable for concatenation.
 
         Determine if  the given source-cube is suitable for concatenation
@@ -1164,7 +1164,7 @@ class _ProtoCube:
 
         Returns
         -------
-        bool
+        tuple[bool, str]
 
         """
         # Verify and assert the nominated axis.
