@@ -353,29 +353,29 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
 
         # We can have multiple coordinate_system, so now stored as a list (note plural key)
         coord_systems = engine.cube_parts.get("coordinate_systems")
-
-        # parse the grid_mapping attribute to get coord_system -> coordinate mappings
-        attr_grid_mapping = getattr(engine.cf_var, "grid_mapping")
-        cs_mappings = hh._parse_extened_grid_mapping(attr_grid_mapping)
-
         coord_system = None
 
-        # Simple `grid_mapping = "crs"`
-        # Only one coord_system will be present and cs_grid_mapping will
-        # contain no coordinate references (set to None).
-        if len(coord_systems) == 1 and cs_mappings[0][1] is None:
-            # Only one grid mapping - apply it.
-            coord_system = list(coord_systems.values())[0]
-            cs_name = cs_mappings[0][0]
+        # parse the grid_mapping attribute to get coord_system -> coordinate mappings
+        attr_grid_mapping = getattr(engine.cf_var, "grid_mapping", None)
+        if attr_grid_mapping:
+            cs_mappings = hh._parse_extened_grid_mapping(attr_grid_mapping)
 
-        # Extended `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
-        # We need to search for coord system that references our coordinate.
-        else:
-            for name, ref_coords in cs_mappings:
-                if cf_var.cf_name in ref_coords:
-                    cs_name = name
-                    coord_system = coord_systems[cs_name]
-                    break
+            # Simple `grid_mapping = "crs"`
+            # Only one coord_system will be present and cs_grid_mapping will
+            # contain no coordinate references (set to None).
+            if len(coord_systems) == 1 and cs_mappings[0][1] is None:
+                # Only one grid mapping - apply it.
+                coord_system = list(coord_systems.values())[0]
+                cs_name = cs_mappings[0][0]
+
+            # Extended `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+            # We need to search for coord system that references our coordinate.
+            else:
+                for name, ref_coords in cs_mappings:
+                    if cf_var.cf_name in ref_coords:
+                        cs_name = name
+                        coord_system = coord_systems[cs_name]
+                        break
 
         # Translate the specific grid-mapping type to a grid-class
         if coord_system is None:
@@ -515,21 +515,22 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     # Check if we have a coord_system specified for this coordinate.
     # (Only possible via extended grid_mapping attribute)
     coord_systems = engine.cube_parts.get("coordinate_systems")
+    coord_system = None
 
     # get grid_mapping from data variable attribute and parse it
-    grid_mapping_attr = getattr(engine.cf_var, "grid_mapping")
-    cs_mappings = hh._parse_extened_grid_mapping(grid_mapping_attr)
+    grid_mapping_attr = getattr(engine.cf_var, "grid_mapping", None)
+    if grid_mapping_attr:
+        cs_mappings = hh._parse_extened_grid_mapping(grid_mapping_attr)
 
-    if len(coord_systems) == 1 and cs_mappings[0][1] is None:
-        # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
-        coord_system = None
-    else:
-        # Extended grid_mapping
-        coord_system = None
-        for crs_name, coords in cs_mappings:
-            if cf_var.cf_name in coords:
-                coord_system = coord_systems[crs_name]
-                break
+        if len(coord_systems) == 1 and cs_mappings[0][1] is None:
+            # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
+            pass
+        else:
+            # Extended grid_mapping
+            for crs_name, coords in cs_mappings:
+                if cf_var.cf_name in coords:
+                    coord_system = coord_systems[crs_name]
+                    break
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
     hh.build_and_add_auxiliary_coordinate(
