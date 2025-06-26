@@ -85,7 +85,9 @@ class Test_concatenate_cube:
         cube.add_dim_coord(lat, 0)
         cube.add_dim_coord(lon, 1)
 
-        cube_quarters = CubeList([cube[:10, :10], cube[:10, 10:], cube[10:, :10], cube[10:, 10:]])
+        cube_quarters = CubeList(
+            [cube[:10, :10], cube[:10, 10:], cube[10:, :10], cube[10:, 10:]]
+        )
 
         result = cube_quarters.concatenate_cube()
         assert cube == result
