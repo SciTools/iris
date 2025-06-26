@@ -609,6 +609,7 @@ def concatenate(
             add_coords(cube_signature, "ancillary_variables_and_dims")
 
     hashes = _compute_hashes(arrays)
+    msg = None
 
     # Register each cube with its appropriate proto-cube.
     for cube_signature in cube_signatures:
@@ -616,7 +617,7 @@ def concatenate(
 
         # Register cube with an existing proto-cube.
         for proto_cube in proto_cubes:
-            registered = proto_cube.register(
+            registered, msg = proto_cube.register(
                 cube_signature,
                 hashes,
                 axis,
@@ -648,6 +649,11 @@ def concatenate(
     count = len(concatenated_cubes)
     if count != 1 and count != len(cubes):
         concatenated_cubes = concatenate(concatenated_cubes)
+    elif msg is not None:
+        if error_on_mismatch:
+            raise iris.exceptions.ConcatenateError([msg])
+        else:
+            warnings.warn(msg, category=iris.warnings.IrisUserWarning)
 
     return concatenated_cubes
 
@@ -1275,15 +1281,7 @@ class _ProtoCube:
             if existing_order == _CONSTANT and this_order != _CONSTANT:
                 self._coord_signature.dim_order[dim_ind] = this_order
 
-        if mismatch_error_msg and not match:
-            if error_on_mismatch:
-                raise iris.exceptions.ConcatenateError([mismatch_error_msg])
-            else:
-                warnings.warn(
-                    mismatch_error_msg, category=iris.warnings.IrisUserWarning
-                )
-
-        return match
+        return match, mismatch_error_msg
 
     def _add_skeleton(self, coord_signature, data):
         """Create and add the source-cube skeleton to the :class:`_ProtoCube`.

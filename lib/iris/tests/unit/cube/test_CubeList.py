@@ -77,6 +77,19 @@ class Test_concatenate_cube:
         with pytest.raises(ValueError, match=exc_regexp):
             CubeList([]).concatenate_cube()
 
+    def test_multidim(self):
+        lat = DimCoord(np.arange(20), standard_name="latitude")
+        lon = DimCoord(np.arange(20), standard_name="longitude")
+
+        cube = Cube(np.zeros([20, 20]))
+        cube.add_dim_coord(lat, 0)
+        cube.add_dim_coord(lon, 1)
+
+        cube_quarters = CubeList([cube[:10, :10], cube[:10, 10:], cube[10:, :10], cube[10:, 10:]])
+
+        result = cube_quarters.concatenate_cube()
+        assert cube == result
+
 
 class Test_extend:
     @pytest.fixture(autouse=True)
