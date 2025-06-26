@@ -24,6 +24,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+import iris.fileformats._nc_load_rules.helpers as hh
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.mesh.components import Connectivity
 import iris.util
@@ -666,17 +667,31 @@ class CFGridMappingVariable(CFVariable):
             if nc_var_att is not None:
                 name = nc_var_att.strip()
 
-                if name not in ignore:
-                    if name not in variables:
-                        if warn:
-                            message = "Missing CF-netCDF grid mapping variable %r, referenced by netCDF variable %r"
-                            warnings.warn(
-                                message % (name, nc_var_name),
-                                category=iris.warnings.IrisCfMissingVarWarning,
-                            )
-                    else:
-                        result[name] = CFGridMappingVariable(name, variables[name])
+                # parse the grid_mappings
+                mappings = hh._parse_extened_grid_mapping(name)
 
+                for name, coords in mappings:
+                    if name not in ignore:
+                        if name not in variables:
+                            if warn:
+                                message = "Missing CF-netCDF grid mapping variable %r, referenced by netCDF variable %r"
+                                warnings.warn(
+                                    message % (name, nc_var_name),
+                                    category=iris.warnings.IrisCfMissingVarWarning,
+                                )
+                        else:
+                            # For extended grid_mapping, also check coord references exist:
+                            if coords:
+                                for coord_name in coords:
+                                    if coord_name not in variables:
+                                        message = "Missing CF-netCDF coordinate variable %r (associated with grid mapping variable %r), referenced by netCDF variable %r"
+                                        warnings.warn(
+                                            message % (coord_name, name, nc_var_name),
+                                            category=iris.warnings.IrisCfMissingVarWarning,
+                                        )
+                            # TODO: Question: A missing coord reference will not stop the coord_system from
+                            #  being added as a CFGridMappingVariable. Is this ok?
+                            result[name] = CFGridMappingVariable(name, variables[name])
         return result
 
 

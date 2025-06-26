@@ -79,6 +79,7 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     engine.cube_parts["coordinates"] = []
     engine.cube_parts["cell_measures"] = []
     engine.cube_parts["ancillary_variables"] = []
+    engine.cube_parts["coordinate_systems"] = {}
 
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
