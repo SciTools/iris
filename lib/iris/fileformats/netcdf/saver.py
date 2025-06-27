@@ -2093,6 +2093,8 @@ class Saver:
                         category=iris.warnings.IrisSaveWarning,
                     )
 
+                cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
+
                 self._coord_systems.append(cs)
 
             # create grid mapping string:
