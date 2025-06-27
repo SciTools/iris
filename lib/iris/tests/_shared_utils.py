@@ -451,6 +451,15 @@ def assert_text_file(source_filename, reference_filename, desc="text file"):
 
 def assert_data_almost_equal(data, reference_filename, **kwargs):
     reference_path = get_result_path(reference_filename)
+
+    def fixed_std(data):
+        # When data is constant, std() is too sensitive.
+        if data.max() == data.min():
+            data_std = 0
+        else:
+            data_std = data.std()
+        return data_std
+
     if _check_reference_file(reference_path):
         kwargs.setdefault("err_msg", "Reference file %s" % reference_path)
         with open(reference_path, "r") as reference_file:
@@ -470,7 +479,7 @@ def assert_data_almost_equal(data, reference_filename, **kwargs):
                 assert math.isnan(data.mean())
             else:
                 data_stats = np.array(
-                    (data.mean(), data.std(), data.max(), data.min()),
+                    (data.mean(), fixed_std(data), data.max(), data.min()),
                     dtype=np.float64,
                 )
                 assert_array_all_close(nstats, data_stats, **kwargs)
@@ -478,7 +487,7 @@ def assert_data_almost_equal(data, reference_filename, **kwargs):
         _ensure_folder(reference_path)
         stats = collections.OrderedDict(
             [
-                ("std", np.float64(data.std())),
+                ("std", np.float64(fixed_std(data))),
                 ("min", np.float64(data.min())),
                 ("max", np.float64(data.max())),
                 ("shape", data.shape),

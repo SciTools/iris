@@ -124,7 +124,7 @@ class Test__str_repr:
     def _check_content(self, future, text):
         assert text == (
             "Future(datum_support=False, pandas_ndim=False, save_split_attrs=False, "
-            "date_microseconds=False, derived_bounds=False)"
+            "date_microseconds=False, derived_bounds=False, lam_pole_offset=False)"
         )
         # Also just check that all the property elements are included
         for propname in future.__dict__.keys():
