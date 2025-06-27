@@ -16,6 +16,7 @@ variables:
 		rotated_latitude_longitude:grid_north_pole_latitude = 18. ;
 		rotated_latitude_longitude:grid_north_pole_longitude = -140.75 ;
 		rotated_latitude_longitude:north_pole_grid_longitude = 0. ;
+		rotated_latitude_longitude:crs_wkt = "GEOGCRS[\"unnamed\",BASEGEOGCRS[\"unknown\",DATUM[\"World Geodetic System 1984\",ELLIPSOID[\"WGS 84\",6378137,298.257223563,LENGTHUNIT[\"metre\",1]],ID[\"EPSG\",6326]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8901]]],DERIVINGCONVERSION[\"unknown\",METHOD[\"PROJ ob_tran o_proj=latlon\"],PARAMETER[\"o_lon_p\",0,ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]],PARAMETER[\"o_lat_p\",18,ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]],PARAMETER[\"lon_0\",39.25,ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]]],CS[ellipsoidal,2],AXIS[\"longitude\",east,ORDER[1],ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]],AXIS[\"latitude\",north,ORDER[2],ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]]]" ;
 	float time(time) ;
 		time:axis = "T" ;
 		time:bounds = "time_bnds" ;

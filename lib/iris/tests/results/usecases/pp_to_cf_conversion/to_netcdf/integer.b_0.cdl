@@ -14,6 +14,7 @@ variables:
 		latitude_longitude:grid_mapping_name = "latitude_longitude" ;
 		latitude_longitude:longitude_of_prime_meridian = 0. ;
 		latitude_longitude:earth_radius = 6371229. ;
+		latitude_longitude:crs_wkt = "GEOGCRS[\"unknown\",DATUM[\"unknown\",ELLIPSOID[\"unknown\",6371229,0,LENGTHUNIT[\"metre\",1,ID[\"EPSG\",9001]]]],PRIMEM[\"Greenwich\",0,ANGLEUNIT[\"degree\",0.0174532925199433],ID[\"EPSG\",8901]],CS[ellipsoidal,2],AXIS[\"longitude\",east,ORDER[1],ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]],AXIS[\"latitude\",north,ORDER[2],ANGLEUNIT[\"degree\",0.0174532925199433,ID[\"EPSG\",9122]]]]" ;
 	float latitude(latitude) ;
 		latitude:axis = "Y" ;
 		latitude:units = "degrees_north" ;
