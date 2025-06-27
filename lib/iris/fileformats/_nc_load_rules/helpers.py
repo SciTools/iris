@@ -1974,7 +1974,7 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
 
 
 ################################################################################
-def _parse_extened_grid_mapping(grid_mapping):
+def _parse_extended_grid_mapping(grid_mapping):
     """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
     # Handles extended grid_mapping too. Possibilities:
     #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords

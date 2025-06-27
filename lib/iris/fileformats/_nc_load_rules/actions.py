@@ -360,7 +360,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             # Parse the grid_mapping attribute to get coord_system -> coordinate mappings
             attr_grid_mapping = getattr(engine.cf_var, "grid_mapping", None)
             if attr_grid_mapping:
-                cs_mappings = hh._parse_extened_grid_mapping(attr_grid_mapping)
+                cs_mappings = hh._parse_extended_grid_mapping(attr_grid_mapping)
 
                 # Simple `grid_mapping = "crs"`
                 # Only one coord_system will be present and cs_grid_mapping will
@@ -522,7 +522,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     # get grid_mapping from data variable attribute and parse it
     grid_mapping_attr = getattr(engine.cf_var, "grid_mapping", None)
     if grid_mapping_attr:
-        cs_mappings = hh._parse_extened_grid_mapping(grid_mapping_attr)
+        cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
 
         if len(coord_systems) == 1 and cs_mappings[0][1] is None:
             # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
