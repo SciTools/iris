@@ -32,12 +32,13 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@trexfeathers`_ and `@ukmo-ccbunney`_ extended the
-   :data:`iris.loading.LOAD_PROBLEMS` capturing to _all_ NetCDF objects that are
+   :data:`iris.loading.LOAD_PROBLEMS` capturing to *all* NetCDF objects that are
    added to a :class:`~iris.cube.Cube` during loading, as well as a selection
    of other objects such as :class:`~iris.coord_systems.CoordSystem`. Note this
    includes an improvement to how :class:`~iris.coords.DimCoord` is 'gracefully'
    converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
-   now preserved when it was not previously.
+   now preserved when it was not previously. See also: :ref:`load-problems`.
+   (:pull:`6465`, :pull:`6529`)
 
 
 🐛 Bugs Fixed
@@ -97,7 +98,14 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added :ref:`load-problems` to the user
+   guide. (:pull:`6529`)
+
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added a new user guide page:
+   :ref:`iris-philosophy`, for readers who are interested in why Iris is
+   designed/maintained the way it is. Initial content: :ref:`code-maintenance`,
+   :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
+   (:pull:`6529`)
 
 
 💼 Internal
