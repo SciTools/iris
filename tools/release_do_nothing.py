@@ -960,7 +960,7 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
     def next_release(self):
-        if not self.release_type == self.ReleaseTypes.PATCH and not self.is_release_candidate:
+        if self.release_type != self.ReleaseTypes.PATCH and not self.is_release_candidate:
             self.print("Prep next release ...")
 
             message = (
