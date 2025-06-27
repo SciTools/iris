@@ -367,7 +367,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 # contain no coordinate references (set to None).
                 if len(coord_systems) == 1 and cs_mappings[0][1] is None:
                     # Only one grid mapping - apply it.
-                    coord_system = list(coord_systems.values())[0]
+                    (coord_system,) = coord_systems.values()
                     cs_name = cs_mappings[0][0]
 
                 # Extended `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
