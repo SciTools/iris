@@ -27,6 +27,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         mapping_missingradius=False,
         mapping_type_name=None,
         mapping_scalefactor=None,
+        phenom_grid_mapping="grid",
         yco_values=None,
         xco_name=None,
         yco_name=None,
@@ -226,7 +227,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 double phenom({ydim_name}, {xdim_name}) ;
                     phenom:standard_name = "air_temperature" ;
                     phenom:units = "K" ;
-                    phenom:grid_mapping = "grid" ;
+                    phenom:grid_mapping = "{phenom_grid_mapping}" ;
 {phenom_coords_string}
                 double yco({ydim_name}) ;
                     yco:axis = "Y" ;
@@ -755,6 +756,45 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         )
         self.check_result(result, cube_no_cs=True, xco_stdname=False, yco_stdname=False)
 
+    def test_extended_mapping_basic_latlon(self):
+        # A basic reference example with a lat-long grid, but using extended
+        # grid mapping syntax on phenomenon.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
+        # Notes:
+        #     * grid-mapping identified : regular latlon
+        #     * dim-coords identified : lat+lon
+        #     * coords built : standard latlon (with latlon coord-system)
+        result = self.run_testcase(phenom_grid_mapping="grid: yco xco")
+        self.check_result(result)
+
+    def test_extended_mapping_basic_latlon_missing_coords(self):
+        # A basic reference example with a lat-long grid, but using extended
+        # grid mapping syntax on phenomenon.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
+        # Notes:
+        #     * grid-mapping identified : regular latlon
+        #     * dim-coords identified : lat+lon
+        #     * coords built : standard latlon (with latlon coord-system)
+        result = self.run_testcase(
+            phenom_grid_mapping="grid: yco bad_coord",
+            warning_regex="Missing CF-netCDF coordinate variable 'bad_coord'",
+        )
+        self.check_result(result, xco_no_cs=True)
+
 
 class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
     # Testcases for translating auxiliary latitude+longitude variables
@@ -837,6 +877,55 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
             yco_is_dim=False,
         )
         self.check_result(result, yco_is_aux=True, yco_no_cs=True)
+
+    def test_extended_grid_mapping_aux_lon(self):
+        # Change the name of xdim, and put xco on the coords list.
+        # Uses extended grid mapping syntax.
+        # In this case, the Aux coord WILL have a coordinate system
+        # as extended grid mapping allows for specification of
+        # explicit coordinate_systems for individual coordinate.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_build_coordinate_(latitude)
+        #     005 : fc_build_auxiliary_coordinate_longitude
+        result = self.run_testcase(
+            xco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, xco_is_aux=True, xco_no_cs=False)
+
+    def test_extended_grid_mapping_aux_lat(self):
+        # As previous, but with the Y coord.
+        # Uses extended grid mapping syntax
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(longitude)
+        #     004 : fc_build_coordinate_(longitude)
+        #     005 : fc_build_auxiliary_coordinate_latitude
+        result = self.run_testcase(
+            yco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, yco_is_aux=True, yco_no_cs=False)
+
+    def test_extended_grid_mapping_aux_lat_and_lon(self):
+        # Make *both* X and Y coords into aux-coords.
+        # Uses extended grid mapping syntax; allows coord_system
+        # to be added to an AuxCoord, so cube.coord_system() returns
+        # a valid coordinate_system.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_build_auxiliary_coordinate_longitude
+        #     004 : fc_build_auxiliary_coordinate_latitude
+        result = self.run_testcase(
+            xco_is_dim=False, yco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=False)
 
 
 class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
