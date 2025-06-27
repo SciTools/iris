@@ -169,12 +169,15 @@ _GRID_MAPPING_PARSE_EXTENDED = re.compile(
     re.VERBOSE,
 )
 _GRID_MAPPING_PARSE_SIMPLE = re.compile(r"^\w+$")
-_GRID_MAPPING_VALIDATORS = (
+_GRID_MAPPING_VALIDATORS = (  # fmt: skip
     (
         re.compile(r"\w+: +\w+:"),
         "`<coord_system>:` identifier followed immediately by another `<coord_system>:` identifier",
     ),
-    (re.compile(r"\w+: *$"), "`<coord_system>:` is empty - missing coordinate list"),
+    (
+        re.compile(r"\w+: *$"),
+        "`<coord_system>:` is empty - missing coordinate list",
+    ),
     (
         re.compile(r"^\w+ +\w+"),
         "Multiple coordinates found without `<coord_system>:` identifier",
