@@ -86,7 +86,7 @@ this stricter approach from Iris on file quality has several benefits:
 Raised Awareness
 ----------------
 
-The Iris developers are keen for a world with maximum file compatibility - where
+The Iris developers aspire to a world with maximum file compatibility - where
 files can be correctly parsed by different parties and even different
 software, without the need for caveats, notes, or workarounds. This is why Iris
 conforms to file standards wherever they are available:
