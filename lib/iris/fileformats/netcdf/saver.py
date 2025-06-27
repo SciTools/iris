@@ -1864,8 +1864,20 @@ class Saver:
         None
 
         """
-        cs = cube.coord_system("CoordSystem")
-        if cs is not None:
+        # TODO(CB): We need ALL coord systems here, not just the fist one found.
+        # cs = cube.coord_system("CoordSystem")
+
+        # TODO(CB): This is workaround code (gets _unique_ coord systems):
+        # TODO(CB): Put this code in new cube.coord_systems() function, or modify cube.coord_system()
+        # coord_systems = [coord.coord_system for coord in cube.coords() if coord.coord_system]
+        coord_systems = []
+        for coord in cube.coords():
+            if coord.coord_system and coord.coord_system not in coord_systems:
+                coord_systems.append(coord.coord_system)
+
+        grid_mappings = []
+
+        for cs in coord_systems:
             # Grid var not yet created?
             if cs not in self._coord_systems:
                 while cs.grid_mapping_name in self._dataset.variables:
@@ -2083,8 +2095,32 @@ class Saver:
 
                 self._coord_systems.append(cs)
 
-            # Refer to grid var
-            _setncattr(cf_var_cube, "grid_mapping", cs.grid_mapping_name)
+            # create grid mapping string:
+            coords = cube.coords(coord_system=cs)
+            # TODO: How do we sort these coords?
+            #       For DimCoords, we can use the dimension order, but what
+            #       about AuxCoords that could be 2D?
+
+            # prefer netCDF variable name, if exists, else default ro coord.name()
+            coord_string = " ".join(
+                [coord.var_name if coord.var_name else coord.name() for coord in coords]
+            )
+            grid_mappings.append((cs.grid_mapping_name, coord_string))
+
+        # Refer to grid var
+        # TODO: Future flag for extended grid_mapping syntax?
+        # For now, if only one coord_system, write out in simple form.
+        # Use extended form for multiple coord_systems
+        if len(grid_mappings):
+            if len(grid_mappings) > 1:
+                # TODO: Check future flag? Warn if not set?
+                grid_mapping = " ".join(
+                    f"{cs_name}: {cs_coords}" for cs_name, cs_coords in grid_mappings
+                )
+            else:
+                grid_mapping = grid_mappings[0][0]  # just the cs_name
+
+            _setncattr(cf_var_cube, "grid_mapping", grid_mapping)
 
     def _create_cf_data_variable(
         self,
