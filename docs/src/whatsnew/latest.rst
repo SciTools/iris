@@ -32,12 +32,25 @@ This document explains the changes made to Iris for this release
 ===========
 
 #. `@trexfeathers`_ and `@ukmo-ccbunney`_ extended the
-   :data:`iris.loading.LOAD_PROBLEMS` capturing to _all_ NetCDF objects that are
+   :data:`iris.loading.LOAD_PROBLEMS` capturing to *all* NetCDF objects that are
    added to a :class:`~iris.cube.Cube` during loading, as well as a selection
    of other objects such as :class:`~iris.coord_systems.CoordSystem`. Note this
    includes an improvement to how :class:`~iris.coords.DimCoord` is 'gracefully'
    converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
-   now preserved when it was not previously.
+   now preserved when it was not previously. See also: :ref:`load-problems`.
+   (:pull:`6465`, :pull:`6529`)
+
+#. `@wjbenfold`_ and `@trexfeathers`_ added ``crs_wkt`` to the attributes when
+   saving a :class:`~iris.coord_systems.CoordSystem` to a NetCDF file. Note that
+   ``crs_wkt`` is considered *supplementary* by the CF conventions, with
+   ``grid_mapping`` being the primary source of information, and ``crs_wkt`` not
+   expected to contain conflicting information. Because of this, Iris generates
+   :class:`~iris.coord_systems.CoordSystem` exclusively from ``grid_mapping``
+   when loading, and writes a fresh ``crs_wkt`` whenever a
+   :class:`~iris.coord_systems.CoordSystem` is saved. If your use case goes
+   beyond the CF conventions, you can modify the save and load process for your
+   needs by using the `Ncdata`_ package.
+   See `CRS WKT in the CF Conventions`_ for more. (:issue:`3796`, :pull:`6519`)
 
 
 🐛 Bugs Fixed
@@ -97,7 +110,14 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added :ref:`load-problems` to the user
+   guide. (:pull:`6529`)
+
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added a new user guide page:
+   :ref:`iris-philosophy`, for readers who are interested in why Iris is
+   designed/maintained the way it is. Initial content: :ref:`code-maintenance`,
+   :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
+   (:pull:`6529`)
 
 
 💼 Internal
@@ -124,3 +144,6 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _CRS WKT in the CF Conventions: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
+.. _Ncdata: https://github.com/pp-mo/ncdata
