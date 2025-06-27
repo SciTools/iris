@@ -188,11 +188,12 @@ class Test_rechunk:
             return {"x": self.x, "y": self.y, "z": self.z}
 
         def _calculate_array(self, *dep_arrays, **other_args):
-            x, y, z = dep_arrays
-            return x + y + z
-            # arrays = np.broadcast_arrays(*dep_arrays)
-            # arraystack = np.stack(arrays, axis=0)# x, y, z = dep_arrays
-            # return np.sum(arraystack, axis=0)
+            # Do this a slightly clunky way, because it generalises nicely to 'N' args.
+            # N.B. by experiment, this produces the same chunks as simple a+b+c+...
+            result = 0
+            for arg in dep_arrays:
+                result += arg
+            return result
 
         def make_coord(self, coord_dims_func):
             # N.B. don't bother with dim remapping, we know it is not needed.
@@ -254,24 +255,54 @@ class Test_rechunk:
         """A test factory with an added multidimensional term."""
 
         # Use fixed test dimensions, for simplicity.
-        _MULTDIM_TEST_DIMS = {"nt": 10, "nz": 7, "ny": 4, "nx": 5}
+        _MULTIDIM_TEST_DIMS = {"nt": 10, "nz": 7, "ny": 4, "nx": 5}
 
         def __init__(self):
-            nx, ny, nz = (self._MULTDIM_TEST_DIMS[name] for name in "xyz")
-            super().__init__(nx=nx, ny=ny, nz=nz)
-            mm_data = da.from_array(np.ones((nz, ny, nx)))
-            self.mm = AuxCoord(mm_data, long_name="mm")
+            nt, nz, ny, nx = (self._MULTIDIM_TEST_DIMS["n" + name] for name in "tzyx")
+            self.t = make_dimco("t", (nt, 1, 1, 1))
+            self.z = make_dimco("x", (1, nz, 1, 1))
+            self.y = make_dimco("y", (1, 1, ny, 1))
+            self.x = make_dimco("z", (1, 1, 1, nx))
+            mm_data = da.from_array(np.ones((1, nz, ny, nx)))
+            mm_bounds = da.stack([mm_data - 0.5, mm_data + 0.5], axis=-1)
+            self.mm = AuxCoord(mm_data, bounds=mm_bounds, long_name="mm")
 
         @property
         def dependencies(self):
-            return super().dependencies.copy().update(mm=self.mm)
-
-        def _calculate_array(self, *dep_arrays, **other_args):
-            x, y, z, mm = dep_arrays
-            return x + y + z + mm
+            return {name: getattr(self, name) for name in ("t", "z", "y", "x", "mm")}
 
     @pytest.mark.parametrize("rechunk", ["unrechunked", "rechunked"])
     def test_multidim(self, rechunk):
         # More-or-less duplicate test_rechunk, but use the 'multidim' test factory.
         # Apply 2 different chunksizes to check the rechunking behaviour.
         aux_co = self.MultiDimTestFactory()
+
+        do_rechunk = rechunk == "rechunked"
+        if do_rechunk:
+            chunksize = 30 * 4  # *4 for np.int32 element size
+        else:
+            chunksize = 9999 * 4  # *4 for np.int32 element size
+        daskformat_chunksize = f"{chunksize}b"
+        with dask.config.set({"array.chunk-size": daskformat_chunksize}):
+            result = aux_co.make_coord(None)
+
+        # Results should *always* be lazy, even when dependencies are all real.
+        assert result.has_lazy_points()
+        assert result.has_lazy_bounds()
+
+        # Check the expected chunking of the result.
+        chunksize_points_and_bounds = (
+            result.core_points().chunksize,
+            result.core_bounds().chunksize,
+        )
+
+        # expected_chunksize_points_and_bounds = {
+        #     10: ((10, 10, 10), (10, 10, 10, 2)),  # no rechunk
+        #     100: ((5, 10, 100), (2, 10, 100, 2)),  # divide x by 2 (bounds: 5)
+        #     1000: ((1, 5, 1000), (1, 2, 1000, 2)),  # divide x,y by 10,2 (bounds: 10,5)
+        # }[nz]
+        if do_rechunk:
+            expected_chunksize_points_and_bounds = ((1, 1, 2, 5), (1, 1, 2, 5, 1))
+        else:
+            expected_chunksize_points_and_bounds = ((10, 7, 4, 5), (10, 7, 4, 5, 1))
+        assert chunksize_points_and_bounds == expected_chunksize_points_and_bounds
