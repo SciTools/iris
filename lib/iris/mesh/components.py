@@ -2757,7 +2757,7 @@ class MeshCoord(AuxCoord):
     ):
         self.timestamp = None
         self._updating = True
-        self._read_only_points_and_bounds = True
+        self._read_only = True
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
 
@@ -2796,12 +2796,12 @@ class MeshCoord(AuxCoord):
         # (Otherwise a non-None coord_system breaks the 'copy' operation)
         use_metadict.pop("coord_system")
         try:
-            self._read_only_points_and_bounds = False
+            self._read_only = False
             super().__init__(points, bounds=bounds, **use_metadict)
         except Exception as e:
             raise e
         finally:
-            self._read_only_points_and_bounds = True
+            self._read_only = True
         self._updating = False
 
     def __getattribute__(self, item):
@@ -2825,57 +2825,55 @@ class MeshCoord(AuxCoord):
     def axis(self):
         return self._metadata_manager.axis
 
-    @contextmanager
-    def _writable_points_and_bounds(self):
-        """Context manager to allow bounds and points to be set during __init__.
+    @property
+    def standard_name(self):
+        return self._metadata_manager.standard_name
 
-        `points` currently doesn't encounter any issues without this manager, but
-        is included here for future proofing.
-        """
-        try:
-            self._read_only_points_and_bounds = False
-            yield
-        finally:
-            self._read_only_points_and_bounds = True
+    @standard_name.setter
+    def standard_name(self, value):
+        if self._read_only:
+            msg = "Cannot set 'standard_name' on a MeshCoord."
+            raise ValueError(msg)
 
     @property
-    def points(self):
-        """The coordinate points values as a NumPy array."""
-        return super().core_points().compute()
+    def long_name(self):
+        return self._metadata_manager.long_name
 
-    @points.setter
-    def points(self, value):
-        if self._read_only_points_and_bounds:
-            if len(value) != 0 or not (value is None):
-                msg = "Cannot set 'points' on a MeshCoord."
-                raise ValueError(msg)
+    @long_name.setter
+    def long_name(self, value):
+        if self._read_only:
+            msg = "Cannot set 'long_name' on a MeshCoord."
+            raise ValueError(msg)
 
     @property
-    def bounds(self):
-        return super().core_bounds().compute()
+    def var_name(self):
+        return self._metadata_manager.var_name
 
-    @bounds.setter
-    def bounds(self, value):
-        if self._read_only_points_and_bounds:
-            if len(value) != 0:  # or not(value is None) and self.bounds:
-                msg = "Cannot set 'bounds' on a MeshCoord."
-                raise ValueError(msg)
-        else:
-            super(MeshCoord, self.__class__).bounds.fset(self, value)
+    @var_name.setter
+    def var_name(self, value):
+        if self._read_only and value:
+            msg = "Cannot set 'var_name' on a MeshCoord."
+            raise ValueError(msg)
 
     @property
-    def _metadata_manager(self):
-        # sets the metadata
-        use_metadict = self._load_metadata()
+    def units(self):
+        return self._metadata_manager.units
 
-        self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
-        self._metadata_manager_temp.long_name = use_metadict["long_name"]
-        self._metadata_manager_temp.var_name = use_metadict["var_name"]
-        self._metadata_manager_temp.units = use_metadict["units"]
-        self._metadata_manager_temp.attributes = use_metadict["attributes"]
-        self._metadata_manager_temp.coord_system = use_metadict["coord_system"]
-        self._metadata_manager_temp.climatological = use_metadict["climatological"]
-        return self._metadata_manager_temp
+    @units.setter
+    def units(self, value):
+        if self._read_only:
+            msg = "Cannot set 'units' on a MeshCoord."
+            raise ValueError(msg)
+
+    @property
+    def attributes(self):
+        return self._metadata_manager.attributes
+
+    @attributes.setter
+    def attributes(self, value):
+        if self._read_only:
+            msg = "Cannot set 'attributes' on a MeshCoord."
+            raise ValueError(msg)
 
     # Provide overrides to mimic the Coord-specific properties that are not
     # supported by MeshCoord, i.e. "coord_system" and "climatological".
@@ -2905,8 +2903,8 @@ class MeshCoord(AuxCoord):
 
     @coord_system.setter
     def coord_system(self, value):
-        if value is not None:
-            msg = "Cannot set the coordinate-system of a MeshCoord."
+        if self._read_only and value:
+            msg = "Cannot set 'coord_system' on a MeshCoord."
             raise ValueError(msg)
 
     @property
@@ -2916,9 +2914,55 @@ class MeshCoord(AuxCoord):
 
     @climatological.setter
     def climatological(self, value):
-        if value:
+        if self._read_only and value:
             msg = "Cannot set 'climatological' on a MeshCoord."
             raise ValueError(msg)
+
+    @property
+    def points(self):
+        """The coordinate points values as a NumPy array."""
+        try:
+            # the points property should return real data, but shouldn't realise the coord on the mesh
+            return super().core_points().compute()
+        except AttributeError:
+            return super().core_points()
+
+    @points.setter
+    def points(self, value):
+        if self._read_only:
+            if len(value) != 0 or not (value is None):
+                msg = "Cannot set 'points' on a MeshCoord."
+                raise ValueError(msg)
+
+    @property
+    def bounds(self):
+        try:
+            return super().core_bounds().compute()
+        except AttributeError:
+            return super().core_bounds()
+
+    @bounds.setter
+    def bounds(self, value):
+        if self._read_only:
+            if len(value) != 0:  # or not(value is None) and self.bounds:
+                msg = "Cannot set 'bounds' on a MeshCoord."
+                raise ValueError(msg)
+        else:
+            super(MeshCoord, self.__class__).bounds.fset(self, value)
+
+    @property
+    def _metadata_manager(self):
+        # sets the metadata
+        use_metadict = self._load_metadata()
+
+        self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
+        self._metadata_manager_temp.long_name = use_metadict["long_name"]
+        self._metadata_manager_temp.var_name = use_metadict["var_name"]
+        self._metadata_manager_temp.units = use_metadict["units"]
+        self._metadata_manager_temp.attributes = use_metadict["attributes"]
+        self._metadata_manager_temp.coord_system = use_metadict["coord_system"]
+        self._metadata_manager_temp.climatological = use_metadict["climatological"]
+        return self._metadata_manager_temp
 
     def __getitem__(self, keys):
         # Disallow any sub-indexing, permitting *only* "self[:,]".

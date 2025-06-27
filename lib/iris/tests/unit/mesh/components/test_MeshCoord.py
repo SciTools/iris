@@ -107,6 +107,26 @@ class Test__readonly_properties(tests.IrisTest):
         with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
             self.meshcoord.climatological = True
 
+    @pytest.mark.parametrize(
+        "metadata_name",
+        [
+            "points",
+            "bounds",
+            "standard_name",
+            "long_name",
+            "var_name",
+            "units",
+            "climatological",
+            "coord_system",
+            "attributes",
+        ],
+    )
+    def test_immutable(self, metadata_name):
+        with pytest.raises(
+            ValueError, match=rf"Cannot set '{metadata_name}' on a MeshCoord\.$"
+        ):
+            self.meshcoord.__setattr__(metadata_name, "value")
+
 
 class Test__points_and_bounds(tests.IrisTest):
     # Basic method testing only, for 3 locations with simple array values.
@@ -754,10 +774,12 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # Calculate both points + bounds of the meshcoord
         self.assertTrue(meshcoord.has_lazy_points())
         self.assertTrue(meshcoord.has_lazy_bounds())
-        meshcoord.points
-        meshcoord.bounds
-        self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_bounds())
+        mc_points = meshcoord.points
+        mc_bounds = meshcoord.bounds
+        self.assertTrue(meshcoord.has_lazy_points())
+        self.assertTrue(meshcoord.has_lazy_bounds())
+        self.assertFalse(is_lazy_data(mc_points))
+        self.assertFalse(is_lazy_data(mc_bounds))
 
         # Check all the source coords are still lazy.
         for coord in fetch_sources_from_mesh():
@@ -909,6 +931,14 @@ class Test__metadata:
         # ... but also, check that the result matches the expected face/edge coord.
         self.coord_metadata_matches(meshcoord, self.location_coord)
 
+    def test_updates_from_mesh(self):
+        self.setup_mesh(location="node", axis="x")
+        coord_on_mesh = self.mesh.coord(location=self.location, axis=self.axis)
+        meshcoord = self.mesh.to_MeshCoord(location=self.location, axis=self.axis)
+
+        coord_on_mesh.units = "radians"
+        meshcoord.standard_name
+
 
 class Test_collapsed:
     """Very simple operation that in theory is fully tested elsewhere
@@ -977,6 +1007,29 @@ class Test_collapsed:
         with mock.patch.object(AuxCoord, "collapsed") as mocked:
             _ = mesh_coord_basic.collapsed()
             mocked.assert_called_once()
+
+
+class Test_immutable(tests.IrisTest):
+    def setUp(self):
+        self.meshcoord = sample_meshcoord()
+        self.timestamp_at_creation = self.meshcoord.mesh.timestamp
+
+    def test_timestamp(self):
+        # Ensure they are identical at creation.
+        assert self.meshcoord.mesh.timestamp == self.timestamp_at_creation
+
+        coord_on_mesh = self.meshcoord.mesh.coord(
+            location=self.meshcoord.location, axis=self.meshcoord.axis
+        )
+        coord_on_mesh.points = np.zeros(3)
+
+        assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
+        assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
+
+        self.meshcoord.standard_name
+
+        assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
+        assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
 
 
 if __name__ == "__main__":
