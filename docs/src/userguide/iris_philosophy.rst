@@ -29,9 +29,9 @@ maintenance effort is probably still necessary:
 * On the one hand, *in principle*, working code will go on working, as long
   as you don't change anything else.
 
-* However, such "version stasis" can easily become a growing burden, if you
+* However, such "version stasis" can easily become a growing burden; if you
   are simply waiting until an update becomes unavoidable, often that will
-  eventually occur when you need to update some other software component,
+  eventually occur when you need to update some other software component
   for some completely unconnected reason.
 
 
@@ -53,7 +53,7 @@ These ensure that, *within a major release number* :
 * you can defer making code compatibility changes for some time, until it
   suits you
 
-The above applies to minor version upgrades : e.g. code that works with version
+The above applies to *minor version upgrades* : e.g. code that works with version
 "1.4.2" should still work with a subsequent minor release such as "1.5.0" or
 "1.7.2".
 
@@ -63,7 +63,7 @@ existing code may need to be modified to make it work with the new version.
 
 Since breaking change can only occur at major releases, these are the *only*
 times we can alter or remove existing behaviours (even deprecated
-ones).  This is what a major release is for : it enables the removal and
+ones).  This is what a major release is for: it enables the removal and
 replacement of old features.
 
 Of course, even at a major release, we do still aim to keep breaking changes to
