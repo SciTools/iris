@@ -169,7 +169,17 @@ _GRID_MAPPING_PARSE_EXTENDED = re.compile(
     re.VERBOSE,
 )
 _GRID_MAPPING_PARSE_SIMPLE = re.compile(r"^\w+$")
-
+_GRID_MAPPING_VALIDATORS = (
+    (
+        re.compile(r"\w+: +\w+:"),
+        "`<coord_system>:` identifier followed immediately by another `<coord_system>:` identifier",
+    ),
+    (re.compile(r"\w+: *$"), "`<coord_system>:` is empty - missing coordinate list"),
+    (
+        re.compile(r"^\w+ +\w+"),
+        "Multiple coordinates found without `<coord_system>:` identifier",
+    ),
+)
 #
 # CF Attribute Names.
 #
@@ -1978,9 +1988,17 @@ def _parse_extened_grid_mapping(grid_mapping):
         return [(grid_mapping, None)]  # simple single grid mapping variable
 
     # Try extended mapping:
+    # 1. Run validators to check for invalid expressions:
+    for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
+        if len(match := v_re.findall(grid_mapping)):
+            msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
+            raise iris.exceptions.IrisError(msg)  # TODO: Better Exception type
+
+    # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
     mappings = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
-    if mappings is None:
-        raise Exception("Bad grid_mapping attribute: %r" % grid_mapping)
+    if len(mappings) == 0:
+        msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
+        raise iris.exceptions.IrisError(msg)  # TODO: Better exception type
 
     # split second match group into list of coordinates:
     mappings = [(m[0], m[1].split()) for m in mappings]
