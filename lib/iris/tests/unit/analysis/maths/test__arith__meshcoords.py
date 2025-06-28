@@ -160,12 +160,19 @@ class TestBasicMeshOperation(tests.IrisTest):
     def test_meshcube_meshcoord(self):
         # Combining a meshcube and meshcoord.
         cube = sample_mesh_cube()
-        cube.coord("latitude").units = "s"
+        cube_coord = cube.coord("latitude")
+        cube_coord_on_mesh = cube_coord.mesh.coord(
+            location=cube_coord.location, axis=cube_coord.axis
+        )
+        cube_coord_on_mesh.units = "s"
         cube.units = "m"
 
         # A separately derived, but matching 'latitude' MeshCoord.
         coord = sample_mesh_cube().coord("latitude")
-        coord.units = "s"  # N.B. the units **must also match**
+        coord_on_mesh = coord.mesh.coord(
+            standard_name=coord.standard_name, location=coord.location
+        )
+        coord_on_mesh.units = "s"  # N.B. the units **must also match**
 
         result = cube / coord
         self.assertEqual(result.name(), "unknown")
