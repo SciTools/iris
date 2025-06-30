@@ -116,11 +116,12 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         points array, and then again to make the bounds.
         """
         # Make an initial result calculation.
-        # First make all dependencies lazy, to ensure a lazy calculation and avoid
-        #  potentially spending a lot of time + memory.
+        # First make all dependencies (args) lazy, to ensure a lazy result calculation
+        #  and so avoid a greedy use of time + memory.
         lazy_deps = [
-            # Note: no attempt to make clever chunking choices here.  If needed it
-            #  should get fixed later.  Plus, single chunks keeps graph overhead small.
+            # Note: wrap real deps as single chunks here, no attempt at clever chunking.
+            #  If better is needed, this appears as too-big result chunks, which get
+            #  rechunked later.  For now, single chunks minimise the initial graph size.
             dep if is_lazy_data(dep) else da.from_array(dep, chunks=-1)
             for dep in dep_arrays
         ]
