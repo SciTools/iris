@@ -6,6 +6,8 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
+from typing import Iterable, Tuple
+
 import dask.array as da
 import dask.config
 import dask.utils
@@ -168,10 +170,46 @@ def make_dimco(name, dims):
     # Create simple points + bounds arrays
     pts = np.ones(dims, dtype=np.int32)
     bds = np.stack([pts - 0.5, pts + 0.5], axis=-1)
-    # Make them lazy with a single chunk in both cases
+    # Make both points and bounds lazy, with a single chunk.
     pts, bds = (da.from_array(x, chunks=-1) for x in (pts, bds))
     co = AuxCoord(pts, bounds=bds, long_name=name)
     return co
+
+
+_Chunkspec = Iterable[int | Iterable[int]]
+_Chunks = Tuple[Tuple[int, ...], ...]
+
+
+def chunkspecs(points: _Chunkspec, bounds: _Chunkspec) -> Tuple[_Chunks, _Chunks]:
+    """Convert chunks to a standard form for comparison.
+
+    Because Python literals for the Dask chunks "tuple of tuples" form are rather hard
+    to read, especially when they are mostly in the form ((n,), (m,), (p,)),
+    i.e. a single chunk per dim.
+
+    This function takes specifically two chunk inputs, for points + bounds.
+
+    Parameters
+    ----------
+    points, bounds : _Chunkspec
+        A pair (points, bounds) of chunk specs.
+        Each is a sequence of dimension specs, where each dim is either an int or an
+        iterable of int
+
+    Returns
+    -------
+    chunks :
+        a pair of tuple of tuples, in the form of Dask chunks arguments.
+
+    """
+    pts_spec, bds_spec = [
+        tuple(
+            (dimspec,) if isinstance(dimspec, int) else tuple(int(x) for x in dimspec)
+            for dimspec in chunks
+        )
+        for chunks in (points, bounds)
+    ]
+    return pts_spec, bds_spec
 
 
 class Test_rechunk:
@@ -179,6 +217,12 @@ class Test_rechunk:
         """A minimal AuxCoordFactory that enables us to test the re-chunking logic."""
 
         def __init__(self, nx, ny, nz):
+            # NOTE: In a *real* factory coordinate, the dependencies are references to
+            # cube coordinates.  The "make_coord" function needs to broadcast/transpose
+            # their points and bounds to align with the result dimensions before passing
+            # them to "_derive_array" / "_calculate_array".
+            # We store our dependencies pre-aligned with result dims so that we *don't*
+            # need to bother with dim mapping, and our "make_coord" is much simpler.
             self.x = make_dimco("x", (nx, 1, 1))
             self.y = make_dimco("y", (1, ny, 1))
             self.z = make_dimco("z", (1, 1, nz))
@@ -189,14 +233,14 @@ class Test_rechunk:
 
         def _calculate_array(self, *dep_arrays, **other_args):
             # Do this a slightly clunky way, because it generalises nicely to 'N' args.
-            # N.B. by experiment, this produces the same chunks as simple a+b+c+...
+            # N.B. from experiment, this gets the same chunks as a one-line a+b+c+...
             result = 0
             for arg in dep_arrays:
                 result += arg
             return result
 
         def make_coord(self, coord_dims_func):
-            # N.B. don't bother with dim remapping, we know it is not needed.
+            # N.B. no dim re-mapping needed, as dep arrays are all pre-aligned.
             points = self._derive_array(
                 *(getattr(self, name).core_points() for name in self.dependencies)
             )
@@ -210,11 +254,13 @@ class Test_rechunk:
             )
             return result
 
+    # Test the calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
+    #  - for different NZ sizes, eventually needing to rechunk on both Y and X.
     @pytest.mark.parametrize("nz", [10, 100, 1000])
+    # Test with  mixtures of real and lazy dependencies.
     @pytest.mark.parametrize("deptypes", ["all_lazy", "mixed_real_lazy", "all_real"])
     def test_rechunk(self, nz, deptypes):
-        # Test calculation which forms (NX, 1, 1) * (1, NY, 1) * (1, 1, NZ)
-        #  at different NZ sizes eventually needing to rechunk on both Y and X
+        """Test hybrid coordinate chunk handling, to avoid excessive memory costs."""
         nx, ny = 10, 10
         chunksize = 9000 * 4  # *4 for np.int32 element size
         # Rough summary  of expectation with different nz (detail below):
@@ -240,69 +286,93 @@ class Test_rechunk:
         assert result.has_lazy_bounds()
 
         # Check the expected chunking of the result.
-        chunksize_points_and_bounds = (
-            result.core_points().chunksize,
-            result.core_bounds().chunksize,
+        result_pts_bds_chunks = chunkspecs(
+            result.core_points().chunks,
+            result.core_bounds().chunks,
         )
-        expected_chunksize_points_and_bounds = {
-            10: ((10, 10, 10), (10, 10, 10, 2)),  # no rechunk
-            100: ((5, 10, 100), (2, 10, 100, 2)),  # divide x by 2 (bounds: 5)
-            1000: ((1, 5, 1000), (1, 2, 1000, 2)),  # divide x,y by 10,2 (bounds: 10,5)
+        expected_pts_bds_chunks = {
+            10: chunkspecs(points=[10, 10, 10], bounds=[10, 10, 10, 2]),
+            100: chunkspecs(points=[[5, 5], 10, 100], bounds=[5 * [2], 10, 100, 2]),
+            1000: chunkspecs(
+                points=[10 * [1], [5, 5], 1000], bounds=[10 * [1], 5 * [2], 1000, 2]
+            ),
         }[nz]
-        assert chunksize_points_and_bounds == expected_chunksize_points_and_bounds
+        assert result_pts_bds_chunks == expected_pts_bds_chunks
 
     class MultiDimTestFactory(TestAuxFact):
-        """A test factory with an added multidimensional term."""
+        """An extended test factory with an added multidimensional term."""
 
         # Use fixed test dimensions, for simplicity.
-        _MULTIDIM_TEST_DIMS = {"nt": 10, "nz": 7, "ny": 4, "nx": 5}
+        _MULTIDIM_TEST_DIMS = {"nz": 7, "ny": 4, "nx": 5}
 
         def __init__(self):
-            nt, nz, ny, nx = (self._MULTIDIM_TEST_DIMS["n" + name] for name in "tzyx")
-            self.t = make_dimco("t", (nt, 1, 1, 1))
-            self.z = make_dimco("x", (1, nz, 1, 1))
-            self.y = make_dimco("y", (1, 1, ny, 1))
-            self.x = make_dimco("z", (1, 1, 1, nx))
-            mm_data = da.from_array(np.ones((1, nz, ny, nx)))
+            nz, ny, nx = (self._MULTIDIM_TEST_DIMS["n" + name] for name in "zyx")
+            self.z = make_dimco("x", (nz, 1, 1))
+            self.y = make_dimco("y", (1, ny, 1))
+            self.x = make_dimco("z", (1, 1, nx))
+            mm_data = da.from_array(np.ones((nz, ny, nx)))
             mm_bounds = da.stack([mm_data - 0.5, mm_data + 0.5], axis=-1)
             self.mm = AuxCoord(mm_data, bounds=mm_bounds, long_name="mm")
 
         @property
         def dependencies(self):
-            return {name: getattr(self, name) for name in ("t", "z", "y", "x", "mm")}
+            return {name: getattr(self, name) for name in ("z", "y", "x", "mm")}
 
-    @pytest.mark.parametrize("rechunk", ["unrechunked", "rechunked"])
-    def test_multidim(self, rechunk):
-        # More-or-less duplicate test_rechunk, but use the 'multidim' test factory.
-        # Apply 2 different chunksizes to check the rechunking behaviour.
+    # More-or-less duplicates "test_rechunk", but with a multidimensional factory.
+    # Apply 2 different chunksizes to check the rechunking behaviour.
+    @pytest.mark.parametrize("rechunk", ["norechunk", "withrechunk"])
+    # Chunk multidim coordinate in 2 ways: single-chunk, and irregular multi-chunk.
+    @pytest.mark.parametrize("chunktype", ["plainchunks", "fancychunks"])
+    def test_multidim(self, rechunk, chunktype):
+        """Test chunk handling with multidimensional terms."""
         aux_co = self.MultiDimTestFactory()
 
-        do_rechunk = rechunk == "rechunked"
+        # When forcing a rechunk, choose a set chunksize which causes a partial
+        #  rechunking, on outer dimensions only.
+        rechunk_chunksize = 20 * 4  # *4 for np.int32 element size
+
+        if chunktype == "fancychunks":
+            # Apply irregular chunking to the multidimensional coord, to demonstrate
+            # (a) that this is passed through when not rechunking, and
+            # (b) that it is correctly, partially, re-chunked when rechunking occurs.
+            mpts_chunks = ((4, 3), (2, 2), (3, 2))
+            aux_co.mm.points = aux_co.mm.core_points().rechunk(mpts_chunks)
+            aux_co.mm.bounds = aux_co.mm.core_bounds().rechunk(mpts_chunks + (2,))
+
+            # These are the expected results...
+            norechunk_pts_bds_chunks = chunkspecs(
+                points=[[4, 3], [2, 2], [3, 2]], bounds=[[4, 3], [2, 2], [3, 2], 2]
+            )
+            rechunked_pts_bds_chunks = chunkspecs(
+                points=[7 * [1], [2, 2], [3, 2]],
+                # N.B. in the bounds array (only), we also split the second dimension.
+                bounds=[7 * [1], 4 * [1], [3, 2], 2],
+            )
+
+        else:
+            # Expected results of the simpler single-chunk multidimensional test.
+            norechunk_pts_bds_chunks = chunkspecs(
+                points=[7, 4, 5], bounds=[7, 4, 5, [1, 1]]
+            )
+            rechunked_pts_bds_chunks = chunkspecs(
+                points=[7 * [1], [2, 2], 5], bounds=[7 * [1], [2, 2], 5, [1, 1]]
+            )
+
+        do_rechunk = rechunk == "withrechunk"
         if do_rechunk:
-            chunksize = 30 * 4  # *4 for np.int32 element size
+            chunksize = rechunk_chunksize
+            expected_pts_bds_chunks = rechunked_pts_bds_chunks
         else:
             chunksize = 9999 * 4  # *4 for np.int32 element size
+            expected_pts_bds_chunks = norechunk_pts_bds_chunks
+
         daskformat_chunksize = f"{chunksize}b"
         with dask.config.set({"array.chunk-size": daskformat_chunksize}):
             result = aux_co.make_coord(None)
 
-        # Results should *always* be lazy, even when dependencies are all real.
-        assert result.has_lazy_points()
-        assert result.has_lazy_bounds()
-
         # Check the expected chunking of the result.
-        chunksize_points_and_bounds = (
-            result.core_points().chunksize,
-            result.core_bounds().chunksize,
+        result_pts_bds_chunks = chunkspecs(
+            result.core_points().chunks,
+            result.core_bounds().chunks,
         )
-
-        # expected_chunksize_points_and_bounds = {
-        #     10: ((10, 10, 10), (10, 10, 10, 2)),  # no rechunk
-        #     100: ((5, 10, 100), (2, 10, 100, 2)),  # divide x by 2 (bounds: 5)
-        #     1000: ((1, 5, 1000), (1, 2, 1000, 2)),  # divide x,y by 10,2 (bounds: 10,5)
-        # }[nz]
-        if do_rechunk:
-            expected_chunksize_points_and_bounds = ((1, 1, 2, 5), (1, 1, 2, 5, 1))
-        else:
-            expected_chunksize_points_and_bounds = ((10, 7, 4, 5), (10, 7, 4, 5, 1))
-        assert chunksize_points_and_bounds == expected_chunksize_points_and_bounds
+        assert result_pts_bds_chunks == expected_pts_bds_chunks
