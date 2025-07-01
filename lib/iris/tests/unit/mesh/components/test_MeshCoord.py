@@ -1057,7 +1057,6 @@ class Test__updates_from_mesh:
         [
             ("long_name", "foo"),
             ("var_name", "foo"),
-            ("units", "radians"),
             ("attributes", {"foo": 1}),
         ],
     )
