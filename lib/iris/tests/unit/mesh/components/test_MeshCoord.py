@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.mesh.MeshCoord`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from platform import python_version
 import re
 import unittest.mock as mock
@@ -22,6 +18,11 @@ from iris.common.metadata import CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
 from iris.mesh import Connectivity, MeshCoord, MeshXY
+from iris.tests._shared_utils import (
+    assert_array_all_close,
+    assert_array_almost_equal,
+    assert_masked_array_almost_equal,
+)
 import iris.tests.stock.mesh
 from iris.tests.stock.mesh import sample_mesh, sample_meshcoord
 from iris.warnings import IrisVagueMetadataWarning
@@ -33,19 +34,20 @@ def location_face_or_edge(request):
     return request.param
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         mesh = sample_mesh()
         self.mesh = mesh
         self.meshcoord = sample_meshcoord(mesh=mesh)
 
     def test_basic(self):
         meshcoord = self.meshcoord
-        self.assertEqual(meshcoord.mesh, self.mesh)
-        self.assertEqual(meshcoord.location, "face")
-        self.assertEqual(meshcoord.axis, "x")
-        self.assertIsInstance(meshcoord, MeshCoord)
-        self.assertIsInstance(meshcoord, Coord)
+        assert meshcoord.mesh == self.mesh
+        assert meshcoord.location == "face"
+        assert meshcoord.axis == "x"
+        assert isinstance(meshcoord, MeshCoord)
+        assert isinstance(meshcoord, Coord)
 
     def test_derived_properties(self):
         # Check the derived properties of the meshcoord against the correct
@@ -56,23 +58,23 @@ class Test___init__(tests.IrisTest):
             for key in face_x_coord.metadata._fields:
                 meshval = getattr(meshcoord, key)
                 # All relevant attributes are derived from the face coord.
-                self.assertEqual(meshval, getattr(face_x_coord, key))
+                assert meshval == getattr(face_x_coord, key)
 
     def test_fail_bad_mesh(self):
-        with self.assertRaisesRegex(TypeError, "must be a.*Mesh"):
+        with pytest.raises(TypeError, match="must be a.*Mesh"):
             sample_meshcoord(mesh=mock.sentinel.odd)
 
     def test_valid_locations(self):
         for loc in MeshXY.ELEMENTS:
             meshcoord = sample_meshcoord(location=loc)
-            self.assertEqual(meshcoord.location, loc)
+            assert meshcoord.location == loc
 
     def test_fail_bad_location(self):
-        with self.assertRaisesRegex(ValueError, "not a valid MeshXY location"):
+        with pytest.raises(ValueError, match="not a valid MeshXY location"):
             sample_meshcoord(location="bad")
 
     def test_fail_bad_axis(self):
-        with self.assertRaisesRegex(ValueError, "not a valid MeshXY axis"):
+        with self.pytest.raises(ValueError, match="not a valid MeshXY axis"):
             sample_meshcoord(axis="q")
 
 
@@ -92,7 +94,7 @@ class Test__readonly_properties:
             with pytest.raises(AttributeError, match=msg):
                 setattr(meshcoord, prop, mock.sentinel.odd)
 
-    def test_coord_system(self):
+    def test_set_coord_system(self):
         # The property exists, =None, can set to None, can not set otherwise.
         assert hasattr(self.meshcoord, "coord_system")
         assert self.meshcoord.coord_system is None
@@ -120,29 +122,29 @@ class Test__readonly_properties:
             "attributes",
         ],
     )
-    def test_immutable(self, metadata_name):
+    def test_set_other(self, metadata_name):
         with pytest.raises(
             ValueError, match=rf"Cannot set '{metadata_name}' on a MeshCoord\.$"
         ):
             self.meshcoord.__setattr__(metadata_name, "value")
 
 
-class Test__points_and_bounds(tests.IrisTest):
+class Test__points_and_bounds:
     # Basic method testing only, for 3 locations with simple array values.
     # See Test_MeshCoord__dataviews for more detailed checks.
     def test_node(self):
         meshcoord = sample_meshcoord(location="node")
         n_nodes = iris.tests.stock.mesh._TEST_N_NODES  # n-nodes default for sample mesh
-        self.assertIsNone(meshcoord.core_bounds())
-        self.assertArrayAllClose(meshcoord.points, 1100 + np.arange(n_nodes))
+        assert meshcoord.core_bounds() is None
+        assert_array_all_close(meshcoord.points, 1100 + np.arange(n_nodes))
 
     def test_edge(self):
         meshcoord = sample_meshcoord(location="edge")
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
-        self.assertEqual(points.shape, meshcoord.shape)
-        self.assertEqual(bounds.shape, meshcoord.shape + (2,))
-        self.assertArrayAllClose(meshcoord.points, [2100, 2101, 2102, 2103, 2104])
-        self.assertArrayAllClose(
+        assert points.shape == meshcoord.shape
+        assert bounds.shape == meshcoord.shape + (2,)
+        assert_array_all_close(meshcoord.points, [2100, 2101, 2102, 2103, 2104])
+        assert_array_all_close(
             meshcoord.bounds,
             [
                 (1105, 1106),
@@ -156,10 +158,10 @@ class Test__points_and_bounds(tests.IrisTest):
     def test_face(self):
         meshcoord = sample_meshcoord(location="face")
         points, bounds = meshcoord.core_points(), meshcoord.core_bounds()
-        self.assertEqual(points.shape, meshcoord.shape)
-        self.assertEqual(bounds.shape, meshcoord.shape + (4,))
-        self.assertArrayAllClose(meshcoord.points, [3100, 3101, 3102])
-        self.assertArrayAllClose(
+        assert points.shape == meshcoord.shape
+        assert bounds.shape == meshcoord.shape + (4,)
+        assert_array_all_close(meshcoord.points, [3100, 3101, 3102])
+        assert_array_all_close(
             meshcoord.bounds,
             [
                 (1100, 1101, 1102, 1103),
@@ -169,8 +171,9 @@ class Test__points_and_bounds(tests.IrisTest):
         )
 
 
-class Test___eq__(tests.IrisTest):
-    def setUp(self):
+class Test___eq__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.mesh = sample_mesh()
 
     def _create_common_mesh(self, **kwargs):
@@ -179,14 +182,14 @@ class Test___eq__(tests.IrisTest):
     def test_identical_mesh(self):
         meshcoord1 = self._create_common_mesh()
         meshcoord2 = self._create_common_mesh()
-        self.assertEqual(meshcoord2, meshcoord1)
+        assert meshcoord2 == meshcoord1
 
     def test_equal_mesh(self):
         mesh1 = sample_mesh()
         mesh2 = sample_mesh()
         meshcoord1 = sample_meshcoord(mesh=mesh1)
         meshcoord2 = sample_meshcoord(mesh=mesh2)
-        self.assertEqual(meshcoord2, meshcoord1)
+        assert meshcoord2 == meshcoord1
 
     def test_different_mesh(self):
         mesh1 = sample_mesh()
@@ -194,63 +197,64 @@ class Test___eq__(tests.IrisTest):
         mesh2.long_name = "new_name"
         meshcoord1 = sample_meshcoord(mesh=mesh1)
         meshcoord2 = sample_meshcoord(mesh=mesh2)
-        self.assertNotEqual(meshcoord2, meshcoord1)
+        assert meshcoord2 != meshcoord1
 
     def test_different_location(self):
         meshcoord = self._create_common_mesh()
         meshcoord2 = self._create_common_mesh(location="node")
-        self.assertNotEqual(meshcoord2, meshcoord)
+        assert meshcoord2 != meshcoord
 
     def test_different_axis(self):
         meshcoord = self._create_common_mesh()
         meshcoord2 = self._create_common_mesh(axis="y")
-        self.assertNotEqual(meshcoord2, meshcoord)
+        assert meshcoord2 != meshcoord
 
 
-class Test__copy(tests.IrisTest):
+class Test__copy:
     def test_basic(self):
         meshcoord = sample_meshcoord()
         meshcoord2 = meshcoord.copy()
-        self.assertIsNot(meshcoord2, meshcoord)
-        self.assertEqual(meshcoord2, meshcoord)
+        assert meshcoord2 is not meshcoord
+        assert meshcoord2 == meshcoord
         # In this case, they should share *NOT* copy the Mesh object.
-        self.assertIs(meshcoord2.mesh, meshcoord.mesh)
+        assert meshcoord2.mesh is meshcoord.mesh
 
     def test_fail_copy_newpoints(self):
         meshcoord = sample_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot change the content"):
+        with pytest.raises(ValueError, match="Cannot change the content"):
             meshcoord.copy(points=meshcoord.points)
 
     def test_fail_copy_newbounds(self):
         meshcoord = sample_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot change the content"):
+        with pytest.raises(ValueError, match="Cannot change the content"):
             meshcoord.copy(bounds=meshcoord.bounds)
 
 
-class Test__getitem__(tests.IrisTest):
+class Test__getitem__:
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
         meshcoord2 = meshcoord[:,]
-        self.assertIsNot(meshcoord2, meshcoord)
-        self.assertEqual(meshcoord2, meshcoord)
+        assert meshcoord2 is not meshcoord
+        assert meshcoord2 == meshcoord
         # In this case, we should *NOT* copy the linked Mesh object.
-        self.assertIs(meshcoord2.mesh, meshcoord.mesh)
+        assert meshcoord2.mesh is meshcoord.mesh
 
     def test_slice_whole_slice_singlekey(self):
         # A slice(None) also fails, if not presented in a 1-tuple.
         meshcoord = sample_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot index"):
+        with pytest.raises(ValueError, match="Cannot index"):
             meshcoord[:]
 
     def test_fail_slice_part(self):
         meshcoord = sample_meshcoord()
-        with self.assertRaisesRegex(ValueError, "Cannot index"):
+        with pytest.raises(ValueError, match="Cannot index"):
             meshcoord[:1]
 
 
-class Test__str_repr(tests.IrisTest):
-    def setUp(self):
+class Test__str_repr:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         mesh = sample_mesh()
         self.mesh = mesh
         # Give mesh itself a name: makes a difference between str and repr.
@@ -314,7 +318,7 @@ class Test__str_repr(tests.IrisTest):
             "<MeshCoord: longitude / (unknown)  "
             "mesh(test_mesh) location(face)  [...]+bounds  shape(3,)>"
         )
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_repr_lazy(self):
         # Displays lazy content (and does not realise!).
@@ -329,18 +333,18 @@ class Test__str_repr(tests.IrisTest):
         for nc in self.meshcoord.mesh.node_coords:
             nc.points = as_lazy_data(nc.points)
 
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
+        assert self.meshcoord.has_lazy_points() is True
+        assert self.meshcoord.has_lazy_bounds() is True
 
         result = repr(self.meshcoord)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
+        assert self.meshcoord.has_lazy_points() is True
+        assert self.meshcoord.has_lazy_bounds() is True
 
         expected = (
             "<MeshCoord: longitude / (unknown)  "
             "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
         )
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_repr__nameless_mesh(self):
         # Check what it does when the Mesh doesn't have a name.
@@ -351,14 +355,14 @@ class Test__str_repr(tests.IrisTest):
             r".MeshCoord: longitude / \(unknown\)  "
             r"mesh\(.MeshXY object at 0x[^>]+.\) location\(face\) "
         )
-        self.assertRegex(result, re_expected)
+        assert re.match(re_expected, result)
 
     def test__str__(self):
         # Basic output contains mesh, location, standard_name, long_name,
         # attributes, mesh, location and axis
         result = str(self.meshcoord)
         re_expected = self._expected_elements_regexp()
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
 
     def test__str__lazy(self):
         # Displays lazy content (and does not realise!).
@@ -374,13 +378,13 @@ class Test__str_repr(tests.IrisTest):
 
         coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
         result = str(self.meshcoord)
-        self.assertTrue(self.meshcoord.has_lazy_points())
-        self.assertTrue(self.meshcoord.has_lazy_bounds())
+        assert self.meshcoord.has_lazy_points() is True
+        assert self.meshcoord.has_lazy_bounds() is True
 
-        self.assertIn("points: <lazy>", result)
-        self.assertIn("bounds: <lazy>", result)
+        assert "points: <lazy>" in result
+        assert "bounds: <lazy>" in result
         re_expected = self._expected_elements_regexp()
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
 
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
@@ -392,7 +396,7 @@ class Test__str_repr(tests.IrisTest):
             axis="y",
             attributes=None,
         )
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
         # Basic output contains standard_name, long_name, attributes
 
     def test_str_no_long_name(self):
@@ -404,7 +408,7 @@ class Test__str_repr(tests.IrisTest):
         meshcoord = sample_meshcoord(mesh=self.mesh)
         result = str(meshcoord)
         re_expected = self._expected_elements_regexp(long_name=False)
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
 
     def test_str_no_attributes(self):
         mesh = self.mesh
@@ -415,7 +419,7 @@ class Test__str_repr(tests.IrisTest):
         meshcoord = sample_meshcoord(mesh=self.mesh)
         result = str(meshcoord)
         re_expected = self._expected_elements_regexp(attributes=False)
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
 
     def test_str_empty_attributes(self):
         mesh = self.mesh
@@ -426,13 +430,14 @@ class Test__str_repr(tests.IrisTest):
         meshcoord = sample_meshcoord(mesh=self.mesh)
         result = str(meshcoord)
         re_expected = self._expected_elements_regexp(attributes=False)
-        self.assertRegex(result, re_expected)
+        re.match(re_expected, result)
 
 
-class Test_cube_containment(tests.IrisTest):
+class Test_cube_containment:
     # Check that we can put a MeshCoord into a cube, and have it behave just
     # like a regular AuxCoord.
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         meshcoord = sample_meshcoord()
         data_shape = (2,) + meshcoord.shape
         cube = Cube(np.zeros(data_shape))
@@ -443,13 +448,13 @@ class Test_cube_containment(tests.IrisTest):
     def test_added_to_cube(self):
         meshcoord = self.meshcoord
         cube = self.cube
-        self.assertIn(meshcoord, cube.coords())
+        assert meshcoord in cube.coords()
 
     def test_cube_dims(self):
         meshcoord = self.meshcoord
         cube = self.cube
-        self.assertEqual(meshcoord.cube_dims(cube), (1,))
-        self.assertEqual(cube.coord_dims(meshcoord), (1,))
+        assert meshcoord.cube_dims(cube) == (1,)
+        assert cube.coord_dims(meshcoord) == (1,)
 
     def test_find_by_name(self):
         meshcoord = self.meshcoord
@@ -461,15 +466,15 @@ class Test_cube_containment(tests.IrisTest):
         coord_on_mesh.long_name = "odd_case"
 
         cube = self.cube
-        self.assertIs(cube.coord(standard_name="longitude"), meshcoord)
-        self.assertIs(cube.coord(long_name="odd_case"), meshcoord)
+        assert cube.coord(standard_name="longitude") is meshcoord
+        assert cube.coord(long_name="odd_case") is meshcoord
 
     def test_find_by_axis(self):
         meshcoord = self.meshcoord
         mesh = self.meshcoord.mesh
         cube = self.cube
-        self.assertIs(cube.coord(axis="x"), meshcoord)
-        self.assertEqual(cube.coords(axis="y"), [])
+        assert cube.coord(axis="x") is meshcoord
+        assert cube.coords(axis="y") == []
 
         # NOTE: the meshcoord.axis takes precedence over the older
         # "guessed axis" approach.  So the standard_name does not control it.
@@ -478,8 +483,8 @@ class Test_cube_containment(tests.IrisTest):
         for c in mesh.coords(axis="y"):
             c.standard_name = "grid_latitude"
 
-        self.assertIs(cube.coord(axis="x"), meshcoord)
-        self.assertEqual(cube.coords(axis="y"), [])
+        assert cube.coord(axis="x") is meshcoord
+        assert cube.coords(axis="y") == []
 
     def test_cube_copy(self):
         # Check that we can copy a cube, and get a MeshCoord == the original.
@@ -488,8 +493,8 @@ class Test_cube_containment(tests.IrisTest):
         cube = self.cube
         cube2 = cube.copy()
         meshco2 = cube2.coord(meshcoord)
-        self.assertIsNot(meshco2, meshcoord)
-        self.assertEqual(meshco2, meshcoord)
+        assert meshco2 is not meshcoord
+        assert meshco2 == meshcoord
 
     def test_cube_nonmesh_slice(self):
         # Check that we can slice a cube on a non-mesh dimension, and get a
@@ -499,8 +504,8 @@ class Test_cube_containment(tests.IrisTest):
         cube = self.cube
         cube2 = cube[:1]  # Make a reduced copy, slicing the non-mesh dim
         meshco2 = cube2.coord(meshcoord)
-        self.assertIsNot(meshco2, meshcoord)
-        self.assertEqual(meshco2, meshcoord)
+        assert meshco2 is not meshcoord
+        assert meshco2 == meshcoord
 
     def test_cube_mesh_partslice(self):
         # Check that we can *not* get a partial MeshCoord slice, as the
@@ -513,36 +518,37 @@ class Test_cube_containment(tests.IrisTest):
         # The resulting coord can not be identified with the original.
         # (i.e. metadata does not match)
         co_matches = cube2.coords(meshcoord)
-        self.assertEqual(co_matches, [])
+        assert co_matches == []
 
         # The resulting coord is an AuxCoord instead of a MeshCoord, but the
         # values match.
         co2 = cube2.coord(meshcoord.name())
-        self.assertFalse(isinstance(co2, MeshCoord))
-        self.assertIsInstance(co2, AuxCoord)
-        self.assertArrayAllClose(co2.points, meshcoord.points[:1])
-        self.assertArrayAllClose(co2.bounds, meshcoord.bounds[:1])
+        assert isinstance(co2, MeshCoord) is False
+        assert isinstance(co2, AuxCoord)
+        assert_array_all_close(co2.points, meshcoord.points[:1])
+        assert_array_all_close(co2.bounds, meshcoord.bounds[:1])
 
 
-class Test_auxcoord_conversion(tests.IrisTest):
+class Test_auxcoord_conversion:
     def test_basic(self):
         meshcoord = sample_meshcoord()
         auxcoord = AuxCoord.from_coord(meshcoord)
         for propname, auxval in auxcoord.metadata._asdict().items():
             meshval = getattr(meshcoord, propname)
-            self.assertEqual(auxval, meshval)
+            assert auxval == meshval
         # Also check array content.
-        self.assertArrayAllClose(auxcoord.points, meshcoord.points)
-        self.assertArrayAllClose(auxcoord.bounds, meshcoord.bounds)
+        assert_array_all_close(auxcoord.points, meshcoord.points)
+        assert_array_all_close(auxcoord.bounds, meshcoord.bounds)
 
 
-class Test_MeshCoord__dataviews(tests.IrisTest):
+class Test_MeshCoord__dataviews:
     """Fuller testing of points and bounds calculations and behaviour.
     Including connectivity missing-points (non-square faces).
 
     """
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self._make_test_meshcoord()
 
     def _make_test_meshcoord(
@@ -678,7 +684,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
     def _check_expected_points_values(self):
         # The points are just the face_x-s
         meshcoord = self.meshcoord
-        self.assertArrayAllClose(meshcoord.points, self.face_xs)
+        assert_array_all_close(meshcoord.points, self.face_xs)
 
     def _check_expected_bounds_values(self, facenodes_changes=None):
         mesh_coord = self.meshcoord
@@ -696,44 +702,44 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         n_missing_expected = 1
         if facenodes_changes:
             n_missing_expected += facenodes_changes["n_extra_bad_points"]
-        self.assertEqual(np.count_nonzero(expected.mask), n_missing_expected)
+        assert np.count_nonzero(expected.mask) == n_missing_expected
         # Check results match, *including* location of masked points.
-        self.assertMaskedArrayAlmostEqual(result, expected)
+        assert_masked_array_almost_equal(result, expected)
 
     def test_points_values(self):
         """Basic points content check, on real data."""
         meshcoord = self.meshcoord
-        self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_bounds())
+        assert meshcoord.has_lazy_points() is False
+        assert meshcoord.has_lazy_bounds() is False
         self._check_expected_points_values()
 
     def test_bounds_values(self):
         """Basic bounds contents check."""
         meshcoord = self.meshcoord
-        self.assertFalse(meshcoord.has_lazy_points())
-        self.assertFalse(meshcoord.has_lazy_bounds())
+        assert meshcoord.has_lazy_points() is False
+        assert meshcoord.has_lazy_bounds() is False
         self._check_expected_bounds_values()
 
     def test_lazy_points_values(self):
         """Check lazy points calculation on lazy inputs."""
         # Remake the test data with lazy source coords.
         meshcoord = self._make_test_meshcoord(lazy_sources=True)
-        self.assertTrue(meshcoord.has_lazy_points())
-        self.assertTrue(meshcoord.has_lazy_bounds())
+        assert meshcoord.has_lazy_points() is True
+        assert meshcoord.has_lazy_bounds() is True
         # Check values, as previous.
         self._check_expected_points_values()
 
     def test_lazy_bounds_values(self):
         meshcoord = self._make_test_meshcoord(lazy_sources=True)
-        self.assertTrue(meshcoord.has_lazy_points())
-        self.assertTrue(meshcoord.has_lazy_bounds())
+        assert meshcoord.has_lazy_points() is True
+        assert meshcoord.has_lazy_bounds() is True
         # Check values, as previous.
         self._check_expected_bounds_values()
 
     def test_edge_points(self):
         meshcoord = self._make_test_meshcoord(location="edge")
         result = meshcoord.points
-        self.assertArrayAllClose(result, self.edge_xs)
+        assert_array_all_close(result, self.edge_xs)
 
     def test_edge_bounds(self):
         meshcoord = self._make_test_meshcoord(location="edge")
@@ -741,7 +747,7 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # The bounds are selected node_x-s :  all == node_number + 100.0
         expected = self.NODECOORDS_BASENUM + self.edge_nodes_array
         # NB simpler than faces : no possibility of missing points
-        self.assertArrayAlmostEqual(result, expected)
+        assert_array_almost_equal(result, expected)
 
     def test_bounds_connectivity__location_axis_1(self):
         # Test with a transposed indices array.
@@ -769,22 +775,22 @@ class Test_MeshCoord__dataviews(tests.IrisTest):
         # Check all the source coords are lazy.
         for coord in fetch_sources_from_mesh():
             # Note: not all are actual Coords, so can't use 'has_lazy_points'.
-            self.assertTrue(is_lazy_data(coord._core_values()))
+            assert is_lazy_data(coord._core_values()) is True
 
         # Calculate both points + bounds of the meshcoord
-        self.assertTrue(meshcoord.has_lazy_points())
-        self.assertTrue(meshcoord.has_lazy_bounds())
+        assert meshcoord.has_lazy_points() is True
+        assert meshcoord.has_lazy_bounds() is True
         mc_points = meshcoord.points
         mc_bounds = meshcoord.bounds
-        self.assertTrue(meshcoord.has_lazy_points())
-        self.assertTrue(meshcoord.has_lazy_bounds())
-        self.assertFalse(is_lazy_data(mc_points))
-        self.assertFalse(is_lazy_data(mc_bounds))
+        assert meshcoord.has_lazy_points() is True
+        assert meshcoord.has_lazy_bounds() is True
+        assert is_lazy_data(mc_points) is False
+        assert is_lazy_data(mc_bounds) is False
 
         # Check all the source coords are still lazy.
         for coord in fetch_sources_from_mesh():
             # Note: not all are actual Coords, so can't use 'has_lazy_points'.
-            self.assertTrue(is_lazy_data(coord._core_values()))
+            assert is_lazy_data(coord._core_values()) is True
 
     def _check_bounds_bad_index_values(self, lazy):
         facenodes_modify = {
@@ -1003,8 +1009,8 @@ class Test_collapsed:
         message = record[0].message.args[0]
         assert message.startswith("Collapsing a mesh coordinate")
 
-    def test_aux_collapsed_called(self, mesh_coord_basic):
-        with mock.patch.object(AuxCoord, "collapsed") as mocked:
+    def test_aux_collapsed_called(self, mesh_coord_basic, mocker):
+        with mocker.patch.object(AuxCoord, "collapsed") as mocked:
             _ = mesh_coord_basic.collapsed()
             mocked.assert_called_once()
 
@@ -1077,7 +1083,3 @@ class Test__updates_from_mesh:
         for c in self.mesh.coords(axis="y"):
             c.standard_name = "grid_latitude"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
-
-
-if __name__ == "__main__":
-    tests.main()
