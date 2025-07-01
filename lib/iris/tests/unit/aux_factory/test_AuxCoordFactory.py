@@ -319,7 +319,7 @@ class Test_rechunk:
             return {name: getattr(self, name) for name in ("z", "y", "x", "mm")}
 
     # More-or-less duplicates "test_rechunk", but with a multidimensional factory.
-    # Apply 2 different chunksizes to check the rechunking behaviour.
+    # Apply 2 different chunksize limits to check the rechunking behaviour.
     @pytest.mark.parametrize("rechunk", ["norechunk", "withrechunk"])
     # Chunk multidim coordinate in 2 ways: single-chunk, and irregular multi-chunk.
     @pytest.mark.parametrize("chunktype", ["plainchunks", "fancychunks"])
@@ -329,24 +329,34 @@ class Test_rechunk:
 
         # When forcing a rechunk, choose a set chunksize which causes a partial
         #  rechunking, on outer dimensions only.
-        rechunk_chunksize = 20 * 4  # *4 for np.int32 element size
+        rechunk_chunksize = 25 * 4  # *4 for np.int32 element size
 
         if chunktype == "fancychunks":
-            # Apply irregular chunking to the multidimensional coord, to demonstrate
-            # (a) that this is passed through when not rechunking, and
-            # (b) that it is correctly, partially, re-chunked when rechunking occurs.
-            mpts_chunks = ((4, 3), (2, 2), (3, 2))
+            # Apply an irregular chunking to the multidimensional coord, to demonstrate
+            #  (a) that this is passed through when not rechunking, and
+            #  (b) that it is correctly, partially, re-chunked when rechunking occurs.
+            mpts_chunks = ((2, 5), (1, 3), (2, 3))
             aux_co.mm.points = aux_co.mm.core_points().rechunk(mpts_chunks)
             aux_co.mm.bounds = aux_co.mm.core_bounds().rechunk(mpts_chunks + (2,))
 
+            # Also re-chunk the other deps similarly on those dims...
+            # N.B. because : an irregular chunking can only survive rechunking if chunks
+            #  of other deps all "agree" with it in each dim: Otherwise, chunks get
+            #  broken up when they arithmetically combine with other, unaligned ones.
+            aux_co.y.points = aux_co.y.core_points().rechunk((1, (1, 3), 1))
+            aux_co.y.bounds = aux_co.y.core_bounds().rechunk((1, (1, 3), 1, 2))
+            aux_co.x.points = aux_co.x.core_points().rechunk((1, 1, (2, 3)))
+            aux_co.x.bounds = aux_co.x.core_bounds().rechunk((1, 1, (2, 3), 2))
+
             # These are the expected results...
             norechunk_pts_bds_chunks = chunkspecs(
-                points=[[4, 3], [2, 2], [3, 2]], bounds=[[4, 3], [2, 2], [3, 2], 2]
+                points=[[2, 5], [1, 3], [2, 3]], bounds=[[2, 5], [1, 3], [2, 3], 2]
             )
             rechunked_pts_bds_chunks = chunkspecs(
-                points=[7 * [1], [2, 2], [3, 2]],
-                # N.B. in the bounds array (only), we also split the second dimension.
-                bounds=[7 * [1], 4 * [1], [3, 2], 2],
+                # Points dim #0 is rechunked, rest retain original chunking.
+                points=[7 * [1], [1, 3], [2, 3]],
+                # Bounds dim #0 is rechunked, and #1 as well.
+                bounds=[7 * [1], 4 * [1], [2, 3], 2],
             )
 
         else:
@@ -355,7 +365,9 @@ class Test_rechunk:
                 points=[7, 4, 5], bounds=[7, 4, 5, [1, 1]]
             )
             rechunked_pts_bds_chunks = chunkspecs(
-                points=[7 * [1], [2, 2], 5], bounds=[7 * [1], [2, 2], 5, [1, 1]]
+                # dim#0 split into individual indices, and dim#1 divided in 2.
+                points=[7 * [1], [2, 2], 5],
+                bounds=[7 * [1], [2, 2], 5, [1, 1]],
             )
 
         do_rechunk = rechunk == "withrechunk"
