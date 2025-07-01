@@ -76,8 +76,9 @@ class Test___init__(tests.IrisTest):
             sample_meshcoord(axis="q")
 
 
-class Test__readonly_properties(tests.IrisTest):
-    def setUp(self):
+class Test__readonly_properties:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.meshcoord = sample_meshcoord()
 
     def test_fixed_metadata(self):
@@ -88,23 +89,23 @@ class Test__readonly_properties(tests.IrisTest):
         else:
             msg = "can't set attribute"
         for prop in ("mesh", "location", "axis"):
-            with self.assertRaisesRegex(AttributeError, msg):
+            with pytest.raises(AttributeError, match=msg):
                 setattr(meshcoord, prop, mock.sentinel.odd)
 
     def test_coord_system(self):
         # The property exists, =None, can set to None, can not set otherwise.
-        self.assertTrue(hasattr(self.meshcoord, "coord_system"))
-        self.assertIsNone(self.meshcoord.coord_system)
+        assert hasattr(self.meshcoord, "coord_system")
+        assert self.meshcoord.coord_system is None
         self.meshcoord.coord_system = None
-        with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
+        with pytest.raises(ValueError, match=r"Cannot set.* MeshCoord\.$"):
             self.meshcoord.coord_system = 1
 
     def test_set_climatological(self):
         # The property exists, =False, can set to False, can not set otherwise.
-        self.assertTrue(hasattr(self.meshcoord, "climatological"))
-        self.assertFalse(self.meshcoord.climatological)
+        assert hasattr(self.meshcoord, "climatological")
+        assert self.meshcoord.climatological is False
         self.meshcoord.climatological = False
-        with self.assertRaisesRegex(ValueError, "Cannot set.* MeshCoord"):
+        with pytest.raises(ValueError, match=r"Cannot set.* MeshCoord\.$"):
             self.meshcoord.climatological = True
 
     @pytest.mark.parametrize(
@@ -116,8 +117,6 @@ class Test__readonly_properties(tests.IrisTest):
             "long_name",
             "var_name",
             "units",
-            "climatological",
-            "coord_system",
             "attributes",
         ],
     )
@@ -369,14 +368,17 @@ class Test__str_repr(tests.IrisTest):
             location=self.meshcoord.location,
         )
 
+        # Node coords are used to calculate the meshcoord bounds
+        for nc in self.meshcoord.mesh.node_coords:
+            nc.points = as_lazy_data(nc.points)
+
         coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
-        coord_on_mesh.bounds = as_lazy_data(self.meshcoord.bounds)
         result = str(self.meshcoord)
         self.assertTrue(self.meshcoord.has_lazy_points())
-        # self.assertTrue(self.meshcoord.has_lazy_bounds())
+        self.assertTrue(self.meshcoord.has_lazy_bounds())
 
         self.assertIn("points: <lazy>", result)
-        # self.assertIn("bounds: <lazy>", result)
+        self.assertIn("bounds: <lazy>", result)
         re_expected = self._expected_elements_regexp()
         self.assertRegex(result, re_expected)
 
@@ -1009,19 +1011,25 @@ class Test_collapsed:
             mocked.assert_called_once()
 
 
-class Test_immutable(tests.IrisTest):
-    def setUp(self):
+class Test__updates_from_mesh:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.meshcoord = sample_meshcoord()
+        self.mesh = self.meshcoord.mesh
         self.timestamp_at_creation = self.meshcoord.mesh.timestamp
+        self.coord_on_mesh = self.mesh.coord(
+            location=self.meshcoord.location, axis=self.meshcoord.axis
+        )
+
+    def _set_all_coords(self, name, value):
+        for c in self.mesh.coords():
+            c.__setattr__(name, value)
 
     def test_timestamp(self):
         # Ensure they are identical at creation.
         assert self.meshcoord.mesh.timestamp == self.timestamp_at_creation
 
-        coord_on_mesh = self.meshcoord.mesh.coord(
-            location=self.meshcoord.location, axis=self.meshcoord.axis
-        )
-        coord_on_mesh.points = np.zeros(3)
+        self.coord_on_mesh.points = np.zeros(3)
 
         assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
         assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
@@ -1030,6 +1038,48 @@ class Test_immutable(tests.IrisTest):
 
         assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
         assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
+
+    def test_points(self):
+        zeroes = np.zeros(3)
+        assert self.meshcoord.points.all() != zeroes.all()
+        self.coord_on_mesh.points = zeroes
+        assert self.meshcoord.points.all() == zeroes.all()
+
+    def test_bounds(self):
+        zero_bounds = np.zeros(3)
+        zero_points = np.zeros(15)
+        assert self.meshcoord.bounds.all() != zero_bounds.all()
+        # Node coords are used to calculate the meshcoord bounds
+        for nc in self.meshcoord.mesh.node_coords:
+            nc.points = zero_points
+        assert self.meshcoord.bounds.all() == zero_bounds.all()
+
+    @pytest.mark.parametrize(
+        "metadata_name, value",
+        [
+            ("long_name", "foo"),
+            ("var_name", "foo"),
+            ("units", "radians"),
+            ("attributes", {"foo": 1}),
+        ],
+    )
+    def test_basic_metadata(self, metadata_name, value):
+        self.coord_on_mesh.__setattr__(metadata_name, value)
+        assert self.meshcoord.__getattribute__(
+            metadata_name
+        ) == self.coord_on_mesh.__getattribute__(metadata_name)
+
+    def test_units(self):
+        for c in self.mesh.coords():
+            c.units = "radians"
+        assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+
+    def test_standard_name(self):
+        for c in self.mesh.coords(axis="x"):
+            c.standard_name = "grid_longitude"
+        for c in self.mesh.coords(axis="y"):
+            c.standard_name = "grid_latitude"
+        assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
 
 
 if __name__ == "__main__":

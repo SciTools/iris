@@ -577,11 +577,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             for parent in self._mesh_parents:
                 parent.timestamp = datetime.now()
 
-        prop = getattr(type(self), key, None)
-        if isinstance(prop, property):
-            prop.__set__(self, value)
-        else:
-            super.__setattr__(self, key, value)
+        # prop = getattr(type(self), key, None)
+        # if isinstance(prop, property):
+        #     prop.__set__(self, value)
+        # else:
+        object.__setattr__(self, key, value)
 
     def __str__(self):
         return self.summary()

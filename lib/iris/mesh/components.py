@@ -841,7 +841,6 @@ class MeshXY(Mesh):
         # Validate points and bounds shape match.
         def check_shape(array_name):
             attr_name = f"core_{array_name}"
-            coords
             arrays = [getattr(coord, attr_name)() for coord in coords]
             if any(a is None for a in arrays):
                 message = f"{array_name} missing from coords[{arrays.index(None)}] ."
@@ -2120,7 +2119,6 @@ class _Mesh1DCoordinateManager:
 
     @property
     def _members(self):
-        self.timestamp = datetime.now()
         return self._members_dict
 
     @_members.setter
@@ -2987,7 +2985,7 @@ class MeshCoord(AuxCoord):
         except Exception as e:
             raise e
         finally:
-            self._updating = False
+            object.__setattr__(self, "_updating", False)
 
     def collapsed(self, dims_to_collapse=None):
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
@@ -3057,7 +3055,7 @@ class MeshCoord(AuxCoord):
 
     def rename(self, name: str | None) -> None:
         """Ensure you that renaming MeshCoords is done via the Coord attached to the Mesh."""
-        self.mesh.coord(location=self.location, axis=self.axis).rename(name)
+        raise ValueError("To rename a MeshCoord, you have to go via the attached mesh.")
 
     def __deepcopy__(self, memo):
         """Make this equivalent to "shallow" copy.
