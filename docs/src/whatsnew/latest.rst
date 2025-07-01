@@ -51,7 +51,8 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@pp-mo`_ implemented automatic rechunking of hybrid (aka factory/derived)
+   coordinates to avoid excessive memory usage. (:issue:`6404`, :pull:`6516`)
 
 
 🔥 Deprecations
