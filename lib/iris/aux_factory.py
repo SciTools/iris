@@ -142,20 +142,24 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
             for dep, original_dep in zip(lazy_deps, dep_arrays):
                 # For each dependency, reduce chunksize in each dim to the new result
                 #  chunksize, if smaller.
-                dep_chunks = dep.chunksize
-                new_chunks = tuple(
-                    [
-                        min(dep_chunk, adj_chunk)
-                        for dep_chunk, adj_chunk in zip(dep_chunks, adjusted_chunks)
-                    ]
-                )
-                if new_chunks != dep_chunks:
+                new_chunks = []
+                for dim_chunks, dim_max in zip(dep.chunks, adjusted_chunks):
+                    # N.B. dim_chunks is a list of the dep chunks in this dm, whereas
+                    #  dim_maxchunk is a single number (part of a chunksize).
+                    if max(dim_chunks) <= dim_max:
+                        dim_chunks = dim_chunks
+                    else:
+                        dim_chunks = dim_max  # do re-chunk in this dim
+                    new_chunks.append(dim_chunks)
+
+                if any(new_chunks):
                     # When dep chunksize needs to change, produce a rechunked version.
                     if is_lazy_data(original_dep):
                         dep = original_dep.rechunk(new_chunks)
                     else:
                         # Make new lazy array from real original, rather than re-chunk.
                         dep = da.from_array(original_dep, chunks=new_chunks)
+
                 new_deps.append(dep)
 
             # Finally, re-do the calculation, which hopefully results in a better
