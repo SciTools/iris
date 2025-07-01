@@ -365,15 +365,15 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                 # Simple `grid_mapping = "crs"`
                 # Only one coord_system will be present and cs_grid_mapping will
                 # contain no coordinate references (set to None).
-                if len(coord_systems) == 1 and cs_mappings[0][1] is None:
+                if len(coord_systems) == 1 and list(cs_mappings.values()) == [None]:
                     # Only one grid mapping - apply it.
                     (coord_system,) = coord_systems.values()
-                    cs_name = cs_mappings[0][0]
+                    (cs_name,) = cs_mappings.keys()
 
                 # Extended `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
                 # We need to search for coord system that references our coordinate.
                 else:
-                    for name, ref_coords in cs_mappings:
+                    for name, ref_coords in cs_mappings.items():
                         if cf_var.cf_name in ref_coords:
                             cs_name = name
                             coord_system = coord_systems[cs_name]
@@ -524,12 +524,12 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     if grid_mapping_attr:
         cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
 
-        if len(coord_systems) == 1 and cs_mappings[0][1] is None:
+        if len(coord_systems) == 1 and list(cs_mappings.values()) == [None]:
             # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
             pass
         else:
             # Extended grid_mapping
-            for crs_name, coords in cs_mappings:
+            for crs_name, coords in cs_mappings.items():
                 if cf_var.cf_name in coords:
                     coord_system = coord_systems[crs_name]
                     break

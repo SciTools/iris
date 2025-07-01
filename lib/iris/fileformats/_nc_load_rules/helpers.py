@@ -19,7 +19,7 @@ from __future__ import annotations
 import contextlib
 from functools import partial
 import re
-from typing import TYPE_CHECKING, Any, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 import warnings
 
 import cf_units
@@ -1977,7 +1977,8 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
 
 
 ################################################################################
-def _parse_extended_grid_mapping(grid_mapping):
+# TODO(ChrisB): Typing doesn't like : Dict[str, List[str] | None]
+def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[str, Any]:
     """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
     # Handles extended grid_mapping too. Possibilities:
     #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords
@@ -1988,23 +1989,24 @@ def _parse_extended_grid_mapping(grid_mapping):
 
     # try simple mapping first
     if _GRID_MAPPING_PARSE_SIMPLE.match(grid_mapping):
-        return [(grid_mapping, None)]  # simple single grid mapping variable
+        mappings = {grid_mapping: None}  # simple single grid mapping variable
+    else:
+        # Try extended mapping:
+        # 1. Run validators to check for invalid expressions:
+        for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
+            if len(match := v_re.findall(grid_mapping)):
+                msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
+                raise iris.exceptions.IrisError(msg)  # TODO: Better Exception type
 
-    # Try extended mapping:
-    # 1. Run validators to check for invalid expressions:
-    for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
-        if len(match := v_re.findall(grid_mapping)):
-            msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
-            raise iris.exceptions.IrisError(msg)  # TODO: Better Exception type
+        # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
+        result = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
+        if len(result) == 0:
+            msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
+            raise iris.exceptions.IrisError(msg)  # TODO: Better exception type
 
-    # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
-    mappings = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
-    if len(mappings) == 0:
-        msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
-        raise iris.exceptions.IrisError(msg)  # TODO: Better exception type
+        # split second match group into list of coordinates:
+        mappings = {r[0]: r[1].split() for r in result}
 
-    # split second match group into list of coordinates:
-    mappings = [(m[0], m[1].split()) for m in mappings]
     return mappings
 
 

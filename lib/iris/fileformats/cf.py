@@ -670,7 +670,7 @@ class CFGridMappingVariable(CFVariable):
                 # parse the grid_mappings
                 mappings = hh._parse_extended_grid_mapping(name)
 
-                for name, coords in mappings:
+                for name, coords in mappings.items():
                     if name not in ignore:
                         if name not in variables:
                             if warn:
