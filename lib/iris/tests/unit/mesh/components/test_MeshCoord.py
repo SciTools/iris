@@ -74,7 +74,7 @@ class Test___init__:
             sample_meshcoord(location="bad")
 
     def test_fail_bad_axis(self):
-        with self.pytest.raises(ValueError, match="not a valid MeshXY axis"):
+        with pytest.raises(ValueError, match="not a valid MeshXY axis"):
             sample_meshcoord(axis="q")
 
 
@@ -1010,9 +1010,9 @@ class Test_collapsed:
         assert message.startswith("Collapsing a mesh coordinate")
 
     def test_aux_collapsed_called(self, mesh_coord_basic, mocker):
-        with mocker.patch.object(AuxCoord, "collapsed") as mocked:
-            _ = mesh_coord_basic.collapsed()
-            mocked.assert_called_once()
+        mocked = mocker.patch.object(AuxCoord, "collapsed")
+        _ = mesh_coord_basic.collapsed()
+        mocked.assert_called_once()
 
 
 class Test__updates_from_mesh:
