@@ -145,6 +145,7 @@ CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
 # Regex for parsing grid_mapping (extended format)
+# Link to online regex101 playground: https://regex101.com/r/jFbFLG/1
 #
 #   (\w+):                # Matches '<word>:' and stores in CAPTURE GROUP 1
 #   (                     # CAPTURE GROUP 2 for capturing multiple coords
@@ -154,7 +155,6 @@ CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 #           (\w+)         #   Matches a <word>
 #       )+                #  Repeats non-capturing group at least once.
 #   )                     # End of CAPTURE GROUP 2
-# _GRID_MAPPING_PARSE = re.compile(r"(\w+):((?: +(?!\w+:)(\w+))+)+")
 _GRID_MAPPING_PARSE_EXTENDED = re.compile(
     r"""
         (\w+):
