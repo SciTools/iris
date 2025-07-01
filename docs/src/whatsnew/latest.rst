@@ -31,7 +31,14 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ extended the
+   :data:`iris.loading.LOAD_PROBLEMS` capturing to *all* NetCDF objects that are
+   added to a :class:`~iris.cube.Cube` during loading, as well as a selection
+   of other objects such as :class:`~iris.coord_systems.CoordSystem`. Note this
+   includes an improvement to how :class:`~iris.coords.DimCoord` is 'gracefully'
+   converted to :class:`~iris.coords.AuxCoord` if it is masked - the mask is
+   now preserved when it was not previously. See also: :ref:`load-problems`.
+   (:pull:`6465`, :pull:`6529`)
 
 
 🐛 Bugs Fixed
@@ -43,6 +50,27 @@ This document explains the changes made to Iris for this release
 #. `@bouweandela`_ changed the ``convert_units`` method on cubes and coordinates
    so it also converts the values of the attributes ``"actual_range"``,
    ``"valid_max"``, ``"valid_min"``, and ``"valid_range"``. (:pull:`6416`)
+
+#. `@ukmo-ccbunney`_ fixed loading and merging of masked data in scalar ``AuxCoords``.
+   (:issue:`3584`, :pull:`6468`)
+
+#. `@stephenworsley`_ fixed the html representation of cubes in Jupyter when coordinates
+   share the same name. (:pull:`6476`)
+
+#. `@schlunma`_ fixed loading of netCDF files with coordinates that have
+   non-string units. (:issue:`6505`, :pull:`6506`)
+
+#. `@ukmo-ccbunney`_ correctly set the ``bplon`` PP field parameter when saving
+   a cube defined on Limited Area Model (LAM) grid to PP format. Activate this
+   behaviour with the new Futures flag ``iris.FUTURE.lam_pole_offset=True``.
+   (:issue:`3560`, :pull:`6520`)
+
+#. `@stephenworsley`_ fixed incompatibilities with numpy v2.3 affecting arrays of dates and
+   array printing. (:pull:`6518`)
+
+#. `@stephenworsley`_ fixed a bug which caused :meth:`~iris.cube.CubeList.concatenate_cube`
+   to fail when concatenating over multiple axes. (:pull:`6533`)
+
 
 💣 Incompatible Changes
 =======================
@@ -70,7 +98,14 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added :ref:`load-problems` to the user
+   guide. (:pull:`6529`)
+
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ added a new user guide page:
+   :ref:`iris-philosophy`, for readers who are interested in why Iris is
+   designed/maintained the way it is. Initial content: :ref:`code-maintenance`,
+   :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
+   (:pull:`6529`)
 
 
 💼 Internal
@@ -79,6 +114,13 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ replaced the PR-based linkchecks with a daily scheduled link checker based
    on `lychee <https://github.com/lycheeverse/lychee-action>`__.
    (:issue:`4140`, :pull:`6386`)
+
+#. `@trexfeathers`_ added a CI workflow to quickly validate that the
+   benchmarking setup is still working. (:pull:`6496`)
+
+#. `@trexfeathers`_ improved the stack trace for errors that occur during
+   benchmark data generation, showing developers the root problem at-a-glance
+   without needing local replication. (:pull:`6524`)
 
 
 .. comment

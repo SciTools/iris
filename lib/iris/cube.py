@@ -162,18 +162,19 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
-        doc = Document()
-        cubes_xml_element = doc.createElement("cubes")
-        cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
+        with np.printoptions(legacy="2.2"):
+            doc = Document()
+            cubes_xml_element = doc.createElement("cubes")
+            cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
 
-        for cube_obj in self:
-            cubes_xml_element.appendChild(
-                cube_obj._xml_element(
-                    doc, checksum=checksum, order=order, byteorder=byteorder
+            for cube_obj in self:
+                cubes_xml_element.appendChild(
+                    cube_obj._xml_element(
+                        doc, checksum=checksum, order=order, byteorder=byteorder
+                    )
                 )
-            )
 
-        doc.appendChild(cubes_xml_element)
+            doc.appendChild(cubes_xml_element)
 
         # return our newly created XML string
         doc = Cube._sort_xml_attrs(doc)
@@ -3864,17 +3865,18 @@ class Cube(CFVariableMixin):
         byteorder: bool = True,
     ) -> str:
         """Return a fully valid CubeML string representation of the Cube."""
-        doc = Document()
+        with np.printoptions(legacy="2.2"):
+            doc = Document()
 
-        cube_xml_element = self._xml_element(
-            doc, checksum=checksum, order=order, byteorder=byteorder
-        )
-        cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
-        doc.appendChild(cube_xml_element)
+            cube_xml_element = self._xml_element(
+                doc, checksum=checksum, order=order, byteorder=byteorder
+            )
+            cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
+            doc.appendChild(cube_xml_element)
 
-        # Print our newly created XML
-        doc = self._sort_xml_attrs(doc)
-        return iris.util._print_xml(doc)
+            # Print our newly created XML
+            doc = self._sort_xml_attrs(doc)
+            return iris.util._print_xml(doc)
 
     def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
         cube_xml_element = doc.createElement("cube")

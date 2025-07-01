@@ -15,6 +15,7 @@ from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
 from enum import Enum, auto
+from functools import partial
 import threading
 import warnings
 
@@ -165,6 +166,8 @@ def _add_unused_attributes(iris_object, cf_var):
     reserved terms.
 
     """
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
+    from iris.loading import LoadProblems
 
     def attribute_predicate(item):
         return item[0] not in _CF_ATTRS
@@ -175,8 +178,18 @@ def _add_unused_attributes(iris_object, cf_var):
         # Treat cube attributes (i.e. a CubeAttrsDict) as a special case.
         # These attrs are "local" (i.e. on the variable), so record them as such.
         attrs_dict = attrs_dict.locals
+
     for attr_name, attr_value in tmpvar:
-        _set_attributes(attrs_dict, attr_name, attr_value)
+        _ = _add_or_capture(
+            build_func=partial(lambda: attr_value),
+            add_method=partial(_set_attributes, attrs_dict, attr_name),
+            cf_var=cf_var,
+            attr_key=attr_name,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=iris_object.__class__,
+                identifier=cf_var.cf_name,
+            ),
+        )
 
 
 def _get_actual_dtype(cf_var):
@@ -202,7 +215,7 @@ _LAZYVAR_MIN_BYTES = 5000
 _MEAN_VL_ARRAY_LEN = 10
 
 
-def _get_cf_var_data(cf_var, filename):
+def _get_cf_var_data(cf_var):
     """Get an array representing the data of a CF variable.
 
     This is typically a lazy array based around a NetCDFDataProxy, but if the variable
@@ -253,6 +266,14 @@ def _get_cf_var_data(cf_var, filename):
         if total_bytes < _LAZYVAR_MIN_BYTES:
             # Don't make a lazy array, as it will cost more memory AND more time to access.
             result = cf_var[:]
+
+            # Special handling of masked scalar value; this will be returned as
+            # an `np.ma.masked` instance which will lose the original dtype.
+            # Workaround for this it return a 1-element masked array of the
+            # correct dtype. Note: this is not an issue for masked arrays,
+            # only masked scalar values.
+            if result is np.ma.masked:
+                result = np.ma.masked_all(1, dtype=cf_var.datatype)
         else:
             # Get lazy chunked data out of a cf variable.
             # Creates Dask wrappers around data arrays for any cube components which
@@ -269,7 +290,7 @@ def _get_cf_var_data(cf_var, filename):
                 _thread_safe_nc.default_fillvals[fill_dtype],
             )
             proxy = NetCDFDataProxy(
-                cf_var.shape, dtype, filename, cf_var.cf_name, fill_value
+                cf_var.shape, dtype, cf_var.filename, cf_var.cf_name, fill_value
             )
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
@@ -365,7 +386,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    data = _get_cf_var_data(cf_var, filename)
+    data = _get_cf_var_data(cf_var)
     cube = Cube(data)
 
     # Reset the actions engine.
@@ -612,8 +633,11 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     """
     # Deferred import to avoid circular imports.
+    from iris.cube import Cube
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
     from iris.fileformats.cf import CFReader
     from iris.io import run_callback
+    from iris.loading import LoadProblems
 
     from .ugrid_load import (
         _build_mesh_coords,
@@ -656,18 +680,52 @@ def load_cubes(file_sources, callback=None, constraints=None):
                         mesh = meshes[mesh_name]
                     except KeyError:
                         message = (
-                            f"File does not contain mesh: '{mesh_name}' - "
-                            f"referenced by variable: '{cf_var.cf_name}' ."
+                            f"Mesh '{mesh_name}' - "
+                            f"referenced by variable: '{cf_var.cf_name}' - "
+                            "could not be found in file."
                         )
                         logger.debug(message)
+
                 if mesh is not None:
-                    mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+                    # Unconventional 'split' usage of _add_or_capture -
+                    #  attribute handling means MeshCoords need to be built
+                    #  BEFORE loading the Cube.
+                    capture_kwargs = dict(
+                        cf_var=cf.cf_group.meshes[mesh_name],
+                        # MeshCoords are an Iris concept; the best fallback we
+                        #  have is to capture the CF Mesh.
+                        destination=LoadProblems.Problem.Destination(
+                            iris_class=Cube,
+                            identifier=cf_var.cf_name,
+                        ),
+                    )
+
+                    def _build_mesh_coords_inner():
+                        nonlocal mesh_coords
+                        nonlocal mesh_dim
+                        mesh_coords, mesh_dim = _build_mesh_coords(mesh, cf_var)
+
+                    def _add_mesh_coords(coords_and_dim):
+                        coords, dim = coords_and_dim
+                        for coord in coords:
+                            cube.add_aux_coord(coord, dim)
+
+                    # MeshCoords part 1.
+                    _ = _add_or_capture(
+                        build_func=partial(_build_mesh_coords_inner),
+                        add_method=partial(lambda built: None),
+                        **capture_kwargs,
+                    )
 
                 cube = _load_cube(engine, cf, cf_var, cf.filename)
 
-                # Attach the mesh (if present) to the cube.
-                for mesh_coord in mesh_coords:
-                    cube.add_aux_coord(mesh_coord, mesh_dim)
+                if mesh is not None:
+                    # MeshCoords part 2.
+                    _ = _add_or_capture(
+                        build_func=partial(lambda: (mesh_coords, mesh_dim)),
+                        add_method=partial(_add_mesh_coords),
+                        **capture_kwargs,
+                    )
 
                 # Process any associated formula terms and attach
                 # the corresponding AuxCoordFactory.

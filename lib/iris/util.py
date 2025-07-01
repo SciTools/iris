@@ -1606,10 +1606,12 @@ def _is_circular(points, modulus, bounds=None):
                 circular_value = (points[-1] + diff) % modulus
                 try:
                     np.testing.assert_approx_equal(
-                        points[0], circular_value, significant=4
+                        points[0] % modulus, circular_value, significant=4
                     )
                     circular = True
                 except AssertionError:
+                    # TODO: I consider the following to be not needed with the modulus being used in the
+                    # above check, but there are some tests that seem to rely on this behavior...
                     if points[0] == 0:
                         try:
                             np.testing.assert_approx_equal(
