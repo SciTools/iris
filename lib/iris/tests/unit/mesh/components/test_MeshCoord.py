@@ -464,24 +464,22 @@ class Test_cube_containment(tests.IrisTest):
         self.assertIs(cube.coord(standard_name="longitude"), meshcoord)
         self.assertIs(cube.coord(long_name="odd_case"), meshcoord)
 
-    # def test_find_by_axis(self):
-    #     meshcoord = self.meshcoord
-    #     cube = self.cube
-    #     print(self.meshcoord.standard_name)
-    #     self.assertIs(cube.coord(axis="x"), meshcoord)
-    #     self.assertEqual(cube.coords(axis="y"), [])
-    #
-    #     # NOTE: the meshcoord.axis takes precedence over the older
-    #     # "guessed axis" approach.  So the standard_name does not control it.
-    #     coord_on_mesh = meshcoord.mesh.coord(
-    #         location=meshcoord.location,
-    #         axis=meshcoord.axis
-    #     )
-    #     #doesn't like renaming to latitude.......
-    #     #any other one works
-    #     coord_on_mesh.standard_name = "grid_longitude"
-    #     self.assertIs(cube.coord(axis="x"), meshcoord)
-    #     self.assertEqual(cube.coords(axis="y"), [])
+    def test_find_by_axis(self):
+        meshcoord = self.meshcoord
+        mesh = self.meshcoord.mesh
+        cube = self.cube
+        self.assertIs(cube.coord(axis="x"), meshcoord)
+        self.assertEqual(cube.coords(axis="y"), [])
+
+        # NOTE: the meshcoord.axis takes precedence over the older
+        # "guessed axis" approach.  So the standard_name does not control it.
+        for c in mesh.coords(axis="x"):
+            c.standard_name = "grid_longitude"
+        for c in mesh.coords(axis="y"):
+            c.standard_name = "grid_latitude"
+
+        self.assertIs(cube.coord(axis="x"), meshcoord)
+        self.assertEqual(cube.coords(axis="y"), [])
 
     def test_cube_copy(self):
         # Check that we can copy a cube, and get a MeshCoord == the original.
