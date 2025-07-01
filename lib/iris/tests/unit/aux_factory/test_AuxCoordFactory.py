@@ -194,12 +194,12 @@ def chunkspecs(points: _Chunkspec, bounds: _Chunkspec) -> Tuple[_Chunks, _Chunks
     points, bounds : _Chunkspec
         A pair (points, bounds) of chunk specs.
         Each is a sequence of dimension specs, where each dim is either an int or an
-        iterable of int
+        iterable of int.
 
     Returns
     -------
-    chunks :
-        a pair of tuple of tuples, in the form of Dask chunks arguments.
+    points, bounds : _Chunks
+        a pair of array chunk descriptors, in the form of Dask chunks arguments.
 
     """
     pts_spec, bds_spec = [

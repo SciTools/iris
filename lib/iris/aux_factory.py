@@ -144,7 +144,7 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
                 #  chunksize, if smaller.
                 new_chunks = []
                 for dim_chunks, dim_max in zip(dep.chunks, adjusted_chunks):
-                    # N.B. dim_chunks is a list of the dep chunks in this dm, whereas
+                    # N.B. dim_chunks is a list of the dep chunks in this dim, whereas
                     #  dim_maxchunk is a single number (part of a chunksize).
                     if max(dim_chunks) <= dim_max:
                         dim_chunks = dim_chunks
