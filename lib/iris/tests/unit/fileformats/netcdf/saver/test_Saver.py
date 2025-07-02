@@ -32,7 +32,7 @@ from iris.coord_systems import (
     TransverseMercator,
     VerticalPerspective,
 )
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 import iris.tests.stock as stock
@@ -176,6 +176,18 @@ class Test_write(tests.IrisTest):
                 saver.write(cube)
             self.assertCDL(nc_path)
 
+    @staticmethod
+    def _filter_compression_calls(patch, compression_kwargs, mismatch=False):
+        result = []
+        for call in patch.call_args_list:
+            kwargs = call.kwargs
+            if (
+                all(kwargs.get(k) == v for k, v in compression_kwargs.items())
+                or mismatch
+            ):
+                result.append(call.args[0])
+        return result
+
     def _simple_cube(self, dtype):
         data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
         points = np.arange(3, dtype=dtype)
@@ -232,6 +244,110 @@ class Test_write(tests.IrisTest):
             chunksizes=None,
         )
         self.assertIn(create_var_call, dataset.createVariable.call_args_list)
+
+    def test_compression(self):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = range(cube.ndim), cube.shape
+
+        # add an auxiliary coordinate to test compression
+        aux_coord = AuxCoord(np.zeros(shape), var_name="compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims)
+
+        # add an ancillary variable to test compression
+        anc_coord = AncillaryVariable(
+            np.zeros(shape), var_name="compress_anc", units="1"
+        )
+        cube.add_ancillary_variable(anc_coord, data_dims=data_dims)
+
+        patch = self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        with self.temp_filename(suffix=".nc") as nc_path:
+            with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                saver.write(cube, **compression_kwargs)
+
+        self.assertEqual(5, patch.call_count)
+        result = self._filter_compression_calls(patch, compression_kwargs)
+        self.assertEqual(3, len(result))
+        self.assertEqual({cube.name(), aux_coord.name(), anc_coord.name()}, set(result))
+
+    def test_non_compression__shape(self):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = (0, 1), cube.shape
+
+        # add an auxiliary coordinate to test non-compression (shape)
+        aux_coord = AuxCoord(np.zeros(shape[0]), var_name="non_compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims[0])
+
+        # add an ancillary variable to test non-compression (shape)
+        anc_coord = AncillaryVariable(
+            np.zeros(shape[1]), var_name="non_compress_anc", units="1"
+        )
+        cube.add_ancillary_variable(anc_coord, data_dims=data_dims[1])
+
+        patch = self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        with self.temp_filename(suffix=".nc") as nc_path:
+            with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                saver.write(cube, **compression_kwargs)
+
+        self.assertEqual(5, patch.call_count)
+        result = self._filter_compression_calls(
+            patch, compression_kwargs, mismatch=True
+        )
+        self.assertEqual(5, len(result))
+        self.assertEqual(
+            {cube.name(), aux_coord.name(), anc_coord.name(), "dim0", "dim0_bnds"},
+            set(result),
+        )
+
+    def test_non_compression__dtype(self):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = (0, 1), cube.shape
+
+        # add an auxiliary coordinate to test non-compression (dtype)
+        data = np.array(["."] * np.prod(shape)).reshape(shape)
+        aux_coord = AuxCoord(data, var_name="non_compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims)
+
+        patch = self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        patch.return_value = mock.MagicMock(dtype=np.dtype("S1"))
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        with self.temp_filename(suffix=".nc") as nc_path:
+            with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                saver.write(cube, **compression_kwargs)
+
+        self.assertEqual(4, patch.call_count)
+        result = self._filter_compression_calls(
+            patch, compression_kwargs, mismatch=True
+        )
+        self.assertEqual(4, len(result))
+        self.assertEqual(
+            {cube.name(), aux_coord.name(), "dim0", "dim0_bnds"}, set(result)
+        )
 
     def test_least_significant_digit(self):
         cube = Cube(

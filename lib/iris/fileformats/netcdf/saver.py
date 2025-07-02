@@ -586,21 +586,28 @@ class Saver:
         # data-vars in the file.
         cf_mesh_name = self._add_mesh(cube)
 
+        # Group the generic compression keyword arguments together for
+        # convenience, as they will be applied to other cube metadata
+        # as well as the cube data payload.
+        compression_kwargs = {
+            "complevel": complevel,
+            "fletcher32": fletcher32,
+            "shuffle": shuffle,
+            "zlib": zlib,
+        }
+
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
             cube,
             cube_dimensions,
-            local_keys,
-            zlib=zlib,
-            complevel=complevel,
-            shuffle=shuffle,
-            fletcher32=fletcher32,
+            local_keys=local_keys,
+            packing=packing,
+            fill_value=fill_value,
             contiguous=contiguous,
             chunksizes=chunksizes,
             endian=endian,
             least_significant_digit=least_significant_digit,
-            packing=packing,
-            fill_value=fill_value,
+            **compression_kwargs,
         )
 
         # Associate any mesh with the data-variable.
@@ -615,7 +622,7 @@ class Saver:
 
         # Add the auxiliary coordinate variables and associate the data
         # variable to them
-        self._add_aux_coords(cube, cf_var_cube, cube_dimensions)
+        self._add_aux_coords(cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs)
 
         # Add the cell_measures variables and associate the data
         # variable to them
@@ -623,7 +630,7 @@ class Saver:
 
         # Add the ancillary_variables variables and associate the data variable
         # to them
-        self._add_ancillary_variables(cube, cf_var_cube, cube_dimensions)
+        self._add_ancillary_variables(cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs)
 
         # Add the formula terms to the appropriate cf variables for each
         # aux factory in the cube.
@@ -883,7 +890,7 @@ class Saver:
         return cf_mesh_name
 
     def _add_inner_related_vars(
-        self, cube, cf_var_cube, dimension_names, coordlike_elements
+        self, cube, cf_var_cube, dimension_names, coordlike_elements, /, *, compression_kwargs=None
     ):
         """Create a set of variables for aux-coords, ancillaries or cell-measures.
 
@@ -913,7 +920,7 @@ class Saver:
                 if cf_name is None:
                     # Not already present : create it
                     cf_name = self._create_generic_cf_array_var(
-                        cube, dimension_names, element
+                        cube, dimension_names, element, compression_kwargs=compression_kwargs
                     )
                     self._name_coord_map.append(cf_name, element)
 
@@ -929,7 +936,7 @@ class Saver:
                 variable_names = " ".join(sorted(element_names))
                 _setncattr(cf_var_cube, role_attribute_name, variable_names)
 
-    def _add_aux_coords(self, cube, cf_var_cube, dimension_names):
+    def _add_aux_coords(self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None):
         """Add aux. coordinate to the dataset and associate with the data variable.
 
         Parameters
@@ -940,6 +947,9 @@ class Saver:
             A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
+
         """
         from iris.mesh.components import (
             MeshEdgeCoords,
@@ -967,6 +977,7 @@ class Saver:
             cf_var_cube,
             dimension_names,
             coords_to_add,
+            compression_kwargs=compression_kwargs,
         )
 
     def _add_cell_measures(self, cube, cf_var_cube, dimension_names):
@@ -988,7 +999,7 @@ class Saver:
             cube.cell_measures(),
         )
 
-    def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names):
+    def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None):
         """Add ancillary variables measures to the dataset and associate with the data variable.
 
         Parameters
@@ -999,12 +1010,16 @@ class Saver:
             A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
+
         """
         return self._add_inner_related_vars(
             cube,
             cf_var_cube,
             dimension_names,
             cube.ancillary_variables(),
+            compression_kwargs=compression_kwargs,
         )
 
     def _add_dim_coords(self, cube, dimension_names):
@@ -1439,7 +1454,7 @@ class Saver:
             values = values.astype(np.int32)
         return values
 
-    def _create_cf_bounds(self, coord, cf_var, cf_name):
+    def _create_cf_bounds(self, coord, cf_var, cf_name, /, *, compression_kwargs=None):
         """Create the associated CF-netCDF bounds variable.
 
         Parameters
@@ -1450,6 +1465,8 @@ class Saver:
             CF-netCDF variable.
         cf_name : str
             Name of the CF-NetCDF variable.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
 
         Returns
         -------
@@ -1457,6 +1474,9 @@ class Saver:
 
         """
         if hasattr(coord, "has_bounds") and coord.has_bounds():
+            if compression_kwargs is None:
+                compression_kwargs = {}
+
             # Get the values in a form which is valid for the file format.
             bounds = self._ensure_valid_dtype(
                 coord.core_bounds(), "the bounds of coordinate", coord
@@ -1489,6 +1509,7 @@ class Saver:
                 boundsvar_name,
                 bounds.dtype.newbyteorder("="),
                 cf_var.dimensions + (bounds_dimension_name,),
+                **compression_kwargs,
             )
             self._lazy_stream_data(data=bounds, cf_var=cf_var_bounds)
 
@@ -1685,8 +1706,11 @@ class Saver:
         cube_or_mesh,
         cube_dim_names,
         element,
+        /,
+        *,
         element_dims=None,
         fill_value=None,
+        compression_kwargs=None,
     ):
         """Create theCF-netCDF variable given dimensional_metadata.
 
@@ -1718,6 +1742,8 @@ class Saver:
             If not set, standard netcdf4-python behaviour : the variable has no
             '_FillValue' property, and uses the "standard" fill-value for its
             type.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
 
         Returns
         -------
@@ -1731,6 +1757,9 @@ class Saver:
             cube = cube_or_mesh
         else:
             cube = None
+
+        if compression_kwargs is None:
+            compression_kwargs = {}
 
         # Work out the var-name to use.
         # N.B. the only part of this routine that may use a mesh _or_ a cube.
@@ -1748,6 +1777,9 @@ class Saver:
         # all are subclasses of _DimensionalMetadata.
         # (e.g. =points if a coord, =data if an ancillary, etc)
         data = element._core_values()
+
+        if cube is None or cube.shape != data.shape:
+            compression_kwargs = {}
 
         if np.issubdtype(data.dtype, np.str_):
             # Deal with string-type variables.
@@ -1811,6 +1843,7 @@ class Saver:
                 data.dtype.newbyteorder("="),
                 element_dims,
                 fill_value=fill_value,
+                **compression_kwargs,
             )
 
             # Add the axis attribute for spatio-temporal CF-netCDF coordinates.
@@ -1820,7 +1853,7 @@ class Saver:
                     _setncattr(cf_var, "axis", axis.upper())
 
             # Create the associated CF-netCDF bounds variable, if any.
-            self._create_cf_bounds(element, cf_var, cf_name)
+            self._create_cf_bounds(element, cf_var, cf_name, compression_kwargs=compression_kwargs)
 
         # Add the data to the CF-netCDF variable.
         self._lazy_stream_data(data=data, cf_var=cf_var)
@@ -2784,16 +2817,16 @@ def save(
         for cube, packspec, fill_value in zip(cubes, packspecs, fill_values):
             sman.write(
                 cube,
-                local_keys,
-                unlimited_dimensions,
-                zlib,
-                complevel,
-                shuffle,
-                fletcher32,
-                contiguous,
-                chunksizes,
-                endian,
-                least_significant_digit,
+                local_keys=local_keys,
+                unlimited_dimensions=unlimited_dimensions,
+                zlib=zlib,
+                complevel=complevel,
+                shuffle=shuffle,
+                fletcher32=fletcher32,
+                contiguous=contiguous,
+                chunksizes=chunksizes,
+                endian=endian,
+                least_significant_digit=least_significant_digit,
                 packing=packspec,
                 fill_value=fill_value,
             )
