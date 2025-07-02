@@ -188,6 +188,7 @@ def test_invalid_geometry(test_input, errortype, errormessage, request, wgs84_cr
     with pytest.raises(errortype, match=errormessage):
         is_geometry_valid(request.getfixturevalue(test_input), wgs84_crs)
 
+
 def test_invalid_crs(basic_polygon_geometry):
     # Assert that an invalid crs raise the expected error
     msg = "Geometry CRS must be a cartopy.crs or pyproj.CRS object, not <class 'str'>."

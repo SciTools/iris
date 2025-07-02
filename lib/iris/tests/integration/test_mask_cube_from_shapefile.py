@@ -8,6 +8,8 @@ import math
 
 import cartopy.io.shapereader as shpreader
 import numpy as np
+from pyproj import CRS
+from pytest import approx
 
 import iris
 import iris.tests as tests
@@ -26,6 +28,7 @@ class TestCubeMasking(tests.IrisTest):
             resolution="10m", category="cultural", name="admin_0_countries"
         )
         self.reader = shpreader.Reader(ne_countries)
+        self.wgs84 = CRS.from_epsg(4326)
 
     def test_global_proj_russia(self):
         path = tests.get_data_path(
@@ -37,11 +40,11 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "Russia" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = mask_cube_from_shapefile(test_global, ne_russia)
-        print(np.sum(masked_test.data))
-        assert math.isclose(np.sum(masked_test.data), 76845.37, rel_tol=0.001), (
-            "Global data with Russia mask failed test"
+        masked_test = mask_cube_from_shapefile(
+            test_global, ne_russia, shape_crs=self.wgs84
         )
+        print(np.sum(masked_test.data))
+        assert 76845.37 == approx(np.sum(masked_test.data), rel=0.001)
 
     def test_rotated_pole_proj_germany(self):
         path = tests.get_data_path(
@@ -53,10 +56,10 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "Germany" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = mask_cube_from_shapefile(test_rotated, ne_germany)
-        assert math.isclose(np.sum(masked_test.data), 179.46872, rel_tol=0.001), (
-            "rotated europe data with German mask failed test"
+        masked_test = mask_cube_from_shapefile(
+            test_rotated, ne_germany, shape_crs=self.wgs84
         )
+        assert 179.46872 == approx(np.sum(masked_test.data), rel=0.001)
 
     def test_transverse_mercator_proj_uk(self):
         path = tests.get_data_path(
@@ -68,10 +71,10 @@ class TestCubeMasking(tests.IrisTest):
             for country in self.reader.records()
             if "United Kingdom" in country.attributes["NAME_LONG"]
         ][0]
-        masked_test = mask_cube_from_shapefile(test_transverse, ne_uk)
-        assert math.isclose(np.sum(masked_test.data), 90740.25, rel_tol=0.001), (
-            "transverse mercator UK data with UK mask failed test"
+        masked_test = mask_cube_from_shapefile(
+            test_transverse, ne_uk, shape_crs=self.wgs84
         )
+        assert 90740.25 == approx(np.sum(masked_test.data), rel=0.001)
 
     def test_rotated_pole_proj_germany_weighted_area(self):
         path = tests.get_data_path(
@@ -84,11 +87,9 @@ class TestCubeMasking(tests.IrisTest):
             if "Germany" in country.attributes["NAME_LONG"]
         ][0]
         masked_test = mask_cube_from_shapefile(
-            test_rotated, ne_germany, minimum_weight=0.9
+            test_rotated, ne_germany, shape_crs=self.wgs84, minimum_weight=0.9
         )
-        assert math.isclose(np.sum(masked_test.data), 125.60199, rel_tol=0.001), (
-            "rotated europe data with 0.9 weight germany mask failed test"
-        )
+        assert 125.60199 == approx(np.sum(masked_test.data), rel=0.001)
 
     def test_4d_global_proj_brazil(self):
         path = tests.get_data_path(["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"])
@@ -101,9 +102,6 @@ class TestCubeMasking(tests.IrisTest):
         masked_test = mask_cube_from_shapefile(
             test_4d_brazil,
             ne_brazil,
+            shape_crs=self.wgs84
         )
-        print(np.sum(masked_test.data))
-        # breakpoint()
-        assert math.isclose(np.sum(masked_test.data), 18616921.2, rel_tol=0.001), (
-            "4d data with brazil mask failed test"
-        )
+        assert 18616921.2  == approx(np.sum(masked_test.data), rel=0.001)

@@ -31,11 +31,16 @@ def mock_cube():
     cube = Cube(data, dim_coords_and_dims=[(y_coord, 0), (x_coord, 1)])
     return cube
 
+
 @pytest.fixture
 def mock_nonregular_cube():
     """Create a mock Iris cube for testing."""
-    x_points = np.array([ 0.,  0.5, 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 9.5, 10.])
-    y_points = np.array([ 0.,  0.5, 1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9., 9.5, 10.])
+    x_points = np.array(
+        [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 9.5, 10.0]
+    )
+    y_points = np.array(
+        [0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 9.5, 10.0]
+    )
     x_coord = DimCoord(x_points, standard_name="longitude", units="degrees")
     y_coord = DimCoord(y_points, standard_name="latitude", units="degrees")
     data = np.zeros((len(y_points), len(x_points)))
@@ -58,6 +63,7 @@ def test_make_raster_cube_transform(mock_cube):
 
     assert isinstance(transform, Affine)
     assert transform == expected_transform
+
 
 def test_invalid_cube(mock_nonregular_cube):
     # Assert that all invalid geometries raise the expected error

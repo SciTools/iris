@@ -282,7 +282,7 @@ def is_geometry_valid(
     if not isinstance(geometry_crs, (ccrs.CRS | CRS)):
         msg = f"Geometry CRS must be a cartopy.crs or pyproj.CRS object, not {type(geometry_crs)}."
         raise TypeError(msg)
-    
+
     # Check geometry is valid shapely geometry
     if not shapely.is_valid_input(geometry):
         msg = f"Shape geometry is not a valid shape (not well formed)."
