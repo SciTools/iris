@@ -2,7 +2,7 @@ from pyproj import CRS
 from pyproj import exceptions as pyproj_exceptions
 import pytest
 import shapely
-from shapely.geometry import Polygon, LineString, MultiLineString, MultiPoint, Point
+from shapely.geometry import LineString, Point, Polygon
 
 import iris
 from iris._shapefiles import _transform_geometry
