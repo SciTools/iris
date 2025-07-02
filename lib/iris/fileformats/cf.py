@@ -1430,9 +1430,9 @@ class CFReader:
         # Parse all instances of "grid_mapping" attributes and store in CFReader
         # This avoids re-parsing the grid_mappings each time they are needed.
         for nc_var in variables.values():
-            if hasattr(nc_var, "grid_mapping"):
+            if grid_mapping_attr := getattr(nc_var, "grid_mapping", None):
                 try:
-                    cs_mappings = hh._parse_extended_grid_mapping(nc_var.grid_mapping)
+                    cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
                     self._coord_system_mappings[nc_var.name] = cs_mappings
                 except iris.exceptions.IrisError as e:
                     msg = f"Error parsing grid_grid mapping attribute for {nc_var.name}: {str(e)}"
