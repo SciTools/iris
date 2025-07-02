@@ -357,11 +357,8 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
 
         if len(coord_systems):
             # Find which coord system applies to this coordinate.
-            # Parse the grid_mapping attribute to get coord_system -> coordinate mappings
-            attr_grid_mapping = getattr(engine.cf_var, "grid_mapping", None)
-            if attr_grid_mapping:
-                cs_mappings = hh._parse_extended_grid_mapping(attr_grid_mapping)
-
+            cs_mappings = engine.cube_parts["coordinate_system_mappings"]
+            if cs_mappings and coord_systems:
                 # Simple `grid_mapping = "crs"`
                 # Only one coord_system will be present and cs_grid_mapping will
                 # contain no coordinate references (set to None).
@@ -519,11 +516,8 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     coord_systems = engine.cube_parts.get("coordinate_systems")
     coord_system = None
 
-    # get grid_mapping from data variable attribute and parse it
-    grid_mapping_attr = getattr(engine.cf_var, "grid_mapping", None)
-    if grid_mapping_attr:
-        cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
-
+    cs_mappings = engine.cube_parts.get("coordinate_system_mappings", None)
+    if cs_mappings and coord_systems:
         if len(coord_systems) == 1 and list(cs_mappings.values()) == [None]:
             # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
             pass

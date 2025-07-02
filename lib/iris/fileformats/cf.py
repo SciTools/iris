@@ -24,6 +24,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+import iris.exceptions
 import iris.fileformats._nc_load_rules.helpers as hh
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.mesh.components import Connectivity
@@ -655,7 +656,9 @@ class CFGridMappingVariable(CFVariable):
     cf_identity = "grid_mapping"
 
     @classmethod
-    def identify(cls, variables, ignore=None, target=None, warn=True):
+    def identify(
+        cls, variables, ignore=None, target=None, warn=True, coord_system_mappings=None
+    ):
         result = {}
         ignore, target = cls._identify_common(variables, ignore, target)
 
@@ -667,10 +670,21 @@ class CFGridMappingVariable(CFVariable):
             if nc_var_att is not None:
                 name = nc_var_att.strip()
 
-                # parse the grid_mappings
-                mappings = hh._parse_extended_grid_mapping(name)
+                # All `grid_mapping` attributes will already have been parsed prior
+                # to `identify` being called and passed in as an argument. We can
+                # ignore the attribute here (it's just used to identify that a grid
+                # mapping exists for this data variable) and get the pre-parsed
+                # mapping from the `coord_mapping_systems` keyword:
+                cs_mappings = None
+                if coord_system_mappings:
+                    cs_mappings = coord_system_mappings.get(nc_var_name, None)
 
-                for name, coords in mappings.items():
+                if not cs_mappings:
+                    # If cs_mappings is None, some parse error must have occurred and the
+                    # user will have already been warned by `_parse_extended_grid_mappings`
+                    continue
+
+                for name, coords in cs_mappings.items():
                     if name not in ignore:
                         if name not in variables:
                             if warn:
@@ -1342,6 +1356,9 @@ class CFReader:
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
+        # Result of parsing "grid_mapping" attribute; mapping of coordinate_system => coordinates
+        self._coord_system_mappings = {}
+
         # Issue load optimisation warning.
         if warn and self._dataset.file_format in [
             "NETCDF3_CLASSIC",
@@ -1410,6 +1427,18 @@ class CFReader:
         """Classify the netCDF variables into CF-netCDF variables."""
         netcdf_variable_names = list(variables.keys())
 
+        # Parse all instances of "grid_mapping" attributes and store in CFReader
+        # This avoids re-parsing the grid_mappings each time they are needed.
+        for nc_var in variables.values():
+            if hasattr(nc_var, "grid_mapping"):
+                try:
+                    cs_mappings = hh._parse_extended_grid_mapping(nc_var.grid_mapping)
+                    self._coord_system_mappings[nc_var.name] = cs_mappings
+                except iris.exceptions.IrisError as e:
+                    msg = f"Error parsing grid_grid mapping attribute for {nc_var.name}: {str(e)}"
+                    warnings.warn(msg, category=iris.warnings.IrisCfWarning)
+                    continue
+
         # Identify all CF coordinate variables first. This must be done
         # first as, by CF convention, the definition of a CF auxiliary
         # coordinate variable may include a scalar CF coordinate variable,
@@ -1428,7 +1457,15 @@ class CFReader:
                 if issubclass(variable_type, CFGridMappingVariable)
                 else coordinate_names
             )
-            self.cf_group.update(variable_type.identify(variables, ignore=ignore))
+            kwargs = (
+                {"coord_system_mappings": self._coord_system_mappings}
+                if issubclass(variable_type, CFGridMappingVariable)
+                else {}
+            )
+
+            self.cf_group.update(
+                variable_type.identify(variables, ignore=ignore, **kwargs)
+            )
 
         # Identify global netCDF attributes.
         attr_dict = {
@@ -1570,6 +1607,7 @@ class CFReader:
             # Build CF variable relationships.
             for variable_type in self._variable_types:
                 ignore = []
+                kwargs = {}
                 # Avoid UGridAuxiliaryCoordinateVariables also being
                 # processed as CFAuxiliaryCoordinateVariables.
                 if not is_mesh_var:
@@ -1577,12 +1615,18 @@ class CFReader:
                 # Prevent grid mapping variables being mis-identified as CF coordinate variables.
                 if not issubclass(variable_type, CFGridMappingVariable):
                     ignore += coordinate_names
+                else:
+                    # pass parsed grid_mappings to CFGridMappingVariable types
+                    kwargs.update(
+                        {"coord_system_mappings": self._coord_system_mappings}
+                    )
 
                 match = variable_type.identify(
                     variables,
                     ignore=ignore,
                     target=cf_variable.cf_name,
                     warn=False,
+                    **kwargs,
                 )
                 # Sanity check dimensionality coverage.
                 for cf_name in match:

@@ -81,6 +81,11 @@ def _assert_case_specific_facts(engine, cf, cf_group):
     engine.cube_parts["ancillary_variables"] = []
     engine.cube_parts["coordinate_systems"] = {}
 
+    # Add the parsed coordinate reference system mappings
+    engine.cube_parts["coordinate_system_mappings"] = cf._coord_system_mappings.get(
+        engine.cf_var.cf_name, None
+    )
+
     # Assert facts for CF coordinates.
     for cf_name in cf_group.coordinates.keys():
         engine.add_case_specific_fact("coordinate", (cf_name,))
