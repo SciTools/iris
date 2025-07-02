@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
 from iris.fileformats.cf import CFVariable
 from iris.loading import LOAD_PROBLEMS, LoadProblems
@@ -21,6 +22,9 @@ class Mixin:
     filename: str = "test__add_or_capture.nc"
     attr_key: str = "attr_key"
     attr_value: str = "attr_value"
+    destination: LoadProblems.Problem.Destination = LoadProblems.Problem.Destination(
+        Cube, "foo"
+    )
 
     @pytest.fixture
     def make_args(self, mocker):
@@ -28,6 +32,7 @@ class Mixin:
         self.build_func.return_value = "BUILT"
         self.add_method = mocker.MagicMock()
         self.cf_var = mocker.MagicMock(spec=CFVariable)
+        self.cf_var.filename = self.filename
         setattr(self.cf_var, self.attr_key, self.attr_value)
 
     def call(
@@ -35,11 +40,14 @@ class Mixin:
         filename=None,
         attr_key=None,
     ):
+        if filename is not None:
+            self.cf_var.filename = filename
+
         result = helpers._add_or_capture(
             build_func=self.build_func,
             add_method=self.add_method,
-            filename=filename or self.filename,
             cf_var=self.cf_var,
+            destination=self.destination,
             attr_key=attr_key,
         )
         return result
@@ -71,6 +79,7 @@ class TestBuildProblems(Mixin):
         assert result.filename == self.filename
         assert result.loaded == expected_loaded
         assert str(result.stack_trace) == self.failure_string
+        assert result.destination is self.destination
         assert result is LOAD_PROBLEMS.problems[-1]
 
     def test_w_o_attr_can_build(self, patch_build_raw_cube):

@@ -58,8 +58,9 @@ class IrisRelease(Progress):
             cls.check_pypi,
             cls.update_conda_forge,
             cls.update_links,
-            cls.twitter_announce,
+            cls.bluesky_announce,
             cls.merge_back,
+            cls.next_release,
         ]
 
     def get_github_user(self):
@@ -845,13 +846,13 @@ class IrisRelease(Progress):
         )
         self.wait_for_done(message)
 
-    def twitter_announce(self):
+    def bluesky_announce(self):
         message = (
-            "Announce the release via https://twitter.com/scitools_iris, "
+            "Announce the release via https://bsky.app/profile/scitools.bsky.social, "
             "and any "
             "other appropriate message boards (e.g. Viva Engage).\n"
             "Any content used for the announcement should be stored in the "
-            "SciTools/twitter-scitools-iris GitHub repo.\n"
+            "SciTools/bluesky-scitools GitHub repo.\n"
         )
         if not self.first_in_series:
             message += (
@@ -955,6 +956,47 @@ class IrisRelease(Progress):
                 "release branch is restored.\n"
                 "GitHub automation rules may have automatically deleted the "
                 "release branch."
+            )
+            self.wait_for_done(message)
+
+    def next_release(self):
+        if self.release_type != self.ReleaseTypes.PATCH and not self.is_release_candidate:
+            self.print("Prep next release ...")
+
+            message = (
+                "Confirm that there is a release manager in place for the "
+                "next minor (or major) release."
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Confirm that the next release manager has set up a "
+                "milestone for their release.\n"
+                "https://github.com/SciTools/iris/milestones"
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Confirm that the next release manager has set up a "
+                "discussion page for their release.\n"
+                "https://github.com/SciTools/iris/discussions/categories/releases"
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Confirm that the next release manager has arranged "
+                "some team development time (e.g. sprints) for "
+                "delivering Iris improvements in their release.\n\n"
+                "The UK Met Office has some Confluence guidance for this."
+            )
+            self.wait_for_done(message)
+
+            message = (
+                "Remind the next release manager about the importance "
+                "of regularly championing their release (e.g. during "
+                "Peloton meetings).\n\n"
+                "Relying solely on a few focussed weeks cannot deliver "
+                "many improvements."
             )
             self.wait_for_done(message)
 

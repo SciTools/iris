@@ -119,5 +119,27 @@ class Test_context(tests.IrisTest):
             self.assertEqual(future.example_future_flag, False)
 
 
+class Test__str_repr:
+    # Very basic check on printed forms of the Future object
+    def _check_content(self, future, text):
+        assert text == (
+            "Future(datum_support=False, pandas_ndim=False, save_split_attrs=False, "
+            "date_microseconds=False, derived_bounds=False, lam_pole_offset=False)"
+        )
+        # Also just check that all the property elements are included
+        for propname in future.__dict__.keys():
+            assert f"{propname}=False" in text
+
+    def test_str(self):
+        future = Future()
+        text = str(future)
+        self._check_content(future, text)
+
+    def test_repr(self):
+        future = Future()
+        text = repr(future)
+        self._check_content(future, text)
+
+
 if __name__ == "__main__":
     tests.main()

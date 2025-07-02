@@ -2997,6 +2997,25 @@ class Test_convert_units:
         cube.data
         _client.close()
 
+    @pytest.mark.parametrize(
+        "attribute",
+        [
+            "valid_min",
+            "valid_max",
+            "valid_range",
+            "actual_range",
+        ],
+    )
+    def test_convert_attributes(self, attribute):
+        cube = iris.cube.Cube(1, units="degrees_C")
+        value = np.array([0, 10]) if attribute.endswith("range") else 0
+        cube.attributes.locals[attribute] = value
+        cube.convert_units("K")
+        converted_value = Unit("degrees_C").convert(value, "K")
+        _shared_utils.assert_array_all_close(
+            cube.attributes.locals[attribute], converted_value
+        )
+
 
 class Test__eq__data:
     """Partial cube equality testing, for data type only."""

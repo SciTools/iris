@@ -298,3 +298,113 @@ these two cubes into separate variables.
         >>> print(number_two)
         2
 
+.. _load-problems:
+
+Load Problems
+-------------
+
+The Iris data model - see :ref:`iris_data_structures` - is highly flexible, but
+there are many examples of file content that will not be loaded into the data
+model. These fall into two categories:
+
+1. Malformations in the file.
+    - For example: a variable that is referenced, but is missing.
+2. Content not conformant with the standard for that file type.
+    - Most commonly :term:`NetCDF<NetCDF Format>` file content that is not
+      compliant with the :term:`CF conventions` - the basis for the Iris
+      data model. But Iris also relies on standards for other file
+      formats such as :term:`GRIB Format` and :term:`Post Processing (PP) Format`.
+    - Content in a non-NetCDF file that Iris does not know how to map onto CF
+      concepts.
+    - :term:`CF conventions` concepts that Iris does not support yet.
+
+.. note::
+
+    The below approach was introduced in Iris 3.12, and widely used in
+    CF-NetCDF loading by Iris 3.13. We hope to continue spreading it to
+    other file formats, and overlooked corner cases, in future releases.
+
+When Iris encounters problem content in a file, it will not make 'best efforts'
+to parse the content, but will instead redirect it to
+:data:`iris.loading.LOAD_PROBLEMS`, as well as issuing a warning to the user.
+The user is then free to add any operations to their script(s) for
+incorporating :data:`~iris.loading.LOAD_PROBLEMS` content into the Iris data
+model, as they see fit.
+
+Find out more about *why* we chose this approach: :ref:`load-problems-explanation`
+
+The below example has 'booby trapped' the Iris loading process, to give an
+impression of the user experience when loading problems are encountered. The
+example shows typical :data:`~iris.loading.LOAD_PROBLEMS` content, and a
+deeper inspection of one redirected object. **Much more detail is in the
+API documentation for:** :class:`iris.loading.LoadProblems`.
+
+.. testsetup:: load-problems
+
+    from pathlib import Path
+    from pprint import pprint
+    import sys
+    import warnings
+
+    import iris
+    import iris.common
+    from iris.fileformats._nc_load_rules import helpers
+    import iris.loading
+    from iris import std_names
+
+    # Ensure doctests actually see Warnings that are raised, and that
+    #  they have a relative path (so a test pass is not machine-dependent).
+    showwarning_original = warnings.showwarning
+    warnings.filterwarnings("default")
+    IRIS_FILE = Path(iris.__file__)
+    def custom_warn(message, category, filename, lineno, file=None, line=None):
+        filepath = Path(filename)
+        filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
+        sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+    warnings.showwarning = custom_warn
+
+    get_names_original = helpers.get_names
+
+    def raise_example_error_names(cf_coord_var, coord_name, attributes):
+        if cf_coord_var.cf_name == "time":
+            raise ValueError("Example coordinate error")
+        else:
+            return get_names_original(
+                cf_coord_var, coord_name, attributes
+            )
+
+    helpers.get_names = raise_example_error_names
+    air_temperature = std_names.STD_NAMES.pop("air_temperature")
+    iris.FUTURE.date_microseconds = True
+
+.. doctest:: load-problems
+
+    >>> cube_a1b = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
+    iris/...IrisLoadWarning: Not all file objects were parsed correctly. See iris.loading.LOAD_PROBLEMS for details.
+      warnings.warn(message, category=IrisLoadWarning)
+    >>> print(iris.loading.LOAD_PROBLEMS)
+    <iris.loading.LoadProblems object at ...>:
+      .../A1B_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
+      .../A1B_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
+    >>> last_problem = iris.loading.LOAD_PROBLEMS.problems[-1]
+    >>> print(last_problem.loaded)
+    unknown / (unknown)                 (-- : 240)
+        Attributes:...
+            IRIS_RAW                    {'axis': 'T', ...}
+    >>> attributes = last_problem.loaded.attributes[
+    ...     iris.common.LimitedAttributeDict.IRIS_RAW
+    ... ]
+    >>> pprint(attributes)
+    {'axis': 'T',
+     'bounds': 'time_bnds',
+     'calendar': '360_day',
+     'standard_name': 'time',
+     'units': 'hours since 1970-01-01 00:00:00',
+     'var_name': 'time'}
+
+.. testcleanup:: load-problems
+
+    warnings.showwarning = showwarning_original
+    warnings.filterwarnings("ignore")
+    helpers.get_names = get_names_original
+    std_names.STD_NAMES["air_temperature"] = air_temperature
