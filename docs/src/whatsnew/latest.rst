@@ -43,7 +43,7 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_ made MeshCoords immutable. :class:`iris.MeshCoord`s are now updated automatically when
    changing the attached mesh. All changes to the :class:`iris.MeshCoord` should instead be done to
    the relevant :class:`iris.Coord` located on the attached :class:`iris.MeshXY`. This change also affects 
-   the behaviour when calling :prop:`iris.MeshCoord.points` and :prop:`MeshCoord.bounds`, which will return 
+   the behaviour when calling :attr:`iris.MeshCoord.points` and :attr:`MeshCoord.bounds`, which will return
    real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
 
 
