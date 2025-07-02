@@ -90,13 +90,15 @@ Mesh2DConnectivities = namedtuple(
 
 
 class _Timestamp:
-    """Makes timestamps mutable.
+    """Stores the last time the timestamped object has been updated.
 
-    This behaviour is used to ensure garbage collection works as expected.
+    The timestamp for a parent object may be held and updated by child objects without
+    the need for the child objects to contain a reference to the parent object.
+    This should prevent large parent objects from being held unnecessarily in memory.
     """
 
     def __init__(self):
-        self._dt = None
+        self._dt = datetime.now()
 
     def update(self):
         self._dt = datetime.now()
@@ -1152,7 +1154,7 @@ class MeshXY(Mesh):
         return self._connectivity_manager.all_members
 
     @property
-    def timestamp(self):
+    def _last_modified(self):
         """The time and date that the mesh coordinates and or connecitivities were last edited."""
         return max(
             self._coord_manager.timestamp._dt, self._connectivity_manager.timestamp._dt
@@ -2771,7 +2773,7 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
-        self.timestamp = None
+        self._last_modified = None
         self._updating = True
         self._read_only = True
         # Setup the metadata.
@@ -2996,7 +2998,9 @@ class MeshCoord(AuxCoord):
     def update_from_mesh(self):
         try:
             object.__setattr__(self, "_updating", True)
-            if (self.timestamp is None) or (self.timestamp != self.mesh.timestamp):
+            if (self._last_modified is None) or (
+                self._last_modified != self.mesh._last_modified
+            ):
                 points, bounds = self._load_points_and_bounds()
                 super(MeshCoord, self.__class__).points.fset(self, points)
                 super(MeshCoord, self.__class__).bounds.fset(self, bounds)
@@ -3072,8 +3076,16 @@ class MeshCoord(AuxCoord):
         return new_coord
 
     def rename(self, name: str | None) -> None:
-        """Ensure you that renaming MeshCoords is done via the Coord attached to the Mesh."""
-        raise ValueError("To rename a MeshCoord, you have to go via the attached mesh.")
+        """Raise an error.
+
+        Ensures that renaming MeshCoords can only be done via the Coord attached
+        to the Mesh.
+        """
+        msg = (
+            "To rename a MeshCoord, instead rename the coordinate on the "
+            "mesh from which it derives."
+        )
+        raise ValueError(msg)
 
     def __deepcopy__(self, memo):
         """Make this equivalent to "shallow" copy.
@@ -3169,7 +3181,7 @@ class MeshCoord(AuxCoord):
             #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
-        self.timestamp = self.mesh.timestamp
+        self._last_modified = self.mesh._last_modified
         return points, bounds
 
     def _load_metadata(self):

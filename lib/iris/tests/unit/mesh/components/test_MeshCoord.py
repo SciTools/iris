@@ -1020,7 +1020,7 @@ class Test__updates_from_mesh:
     def _setup(self):
         self.meshcoord = sample_meshcoord()
         self.mesh = self.meshcoord.mesh
-        self.timestamp_at_creation = self.meshcoord.mesh.timestamp
+        self.timestamp_at_creation = self.meshcoord.mesh._last_modified
         self.coord_on_mesh = self.mesh.coord(
             location=self.meshcoord.location, axis=self.meshcoord.axis
         )
@@ -1029,19 +1029,19 @@ class Test__updates_from_mesh:
         for c in self.mesh.coords():
             c.__setattr__(name, value)
 
-    def test_timestamp(self):
+    def test__last_modified(self):
         # Ensure they are identical at creation.
-        assert self.meshcoord.mesh.timestamp == self.timestamp_at_creation
+        assert self.meshcoord.mesh._last_modified == self.timestamp_at_creation
 
         self.coord_on_mesh.points = np.zeros(3)
 
-        assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
-        assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
+        assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
+        assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
 
         self.meshcoord.standard_name
 
-        assert self.meshcoord.mesh.timestamp == self.meshcoord.timestamp
-        assert self.meshcoord.mesh.timestamp != self.timestamp_at_creation
+        assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
+        assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
 
     def test_points(self):
         zeroes = np.zeros(3)
