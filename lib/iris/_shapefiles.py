@@ -31,7 +31,7 @@ if "iris.analysis.cartography" in sys.modules:
 
 def create_shapefile_mask(
     geometry: shapely.Geometry,
-    geometry_crs: ccrs | CRS,
+    geometry_crs: ccrs.CRS | CRS,
     cube: iris.cube.Cube,
     minimum_weight: float = 0.0,
     all_touched: bool = False,
@@ -143,23 +143,21 @@ def create_shapefile_mask(
             raise TypeError(msg)
 
     # Check minimum_weight is within range
-    if minimum_weight < 0.0 or minimum_weight > 1.0:
+    if (minimum_weight < 0.0) or (minimum_weight > 1.0):
         msg = "Minimum weight must be between 0.0 and 1.0"
         raise ValueError(msg)
 
     # Check compatibility of function arguments
     # all_touched and minimum_weight are mutually exclusive
-    if minimum_weight > 0 & all_touched is True:
-        msg = "Cannot use minimum_weight > 0.0 with all_touched=True.  "
+    if (minimum_weight > 0) and (all_touched is True):
+        msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
         raise ValueError(msg)
 
     # Get cube coordinates
-    x_coord = cube.coord(axis='x', dim_coords=True)
-    y_coord = cube.coord(axis='y', dim_coords=True)
+    x_coord = cube.coord(axis="x", dim_coords=True)
+    y_coord = cube.coord(axis="y", dim_coords=True)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
-    if (x_coord.units.origin == "degrees") and (
-        x_coord.points.max() > 180
-    ):
+    if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
 
@@ -188,7 +186,7 @@ def create_shapefile_mask(
 
     # Define raster transform based on cube
     # This maps the geometry domain onto the cube domain
-    tr = _make_raster_cube_transform(cube, x_coord.name(), y_coord.name())
+    tr = _make_raster_cube_transform(cube)
 
     # Generate mask from geometry
     mask_template = rfeatures.geometry_mask(
@@ -216,7 +214,7 @@ def create_shapefile_mask(
 
 def is_geometry_valid(
     geometry: shapely.Geometry,
-    geometry_crs: ccrs | CRS,
+    geometry_crs: ccrs.CRS | CRS,
 ) -> None:
     """Check the validity of the shape geometry.
 
@@ -280,6 +278,11 @@ def is_geometry_valid(
     """
     WGS84_crs = CRS.from_epsg(4326)
 
+    # Check crs is valid type
+    if not isinstance(geometry_crs, (ccrs.CRS | CRS)):
+        msg = f"Geometry CRS must be a cartopy.crs or pyproj.CRS object, not {type(geometry_crs)}."
+        raise TypeError(msg)
+    
     # Check geometry is valid shapely geometry
     if not shapely.is_valid_input(geometry):
         msg = f"Shape geometry is not a valid shape (not well formed)."
@@ -320,36 +323,8 @@ def is_geometry_valid(
     return
 
 
-
-
-def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
-    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
-
-    Parameters
-    ----------
-    coord : :class:`iris.coords.DimCoord`
-        An Iris coordinate with a modulus.
-
-    Returns
-    -------
-    :class:`np.array`
-        A 1d Numpy array of [start,end] pairs for bounds of the coord.
-
-    """
-    modulus = coord.units.modulus
-    # Force realisation (rather than core_bounds) - more efficient for the
-    #  repeated indexing happening downstream.
-    result = np.array(coord.bounds)
-    if modulus:
-        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
-        result[np.isclose(result, modulus, 1e-10)] = 0.0
-    return result
-
-
 def _transform_geometry(
-    geometry: shapely.Geometry,
-    geometry_crs: ccrs | CRS,
-    cube_crs: ccrs
+    geometry: shapely.Geometry, geometry_crs: ccrs.CRS | CRS, cube_crs: ccrs.CRS
 ) -> shapely.Geometry:
     """Transform a geometry to the cube CRS using pyproj.
 
@@ -441,22 +416,23 @@ def _get_weighted_mask(
     return weighted_mask_template
 
 
-def _make_raster_cube_transform(
-    cube: iris.cube.Cube,
-    x_name: str,
-    y_name: str,
-) -> Affine:
+def _make_raster_cube_transform(cube: iris.cube.Cube) -> Affine:
     """Create a rasterio transform for the cube.
+
+    Raises
+    ------
+    CoordinateNotRegularError
+        If the cube dimension coordinates are not regular.
 
     Returns
     -------
     :class:`affine.Affine`
         An affine transform object that maps the geometry domain onto the cube domain.
     """
-    x_points = cube.coord(x_name).points
-    y_points = cube.coord(y_name).points
-    dx = iris.util.regular_step(cube.coord(x_name))
-    dy = iris.util.regular_step(cube.coord(y_name))
+    x_points = cube.coord(axis="x", dim_coords=True).points
+    y_points = cube.coord(axis="y", dim_coords=True).points
+    dx = iris.util.regular_step(cube.coord(axis="x", dim_coords=True))
+    dy = iris.util.regular_step(cube.coord(axis="y", dim_coords=True))
     # Create a rasterio transform based on the cube
     # This maps the geometry domain onto the cube domain
     trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
