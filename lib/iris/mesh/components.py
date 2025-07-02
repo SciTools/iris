@@ -2823,6 +2823,9 @@ class MeshCoord(AuxCoord):
         self._updating = False
 
     def __getattribute__(self, item):
+        # Ensure that the MeshCoord is up to date whenever you use it
+        # object.__getattribute__ bypasses this block to avoid infinite recursion
+        # by calling the method on the base class `object`
         updating = object.__getattribute__(self, "_updating")
         if updating is False and item != "update_from_mesh":
             object.__getattribute__(self, "update_from_mesh")()
@@ -2999,11 +3002,13 @@ class MeshCoord(AuxCoord):
         try:
             object.__setattr__(self, "_updating", True)
             if (self._last_modified is None) or (
-                self._last_modified != self.mesh._last_modified
+                self._last_modified < self.mesh._last_modified
             ):
                 points, bounds = self._load_points_and_bounds()
                 super(MeshCoord, self.__class__).points.fset(self, points)
                 super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+                object.__setattr__(self, "_last_modified", self.mesh._last_modified)
+        # Ensure errors aren't bypassed
         except Exception as e:
             raise e
         finally:
@@ -3181,7 +3186,6 @@ class MeshCoord(AuxCoord):
             #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
-        self._last_modified = self.mesh._last_modified
         return points, bounds
 
     def _load_metadata(self):

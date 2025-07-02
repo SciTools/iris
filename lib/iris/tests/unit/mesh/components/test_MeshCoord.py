@@ -1083,3 +1083,17 @@ class Test__updates_from_mesh:
         for c in self.mesh.coords(axis="y"):
             c.standard_name = "grid_latitude"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+
+    def test_updates_only_once(self, mocker):
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
+        mocked.return_value = (
+            np.zeros(
+                3,
+            ),
+            np.zeros((3, 3)),
+        )
+        self.coord_on_mesh.points = np.zeros(3)
+        # Only the first update should actually update
+        _ = self.meshcoord.update_from_mesh()
+        _ = self.meshcoord.update_from_mesh()
+        mocked.assert_called_once()
