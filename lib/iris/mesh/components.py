@@ -89,6 +89,19 @@ Mesh2DConnectivities = namedtuple(
 )
 
 
+class _Timestamp:
+    """Makes timestamps mutable.
+
+    This behaviour is used to ensure garbage collection works as expected.
+    """
+
+    def __init__(self):
+        self._dt = None
+
+    def update(self):
+        self._dt = datetime.now()
+
+
 class Connectivity(_DimensionalMetadata):
     """CF-UGRID topology.
 
@@ -1141,7 +1154,9 @@ class MeshXY(Mesh):
     @property
     def timestamp(self):
         """The time and date that the mesh coordinates and or connecitivities were last edited."""
-        return max(self._coord_manager.timestamp, self._connectivity_manager.timestamp)
+        return max(
+            self._coord_manager.timestamp._dt, self._connectivity_manager.timestamp._dt
+        )
 
     @property
     def all_coords(self):
@@ -1996,6 +2011,7 @@ class _Mesh1DCoordinateManager:
     )
 
     def __init__(self, node_x, node_y, edge_x=None, edge_y=None):
+        self.timestamp = _Timestamp()
         # initialise all the coordinates
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members_dict = {member: None for member in self.ALL}
@@ -2006,17 +2022,16 @@ class _Mesh1DCoordinateManager:
         # optional coordinates
         self.edge_x = edge_x
         self.edge_y = edge_y
-        # makes a note of when the mesh coordinates were last edited, for use in
-        # ensuring MeshCoords are up to date
-        self.timestamp = datetime.now()
 
         # add the coordinate manager to the coord
-        self.node_x._mesh_parents.append(self)
-        self.node_y._mesh_parents.append(self)
+        # makes a note of when the mesh coordinates were last edited, for use in
+        # ensuring MeshCoords are up to date
+        self.node_x._mesh_timestamps.append(self.timestamp)
+        self.node_y._mesh_timestamps.append(self.timestamp)
         if self.edge_x:
-            self.edge_x._mesh_parents.append(self)
+            self.edge_x._mesh_timestamps.append(self.timestamp)
         if self.edge_y:
-            self.edge_y._mesh_parents.append(self)
+            self.edge_y._mesh_timestamps.append(self.timestamp)
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2047,7 +2062,7 @@ class _Mesh1DCoordinateManager:
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def _remove(self, **kwargs):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         result = {}
         members = self.filters(**kwargs)
 
@@ -2057,7 +2072,7 @@ class _Mesh1DCoordinateManager:
                 logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
             else:
                 try:
-                    members[member]._mesh_parents.remove(self)
+                    members[member]._mesh_timestamps.remove(self)
                 except ValueError:
                     pass
                 result[member] = members[member]
@@ -2066,7 +2081,7 @@ class _Mesh1DCoordinateManager:
         return result
 
     def _setter(self, element, axis, coord, shape):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         axis = axis.lower()
         member = f"{element}_{axis}"
 
@@ -2096,8 +2111,8 @@ class _Mesh1DCoordinateManager:
                 )
                 raise ValueError(emsg)
             # if the coordinate attached to the mesh hasn't been linked
-            if self not in coord._mesh_parents:
-                coord._mesh_parents.append(self)
+            if self.timestamp not in coord._mesh_timestamps:
+                coord._mesh_timestamps.append(self.timestamp)
         self._members[member] = coord
 
     def _shape(self, element):
@@ -2123,7 +2138,7 @@ class _Mesh1DCoordinateManager:
 
     @_members.setter
     def _members(self, value):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         self._members_dict = value
 
     @property
@@ -2171,7 +2186,7 @@ class _Mesh1DCoordinateManager:
         self._setter(element="node", axis="y", coord=coord, shape=self._node_shape)
 
     def _add(self, coords):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         member_x, member_y = coords._fields
 
         # deal with the special case where both members are changing
@@ -2183,9 +2198,11 @@ class _Mesh1DCoordinateManager:
 
             try:
                 setattr(self, member_x, coords[0])
-                coords[0]._mesh_parents.append(self)
                 setattr(self, member_y, coords[1])
-                coords[1]._mesh_parents.append(self)
+                if self.timestamp not in coords[0]._mesh_timestamps:
+                    coords[0]._mesh_timestamps.append(self.timestamp)
+                if self.timestamp not in coords[1]._mesh_timestamps:
+                    coords[1]._mesh_timestamps.append(self.timestamp)
             except (TypeError, ValueError):
                 # restore previous valid state
                 self._members[member_x] = cache_x
@@ -2196,10 +2213,10 @@ class _Mesh1DCoordinateManager:
             # deal with the case where one or no member is changing
             if coords[0] is not None:
                 setattr(self, member_x, coords[0])
-                coords[0]._mesh_parents.append(self)
+                coords[0]._mesh_timestamps.append(self.timestamp)
             if coords[1] is not None:
                 setattr(self, member_y, coords[1])
-                coords[1]._mesh_parents.append(self)
+                coords[1]._mesh_timestamps.append(self.timestamp)
 
     def add(self, node_x=None, node_y=None, edge_x=None, edge_y=None):
         """Use self.remove(edge_x=True) to remove a coordinate.
@@ -2339,9 +2356,9 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         self.face_x = face_x
         self.face_y = face_y
         if self.face_x:
-            self.face_x._mesh_parents.append(self)
+            self.face_x._mesh_timestamps.append(self.timestamp)
         if self.face_y:
-            self.face_y._mesh_parents.append(self)
+            self.face_y._mesh_timestamps.append(self.timestamp)
 
     @property
     def _face_shape(self):
@@ -2410,6 +2427,7 @@ class _MeshConnectivityManagerBase(ABC):
     OPTIONAL: tuple = NotImplemented
 
     def __init__(self, *connectivities):
+        self.timestamp = _Timestamp()
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
@@ -2461,12 +2479,12 @@ class _MeshConnectivityManagerBase(ABC):
 
     @property
     def _members(self):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         return self._members_dict
 
     @_members.setter
     def _members(self, value):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         self._members_dict = value
 
     def add(self, *connectivities):
@@ -2475,7 +2493,7 @@ class _MeshConnectivityManagerBase(ABC):
         # manager.
         # No warning is raised for duplicate cf_roles - user is trusted to
         # validate their outputs.
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         add_dict = {}
         for connectivity in connectivities:
             if not isinstance(connectivity, Connectivity):
@@ -2509,8 +2527,8 @@ class _MeshConnectivityManagerBase(ABC):
 
         self._members = proposed_members
         for c in self._members.values():
-            if c is not None:
-                c._mesh_parents.append(self)
+            if c is not None and self.timestamp not in c._mesh_timestamps:
+                c._mesh_timestamps.append(self.timestamp)
 
     def filter(self, **kwargs):
         # TODO: rationalise commonality with MeshCoordManager.filter and Cube.coord.
@@ -2618,7 +2636,7 @@ class _MeshConnectivityManagerBase(ABC):
         contains_edge=None,
         contains_face=None,
     ):
-        self.timestamp = datetime.now()
+        self.timestamp.update()
         removal_dict = self.filters(
             item=item,
             standard_name=standard_name,
@@ -2641,7 +2659,7 @@ class _MeshConnectivityManagerBase(ABC):
 
         for cf_role in removal_dict.keys():
             try:
-                self._members[cf_role]._mesh_parents.remove(self)
+                self._members[cf_role]._mesh_timestamps.remove(self)
             except ValueError:
                 pass
             self._members[cf_role] = None
