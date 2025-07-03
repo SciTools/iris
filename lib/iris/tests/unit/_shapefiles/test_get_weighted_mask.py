@@ -9,16 +9,13 @@
 import iris.tests as tests  # isort:skip
 
 import numpy as np
-from pyproj import CRS
 import pytest
-from shapely.geometry import Point, Polygon, box
+from shapely.geometry import box
 
 from iris._shapefiles import _get_weighted_mask
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
-from iris.cube import Cube, CubeList
-from iris.warnings import IrisUserWarning
-
+from iris.cube import Cube
 
 @pytest.fixture
 def square_polygon():

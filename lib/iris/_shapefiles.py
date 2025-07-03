@@ -98,7 +98,7 @@ def create_shapefile_mask(
     Where the :class:`iris.cube.Cube` CRS and the geometry CRS differ, the geometry will be
     transformed to the cube CRS using the pyproj library. This is a best-effort
     transformation and may not be perfect, especially for complex geometries and
-    non-standard coordinate referece systems. Consult the `pyproj documentation`_ for
+    non-standard coordinate reference systems. Consult the `pyproj documentation`_ for
     more information.
 
     If the :class:`iris.cube.Cube` has no :class:`~iris.coord_systems`, the default GeogCS is used where

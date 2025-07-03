@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import TYPE_CHECKING, List, Literal, overload
+from typing import TYPE_CHECKING, List, Literal
 from warnings import warn
 
 import cartopy
