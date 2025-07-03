@@ -172,15 +172,11 @@ def create_shapefile_mask(
             cube_crs=cube_crs,
         )
 
-    w = len(x_coord.points)
-    h = len(y_coord.points)
     # Mask by weight if minimum_weight > 0.0
     if minimum_weight > 0:
         weighted_mask_template = _get_weighted_mask(
             geometry=geometry,
             cube=cube,
-            x_name=x_coord.name(),
-            y_name=y_coord.name(),
             minimum_weight=minimum_weight,
         )
 
@@ -189,6 +185,8 @@ def create_shapefile_mask(
     tr = _make_raster_cube_transform(cube)
 
     # Generate mask from geometry
+    w = len(x_coord.points)
+    h = len(y_coord.points)
     mask_template = rfeatures.geometry_mask(
         geometries=shapely.get_parts(geometry),
         out_shape=(h, w),
@@ -352,8 +350,6 @@ def _transform_geometry(
 
 def _get_weighted_mask(
     cube: iris.cube.Cube,
-    x_name: str,
-    y_name: str,
     geometry: shapely.Geometry,
     minimum_weight: float,
 ) -> np.array:
@@ -363,10 +359,6 @@ def _get_weighted_mask(
     ----------
     cube : :class:`iris.cube.Cube`
         The cube to mask.
-    x_name : str
-        The name of the x coordinate in the cube.
-    y_name : str
-        The name of the y coordinate in the cube.
     geometry : :class:`shapely.Geometry`
         The geometry to use for masking.
     minimum_weight : float
@@ -380,19 +372,20 @@ def _get_weighted_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
     """
-    if not cube.coord(x_name).has_bounds():
-        cube.coord(x_name).guess_bounds()
-    if not cube.coord(y_name).has_bounds():
-        cube.coord(y_name).guess_bounds()
+    if not cube.coord(axis="x", dim_coords=True).has_bounds():
+        cube.coord(axis="x", dim_coords=True).guess_bounds()
+    if not cube.coord(axis="y", dim_coords=True).has_bounds():
+        cube.coord(axis="y", dim_coords=True).guess_bounds()
     # Get the shape of the cube
-    w = len(cube.coord(x_name).points)
-    h = len(cube.coord(y_name).points)
+    w = len(cube.coord(axis="x", dim_coords=True).points)
+    h = len(cube.coord(axis="y", dim_coords=True).points)
     # Get the bounds of the cube
     # x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
     # y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
-    x_bounds = cube.coord(x_name).bounds
-    y_bounds = cube.coord(y_name).bounds
-    # Generate STRtree of bounding boxes
+    x_bounds = cube.coord(axis="x", dim_coords=True).bounds
+    y_bounds = cube.coord(axis="y", dim_coords=True).bounds
+    # Generate Sort-Tile-Recursive (STR) packed R-tree of bounding boxes
+    # https://shapely.readthedocs.io/en/stable/strtree.html
     grid_boxes = [
         sgeom.box(x[0], y[0], x[1], y[1]) for y, x in product(y_bounds, x_bounds)
     ]
