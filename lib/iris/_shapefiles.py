@@ -321,6 +321,32 @@ def is_geometry_valid(
     return
 
 
+
+
+def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
+    """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
+
+    Parameters
+    ----------
+    coord : :class:`iris.coords.DimCoord`
+        An Iris coordinate with a modulus.
+
+    Returns
+    -------
+    :class:`np.array`
+        A 1d Numpy array of [start,end] pairs for bounds of the coord.
+
+    """
+    modulus = coord.units.modulus
+    # Force realisation (rather than core_bounds) - more efficient for the
+    #  repeated indexing happening downstream.
+    result = np.array(coord.bounds)
+    if modulus:
+        result[result < 0.0] = (np.abs(result[result < 0.0]) % modulus) * -1
+        result[np.isclose(result, modulus, 1e-10)] = 0.0
+    return result
+
+
 def _transform_geometry(
     geometry: shapely.Geometry, geometry_crs: ccrs.CRS | CRS, cube_crs: ccrs.CRS
 ) -> shapely.Geometry:

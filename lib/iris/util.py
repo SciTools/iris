@@ -1606,10 +1606,12 @@ def _is_circular(points, modulus, bounds=None):
                 circular_value = (points[-1] + diff) % modulus
                 try:
                     np.testing.assert_approx_equal(
-                        points[0], circular_value, significant=4
+                        points[0] % modulus, circular_value, significant=4
                     )
                     circular = True
                 except AssertionError:
+                    # TODO: I consider the following to be not needed with the modulus being used in the
+                    # above check, but there are some tests that seem to rely on this behavior...
                     if points[0] == 0:
                         try:
                             np.testing.assert_approx_equal(
@@ -2197,7 +2199,7 @@ def mask_cube_from_shapefile(
     in_place: bool = False,
     all_touched: bool = False,
     minimum_weight: float = 0.0,
-    invert: bool = False
+    invert: bool = False,
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 
