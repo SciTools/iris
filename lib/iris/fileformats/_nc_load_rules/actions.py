@@ -359,22 +359,18 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             # Find which coord system applies to this coordinate.
             cs_mappings = engine.cube_parts["coordinate_system_mappings"]
             if cs_mappings and coord_systems:
-                # Simple `grid_mapping = "crs"`
-                # Only one coord_system will be present and cs_grid_mapping will
-                # contain no coordinate references (set to None).
-                if len(coord_systems) == 1 and list(cs_mappings.values()) == [None]:
-                    # Only one grid mapping - apply it.
+                if len(coord_systems) == 1 and None in cs_mappings:
+                    # Simple grid mapping (a single coord_system with no explicit coords)
+                    # Applies to spatial DimCoord(s) only. In this case only one
+                    # coordinate_system will have been built, so just use it.
                     (coord_system,) = coord_systems.values()
-                    (cs_name,) = cs_mappings.keys()
-
-                # Extended `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
-                # We need to search for coord system that references our coordinate.
+                    (cs_name,) = cs_mappings.values()
                 else:
-                    for name, ref_coords in cs_mappings.items():
-                        if cf_var.cf_name in ref_coords:
-                            cs_name = name
-                            coord_system = coord_systems[cs_name]
-                            break
+                    # Extended grid mapping, e.g.
+                    #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+                    # We need to search for coord system that references our coordinate.
+                    if cs_name := cs_mappings.get(cf_var.cf_name):
+                        coord_system = coord_systems[cs_name]
 
         # Translate the specific grid-mapping type to a grid-class
         if coord_system is None:
@@ -518,15 +514,15 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
 
     cs_mappings = engine.cube_parts.get("coordinate_system_mappings", None)
     if cs_mappings and coord_systems:
-        if len(coord_systems) == 1 and list(cs_mappings.values()) == [None]:
+        if len(coord_systems) == 1 and None in cs_mappings:
             # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
             pass
         else:
-            # Extended grid_mapping
-            for crs_name, coords in cs_mappings.items():
-                if cf_var.cf_name in coords:
-                    coord_system = coord_systems[crs_name]
-                    break
+            # Extended grid mapping, e.g.
+            #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+            # We need to search for coord system that references our coordinate.
+            if cs_name := cs_mappings.get(cf_var.cf_name):
+                coord_system = coord_systems[cs_name]
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
     hh.build_and_add_auxiliary_coordinate(

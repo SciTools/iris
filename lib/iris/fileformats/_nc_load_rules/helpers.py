@@ -1977,8 +1977,7 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
 
 
 ################################################################################
-# TODO(ChrisB): Typing doesn't like : Dict[str, List[str] | None]
-def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[str, Any]:
+def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[Any, str]:
     """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
     # Handles extended grid_mapping too. Possibilities:
     #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords
@@ -1989,7 +1988,7 @@ def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[str, Any]:
 
     # try simple mapping first
     if _GRID_MAPPING_PARSE_SIMPLE.match(grid_mapping):
-        mappings = {grid_mapping: None}  # simple single grid mapping variable
+        mappings = {None: grid_mapping}  # simple single grid mapping variable
     else:
         # Try extended mapping:
         # 1. Run validators to check for invalid expressions:
@@ -2005,7 +2004,13 @@ def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[str, Any]:
             raise iris.exceptions.IrisError(msg)  # TODO: Better exception type
 
         # split second match group into list of coordinates:
-        mappings = {r[0]: r[1].split() for r in result}
+        mappings = {}
+        # TODO: below could possibly be a nested list/dict comprehension, but wold
+        #  likely be overly complicated?
+        for r in result:
+            cs = r[0]
+            coords = r[1].split()
+            mappings.update({coord: cs for coord in coords})
 
     return mappings
 

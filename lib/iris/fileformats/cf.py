@@ -684,7 +684,18 @@ class CFGridMappingVariable(CFVariable):
                     # user will have already been warned by `_parse_extended_grid_mappings`
                     continue
 
-                for name, coords in cs_mappings.items():
+                # group the cs_mappings by coordinate system, as we want to iterate over coord systems:
+                uniq_cs = set(cs_mappings.values())
+                cs_coord_mappings = {
+                    cs: [
+                        coord
+                        for coord, coord_cs in cs_mappings.items()
+                        if cs == coord_cs
+                    ]
+                    for cs in uniq_cs
+                }
+
+                for name, coords in cs_coord_mappings.items():
                     if name not in ignore:
                         if name not in variables:
                             if warn:
@@ -697,7 +708,8 @@ class CFGridMappingVariable(CFVariable):
                             # For extended grid_mapping, also check coord references exist:
                             if coords:
                                 for coord_name in coords:
-                                    if coord_name not in variables:
+                                    # coord_name could be None if simple grid_mapping is used.
+                                    if coord_name and coord_name not in variables:
                                         message = "Missing CF-netCDF coordinate variable %r (associated with grid mapping variable %r), referenced by netCDF variable %r"
                                         warnings.warn(
                                             message % (coord_name, name, nc_var_name),
