@@ -214,5 +214,5 @@ class TestCreateShapefileMaskErrors:
             create_shapefile_mask(square_polygon, crs, mock_cube)
 
 
-# Note: `minimum_weight` keyword arguement is tested under its' own unit test
+# Note: `minimum_weight` keyword argument is tested under its' own unit test
 #       `test_mask_cube_from_shapefile.py` in the `lib/iris/tests/unit/_shapefiles/` directory.

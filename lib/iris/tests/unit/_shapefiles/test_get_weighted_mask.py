@@ -17,6 +17,7 @@ from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
 
+
 @pytest.fixture
 def square_polygon():
     # Create a roughly 3x3 square polygon
