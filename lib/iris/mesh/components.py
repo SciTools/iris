@@ -3012,6 +3012,8 @@ class MeshCoord(AuxCoord):
         except Exception as e:
             raise e
         finally:
+            # if _updating isn't reset, this would mean the MeshCoord would never
+            # update from the attached Mesh, breaking the link
             object.__setattr__(self, "_updating", False)
 
     def collapsed(self, dims_to_collapse=None):

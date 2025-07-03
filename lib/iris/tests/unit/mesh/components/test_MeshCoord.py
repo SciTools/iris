@@ -1084,7 +1084,7 @@ class Test__updates_from_mesh:
             c.standard_name = "grid_latitude"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
 
-    def test_updates_only_once(self, mocker):
+    def test_updates(self, mocker):
         mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
         mocked.return_value = (
             np.zeros(
@@ -1097,3 +1097,9 @@ class Test__updates_from_mesh:
         _ = self.meshcoord.update_from_mesh()
         _ = self.meshcoord.update_from_mesh()
         mocked.assert_called_once()
+
+        # Ensure it updates more than once if the mesh has been updated
+        # a second time
+        self.coord_on_mesh.points = np.ones(3)
+        _ = self.meshcoord.update_from_mesh()
+        mocked.assert_has_calls([mock.call(), mock.call()])
