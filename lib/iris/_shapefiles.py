@@ -16,8 +16,10 @@ from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
 import shapely
 import shapely.geometry as sgeom
+import shapely.ops
 
 import iris
+from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
 
 if "iris.cube" in sys.modules:
@@ -74,6 +76,8 @@ def create_shapefile_mask(
     ------
     TypeError
         If the cube is not a :class:`~iris.cube.Cube`.
+    IrisError
+        If the cube does not have a coordinate reference system defined.
     TypeError
         If the geometry is not a valid shapely geometry.
     ValueError
@@ -100,10 +104,6 @@ def create_shapefile_mask(
     transformation and may not be perfect, especially for complex geometries and
     non-standard coordinate reference systems. Consult the `pyproj documentation`_ for
     more information.
-
-    If the :class:`iris.cube.Cube` has no :class:`~iris.coord_systems`, the default GeogCS is used where
-    the coordinate units are degrees. For any other coordinate units,
-    the cube **must** have a :class:`~iris.coord_systems` defined.
 
     If a CRS is not provided for the the masking geometry, the CRS of the :class:`iris.cube.Cube` is assumed.
 
@@ -139,6 +139,11 @@ def create_shapefile_mask(
             msg = "Received non-Cube object where a Cube is expected"
             raise TypeError(msg)
 
+    # Check cube coordinate system
+    if not cube.coord_system():
+        err_msg = "Cube does not have a coordinate references system defined. For reliable results we recommend you add a coordinate system to your cube."
+        raise IrisError(err_msg)
+
     # Check minimum_weight is within range
     if (minimum_weight < 0.0) or (minimum_weight > 1.0):
         msg = "Minimum weight must be between 0.0 and 1.0"
@@ -157,6 +162,10 @@ def create_shapefile_mask(
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
+
+    if geometry_crs is None:
+        # If no geometry CRS is provided, assume it is the same as the cube CRS
+        geometry_crs = cube.coord_system().as_cartopy_projection()
 
     # Check for CRS equality and transform if necessary
     cube_crs = cube.coord_system().as_cartopy_projection()

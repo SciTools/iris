@@ -17,6 +17,7 @@ from iris._shapefiles import create_shapefile_mask
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube, CubeList
+from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
 
 
@@ -179,6 +180,12 @@ class TestCreateShapefileMaskErrors:
             create_shapefile_mask(square_polygon, wgs84_crs, "not_a_cube")
         with pytest.raises(TypeError):
             create_shapefile_mask(square_polygon, wgs84_crs, CubeList())
+
+    def test_invalid_cube_crs(self, square_polygon, wgs84_crs):
+        # Pass a cube without a coordinate system
+        cube = Cube(np.ones((10, 10)), dim_coords_and_dims=[])
+        with pytest.raises(IrisError):
+            create_shapefile_mask(square_polygon, wgs84_crs, cube)
 
     def test_invalid_minimum_weight(self, square_polygon, wgs84_crs):
         # Pass invalid minimum_weight values
