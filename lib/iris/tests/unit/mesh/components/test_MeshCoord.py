@@ -1102,4 +1102,4 @@ class Test__updates_from_mesh:
         # a second time
         self.coord_on_mesh.points = np.ones(3)
         _ = self.meshcoord.update_from_mesh()
-        mocked.assert_has_calls([mock.call(), mock.call()])
+        assert mocked.call_count == 2
