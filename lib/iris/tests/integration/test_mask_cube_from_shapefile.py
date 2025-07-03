@@ -100,8 +100,6 @@ class TestCubeMasking(tests.IrisTest):
             if "Brazil" in country.attributes["NAME_LONG"]
         ][0]
         masked_test = mask_cube_from_shapefile(
-            test_4d_brazil,
-            ne_brazil,
-            shape_crs=self.wgs84
+            test_4d_brazil, ne_brazil, shape_crs=self.wgs84
         )
-        assert 18616921.2  == approx(np.sum(masked_test.data), rel=0.001)
+        assert 18616921.2 == approx(np.sum(masked_test.data), rel=0.001)

@@ -321,8 +321,6 @@ def is_geometry_valid(
     return
 
 
-
-
 def _get_mod_rebased_coord_bounds(coord: iris.coords.DimCoord) -> np.array:
     """Take in a coord and returns a array of the bounds of that coord rebased to the modulus.
 
