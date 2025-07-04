@@ -98,6 +98,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if not hasattr(self, "_metadata_manager"):
             self._metadata_manager = metadata_manager_factory(BaseMetadata)
 
+        self._mesh_timestamps = []
+
         #: CF standard name of the quantity that the metadata represents.
         self.standard_name = standard_name
 
@@ -568,6 +570,12 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                         add_output(f"{name}: {val!r}", section=name)
 
         return "\n".join(output_lines)
+
+    def __setattr__(self, key, value):
+        if getattr(self, "_mesh_timestamps", None) is not None:
+            for timestamp in self._mesh_timestamps:
+                timestamp.update()
+        object.__setattr__(self, key, value)
 
     def __str__(self):
         return self.summary()
