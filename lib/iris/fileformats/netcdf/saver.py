@@ -29,6 +29,7 @@ import dask.array as da
 from dask.delayed import Delayed
 import numpy as np
 
+from iris import FUTURE
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
@@ -1068,11 +1069,13 @@ class Saver:
                 cf_name = self._name_coord_map.name(primary_coord)
                 cf_var = self._dataset.variables[cf_name]
 
-                names = {
-                    key: self._name_coord_map.name(coord)
-                    for key, coord in factory.dependencies.items()
+                term_varnames = {
+                    term: self._name_coord_map.name(coord)
+                    for term, coord in factory.dependencies.items()
                 }
-                formula_terms = factory_defn.formula_terms_format.format(**names)
+                formula_terms = factory_defn.formula_terms_format.format(
+                    **term_varnames
+                )
                 std_name = factory_defn.std_name
 
                 if hasattr(cf_var, "formula_terms"):
@@ -1113,6 +1116,39 @@ class Saver:
                     _setncattr(cf_var, "standard_name", std_name)
                     _setncattr(cf_var, "axis", "Z")
                     _setncattr(cf_var, "formula_terms", formula_terms)
+
+                if FUTURE.derived_bounds:
+                    # ensure that the primary variable *bounds*, if any, obey the CF
+                    #  encoding rule : the bounds variable of a parametric coordinate
+                    #  must itself have a "formula_terms" attribute.
+                    # See : https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#boundaries-and-formula-terms
+                    bounds_varname = getattr(cf_var, "bounds", None)
+                    cf_bounds_var = self._dataset.variables.get(bounds_varname, None)
+                    if (
+                        cf_bounds_var is not None
+                        and getattr(cf_bounds_var, "formula_terms", None) is None
+                    ):
+                        # We need a bounds formula, and there is none already attached.
+                        # Construct and add one, mirroring the main formula.
+                        def boundsterm_varname(term_varname):
+                            """Identify the boundsvar for a given term var."""
+                            # First establish a fallback default, meaning 'no bounds'.
+                            result = term_varname
+                            # Follow links (if they exist) to find the bounds var.
+                            termvar = self._dataset.variables.get(term_varname)
+                            boundsname = getattr(termvar, "bounds", None)
+                            if boundsname in self._dataset.variables:
+                                result = boundsname
+                            return result
+
+                        boundsterm_varnames = {
+                            term: boundsterm_varname(term_varname)
+                            for term, term_varname in term_varnames.items()
+                        }
+                        bounds_formula_terms = factory_defn.formula_terms_format.format(
+                            **boundsterm_varnames
+                        )
+                        _setncattr(cf_bounds_var, "formula_terms", bounds_formula_terms)
 
     def _get_dim_names(self, cube_or_mesh):
         """Determine suitable CF-netCDF data dimension names.
