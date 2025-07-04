@@ -41,7 +41,8 @@ Conversion Checklist
 
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for references to ``with mock.patch("...")``. These should be replaced with
-   ``mocker.patch("...")``. ``mocker`` is a fixture, and can be passed into functions.
+   ``with mocker.patch("...")``. ``mocker`` is a fixture, should be passed into
+   relevant functions as a parameter.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
 #. Check for references to ``super()``. Most test classes used to inherit from
@@ -73,4 +74,6 @@ Common Translations
      - ``with pytest.raises(cls, match=msg_re):``
    * - ``mock.patch(...)``
      - ``mocker.patch(...)``
+   * - ``with mocker.patch.object(...) as x:``
+     - ``x = mocker.patch.object(...)``
 
