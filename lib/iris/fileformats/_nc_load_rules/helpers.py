@@ -19,7 +19,7 @@ from __future__ import annotations
 import contextlib
 from functools import partial
 import re
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 import warnings
 
 import cf_units
@@ -1977,14 +1977,14 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
 
 
 ################################################################################
-def _parse_extended_grid_mapping(grid_mapping: str) -> Dict[Any, str]:
+def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
     """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
     # Handles extended grid_mapping too. Possibilities:
     #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords
     #  grid_mapping = "crs: lat lon"  : extended mapping; a variable name and list of coords
     #  grid_mapping = "crs: lat lon other: var1 var2"  : multiple extended mappings
 
-    # TODO(ChrisB): TESTS!!
+    mappings: dict[None | str, str]
 
     # try simple mapping first
     if _GRID_MAPPING_PARSE_SIMPLE.match(grid_mapping):
