@@ -1447,7 +1447,7 @@ class CFReader:
                     cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
                     self._coord_system_mappings[nc_var.name] = cs_mappings
                 except iris.exceptions.IrisError as e:
-                    msg = f"Error parsing grid_grid mapping attribute for {nc_var.name}: {str(e)}"
+                    msg = f"Error parsing `grid_mapping` attribute for {nc_var.name}: {str(e)}"
                     warnings.warn(msg, category=iris.warnings.IrisCfWarning)
                     continue
 
