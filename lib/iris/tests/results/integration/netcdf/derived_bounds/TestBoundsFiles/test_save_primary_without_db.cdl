@@ -1,0 +1,43 @@
+dimensions:
+	bnds = 2 ;
+	dim1 = 1 ;
+	dim2 = 1 ;
+	eta = 1 ;
+variables:
+	float temp(eta, dim1, dim2) ;
+		temp:standard_name = "air_temperature" ;
+		temp:units = "K" ;
+		temp:coordinates = "A B P0 PS ap" ;
+	double eta(eta) ;
+		eta:axis = "Z" ;
+		eta:bounds = "eta_bnds" ;
+		eta:standard_name = "atmosphere_hybrid_sigma_pressure_coordinate" ;
+		eta:long_name = "eta at full levels" ;
+		eta:positive = "down" ;
+	double eta_bnds(eta, bnds) ;
+	double P0 ;
+		P0:units = "Pa" ;
+	double PS(dim1, dim2) ;
+		PS:units = "Pa" ;
+	double A(eta) ;
+		A:bounds = "A_bnds" ;
+		A:units = "1" ;
+		A:long_name = "a coefficient for vertical coordinate at full levels" ;
+	double A_bnds(eta, bnds) ;
+	double B(eta) ;
+		B:bounds = "B_bnds" ;
+		B:units = "1" ;
+		B:long_name = "b coefficient for vertical coordinate at full levels" ;
+	double B_bnds(eta, bnds) ;
+	double ap(eta) ;
+		ap:bounds = "ap_bnds" ;
+		ap:units = "Pa" ;
+		ap:long_name = "vertical pressure" ;
+		ap:standard_name = "atmosphere_hybrid_sigma_pressure_coordinate" ;
+		ap:axis = "Z" ;
+		ap:formula_terms = "ap: ap b: B ps: PS" ;
+	double ap_bnds(eta, bnds) ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}

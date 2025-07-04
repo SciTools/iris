@@ -18,13 +18,20 @@ import pytest
 
 import iris
 from iris import FUTURE, sample_data_path
+from iris.tests._shared_utils import assert_CDL
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 db_testfile_path = Path(__file__).parent / "temp_nc_sources" / "a_new_file.nc"
 legacy_filepath = sample_data_path("hybrid_height.nc")
 
+_DERIVED_BOUNDS_IDS = ["with_db", "without_db"]
+_DERIVED_BOUNDS_VALUES = [True, False]
+_DERIVED_BOUNDS_ID_MAP = {
+    value: id for value, id in zip(_DERIVED_BOUNDS_VALUES, _DERIVED_BOUNDS_IDS)
+}
 
-@pytest.fixture(params=[True, False], ids=["with_db", "without_db"])
+
+@pytest.fixture(params=_DERIVED_BOUNDS_VALUES, ids=_DERIVED_BOUNDS_IDS)
 def derived_bounds(request):
     db = request.param
     with FUTURE.context(derived_bounds=db):
@@ -181,3 +188,35 @@ def test_load_primary_cf_style(derived_bounds, cf_primary_sample_path):
     assert co_P0.var_name == "P0"
     assert not co_P0.has_bounds()
     assert main_cube.coord_dims(co_P0) == ()
+
+
+@pytest.fixture()
+def tmp_ncdir(tmp_path_factory):
+    yield tmp_path_factory.mktemp("_temp_netcdf_dir")
+
+
+def test_save_primary_cf_style(
+    derived_bounds, cf_primary_sample_path, request, tmp_ncdir
+):
+    """Check how our 'standard primary encoded' derived coordinate example saves.
+
+    Test against saved snapshot CDL, with and without FUTURE.derived_bounds enabled.
+    """
+    # N.B. always **load** with derived bounds enabled, as the content implies it...
+    with FUTURE.context(derived_bounds=True):
+        test_cube = iris.load(cf_primary_sample_path, "air_temperature")
+
+    # ... but whether we **save** with full derived-bounds handling depends on test mode.
+    db_id = _DERIVED_BOUNDS_ID_MAP[derived_bounds]
+
+    nc_filename = f"test_save_primary_{db_id}.nc"
+    cdl_filename = nc_filename.replace("nc", "cdl")
+    nc_filepath = tmp_ncdir / nc_filename
+    cdl_filepath = "integration/netcdf/derived_bounds/TestBoundsFiles/" + cdl_filename
+
+    # Save to test netcdf file
+    iris.save(test_cube, nc_filepath)
+    # Dump to CDL, check against stored reference snapshot.
+    assert_CDL(
+        request=request, netcdf_filename=nc_filepath, reference_filename=cdl_filepath
+    )
