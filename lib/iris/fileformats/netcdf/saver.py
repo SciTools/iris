@@ -1845,7 +1845,7 @@ class Saver:
 
         return " ".join(cell_methods)
 
-    def _add_grid_mapping_to_dataset(self, cs):
+    def _add_grid_mapping_to_dataset(self, cs, extended_grid_mapping=False):
         """Create a CF-netCDF grid mapping variable and add to the dataset.
 
         Parameters
@@ -2050,7 +2050,8 @@ class Saver:
             )
 
         # add WKT string
-        cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
+        if extended_grid_mapping:
+            cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
 
     def _create_cf_grid_mapping(self, cube, cf_var_cube):
         """Create CF-netCDF grid mapping and associated CF-netCDF variable.
@@ -2094,7 +2095,9 @@ class Saver:
                     cs.grid_mapping_name = aname
 
                 # create grid mapping variable on dataset for this coordinate system:
-                self._add_grid_mapping_to_dataset(cs)
+                self._add_grid_mapping_to_dataset(
+                    cs, extended_grid_mapping=cube.ordered_axes
+                )
                 self._coord_systems.append(cs)
 
             # create the `grid_mapping` attribute for the data variable:
