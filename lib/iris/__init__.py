@@ -183,6 +183,7 @@ class Future(threading.local):
         date_microseconds=False,
         derived_bounds=False,
         lam_pole_offset=False,
+        extended_grid_mapping=False,
     ):
         """Container for run-time options controls.
 
@@ -223,6 +224,14 @@ class Future(threading.local):
             to a PP file will set the pole longitude (PP field ``bplon``) to
             180.0 degrees if the grid is defined on a standard pole. Does not
             affect global or rotated-pole domains.
+        extended_grid_mapping : bool, default=False
+            When True, Iris will use the extended grid mapping syntax for the
+            `grid_mapping` attribute of a data variable. This allows for multiple
+            coordinate systems to be associated with a data variable and explicitly
+            defines an ordered mapping between coordinate systems and coordinates.
+            See:
+            https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#grid-mappings-and-projections
+            for more information on extended grid mapping.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -238,6 +247,7 @@ class Future(threading.local):
         self.__dict__["date_microseconds"] = date_microseconds
         self.__dict__["derived_bounds"] = derived_bounds
         self.__dict__["lam_pole_offset"] = lam_pole_offset
+        self.__dict__["extended_grid_mapping"] = extended_grid_mapping
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.

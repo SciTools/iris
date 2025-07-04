@@ -1845,6 +1845,213 @@ class Saver:
 
         return " ".join(cell_methods)
 
+    def _add_grid_mapping_to_dataset(self, cs, cf_var_grid):
+        """Create a CF-netCDF grid mapping variable and add to the dataset.
+
+        Parameters
+        ----------
+        cs : :class:`iris.coord_system.CoordSystem`
+            The :class:`iris.coord_system.CoordSystem` used to generate the
+            new netCDF CF grid mapping variable.
+
+        Returns
+        -------
+        None
+        """
+        cf_var_grid = self._dataset.createVariable(cs.grid_mapping_name, np.int32)
+        _setncattr(cf_var_grid, "grid_mapping_name", cs.grid_mapping_name)
+
+        def add_ellipsoid(ellipsoid):
+            cf_var_grid.longitude_of_prime_meridian = (
+                ellipsoid.longitude_of_prime_meridian
+            )
+            semi_major = ellipsoid.semi_major_axis
+            semi_minor = ellipsoid.semi_minor_axis
+            if semi_minor == semi_major:
+                cf_var_grid.earth_radius = semi_major
+            else:
+                cf_var_grid.semi_major_axis = semi_major
+                cf_var_grid.semi_minor_axis = semi_minor
+            if ellipsoid.datum is not None:
+                cf_var_grid.horizontal_datum_name = ellipsoid.datum
+
+        # latlon
+        if isinstance(cs, iris.coord_systems.GeogCS):
+            add_ellipsoid(cs)
+
+        # rotated latlon
+        elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole_latitude
+            cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole_longitude
+            cf_var_grid.north_pole_grid_longitude = cs.north_pole_grid_longitude
+
+        # tmerc
+        elif isinstance(cs, iris.coord_systems.TransverseMercator):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_central_meridian = cs.longitude_of_central_meridian
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            cf_var_grid.scale_factor_at_central_meridian = (
+                cs.scale_factor_at_central_meridian
+            )
+
+        # merc
+        elif isinstance(cs, iris.coord_systems.Mercator):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_projection_origin = (
+                cs.longitude_of_projection_origin
+            )
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            # Only one of these should be set
+            if cs.standard_parallel is not None:
+                cf_var_grid.standard_parallel = cs.standard_parallel
+            elif cs.scale_factor_at_projection_origin is not None:
+                cf_var_grid.scale_factor_at_projection_origin = (
+                    cs.scale_factor_at_projection_origin
+                )
+
+        # lcc
+        elif isinstance(cs, iris.coord_systems.LambertConformal):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.standard_parallel = cs.secant_latitudes
+            cf_var_grid.latitude_of_projection_origin = cs.central_lat
+            cf_var_grid.longitude_of_central_meridian = cs.central_lon
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+
+        # polar stereo (have to do this before Stereographic because it subclasses it)
+        elif isinstance(cs, iris.coord_systems.PolarStereographic):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.latitude_of_projection_origin = cs.central_lat
+            cf_var_grid.straight_vertical_longitude_from_pole = cs.central_lon
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            # Only one of these should be set
+            if cs.true_scale_lat is not None:
+                cf_var_grid.true_scale_lat = cs.true_scale_lat
+            elif cs.scale_factor_at_projection_origin is not None:
+                cf_var_grid.scale_factor_at_projection_origin = (
+                    cs.scale_factor_at_projection_origin
+                )
+            else:
+                cf_var_grid.scale_factor_at_projection_origin = 1.0
+
+        # stereo
+        elif isinstance(cs, iris.coord_systems.Stereographic):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_projection_origin = cs.central_lon
+            cf_var_grid.latitude_of_projection_origin = cs.central_lat
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            # Only one of these should be set
+            if cs.true_scale_lat is not None:
+                msg = (
+                    "It is not valid CF to save a true_scale_lat for "
+                    "a Stereographic grid mapping."
+                )
+                raise ValueError(msg)
+            elif cs.scale_factor_at_projection_origin is not None:
+                cf_var_grid.scale_factor_at_projection_origin = (
+                    cs.scale_factor_at_projection_origin
+                )
+            else:
+                cf_var_grid.scale_factor_at_projection_origin = 1.0
+
+        # osgb (a specific tmerc)
+        elif isinstance(cs, iris.coord_systems.OSGB):
+            warnings.warn(
+                "OSGB coordinate system not yet handled",
+                category=iris.warnings.IrisSaveWarning,
+            )
+
+        # lambert azimuthal equal area
+        elif isinstance(cs, iris.coord_systems.LambertAzimuthalEqualArea):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_projection_origin = (
+                cs.longitude_of_projection_origin
+            )
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+
+        # albers conical equal area
+        elif isinstance(cs, iris.coord_systems.AlbersEqualArea):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_central_meridian = cs.longitude_of_central_meridian
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            cf_var_grid.standard_parallel = cs.standard_parallels
+
+        # vertical perspective
+        elif isinstance(cs, iris.coord_systems.VerticalPerspective):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_projection_origin = (
+                cs.longitude_of_projection_origin
+            )
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            cf_var_grid.perspective_point_height = cs.perspective_point_height
+
+        # geostationary
+        elif isinstance(cs, iris.coord_systems.Geostationary):
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.longitude_of_projection_origin = (
+                cs.longitude_of_projection_origin
+            )
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            cf_var_grid.perspective_point_height = cs.perspective_point_height
+            cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
+
+        # oblique mercator (and rotated variant)
+        # Use duck-typing over isinstance() - subclasses (i.e.
+        #  RotatedMercator) upset mock tests.
+        elif getattr(cs, "grid_mapping_name", None) == "oblique_mercator":
+            # RotatedMercator subclasses ObliqueMercator, and RM
+            #  instances are implicitly saved as OM due to inherited
+            #  properties. This is correct because CF 1.11 is removing
+            #  all mention of RM.
+            if cs.ellipsoid:
+                add_ellipsoid(cs.ellipsoid)
+            cf_var_grid.azimuth_of_central_line = cs.azimuth_of_central_line
+            cf_var_grid.latitude_of_projection_origin = cs.latitude_of_projection_origin
+            cf_var_grid.longitude_of_projection_origin = (
+                cs.longitude_of_projection_origin
+            )
+            cf_var_grid.false_easting = cs.false_easting
+            cf_var_grid.false_northing = cs.false_northing
+            cf_var_grid.scale_factor_at_projection_origin = (
+                cs.scale_factor_at_projection_origin
+            )
+
+        # other
+        else:
+            warnings.warn(
+                "Unable to represent the horizontal "
+                "coordinate system. The coordinate system "
+                "type %r is not yet implemented." % type(cs),
+                category=iris.warnings.IrisSaveWarning,
+            )
+
+        # add WKT string
+        cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
+
     def _create_cf_grid_mapping(self, cube, cf_var_cube):
         """Create CF-netCDF grid mapping and associated CF-netCDF variable.
 
@@ -1864,265 +2071,100 @@ class Saver:
         None
 
         """
-        # TODO(CB): We need ALL coord systems here, not just the fist one found.
-        # cs = cube.coord_system("CoordSystem")
-
-        # TODO(CB): This is workaround code (gets _unique_ coord systems):
-        # TODO(CB): Put this code in new cube.coord_systems() function, or modify cube.coord_system()
-        # coord_systems = [coord.coord_system for coord in cube.coords() if coord.coord_system]
         coord_systems = []
-        for coord in cube.coords():
-            if coord.coord_system and coord.coord_system not in coord_systems:
-                coord_systems.append(coord.coord_system)
+        if iris.FUTURE.extended_grid_mapping:
+            # get unique list of all coord_systems on cube coords:
+            for coord in cube.coords():
+                if coord.coord_system and coord.coord_system not in coord_systems:
+                    coord_systems.append(coord.coord_system)
+        else:
+            # will only return a single coord system (if one exists):
+            if cs := cube.coord_system("CoordSystem"):
+                coord_systems.append(cs)
 
         grid_mappings = []
+        matched_all_coords = True
 
         for cs in coord_systems:
             # Grid var not yet created?
             if cs not in self._coord_systems:
+                # handle potential duplicate netCDF variable names:
                 while cs.grid_mapping_name in self._dataset.variables:
                     aname = self._increment_name(cs.grid_mapping_name)
                     cs.grid_mapping_name = aname
 
-                cf_var_grid = self._dataset.createVariable(
-                    cs.grid_mapping_name, np.int32
-                )
-                _setncattr(cf_var_grid, "grid_mapping_name", cs.grid_mapping_name)
-
-                def add_ellipsoid(ellipsoid):
-                    cf_var_grid.longitude_of_prime_meridian = (
-                        ellipsoid.longitude_of_prime_meridian
-                    )
-                    semi_major = ellipsoid.semi_major_axis
-                    semi_minor = ellipsoid.semi_minor_axis
-                    if semi_minor == semi_major:
-                        cf_var_grid.earth_radius = semi_major
-                    else:
-                        cf_var_grid.semi_major_axis = semi_major
-                        cf_var_grid.semi_minor_axis = semi_minor
-                    if ellipsoid.datum is not None:
-                        cf_var_grid.horizontal_datum_name = ellipsoid.datum
-
-                # latlon
-                if isinstance(cs, iris.coord_systems.GeogCS):
-                    add_ellipsoid(cs)
-
-                # rotated latlon
-                elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.grid_north_pole_latitude = cs.grid_north_pole_latitude
-                    cf_var_grid.grid_north_pole_longitude = cs.grid_north_pole_longitude
-                    cf_var_grid.north_pole_grid_longitude = cs.north_pole_grid_longitude
-
-                # tmerc
-                elif isinstance(cs, iris.coord_systems.TransverseMercator):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_central_meridian = (
-                        cs.longitude_of_central_meridian
-                    )
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.scale_factor_at_central_meridian = (
-                        cs.scale_factor_at_central_meridian
-                    )
-
-                # merc
-                elif isinstance(cs, iris.coord_systems.Mercator):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_projection_origin = (
-                        cs.longitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    # Only one of these should be set
-                    if cs.standard_parallel is not None:
-                        cf_var_grid.standard_parallel = cs.standard_parallel
-                    elif cs.scale_factor_at_projection_origin is not None:
-                        cf_var_grid.scale_factor_at_projection_origin = (
-                            cs.scale_factor_at_projection_origin
-                        )
-
-                # lcc
-                elif isinstance(cs, iris.coord_systems.LambertConformal):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.standard_parallel = cs.secant_latitudes
-                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
-                    cf_var_grid.longitude_of_central_meridian = cs.central_lon
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-
-                # polar stereo (have to do this before Stereographic because it subclasses it)
-                elif isinstance(cs, iris.coord_systems.PolarStereographic):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
-                    cf_var_grid.straight_vertical_longitude_from_pole = cs.central_lon
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    # Only one of these should be set
-                    if cs.true_scale_lat is not None:
-                        cf_var_grid.true_scale_lat = cs.true_scale_lat
-                    elif cs.scale_factor_at_projection_origin is not None:
-                        cf_var_grid.scale_factor_at_projection_origin = (
-                            cs.scale_factor_at_projection_origin
-                        )
-                    else:
-                        cf_var_grid.scale_factor_at_projection_origin = 1.0
-
-                # stereo
-                elif isinstance(cs, iris.coord_systems.Stereographic):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_projection_origin = cs.central_lon
-                    cf_var_grid.latitude_of_projection_origin = cs.central_lat
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    # Only one of these should be set
-                    if cs.true_scale_lat is not None:
-                        msg = (
-                            "It is not valid CF to save a true_scale_lat for "
-                            "a Stereographic grid mapping."
-                        )
-                        raise ValueError(msg)
-                    elif cs.scale_factor_at_projection_origin is not None:
-                        cf_var_grid.scale_factor_at_projection_origin = (
-                            cs.scale_factor_at_projection_origin
-                        )
-                    else:
-                        cf_var_grid.scale_factor_at_projection_origin = 1.0
-
-                # osgb (a specific tmerc)
-                elif isinstance(cs, iris.coord_systems.OSGB):
-                    warnings.warn(
-                        "OSGB coordinate system not yet handled",
-                        category=iris.warnings.IrisSaveWarning,
-                    )
-
-                # lambert azimuthal equal area
-                elif isinstance(cs, iris.coord_systems.LambertAzimuthalEqualArea):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_projection_origin = (
-                        cs.longitude_of_projection_origin
-                    )
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-
-                # albers conical equal area
-                elif isinstance(cs, iris.coord_systems.AlbersEqualArea):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_central_meridian = (
-                        cs.longitude_of_central_meridian
-                    )
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.standard_parallel = cs.standard_parallels
-
-                # vertical perspective
-                elif isinstance(cs, iris.coord_systems.VerticalPerspective):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_projection_origin = (
-                        cs.longitude_of_projection_origin
-                    )
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.perspective_point_height = cs.perspective_point_height
-
-                # geostationary
-                elif isinstance(cs, iris.coord_systems.Geostationary):
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.longitude_of_projection_origin = (
-                        cs.longitude_of_projection_origin
-                    )
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.perspective_point_height = cs.perspective_point_height
-                    cf_var_grid.sweep_angle_axis = cs.sweep_angle_axis
-
-                # oblique mercator (and rotated variant)
-                # Use duck-typing over isinstance() - subclasses (i.e.
-                #  RotatedMercator) upset mock tests.
-                elif getattr(cs, "grid_mapping_name", None) == "oblique_mercator":
-                    # RotatedMercator subclasses ObliqueMercator, and RM
-                    #  instances are implicitly saved as OM due to inherited
-                    #  properties. This is correct because CF 1.11 is removing
-                    #  all mention of RM.
-                    if cs.ellipsoid:
-                        add_ellipsoid(cs.ellipsoid)
-                    cf_var_grid.azimuth_of_central_line = cs.azimuth_of_central_line
-                    cf_var_grid.latitude_of_projection_origin = (
-                        cs.latitude_of_projection_origin
-                    )
-                    cf_var_grid.longitude_of_projection_origin = (
-                        cs.longitude_of_projection_origin
-                    )
-                    cf_var_grid.false_easting = cs.false_easting
-                    cf_var_grid.false_northing = cs.false_northing
-                    cf_var_grid.scale_factor_at_projection_origin = (
-                        cs.scale_factor_at_projection_origin
-                    )
-
-                # other
-                else:
-                    warnings.warn(
-                        "Unable to represent the horizontal "
-                        "coordinate system. The coordinate system "
-                        "type %r is not yet implemented." % type(cs),
-                        category=iris.warnings.IrisSaveWarning,
-                    )
-
-                cf_var_grid.crs_wkt = cs.as_cartopy_crs().to_wkt()
-
+                # create grid mapping variable on dataset for this coordinate system:
+                self._add_grid_mapping_to_dataset(cs)
                 self._coord_systems.append(cs)
 
-            # create grid mapping string:
-            coords = cube.coords(coord_system=cs)
-            # TODO: How do we sort these coords?
-            #       For DimCoords, we can use the dimension order, but what
-            #       about AuxCoords that could be 2D?
+            # create the `grid_mapping` attribute for the data variable:
+            if iris.FUTURE.extended_grid_mapping:
+                # Order the coordinates as per the order in the CRS/WKT string.
+                # (We should only ever have a coordinate system for horizontal
+                # spatial coords, so check for east/north directions)
+                ordered_coords = []
+                for ax_info in cs.as_cartopy_crs().axis_info:
+                    try:
+                        match ax_info.direction.lower():
+                            case "east":
+                                ordered_coords.append(
+                                    cube.coord(axis="X", coord_system=cs)
+                                )
+                            case "north":
+                                ordered_coords.append(
+                                    cube.coord(axis="Y", coord_system=cs)
+                                )
+                            case _:
+                                msg = (
+                                    f"Can't handle axis direction {ax_info.direction!r}"
+                                )
+                                raise Exception(msg)
+                    except iris.exceptions.CoordinateNotFoundError as e:
+                        msg = (
+                            f"Failed to assign coordinate for {ax_info.name} axis of "
+                            f"coordinate system {cs.grid_mapping_name}: {str(e)}"
+                        )
+                        warnings.warn(msg, iris.warnings.IrisSaveWarning)
 
-            # prefer netCDF variable name, if exists, else default ro coord.name()
-            coord_string = " ".join(
-                [coord.var_name if coord.var_name else coord.name() for coord in coords]
-            )
-            grid_mappings.append((cs.grid_mapping_name, coord_string))
+                        # fall back to simple grid mapping (single crs entry for DimCoord only)
+                        matched_all_coords = False
+
+                # prefer netCDF variable name, if exists, else default to coord.name()
+                coord_string = " ".join(
+                    [
+                        coord.var_name if coord.var_name else coord.name()
+                        for coord in ordered_coords
+                    ]
+                )
+                grid_mappings.append((cs.grid_mapping_name, coord_string))
 
         # Refer to grid var
-        # TODO: Future flag for extended grid_mapping syntax?
-        # For now, if only one coord_system, write out in simple form.
-        # Use extended form for multiple coord_systems
-        if len(grid_mappings):
-            if len(grid_mappings) > 1:
-                # TODO: Check future flag? Warn if not set?
-                grid_mapping = " ".join(
-                    f"{cs_name}: {cs_coords}" for cs_name, cs_coords in grid_mappings
-                )
+        if len(coord_systems):
+            grid_mapping = None
+            if iris.FUTURE.extended_grid_mapping:
+                if matched_all_coords:
+                    grid_mapping = " ".join(
+                        f"{cs_name}: {cs_coords}"
+                        for cs_name, cs_coords in grid_mappings
+                    )
+                else:
+                    # We didn't match all coords required for grid mapping, default to
+                    # single coordinate system for DimCoords, if set.
+                    for ax in ["x", "y"]:
+                        try:
+                            if dim_cs := cube.coord(
+                                axis=ax, dim_coords=True
+                            ).coord_system:
+                                grid_mapping = dim_cs.grid_mapping_name
+                                break
+                        except iris.exceptions.CoordinateNotFoundError:
+                            pass
             else:
-                grid_mapping = grid_mappings[0][0]  # just the cs_name
+                # Not using extended_grid_mapping: only ever be on cs in this case:
+                grid_mapping = coord_systems[0].grid_mapping_name
 
-            _setncattr(cf_var_cube, "grid_mapping", grid_mapping)
+            if grid_mapping:
+                _setncattr(cf_var_cube, "grid_mapping", grid_mapping)
 
     def _create_cf_data_variable(
         self,
