@@ -2118,7 +2118,7 @@ class Saver:
                                 msg = (
                                     f"Can't handle axis direction {ax_info.direction!r}"
                                 )
-                                raise Exception(msg)
+                                raise NotImplementedError(msg)
                     except iris.exceptions.CoordinateNotFoundError as e:
                         msg = (
                             f"Failed to assign coordinate for {ax_info.name} axis of "
@@ -2132,7 +2132,7 @@ class Saver:
                 # prefer netCDF variable name, if exists, else default to coord.name()
                 coord_string = " ".join(
                     [
-                        coord.var_name if coord.var_name else coord.name()
+                        self._get_coord_variable_name(cube, coord)
                         for coord in ordered_coords
                     ]
                 )
