@@ -2471,8 +2471,8 @@ class Cube(CFVariableMixin):
 
         Only relevant when saving a cube to NetCDF file format.
 
-        For more details see:
-        https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#grid-mappings-and-projections
+        For more details see "Grid Mappings and Projections" in the CF Conventions document:
+        https://cfconventions.org/cf-conventions/conformance.html
         """
         return self._ordered_axes
 
