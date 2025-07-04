@@ -668,8 +668,6 @@ class CFGridMappingVariable(CFVariable):
             nc_var_att = getattr(nc_var, cls.cf_identity, None)
 
             if nc_var_att is not None:
-                name = nc_var_att.strip()
-
                 # All `grid_mapping` attributes will already have been parsed prior
                 # to `identify` being called and passed in as an argument. We can
                 # ignore the attribute here (it's just used to identify that a grid
