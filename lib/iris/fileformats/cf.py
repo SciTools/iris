@@ -1623,13 +1623,13 @@ class CFReader:
                 if not is_mesh_var:
                     ignore += ugrid_coord_names
                 # Prevent grid mapping variables being mis-identified as CF coordinate variables.
-                if not issubclass(variable_type, CFGridMappingVariable):
-                    ignore += coordinate_names
-                else:
+                if issubclass(variable_type, CFGridMappingVariable):
                     # pass parsed grid_mappings to CFGridMappingVariable types
                     kwargs.update(
                         {"coord_system_mappings": self._coord_system_mappings}
                     )
+                else:
+                    ignore += coordinate_names
 
                 match = variable_type.identify(
                     variables,
