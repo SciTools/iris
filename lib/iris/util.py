@@ -2237,7 +2237,7 @@ def mask_cube_from_shapefile(
     shape_crs: cartopy.crs | pyproj.CRS,
     in_place: bool = False,
     minimum_weight: float = 0.0,
-   **kwargs
+    **kwargs,
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 
@@ -2271,7 +2271,7 @@ def mask_cube_from_shapefile(
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
 
     Other Parameters
-    -----------
+    ----------------
     all_touched : bool, default=None
         If True, all cells touched by the shape are kept. If False, only cells whose
         center is within the polygon or that are selected by Bresenham’s line algorithm
@@ -2349,7 +2349,7 @@ def mask_cube_from_shapefile(
         geometry_crs=shape_crs,
         cube=cube,
         minimum_weight=minimum_weight,
-        **kwargs
+        **kwargs,
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:

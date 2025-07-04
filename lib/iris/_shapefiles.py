@@ -22,6 +22,7 @@ import shapely.ops
 import iris
 from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
+
 # from iris.util import mutually_exclusive_keywords
 
 if "iris.cube" in sys.modules:
@@ -221,8 +222,8 @@ def create_shapefile_mask(
 
     if kwargs.get("invert"):
         if not isinstance(kwargs.get("invert"), bool):
-                msg = "`invert` kwarg must be True or False."
-                raise TypeError(msg)
+            msg = "`invert` kwarg must be True or False."
+            raise TypeError(msg)
         # Invert the mask
         mask_template = np.logical_not(mask_template)
 

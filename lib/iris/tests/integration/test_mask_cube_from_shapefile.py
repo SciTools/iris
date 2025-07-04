@@ -12,7 +12,7 @@ import numpy as np
 from pyproj import CRS
 import pytest
 from pytest import approx
-from shapely.geometry import LineString, Point, MultiPoint, MultiLineString
+from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 
 import iris
 from iris.coord_systems import GeogCS
