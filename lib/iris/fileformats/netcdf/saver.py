@@ -2082,7 +2082,7 @@ class Saver:
             if cs := cube.coord_system("CoordSystem"):
                 coord_systems.append(cs)
 
-        grid_mappings = []
+        grid_mappings = {}
         matched_all_coords = True
 
         for cs in coord_systems:
@@ -2136,7 +2136,7 @@ class Saver:
                         for coord in ordered_coords
                     ]
                 )
-                grid_mappings.append((cs.grid_mapping_name, coord_string))
+                grid_mappings[cs.grid_mapping_name] = coord_string
 
         # Refer to grid var
         if len(coord_systems):
@@ -2145,7 +2145,7 @@ class Saver:
                 if matched_all_coords:
                     grid_mapping = " ".join(
                         f"{cs_name}: {cs_coords}"
-                        for cs_name, cs_coords in grid_mappings
+                        for cs_name, cs_coords in grid_mappings.items()
                     )
                 else:
                     # We didn't match all coords required for grid mapping, default to
