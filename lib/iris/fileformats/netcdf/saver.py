@@ -1845,7 +1845,7 @@ class Saver:
 
         return " ".join(cell_methods)
 
-    def _add_grid_mapping_to_dataset(self, cs, cf_var_grid):
+    def _add_grid_mapping_to_dataset(self, cs):
         """Create a CF-netCDF grid mapping variable and add to the dataset.
 
         Parameters
