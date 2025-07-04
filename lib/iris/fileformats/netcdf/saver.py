@@ -2134,10 +2134,7 @@ class Saver:
 
                 # prefer netCDF variable name, if exists, else default to coord.name()
                 coord_string = " ".join(
-                    [
-                        self._get_coord_variable_name(cube, coord)
-                        for coord in ordered_coords
-                    ]
+                    [self._name_coord_map.name(coord) for coord in ordered_coords]
                 )
                 grid_mappings[cs.grid_mapping_name] = coord_string
 
