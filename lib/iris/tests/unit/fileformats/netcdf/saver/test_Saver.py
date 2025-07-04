@@ -816,7 +816,9 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         saver = mock.Mock(spec=Saver, _coord_systems=[], _dataset=dataset)
         variable = NCMock()
 
-        # This is the method we're actually testing!
+        saver._add_grid_mapping_to_dataset = (
+            lambda x: Saver._add_grid_mapping_to_dataset(saver, x)
+        )
         Saver._create_cf_grid_mapping(saver, cube, variable)
 
         self.assertEqual(create_var_fn.call_count, 1)
