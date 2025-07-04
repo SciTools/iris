@@ -1332,6 +1332,10 @@ class Cube(CFVariableMixin):
             for ancillary_variable, avdims in ancillary_variables_and_dims:
                 self.add_ancillary_variable(ancillary_variable, avdims)
 
+        # Set ordered_axis property - if we have more that one coord system then
+        # it should be True.
+        self._ordered_axes = len(self.coord_systems()) > 1
+
     @property
     def _names(self) -> tuple[str | None, str | None, str | None, str | None]:
         """Tuple containing the value of each name participating in the identity of a :class:`iris.cube.Cube`.
@@ -2450,6 +2454,32 @@ class Cube(CFVariableMixin):
             result = coord_systems.get(spec_name)
 
         return result
+
+    def coord_systems(self) -> list[iris.coord_systems.CoordSystem]:
+        """Return a list of all coordinate systems used in cube coordinates."""
+        # Gather list of our unique CoordSystems on cube:
+        coord_systems = ClassDict(iris.coord_systems.CoordSystem)
+        for coord in self.coords():
+            if coord.coord_system:
+                coord_systems.add(coord.coord_system, replace=True)
+
+        return list(coord_systems.values())
+
+    @property
+    def ordered_axes(self) -> bool:
+        """Return True if a cube will use extended grid mapping syntax to write axes order in grid_mapping.
+
+        Only relevant when saving a cube to NetCDF file format.
+
+        For more details see:
+        https://cfconventions.org/Data/cf-conventions/cf-conventions-1.9/cf-conventions.html#grid-mappings-and-projections
+        """
+        return self._ordered_axes
+
+    @ordered_axes.setter
+    def ordered_axes(self, ordered: bool) -> None:
+        """Set to True to enable extended grid mapping syntax."""
+        self._ordered_axes = ordered
 
     def _any_meshcoord(self) -> MeshCoord | None:
         """Return a MeshCoord if there are any, else None."""

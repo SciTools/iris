@@ -2072,7 +2072,7 @@ class Saver:
 
         """
         coord_systems = []
-        if iris.FUTURE.extended_grid_mapping:
+        if cube.ordered_axes:
             # get unique list of all coord_systems on cube coords:
             for coord in cube.coords():
                 if coord.coord_system and coord.coord_system not in coord_systems:
@@ -2098,7 +2098,7 @@ class Saver:
                 self._coord_systems.append(cs)
 
             # create the `grid_mapping` attribute for the data variable:
-            if iris.FUTURE.extended_grid_mapping:
+            if cube.ordered_axes:
                 # Order the coordinates as per the order in the CRS/WKT string.
                 # (We should only ever have a coordinate system for horizontal
                 # spatial coords, so check for east/north directions)
@@ -2141,7 +2141,7 @@ class Saver:
         # Refer to grid var
         if len(coord_systems):
             grid_mapping = None
-            if iris.FUTURE.extended_grid_mapping:
+            if cube.ordered_axes:
                 if matched_all_coords:
                     grid_mapping = " ".join(
                         f"{cs_name}: {cs_coords}"
