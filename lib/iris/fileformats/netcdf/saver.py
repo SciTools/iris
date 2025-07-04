@@ -2124,7 +2124,7 @@ class Saver:
                             f"Failed to assign coordinate for {ax_info.name} axis of "
                             f"coordinate system {cs.grid_mapping_name}: {str(e)}"
                         )
-                        warnings.warn(msg, iris.warnings.IrisSaveWarning)
+                        warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
 
                         # fall back to simple grid mapping (single crs entry for DimCoord only)
                         matched_all_coords = False
