@@ -145,14 +145,14 @@ CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
 # Regex for parsing grid_mapping (extended format)
-# Link to online regex101 playground: https://regex101.com/r/jFbFLG/1
+# Link to online regex101 playground: https://regex101.com/r/NcKzkQ/1
 #
 #   (\w+):                # Matches '<word>:' and stores in CAPTURE GROUP 1
 #   (                     # CAPTURE GROUP 2 for capturing multiple coords
 #       (?:               #  Non-capturing group for composing match
 #           \s+           #   Matches one or more blank characters
 #           (?!\w+:)      #   Negative look-ahead: don't match <word> followed by colon
-#           (\w+)         #   Matches a <word>
+#           \w+           #   Matches a <word>
 #       )+                #  Repeats non-capturing group at least once.
 #   )                     # End of CAPTURE GROUP 2
 _GRID_MAPPING_PARSE_EXTENDED = re.compile(
@@ -162,7 +162,7 @@ _GRID_MAPPING_PARSE_EXTENDED = re.compile(
             (?:
                 \s+
                 (?!\w+:)
-                (\w+)
+                \w+
             )+
         )+
     """,
@@ -2007,10 +2007,8 @@ def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
         mappings = {}
         # TODO: below could possibly be a nested list/dict comprehension, but wold
         #  likely be overly complicated?
-        for r in result:
-            cs = r[0]
-            coords = r[1].split()
-            mappings.update({coord: cs for coord in coords})
+        for cs, coords in result:
+            mappings.update({coord: cs for coord in coords.split()})
 
     return mappings
 
