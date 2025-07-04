@@ -357,7 +357,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
 
         if len(coord_systems):
             # Find which coord system applies to this coordinate.
-            cs_mappings = engine.cube_parts["coordinate_system_mappings"]
+            cs_mappings = engine.cube_parts.get("coordinate_system_mappings")
             if cs_mappings and coord_systems:
                 if len(coord_systems) == 1 and None in cs_mappings:
                     # Simple grid mapping (a single coord_system with no explicit coords)
