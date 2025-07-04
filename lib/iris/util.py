@@ -10,6 +10,7 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
 from copy import deepcopy
 import functools
+from functools import wraps
 import inspect
 import os
 import os.path
@@ -2192,14 +2193,51 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
+# def mutually_exclusive_keywords(keyword, *keywords):
+#     """Ensure that exactly one of the given keywords is specified.
+
+#     Used to ensure that only one of a set of mutually exclusive keyword arguments
+#     is provided to a function.
+
+#     Parameters
+#     ----------
+#     *keywords : str
+#         Names of mutually exclusive keyword arguments.
+
+#     Returns
+#     -------
+#     decorator
+#         A decorator that enforces the mutually exclusive constraint.
+
+#     Raises
+#     ------
+#     iris.exceptions.IrisError
+#         If zero or more than one of the specified keywords are present in kwargs.
+#     """
+#     keywords = (keyword,) + keywords
+
+#     def wrapper(func):
+#         @wraps(func)
+#         def inner(*args, **kwargs):
+#             if sum(k in keywords for k in kwargs) != 1:
+#                 raise iris.exceptions.IrisError(
+#                     "You must specify exactly one of {}".format(", ".join(keywords))
+#                 )
+#             return func(*args, **kwargs)
+
+#         return inner
+
+#     return wrapper
+
+
+# @mutually_exclusive_keywords("minimum_weight", "all_touched")
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
     shape_crs: cartopy.crs | pyproj.CRS,
     in_place: bool = False,
-    all_touched: bool = False,
     minimum_weight: float = 0.0,
-    invert: bool = False,
+   **kwargs
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 
@@ -2209,9 +2247,11 @@ def mask_cube_from_shapefile(
 
     Shapes can be polygons, lines or points.
 
-    By default, only the only cells whose center is within the polygon or that are selected by
-    Bresenham’s line algorithm (for line type shape) are kept.  This behaviour can be changed by
-    using the `all_touched=True` keyword argument. Then all cells touched by geometries are kept.
+    By default, all cells touched by geometries are kept (equivalent to `minimum_weight=0`). This behaviour
+    can be changed by increasing the `minimum_weight` keyword argument or setting `all_touched=False`,
+    then only the only cells whose center is within the polygon or that are selected by Bresenham’s line algorithm
+    (for line type shapes) are kept.   For points, the `minimum_weight` is ignored, and the cell that intersects the point
+    is kept.
 
     Parameters
     ----------
@@ -2230,6 +2270,18 @@ def mask_cube_from_shapefile(
         A number between 0-1 describing what % of a cube cell area must the shape overlap to be masked.
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
 
+    Other Parameters
+    -----------
+    all_touched : bool, default=None
+        If True, all cells touched by the shape are kept. If False, only cells whose
+        center is within the polygon or that are selected by Bresenham’s line algorithm
+        (for line type shape) are kept.
+    invert : bool, default=False
+        If True, the mask is inverted, meaning that cells that intersect the shape are masked out
+        and cells that do not intersect the shape are kept. If False, the mask is applied normally,
+        meaning that cells that intersect the shape are kept and cells that do not intersect the shape
+        are masked out.
+
     Returns
     -------
     iris.Cube
@@ -2239,16 +2291,6 @@ def mask_cube_from_shapefile(
     --------
     :func:`~iris.util.mask_cube`
         Mask any cells in the cube’s data array.
-
-    Notes
-    -----
-    To mask a cube from a shapefile, both must first be on the same coordinate system.
-    Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
-    The shapefile is projected to the coord system of the cube using cartopy, then each cell
-    is compared to the shapefile to determine overlap and populate a true/false array
-    This array is then used to mask the cube using the `iris.util.mask_cube` function
-    This uses numpy arithmetic logic for broadcasting, so you may encounter unexpected
-    results if your cube has other dimensions the same length as the x/y dimensions
 
     Examples
     --------
@@ -2307,8 +2349,7 @@ def mask_cube_from_shapefile(
         geometry_crs=shape_crs,
         cube=cube,
         minimum_weight=minimum_weight,
-        invert=invert,
-        all_touched=all_touched,
+        **kwargs
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:

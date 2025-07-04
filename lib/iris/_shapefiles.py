@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+from functools import wraps
 from itertools import product
 import sys
 import warnings
@@ -21,6 +22,7 @@ import shapely.ops
 import iris
 from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
+# from iris.util import mutually_exclusive_keywords
 
 if "iris.cube" in sys.modules:
     import iris.cube
@@ -28,13 +30,13 @@ if "iris.analysis.cartography" in sys.modules:
     import iris.analysis.cartography
 
 
+# @mutually_exclusive_keywords("minimum_weight", "all_touched")
 def create_shapefile_mask(
     geometry: shapely.Geometry,
     geometry_crs: ccrs.CRS | CRS,
     cube: iris.cube.Cube,
     minimum_weight: float = 0.0,
-    all_touched: bool = False,
-    invert: bool = False,
+    **kwargs,
 ) -> np.array:
     """Make a mask for a cube from a shape.
 
@@ -58,10 +60,13 @@ def create_shapefile_mask(
         The minimum weight of the geometry to be included in the mask.
         If the weight is less than this value, the geometry will not be
         included in the mask. Defaults to 0.0.
+
+    Other Parameters
+    ----------------
     all_touched : bool, optional
         If True, all pixels touched by the geometry will be included in the mask.
         If False, only pixels fully covered by the geometry will be included in the mask.
-        Defaults to False.
+        Defaults to True.
     invert : bool, optional
         If True, the mask will be inverted, so that pixels not covered by the geometry
         will be included in the mask. Defaults to False.
@@ -151,7 +156,7 @@ def create_shapefile_mask(
 
     # Check compatibility of function arguments
     # all_touched and minimum_weight are mutually exclusive
-    if (minimum_weight > 0) and (all_touched is True):
+    if (minimum_weight > 0) and (kwargs.get("all_touched") is True):
         msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
         raise ValueError(msg)
 
@@ -178,38 +183,46 @@ def create_shapefile_mask(
             cube_crs=cube_crs,
         )
 
+    w = len(x_coord.points)
+    h = len(y_coord.points)
     # Mask by weight if minimum_weight > 0.0
     if minimum_weight > 0:
-        weighted_mask_template = _get_weighted_mask(
+        mask_template = _get_weighted_mask(
             geometry=geometry,
             cube=cube,
             minimum_weight=minimum_weight,
         )
-
-    # Define raster transform based on cube
-    # This maps the geometry domain onto the cube domain
-    tr = _make_raster_cube_transform(cube)
-
-    # Generate mask from geometry
-    w = len(x_coord.points)
-    h = len(y_coord.points)
-    mask_template = rfeatures.geometry_mask(
-        geometries=shapely.get_parts(geometry),
-        out_shape=(h, w),
-        transform=tr,
-        all_touched=all_touched,
-    )
+    else:
+        if (minimum_weight == 0) and (kwargs.get("all_touched") is None):
+            # For speed, if minimum_weight is 0, then
+            # we can use the geometry_mask function directly
+            # This is equivalent to all_touched=True
+            all_touched = True
+        elif (minimum_weight == 0) and (kwargs.get("all_touched") is not None):
+            if not isinstance(kwargs.get("all_touched"), bool):
+                msg = "`all_touched` kwarg must be True or False."
+                raise TypeError(msg)
+            all_touched = kwargs.get("all_touched")
+        # Define raster transform based on cube
+        # This maps the geometry domain onto the cube domain
+        tr = _make_raster_cube_transform(cube)
+        # Generate mask from geometry
+        mask_template = rfeatures.geometry_mask(
+            geometries=shapely.get_parts(geometry),
+            out_shape=(h, w),
+            transform=tr,
+            all_touched=all_touched,
+        )
 
     # If cube was on circular domain, then the transformed
     # mask template needs shifting to match the cube domain
     if x_coord.circular:
         mask_template = np.roll(mask_template, w // 2, axis=1)
 
-    if minimum_weight > 0:
-        # Combine the two masks
-        mask_template = np.logical_and(mask_template, weighted_mask_template)
-
-    if invert:
+    if kwargs.get("invert"):
+        if not isinstance(kwargs.get("invert"), bool):
+                msg = "`invert` kwarg must be True or False."
+                raise TypeError(msg)
         # Invert the mask
         mask_template = np.logical_not(mask_template)
 
@@ -421,7 +434,8 @@ def _make_raster_cube_transform(cube: iris.cube.Cube) -> Affine:
     Raises
     ------
     CoordinateNotRegularError
-        If the cube dimension coordinates are not regular.
+        If the cube dimension coordinates are not regular,
+        such that :func:`iris.util.regular_step` returns an error.
 
     Returns
     -------
