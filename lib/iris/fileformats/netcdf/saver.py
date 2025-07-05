@@ -2132,10 +2132,19 @@ class Saver:
                         # fall back to simple grid mapping (single crs entry for DimCoord only)
                         matched_all_coords = False
 
-                # prefer netCDF variable name, if exists, else default to coord.name()
-                coord_string = " ".join(
-                    [self._name_coord_map.name(coord) for coord in ordered_coords]
-                )
+                # Get variable names, and store them if necessary:
+                cfvar_names = []
+                for coord in ordered_coords:
+                    cfvar = self._name_coord_map.name(coord)
+                    if not cfvar:
+                        # not found - create and store it:
+                        cfvar = self._get_coord_variable_name(cube, coord)
+                        self._name_coord_map.append(
+                            cfvar, self._get_coord_variable_name(cube, coord)
+                        )
+                    cfvar_names.append(cfvar)
+
+                coord_string = " ".join(cfvar_names)
                 grid_mappings[cs.grid_mapping_name] = coord_string
 
         # Refer to grid var
