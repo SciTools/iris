@@ -326,6 +326,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             self.assertIsNone(yco_cs)
             self.assertIsNone(xco_cs)
         else:
+            self.assertIsNotNone(cube_cs)
             if cube_cstype is not None:
                 self.assertIsInstance(cube_cs, cube_cstype)
             if xco_no_cs:
