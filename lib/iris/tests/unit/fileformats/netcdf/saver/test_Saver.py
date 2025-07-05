@@ -6,7 +6,7 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-from types import MethodType, ModuleType
+from types import ModuleType
 
 import iris.tests as tests  # isort:skip
 
@@ -36,6 +36,7 @@ from iris.coord_systems import (
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
 
 
@@ -790,10 +791,107 @@ class Test__cf_coord_identity(tests.IrisTest):
         )
 
 
+@pytest.fixture
+def transverse_mercator_cube_ordered_axes():
+    data = np.arange(12).reshape(3, 4)
+    cube = Cube(data, "air_pressure_anomaly")
+    cube.ordered_axes = True
+
+    geog_cs = GeogCS(6377563.396, 6356256.909)
+    trans_merc = TransverseMercator(
+        49.0, -2.0, -400000.0, 100000.0, 0.9996012717, geog_cs
+    )
+    coord = DimCoord(
+        np.arange(3),
+        "projection_y_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 0)
+    coord = DimCoord(
+        np.arange(4),
+        "projection_x_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 1)
+
+    # Add auxiliary lat/lon coords with a GeogCS coord system
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "longitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "latitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    return cube
+
+
+class Test_write_extended_grid_mapping:
+    def test_multi_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+        """Test writing a cube with multiple coordinate systems.
+        Should generate a grid mapping using extended syntax that references
+        both coordinate systems and the coords.
+        """
+        cube = transverse_mercator_cube_ordered_axes
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_aux_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+        """Test when DimCoords have coord system, but AuxCoords do not.
+        Should write extended grid mapping for just DimCoords.
+        """
+        cube = transverse_mercator_cube_ordered_axes
+        cube.coord("latitude").coord_system = None
+        cube.coord("longitude").coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_multi_cs_missing_coord(
+        self, transverse_mercator_cube_ordered_axes, tmp_path, request
+    ):
+        """Test when we have a missing coordinate.
+        Grid mapping will fall back to simple mapping to DimCoord CS (no coords referenced).
+        """
+        cube = transverse_mercator_cube_ordered_axes
+        cube.remove_coord("latitude")
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+        """Test when no coordinate systems associated with cube coords.
+        Grid mapping will not be generated at all.
+        """
+        cube = transverse_mercator_cube_ordered_axes
+        for coord in cube.coords():
+            coord.coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+
 class Test_create_cf_grid_mapping:
     """Tests correct generation of CF grid_mapping variable attributes.
 
-    Note: The firtst 3 tests are run with the "extended grid" mapping
+    Note: The first 3 tests are run with the "extended grid" mapping
     both enabled (the default for all these tests) and disabled. This
     controls the output of the WKT attribute.
     """
@@ -826,20 +924,12 @@ class Test_create_cf_grid_mapping:
         grid_variable = NCMock(name="NetCDFVariable")
         create_var_fn = mock.Mock(side_effect=[grid_variable])
         dataset = mock.Mock(variables=[], createVariable=create_var_fn)
-        saver = mock.Mock(spec=Saver, _coord_systems=[], _dataset=dataset)
         variable = NCMock()
 
-        # Bind required methods on Saver called by `_create_cf_grid_mapping`:
-        saver._add_grid_mapping_to_dataset = MethodType(
-            Saver._add_grid_mapping_to_dataset, saver
-        )
-        saver._get_coord_variable_name = MethodType(
-            Saver._get_coord_variable_name, saver
-        )
-        saver.cf_valid_var_name = Saver.cf_valid_var_name  # simpler for static methods
+        saver = Saver(dataset, "NETCDF4", compute=False)
 
         # The method we want to test:
-        Saver._create_cf_grid_mapping(saver, cube, variable)
+        saver._create_cf_grid_mapping(cube, variable)
 
         assert create_var_fn.call_count == 1
         assert variable.grid_mapping, grid_variable.grid_mapping_name
