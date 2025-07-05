@@ -9,7 +9,11 @@ Here, *specifically* testcases relating to grid-mappings and dim-coords.
 
 """
 
+import iris.coord_systems
+
 import iris.tests as tests  # isort: skip
+
+import pytest
 
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
@@ -957,6 +961,238 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
             warning_regex="Not all file objects were parsed correctly.",
         )
         self.check_result(result, yco_is_aux=True, load_problems_regex=error)
+
+
+@pytest.fixture
+def latlon_cs():
+    return """
+        int crsWGS84 ;
+            crsWGS84:grid_mapping_name = "latitude_longitude" ;
+            crsWGS84:longitude_of_prime_meridian = 0. ;
+            crsWGS84:semi_major_axis = 6378137. ;
+            crsWGS84:inverse_flattening = 298.257223563 ;
+        double lat(x,y) ;
+            lat:standard_name = "latitude" ;
+            lat:units = "degrees_north" ;
+        double lon(x,y) ;
+            lon:standard_name = "longitude" ;
+            lon:units = "degrees_east" ;
+    """
+
+
+@pytest.fixture
+def latlon_cs_missing_coord(latlon_cs):
+    # Trin last 3 lines of latlon_cs to remove longitude coord
+    return "\n".join(latlon_cs.splitlines()[:-4])
+
+
+@pytest.fixture
+def osgb_cs():
+    return """
+        int crsOSGB ;
+            crsOSGB:grid_mapping_name = "transverse_mercator" ;
+            crsOSGB:semi_major_axis = 6377563.396 ;
+            crsOSGB:inverse_flattening = 299.3249646 ;
+            crsOSGB:longitude_of_prime_meridian = 0. ;
+            crsOSGB:latitude_of_projection_origin = 49. ;
+            crsOSGB:longitude_of_central_meridian = -2. ;
+            crsOSGB:scale_factor_at_central_meridian = 0.9996012717 ;
+            crsOSGB:false_easting = 400000. ;
+            crsOSGB:false_northing = -100000. ;
+            crsOSGB:unit = "metre" ;
+        double x(x) ;
+            x:standard_name = "projection_x_coordinate" ;
+            x:long_name = "Easting" ;
+            x:units = "m" ;
+        double y(y) ;
+            y:standard_name = "projection_y_coordinate" ;
+            y:long_name = "Northing" ;
+            y:units = "m" ;
+    """
+
+
+class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
+    def test_two_coord_systems(self, osgb_cs, latlon_cs, mocker, tmp_path):
+        """Test load a well described multi coordinate system variable."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+        cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coord_systems()) == 2
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["longitude", "latitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+        # TODO: assert cube.ordered_axes
+
+    def test_two_coord_systems_missing_coord(
+        self, osgb_cs, latlon_cs_missing_coord, mocker, tmp_path
+    ):
+        """Test missing coord in grid_mapping raises warning."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat" ;
+                phenom:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs_missing_coord}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF coordinate variable 'lon'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 3
+        assert len(cube.coord_systems()) == 2
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["latitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+    def test_two_coord_systems_missing_aux_crs(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid coordinate system mapping for Aux coords."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: x y non_existent_crs: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF grid mapping variable 'non_existent_crs'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 4
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["latitude", "longitude"]:
+            assert cube.coord(coord_name).coord_system is None
+
+    def test_two_coord_systems_missing_dim_crs(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid coordinate system mapping for Dim coords."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "non_existent_crs: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF grid mapping variable 'non_existent_crs'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 2  # DimCoords won't be found
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["latitude", "longitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+    def test_two_coord_systems_invalid_grid_mapping(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid grid mapping doesn't load any coord systems and warns."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: crsWGS84:" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that grid_mapping is invalid
+        with pytest.warns(
+            iris.warnings.IrisCfWarning, match="Error parsing `grid_mapping` attribute"
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 2
+        assert len(cube.coord_systems()) == 0
+        for coord in cube.coords():
+            assert coord.coord_system is None
 
 
 if __name__ == "__main__":

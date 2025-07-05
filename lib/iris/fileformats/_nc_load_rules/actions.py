@@ -370,7 +370,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
                     #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
                     # We need to search for coord system that references our coordinate.
                     if cs_name := cs_mappings.get(cf_var.cf_name):
-                        coord_system = coord_systems[cs_name]
+                        coord_system = coord_systems.get(cs_name, None)
 
         # Translate the specific grid-mapping type to a grid-class
         if coord_system is None:
@@ -522,7 +522,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
             #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
             # We need to search for coord system that references our coordinate.
             if cs_name := cs_mappings.get(cf_var.cf_name):
-                coord_system = coord_systems[cs_name]
+                coord_system = coord_systems.get(cs_name, None)
 
     cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
     hh.build_and_add_auxiliary_coordinate(
