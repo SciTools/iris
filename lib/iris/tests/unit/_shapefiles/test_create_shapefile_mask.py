@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris._shapefiles.create_shapefile_mask`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 from pyproj import CRS
 import pytest
@@ -40,9 +36,9 @@ def circle_polygon():
 
 @pytest.fixture
 def mock_cube():
-    """Create a mock 10x10 Iris cube for testing."""
-    x_points = np.linspace(0, 9, 10)
-    y_points = np.linspace(0, 9, 10)
+    """Create a mock 9x9 Iris cube for testing."""
+    x_points = np.linspace(1, 9, 9) - 0.5  # Specify cube cell midpoints
+    y_points = np.linspace(1, 9, 9) - 0.5
     x_coord = DimCoord(
         x_points,
         standard_name="longitude",
@@ -102,16 +98,15 @@ def test_all_touched_true_create_shapefile_mask(circle_polygon, wgs84_crs, mock_
     # Check that the masked area corresponds to the circular polygon
     expected_mask = np.array(
         [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
         ],
         dtype=bool,
     )
@@ -132,16 +127,15 @@ def test_all_touched_false_create_shapefile_mask(circle_polygon, wgs84_crs, mock
     # Check that the masked area corresponds to the circular polygon
     expected_mask = np.array(
         [
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 0, 1, 1, 1, 1],
-            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 1, 0, 0, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],
         ],
         dtype=bool,
     )

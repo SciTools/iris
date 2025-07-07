@@ -10,7 +10,6 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
 from copy import deepcopy
 import functools
-from functools import wraps
 import inspect
 import os
 import os.path
@@ -2193,51 +2192,13 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-# def mutually_exclusive_keywords(keyword, *keywords):
-#     """Ensure that exactly one of the given keywords is specified.
-
-#     Used to ensure that only one of a set of mutually exclusive keyword arguments
-#     is provided to a function.
-
-#     Parameters
-#     ----------
-#     *keywords : str
-#         Names of mutually exclusive keyword arguments.
-
-#     Returns
-#     -------
-#     decorator
-#         A decorator that enforces the mutually exclusive constraint.
-
-#     Raises
-#     ------
-#     iris.exceptions.IrisError
-#         If zero or more than one of the specified keywords are present in kwargs.
-#     """
-#     keywords = (keyword,) + keywords
-
-#     def wrapper(func):
-#         @wraps(func)
-#         def inner(*args, **kwargs):
-#             if sum(k in keywords for k in kwargs) != 1:
-#                 raise iris.exceptions.IrisError(
-#                     "You must specify exactly one of {}".format(", ".join(keywords))
-#                 )
-#             return func(*args, **kwargs)
-
-#         return inner
-
-#     return wrapper
-
-
-# @mutually_exclusive_keywords("minimum_weight", "all_touched")
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
     shape_crs: cartopy.crs | pyproj.CRS,
     in_place: bool = False,
     minimum_weight: float = 0.0,
-   **kwargs
+    **kwargs,
 ):
     """Mask all points in a cube that do not intersect a shapefile object.
 
@@ -2349,7 +2310,7 @@ def mask_cube_from_shapefile(
         geometry_crs=shape_crs,
         cube=cube,
         minimum_weight=minimum_weight,
-        **kwargs
+        **kwargs,
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:

@@ -4,15 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris._shapefiles._make_raster_cube_transform`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 from affine import Affine
 import numpy as np
 import pytest
 
-import iris
 from iris._shapefiles import _make_raster_cube_transform
 from iris.coords import DimCoord
 from iris.cube import Cube

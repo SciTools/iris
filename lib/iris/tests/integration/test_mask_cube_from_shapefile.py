@@ -4,15 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
-import math
-
-import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import numpy as np
 from pyproj import CRS
 import pytest
 from pytest import approx
-from shapely.geometry import LineString, Point, MultiPoint, MultiLineString
+from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 
 import iris
 from iris.coord_systems import GeogCS

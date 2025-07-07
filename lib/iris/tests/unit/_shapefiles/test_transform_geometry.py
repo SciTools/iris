@@ -1,3 +1,9 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :func:`iris._shapefiles._transform_geometry`."""
+
 from pyproj import CRS
 from pyproj import exceptions as pyproj_exceptions
 import pytest

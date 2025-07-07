@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris._shapefiles._get_weighted_mask`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 import pytest
 from shapely.geometry import box

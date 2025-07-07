@@ -5,7 +5,6 @@
 
 from __future__ import annotations
 
-from functools import wraps
 from itertools import product
 import sys
 import warnings
@@ -302,7 +301,7 @@ def is_geometry_valid(
 
     # Check geometry is valid shapely geometry
     if not shapely.is_valid_input(geometry):
-        msg = f"Shape geometry is not a valid shape (not well formed)."
+        msg = "Shape geometry is not a valid shape (not well formed)."
         raise TypeError(msg)
 
     # Check that the geometry is within the bounds of the coordinate system
