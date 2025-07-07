@@ -2298,9 +2298,7 @@ def mask_cube_from_shapefile(
     coordinate reference system (CRS) defined. Masking results will be most reliable
     when the cube and masking geometry have the same CRS.
 
-    If the cube has no coord_system, the default GeogCS is used where
-    the coordinate units are degrees. For any other coordinate units,
-    the cube **must** have a coord_system defined.
+    The cube **must** have a coord_system defined.
 
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
 
