@@ -2232,7 +2232,7 @@ def mask_cube_from_shapefile(
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
 
     Other Parameters
-    -----------
+    ----------------
     all_touched : bool, default=None
         If True, all cells touched by the shape are kept. If False, only cells whose
         center is within the polygon or that are selected by Bresenham’s line algorithm
