@@ -129,6 +129,11 @@ This document explains the changes made to Iris for this release
    benchmark data generation, showing developers the root problem at-a-glance
    without needing local replication. (:pull:`6524`)
 
+#. `@trexfeathers`_ fixed benchmark result comparison to inspect the results
+   for the current machine only. This is useful for setups where a single
+   home-space is shared between multiple machines, as with some virtual desktop
+   arrangements. (:pull:`6550`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

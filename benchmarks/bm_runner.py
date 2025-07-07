@@ -140,11 +140,21 @@ def _asv_compare(
 ) -> None:
     """Run through a list of commits comparing each one to the next."""
     commits = tuple(commit[:8] for commit in commits)
+
+    machine_script = [
+        "from asv.machine import Machine",
+        "print(Machine.get_unique_machine_name())",
+    ]
+    machine_name = _subprocess_runner_capture(
+        ["python", "-c", ";".join(machine_script)]
+    )
+
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
         asv_command = shlex.split(
-            f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
+            f"compare {before} {after} "
+            f"--machine {machine_name} --factor={COMPARE_FACTOR} --split"
         )
 
         comparison = _subprocess_runner_capture(asv_command, asv=True)
