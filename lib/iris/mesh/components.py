@@ -2828,7 +2828,10 @@ class MeshCoord(AuxCoord):
         # by calling the method on the base class `object`
         updating = object.__getattribute__(self, "_updating")
         if updating is False and item != "update_from_mesh":
-            object.__getattribute__(self, "update_from_mesh")()
+            if item in ("points", "bounds", "_values"):
+                object.__getattribute__(self, "update_from_mesh")(True)
+            else:
+                object.__getattribute__(self, "update_from_mesh")(False)
         return super().__getattribute__(item)
 
         # Define accessors for MeshCoord-specific properties mesh/location/axis.
@@ -2989,7 +2992,7 @@ class MeshCoord(AuxCoord):
         # Translate "self[:,]" as "self.copy()".
         return self.copy()
 
-    def update_from_mesh(self):
+    def update_from_mesh(self, points_and_bounds=True):
         try:
             object.__setattr__(self, "_updating", True)
             if (self._last_modified is None) or (
@@ -3008,12 +3011,12 @@ class MeshCoord(AuxCoord):
                 self._metadata_manager_temp.climatological = use_metadict[
                     "climatological"
                 ]
-
-                # update points and bounds
-                points, bounds = self._load_points_and_bounds()
-                super(MeshCoord, self.__class__).points.fset(self, points)
-                super(MeshCoord, self.__class__).bounds.fset(self, bounds)
-                object.__setattr__(self, "_last_modified", self.mesh._last_modified)
+                if points_and_bounds:
+                    # update points and bounds
+                    points, bounds = self._load_points_and_bounds()
+                    super(MeshCoord, self.__class__).points.fset(self, points)
+                    super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+                    object.__setattr__(self, "_last_modified", self.mesh._last_modified)
         # Ensure errors aren't bypassed
         except Exception as e:
             raise e
