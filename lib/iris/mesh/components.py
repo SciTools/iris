@@ -3016,7 +3016,7 @@ class MeshCoord(AuxCoord):
                     points, bounds = self._load_points_and_bounds()
                     super(MeshCoord, self.__class__).points.fset(self, points)
                     super(MeshCoord, self.__class__).bounds.fset(self, bounds)
-                    object.__setattr__(self, "_last_modified", self.mesh._last_modified)
+                object.__setattr__(self, "_last_modified", self.mesh._last_modified)
         # Ensure errors aren't bypassed
         except Exception as e:
             raise e

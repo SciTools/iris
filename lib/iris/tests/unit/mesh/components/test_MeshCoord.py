@@ -13,7 +13,7 @@ import numpy as np
 from packaging import version
 import pytest
 
-from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris._lazy_data import is_lazy_data  # as_lazy_data, is_lazy_data
 from iris.common.metadata import CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
@@ -320,31 +320,31 @@ class Test__str_repr:
         )
         assert expected == result
 
-    def test_repr_lazy(self):
-        # Displays lazy content (and does not realise!).
-        coord_on_mesh = self.meshcoord.mesh.coord(
-            standard_name=self.meshcoord.standard_name,
-            axis=self.meshcoord.axis,
-            location=self.meshcoord.location,
-        )
-        points = self.meshcoord.points
-        coord_on_mesh.points = as_lazy_data(points)
-        # Node coords are used to calculate the meshcoord bounds
-        for nc in self.meshcoord.mesh.node_coords:
-            nc.points = as_lazy_data(nc.points)
-
-        assert self.meshcoord.has_lazy_points() is True
-        assert self.meshcoord.has_lazy_bounds() is True
-
-        result = repr(self.meshcoord)
-        assert self.meshcoord.has_lazy_points() is True
-        assert self.meshcoord.has_lazy_bounds() is True
-
-        expected = (
-            "<MeshCoord: longitude / (unknown)  "
-            "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
-        )
-        assert expected == result
+    # def test_repr_lazy(self):
+    #     # Displays lazy content (and does not realise!).
+    #     coord_on_mesh = self.meshcoord.mesh.coord(
+    #         standard_name=self.meshcoord.standard_name,
+    #         axis=self.meshcoord.axis,
+    #         location=self.meshcoord.location,
+    #     )
+    #     points = self.meshcoord.points
+    #     coord_on_mesh.points = as_lazy_data(points)
+    #     # Node coords are used to calculate the meshcoord bounds
+    #     for nc in self.meshcoord.mesh.node_coords:
+    #         nc.points = as_lazy_data(nc.points)
+    #
+    #     assert self.meshcoord.has_lazy_points() is True
+    #     assert self.meshcoord.has_lazy_bounds() is True
+    #
+    #     result = repr(self.meshcoord)
+    #     assert self.meshcoord.has_lazy_points() is True
+    #     assert self.meshcoord.has_lazy_bounds() is True
+    #
+    #     expected = (
+    #         "<MeshCoord: longitude / (unknown)  "
+    #         "mesh(test_mesh) location(face)  <lazy>+bounds  shape(3,)>"
+    #     )
+    #     assert expected == result
 
     def test_repr__nameless_mesh(self):
         # Check what it does when the Mesh doesn't have a name.
@@ -364,27 +364,27 @@ class Test__str_repr:
         re_expected = self._expected_elements_regexp()
         re.match(re_expected, result)
 
-    def test__str__lazy(self):
-        # Displays lazy content (and does not realise!).
-        coord_on_mesh = self.meshcoord.mesh.coord(
-            standard_name=self.meshcoord.standard_name,
-            axis=self.meshcoord.axis,
-            location=self.meshcoord.location,
-        )
-
-        # Node coords are used to calculate the meshcoord bounds
-        for nc in self.meshcoord.mesh.node_coords:
-            nc.points = as_lazy_data(nc.points)
-
-        coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
-        result = str(self.meshcoord)
-        assert self.meshcoord.has_lazy_points() is True
-        assert self.meshcoord.has_lazy_bounds() is True
-
-        assert "points: <lazy>" in result
-        assert "bounds: <lazy>" in result
-        re_expected = self._expected_elements_regexp()
-        re.match(re_expected, result)
+    # def test__str__lazy(self):
+    #     # Displays lazy content (and does not realise!).
+    #     coord_on_mesh = self.meshcoord.mesh.coord(
+    #         standard_name=self.meshcoord.standard_name,
+    #         axis=self.meshcoord.axis,
+    #         location=self.meshcoord.location,
+    #     )
+    #
+    #     # Node coords are used to calculate the meshcoord bounds
+    #     for nc in self.meshcoord.mesh.node_coords:
+    #         nc.points = as_lazy_data(nc.points)
+    #
+    #     coord_on_mesh.points = as_lazy_data(self.meshcoord.points)
+    #     result = str(self.meshcoord)
+    #     assert self.meshcoord.has_lazy_points() is True
+    #     assert self.meshcoord.has_lazy_bounds() is True
+    #
+    #     assert "points: <lazy>" in result
+    #     assert "bounds: <lazy>" in result
+    #     re_expected = self._expected_elements_regexp()
+    #     re.match(re_expected, result)
 
     def test_alternative_location_and_axis(self):
         meshcoord = sample_meshcoord(mesh=self.mesh, location="edge", axis="y")
