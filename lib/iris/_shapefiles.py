@@ -161,8 +161,8 @@ def create_shapefile_mask(
         raise ValueError(msg)
 
     # Get cube coordinates
-    x_coord = cube.coord(axis="x", dim_coords=True)
-    y_coord = cube.coord(axis="y", dim_coords=True)
+    x_coord = cube.coord(axis="X", dim_coords=True)
+    y_coord = cube.coord(axis="Y", dim_coords=True)
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
@@ -391,18 +391,18 @@ def _get_weighted_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
     """
-    if not cube.coord(axis="x", dim_coords=True).has_bounds():
-        cube.coord(axis="x", dim_coords=True).guess_bounds()
-    if not cube.coord(axis="y", dim_coords=True).has_bounds():
-        cube.coord(axis="y", dim_coords=True).guess_bounds()
+    if not cube.coord(axis="X", dim_coords=True).has_bounds():
+        cube.coord(axis="X", dim_coords=True).guess_bounds()
+    if not cube.coord(axis="Y", dim_coords=True).has_bounds():
+        cube.coord(axis="Y", dim_coords=True).guess_bounds()
     # Get the shape of the cube
-    w = len(cube.coord(axis="x", dim_coords=True).points)
-    h = len(cube.coord(axis="y", dim_coords=True).points)
+    w = len(cube.coord(axis="X", dim_coords=True).points)
+    h = len(cube.coord(axis="Y", dim_coords=True).points)
     # Get the bounds of the cube
     # x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
     # y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
-    x_bounds = cube.coord(axis="x", dim_coords=True).bounds
-    y_bounds = cube.coord(axis="y", dim_coords=True).bounds
+    x_bounds = cube.coord(axis="X", dim_coords=True).bounds
+    y_bounds = cube.coord(axis="Y", dim_coords=True).bounds
     # Generate Sort-Tile-Recursive (STR) packed R-tree of bounding boxes
     # https://shapely.readthedocs.io/en/stable/strtree.html
     grid_boxes = [
@@ -442,10 +442,10 @@ def _make_raster_cube_transform(cube: iris.cube.Cube) -> Affine:
     :class:`affine.Affine`
         An affine transform object that maps the geometry domain onto the cube domain.
     """
-    x_points = cube.coord(axis="x", dim_coords=True).points
-    y_points = cube.coord(axis="y", dim_coords=True).points
-    dx = iris.util.regular_step(cube.coord(axis="x", dim_coords=True))
-    dy = iris.util.regular_step(cube.coord(axis="y", dim_coords=True))
+    x_points = cube.coord(axis="X", dim_coords=True).points
+    y_points = cube.coord(axis="Y", dim_coords=True).points
+    dx = iris.util.regular_step(cube.coord(axis="X", dim_coords=True))
+    dy = iris.util.regular_step(cube.coord(axis="Y", dim_coords=True))
     # Create a rasterio transform based on the cube
     # This maps the geometry domain onto the cube domain
     trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
