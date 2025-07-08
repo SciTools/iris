@@ -1044,7 +1044,8 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
                 cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
             )
 
-        # TODO: assert cube.ordered_axes
+        # Loading multiple coord systems or using extended grid mapping implies ordered axes:
+        assert cube.ordered_axes is True
 
     def test_two_coord_systems_missing_coord(
         self, osgb_cs, latlon_cs_missing_coord, mocker, tmp_path
@@ -1087,6 +1088,8 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
                 cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
             )
 
+        assert cube.ordered_axes is True
+
     def test_two_coord_systems_missing_aux_crs(
         self, osgb_cs, latlon_cs, mocker, tmp_path
     ):
@@ -1126,6 +1129,8 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
         for coord_name in ["latitude", "longitude"]:
             assert cube.coord(coord_name).coord_system is None
 
+        assert cube.ordered_axes is True
+
     def test_two_coord_systems_missing_dim_crs(
         self, osgb_cs, latlon_cs, mocker, tmp_path
     ):
@@ -1162,6 +1167,8 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
                 cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
             )
 
+        assert cube.ordered_axes is True
+
     def test_two_coord_systems_invalid_grid_mapping(
         self, osgb_cs, latlon_cs, mocker, tmp_path
     ):
@@ -1193,6 +1200,41 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
         assert len(cube.coord_systems()) == 0
         for coord in cube.coords():
             assert coord.coord_system is None
+
+        assert cube.ordered_axes is False
+
+    def test_one_coord_system_simple(self, osgb_cs, latlon_cs, mocker, tmp_path):
+        """Make sure the simple coord system syntax still works."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+        cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["longitude", "latitude"]:
+            assert cube.coord(coord_name).coord_system is None
+
+        # Loading multiple coord systems or using extended grid mapping implies ordered axes:
+        assert cube.ordered_axes is False
 
 
 if __name__ == "__main__":

@@ -451,6 +451,11 @@ def _load_cube_inner(engine, cf, cf_var, filename):
         for method in cube.cell_methods
     ]
 
+    # Set ordered_axis property if extended grid_mapping was used
+    if cs_mappings := engine.cube_parts.get("coordinate_system_mappings", None):
+        # None as a mapping key implies simple mapping syntax (single coord system)
+        cube.ordered_axes = None not in cs_mappings
+
     if DEBUG:
         # Show activation statistics for this data-var (i.e. cube).
         _actions_activation_stats(engine, cf_var.cf_name)

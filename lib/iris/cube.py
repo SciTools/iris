@@ -1291,6 +1291,9 @@ class Cube(CFVariableMixin):
         ] = []
         self._aux_factories: list[AuxCoordFactory] = []
 
+        # Default ordered_axes property to False; requires explicit opt-in
+        self._ordered_axes = False
+
         # Cell Measures
         self._cell_measures_and_dims: list[tuple[CellMeasure, tuple[int, ...]]] = []
 
@@ -1331,10 +1334,6 @@ class Cube(CFVariableMixin):
         if ancillary_variables_and_dims:
             for ancillary_variable, avdims in ancillary_variables_and_dims:
                 self.add_ancillary_variable(ancillary_variable, avdims)
-
-        # Set ordered_axis property - if we have more that one coord system then
-        # it should be True.
-        self._ordered_axes = len(self.coord_systems()) > 1
 
     @property
     def _names(self) -> tuple[str | None, str | None, str | None, str | None]:

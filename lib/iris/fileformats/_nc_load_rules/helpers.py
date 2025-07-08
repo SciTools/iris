@@ -2005,8 +2005,6 @@ def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
 
         # split second match group into list of coordinates:
         mappings = {}
-        # TODO: below could possibly be a nested list/dict comprehension, but wold
-        #  likely be overly complicated?
         for cs, coords in result:
             mappings.update({coord: cs for coord in coords.split()})
 
