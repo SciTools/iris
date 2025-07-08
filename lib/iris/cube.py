@@ -1291,6 +1291,9 @@ class Cube(CFVariableMixin):
         ] = []
         self._aux_factories: list[AuxCoordFactory] = []
 
+        # Default ordered_axes property to False; requires explicit opt-in
+        self._ordered_axes = False
+
         # Cell Measures
         self._cell_measures_and_dims: list[tuple[CellMeasure, tuple[int, ...]]] = []
 
@@ -2450,6 +2453,32 @@ class Cube(CFVariableMixin):
             result = coord_systems.get(spec_name)
 
         return result
+
+    def coord_systems(self) -> list[iris.coord_systems.CoordSystem]:
+        """Return a list of all coordinate systems used in cube coordinates."""
+        # Gather list of our unique CoordSystems on cube:
+        coord_systems = ClassDict(iris.coord_systems.CoordSystem)
+        for coord in self.coords():
+            if coord.coord_system:
+                coord_systems.add(coord.coord_system, replace=True)
+
+        return list(coord_systems.values())
+
+    @property
+    def ordered_axes(self) -> bool:
+        """Return True if a cube will use extended grid mapping syntax to write axes order in grid_mapping.
+
+        Only relevant when saving a cube to NetCDF file format.
+
+        For more details see "Grid Mappings and Projections" in the CF Conventions document:
+        https://cfconventions.org/cf-conventions/conformance.html
+        """
+        return self._ordered_axes
+
+    @ordered_axes.setter
+    def ordered_axes(self, ordered: bool) -> None:
+        """Set to True to enable extended grid mapping syntax."""
+        self._ordered_axes = ordered
 
     def _any_meshcoord(self) -> MeshCoord | None:
         """Return a MeshCoord if there are any, else None."""

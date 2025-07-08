@@ -172,3 +172,9 @@ class DatalessError(ValueError):
             "operations are not currently supported."
         )
         return msg.format(super().__str__())
+
+
+class CFParseError(IrisError):
+    """Raised when a string associated with a CF defined syntax could not be parsed."""
+
+    pass
