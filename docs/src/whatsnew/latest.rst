@@ -52,6 +52,18 @@ This document explains the changes made to Iris for this release
    needs by using the `Ncdata`_ package.
    See `CRS WKT in the CF Conventions`_ for more. (:issue:`3796`, :pull:`6519`)
 
+#. `@ukmo-ccbunney` and `@trexfeathers` added support for **ordered coordinates**
+    when loading and saving NetCDF files. This allows for coordinates to be
+    explicitly associated with a coordinate system via an extended syntax in
+    the ``grid_mapping`` attribute of a NetCDF data variable. This extended
+    syntax also supports specification of multiple coordinate systems per
+    data variable. Setting the property ``cube.ordered_coords = True`` will
+    enable extended grid mapping syntax when saving a NetCDF file and also
+    enerated an associated well known text attribute (``crs_wks``; as
+    described in :issue:`3796`).
+    See `CRS Grid Mappings and Projections`_ for more information.
+    (:issue:3388:, :pull:6536:)
+
 
 🐛 Bugs Fixed
 =============
@@ -146,4 +158,5 @@ This document explains the changes made to Iris for this release
     Whatsnew resources in alphabetical order:
 
 .. _CRS WKT in the CF Conventions: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
+.. _CRS Grid Mappings and Projections: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#grid-mappings-and-projections
 .. _Ncdata: https://github.com/pp-mo/ncdata
