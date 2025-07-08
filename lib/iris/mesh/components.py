@@ -2828,7 +2828,19 @@ class MeshCoord(AuxCoord):
         # by calling the method on the base class `object`
         updating = object.__getattribute__(self, "_updating")
         if updating is False and item != "update_from_mesh":
-            if item in ("points", "bounds", "_values"):
+            # Don't update the points/bounds if you're only getting metadata
+            if item not in (
+                "_metadata_manager_temp",
+                "_metadata_manager",
+                "standard_name",
+                "long_name",
+                "var_name",
+                "units",
+                "attributes",
+                "climatological",
+                "coord_system",
+                "attributes",
+            ):
                 object.__getattribute__(self, "update_from_mesh")(True)
             else:
                 object.__getattribute__(self, "update_from_mesh")(False)
