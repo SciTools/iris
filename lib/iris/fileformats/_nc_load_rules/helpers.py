@@ -1995,13 +1995,13 @@ def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
         for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
             if len(match := v_re.findall(grid_mapping)):
                 msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
-                raise iris.exceptions.IrisError(msg)  # TODO: Better Exception type
+                raise iris.exceptions.CFParseError(msg)
 
         # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
         result = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
         if len(result) == 0:
             msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
-            raise iris.exceptions.IrisError(msg)  # TODO: Better exception type
+            raise iris.exceptions.CFParseError(msg)
 
         # split second match group into list of coordinates:
         mappings = {}
