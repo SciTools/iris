@@ -47,11 +47,17 @@ def first_filename():
 
 
 @pytest.fixture
-def problem_instance(first_filename, loaded_object, stack_trace):
+def destination():
+    return LoadProblems.Problem.Destination(Cube, "foo")
+
+
+@pytest.fixture
+def problem_instance(first_filename, loaded_object, stack_trace, destination):
     return LoadProblems.Problem(
         filename=first_filename,
         loaded=loaded_object,
         stack_trace=stack_trace,
+        destination=destination,
     )
 
 
@@ -61,11 +67,13 @@ def load_problems_instance(problem_instance):
         filename="test2.nc",
         loaded=problem_instance.loaded,
         stack_trace=problem_instance.stack_trace,
+        destination=problem_instance.destination,
     )
     problem3 = LoadProblems.Problem(
         filename=problem_instance.filename,
         loaded=None,
         stack_trace=problem_instance.stack_trace,
+        destination=problem_instance.destination,
     )
     result = LoadProblems()
     result._problems = [problem_instance, problem2, problem3]
@@ -108,11 +116,16 @@ def test_problems_by_file_property(load_problems_instance):
     assert load_problems_instance.problems_by_file == expected
 
 
-def test_record(load_problems_instance, loaded_object, error, stack_trace):
+@pytest.mark.parametrize("handled", [True, False], ids=["handled", "not_handled"])
+def test_record(
+    load_problems_instance, loaded_object, error, stack_trace, destination, handled
+):
     def check_equality(problem: LoadProblems.Problem, expected: LoadProblems.Problem):
         assert problem.filename == expected.filename
         assert problem.loaded == expected.loaded
         assert str(problem.stack_trace) == str(expected.stack_trace)
+        assert problem.destination is expected.destination
+        assert problem.handled == expected.handled
 
     file_names = ["test3.nc", "test4.nc"]
 
@@ -121,6 +134,8 @@ def test_record(load_problems_instance, loaded_object, error, stack_trace):
             filename=filename,
             loaded=loaded_object,
             stack_trace=stack_trace,
+            destination=destination,
+            handled=handled,
         )
         for filename in file_names
     ]
@@ -131,6 +146,8 @@ def test_record(load_problems_instance, loaded_object, error, stack_trace):
             filename=filename,
             loaded=loaded_object,
             exception=error,
+            destination=destination,
+            handled=handled,
         )
         check_equality(result, expected_additions[ix])
 
@@ -138,7 +155,7 @@ def test_record(load_problems_instance, loaded_object, error, stack_trace):
         check_equality(problem, expected_problems[ix])
 
 
-def test_warning(load_problems_instance, loaded_object, error):
+def test_warning(load_problems_instance, loaded_object, error, destination):
     with pytest.warns(
         expected_warning=IrisLoadWarning,
         match="Not all file objects were parsed correctly.",
@@ -147,6 +164,7 @@ def test_warning(load_problems_instance, loaded_object, error):
             filename="test3.nc",
             loaded=loaded_object,
             exception=error,
+            destination=destination,
         )
 
 

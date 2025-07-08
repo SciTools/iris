@@ -40,6 +40,6 @@ they may serve as a useful reference for future exploration.
    cube_statistics
    cube_maths
    citation
-   code_maintenance
+   iris_philosophy
    glossary
    ../further_topics/index

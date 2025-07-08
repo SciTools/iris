@@ -44,6 +44,27 @@ def _basic_coord_system_rules(cube, pp):
     if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
         pp.bplat = 90
         pp.bplon = 0
+
+        try:
+            # LAMs should have bplon of 180
+            x_coord = cube.coord(axis="x", dim_coords=True)
+            y_coord = cube.coord(axis="y", dim_coords=True)
+            if not iris.util._is_circular(
+                x_coord.points, 360.0, x_coord.bounds
+            ) or not iris.util._is_circular(y_coord.points, 180.0, y_coord.bounds):
+                if iris.FUTURE.lam_pole_offset:
+                    pp.bplon = 180.0
+                else:
+                    msg = (
+                        "Saving a cube defined on a Limited Area Model (LAM) grid to PP format "
+                        "will set the 'pole longitude' field (`bplon`) to 180.0 degrees in "
+                        "future iris releases. Enable this behaviour now with the Future flag "
+                        "`iris.FUTURE.lam_pole_offset = True`"
+                    )
+                    warnings.warn(msg, category=FutureWarning)
+
+        except iris.exceptions.CoordinateNotFoundError:
+            pass
     elif cube.coord_system("RotatedGeogCS") is not None:
         pp.bplat = cube.coord_system("RotatedGeogCS").grid_north_pole_latitude
         pp.bplon = cube.coord_system("RotatedGeogCS").grid_north_pole_longitude

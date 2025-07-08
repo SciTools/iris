@@ -619,6 +619,50 @@ class TrialRun(_SubParserGenerator):
         _subprocess_runner(asv_command, asv=True)
 
 
+class Validate(_SubParserGenerator):
+    name = "validate"
+    description = (
+        "Quickly check that the benchmark architecture works as intended with "
+        "the current codebase. Things that are checked: env creation/update, "
+        "package build/install/uninstall, artificial data creation."
+    )
+    epilog = "Sole acceptable syntax: python bm_runner.py validate"
+
+    @staticmethod
+    def func(args: argparse.Namespace) -> None:
+        _setup_common()
+
+        git_command = shlex.split("git rev-parse HEAD")
+        head_sha = _subprocess_runner_capture(git_command)[:8]
+
+        # Find the most recent commit where the lock-files are not
+        #  identical to HEAD - will force environment updates.
+        locks_dir = Path(__file__).parents[1] / "requirements" / "locks"
+        assert locks_dir.is_dir()
+        git_command = shlex.split(
+            f"git log -1 --pretty=format:%P -- {locks_dir.resolve()}"
+        )
+        locks_sha = _subprocess_runner_capture(git_command)[:8]
+
+        with NamedTemporaryFile("w") as hashfile:
+            hashfile.writelines([locks_sha, "\n", head_sha])
+            hashfile.flush()
+            asv_command = shlex.split(
+                f"run HASHFILE:{hashfile.name} --bench ValidateSetup "
+                "--attribute rounds=1 --show-stderr"
+            )
+            extra_env = environ | {"ON_DEMAND_BENCHMARKS": "1"}
+            _subprocess_runner(asv_command, asv=True, env=extra_env)
+
+    # No arguments permitted for this subclass:
+
+    def add_arguments(self) -> None:
+        pass
+
+    def add_asv_arguments(self) -> None:
+        pass
+
+
 class GhPost(_SubParserGenerator):
     name = "_gh_post"
     description = (
@@ -670,6 +714,7 @@ def main():
         SPerf,
         Custom,
         TrialRun,
+        Validate,
         GhPost,
     )
 

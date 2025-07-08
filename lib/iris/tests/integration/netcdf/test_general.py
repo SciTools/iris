@@ -16,6 +16,7 @@ import tempfile
 from unittest import mock
 import warnings
 
+import dask
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -361,9 +362,10 @@ data:
             cube = iris.load_cube(self.nc_path)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             _ = cube.coord("lat")
-        load_problem = LOAD_PROBLEMS.problems[-1]
-        assert isinstance(load_problem.loaded, iris.coords.DimCoord)
-        assert load_problem.loaded.name() == "latitude"
+        problems = LOAD_PROBLEMS.problems
+        assert isinstance(problems[-2].loaded, iris.coords.DimCoord)
+        assert isinstance(problems[-1].loaded, iris.coords.AuxCoord)
+        assert problems[-1].loaded.name() == "latitude"
 
 
 @tests.skip_data
@@ -456,7 +458,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         ds.close()
 
         # Complete the delayed saves.
-        result.compute()
+        dask.compute(result)
 
         # Check that data now *is* written.
         ds = nc.Dataset(filepath_indirect)

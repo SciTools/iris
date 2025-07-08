@@ -203,7 +203,7 @@ class Unit(cf_units.Unit):
             warnings.warn(message, category=FutureWarning)
 
             if hasattr(result, "shape"):
-                vfunc = np.vectorize(_round)
+                vfunc = np.frompyfunc(_round, 1, 1)
                 result = vfunc(result)
             else:
                 result = _round(result)

@@ -59,6 +59,12 @@ elif not BENCHMARK_DATA.is_dir():
 REUSE_DATA = True
 
 
+class DataGenerationError(Exception):
+    """Exception raised for errors during data generation."""
+
+    pass
+
+
 def run_function_elsewhere(func_to_run, *args, **kwargs):
     """Run a given function using the :const:`DATA_GEN_PYTHON` executable.
 
@@ -92,9 +98,19 @@ def run_function_elsewhere(func_to_run, *args, **kwargs):
         f"{func_to_run.__name__}(" + ",".join(func_call_term_strings) + ")"
     )
     python_string = "\n".join([func_string, func_call_string])
-    result = run(
-        [DATA_GEN_PYTHON, "-c", python_string], capture_output=True, check=True
-    )
+
+    try:
+        result = run(
+            [DATA_GEN_PYTHON, "-c", python_string],
+            capture_output=True,
+            check=True,
+            text=True,
+        )
+    except CalledProcessError as error_:
+        # From None 'breaks' the error chain - we don't want the original
+        #  traceback since it is long and confusing.
+        raise DataGenerationError(error_.stderr) from None
+
     return result.stdout
 
 
@@ -109,8 +125,8 @@ def load_realised():
     from iris.fileformats._nc_load_rules import helpers
     from iris.fileformats.netcdf.loader import _get_cf_var_data as pre_patched
 
-    def patched(cf_var, filename):
-        return as_concrete_data(pre_patched(cf_var, filename))
+    def patched(*args, **kwargs):
+        return as_concrete_data(pre_patched(*args, **kwargs))
 
     netcdf.loader._get_cf_var_data = patched
     helpers._get_cf_var_data = patched

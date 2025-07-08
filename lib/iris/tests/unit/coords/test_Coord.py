@@ -23,6 +23,7 @@ import iris
 from iris.coords import AuxCoord, Coord, DimCoord
 from iris.cube import Cube
 from iris.exceptions import UnitConversionError
+from iris.tests import _shared_utils
 from iris.tests.unit.coords import CoordTestMixin
 from iris.warnings import IrisVagueMetadataWarning
 
@@ -1177,15 +1178,34 @@ class Test__sanity_check_bounds(tests.IrisTest):
             coord._sanity_check_bounds()
 
 
-class Test_convert_units(tests.IrisTest):
+class Test_convert_units:
     def test_convert_unknown_units(self):
         coord = iris.coords.AuxCoord(1, units="unknown")
         emsg = (
             "Cannot convert from unknown units. "
             'The "units" attribute may be set directly.'
         )
-        with self.assertRaisesRegex(UnitConversionError, emsg):
+        with pytest.raises(UnitConversionError, match=emsg):
             coord.convert_units("degrees")
+
+    @pytest.mark.parametrize(
+        "attribute",
+        [
+            "valid_min",
+            "valid_max",
+            "valid_range",
+            "actual_range",
+        ],
+    )
+    def test_convert_attributes(self, attribute):
+        coord = iris.coords.AuxCoord(1, units="m")
+        value = np.array([0, 10]) if attribute.endswith("range") else 0
+        coord.attributes[attribute] = value
+        coord.convert_units("ft")
+        converted_value = cf_units.Unit("m").convert(value, "ft")
+        _shared_utils.assert_array_all_close(
+            coord.attributes[attribute], converted_value
+        )
 
 
 class Test___str__(tests.IrisTest):

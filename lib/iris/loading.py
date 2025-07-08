@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import itertools
 import threading
 from traceback import TracebackException
-from typing import Any, Iterable
+from typing import Any, Iterable, Type
 import warnings
 
 from iris.common import CFVariableMixin
@@ -334,17 +334,17 @@ class LoadProblems(threading.local):
         ...     sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
         >>> warnings.showwarning = custom_warn
 
-        >>> build_dimension_coordinate_original = helpers._build_dimension_coordinate
+        >>> get_names_original = helpers.get_names
 
-        >>> def raise_example_error_dim(filename, cf_coord_var, coord_name, coord_system):
+        >>> def raise_example_error_names(cf_coord_var, coord_name, attributes):
         ...     if cf_coord_var.cf_name == "time":
-        ...         raise ValueError("Example dimension coordinate error")
+        ...         raise ValueError("Example coordinate error")
         ...     else:
-        ...         return build_dimension_coordinate_original(
-        ...             filename, cf_coord_var, coord_name, coord_system
+        ...         return get_names_original(
+        ...             cf_coord_var, coord_name, attributes
         ...         )
 
-        >>> helpers._build_dimension_coordinate = raise_example_error_dim
+        >>> helpers.get_names = raise_example_error_names
         >>> air_temperature = std_names.STD_NAMES.pop("air_temperature")
         >>> iris.FUTURE.date_microseconds = True
 
@@ -378,10 +378,9 @@ class LoadProblems(threading.local):
     >>> print(iris.loading.LOAD_PROBLEMS)
     <iris.loading.LoadProblems object at ...>:
       .../A1B_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
-      .../A1B_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
+      .../A1B_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
       .../E1_north_america.nc: "'air_temperature' is not a valid standard_name", {'standard_name': 'air_temperature'}
-      .../E1_north_america.nc: "Example dimension coordinate error", unknown / (unknown)                 (-- : 240)
-
+      .../E1_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
 
     Below demonstrates how to explore the captured stack traces in detail:
 
@@ -394,14 +393,17 @@ class LoadProblems(threading.local):
     ...     print(problem.stack_trace.exc_type_str)
     ValueError
     ValueError
+    ValueError
 
     >>> last_problem = A1B[-1]
     >>> print("".join(last_problem.stack_trace.format()))
     Traceback (most recent call last):
       File ..., in _add_or_capture
         built = build_func()
-      File ..., in raise_example_error_dim
-    ValueError: Example dimension coordinate error
+      File ..., in _build_auxiliary_coordinate
+        ...
+      File ..., in raise_example_error_names
+    ValueError: Example coordinate error
     <BLANKLINE>
 
     :const:`LOAD_PROBLEMS` also captures the 'raw' information in the object
@@ -441,6 +443,33 @@ class LoadProblems(threading.local):
     demonstrating that this error handling is a 'best effort' and not perfect. We
     hope to continually improve it over time.
 
+    **More detail**
+
+    Each :class:`LoadProblems.Problem` instance carries other information to
+    help your investigation. This information is now shown when printing, to
+    keep the output as simple as possible.
+
+    The :attr:`Problem.destination` attribute shows where the problem object
+    was being added, which can be useful when you see many similar problems
+    and/or you are generating many objects in your load call:
+
+    >>> destination_0 = iris.loading.LOAD_PROBLEMS.problems[0].destination
+    >>> print(
+    ...     "The first problem occurred while adding to the "
+    ...     f"{destination_0.iris_class.__name__} named "
+    ...     f"'{destination_0.identifier}'"
+    ... )
+    The first problem occurred while adding to the Cube named 'air_temperature'
+
+    The :attr:`Problem.handled` flag can be useful to filter for only the most
+    (or least) impactful :class:`Problem` instances:
+
+    >>> for problem in iris.loading.LOAD_PROBLEMS.problems:
+    ...     if not problem.handled:
+    ...         print(problem)
+    /.../A1B_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
+    /.../E1_north_america.nc: "Example coordinate error", unknown / (unknown)                 (-- : 240)
+
     .. dropdown:: (expand to see cleanup)
 
         ..
@@ -452,7 +481,7 @@ class LoadProblems(threading.local):
 
         >>> warnings.showwarning = showwarning_original
         >>> warnings.filterwarnings("ignore")
-        >>> helpers._build_dimension_coordinate = build_dimension_coordinate_original
+        >>> helpers.get_names = get_names_original
         >>> std_names.STD_NAMES["air_temperature"] = air_temperature
 
     """
@@ -460,6 +489,32 @@ class LoadProblems(threading.local):
     @dataclass
     class Problem:
         """A single object that could not be loaded correctly."""
+
+        # TODO: is it acceptable to use dataclass instead of NamedTuple purely
+        #  because the docs render cleaner?!
+        @dataclass
+        class Destination:
+            """Info about where the problem object was being added.
+
+            E.g. a ``standard_name`` might be added to a
+            :class:`~iris.cube.Cube`, :class:`~iris.coords.DimCoord`, etcetera.
+
+            Provided for maximum user information when debugging.
+            """
+
+            iris_class: Type[CFVariableMixin]
+            """The class of the destination object.
+
+            E.g. :class:`~iris.cube.Cube` or :class:`~iris.coords.DimCoord`.
+            """
+
+            identifier: str
+            """A name to help distinguish amongst other possible destinations.
+
+            E.g. for NetCDF: this will be the
+            :attr:`~iris.common.mixin.CFVariableMixin.var_name`, for PP: the
+            :class:`~iris.fileformats.pp.STASH` string.
+            """
 
         filename: str
         """The file path/URL that contained the problem object."""
@@ -500,6 +555,20 @@ class LoadProblems(threading.local):
           the same way this would be seen at the command line.
         - ``stack_trace.exc_type_str``: the exception type e.g.
           :class:`ValueError`.
+        """
+
+        destination: Destination
+        """Info about where the problem object was being added."""
+
+        handled: bool = False
+        """Whether Iris can still load this object, working around the problem.
+
+        Examples where this is ``True`` include: storing invalid standard names
+        directly on their parent objects, or automatically demoting
+        non-monotonic coordinates to be auxiliary coordinates.
+
+        If this is ``False``: the :attr:`loaded` object will be entirely
+        missing from its parent object.
         """
 
         def __str__(self):
@@ -547,6 +616,8 @@ class LoadProblems(threading.local):
         filename: str,
         loaded: CFVariableMixin | dict[str, Any] | None,
         exception: BaseException,
+        destination: Problem.Destination,
+        handled: bool = False,
     ) -> Problem:
         """Record a problem object that could not be loaded correctly.
 
@@ -563,6 +634,10 @@ class LoadProblems(threading.local):
             :attr:`LoadProblems.Problem.loaded` for details on possible values.
         exception : Exception
             The traceback exception that was raised during loading.
+        destination : LoadProblems.Problem.Destination
+            Info about where the problem object was being added.
+        handled : bool, default=False
+            Whether Iris can still load this object, working around the problem.
 
         Returns
         -------
@@ -570,7 +645,13 @@ class LoadProblems(threading.local):
             The recorded load problem.
         """
         stack_trace = TracebackException.from_exception(exception)
-        problem = LoadProblems.Problem(filename, loaded, stack_trace)
+        problem = LoadProblems.Problem(
+            filename=filename,
+            loaded=loaded,
+            stack_trace=stack_trace,
+            destination=destination,
+            handled=handled,
+        )
         self._problems.append(problem)
 
         # Python's default warning behaviour means this will only be raised

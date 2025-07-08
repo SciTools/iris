@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.save` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from unittest import mock
 
 import cf_units
@@ -15,7 +11,9 @@ import cftime
 import numpy as np
 import pytest
 
+from iris import FUTURE
 from iris.coords import CellMethod, DimCoord
+from iris.cube import Cube
 from iris.fileformats._ff_cross_references import STASH_TRANS
 import iris.fileformats.pp as pp
 from iris.fileformats.pp_save_rules import _lbproc_rules, verify
@@ -43,37 +41,35 @@ def test_grid_and_pole__scalar_dim_longitude(unit, modulus):
     assert field.lbnpt == lon.points.size
 
 
-def test_realization():
+def test_realization(mocker):
     cube = stock.lat_lon_cube()
     real_coord = DimCoord(42, standard_name="realization", units=1)
     cube.add_aux_coord(real_coord)
-    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-        pp_field.lbrsvd = list(range(4))
-        verify(cube, pp_field)
-        member_number = pp_field.lbrsvd[3]
+    pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+    pp_field.lbrsvd = list(range(4))
+    verify(cube, pp_field)
+    member_number = pp_field.lbrsvd[3]
 
     assert member_number == 42
 
 
-def test_stash_string():
+def test_stash_string(mocker):
     cube = stock.lat_lon_cube()
     cube.attributes["STASH"] = "m01s34i001"
-    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-        pp_field.lbuser = list(range(7))
-        verify(cube, pp_field)
-        stash_num = pp_field.lbuser[3]
+    pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+    pp_field.lbuser = list(range(7))
+    verify(cube, pp_field)
+    stash_num = pp_field.lbuser[3]
 
     assert stash_num == 34001
 
 
-def test_bad_stash_string():
+def test_bad_stash_string(mocker):
     cube = stock.lat_lon_cube()
     cube.attributes["STASH"] = "ooovarvoo"
-    with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-        with pytest.raises(
-            ValueError, match='Expected STASH code MSI string "mXXsXXiXXX"'
-        ):
-            verify(cube, pp_field)
+    pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+    with pytest.raises(ValueError, match='Expected STASH code MSI string "mXXsXXiXXX"'):
+        verify(cube, pp_field)
 
 
 def _pp_save_ppfield_values(cube):
@@ -91,8 +87,8 @@ def _pp_save_ppfield_values(cube):
     return pp_field
 
 
-class TestVertical(tests.IrisTest):
-    def setUp(self):
+class TestVertical:
+    def setup_method(self):
         self.cube = stock.lat_lon_cube()
 
     def test_pseudo_level(self):
@@ -100,7 +96,7 @@ class TestVertical(tests.IrisTest):
         coord = DimCoord(pseudo_level, long_name="pseudo_level", units="1")
         self.cube.add_aux_coord(coord)
         lbuser5_produced = _pp_save_ppfield_values(self.cube).lbuser[4]
-        self.assertEqual(pseudo_level, lbuser5_produced)
+        assert pseudo_level == lbuser5_produced
 
     def test_soil_level(self):
         soil_level = 314
@@ -108,11 +104,11 @@ class TestVertical(tests.IrisTest):
         self.cube.add_aux_coord(coord)
         self.cube.standard_name = "moisture_content_of_soil_layer"
         field = _pp_save_ppfield_values(self.cube)
-        self.assertEqual(field.lbvc, 6)
-        self.assertEqual(field.lblev, soil_level)
-        self.assertEqual(field.blev, soil_level)
-        self.assertEqual(field.brsvd[0], 0)
-        self.assertEqual(field.brlev, 0)
+        assert field.lbvc == 6
+        assert field.lblev == soil_level
+        assert field.blev == soil_level
+        assert field.brsvd[0] == 0
+        assert field.brlev == 0
 
     def test_soil_depth(self):
         lower, point, upper = 1, 2, 3
@@ -120,47 +116,45 @@ class TestVertical(tests.IrisTest):
         self.cube.add_aux_coord(coord)
         self.cube.standard_name = "moisture_content_of_soil_layer"
         field = _pp_save_ppfield_values(self.cube)
-        self.assertEqual(field.lbvc, 6)
-        self.assertEqual(field.lblev, 0)
-        self.assertEqual(field.blev, point)
-        self.assertEqual(field.brsvd[0], lower)
-        self.assertEqual(field.brlev, upper)
+        assert field.lbvc == 6
+        assert field.lblev == 0
+        assert field.blev == point
+        assert field.brsvd[0] == lower
+        assert field.brlev == upper
 
 
-class TestLbfcProduction(tests.IrisTest):
-    def setUp(self):
+class TestLbfcProduction:
+    def setup_method(self):
         self.cube = stock.lat_lon_cube()
 
     def check_cube_stash_yields_lbfc(self, stash, lbfc_expected):
         if stash:
             self.cube.attributes["STASH"] = stash
         lbfc_produced = _pp_save_ppfield_values(self.cube).lbfc
-        self.assertEqual(lbfc_produced, lbfc_expected)
+        assert lbfc_produced == lbfc_expected
 
     def test_known_stash(self):
         stashcode_str = "m04s07i002"
-        self.assertIn(stashcode_str, STASH_TRANS)
+        assert stashcode_str in STASH_TRANS
         self.check_cube_stash_yields_lbfc(stashcode_str, 359)
 
     def test_unknown_stash(self):
         stashcode_str = "m99s99i999"
-        self.assertNotIn(stashcode_str, STASH_TRANS)
+        assert stashcode_str not in STASH_TRANS
         self.check_cube_stash_yields_lbfc(stashcode_str, 0)
 
     def test_no_stash(self):
-        self.assertNotIn("STASH", self.cube.attributes)
+        assert "STASH" not in self.cube.attributes
         self.check_cube_stash_yields_lbfc(None, 0)
 
     def check_cube_name_units_yields_lbfc(self, name, units, lbfc_expected):
         self.cube.rename(name)
         self.cube.units = units
         lbfc_produced = _pp_save_ppfield_values(self.cube).lbfc
-        self.assertEqual(
-            lbfc_produced,
-            lbfc_expected,
+        assert lbfc_produced == lbfc_expected, (
             "Lbfc for ({!r} / {!r}) should be {:d}, got {:d}".format(
                 name, units, lbfc_expected, lbfc_produced
-            ),
+            )
         )
 
     def test_name_units_to_lbfc(self):
@@ -173,8 +167,8 @@ class TestLbfcProduction(tests.IrisTest):
         self.check_cube_name_units_yields_lbfc("Junk_Name", "K", 0)
 
 
-class TestLbsrceProduction(tests.IrisTest):
-    def setUp(self):
+class TestLbsrceProduction:
+    def setup_method(self):
         self.cube = stock.lat_lon_cube()
 
     def check_cube_um_source_yields_lbsrce(
@@ -185,7 +179,7 @@ class TestLbsrceProduction(tests.IrisTest):
         if um_version_str is not None:
             self.cube.attributes["um_version"] = um_version_str
         lbsrce_produced = _pp_save_ppfield_values(self.cube).lbsrce
-        self.assertEqual(lbsrce_produced, lbsrce_expected)
+        assert lbsrce_produced == lbsrce_expected
 
     def test_none(self):
         self.check_cube_um_source_yields_lbsrce(None, None, 0)
@@ -206,7 +200,7 @@ class TestLbsrceProduction(tests.IrisTest):
         )
 
 
-class Test_Save__LbprocProduction(tests.IrisTest):
+class Test_Save__LbprocProduction:
     # This test class is a little different to the others.
     # If it called `pp.save` via `_pp_save_ppfield_values` it would run
     # `pp_save_rules.verify` and run all the save rules. As this class uses
@@ -215,33 +209,34 @@ class Test_Save__LbprocProduction(tests.IrisTest):
     # correctly (i.e. as a `SplittableInt` object).
     # To work around this we call the lbproc rules directly here.
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cube = stock.realistic_3d()
         self.pp_field = mock.MagicMock(spec=pp.PPField3)
         self.pp_field.HEADER_DEFN = pp.PPField3.HEADER_DEFN
-        self.patch("iris.fileformats.pp.PPField3", return_value=self.pp_field)
+        mocker.patch("iris.fileformats.pp.PPField3", return_value=self.pp_field)
 
     def test_no_cell_methods(self):
         lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
-        self.assertEqual(lbproc, 0)
+        assert lbproc == 0
 
     def test_mean(self):
         self.cube.cell_methods = (CellMethod("mean", "time", "1 hour"),)
         lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
-        self.assertEqual(lbproc, 128)
+        assert lbproc == 128
 
     def test_minimum(self):
         self.cube.cell_methods = (CellMethod("minimum", "time", "1 hour"),)
         lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
-        self.assertEqual(lbproc, 4096)
+        assert lbproc == 4096
 
     def test_maximum(self):
         self.cube.cell_methods = (CellMethod("maximum", "time", "1 hour"),)
         lbproc = _lbproc_rules(self.cube, self.pp_field).lbproc
-        self.assertEqual(lbproc, 8192)
+        assert lbproc == 8192
 
 
-class TestTimeMean(tests.IrisTest):
+class TestTimeMean:
     """Tests that time mean cell method is converted to pp appropriately.
 
     Pattern is pairs of tests - one with time mean method, and one without, to
@@ -249,109 +244,156 @@ class TestTimeMean(tests.IrisTest):
 
     """
 
-    def test_t1_time_mean(self):
-        cube = _get_single_time_cube(set_time_mean=True)
-        tc = cube.coord(axis="t")
+    def test_t1_time_mean(self, mocker, single_mean_time_cube):
+        tc = single_mean_time_cube.coord(axis="t")
         expected = tc.units.num2date(0)
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.t1
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
-    def test_t1_no_time_mean(self):
-        cube = _get_single_time_cube()
-        tc = cube.coord(axis="t")
+    def test_t1_no_time_mean(self, mocker, single_time_cube):
+        tc = single_time_cube.coord(axis="t")
         expected = tc.units.num2date(15)
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_time_cube, pp_field)
         actual = pp_field.t1
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
-    def test_t2_time_mean(self):
-        cube = _get_single_time_cube(set_time_mean=True)
-        tc = cube.coord(axis="t")
+    def test_t2_time_mean(self, mocker, single_mean_time_cube):
+        tc = single_mean_time_cube.coord(axis="t")
         expected = tc.units.num2date(30)
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.t2
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
-    def test_t2_no_time_mean(self):
-        cube = _get_single_time_cube(set_time_mean=False)
+    def test_t2_no_time_mean(self, mocker, single_time_cube):
         expected = cftime.datetime(0, 0, 0, calendar=None, has_year_zero=True)
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_time_cube, pp_field)
         actual = pp_field.t2
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
-    def test_lbft_no_forecast_time(self):
+    def test_lbft_no_forecast_time(self, mocker, single_time_cube):
         # Different pattern here: checking that lbft hasn't been changed from
         # the default value.
-        cube = _get_single_time_cube()
-        mock_lbft = mock.sentinel.lbft
+        mock_lbft = mocker.sentinel.lbft
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            pp_field.lbft = mock_lbft
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        pp_field.lbft = mock_lbft
+        verify(single_time_cube, pp_field)
         actual = pp_field.lbft
 
         assert mock_lbft is actual
 
-    def test_lbtim_no_time_mean(self):
-        cube = _get_single_time_cube()
+    def test_lbtim_no_time_mean(self, mocker, single_time_cube):
         expected_ib = 0
         expected_ic = 2  # 360 day calendar
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_time_cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
 
-        self.assertEqual(expected_ib, actual_ib)
-        self.assertEqual(expected_ic, actual_ic)
+        assert expected_ib == actual_ib
+        assert expected_ic == actual_ic
 
-    def test_lbtim_time_mean(self):
-        cube = _get_single_time_cube(set_time_mean=True)
+    def test_lbtim_time_mean(self, mocker, single_mean_time_cube):
         expected_ib = 2  # Time mean
         expected_ic = 2  # 360 day calendar
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_mean_time_cube, pp_field)
         actual_ib = pp_field.lbtim.ib
         actual_ic = pp_field.lbtim.ic
 
-        self.assertEqual(expected_ib, actual_ib)
-        self.assertEqual(expected_ic, actual_ic)
+        assert expected_ib == actual_ib
+        assert expected_ic == actual_ic
 
-    def test_lbproc_no_time_mean(self):
-        cube = _get_single_time_cube()
+    def test_lbproc_no_time_mean(self, mocker, single_time_cube):
         expected = 0
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_time_cube, pp_field)
         actual = pp_field.lbproc
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
-    def test_lbproc_time_mean(self):
-        cube = _get_single_time_cube(set_time_mean=True)
+    def test_lbproc_time_mean(self, mocker, single_mean_time_cube):
         expected = 128
 
-        with mock.patch("iris.fileformats.pp.PPField3", autospec=True) as pp_field:
-            verify(cube, pp_field)
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(single_mean_time_cube, pp_field)
         actual = pp_field.lbproc
 
-        self.assertEqual(expected, actual)
+        assert expected == actual
 
 
-def _get_single_time_cube(set_time_mean=False):
+class TestPoleLocation:
+    @pytest.mark.parametrize(
+        "future_enabled",
+        [
+            pytest.param(True, id="with_lam_pole_offset_future"),
+            pytest.param(False, id="default"),
+        ],
+    )
+    def test_lam_standard_pole(self, mocker, future_enabled):
+        cube = stock.lat_lon_cube()
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        with FUTURE.context(lam_pole_offset=future_enabled):
+            if future_enabled:
+                verify(cube, pp_field)
+                assert pp_field.bplon == 180.0
+            else:
+                with pytest.warns(FutureWarning, match="iris.FUTURE.lam_pole_offset"):
+                    verify(cube, pp_field)
+                assert pp_field.bplon == 0.0
+
+        assert pp_field.bplat == 90.0
+
+    def test_global_standard_pole(self, mocker, global_cube):
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        with FUTURE.context(lam_pole_offset=True):
+            verify(global_cube, pp_field)
+
+        # Global domains should have bplon set to 0.0
+        assert pp_field.bplon == 0.0
+        assert pp_field.bplat == 90.0
+
+    def test_zonal_slice(self, mocker, zonal_slice_cube):
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        with FUTURE.context(lam_pole_offset=True):
+            verify(zonal_slice_cube, pp_field)
+
+        # Zonal slice doesn't have lat coord, so is not a LAM:
+        assert pp_field.bplon == 0.0
+        assert pp_field.bplat == 90.0
+
+    def test_lam_rotated_pole(self, mocker, single_time_cube):
+        coord_system = single_time_cube.coord_system()
+        bplon = coord_system.grid_north_pole_longitude
+        bplat = coord_system.grid_north_pole_latitude
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+
+        with FUTURE.context(lam_pole_offset=True):
+            verify(single_time_cube, pp_field)
+
+        assert pp_field.lbcode == 101
+        assert pp_field.bplon == bplon
+        assert pp_field.bplat == bplat
+
+
+@pytest.fixture
+def single_time_cube():
+    # stock.realistic_3d returns a cube on a rotated pole grid
     cube = stock.realistic_3d()[0:1, :, :]
     cube.remove_coord("time")
     cube.remove_coord("forecast_period")
@@ -362,10 +404,38 @@ def _get_single_time_cube(set_time_mean=False):
         bounds=[[0, 30]],
     )
     cube.add_dim_coord(tc, 0)
-    if set_time_mean:
-        cube.cell_methods = (CellMethod("mean", coords="time"),)
     return cube
 
 
-if __name__ == "__main__":
-    tests.main()
+@pytest.fixture
+def zonal_slice_cube():
+    x_coord = DimCoord(
+        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
+    )
+    t_coord = DimCoord(
+        np.arange(5), standard_name="time", units="hours since 2020-01-01T00:00:00"
+    )
+    return Cube(
+        data=np.zeros((len(t_coord.points), len(x_coord.points))),
+        dim_coords_and_dims=[(t_coord, 0), (x_coord, 1)],
+    )
+
+
+@pytest.fixture
+def single_mean_time_cube(single_time_cube):
+    single_time_cube.cell_methods = (CellMethod("mean", coords="time"),)
+    return single_time_cube
+
+
+@pytest.fixture()
+def global_cube():
+    x_coord = DimCoord(
+        np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True
+    )
+    y_coord = DimCoord(
+        np.arange(-90, 90, 10), standard_name="latitude", units="degrees", circular=True
+    )
+    return Cube(
+        data=np.zeros((len(x_coord.points), len(y_coord.points))),
+        dim_coords_and_dims=[(x_coord, 0), (y_coord, 1)],
+    )

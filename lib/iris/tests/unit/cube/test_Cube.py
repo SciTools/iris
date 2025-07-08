@@ -2336,21 +2336,6 @@ class Test__init__mesh:
         )
         assert cube.mesh == meshco_x.mesh
 
-    def test_multi_meshcoords_same_axis(self):
-        # *Not* an error, as long as the coords are distinguishable.
-        meshco_1 = sample_meshcoord(axis="x", mesh=self.mesh)
-        meshco_2 = sample_meshcoord(axis="x", mesh=self.mesh)
-        # Can't make these different at creation, owing to the limited
-        # constructor args, but we can adjust common metadata afterwards.
-        meshco_2.rename("junk_name")
-
-        n_faces = meshco_1.shape[0]
-        cube = Cube(
-            np.zeros(n_faces),
-            aux_coords_and_dims=[(meshco_1, 0), (meshco_2, 0)],
-        )
-        assert cube.mesh == meshco_1.mesh
-
     def test_fail_meshcoords_different_locations(self):
         # Same as successful 'multi_mesh', but different locations.
         # N.B. must have a mesh with n-faces == n-edges to test this
@@ -2421,18 +2406,6 @@ class Test__add_aux_coord__mesh:
         # Add the y-meshco back into the cube.
         cube.add_aux_coord(meshco_y, 1)
         assert meshco_y in cube.coords(mesh_coords=True)
-
-    def test_add_multiple(self):
-        # Show that we can add extra mesh coords.
-        cube = self.cube
-        meshco_y = self.meshco_y
-        # Add the y-meshco back into the cube.
-        cube.add_aux_coord(meshco_y, 1)
-        # Make a duplicate y-meshco, renamed so it can add into the cube.
-        new_meshco_y = meshco_y.copy()
-        new_meshco_y.rename("alternative")
-        cube.add_aux_coord(new_meshco_y, 1)
-        assert len(cube.coords(mesh_coords=True)) == 3
 
     def test_add_equal_mesh(self):
         # Make a duplicate y-meshco, and rename so it can add into the cube.
@@ -3023,6 +2996,25 @@ class Test_convert_units:
         cube.convert_units("m s-1")
         cube.data
         _client.close()
+
+    @pytest.mark.parametrize(
+        "attribute",
+        [
+            "valid_min",
+            "valid_max",
+            "valid_range",
+            "actual_range",
+        ],
+    )
+    def test_convert_attributes(self, attribute):
+        cube = iris.cube.Cube(1, units="degrees_C")
+        value = np.array([0, 10]) if attribute.endswith("range") else 0
+        cube.attributes.locals[attribute] = value
+        cube.convert_units("K")
+        converted_value = Unit("degrees_C").convert(value, "K")
+        _shared_utils.assert_array_all_close(
+            cube.attributes.locals[attribute], converted_value
+        )
 
 
 class Test__eq__data:

@@ -135,21 +135,21 @@ class Test_dependencies:
 
 class Test__derive:
     def test_function_scalar(self):
-        assert AtmosphereSigmaFactory._derive(0, 0, 0) == 0
-        assert AtmosphereSigmaFactory._derive(3, 0, 0) == 3
-        assert AtmosphereSigmaFactory._derive(0, 5, 0) == 0
-        assert AtmosphereSigmaFactory._derive(0, 0, 7) == 0
-        assert AtmosphereSigmaFactory._derive(3, 5, 0) == -12
-        assert AtmosphereSigmaFactory._derive(3, 0, 7) == 3
-        assert AtmosphereSigmaFactory._derive(0, 5, 7) == 35
-        assert AtmosphereSigmaFactory._derive(3, 5, 7) == 23
+        assert AtmosphereSigmaFactory._calculate_array(0, 0, 0) == 0
+        assert AtmosphereSigmaFactory._calculate_array(3, 0, 0) == 3
+        assert AtmosphereSigmaFactory._calculate_array(0, 5, 0) == 0
+        assert AtmosphereSigmaFactory._calculate_array(0, 0, 7) == 0
+        assert AtmosphereSigmaFactory._calculate_array(3, 5, 0) == -12
+        assert AtmosphereSigmaFactory._calculate_array(3, 0, 7) == 3
+        assert AtmosphereSigmaFactory._calculate_array(0, 5, 7) == 35
+        assert AtmosphereSigmaFactory._calculate_array(3, 5, 7) == 23
 
     def test_function_array(self):
         ptop = 3
         sigma = np.array([2, 4])
         ps = np.arange(4).reshape(2, 2)
         np.testing.assert_equal(
-            AtmosphereSigmaFactory._derive(ptop, sigma, ps),
+            AtmosphereSigmaFactory._calculate_array(ptop, sigma, ps),
             [[-3, -5], [1, 3]],
         )
 
