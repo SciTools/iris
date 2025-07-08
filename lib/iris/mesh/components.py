@@ -2840,6 +2840,7 @@ class MeshCoord(AuxCoord):
                 "climatological",
                 "coord_system",
                 "attributes",
+                "haz_lazy_data",
             ):
                 object.__getattribute__(self, "update_from_mesh")(True)
             else:
@@ -2988,7 +2989,15 @@ class MeshCoord(AuxCoord):
 
     @property
     def _metadata_manager(self):
-        # sets the metadata
+        # update metadata
+        use_metadict = self._load_metadata()
+        self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
+        self._metadata_manager_temp.long_name = use_metadict["long_name"]
+        self._metadata_manager_temp.var_name = use_metadict["var_name"]
+        self._metadata_manager_temp.units = use_metadict["units"]
+        self._metadata_manager_temp.attributes = use_metadict["attributes"]
+        self._metadata_manager_temp.coord_system = use_metadict["coord_system"]
+        self._metadata_manager_temp.climatological = use_metadict["climatological"]
         return self._metadata_manager_temp
 
     def __getitem__(self, keys):
@@ -3010,19 +3019,6 @@ class MeshCoord(AuxCoord):
             if (self._last_modified is None) or (
                 self._last_modified < self.mesh._last_modified
             ):
-                # update metadata
-                use_metadict = self._load_metadata()
-                self._metadata_manager_temp.standard_name = use_metadict[
-                    "standard_name"
-                ]
-                self._metadata_manager_temp.long_name = use_metadict["long_name"]
-                self._metadata_manager_temp.var_name = use_metadict["var_name"]
-                self._metadata_manager_temp.units = use_metadict["units"]
-                self._metadata_manager_temp.attributes = use_metadict["attributes"]
-                self._metadata_manager_temp.coord_system = use_metadict["coord_system"]
-                self._metadata_manager_temp.climatological = use_metadict[
-                    "climatological"
-                ]
                 if points_and_bounds:
                     # update points and bounds
                     points, bounds = self._load_points_and_bounds()
