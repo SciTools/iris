@@ -704,18 +704,25 @@ class CFGridMappingVariable(CFVariable):
                                 )
                         else:
                             # For extended grid_mapping, also check coord references exist:
+                            has_a_valid_coord = False
                             if coords:
                                 for coord_name in coords:
                                     # coord_name could be None if simple grid_mapping is used.
-                                    if coord_name and coord_name not in variables:
+                                    if coord_name is None or (
+                                        coord_name and coord_name in variables
+                                    ):
+                                        has_a_valid_coord = True
+                                    else:
                                         message = "Missing CF-netCDF coordinate variable %r (associated with grid mapping variable %r), referenced by netCDF variable %r"
                                         warnings.warn(
                                             message % (coord_name, name, nc_var_name),
                                             category=iris.warnings.IrisCfMissingVarWarning,
                                         )
-                            # TODO: Question: A missing coord reference will not stop the coord_system from
-                            #  being added as a CFGridMappingVariable. Is this ok?
-                            result[name] = CFGridMappingVariable(name, variables[name])
+                            #  Only add as a CFGridMappingVariable if at least one of its referenced coords exists:
+                            if has_a_valid_coord:
+                                result[name] = CFGridMappingVariable(
+                                    name, variables[name]
+                                )
         return result
 
 
