@@ -46,6 +46,9 @@ This document explains the changes made to Iris for this release
    the behaviour when calling :attr:`iris.MeshCoord.points` and :attr:`MeshCoord.bounds`, which will return
    real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
 
+#. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
+   (:pull: 6517).
+
 
 🐛 Bugs Fixed
 =============
