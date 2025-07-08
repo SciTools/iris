@@ -235,3 +235,70 @@ Worked example:
     >>> my_coord.ignore_axis = True
     >>> print(guess_coord_axis(my_coord))
     None
+
+Multiple Coordinate Systems and Ordered Axes
+--------------------------------------------
+
+Traditionally, the coordinate system for coordinate of a data variable
+is specified by variable a single name in the ``grid_mapping`` attribute,
+e.g.:
+
+::
+
+    grid_mapping = 'latitude_longitude`
+
+Since version `1.8 of the CF Conventions
+<https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections>`_
+, there has been support for the concept of **ordered axes** in the definition
+of a coordinate system which allows for more explicit specification of the
+associated coordinate variables.
+
+This is achieved via use of an extended syntax in the ``grid_mapping``
+attribute of a data variable:
+
+::
+
+    <gridMappingVariable>: <coordinatesVariable> [<coordinatesVariable> …] [<gridMappingVariable>: <coordinatesVariable>…]
+
+where each ``gridMappingVariable`` identifies a grid mapping variable
+followed by the list of associated coordinate variables. Note that with
+this syntax it is possible to specify multiple coordinate systems for a
+data variable.
+
+The order of the axes in the extended grid mapping specification is
+significant, but only when used in conjunction with a "well known text"
+(WKT) representation of the coordinate system _REF_ where it should be
+consistent with the ``AXES ORDER`` specified in the ``crs_wkt`` attribute.
+
+
+Effect on loading
+^^^^^^^^^^^^^^^^^
+
+When Iris loads a NetCDF file that uses the extended grid mapping syntax
+it will generate an :class:`iris.coord_systems.CoordSystem` for each
+coordinate system listed and attempt to attach it to the associated
+:class:`iris.coord.Coord` instances on the cube. Currently, Iris considers
+the ``crs_wkt`` supplementary and builds coordinate systems exclusively
+from the ``grid_mapping`` attribute.
+
+The :attr:`iris.cube.Cube.ordered_axes` property will be set to ``True``
+for cubes loaded from NetCDF data variables utilising the extended
+``grid_mapping`` syntax.
+
+Effect on saving
+^^^^^^^^^^^^^^^^
+
+To maintain existing behaviour, saving an :class:`iris.cube.Cube` to
+a netCDF file will default to the "simple" grid mapping syntax. If
+the cube contains multiple coordinate systems, only the coordinate
+system of the dimension coordinate(s) will be specified.
+
+To enable saving of multiple coordinate systems with ordered axes,
+set the :attr:`iris.cube.Cube.ordered_axes` to ``True``. This will
+generate a ``grid_mapping`` attribute using the extended syntax to
+specify all coordinate systems on the cube. The axes ordering of the
+associated coordinate variables will be consistent with that of the
+generated ``crs_wkt`` attribute.
+
+Note, the ``crs_wkt`` attribute will only be generated when the
+extended grid mapping is also written, i.e. when ``Cube.ordered_axes=True``.
