@@ -622,7 +622,9 @@ class Saver:
 
         # Add the auxiliary coordinate variables and associate the data
         # variable to them
-        self._add_aux_coords(cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs)
+        self._add_aux_coords(
+            cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs
+        )
 
         # Add the cell_measures variables and associate the data
         # variable to them
@@ -630,7 +632,9 @@ class Saver:
 
         # Add the ancillary_variables variables and associate the data variable
         # to them
-        self._add_ancillary_variables(cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs)
+        self._add_ancillary_variables(
+            cube, cf_var_cube, cube_dimensions, compression_kwargs=compression_kwargs
+        )
 
         # Add the formula terms to the appropriate cf variables for each
         # aux factory in the cube.
@@ -890,7 +894,14 @@ class Saver:
         return cf_mesh_name
 
     def _add_inner_related_vars(
-        self, cube, cf_var_cube, dimension_names, coordlike_elements, /, *, compression_kwargs=None
+        self,
+        cube,
+        cf_var_cube,
+        dimension_names,
+        coordlike_elements,
+        /,
+        *,
+        compression_kwargs=None,
     ):
         """Create a set of variables for aux-coords, ancillaries or cell-measures.
 
@@ -920,7 +931,10 @@ class Saver:
                 if cf_name is None:
                     # Not already present : create it
                     cf_name = self._create_generic_cf_array_var(
-                        cube, dimension_names, element, compression_kwargs=compression_kwargs
+                        cube,
+                        dimension_names,
+                        element,
+                        compression_kwargs=compression_kwargs,
                     )
                     self._name_coord_map.append(cf_name, element)
 
@@ -936,7 +950,9 @@ class Saver:
                 variable_names = " ".join(sorted(element_names))
                 _setncattr(cf_var_cube, role_attribute_name, variable_names)
 
-    def _add_aux_coords(self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None):
+    def _add_aux_coords(
+        self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None
+    ):
         """Add aux. coordinate to the dataset and associate with the data variable.
 
         Parameters
@@ -999,7 +1015,9 @@ class Saver:
             cube.cell_measures(),
         )
 
-    def _add_ancillary_variables(self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None):
+    def _add_ancillary_variables(
+        self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None
+    ):
         """Add ancillary variables measures to the dataset and associate with the data variable.
 
         Parameters
@@ -1853,7 +1871,9 @@ class Saver:
                     _setncattr(cf_var, "axis", axis.upper())
 
             # Create the associated CF-netCDF bounds variable, if any.
-            self._create_cf_bounds(element, cf_var, cf_name, compression_kwargs=compression_kwargs)
+            self._create_cf_bounds(
+                element, cf_var, cf_name, compression_kwargs=compression_kwargs
+            )
 
         # Add the data to the CF-netCDF variable.
         self._lazy_stream_data(data=data, cf_var=cf_var)
