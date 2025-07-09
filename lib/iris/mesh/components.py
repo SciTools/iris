@@ -2481,7 +2481,6 @@ class _MeshConnectivityManagerBase(ABC):
 
     @property
     def _members(self):
-        self.timestamp.update()
         return self._members_dict
 
     @_members.setter

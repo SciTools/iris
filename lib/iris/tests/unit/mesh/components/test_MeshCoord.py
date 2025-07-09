@@ -1034,7 +1034,6 @@ class Test__updates_from_mesh:
         assert self.meshcoord.mesh._last_modified == self.timestamp_at_creation
 
         self.coord_on_mesh.points = np.zeros(3)
-        self.meshcoord.points
 
         assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
         assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
