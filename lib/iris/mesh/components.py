@@ -2772,9 +2772,9 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
-        # self._last_modified = None
         self._updating = True
         self._read_only = True
+
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
 
@@ -2823,18 +2823,17 @@ class MeshCoord(AuxCoord):
         self._updating = False
 
     def __getattribute__(self, item):
-        # Ensure that the MeshCoord is up to date whenever you use it
+        # Ensure that the MeshCoord is up to date each time you access an attribute.
         # object.__getattribute__ bypasses this block to avoid infinite recursion
-        # by calling the method on the base class `object`
+        # by calling the method on the base class `object`.
         updating = object.__getattribute__(self, "_updating")
         if updating is False and item != "update_from_mesh":
-            # Don't update the points/bounds if you're only getting metadata
             object.__getattribute__(self, "update_from_mesh")()
         return super().__getattribute__(item)
 
-        # Define accessors for MeshCoord-specific properties mesh/location/axis.
+    # Define accessors for MeshCoord-specific properties mesh/location/axis, and
+    # ensure every property on a MeshCoord is read-only.
 
-    # These are all read-only.
     @property
     def mesh(self):
         return self._mesh
@@ -2944,7 +2943,8 @@ class MeshCoord(AuxCoord):
     def points(self):
         """The coordinate points values as a NumPy array."""
         try:
-            # the points property should return real data, but shouldn't realise the coord on the mesh
+            # The points property should return real data, but shouldn't
+            # realise the coord on the mesh.
             return super().core_points().compute()
         except AttributeError:
             return super().core_points()
@@ -2958,6 +2958,8 @@ class MeshCoord(AuxCoord):
 
     @property
     def bounds(self):
+        # The bounds property should return real data, but shouldn't
+        # realise the coord on the mesh.
         try:
             return super().core_bounds().compute()
         except AttributeError:
@@ -2974,7 +2976,7 @@ class MeshCoord(AuxCoord):
 
     @property
     def _metadata_manager(self):
-        # update metadata
+        # Fetches the metadata from the mesh every time any metadata is accessed.
         use_metadict = self._load_metadata()
         self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
         self._metadata_manager_temp.long_name = use_metadict["long_name"]
@@ -2999,6 +3001,14 @@ class MeshCoord(AuxCoord):
         return self.copy()
 
     def update_from_mesh(self):
+        """Fetch and recalculate the points and bounds from the relevant coord on the mesh.
+
+        This uses _last_modified to ensure that points/bounds are only updated when they
+        are out of date with the mesh, to prevent unnecessary time costs.
+
+        In most cases, updates should be done automatically, but this method can be used
+        if for some reason the points or bounds are out of date.
+        """
         try:
             object.__setattr__(self, "_updating", True)
             if (self._last_modified is None) or (

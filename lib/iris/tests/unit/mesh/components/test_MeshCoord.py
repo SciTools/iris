@@ -1030,15 +1030,12 @@ class Test__updates_from_mesh:
             c.__setattr__(name, value)
 
     def test__last_modified(self):
-        # Ensure they are identical at creation.
+        # Ensure that mesh._last_modified is updated when you update the mesh, and
+        # and meshcoord._last_modified is updated to match that.
+
         assert self.meshcoord.mesh._last_modified == self.timestamp_at_creation
 
         self.coord_on_mesh.points = np.zeros(3)
-
-        assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
-        assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
-
-        self.meshcoord.points
 
         assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
         assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
@@ -1053,6 +1050,7 @@ class Test__updates_from_mesh:
         assert self.meshcoord.points.all() != zeroes.all()
         self.coord_on_mesh.points = zeroes
         assert self.meshcoord.points.all() == zeroes.all()
+        mocked.assert_called_once()
 
     def test_bounds(self, mocker):
         zero_bounds = np.zeros(3)
@@ -1085,7 +1083,8 @@ class Test__updates_from_mesh:
             metadata_name
         ) == self.coord_on_mesh.__getattribute__(metadata_name)
 
-        # Ensure updating metadata doesn't prompt the MeshCoord to update points and bounds
+        # Ensure updating metadata doesn't prompt the MeshCoord
+        # to update points and bounds.
         mocked.assert_not_called()
 
     def test_units(self, mocker):
@@ -1093,6 +1092,8 @@ class Test__updates_from_mesh:
         for c in self.mesh.coords():
             c.units = "radians"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+        # Ensure updating metadata doesn't prompt the MeshCoord
+        # to update points and bounds.
         mocked.assert_not_called()
 
     def test_standard_name(self, mocker):
@@ -1102,6 +1103,8 @@ class Test__updates_from_mesh:
         for c in self.mesh.coords(axis="y"):
             c.standard_name = "grid_latitude"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+        # Ensure updating metadata doesn't prompt the MeshCoord
+        # to update points and bounds.
         mocked.assert_not_called()
 
     def test_updates(self, mocker):
@@ -1113,13 +1116,13 @@ class Test__updates_from_mesh:
             np.zeros((3, 3)),
         )
         self.coord_on_mesh.points = np.zeros(3)
-        # Only the first update should actually update
+        # Only the first update should actually update the points/bounds.
         _ = self.meshcoord.update_from_mesh()
         _ = self.meshcoord.update_from_mesh()
         mocked.assert_called_once()
 
         # Ensure it updates more than once if the mesh has been updated
-        # a second time
+        # a second time.
         self.coord_on_mesh.points = np.ones(3)
         _ = self.meshcoord.update_from_mesh()
         assert mocked.call_count == 2
