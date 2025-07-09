@@ -1034,29 +1034,41 @@ class Test__updates_from_mesh:
         assert self.meshcoord.mesh._last_modified == self.timestamp_at_creation
 
         self.coord_on_mesh.points = np.zeros(3)
+        self.meshcoord.points
 
         assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
         assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
 
-        self.meshcoord.standard_name
+        self.meshcoord.points
 
         assert self.meshcoord.mesh._last_modified == self.meshcoord._last_modified
         assert self.meshcoord.mesh._last_modified != self.timestamp_at_creation
 
-    def test_points(self):
+    def test_points(self, mocker):
         zeroes = np.zeros(3)
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
+        mocked.return_value = (
+            zeroes,
+            np.zeros((3, 3)),
+        )
         assert self.meshcoord.points.all() != zeroes.all()
         self.coord_on_mesh.points = zeroes
         assert self.meshcoord.points.all() == zeroes.all()
 
-    def test_bounds(self):
+    def test_bounds(self, mocker):
         zero_bounds = np.zeros(3)
         zero_points = np.zeros(15)
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
+        mocked.return_value = (
+            zero_bounds,
+            np.zeros((3, 3)),
+        )
         assert self.meshcoord.bounds.all() != zero_bounds.all()
         # Node coords are used to calculate the meshcoord bounds
         for nc in self.meshcoord.mesh.node_coords:
             nc.points = zero_points
         assert self.meshcoord.bounds.all() == zero_bounds.all()
+        mocked.assert_called_once()
 
     @pytest.mark.parametrize(
         "metadata_name, value",
@@ -1066,23 +1078,32 @@ class Test__updates_from_mesh:
             ("attributes", {"foo": 1}),
         ],
     )
-    def test_basic_metadata(self, metadata_name, value):
+    def test_basic_metadata(self, metadata_name, value, mocker):
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
+
         self.coord_on_mesh.__setattr__(metadata_name, value)
         assert self.meshcoord.__getattribute__(
             metadata_name
         ) == self.coord_on_mesh.__getattribute__(metadata_name)
 
-    def test_units(self):
+        # Ensure updating metadata doesn't prompt the MeshCoord to update points and bounds
+        mocked.assert_not_called()
+
+    def test_units(self, mocker):
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
         for c in self.mesh.coords():
             c.units = "radians"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+        mocked.assert_not_called()
 
-    def test_standard_name(self):
+    def test_standard_name(self, mocker):
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
         for c in self.mesh.coords(axis="x"):
             c.standard_name = "grid_longitude"
         for c in self.mesh.coords(axis="y"):
             c.standard_name = "grid_latitude"
         assert self.meshcoord.standard_name == self.coord_on_mesh.standard_name
+        mocked.assert_not_called()
 
     def test_updates(self, mocker):
         mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")

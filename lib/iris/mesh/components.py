@@ -2773,7 +2773,7 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
-        self._last_modified = None
+        # self._last_modified = None
         self._updating = True
         self._read_only = True
         # Setup the metadata.
@@ -2820,6 +2820,7 @@ class MeshCoord(AuxCoord):
             raise e
         finally:
             self._read_only = True
+        self._last_modified = self.mesh._last_modified
         self._updating = False
 
     def __getattribute__(self, item):
@@ -2829,22 +2830,7 @@ class MeshCoord(AuxCoord):
         updating = object.__getattribute__(self, "_updating")
         if updating is False and item != "update_from_mesh":
             # Don't update the points/bounds if you're only getting metadata
-            if item not in (
-                "_metadata_manager_temp",
-                "_metadata_manager",
-                "standard_name",
-                "long_name",
-                "var_name",
-                "units",
-                "attributes",
-                "climatological",
-                "coord_system",
-                "attributes",
-                "haz_lazy_data",
-            ):
-                object.__getattribute__(self, "update_from_mesh")(True)
-            else:
-                object.__getattribute__(self, "update_from_mesh")(False)
+            object.__getattribute__(self, "update_from_mesh")()
         return super().__getattribute__(item)
 
         # Define accessors for MeshCoord-specific properties mesh/location/axis.
@@ -3013,17 +2999,16 @@ class MeshCoord(AuxCoord):
         # Translate "self[:,]" as "self.copy()".
         return self.copy()
 
-    def update_from_mesh(self, points_and_bounds=True):
+    def update_from_mesh(self):
         try:
             object.__setattr__(self, "_updating", True)
             if (self._last_modified is None) or (
                 self._last_modified < self.mesh._last_modified
             ):
-                if points_and_bounds:
-                    # update points and bounds
-                    points, bounds = self._load_points_and_bounds()
-                    super(MeshCoord, self.__class__).points.fset(self, points)
-                    super(MeshCoord, self.__class__).bounds.fset(self, bounds)
+                # update points and bounds
+                points, bounds = self._load_points_and_bounds()
+                super(MeshCoord, self.__class__).points.fset(self, points)
+                super(MeshCoord, self.__class__).bounds.fset(self, bounds)
                 object.__setattr__(self, "_last_modified", self.mesh._last_modified)
         # Ensure errors aren't bypassed
         except Exception as e:
@@ -3205,6 +3190,7 @@ class MeshCoord(AuxCoord):
             #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
+
         return points, bounds
 
     def _load_metadata(self):
