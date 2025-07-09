@@ -1116,13 +1116,32 @@ class Test__updates_from_mesh:
             np.zeros((3, 3)),
         )
         self.coord_on_mesh.points = np.zeros(3)
-        # Only the first update should actually update the points/bounds.
-        _ = self.meshcoord.update_from_mesh()
-        _ = self.meshcoord.update_from_mesh()
+        # Only the first time you access an attribute should fetch
+        # update the points and bounds.
+
+        self.meshcoord.standard_name
+        self.meshcoord.standard_name
         mocked.assert_called_once()
 
         # Ensure it updates more than once if the mesh has been updated
         # a second time.
         self.coord_on_mesh.points = np.ones(3)
-        _ = self.meshcoord.update_from_mesh()
+        self.meshcoord.standard_name
+        assert mocked.call_count == 2
+
+    def test_update_from_mesh(self, mocker):
+        mocked = mocker.patch.object(MeshCoord, "_load_points_and_bounds")
+        mocked.return_value = (
+            np.zeros(
+                3,
+            ),
+            np.zeros((3, 3)),
+        )
+        self.coord_on_mesh.points = np.zeros(3)
+        # Only the first update should actually update the points/bounds.
+        self.meshcoord.update_from_mesh()
+        mocked.assert_called_once()
+
+        # Ensure it forces an update, even if the mesh hasn't been updated.
+        self.meshcoord.update_from_mesh()
         assert mocked.call_count == 2

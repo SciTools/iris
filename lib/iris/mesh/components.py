@@ -2772,6 +2772,7 @@ class MeshCoord(AuxCoord):
         location,
         axis,
     ):
+        self._last_modified = None
         self._updating = True
         self._read_only = True
 
@@ -2826,8 +2827,12 @@ class MeshCoord(AuxCoord):
         # Ensure that the MeshCoord is up to date each time you access an attribute.
         # object.__getattribute__ bypasses this block to avoid infinite recursion
         # by calling the method on the base class `object`.
-        updating = object.__getattribute__(self, "_updating")
-        if updating is False and item != "update_from_mesh":
+        mesh = object.__getattribute__(self, "_mesh")
+        mesh_last_modified = object.__getattribute__(mesh, "_last_modified")
+        self_last_modified = object.__getattribute__(self, "_last_modified")
+        if (
+            self_last_modified is None or self_last_modified < mesh_last_modified
+        ) and item != "update_from_mesh":
             object.__getattribute__(self, "update_from_mesh")()
         return super().__getattribute__(item)
 
@@ -3009,23 +3014,22 @@ class MeshCoord(AuxCoord):
         In most cases, updates should be done automatically, but this method can be used
         if for some reason the points or bounds are out of date.
         """
-        try:
-            object.__setattr__(self, "_updating", True)
-            if (self._last_modified is None) or (
-                self._last_modified < self.mesh._last_modified
-            ):
+        updating = object.__getattribute__(self, "_updating")
+        if updating is False:
+            try:
+                object.__setattr__(self, "_updating", True)
                 # update points and bounds
                 points, bounds = self._load_points_and_bounds()
                 super(MeshCoord, self.__class__).points.fset(self, points)
                 super(MeshCoord, self.__class__).bounds.fset(self, bounds)
                 object.__setattr__(self, "_last_modified", self.mesh._last_modified)
-        # Ensure errors aren't bypassed
-        except Exception as e:
-            raise e
-        finally:
-            # if _updating isn't reset, this would mean the MeshCoord would never
-            # update from the attached Mesh, breaking the link
-            object.__setattr__(self, "_updating", False)
+            # Ensure errors aren't bypassed
+            except Exception as e:
+                raise e
+            finally:
+                # if _updating isn't reset, this would mean the MeshCoord would never
+                # update from the attached Mesh, breaking the link
+                object.__setattr__(self, "_updating", False)
 
     def collapsed(self, dims_to_collapse=None):
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
