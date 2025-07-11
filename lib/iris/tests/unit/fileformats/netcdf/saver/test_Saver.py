@@ -181,10 +181,10 @@ class Test_write(tests.IrisTest):
         result = []
         for call in patch.call_args_list:
             kwargs = call.kwargs
-            if (
-                all(kwargs.get(k) == v for k, v in compression_kwargs.items())
-                or mismatch
-            ):
+            if all(kwargs.get(k) == v for k, v in compression_kwargs.items()):
+                if not mismatch:
+                    result.append(call.args[0])
+            elif mismatch:
                 result.append(call.args[0])
         return result
 
@@ -310,11 +310,11 @@ class Test_write(tests.IrisTest):
         result = self._filter_compression_calls(
             patch, compression_kwargs, mismatch=True
         )
-        self.assertEqual(5, len(result))
-        self.assertEqual(
-            {cube.name(), aux_coord.name(), anc_coord.name(), "dim0", "dim0_bnds"},
-            set(result),
-        )
+        self.assertEqual(4, len(result))
+        # the aux coord and ancil variable are not compressed due to shape, and
+        # the dim coord and its associated bounds are also not compressed
+        expected = {aux_coord.name(), anc_coord.name(), "dim0", "dim0_bnds"}
+        self.assertEqual(expected, set(result))
 
     def test_non_compression__dtype(self):
         cube = self._simple_cube(">f4")
@@ -344,10 +344,11 @@ class Test_write(tests.IrisTest):
         result = self._filter_compression_calls(
             patch, compression_kwargs, mismatch=True
         )
-        self.assertEqual(4, len(result))
-        self.assertEqual(
-            {cube.name(), aux_coord.name(), "dim0", "dim0_bnds"}, set(result)
-        )
+        self.assertEqual(3, len(result))
+        # the aux coord is not compressed due to its string dtype, and
+        # the dim coord and its associated bounds are also not compressed
+        expected = {aux_coord.name(), "dim0", "dim0_bnds"}
+        self.assertEqual(expected, set(result))
 
     def test_least_significant_digit(self):
         cube = Cube(
