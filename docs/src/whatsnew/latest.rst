@@ -49,6 +49,12 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
    (:pull: 6517).
 
+#. `@HGWright`_ and `@pp-mo`_ enabled correct loading and saving of the bounds of CF
+   parametric coordinates (that is, Iris derived coordinates).  This was previously
+   incorrect.  However the fix is opt-in, controlled by the ``derived_bounds`` flag in
+   the :data:`iris.FUTURE` object, to avoid breaking existing code.
+   (:issue:`3678`, :pull:`6481`, :pull:`6540`)
+
 
 🐛 Bugs Fixed
 =============
