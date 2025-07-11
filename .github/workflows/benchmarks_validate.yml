@@ -31,9 +31,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Nox
+      - name: Install run dependencies
         run: |
-          pip install nox!=2025.05.01
+          pip install asv nox!=2025.05.01
 
       - name: Cache environment directories
         id: cache-env-dir
