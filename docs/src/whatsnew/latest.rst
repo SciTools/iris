@@ -55,6 +55,10 @@ This document explains the changes made to Iris for this release
    the :data:`iris.FUTURE` object, to avoid breaking existing code.
    (:issue:`3678`, :pull:`6481`, :pull:`6540`)
 
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data payload when saving to NetCDF
+   to also include any auxiliary coordinates and ancillary variables with the same ``shape``.
+   (:issue:`6539`, :pull:`6552`)
+
 
 🐛 Bugs Fixed
 =============
