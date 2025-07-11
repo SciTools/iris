@@ -12,6 +12,7 @@ import numpy as np
 from numpy.testing import assert_array_equal
 import pytest
 
+from iris.cube import NP_PRINTOPTIONS_LEGACY
 import iris.fileformats.pp as pp
 from iris.tests import _shared_utils
 
@@ -64,7 +65,7 @@ class IrisPPTest:
         for pp_field in pp_fields:
             pp_field.data
 
-        with np.printoptions(legacy="2.2"):
+        with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             test_string = str(pp_fields)
         reference_path = _shared_utils.get_result_path(reference_filename)
         if os.path.isfile(reference_path):
