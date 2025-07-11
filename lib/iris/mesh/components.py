@@ -2481,7 +2481,6 @@ class _MeshConnectivityManagerBase(ABC):
 
     @property
     def _members(self):
-        self.timestamp.update()
         return self._members_dict
 
     @_members.setter
@@ -2776,6 +2775,7 @@ class MeshCoord(AuxCoord):
         self._last_modified = None
         self._updating = True
         self._read_only = True
+
         # Setup the metadata.
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
 
@@ -2820,20 +2820,25 @@ class MeshCoord(AuxCoord):
             raise e
         finally:
             self._read_only = True
+        self._last_modified = self.mesh._last_modified
         self._updating = False
 
     def __getattribute__(self, item):
-        # Ensure that the MeshCoord is up to date whenever you use it
+        # Ensure that the MeshCoord is up to date each time you access an attribute.
         # object.__getattribute__ bypasses this block to avoid infinite recursion
-        # by calling the method on the base class `object`
-        updating = object.__getattribute__(self, "_updating")
-        if updating is False and item != "update_from_mesh":
+        # by calling the method on the base class `object`.
+        mesh = object.__getattribute__(self, "_mesh")
+        mesh_last_modified = object.__getattribute__(mesh, "_last_modified")
+        self_last_modified = object.__getattribute__(self, "_last_modified")
+        if (
+            self_last_modified is None or self_last_modified < mesh_last_modified
+        ) and item != "update_from_mesh":
             object.__getattribute__(self, "update_from_mesh")()
         return super().__getattribute__(item)
 
-        # Define accessors for MeshCoord-specific properties mesh/location/axis.
+    # Define accessors for MeshCoord-specific properties mesh/location/axis, and
+    # ensure every property on a MeshCoord is read-only.
 
-    # These are all read-only.
     @property
     def mesh(self):
         return self._mesh
@@ -2943,7 +2948,8 @@ class MeshCoord(AuxCoord):
     def points(self):
         """The coordinate points values as a NumPy array."""
         try:
-            # the points property should return real data, but shouldn't realise the coord on the mesh
+            # The points property should return real data, but shouldn't
+            # realise the coord on the mesh.
             return super().core_points().compute()
         except AttributeError:
             return super().core_points()
@@ -2957,6 +2963,8 @@ class MeshCoord(AuxCoord):
 
     @property
     def bounds(self):
+        # The bounds property should return real data, but shouldn't
+        # realise the coord on the mesh.
         try:
             return super().core_bounds().compute()
         except AttributeError:
@@ -2973,9 +2981,8 @@ class MeshCoord(AuxCoord):
 
     @property
     def _metadata_manager(self):
-        # sets the metadata
+        # Fetches the metadata from the mesh every time any metadata is accessed.
         use_metadict = self._load_metadata()
-
         self._metadata_manager_temp.standard_name = use_metadict["standard_name"]
         self._metadata_manager_temp.long_name = use_metadict["long_name"]
         self._metadata_manager_temp.var_name = use_metadict["var_name"]
@@ -2999,22 +3006,27 @@ class MeshCoord(AuxCoord):
         return self.copy()
 
     def update_from_mesh(self):
-        try:
-            object.__setattr__(self, "_updating", True)
-            if (self._last_modified is None) or (
-                self._last_modified < self.mesh._last_modified
-            ):
+        """Fetch and recalculate the points and bounds from the relevant coord on the mesh.
+
+        In most cases, updates should be done automatically, but this method can be used
+        if for some reason the points or bounds are out of date.
+        """
+        updating = object.__getattribute__(self, "_updating")
+        if updating is False:
+            try:
+                object.__setattr__(self, "_updating", True)
+                # update points and bounds
                 points, bounds = self._load_points_and_bounds()
                 super(MeshCoord, self.__class__).points.fset(self, points)
                 super(MeshCoord, self.__class__).bounds.fset(self, bounds)
                 object.__setattr__(self, "_last_modified", self.mesh._last_modified)
-        # Ensure errors aren't bypassed
-        except Exception as e:
-            raise e
-        finally:
-            # if _updating isn't reset, this would mean the MeshCoord would never
-            # update from the attached Mesh, breaking the link
-            object.__setattr__(self, "_updating", False)
+            # Ensure errors aren't bypassed
+            except Exception as e:
+                raise e
+            finally:
+                # if _updating isn't reset, this would mean the MeshCoord would never
+                # update from the attached Mesh, breaking the link
+                object.__setattr__(self, "_updating", False)
 
     def collapsed(self, dims_to_collapse=None):
         """Return a copy of this coordinate, which has been collapsed along the specified dimensions.
@@ -3188,6 +3200,7 @@ class MeshCoord(AuxCoord):
             #  extra work to refactor the parent classes.
             msg = "Cannot yet create a MeshCoord without points."
             raise ValueError(msg)
+
         return points, bounds
 
     def _load_metadata(self):
