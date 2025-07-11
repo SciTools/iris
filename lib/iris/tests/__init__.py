@@ -7,6 +7,9 @@
 .. note:: This module needs to control the matplotlib backend, so it
           **must** be imported before ``matplotlib.pyplot``.
 
+.. note:: Iris is currently undergoing conversion to PyTest. Once that
+          conversion is complete, this module will eventually be removed.
+
 The primary class for this module is :class:`IrisTest`.
 
 """
