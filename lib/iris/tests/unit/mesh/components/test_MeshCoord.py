@@ -1138,7 +1138,6 @@ class Test__updates_from_mesh:
             np.zeros((3, 3)),
         )
         self.coord_on_mesh.points = np.zeros(3)
-        # Only the first update should actually update the points/bounds.
         self.meshcoord.update_from_mesh()
         mocked.assert_called_once()
 
