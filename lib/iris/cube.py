@@ -19,7 +19,6 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from packaging.version import Version
 from typing import TYPE_CHECKING, Any, Optional, TypeGuard
 import warnings
 from xml.dom.minidom import Document
@@ -29,6 +28,7 @@ from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+from packaging.version import Version
 
 import iris._constraints
 from iris._data_manager import DataManager
@@ -64,7 +64,11 @@ __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
 # Determine the numpy printoptions legacy setting.
 _NP_VERSION = Version(np.__version__)
 _NP_LEGACY_VERSION = Version("2.2")
-NP_PRINTOPTIONS_LEGACY = str(_NP_LEGACY_VERSION) if Version(f"{_NP_VERSION.major}.{_NP_VERSION.minor}") > _NP_LEGACY_VERSION else False
+NP_PRINTOPTIONS_LEGACY = (
+    str(_NP_LEGACY_VERSION)
+    if Version(f"{_NP_VERSION.major}.{_NP_VERSION.minor}") > _NP_LEGACY_VERSION
+    else False
+)
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
