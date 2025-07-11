@@ -3008,9 +3008,6 @@ class MeshCoord(AuxCoord):
     def update_from_mesh(self):
         """Fetch and recalculate the points and bounds from the relevant coord on the mesh.
 
-        This uses _last_modified to ensure that points/bounds are only updated when they
-        are out of date with the mesh, to prevent unnecessary time costs.
-
         In most cases, updates should be done automatically, but this method can be used
         if for some reason the points or bounds are out of date.
         """
