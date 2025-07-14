@@ -127,6 +127,8 @@ This document explains the changes made to Iris for this release
    :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
    (:pull:`6529`)
 
+#. `@tkknight`_ updated image to ensure it renders correctly using various web browsers
+   on Windows and Linux. (:pull:`6560`)
 
 💼 Internal
 ===========
