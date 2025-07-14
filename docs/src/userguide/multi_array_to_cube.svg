@@ -2,21 +2,21 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="588.37256"
    height="379.43076"
    id="svg2"
    version="1.1"
-   inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
+   inkscape:version="1.4.2 (ebf0e94, 2025-05-08)"
    sodipodi:docname="multi_array_to_cube.svg"
    inkscape:export-xdpi="90"
-   inkscape:export-ydpi="90">
+   inkscape:export-ydpi="90"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <marker
@@ -259,10 +259,10 @@
        sodipodi:type="inkscape:persp3d" />
     <filter
        id="filter4330"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
+       x="-inf"
+       y="-inf"
+       width="inf"
+       height="inf"
        inkscape:label="Lightness-Contrast"
        inkscape:menu="Color"
        inkscape:menu-tooltip="Increase or decrease lightness and contrast"
@@ -457,10 +457,10 @@
        sodipodi:type="inkscape:persp3d" />
     <filter
        id="filter4330-5-0"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
+       x="-0.024746726"
+       y="-0.049926996"
+       width="1.0494935"
+       height="1.099854"
        inkscape:label="Lightness-Contrast"
        inkscape:menu="Color"
        inkscape:menu-tooltip="Increase or decrease lightness and contrast"
@@ -710,10 +710,10 @@
        sodipodi:type="inkscape:persp3d" />
     <filter
        id="filter4330-2"
-       x="0"
-       y="0"
-       width="1"
-       height="1"
+       x="-0.022710981"
+       y="-0.045819841"
+       width="1.045422"
+       height="1.0916397"
        inkscape:label="Lightness-Contrast"
        inkscape:menu="Color"
        inkscape:menu-tooltip="Increase or decrease lightness and contrast"
@@ -827,9 +827,9 @@
     <filter
        id="filter4330-0"
        x="0"
-       y="0"
+       y="-inf"
        width="1"
-       height="1"
+       height="inf"
        inkscape:label="Lightness-Contrast"
        inkscape:menu="Color"
        inkscape:menu-tooltip="Increase or decrease lightness and contrast"
@@ -984,6 +984,40 @@
        inkscape:vp_y="0 : 1000 : 0"
        inkscape:vp_x="0 : 0.5 : 1"
        sodipodi:type="inkscape:persp3d" />
+    <filter
+       id="filter4330-09"
+       x="-0.010171507"
+       y="-0.020521212"
+       width="1.020343"
+       height="1.0410424"
+       inkscape:label="Lightness-Contrast"
+       inkscape:menu="Color"
+       inkscape:menu-tooltip="Increase or decrease lightness and contrast"
+       style="color-interpolation-filters:sRGB">
+      <feFlood
+         id="feFlood4332-4"
+         result="result1"
+         flood-opacity="0"
+         flood-color="rgb(128,128,128)" />
+      <feBlend
+         id="feBlend4334-8"
+         in2="SourceGraphic"
+         mode="normal"
+         result="result2" />
+      <feComposite
+         id="feComposite4336-8"
+         in2="SourceGraphic"
+         k2="1"
+         operator="arithmetic"
+         result="result3"
+         k1="0"
+         k3="0"
+         k4="0" />
+      <feComposite
+         id="feComposite4338-2"
+         in2="SourceGraphic"
+         operator="in" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -992,20 +1026,20 @@
      borderopacity="1.0"
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1.534"
-     inkscape:cx="156.4378"
-     inkscape:cy="286.45523"
+     inkscape:zoom="2.1694036"
+     inkscape:cx="152.34602"
+     inkscape:cy="97.492232"
      inkscape:document-units="px"
-     inkscape:current-layer="layer2"
+     inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:snap-bbox="true"
      inkscape:bbox-nodes="true"
      inkscape:snap-global="true"
-     inkscape:window-width="1718"
-     inkscape:window-height="1368"
-     inkscape:window-x="3633"
-     inkscape:window-y="0"
-     inkscape:window-maximized="0"
+     inkscape:window-width="3440"
+     inkscape:window-height="1369"
+     inkscape:window-x="1912"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
      width="1052.36px"
      showguides="true"
      inkscape:guide-bbox="true"
@@ -1015,7 +1049,9 @@
      fit-margin-top="10"
      fit-margin-left="10"
      fit-margin-bottom="10"
-     fit-margin-right="10" />
+     fit-margin-right="10"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -1432,5 +1468,45 @@
          x="555.79572"
          y="304.57159"
          style="font-size:16px;line-height:1.25">25</tspan></text>
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1"
+       id="rect1"
+       width="2.7409034"
+       height="185.27191"
+       x="275.66422"
+       y="298.09412"
+       ry="0" />
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1"
+       id="rect1-1"
+       width="2.7409034"
+       height="185.27191"
+       x="333.87"
+       y="298.13745"
+       ry="0" />
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1"
+       id="rect1-1-5"
+       width="2.7409034"
+       height="185.27191"
+       x="396.75919"
+       y="298.13876"
+       ry="0" />
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1;stroke-width:1.07886"
+       id="rect3"
+       width="230.85495"
+       height="2.410434"
+       x="223.59918"
+       y="356.37131"
+       ry="0" />
+    <rect
+       style="fill:#b2b2b2;fill-opacity:1;stroke-width:1.07886"
+       id="rect3-7"
+       width="230.85495"
+       height="2.410434"
+       x="223.60962"
+       y="422.51483"
+       ry="0" />
   </g>
 </svg>
