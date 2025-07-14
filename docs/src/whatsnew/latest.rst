@@ -144,6 +144,11 @@ This document explains the changes made to Iris for this release
    benchmark data generation, showing developers the root problem at-a-glance
    without needing local replication. (:pull:`6524`)
 
+#. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
+   and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
+
+
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -154,3 +159,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _Trusted Publishing: https://docs.pypi.org/trusted-publishers/
