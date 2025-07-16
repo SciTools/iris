@@ -159,7 +159,7 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                 src, cube = _ensure_aligned(regrid_cache, src, cube)
                 if src is not None:
                     new_coord = iris.coords.AuxCoord(
-                        src.data,
+                        src.core_data(),
                         src.standard_name,
                         src.long_name,
                         src.var_name,

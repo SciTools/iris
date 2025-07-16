@@ -46,6 +46,19 @@ This document explains the changes made to Iris for this release
    the behaviour when calling :attr:`iris.MeshCoord.points` and :attr:`MeshCoord.bounds`, which will return
    real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
 
+#. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
+   (:pull: 6517).
+
+#. `@HGWright`_ and `@pp-mo`_ enabled correct loading and saving of the bounds of CF
+   parametric coordinates (that is, Iris derived coordinates).  This was previously
+   incorrect.  However the fix is opt-in, controlled by the ``derived_bounds`` flag in
+   the :data:`iris.FUTURE` object, to avoid breaking existing code.
+   (:issue:`3678`, :pull:`6481`, :pull:`6540`)
+
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data payload when saving to NetCDF
+   to also include any auxiliary coordinates and ancillary variables with the same ``shape``.
+   (:issue:`6539`, :pull:`6552`)
+
 
 🐛 Bugs Fixed
 =============
@@ -114,6 +127,8 @@ This document explains the changes made to Iris for this release
    :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
    (:pull:`6529`)
 
+#. `@tkknight`_ updated image to ensure it renders correctly using various web browsers
+   on Windows and Linux. (:pull:`6560`)
 
 💼 Internal
 ===========
@@ -129,6 +144,9 @@ This document explains the changes made to Iris for this release
    benchmark data generation, showing developers the root problem at-a-glance
    without needing local replication. (:pull:`6524`)
 
+#. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
+   and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
+
 #. `@ESadek-MO`_ moved `@rcomer`s `mocked_compute` pytest fixture to the unit test
    `conftest.py`, and used this fixture in :mod:`tests/unit/analysis/maths/test__arith_dask_array.py` and
    :mod:`tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:``)
@@ -143,3 +161,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _Trusted Publishing: https://docs.pypi.org/trusted-publishers/
