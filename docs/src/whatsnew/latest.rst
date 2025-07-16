@@ -149,7 +149,7 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ moved `@rcomer`s `mocked_compute` pytest fixture to the unit test
    `conftest.py`, and used this fixture in :mod:`tests/unit/analysis/maths/test__arith_dask_array.py` and
-   :mod:`tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:``)
+   :mod:`tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:`6564`)
 
 
 .. comment
