@@ -829,6 +829,7 @@ def as_data_frame(
         return data_frame
 
     if getattr(cube, "ndim", None) is not None and (is_scalar := cube.ndim == 0):
+        # promote the scalar cube to a 1D cube, and convert in the same way as a 1D cube
         cube = new_axis(cube)
 
     if iris.FUTURE.pandas_ndim:
@@ -898,6 +899,8 @@ def as_data_frame(
         result = data_frame
 
     if is_scalar:
+        # clear the promoted dimension name associated with any
+        # indices of the dataframe
         if isinstance(result.index, pd.MultiIndex):
             result.index.names = [None] * result.index.nlevels
         else:
