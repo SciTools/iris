@@ -90,11 +90,15 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ fixed a bug which caused :meth:`~iris.cube.CubeList.concatenate_cube`
    to fail when concatenating over multiple axes. (:pull:`6533`)
 
+#. `@bjlittle`_ fixed :func:`~iris.pandas.as_data_frame` to correctly convert a
+   scalar cube to a :class:`pandas.DataFrame`. (:issue:`6419`, :pull:`6567`)
+
 
 💣 Incompatible Changes
 =======================
 
 #. N/A
+
 
 🚀 Performance Enhancements
 ===========================
@@ -129,6 +133,7 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ updated image to ensure it renders correctly using various web browsers
    on Windows and Linux. (:pull:`6560`)
+
 
 💼 Internal
 ===========
