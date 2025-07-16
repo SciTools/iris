@@ -12,6 +12,7 @@ import warnings
 from affine import Affine
 import cartopy.crs as ccrs
 import numpy as np
+import pyproj
 from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
 import shapely
@@ -28,6 +29,13 @@ if "iris.cube" in sys.modules:
     import iris.cube
 if "iris.analysis.cartography" in sys.modules:
     import iris.analysis.cartography
+
+# Set PROJ environment variable network settings to ensure
+# that PROJ forced to disable use of network for grids
+# This is equivalent to setting the PROJ_NETWORK environment variable
+# to "OFF" in the environment. Having PROJ_NETWORK = "ON"
+# can lead to some coordinate transformations resulting in Inf values.
+pyproj.network.set_network_enabled(active=False)
 
 
 # @mutually_exclusive_keywords("minimum_weight", "all_touched")
@@ -301,7 +309,7 @@ def is_geometry_valid(
         raise TypeError(msg)
 
     # Check geometry is valid shapely geometry
-    if not shapely.is_valid_input(geometry):
+    if not shapely.is_valid_input(geometry).any():
         msg = "Shape geometry is not a valid shape (not well formed)."
         raise TypeError(msg)
 
