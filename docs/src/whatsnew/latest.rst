@@ -129,6 +129,10 @@ This document explains the changes made to Iris for this release
    benchmark data generation, showing developers the root problem at-a-glance
    without needing local replication. (:pull:`6524`)
 
+#. `@ESadek-MO`_ moved `@rcomer`s `mocked_compute` pytest fixture to the unit test
+   `conftest.py`, and used this fixture in :mod:`tests/unit/analysis/maths/test__arith_dask_array.py` and
+   :mod:`tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:``)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

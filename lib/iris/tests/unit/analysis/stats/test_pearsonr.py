@@ -8,10 +8,6 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from unittest import mock
-
-import dask
-import dask.array
 import numpy as np
 import numpy.ma as ma
 import pytest
@@ -41,19 +37,6 @@ class Mixin:
 
 @tests.skip_data
 class TestLazy(Mixin):
-    @pytest.fixture
-    def mocked_compute(self, monkeypatch):
-        m_compute = mock.Mock(wraps=dask.base.compute)
-
-        # The three dask compute functions are all the same function but monkeypatch
-        # does not automatically know that.
-        # https://stackoverflow.com/questions/77820437
-        monkeypatch.setattr(dask.base, dask.base.compute.__name__, m_compute)
-        monkeypatch.setattr(dask, dask.compute.__name__, m_compute)
-        monkeypatch.setattr(dask.array, dask.array.compute.__name__, m_compute)
-
-        return m_compute
-
     def test_perfect_corr(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_a, ["latitude", "longitude"])
         mocked_compute.assert_not_called()

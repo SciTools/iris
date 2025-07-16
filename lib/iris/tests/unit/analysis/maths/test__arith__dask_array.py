@@ -6,19 +6,14 @@
 
 # Import iris.tests first so that some things can be initialised before
 # importing anything else.
-import iris.tests as tests  # isort:skip
 
-from unittest import mock
-
-import dask
 import dask.array as da
 
 import iris.cube
 from iris.tests.unit.analysis.maths import MathsAddOperationMixin
 
 
-class TestArithDask(tests.IrisTest, MathsAddOperationMixin):
-    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
+class TestArithDask(MathsAddOperationMixin):
     def test_compute_not_called(self, mocked_compute):
         # No data should be realised when adding a cube and a dask array.
         cube = iris.cube.Cube(da.arange(4))
