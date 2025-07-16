@@ -16,6 +16,8 @@ from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 from cf_units import Unit
 
+import pytest
+
 class TestUmVersionAttribute(tests.IrisTest):
     def test_single_saves_as_global(self):
         cube = Cube(
@@ -112,13 +114,16 @@ class TestStandardName(tests.IrisTest):
             self.assertEqual(detection_limit_cube.standard_name, standard_name)
 
 class TestCalendar:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.calendar = Unit('days since 1970-01-01', calendar='360_day')
+        self.cube = iris.cube.Cube(1, units=self.calendar)
+
     def test_calendar_roundtrip(self, tmp_path):
-        calendar = Unit('days since 1970-01-01', calendar='360_day')
-        cube = iris.cube.Cube(1, units=calendar)
         fout = tmp_path / "calendar.nc"
-        iris.save(cube, fout)
+        iris.save(self.cube, fout)
         detection_limit_cube = iris.load_cube(fout)
-        assert detection_limit_cube.units == calendar
+        assert detection_limit_cube.units == self.calendar
 
 if __name__ == "__main__":
     tests.main()
