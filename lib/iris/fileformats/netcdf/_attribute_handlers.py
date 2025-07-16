@@ -22,8 +22,10 @@ At present, there are 3 of these :
 from abc import ABCMeta, abstractmethod
 from typing import Any, Dict, List, Tuple
 
+from iris.fileformats.pp import STASH
 
-class AttributeCodingObject(metaclass=ABCMeta):
+
+class AttributeHandler(metaclass=ABCMeta):
     #: The user-visible attribute name used within Iris, which identifies attributes
     #  which we should attempt to encode with this coder.
     IrisIdentifyingName: str = ""
@@ -36,9 +38,8 @@ class AttributeCodingObject(metaclass=ABCMeta):
     #  are lost, and a warning will be issued.
     NetcdfIdentifyingNames: List[str] = []
 
-    @staticmethod
     @abstractmethod
-    def encode_object(content) -> Tuple[str, str]:
+    def encode_object(self, content) -> Tuple[str, str]:
         """Encode an object as an attribute name and value.
 
         We already do change the name of STASH attributes to "um_stash_source" on save
@@ -47,40 +48,60 @@ class AttributeCodingObject(metaclass=ABCMeta):
         """
         pass
 
-    @staticmethod
     @abstractmethod
-    def decode_attribute(attr_name: str, attr_value: str) -> Any:
+    def decode_attribute(self, attr_name: str, attr_value: str) -> Any:
         """Decode an attribute name and string to an attribute object."""
         pass
 
 
-class StashCoder(AttributeCodingObject):
+class StashHandler(AttributeHandler):
     """Convert STASH object attribute to/from a netcdf string attribute."""
 
     IrisIdentifyingName = "STASH"
     # Note: two possible in-file attribute names, second one is a 'legacy' version.
     NetcdfIdentifyingNames = ["um_stash_source", "ukmo__um_stash_source"]
 
-    @staticmethod
-    def encode_object(stash):
-        return StashCoder.NetcdfIdentifyingNames[0], str(stash)
+    def encode_object(self, stash):
+        if isinstance(stash, STASH):
+            stash_object = stash
+        elif isinstance(stash, str):
+            # Attempt to convert as an MSI string to a STASH object.
+            # NB this will normalise the content.
+            stash_object = STASH.from_msi(stash)
+        else:
+            msg = (
+                f"Invalid STASH attribute can not be written to netcdf file: {stash!r}. "
+                "Can only be a 'iris.fileformats.pp.STASH' object, or a string of the "
+                "form 'mXXsXXiXXX', where XX are decimal numbers."
+            )
+            raise TypeError(msg)
 
-    @staticmethod
-    def decode_attribute(attr_name: str, attr_value: str):
+        msi_string = str(stash_object)  # convert to standard MSI string representation
+        return self.NetcdfIdentifyingNames[0], msi_string
+
+    def decode_attribute(self, attr_name: str, attr_value: str):
         # In this case the attribute name does not matter.
         from iris.fileformats.pp import STASH
 
         return STASH.from_msi(attr_value)
 
 
-class UkmoProcessCoder(AttributeCodingObject):
+class UkmoProcessHandler(AttributeHandler):
     """Convert ukmo__process_flags tuple attribute to/from a netcdf string attribute."""
 
     IrisIdentifyingName = "ukmo__process_flags"
     NetcdfIdentifyingNames = ["ukmo__process_flags"]
 
-    @staticmethod
-    def encode_object(value):
+    def encode_object(self, value):
+        if not isinstance(value, tuple) or any(
+            not isinstance(elem, str) for elem in value
+        ):
+            msg = (
+                f"Invalid 'ukmo__process_flags' attribute : {value!r}. "
+                "Must be a tuple of str."
+            )
+            raise TypeError(msg)
+
         def value_fix(value):
             value = value.replace(" ", "_")
             if value == "":
@@ -90,19 +111,19 @@ class UkmoProcessCoder(AttributeCodingObject):
             return value
 
         value = " ".join([value_fix(x) for x in value])
-        return UkmoProcessCoder.NetcdfIdentifyingNames[0], value
+        return self.NetcdfIdentifyingNames[0], value
 
-    @staticmethod
-    def decode_attribute(attr_name: str, attr_value: str):
+    def decode_attribute(self, attr_name: str, attr_value: str):
         # In this case the attribute name does not matter.
         def value_unfix(value):
             value = value.replace("_", " ")
             if value == "<EMPTY>":
-                # A placeholder flagging where the original was an empty string.
+                # A special placeholder flagging where the original was an empty string.
                 value = ""
             return value
 
         if attr_value == "":
+            # This is basically a fix for the odd behaviour of 'str.split'.
             flags = []
         else:
             flags = [value_unfix(x) for x in attr_value.split(" ")]
@@ -110,7 +131,7 @@ class UkmoProcessCoder(AttributeCodingObject):
         return tuple(flags)
 
 
-class GribParamCoder(AttributeCodingObject):
+class GribParamHandler(AttributeHandler):
     """Convert iris_grib GRIB_PARAM object attribute to/from a netcdf string attribute.
 
     Use the mechanisms in iris_grib.
@@ -119,15 +140,13 @@ class GribParamCoder(AttributeCodingObject):
     IrisIdentifyingName = "GRIB_PARAM"
     NetcdfIdentifyingNames = ["GRIB_PARAM"]
 
-    @staticmethod
-    def encode_object(grib_param):
+    def encode_object(self, grib_param):
         # grib_param should be an
         #  iris_grib.grib_phenom_translation._gribcode.GenericConcreteGRIBCode
         # Not typing this, as we need iris_grib to remain an optional import.
-        return GribParamCoder.NetcdfIdentifyingNames[0], repr(grib_param)
+        return self.NetcdfIdentifyingNames[0], repr(grib_param)
 
-    @staticmethod
-    def decode_attribute(attr_name: str, attr_value: str):
+    def decode_attribute(self, attr_name: str, attr_value: str):
         from iris_grib.grib_phenom_translation._gribcode import GRIBCode
 
         result = None
@@ -140,22 +159,22 @@ class GribParamCoder(AttributeCodingObject):
 
 
 # Define the available attribute handlers.
-ATTRIBUTE_HANDLERS: Dict[str, AttributeCodingObject] = {}
+ATTRIBUTE_HANDLERS: Dict[str, AttributeHandler] = {}
 
 
-def _add_handler(handler: AttributeCodingObject):
+def _add_handler(handler: AttributeHandler):
     ATTRIBUTE_HANDLERS[handler.IrisIdentifyingName] = handler
 
 
 # Always include the "STASH" and "ukmo__process_flags" handlers.
-_add_handler(StashCoder())
-_add_handler(UkmoProcessCoder())
+_add_handler(StashHandler())
+_add_handler(UkmoProcessHandler())
 
 try:
     import iris_grib  # noqa: F401
 
     # If iris-grib is available, also include the "GRIB_PARAM" handler.
-    _add_handler(GribParamCoder())
+    _add_handler(GribParamHandler())
 
 except ImportError:
     pass
@@ -165,7 +184,7 @@ except ImportError:
 # Mechanism tests
 #
 def _decode_gribcode(grib_code: str):
-    return GribParamCoder.decode_attribute("x", grib_code)
+    return GribParamHandler().decode_attribute("x", grib_code)
     # from iris_grib.grib_phenom_translation._gribcode import GRIBCode
     #
     # result = None
@@ -229,8 +248,9 @@ def _sample_decode_rawlbproc(lbproc):
 
 def _check_pf_roundtrip(contents):
     print(f"original: {contents!r}")
-    name, val = UkmoProcessCoder.encode_object(contents)
-    reconstruct = UkmoProcessCoder.decode_attribute(name, val)
+    handler = UkmoProcessHandler()
+    name, val = handler.encode_object(contents)
+    reconstruct = handler.decode_attribute(name, val)
     print(f"  -> encoded: {val!r}")
     print(f"  -> reconstructed: {reconstruct!r}")
     assert name == "ukmo__process_flags"
