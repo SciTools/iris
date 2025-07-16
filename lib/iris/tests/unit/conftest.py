@@ -18,6 +18,7 @@ def sample_coord():
 
 @pytest.fixture
 def mocked_compute(monkeypatch, mocker):
+    """A fixture to provide a mock for `dask.compute()`."""
     m_compute = mocker.Mock(wraps=dask.base.compute)
 
     # The three dask compute functions are all the same function but monkeypatch
