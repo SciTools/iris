@@ -11,10 +11,12 @@ import iris.tests as tests  # isort:skip
 from contextlib import contextmanager
 from unittest import mock
 
+from cf_units import Unit
+
 import iris
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
-from cf_units import Unit
+
 
 import pytest
 
@@ -113,6 +115,7 @@ class TestStandardName(tests.IrisTest):
             detection_limit_cube = iris.load_cube(fout)
             self.assertEqual(detection_limit_cube.standard_name, standard_name)
 
+
 class TestCalendar:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -124,6 +127,7 @@ class TestCalendar:
         iris.save(self.cube, fout)
         detection_limit_cube = iris.load_cube(fout)
         assert detection_limit_cube.units == self.calendar
+
 
 if __name__ == "__main__":
     tests.main()
