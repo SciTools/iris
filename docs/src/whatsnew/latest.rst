@@ -147,17 +147,21 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
    and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
 
-#. `@ESadek-MO`_ moved `@rcomer`_ s `mocked_compute` testing fixture into the `conftest.py` for
+#. `@ESadek-MO`_ moved `@rcomer`_ 's `mocked_compute` testing fixture into the `conftest.py` for
    within the unit testing directory, and used this fixture in
    :mod:`iris/tests/unit/analysis/maths/test__arith_dask_array.py` and
    :mod:`iris/tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:`6564`)
+
+#. `@DarkVoyager11`_ added a round trip integration test for NetCDF calendar attributes.
+   (:issue:`2985`, :pull:`6562`)
+
 
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@DarkVoyager11: https://github.com/DarkVoyager11
 
 
 .. comment
