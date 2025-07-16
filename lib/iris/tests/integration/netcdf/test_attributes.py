@@ -12,13 +12,12 @@ from contextlib import contextmanager
 from unittest import mock
 
 from cf_units import Unit
+import pytest
 
 import iris
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
 
-
-import pytest
 
 class TestUmVersionAttribute(tests.IrisTest):
     def test_single_saves_as_global(self):
@@ -119,7 +118,7 @@ class TestStandardName(tests.IrisTest):
 class TestCalendar:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.calendar = Unit('days since 1970-01-01', calendar='360_day')
+        self.calendar = Unit("days since 1970-01-01", calendar="360_day")
         self.cube = iris.cube.Cube(1, units=self.calendar)
 
     def test_calendar_roundtrip(self, tmp_path):
