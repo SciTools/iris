@@ -103,7 +103,12 @@ _CF_DATA_ATTRS = [
 _CF_GLOBAL_ATTRS = ["conventions", "featureType", "history", "title"]
 
 # UKMO specific attributes that should not be global.
-_UKMO_DATA_ATTRS = ["STASH", "um_stash_source", "ukmo__process_flags"]
+_UKMO_DATA_ATTRS = [
+    "STASH",
+    "um_stash_source",
+    "ukmo__process_flags",
+    "iris_extended_grid_mapping",
+]
 
 # TODO: whenever we advance to CF-1.11 we should then discuss a completion date
 #  for the deprecation of Rotated Mercator in coord_systems.py and
@@ -642,7 +647,10 @@ class Saver:
             global_attributes = {
                 k: v
                 for k, v in cube_attributes.items()
-                if (k not in local_keys and k.lower() != "conventions")
+                if (
+                    k not in local_keys
+                    and k.lower() not in ["conventions", "iris_extended_grid_mapping"]
+                )
             }
             self.update_global_attributes(global_attributes)
 
@@ -2073,7 +2081,7 @@ class Saver:
 
         """
         coord_systems = []
-        if cube.ordered_axes:
+        if cube.extended_grid_mapping:
             # get unique list of all coord_systems on cube coords:
             for coord in cube.coords():
                 if coord.coord_system and coord.coord_system not in coord_systems:
@@ -2096,12 +2104,12 @@ class Saver:
 
                 # create grid mapping variable on dataset for this coordinate system:
                 self._add_grid_mapping_to_dataset(
-                    cs, extended_grid_mapping=cube.ordered_axes
+                    cs, extended_grid_mapping=cube.extended_grid_mapping
                 )
                 self._coord_systems.append(cs)
 
             # create the `grid_mapping` attribute for the data variable:
-            if cube.ordered_axes:
+            if cube.extended_grid_mapping:
                 # Order the coordinates as per the order in the CRS/WKT string.
                 # (We should only ever have a coordinate system for horizontal
                 # spatial coords, so check for east/north directions)
@@ -2150,7 +2158,7 @@ class Saver:
         # Refer to grid var
         if len(coord_systems):
             grid_mapping = None
-            if cube.ordered_axes:
+            if cube.extended_grid_mapping:
                 if matched_all_coords:
                     grid_mapping = " ".join(
                         f"{cs_name}: {cs_coords}"
@@ -2311,8 +2319,8 @@ class Saver:
             attr_names = set(cube.attributes).intersection(local_keys)
 
         for attr_name in sorted(attr_names):
-            # Do not output 'conventions' attribute.
-            if attr_name.lower() == "conventions":
+            # Do not output 'conventions' or extended grid mapping attribute.
+            if attr_name.lower() in ["conventions", "iris_extended_grid_mapping"]:
                 continue
 
             value = cube.attributes[attr_name]

@@ -281,8 +281,8 @@ coordinate system listed and attempt to attach it to the associated
 the ``crs_wkt`` supplementary and builds coordinate systems exclusively
 from the ``grid_mapping`` attribute.
 
-The :attr:`iris.cube.Cube.ordered_axes` property will be set to ``True``
-for cubes loaded from NetCDF data variables utilising the extended
+The :attr:`iris.cube.Cube.extended_grid_mapping` property will be set to
+``True`` for cubes loaded from NetCDF data variables utilising the extended
 ``grid_mapping`` syntax.
 
 Effect on saving
@@ -294,11 +294,12 @@ the cube contains multiple coordinate systems, only the coordinate
 system of the dimension coordinate(s) will be specified.
 
 To enable saving of multiple coordinate systems with ordered axes,
-set the :attr:`iris.cube.Cube.ordered_axes` to ``True``. This will
-generate a ``grid_mapping`` attribute using the extended syntax to
-specify all coordinate systems on the cube. The axes ordering of the
+set the :attr:`iris.cube.Cube.extended_grid_mapping` to ``True``.
+This will generate a ``grid_mapping`` attribute using the extended syntax
+to specify all coordinate systems on the cube. The axes ordering of the
 associated coordinate variables will be consistent with that of the
 generated ``crs_wkt`` attribute.
 
 Note, the ``crs_wkt`` attribute will only be generated when the
-extended grid mapping is also written, i.e. when ``Cube.ordered_axes=True``.
+extended grid mapping is also written, i.e. when
+``Cube.extended_grid_mapping=True``.

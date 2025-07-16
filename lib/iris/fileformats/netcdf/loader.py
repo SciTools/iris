@@ -451,10 +451,12 @@ def _load_cube_inner(engine, cf, cf_var, filename):
         for method in cube.cell_methods
     ]
 
-    # Set ordered_axis property if extended grid_mapping was used
+    # Set extended_grid_mapping property ONLY if extended grid_mapping was used.
+    # This avoids having an unnecessary `iris_extended_grid_mapping` attribute entry.
     if cs_mappings := engine.cube_parts.get("coordinate_system_mappings", None):
-        # None as a mapping key implies simple mapping syntax (single coord system)
-        cube.ordered_axes = None not in cs_mappings
+        # `None` as a mapping key implies simple mapping syntax (single coord system)
+        if None not in cs_mappings:
+            cube.extended_grid_mapping = True
 
     if DEBUG:
         # Show activation statistics for this data-var (i.e. cube).

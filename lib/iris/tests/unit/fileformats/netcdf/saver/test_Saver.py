@@ -792,10 +792,11 @@ class Test__cf_coord_identity(tests.IrisTest):
 
 
 @pytest.fixture
-def transverse_mercator_cube_ordered_axes():
+def transverse_mercator_cube_multi_cs():
+    """A transverse mercator cube with an auxiliary GeogGS coordinate system."""
     data = np.arange(12).reshape(3, 4)
     cube = Cube(data, "air_pressure_anomaly")
-    cube.ordered_axes = True
+    cube.extended_grid_mapping = True
 
     geog_cs = GeogCS(6377563.396, 6356256.909)
     trans_merc = TransverseMercator(
@@ -837,22 +838,22 @@ def transverse_mercator_cube_ordered_axes():
 
 
 class Test_write_extended_grid_mapping:
-    def test_multi_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+    def test_multi_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
         """Test writing a cube with multiple coordinate systems.
         Should generate a grid mapping using extended syntax that references
         both coordinate systems and the coords.
         """
-        cube = transverse_mercator_cube_ordered_axes
+        cube = transverse_mercator_cube_multi_cs
         nc_path = tmp_path / "tmp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube)
         assert_CDL(request, nc_path)
 
-    def test_no_aux_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+    def test_no_aux_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
         """Test when DimCoords have coord system, but AuxCoords do not.
         Should write extended grid mapping for just DimCoords.
         """
-        cube = transverse_mercator_cube_ordered_axes
+        cube = transverse_mercator_cube_multi_cs
         cube.coord("latitude").coord_system = None
         cube.coord("longitude").coord_system = None
 
@@ -862,23 +863,23 @@ class Test_write_extended_grid_mapping:
         assert_CDL(request, nc_path)
 
     def test_multi_cs_missing_coord(
-        self, transverse_mercator_cube_ordered_axes, tmp_path, request
+        self, transverse_mercator_cube_multi_cs, tmp_path, request
     ):
         """Test when we have a missing coordinate.
         Grid mapping will fall back to simple mapping to DimCoord CS (no coords referenced).
         """
-        cube = transverse_mercator_cube_ordered_axes
+        cube = transverse_mercator_cube_multi_cs
         cube.remove_coord("latitude")
         nc_path = tmp_path / "tmp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube)
         assert_CDL(request, nc_path)
 
-    def test_no_cs(self, transverse_mercator_cube_ordered_axes, tmp_path, request):
+    def test_no_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
         """Test when no coordinate systems associated with cube coords.
         Grid mapping will not be generated at all.
         """
-        cube = transverse_mercator_cube_ordered_axes
+        cube = transverse_mercator_cube_multi_cs
         for coord in cube.coords():
             coord.coord_system = None
 
@@ -905,7 +906,7 @@ class Test_create_cf_grid_mapping:
         cube = stock.lat_lon_cube()
         x, y = cube.coord("longitude"), cube.coord("latitude")
         x.coord_system = y.coord_system = coord_system
-        cube.ordered_axes = self._extended_grid_mapping
+        cube.extended_grid_mapping = self._extended_grid_mapping
         return cube
 
     def _grid_mapping_variable(self, coord_system):
