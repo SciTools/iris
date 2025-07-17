@@ -13,6 +13,7 @@ import shutil
 import tempfile
 import warnings
 
+import numpy as np
 import pytest
 
 import iris
@@ -93,7 +94,7 @@ variables:
     float data(y, x) ;
         data :standard_name = "toa_brightness_temperature" ;
         data :units = "K" ;
-        data :grid_mapping = "mercator" ;
+        data :grid_mapping = "mercator: x y" ;
     int mercator ;
         mercator:grid_mapping_name = "mercator" ;
         mercator:longitude_of_prime_meridian = 0. ;
@@ -130,6 +131,55 @@ data:
  x = -6, -4, -2 ;
 }
     """
+
+    multi_cs_osgb_wkt = """
+netcdf osgb {
+dimensions:
+    y = 5 ;
+    x = 4 ;
+variables:
+    double x(x) ;
+        x:standard_name = "projection_x_coordinate" ;
+        x:long_name = "Easting" ;
+        x:units = "m" ;
+    double y(y) ;
+        y:standard_name = "projection_y_coordinate" ;
+        y:long_name = "Northing" ;
+        y:units = "m" ;
+    double lat(y, x) ;
+        lat:standard_name = "latitude" ;
+        lat:units = "degrees_north" ;
+    double lon(y, x) ;
+        lon:standard_name = "longitude" ;
+        lon:units = "degrees_east" ;
+    float temp(y, x) ;
+        temp:standard_name = "air_temperature" ;
+        temp:units = "K" ;
+        temp:coordinates = "lat lon" ;
+        temp:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+    int crsOSGB ;
+        crsOSGB:grid_mapping_name = "transverse_mercator" ;
+        crsOSGB:semi_major_axis = 6377563.396 ;
+        crsOSGB:inverse_flattening = 299.3249646 ;
+        crsOSGB:longitude_of_prime_meridian = 0. ;
+        crsOSGB:latitude_of_projection_origin = 49. ;
+        crsOSGB:longitude_of_central_meridian = -2. ;
+        crsOSGB:scale_factor_at_central_meridian = 0.9996012717 ;
+        crsOSGB:false_easting = 400000. ;
+        crsOSGB:false_northing = -100000. ;
+        crsOSGB:unit = "metre" ;
+        crsOSGB:crs_wkt = "PROJCRS[\\"unknown\\",BASEGEOGCRS[\\"unknown\\",DATUM[\\"Unknown based on Airy 1830 ellipsoid\\",ELLIPSOID[\\"Airy 1830\\",6377563.396,299.324964600004,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]]],CONVERSION[\\"unknown\\",METHOD[\\"Transverse Mercator\\",ID[\\"EPSG\\",9807]],PARAMETER[\\"Latitude of natural origin\\",49,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8801]],PARAMETER[\\"Longitude of natural origin\\",-2,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8802]],PARAMETER[\\"Scale factor at natural origin\\",0.9996012717,SCALEUNIT[\\"unity\\",1],ID[\\"EPSG\\",8805]],PARAMETER[\\"False easting\\",400000,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8806]],PARAMETER[\\"False northing\\",-100000,LENGTHUNIT[\\"metre\\",1],ID[\\"EPSG\\",8807]]],CS[Cartesian,2],AXIS[\\"(E)\\",east,ORDER[1],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]],AXIS[\\"(N)\\",north,ORDER[2],LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]]" ;
+    int crsWGS84 ;
+        crsWGS84:grid_mapping_name = "latitude_longitude" ;
+        crsWGS84:longitude_of_prime_meridian = 0. ;
+        crsWGS84:semi_major_axis = 6378137. ;
+        crsWGS84:inverse_flattening = 298.257223563 ;
+        crsWGS84: crs_wkt = "GEOGCRS[\\"unknown\\",DATUM[\\"Unknown based on WGS 84 ellipsoid\\",ELLIPSOID[\\"WGS 84\\",6378137,298.257223562997,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]],CS[ellipsoidal,2],AXIS[\\"longitude\\",east,ORDER[1],ANGLEUNIT[\\"degree\\",0.0174532925199433,ID[\\"EPSG\\",9122]]],AXIS[\\"latitude\\",north,ORDER[2],ANGLEUNIT[\\"degree\\",0.0174532925199433,ID[\\"EPSG\\",9122]]]]" ;
+data:
+    x = 1,2,3,4,5 ;
+    y = 1,2,3,4 ;
+}
+"""
 
     def test_load_datum_wkt(self):
         expected = "OSGB 1936"
@@ -175,6 +225,22 @@ data:
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
 
+    def test_load_multi_cs_wkt(self):
+        nc_path = tlc.cdl_to_nc(self.multi_cs_osgb_wkt)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(nc_path)
+
+        assert len(cube.coord_systems()) == 2
+        for name in ["projection_y_coordinate", "projection_y_coordinate"]:
+            assert (
+                cube.coord(name).coord_system.grid_mapping_name == "transverse_mercator"
+            )
+        for name in ["latitude", "longitude"]:
+            assert (
+                cube.coord(name).coord_system.grid_mapping_name == "latitude_longitude"
+            )
+        assert cube.extended_grid_mapping is True
+
     def test_save_datum(self):
         expected = "OSGB 1936"
         saved_crs = iris.coord_systems.Mercator(
@@ -213,6 +279,60 @@ data:
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
+
+    def test_save_multi_cs_wkt(self):
+        crsOSGB = iris.coord_systems.OSGB()
+        crsLatLon = iris.coord_systems.GeogCS(6e6)
+
+        dimx_coord = iris.coords.DimCoord(
+            np.arange(4), "projection_x_coordinate", coord_system=crsOSGB
+        )
+        dimy_coord = iris.coords.DimCoord(
+            np.arange(5), "projection_y_coordinate", coord_system=crsOSGB
+        )
+
+        auxlon_coord = iris.coords.AuxCoord(
+            np.arange(20).reshape((5, 4)),
+            standard_name="longitude",
+            coord_system=crsLatLon,
+        )
+        auxlat_coord = iris.coords.AuxCoord(
+            np.arange(20).reshape((5, 4)),
+            standard_name="latitude",
+            coord_system=crsLatLon,
+        )
+
+        test_cube = Cube(
+            np.ones(20).reshape((5, 4)),
+            standard_name="air_pressure",
+            units="Pa",
+            dim_coords_and_dims=(
+                (dimy_coord, 0),
+                (dimx_coord, 1),
+            ),
+            aux_coords_and_dims=(
+                (auxlat_coord, (0, 1)),
+                (auxlon_coord, (0, 1)),
+            ),
+        )
+
+        test_cube.extended_grid_mapping = True
+
+        with self.temp_filename(suffix=".nc") as filename:
+            iris.save(test_cube, filename)
+            with iris.FUTURE.context(datum_support=True):
+                cube = iris.load_cube(filename)
+
+        assert len(cube.coord_systems()) == 2
+        for name in ["projection_y_coordinate", "projection_y_coordinate"]:
+            assert (
+                cube.coord(name).coord_system.grid_mapping_name == "transverse_mercator"
+            )
+        for name in ["latitude", "longitude"]:
+            assert (
+                cube.coord(name).coord_system.grid_mapping_name == "latitude_longitude"
+            )
+        assert cube.extended_grid_mapping is True
 
 
 class TestLoadMinimalGeostationary(tests.IrisTest):
