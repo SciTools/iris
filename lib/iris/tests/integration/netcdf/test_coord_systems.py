@@ -168,8 +168,8 @@ variables:
         crsWGS84:inverse_flattening = 298.257223563 ;
         crsWGS84: crs_wkt = "GEOGCRS[\\"unknown\\",DATUM[\\"Unknown based on WGS 84 ellipsoid\\",ELLIPSOID[\\"WGS 84\\",6378137,298.257223562997,LENGTHUNIT[\\"metre\\",1,ID[\\"EPSG\\",9001]]]],PRIMEM[\\"Greenwich\\",0,ANGLEUNIT[\\"degree\\",0.0174532925199433],ID[\\"EPSG\\",8901]],CS[ellipsoidal,2],AXIS[\\"longitude\\",east,ORDER[1],ANGLEUNIT[\\"degree\\",0.0174532925199433,ID[\\"EPSG\\",9122]]],AXIS[\\"latitude\\",north,ORDER[2],ANGLEUNIT[\\"degree\\",0.0174532925199433,ID[\\"EPSG\\",9122]]]]" ;
 data:
-    x = 1,2,3,4,5 ;
-    y = 1,2,3,4 ;
+    x = 1,2,3,4 ;
+    y = 1,2,3,4,5 ;
 }
     """
 
