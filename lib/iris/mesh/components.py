@@ -2057,6 +2057,10 @@ class _Mesh1DCoordinateManager:
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
+        if not hasattr(self, "timestamp"):
+            # Create ".timestamp" if missing, as the "._members" setter requires one.
+            # Needing during unpickling, where __setstate__ replaces object __init__.
+            self.timestamp = _Timestamp()
         self._members = state
 
     def __str__(self):
@@ -2466,6 +2470,10 @@ class _MeshConnectivityManagerBase(ABC):
         return f"{self.__class__.__name__}({', '.join(args)})"
 
     def __setstate__(self, state):
+        if not hasattr(self, "timestamp"):
+            # Create ".timestamp" if missing, as the "._members" setter requires one.
+            # Needing during unpickling, where __setstate__ replaces object __init__.
+            self.timestamp = _Timestamp()
         self._members = state
 
     def __str__(self):
@@ -2827,7 +2835,12 @@ class MeshCoord(AuxCoord):
         # Ensure that the MeshCoord is up to date each time you access an attribute.
         # object.__getattribute__ bypasses this block to avoid infinite recursion
         # by calling the method on the base class `object`.
-        mesh = object.__getattribute__(self, "_mesh")
+        mesh = object.__getattribute__(self, "__dict__").get("_mesh")
+        if mesh is None:
+            # Disable the hook if we don't even (yet) have a "._mesh" property.
+            # This allows assignment to an uninitialised object, which is needed for
+            #  unpickling, where the __init__ call is replaced by a __setstate__.
+            return object.__getattribute__(self, item)
         mesh_last_modified = object.__getattribute__(mesh, "_last_modified")
         self_last_modified = object.__getattribute__(self, "_last_modified")
         if (
