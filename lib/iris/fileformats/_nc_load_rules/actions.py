@@ -44,7 +44,6 @@ import warnings
 
 from iris.config import get_logger
 import iris.fileformats.cf
-import iris.fileformats.pp as pp
 from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.warnings
 
@@ -533,49 +532,50 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
 
 
 @action_function
-def action_ukmo_stash(engine):
-    """Convert 'ukmo stash' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__um_stash_source"
+def action_managed_attribute(engine, attr_name, attr_value):
+    rule_name = f"fc_special_attribute__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
+    return rule_name
+
+
+def action_all_managed_attributes(engine):
+    """Check for and convert all 'handled' attributes."""
+    from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+
     var = engine.cf_var
-    attr_name = "ukmo__um_stash_source"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        attr_name = "um_stash_source"  # legacy form
-        attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        try:
-            stash_code = pp.STASH.from_msi(attr_value)
-        except (TypeError, ValueError):
-            engine.cube.attributes[attr_name] = attr_value
+    for handler in ATTRIBUTE_HANDLERS.values():
+        # Each handler can have several match names, but ideally only 0 or 1 appears !
+        iris_name = handler.IrisIdentifyingName
+        matches = []
+        for match_name in handler.NetcdfIdentifyingNames:
+            match_value = getattr(var, match_name, None)
+            if match_value is not None:
+                matches.append((match_name, match_value))
+
+        if len(matches) > 1:
             msg = (
-                "Unable to set attribute STASH as not a valid MSI "
-                f'string "mXXsXXiXXX", got "{attr_value}"'
+                f"Multiple file attributes would set the iris '.{iris_name}' cube "
+                "attribute:"
+                + "".join(f"\n  {name!r}: {val!r}" for name, val in matches)
+                + "\n- only the first of these is actioned."
             )
-            logger.debug(msg)
-        else:
-            engine.cube.attributes["STASH"] = stash_code
+            warnings.warn(msg)
 
-    return rule_name
+        if len(matches) > 0:
+            input_name, input_value = matches[0]
+            try:
+                iris_value = handler.decode_attribute(input_name, input_value)
+            except (ValueError, TypeError):
+                iris_value = input_value
+                msg = (
+                    f"Invalid content for attribute {match_name!r} = {input_value!r}."
+                    f"Iris '.{iris_name}' attribute is set to this untranslated raw "
+                    "value -- which will not save out."
+                )
+                warnings.warn(msg)
 
-
-@action_function
-def action_ukmo_processflags(engine):
-    """Convert 'ukmo process flags' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__process_flags"
-    var = engine.cf_var
-    attr_name = "ukmo__process_flags"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        flags = [x.replace("_", " ") for x in attr_value.split(" ")]
-        engine.cube.attributes["ukmo__process_flags"] = tuple(flags)
-
-    return rule_name
+            # process as a rule
+            action_managed_attribute(engine, iris_name, iris_value)
 
 
 @action_function
@@ -693,10 +693,9 @@ def run_actions(engine):
     for auxcoord_fact in auxcoord_facts:
         action_build_auxiliary_coordinate(engine, auxcoord_fact)
 
-    # Detect + process and special 'ukmo' attributes
+    # Detect + process and special handling attributes
     # Run on every cube : they choose themselves whether to trigger.
-    action_ukmo_stash(engine)
-    action_ukmo_processflags(engine)
+    action_all_managed_attributes(engine)
 
     # cell measures
     cellm_facts = engine.fact_list("cell_measure")
