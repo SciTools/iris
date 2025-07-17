@@ -10,7 +10,6 @@ import iris.tests as tests  # isort:skip
 
 from os.path import join as path_join
 import shutil
-import tempfile
 import warnings
 
 import numpy as np
@@ -344,13 +343,9 @@ class TestCoordSystem:
         assert cube.extended_grid_mapping is True
 
 
-class TestLoadMinimalGeostationary(tests.IrisTest):
-    """Check we can load data with a geostationary grid-mapping, even when the
-    'false-easting' and 'false_northing' properties are missing.
-
-    """
-
-    _geostationary_problem_cdl = """
+@pytest.fixture
+def geostationary_problem_cdl():
+    return """
 netcdf geostationary_problem_case {
 dimensions:
     y = 2 ;
@@ -387,23 +382,30 @@ data:
  x = 0, 1, 2 ;
 
 }
-"""
+    """
+
+
+class TestLoadMinimalGeostationary:
+    """Check we can load data with a geostationary grid-mapping, even when the
+    'false-easting' and 'false_northing' properties are missing.
+
+    """
 
     @classmethod
-    def setUpClass(cls):
+    @pytest.fixture(autouse=True)
+    def _setup(cls, tmp_path, geostationary_problem_cdl):
         # Create a temp directory for transient test files.
-        cls.temp_dir = tempfile.mkdtemp()
+        cls.temp_dir = tmp_path
         cls.path_test_cdl = path_join(cls.temp_dir, "geos_problem.cdl")
         cls.path_test_nc = path_join(cls.temp_dir, "geos_problem.nc")
         # Create reference CDL and netcdf files from the CDL text.
         ncgen_from_cdl(
-            cdl_str=cls._geostationary_problem_cdl,
+            cdl_str=geostationary_problem_cdl,
             cdl_path=cls.path_test_cdl,
             nc_path=cls.path_test_nc,
         )
+        yield
 
-    @classmethod
-    def tearDownClass(cls):
         # Destroy the temp directory.
         shutil.rmtree(cls.temp_dir)
 
@@ -415,7 +417,3 @@ data:
         assert isinstance(cs, iris.coord_systems.Geostationary)
         assert cs.false_easting == 0.0
         assert cs.false_northing == 0.0
-
-
-if __name__ == "__main__":
-    tests.main()
