@@ -339,7 +339,7 @@ defined on an *OSGB Transverse Mercator grid*:
 
 
 The dimension coordinates ``x`` and ``y`` are explicitly defined on
-an *transverse mercator`` grid via the ``crsOSGB`` variable.
+an a *transverse mercator* grid via the ``crsOSGB`` variable.
 
 However, with the extended grid syntax, it is also possible to define
 a second coordinate system on a standard **latitude_longitude** grid
