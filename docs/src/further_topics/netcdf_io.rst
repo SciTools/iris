@@ -257,7 +257,6 @@ look like this in a NetCDF file (extract of relevant variables):
   float T(rlat,rlon) ;
     T:long_name = "temperature" ;
     T:units = "K" ;
-    T:coordinates = "lon lat" ;
     T:grid_mapping = "rotated_pole" ;
 
   char rotated_pole ;
