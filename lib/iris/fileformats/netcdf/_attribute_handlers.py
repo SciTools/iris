@@ -49,7 +49,7 @@ class AttributeHandler(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def decode_attribute(self, attr_name: str, attr_value: str) -> Any:
+    def decode_attribute(self, attr_name: str, attr_value) -> Any:
         """Decode an attribute name and string to an attribute object."""
         pass
 
@@ -79,10 +79,11 @@ class StashHandler(AttributeHandler):
         msi_string = str(stash_object)  # convert to standard MSI string representation
         return self.NetcdfIdentifyingNames[0], msi_string
 
-    def decode_attribute(self, attr_name: str, attr_value: str):
+    def decode_attribute(self, attr_name: str, attr_value):
         # In this case the attribute name does not matter.
         from iris.fileformats.pp import STASH
 
+        attr_value = str(attr_value)
         return STASH.from_msi(attr_value)
 
 
@@ -113,8 +114,10 @@ class UkmoProcessHandler(AttributeHandler):
         value = " ".join([value_fix(x) for x in value])
         return self.NetcdfIdentifyingNames[0], value
 
-    def decode_attribute(self, attr_name: str, attr_value: str):
+    def decode_attribute(self, attr_name: str, attr_value):
         # In this case the attribute name does not matter.
+        attr_value = str(attr_value)
+
         def value_unfix(value):
             value = value.replace("_", " ")
             if value == "<EMPTY>":
@@ -140,21 +143,33 @@ class GribParamHandler(AttributeHandler):
     IrisIdentifyingName = "GRIB_PARAM"
     NetcdfIdentifyingNames = ["GRIB_PARAM"]
 
-    def encode_object(self, grib_param):
+    def encode_object(self, iris_value):
         # grib_param should be an
         #  iris_grib.grib_phenom_translation._gribcode.GenericConcreteGRIBCode
         # Not typing this, as we need iris_grib to remain an optional import.
-        return self.NetcdfIdentifyingNames[0], repr(grib_param)
+        from iris_grib.grib_phenom_translation._gribcode import (
+            GenericConcreteGRIBCode,
+            GRIBCode,
+        )
 
-    def decode_attribute(self, attr_name: str, attr_value: str):
+        if isinstance(iris_value, GenericConcreteGRIBCode):
+            gribcode = iris_value
+        else:
+            # Attempt to convert to string, if not already
+            gribcode = str(iris_value)
+            # Attempt to create a gribcode from that.
+            # NB let it fail if it will -- caller deals with this !
+            gribcode = GRIBCode(gribcode)
+
+        # The correct file attribute is the repr of a GRIBCode object.
+        grib_string = repr(gribcode)
+        return self.NetcdfIdentifyingNames[0], grib_string
+
+    def decode_attribute(self, attr_name: str, attr_value):
         from iris_grib.grib_phenom_translation._gribcode import GRIBCode
 
-        result = None
-        # Use the helper function to construct a suitable GenericConcreteGRIBCode object.
-        try:
-            result = GRIBCode(attr_value)
-        except (TypeError, ValueError):
-            pass
+        attr_value = str(attr_value)
+        result = GRIBCode(attr_value)
         return result
 
 
