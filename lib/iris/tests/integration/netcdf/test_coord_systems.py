@@ -20,27 +20,14 @@ import iris
 from iris.coords import DimCoord
 from iris.cube import Cube
 from iris.tests import stock as stock
+from iris.tests._shared_utils import assert_CML
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.tests.unit.fileformats.netcdf.loader import test_load_cubes as tlc
 
 
-@tests.skip_data
-class TestCoordSystem(tests.IrisTest):
-    def setUp(self):
-        tlc.setUpModule()
-
-    def tearDown(self):
-        tlc.tearDownModule()
-
-    def test_load_laea_grid(self):
-        cube = iris.load_cube(
-            tests.get_data_path(
-                ("NetCDF", "lambert_azimuthal_equal_area", "euro_air_temp.nc")
-            )
-        )
-        self.assertCML(cube, ("netcdf", "netcdf_laea.cml"))
-
-    datum_cf_var_cdl = """
+@pytest.fixture
+def datum_cf_var_cdl():
+    return """
         netcdf output {
         dimensions:
             y = 4 ;
@@ -85,7 +72,10 @@ class TestCoordSystem(tests.IrisTest):
         }
     """
 
-    datum_wkt_cdl = """
+
+@pytest.fixture
+def datum_wkt_cdl():
+    return """
 netcdf output5 {
 dimensions:
     y = 4 ;
@@ -132,7 +122,10 @@ data:
 }
     """
 
-    multi_cs_osgb_wkt = """
+
+@pytest.fixture
+def multi_cs_osgb_wkt():
+    return """
 netcdf osgb {
 dimensions:
     y = 5 ;
@@ -179,27 +172,44 @@ data:
     x = 1,2,3,4,5 ;
     y = 1,2,3,4 ;
 }
-"""
+    """
 
-    def test_load_datum_wkt(self):
+
+@tests.skip_data
+class TestCoordSystem:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        tlc.setUpModule()
+        yield
+        tlc.tearDownModule()
+
+    def test_load_laea_grid(self, request):
+        cube = iris.load_cube(
+            tests.get_data_path(
+                ("NetCDF", "lambert_azimuthal_equal_area", "euro_air_temp.nc")
+            )
+        )
+        assert_CML(request, cube, ("netcdf", "netcdf_laea.cml"))
+
+    def test_load_datum_wkt(self, datum_wkt_cdl):
         expected = "OSGB 1936"
-        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+        nc_path = tlc.cdl_to_nc(datum_wkt_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
 
-    def test_no_load_datum_wkt(self):
-        nc_path = tlc.cdl_to_nc(self.datum_wkt_cdl)
+    def test_no_load_datum_wkt(self, datum_wkt_cdl):
+        nc_path = tlc.cdl_to_nc(datum_wkt_cdl)
         with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
 
-    def test_no_datum_no_warn(self):
-        new_cdl = self.datum_wkt_cdl.splitlines()
+    def test_no_datum_no_warn(self, datum_wkt_cdl):
+        new_cdl = datum_wkt_cdl.splitlines()
         new_cdl = [line for line in new_cdl if "DATUM" not in line]
         new_cdl = "\n".join(new_cdl)
         nc_path = tlc.cdl_to_nc(new_cdl)
@@ -208,25 +218,25 @@ data:
             warnings.simplefilter("error", FutureWarning)
             _ = iris.load_cube(nc_path)
 
-    def test_load_datum_cf_var(self):
+    def test_load_datum_cf_var(self, datum_cf_var_cdl):
         expected = "OSGB 1936"
-        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+        nc_path = tlc.cdl_to_nc(datum_cf_var_cdl)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
 
-    def test_no_load_datum_cf_var(self):
-        nc_path = tlc.cdl_to_nc(self.datum_cf_var_cdl)
+    def test_no_load_datum_cf_var(self, datum_cf_var_cdl):
+        nc_path = tlc.cdl_to_nc(datum_cf_var_cdl)
         with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
 
-    def test_load_multi_cs_wkt(self):
-        nc_path = tlc.cdl_to_nc(self.multi_cs_osgb_wkt)
+    def test_load_multi_cs_wkt(self, multi_cs_osgb_wkt):
+        nc_path = tlc.cdl_to_nc(multi_cs_osgb_wkt)
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
 
@@ -241,7 +251,7 @@ data:
             )
         assert cube.extended_grid_mapping is True
 
-    def test_save_datum(self):
+    def test_save_datum(self, tmp_path):
         expected = "OSGB 1936"
         saved_crs = iris.coord_systems.Mercator(
             ellipsoid=iris.coord_systems.GeogCS.from_datum("OSGB36")
@@ -270,8 +280,7 @@ data:
                 (test_lon_coord, 2),
             ),
         )
-
-        with self.temp_filename(suffix=".nc") as filename:
+        with tmp_path / "output.nc" as filename:
             iris.save(test_cube, filename)
             with iris.FUTURE.context(datum_support=True):
                 cube = iris.load_cube(filename)
@@ -280,7 +289,7 @@ data:
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
 
-    def test_save_multi_cs_wkt(self):
+    def test_save_multi_cs_wkt(self, tmp_path):
         crsOSGB = iris.coord_systems.OSGB()
         crsLatLon = iris.coord_systems.GeogCS(6e6)
 
@@ -318,7 +327,7 @@ data:
 
         test_cube.extended_grid_mapping = True
 
-        with self.temp_filename(suffix=".nc") as filename:
+        with tmp_path / "output.nc" as filename:
             iris.save(test_cube, filename)
             with iris.FUTURE.context(datum_support=True):
                 cube = iris.load_cube(filename)
