@@ -1332,7 +1332,7 @@ class TestNetCDFUKmoProcessFlags(tests.IrisTest):
 
         # Maps lbproc value to the process flags that should be created
         multiple_map = {
-            bits: [iris.fileformats.pp.lbproc_map[bit] for bit in bits]
+            bits: tuple([iris.fileformats.pp.lbproc_map[bit] for bit in bits])
             for bits in multiple_bit_values
         }
 
