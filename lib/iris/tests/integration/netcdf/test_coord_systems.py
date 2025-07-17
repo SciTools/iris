@@ -279,10 +279,10 @@ class TestCoordSystem:
                 (test_lon_coord, 2),
             ),
         )
-        with tmp_path / "output.nc" as filename:
-            iris.save(test_cube, filename)
-            with iris.FUTURE.context(datum_support=True):
-                cube = iris.load_cube(filename)
+        filename = tmp_path / "output.nc"
+        iris.save(test_cube, filename)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(filename)
 
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
@@ -326,10 +326,10 @@ class TestCoordSystem:
 
         test_cube.extended_grid_mapping = True
 
-        with tmp_path / "output.nc" as filename:
-            iris.save(test_cube, filename)
-            with iris.FUTURE.context(datum_support=True):
-                cube = iris.load_cube(filename)
+        filename = tmp_path / "output.nc"
+        iris.save(test_cube, filename)
+        with iris.FUTURE.context(datum_support=True):
+            cube = iris.load_cube(filename)
 
         assert len(cube.coord_systems()) == 2
         for name in ["projection_y_coordinate", "projection_y_coordinate"]:
