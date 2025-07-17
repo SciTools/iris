@@ -53,17 +53,17 @@ This document explains the changes made to Iris for this release
    See `CRS WKT in the CF Conventions`_ for more. (:issue:`3796`, :pull:`6519`)
 
 #. `@ukmo-ccbunney`_ and `@trexfeathers`_ added support for
-    **multiple coordinate systems** and **ordered coordinates** when loading
-    and saving NetCDF files.
-    This allows for coordinates to be explicitly associated with a coordinate
-    system via an extended syntax in the ``grid_mapping`` attribute of a NetCDF
-    data variable. This extended syntax also supports specification of multiple
-    coordinate systems per data variable. Setting the property
-    ``cube.extended_grid_mapping = True`` will enable extended grid mapping
-    syntax when saving a NetCDF file and also generate an associated **well known
-    text** attribute (``crs_wkt``; as described in :issue:`3796`).
-    See `CRS Grid Mappings and Projections`_ for more information.
-    (:issue:3388:, :pull:6536:)
+   **multiple coordinate systems** and **ordered coordinates** when loading
+   and saving NetCDF files.
+   This allows for coordinates to be explicitly associated with a coordinate
+   system via an extended syntax in the ``grid_mapping`` attribute of a NetCDF
+   data variable. This extended syntax also supports specification of multiple
+   coordinate systems per data variable. Setting the property
+   ``cube.extended_grid_mapping = True`` will enable extended grid mapping
+   syntax when saving a NetCDF file and also generate an associated **well known
+   text** attribute (``crs_wkt``; as described in :issue:`3796`).
+   See `CRS Grid Mappings and Projections`_ for more information.
+   (:issue:`3388`:, :pull:`6536`:)
 
 
 🐛 Bugs Fixed
