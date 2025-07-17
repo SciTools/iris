@@ -239,36 +239,122 @@ Worked example:
 Multiple Coordinate Systems and Ordered Axes
 --------------------------------------------
 
-Traditionally, the coordinate system for coordinate of a data variable
-is specified by variable a single name in the ``grid_mapping`` attribute,
-e.g.:
+In a CF compliant NetCDF file, the coordinate variables associated with a
+data variable can specify a specific *coordinate system* that defines how
+the coordinate values relate to physical locations on the globe. For example,
+a coordinate might have values with units of metres that should be referenced
+against a *Transverse Mercator* projection with a specific origin. This
+information is not stored on the coordinate itself, but in a separate
+*grid mapping* variable. Furthermore, the grid mapping for a set of
+coordinates is associated with the data variable (not the coordinates
+variables) via the ``grid_mapping`` attribute.
 
-::
+For example, a temperature variable defined on a *rotated pole* grid might
+look like this in a NetCDF file (extract of relevant variables):
 
-    grid_mapping = 'latitude_longitude`
+.. code-block:: text
+
+  float T(rlat,rlon) ;
+    T:long_name = "temperature" ;
+    T:units = "K" ;
+    T:coordinates = "lon lat" ;
+    T:grid_mapping = "rotated_pole" ;
+
+  char rotated_pole ;
+    rotated_pole:grid_mapping_name = "rotated_latitude_longitude" ;
+    rotated_pole:grid_north_pole_latitude = 32.5 ;
+    rotated_pole:grid_north_pole_longitude = 170. ;
+
+  float rlon(rlon) ;
+    rlon:long_name = "longitude in rotated pole grid" ;
+    rlon:units = "degrees" ;
+    rlon:standard_name = "grid_longitude";
+
+  float rlat(rlat) ;
+    rlat:long_name = "latitude in rotated pole grid" ;
+    rlat:units = "degrees" ;
+    rlat:standard_name = "grid_latitude";
+
+
+Note how the ``rotated pole`` grid mapping (coordinate system) is referenced
+from the data variable ``T:grid_mapping = "rotated_pole"`` and is implicitly
+associated with the dimension coordinate variables ``rlat`` and ``rlon``.
+
 
 Since version `1.8 of the CF Conventions
 <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#grid-mappings-and-projections>`_
-, there has been support for the concept of **ordered axes** in the definition
-of a coordinate system which allows for more explicit specification of the
-associated coordinate variables.
+, there has been support for a more explicit version of the ``grid_mapping``
+attribute. This allows for **multiple coordinate systems** to be defined for
+a data variable and individual coordinates to be explicitly associated with
+a coordinate system. This is achieved by use of an **extended syntax** in the
+``grid_mapping`` variable of a data variable:
 
-This is achieved via use of an extended syntax in the ``grid_mapping``
-attribute of a data variable:
 
-::
+.. code-block:: text
 
-    <gridMappingVariable>: <coordinatesVariable> [<coordinatesVariable> …] [<gridMappingVariable>: <coordinatesVariable>…]
+  <grid_mapping_var>: <coord_var> [<coord_var>] [<grid_mapping_var>: <coord_var> ...]
 
-where each ``gridMappingVariable`` identifies a grid mapping variable
-followed by the list of associated coordinate variables. Note that with
+where each ``grid_mapping_var`` identifies a grid mapping variable followed by
+the list of associated coordinate variables (``coord_var``). Note that with
 this syntax it is possible to specify multiple coordinate systems for a
 data variable.
 
-The order of the axes in the extended grid mapping specification is
-significant, but only when used in conjunction with a "well known text"
-(WKT) representation of the coordinate system _REF_ where it should be
-consistent with the ``AXES ORDER`` specified in the ``crs_wkt`` attribute.
+For example, consider the following *air pressure* variable that is
+defined on an *OSGB Transverse Mercator grid*:
+
+.. code-block:: text
+
+    float pres(y, x) ;
+        pres:standard_name = "air_pressure" ;
+        pres:units = "Pa" ;
+        pres:coordinates = "lat lon" ;
+        pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+
+    double x(x) ;
+        x:standard_name = "projection_x_coordinate" ;
+        x:units = "m" ;
+
+    double y(y) ;
+        y:standard_name = "projection_y_coordinate" ;
+        y:units = "m" ;
+
+    double lat(y, x) ;
+        lat:standard_name = "latitude" ;
+        lat:units = "degrees_north" ;
+
+    double lon(y, x) ;
+        lon:standard_name = "longitude" ;
+        lon:units = "degrees_east" ;
+
+    int crsOSGB ;
+        crsOSGB:grid_mapping_name = "transverse_mercator" ;
+        crsOSGB:semi_major_axis = 6377563.396 ;
+        crsOSGB:inverse_flattening = 299.3249646 ;
+        <snip>
+
+    int crsWGS84 ;
+        crsWGS84:grid_mapping_name = "latitude_longitude" ;
+        crsWGS84:longitude_of_prime_meridian = 0. ;
+        <snip>
+
+
+The dimension coordinates ``x`` and ``y`` are explicitly defined on
+an *transverse mercator`` grid via the ``crsOSGB`` variable.
+
+However, with the extended grid syntax, it is also possible to define
+a second coordinate system on a standard **latitude_longitude** grid
+and associate it with the auxiliary ``lat`` and ``lon`` coordinates:
+
+::
+
+    pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+
+
+Note, the *order* of the axes in the extended grid mapping specification is
+significant, but only when used in conjunction with a
+`CRS Well Known Text (WKT)`_ representation of the coordinate system where it
+should be consistent with the ``AXES ORDER`` specified in the ``crs_wkt``
+attribute.
 
 
 Effect on loading
@@ -289,8 +375,9 @@ Effect on saving
 ^^^^^^^^^^^^^^^^
 
 To maintain existing behaviour, saving an :class:`iris.cube.Cube` to
-a netCDF file will default to the "simple" grid mapping syntax. If
-the cube contains multiple coordinate systems, only the coordinate
+a netCDF file will default to the "simple" grid mapping syntax, unless
+the cube was loaded from a file using the extended grid mapping syntax.
+If the cube contains multiple coordinate systems, only the coordinate
 system of the dimension coordinate(s) will be specified.
 
 To enable saving of multiple coordinate systems with ordered axes,
@@ -303,3 +390,6 @@ generated ``crs_wkt`` attribute.
 Note, the ``crs_wkt`` attribute will only be generated when the
 extended grid mapping is also written, i.e. when
 ``Cube.extended_grid_mapping=True``.
+
+
+.. _CRS Well Known Text (WKT): https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
