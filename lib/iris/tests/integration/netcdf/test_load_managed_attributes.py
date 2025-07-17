@@ -55,11 +55,38 @@ class TestStash(LoadTestCommon):
     def _check_load(self, value):
         return self._check_load_inner("STASH", "um_stash_source", value)
 
-    def test_simple_object(self):
+    def test_simple_string(self):
         stash_string = "m01s02i324"
         result = self._check_load(stash_string)
         assert isinstance(result, STASH)
         assert result == STASH(1, 2, 324)
+
+    def test_legacy_name(self):
+        # Write using the old legacy name of the attribute.
+        # Presumably may still occur in some old files.
+        stash_string = "m01s02i324"
+        result = self._check_load_inner(
+            nc_name="ukmo__um_stash_source", iris_name="STASH", value=stash_string
+        )
+        assert isinstance(result, STASH)
+        assert result == STASH(1, 2, 324)
+
+    def test_dual_names(self):
+        # Test the highly unusual case where both names occur.
+        result = self._check_load(value="xxx")
+        # Modify the file variable to have *both* attributes
+        with nc.Dataset(self.tmp_ncpath, "r+") as ds:
+            var = ds.variables["x"]
+            var.um_stash_source = "x1"
+            var.ukmo__um_stash_source = "x2"
+
+        # When re-loaded, this should raise a warning.
+        msg = "Multiple file attributes would set .*STASH"
+        with pytest.warns(UserWarning, match=msg):
+            result_cube = iris.load_cube(self.tmp_ncpath, "x")
+        result = result_cube.attributes["STASH"]
+        assert isinstance(result, str)
+        assert result == "x1"  # because the primary name takes precedence
 
     def test_alternate_format(self):
         stash_string = "  m1s2i3  "  # slight tolerance in STASH conversion function
