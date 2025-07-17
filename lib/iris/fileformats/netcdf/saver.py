@@ -647,10 +647,7 @@ class Saver:
             global_attributes = {
                 k: v
                 for k, v in cube_attributes.items()
-                if (
-                    k not in local_keys
-                    and k.lower() not in ["conventions", "iris_extended_grid_mapping"]
-                )
+                if (k not in local_keys and k.lower() != "conventions")
             }
             self.update_global_attributes(global_attributes)
 
