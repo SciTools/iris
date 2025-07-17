@@ -363,7 +363,7 @@ Effect on loading
 When Iris loads a NetCDF file that uses the extended grid mapping syntax
 it will generate an :class:`iris.coord_systems.CoordSystem` for each
 coordinate system listed and attempt to attach it to the associated
-:class:`iris.coord.Coord` instances on the cube. Currently, Iris considers
+:class:`iris.coords.Coord` instances on the cube. Currently, Iris considers
 the ``crs_wkt`` supplementary and builds coordinate systems exclusively
 from the ``grid_mapping`` attribute.
 
