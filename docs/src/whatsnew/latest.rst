@@ -147,7 +147,7 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
    and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
 
-#. `@ESadek-MO`_ moved `@rcomer`_ 's `mocked_compute` testing fixture into the
+#. `@ESadek-MO`_ moved `@rcomer`_'s `mocked_compute` testing fixture into the
    `conftest.py` for the unit testing directory, and used this fixture in
    :mod:`iris/tests/unit/analysis/maths/test__arith_dask_array.py` and
    :mod:`iris/tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:`6564`)
