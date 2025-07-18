@@ -45,14 +45,19 @@ exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
 exclude .ruff.toml
 exclude CHANGES
+include CHANGELOG.md
 include CITATION.cff
 exclude CODE_OF_CONDUCT.md
+exclude CONTRIBUTING.md
 include COPYING
 include COPYING.LESSER
+include INSTALL
 include LICENSE
 exclude Makefile
 exclude codecov.yml
 include noxfile.py
+include tox.ini
+exclude pixi.lock
     # principles:
     #    - *ANY* file in the root should be explicitly "include"- or "exclude"-d
     #         - EXCEPT (possibly) those covered by setuptools default rules (see above link)
