@@ -65,7 +65,7 @@ class Mixin__nc_load_actions:
         # Destroy a temp directory for temp files.
         shutil.rmtree(cls.temp_dirpath)
 
-    def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path):
+    def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path, mocker=None):
         """Load the 'phenom' data variable in a CDL testcase, as a cube.
 
         Using ncgen, CFReader and the _load_cube call.
@@ -85,8 +85,12 @@ class Mixin__nc_load_actions:
 
             # If debug enabled, switch on the activation summary debug output.
             # Use 'patch' so it is restored after the test.
-            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
-
+            if mocker:
+                # If pytest mocker provided, use that to patch:
+                mocker.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
+            elif hasattr(self, "patch"):
+                # keep old UnitTest patch working
+                self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
             with warnings.catch_warnings():
                 warnings.filterwarnings(
                     "ignore",

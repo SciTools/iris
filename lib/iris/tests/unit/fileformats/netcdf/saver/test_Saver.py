@@ -16,6 +16,7 @@ from unittest import mock
 
 import numpy as np
 from numpy import ma
+import pytest
 
 import iris
 from iris.coord_systems import (
@@ -35,6 +36,7 @@ from iris.coord_systems import (
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
 
 
@@ -789,12 +791,122 @@ class Test__cf_coord_identity(tests.IrisTest):
         )
 
 
-class Test__create_cf_grid_mapping(tests.IrisTest):
+@pytest.fixture
+def transverse_mercator_cube_multi_cs():
+    """A transverse mercator cube with an auxiliary GeogGS coordinate system."""
+    data = np.arange(12).reshape(3, 4)
+    cube = Cube(data, "air_pressure_anomaly")
+    cube.extended_grid_mapping = True
+
+    geog_cs = GeogCS(6377563.396, 6356256.909)
+    trans_merc = TransverseMercator(
+        49.0, -2.0, -400000.0, 100000.0, 0.9996012717, geog_cs
+    )
+    coord = DimCoord(
+        np.arange(3),
+        "projection_y_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 0)
+    coord = DimCoord(
+        np.arange(4),
+        "projection_x_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 1)
+
+    # Add auxiliary lat/lon coords with a GeogCS coord system
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "longitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "latitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    return cube
+
+
+class Test_write_extended_grid_mapping:
+    def test_multi_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test writing a cube with multiple coordinate systems.
+        Should generate a grid mapping using extended syntax that references
+        both coordinate systems and the coords.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_aux_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test when DimCoords have coord system, but AuxCoords do not.
+        Should write extended grid mapping for just DimCoords.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        cube.coord("latitude").coord_system = None
+        cube.coord("longitude").coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_multi_cs_missing_coord(
+        self, transverse_mercator_cube_multi_cs, tmp_path, request
+    ):
+        """Test when we have a missing coordinate.
+        Grid mapping will fall back to simple mapping to DimCoord CS (no coords referenced).
+        """
+        cube = transverse_mercator_cube_multi_cs
+        cube.remove_coord("latitude")
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test when no coordinate systems associated with cube coords.
+        Grid mapping will not be generated at all.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        for coord in cube.coords():
+            coord.coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+
+class Test_create_cf_grid_mapping:
+    """Tests correct generation of CF grid_mapping variable attributes.
+
+    Note: The first 3 tests are run with the "extended grid" mapping
+    both enabled (the default for all these tests) and disabled. This
+    controls the output of the WKT attribute.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self._extended_grid_mapping = True  # forces WKT strings to be written
+
     def _cube_with_cs(self, coord_system):
         """Return a simple 2D cube that uses the given coordinate system."""
         cube = stock.lat_lon_cube()
         x, y = cube.coord("longitude"), cube.coord("latitude")
         x.coord_system = y.coord_system = coord_system
+        cube.extended_grid_mapping = self._extended_grid_mapping
         return cube
 
     def _grid_mapping_variable(self, coord_system):
@@ -813,14 +925,15 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         grid_variable = NCMock(name="NetCDFVariable")
         create_var_fn = mock.Mock(side_effect=[grid_variable])
         dataset = mock.Mock(variables=[], createVariable=create_var_fn)
-        saver = mock.Mock(spec=Saver, _coord_systems=[], _dataset=dataset)
         variable = NCMock()
 
-        # This is the method we're actually testing!
-        Saver._create_cf_grid_mapping(saver, cube, variable)
+        saver = Saver(dataset, "NETCDF4", compute=False)
 
-        self.assertEqual(create_var_fn.call_count, 1)
-        self.assertEqual(variable.grid_mapping, grid_variable.grid_mapping_name)
+        # The method we want to test:
+        saver._create_cf_grid_mapping(cube, variable)
+
+        assert create_var_fn.call_count == 1
+        assert variable.grid_mapping, grid_variable.grid_mapping_name
         return grid_variable
 
     def _variable_attributes(self, coord_system):
@@ -840,14 +953,24 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         actual = self._variable_attributes(coord_system)
 
         # To see obvious differences, check that they keys are the same.
-        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        assert sorted(actual.keys()) == sorted(expected.keys())
         # Now check that the values are equivalent.
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
-    def test_rotated_geog_cs(self):
+    def test_rotated_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
+
         expected = {
-            "crs_wkt": (
+            "grid_mapping_name": b"rotated_latitude_longitude",
+            "north_pole_grid_longitude": 0.0,
+            "grid_north_pole_longitude": 177.5,
+            "grid_north_pole_latitude": 37.5,
+            "longitude_of_prime_meridian": 0.0,
+            "earth_radius": 6371229.0,
+        }
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
                 'GEOGCRS["unnamed",BASEGEOGCRS["unknown",DATUM["unknown",'
                 'ELLIPSOID["unknown",6371229,0,LENGTHUNIT["metre",1,ID['
                 '"EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
@@ -861,20 +984,20 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                 '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
                 ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
                 '"EPSG",9122]]]]'
-            ),
-            "grid_mapping_name": b"rotated_latitude_longitude",
-            "north_pole_grid_longitude": 0.0,
-            "grid_north_pole_longitude": 177.5,
-            "grid_north_pole_latitude": 37.5,
+            )
+
+        self._test(coord_system, expected)
+
+    def test_spherical_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
+        coord_system = GeogCS(6371229.0)
+        expected = {
+            "grid_mapping_name": b"latitude_longitude",
             "longitude_of_prime_meridian": 0.0,
             "earth_radius": 6371229.0,
         }
-        self._test(coord_system, expected)
-
-    def test_spherical_geog_cs(self):
-        coord_system = GeogCS(6371229.0)
-        expected = {
-            "crs_wkt": (
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
                 'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",6371229'
                 ',0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PRIMEM["Greenwich"'
                 ',0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8901]],CS'
@@ -882,17 +1005,20 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                 '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
                 ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
                 '"EPSG",9122]]]]'
-            ),
-            "grid_mapping_name": b"latitude_longitude",
-            "longitude_of_prime_meridian": 0.0,
-            "earth_radius": 6371229.0,
-        }
+            )
         self._test(coord_system, expected)
 
-    def test_elliptic_geog_cs(self):
+    def test_elliptic_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
         coord_system = GeogCS(637, 600)
         expected = {
-            "crs_wkt": (
+            "grid_mapping_name": b"latitude_longitude",
+            "longitude_of_prime_meridian": 0.0,
+            "semi_minor_axis": 600.0,
+            "semi_major_axis": 637.0,
+        }
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
                 'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",637,'
                 '17.2162162162162,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],'
                 'PRIMEM["Reference meridian",0,ANGLEUNIT["degree",'
@@ -901,12 +1027,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
                 '0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude",north,'
                 'ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",'
                 "9122]]]]"
-            ),
-            "grid_mapping_name": b"latitude_longitude",
-            "longitude_of_prime_meridian": 0.0,
-            "semi_minor_axis": 600.0,
-            "semi_major_axis": 637.0,
-        }
+            )
         self._test(coord_system, expected)
 
     def test_lambert_conformal(self):
@@ -1194,6 +1315,17 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             (rotated, expected_rotated),
         ]:
             self._test(coord_system, expected)
+
+
+@pytest.fixture(
+    params=[
+        pytest.param(True, id="extended_grid_mapping"),
+        pytest.param(False, id="no_extended_grid_mapping"),
+    ]
+)
+def extended_grid_mapping(request):
+    """Fixture for enabling/disabling extended grid mapping."""
+    return request.param
 
 
 if __name__ == "__main__":

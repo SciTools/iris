@@ -144,6 +144,46 @@ CF_GRID_MAPPING_OBLIQUE = "oblique_mercator"
 CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
+# Regex for parsing grid_mapping (extended format)
+# Link to online regex101 playground: https://regex101.com/r/NcKzkQ/1
+#
+#   (\w+):                # Matches '<word>:' and stores in CAPTURE GROUP 1
+#   (                     # CAPTURE GROUP 2 for capturing multiple coords
+#       (?:               #  Non-capturing group for composing match
+#           \s+           #   Matches one or more blank characters
+#           (?!\w+:)      #   Negative look-ahead: don't match <word> followed by colon
+#           \w+           #   Matches a <word>
+#       )+                #  Repeats non-capturing group at least once.
+#   )                     # End of CAPTURE GROUP 2
+_GRID_MAPPING_PARSE_EXTENDED = re.compile(
+    r"""
+        (\w+):
+        (
+            (?:
+                \s+
+                (?!\w+:)
+                \w+
+            )+
+        )+
+    """,
+    re.VERBOSE,
+)
+_GRID_MAPPING_PARSE_SIMPLE = re.compile(r"^\w+$")
+_GRID_MAPPING_VALIDATORS = (  # fmt: skip
+    (
+        re.compile(r"\w+: +\w+:"),
+        "`<coord_system>:` identifier followed immediately by another `<coord_system>:` identifier",
+    ),
+    (
+        re.compile(r"\w+: *$"),
+        "`<coord_system>:` is empty - missing coordinate list",
+    ),
+    (
+        re.compile(r"^\w+ +\w+"),
+        "Multiple coordinates found without `<coord_system>:` identifier",
+    ),
+)
+#
 # CF Attribute Names.
 #
 CF_ATTR_AXIS = "axis"
@@ -1934,6 +1974,41 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
         is_valid = attr_mapping_name.lower() == grid_mapping
 
     return is_valid
+
+
+################################################################################
+def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
+    """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
+    # Handles extended grid_mapping too. Possibilities:
+    #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords
+    #  grid_mapping = "crs: lat lon"  : extended mapping; a variable name and list of coords
+    #  grid_mapping = "crs: lat lon other: var1 var2"  : multiple extended mappings
+
+    mappings: dict[None | str, str]
+
+    # try simple mapping first
+    if _GRID_MAPPING_PARSE_SIMPLE.match(grid_mapping):
+        mappings = {None: grid_mapping}  # simple single grid mapping variable
+    else:
+        # Try extended mapping:
+        # 1. Run validators to check for invalid expressions:
+        for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
+            if len(match := v_re.findall(grid_mapping)):
+                msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
+                raise iris.exceptions.CFParseError(msg)
+
+        # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
+        result = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
+        if len(result) == 0:
+            msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
+            raise iris.exceptions.CFParseError(msg)
+
+        # split second match group into list of coordinates:
+        mappings = {}
+        for cs, coords in result:
+            mappings.update({coord: cs for coord in coords.split()})
+
+    return mappings
 
 
 ################################################################################
