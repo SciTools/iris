@@ -8,8 +8,6 @@
 # importing anything else.
 import iris.tests as tests  # isort:skip
 
-from os.path import join as path_join
-import shutil
 import warnings
 
 import numpy as np
@@ -343,7 +341,7 @@ class TestCoordSystem:
         assert cube.extended_grid_mapping is True
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def geostationary_problem_cdl():
     return """
 netcdf geostationary_problem_case {
@@ -391,27 +389,23 @@ class TestLoadMinimalGeostationary:
 
     """
 
-    @classmethod
-    @pytest.fixture(autouse=True)
-    def _setup(cls, tmp_path, geostationary_problem_cdl):
-        # Create a temp directory for transient test files.
-        cls.temp_dir = tmp_path
-        cls.path_test_cdl = path_join(cls.temp_dir, "geos_problem.cdl")
-        cls.path_test_nc = path_join(cls.temp_dir, "geos_problem.nc")
-        # Create reference CDL and netcdf files from the CDL text.
+    @pytest.fixture(scope="class")
+    def geostationary_problem_ncfile(self, tmp_path_factory, geostationary_problem_cdl):
+        tmp_path = tmp_path_factory.mktemp("geos")
+        cdl_path = tmp_path / "geos_problem.cdl"
+        nc_path = tmp_path / "geos_problem.nc"
         ncgen_from_cdl(
             cdl_str=geostationary_problem_cdl,
-            cdl_path=cls.path_test_cdl,
-            nc_path=cls.path_test_nc,
+            cdl_path=cdl_path,
+            nc_path=nc_path,
         )
-        yield
+        return nc_path
 
-        # Destroy the temp directory.
-        shutil.rmtree(cls.temp_dir)
-
-    def test_geostationary_no_false_offsets(self):
+    def test_geostationary_no_false_offsets(
+        self, tmp_path, geostationary_problem_ncfile
+    ):
         # Check we can load the test data and coordinate system properties are correct.
-        cube = iris.load_cube(self.path_test_nc)
+        cube = iris.load_cube(geostationary_problem_ncfile)
         # Check the coordinate system properties has the correct default properties.
         cs = cube.coord_system()
         assert isinstance(cs, iris.coord_systems.Geostationary)
