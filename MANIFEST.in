@@ -22,17 +22,6 @@ recursive-include lib *.cdl *.cml *.json *.md *.py *.template *.txt *.xml
 
 
 #---------
-# SECTION: docs
-prune docs
-# and if required ... include ONLY docs source files.
-# E.G. recursive-include docs *.rst *.inc
-    # principles:
-    #    - use prune to ignore everything (optionally: except the docs sources)
-    # hints:
-    #    - most projects don't want to package the docs, but some currently do (cf-units).
-
-
-#---------
 # SECTION: requirements
 prune requirements
 recursive-include requirements *.txt
@@ -41,7 +30,6 @@ recursive-include requirements *.txt
     # hints:
     #    - not all projects include requirements, but they can be drawn in anyway by dynamic dependencies
     #        in the setuptools build process, linked via config in pyproject.toml
-    #    - for some repos, the *.txt are actually lockfiles.  This probably needs fixing.
 
 
 #---------
@@ -57,14 +45,19 @@ exclude .pre-commit-config.yaml
 exclude .readthedocs.yml
 exclude .ruff.toml
 exclude CHANGES
+include CHANGELOG.md
 include CITATION.cff
 exclude CODE_OF_CONDUCT.md
+exclude CONTRIBUTING.md
 include COPYING
 include COPYING.LESSER
+include INSTALL
 include LICENSE
 exclude Makefile
 exclude codecov.yml
 include noxfile.py
+include tox.ini
+exclude pixi.lock
     # principles:
     #    - *ANY* file in the root should be explicitly "include"- or "exclude"-d
     #         - EXCEPT (possibly) those covered by setuptools default rules (see above link)
@@ -83,6 +76,7 @@ prune .github
 prune .nox
 prune .tox
 prune .coverage
+prune docs
 # (2) top-level files to omit
 exclude .coveragerc
 # (3) file types (path patterns) to skip everywhere
