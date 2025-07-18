@@ -56,6 +56,6 @@ the below table.
    <p></p>
 
 
-.. note:: The data in this table is updated every 30 minutes and is sourced
-          from `voted-issues.json`_.
-          For the latest data please see the `issues on GitHub`_.
+.. note:: The data in this table is sourced from `voted-issues.json`_ and is updated
+          via a scheduled GitHub Action.  For the latest data please see
+          the `issues on GitHub`_.
