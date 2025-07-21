@@ -69,14 +69,15 @@ _LOCAL_TEST_ATTRS = (
     iris.fileformats.netcdf.saver._CF_DATA_ATTRS
     + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
 )
-# Don't test iris_extended_grid_mapping, as it is a special attribute that
-# is not expected to always roundtrip.
-# Also, let's simply exclude "ukmo__process_flags", as the required value structure is
-# weird and doesn't fit our general testing structure.
+# For simplicity, we exclude several special cases that don't act with "standard"
+#  behaviour (because they translate in special ways):
+#   * "iris_extended_grid_mapping" : not expected to always roundtrip
+#   * "ukmo__process_flags" : has an odd value structure
+#   * "um_stash_source" : should only occur in files, not in Iris attribute dicts
 _LOCAL_TEST_ATTRS = [
     a
     for a in _LOCAL_TEST_ATTRS
-    if a not in ("iris_extended_grid_mapping", "ukmo__process_flags")
+    if a not in ("iris_extended_grid_mapping", "ukmo__process_flags", "um_stash_source")
 ]
 
 
