@@ -87,7 +87,7 @@ class StashHandler(AttributeHandler):
         return STASH.from_msi(attr_value)
 
 
-class UkmoProcessHandler(AttributeHandler):
+class UkmoProcessFlagsHandler(AttributeHandler):
     """Convert ukmo__process_flags tuple attribute to/from a netcdf string attribute."""
 
     IrisIdentifyingName = "ukmo__process_flags"
@@ -183,7 +183,7 @@ def _add_handler(handler: AttributeHandler):
 
 # Always include the "STASH" and "ukmo__process_flags" handlers.
 _add_handler(StashHandler())
-_add_handler(UkmoProcessHandler())
+_add_handler(UkmoProcessFlagsHandler())
 
 try:
     import iris_grib  # noqa: F401
@@ -263,7 +263,7 @@ def _sample_decode_rawlbproc(lbproc):
 
 def _check_pf_roundtrip(contents):
     print(f"original: {contents!r}")
-    handler = UkmoProcessHandler()
+    handler = UkmoProcessFlagsHandler()
     name, val = handler.encode_object(contents)
     reconstruct = handler.decode_attribute(name, val)
     print(f"  -> encoded: {val!r}")
