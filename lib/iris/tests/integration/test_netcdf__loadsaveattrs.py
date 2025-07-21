@@ -69,6 +69,9 @@ _LOCAL_TEST_ATTRS = (
     iris.fileformats.netcdf.saver._CF_DATA_ATTRS
     + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
 )
+# Don't test iris_extended_grid_mapping, as it is a special attribute that
+# is not expected to always roundtrip.
+_LOCAL_TEST_ATTRS = [a for a in _LOCAL_TEST_ATTRS if a != "iris_extended_grid_mapping"]
 
 
 # Define a fixture to parametrise over the 'local-style' test attributes.
@@ -513,6 +516,7 @@ _SPECIAL_ATTRS = [
     "standard_error_multiplier",
     "STASH",
     "um_stash_source",
+    "iris_extended_grid_mapping",
 ]
 _MATRIX_ATTRNAMES = [attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS]
 

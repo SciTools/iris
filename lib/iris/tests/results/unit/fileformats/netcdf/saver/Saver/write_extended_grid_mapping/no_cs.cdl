@@ -4,13 +4,7 @@ dimensions:
 variables:
 	int64 air_pressure_anomaly(projection_y_coordinate, projection_x_coordinate) ;
 		air_pressure_anomaly:standard_name = "air_pressure_anomaly" ;
-		air_pressure_anomaly:grid_mapping = "mercator" ;
-	int mercator ;
-		mercator:grid_mapping_name = "mercator" ;
-		mercator:longitude_of_projection_origin = 49. ;
-		mercator:false_easting = 0. ;
-		mercator:false_northing = 0. ;
-		mercator:standard_parallel = 0. ;
+		air_pressure_anomaly:coordinates = "latitude longitude" ;
 	int64 projection_y_coordinate(projection_y_coordinate) ;
 		projection_y_coordinate:axis = "Y" ;
 		projection_y_coordinate:units = "m" ;
@@ -19,4 +13,10 @@ variables:
 		projection_x_coordinate:axis = "X" ;
 		projection_x_coordinate:units = "m" ;
 		projection_x_coordinate:standard_name = "projection_x_coordinate" ;
+	int64 latitude(projection_y_coordinate, projection_x_coordinate) ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	int64 longitude(projection_y_coordinate, projection_x_coordinate) ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
 }

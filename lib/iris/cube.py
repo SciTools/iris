@@ -2451,6 +2451,32 @@ class Cube(CFVariableMixin):
 
         return result
 
+    def coord_systems(self) -> list[iris.coord_systems.CoordSystem]:
+        """Return a list of all coordinate systems used in cube coordinates."""
+        # Gather list of our unique CoordSystems on cube:
+        coord_systems = ClassDict(iris.coord_systems.CoordSystem)
+        for coord in self.coords():
+            if coord.coord_system:
+                coord_systems.add(coord.coord_system, replace=True)
+
+        return list(coord_systems.values())
+
+    @property
+    def extended_grid_mapping(self) -> bool:
+        """Return True if a cube will use extended grid mapping syntax to write axes order in grid_mapping.
+
+        Only relevant when saving a cube to NetCDF file format.
+
+        For more details see "Grid Mappings and Projections" in the CF Conventions document:
+        https://cfconventions.org/cf-conventions/conformance.html
+        """
+        return self.attributes.get("iris_extended_grid_mapping", False)
+
+    @extended_grid_mapping.setter
+    def extended_grid_mapping(self, ordered: bool) -> None:
+        """Set to True to enable extended grid mapping syntax."""
+        self.attributes["iris_extended_grid_mapping"] = ordered
+
     def _any_meshcoord(self) -> MeshCoord | None:
         """Return a MeshCoord if there are any, else None."""
         mesh_coords = self.coords(mesh_coords=True)
