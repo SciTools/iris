@@ -58,8 +58,9 @@ class StashHandler(AttributeHandler):
     """Convert STASH object attribute to/from a netcdf string attribute."""
 
     IrisIdentifyingName = "STASH"
-    # Note: two possible in-file attribute names, second one is a 'legacy' version.
-    NetcdfIdentifyingNames = ["um_stash_source", "ukmo__um_stash_source"]
+    # Note: two possible in-file attribute names, the first one is a 'legacy' version
+    #  but takes priority in a conflict.
+    NetcdfIdentifyingNames = ["ukmo__um_stash_source", "um_stash_source"]
 
     def encode_object(self, stash):
         if isinstance(stash, STASH):
@@ -77,7 +78,8 @@ class StashHandler(AttributeHandler):
             raise TypeError(msg)
 
         msi_string = str(stash_object)  # convert to standard MSI string representation
-        return self.NetcdfIdentifyingNames[0], msi_string
+        # We always write "um_stash_source", not the legacy one.
+        return self.NetcdfIdentifyingNames[1], msi_string
 
     def decode_attribute(self, attr_name: str, attr_value):
         # In this case the attribute name does not matter.

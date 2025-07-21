@@ -533,7 +533,16 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
 
 @action_function
 def action_managed_attribute(engine, attr_name, attr_value):
+    """Record a managed attribute, as successfully translated."""
     rule_name = f"fc_special_attribute__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
+    return rule_name
+
+
+@action_function
+def action_unmanaged_attribute(engine, attr_name, attr_value):
+    """Record the original attribute, when translation of a managed one failed."""
+    rule_name = f"fc_special_attribute__fallback__{attr_name}"
     engine.cube.attributes[attr_name] = attr_value
     return rule_name
 
@@ -562,20 +571,25 @@ def action_all_managed_attributes(engine):
             warnings.warn(msg, category=_WarnComboLoadIgnoring)
 
         if len(matches) > 0:
+            # Take the first as priority
             input_name, input_value = matches[0]
             try:
                 iris_value = handler.decode_attribute(input_name, input_value)
+                # process as a rule
+                action_managed_attribute(engine, iris_name, iris_value)
+
             except (ValueError, TypeError):
-                iris_value = input_value
                 msg = (
-                    f"Invalid content for attribute {match_name!r} = {input_value!r}."
-                    f"Iris '.{iris_name}' attribute is set to this untranslated raw "
-                    "value -- which will not save out."
+                    f"Invalid content for managed attribute name {match_name!r} "
+                    f"= {input_value!r}: The attribute is retained untranslated, which "
+                    "may not re-save correctly."
                 )
                 warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
 
-            # process as a rule
-            action_managed_attribute(engine, iris_name, iris_value)
+                # ALSO record the attribute on the cube since, now it has been fetched
+                #  by the CF interpreting code, it will be discounted from inclusion.
+                # Since translation failed, record as original name=value.
+                action_unmanaged_attribute(engine, input_name, input_value)
 
 
 @action_function
