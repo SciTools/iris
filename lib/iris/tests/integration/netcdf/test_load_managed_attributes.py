@@ -19,6 +19,7 @@ import iris
 from iris.cube import Cube
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper as NcDataset
 from iris.fileformats.pp import STASH
+from iris.warnings import IrisLoadWarning
 
 
 @pytest.fixture(autouse=True, scope="session")
@@ -50,12 +51,17 @@ class LoadTestCommon:
         result = cube.attributes.get(iris_name)
         return result
 
-    _LOAD_FAIL_MSG = "Invalid content for attribute.* set to.* untranslated raw value"
+    _LOAD_FAIL_MSG = "Invalid content for managed attribute.*untranslated"
 
 
 class TestStash(LoadTestCommon):
-    def _check_load(self, value):
-        return self._check_load_inner("STASH", "um_stash_source", value)
+    def _check_load(self, value, succeed=True):
+        # When succeed=False, expect translation fail + return original 'raw' attribute
+        return self._check_load_inner(
+            iris_name="STASH" if succeed else "um_stash_source",
+            nc_name="um_stash_source",
+            value=value,
+        )
 
     def test_simple_string(self):
         stash_string = "m01s02i324"
@@ -79,8 +85,8 @@ class TestStash(LoadTestCommon):
         # Modify the file variable to have *both* attributes
         ds = NcDataset(self.tmp_ncpath, "r+")
         var = ds.variables["x"]
-        var.um_stash_source = "x1"
-        var.ukmo__um_stash_source = "x2"
+        var.um_stash_source = "m1s2i3"
+        var.ukmo__um_stash_source = "m2s3i4"
         ds.close()
 
         # When re-loaded, this should raise a warning.
@@ -88,8 +94,8 @@ class TestStash(LoadTestCommon):
         with pytest.warns(UserWarning, match=msg):
             result_cube = iris.load_cube(self.tmp_ncpath, "x")
         result = result_cube.attributes["STASH"]
-        assert isinstance(result, str)
-        assert result == "x1"  # because the primary name takes precedence
+        assert isinstance(result, STASH)
+        assert result == STASH(2, 3, 4)  # because the "legacy" name takes precedence
 
     def test_alternate_format(self):
         stash_string = "  m1s2i3  "  # slight tolerance in STASH conversion function
@@ -99,20 +105,20 @@ class TestStash(LoadTestCommon):
 
     def test_bad_string__fail(self):
         stash_string = "xxx"
-        with pytest.warns(UserWarning, match=self._LOAD_FAIL_MSG):
-            result = self._check_load(stash_string)
+        with pytest.warns(IrisLoadWarning, match=self._LOAD_FAIL_MSG):
+            result = self._check_load(stash_string, succeed=False)
         assert result == "xxx"
 
     def test_empty_string__fail(self):
         stash_string = ""
-        with pytest.warns(UserWarning, match=self._LOAD_FAIL_MSG):
-            result = self._check_load(stash_string)
+        with pytest.warns(IrisLoadWarning, match=self._LOAD_FAIL_MSG):
+            result = self._check_load(stash_string, succeed=False)
         assert result == ""
 
     def test_numeric_value__fail(self):
         value = 3
-        with pytest.warns(UserWarning, match=self._LOAD_FAIL_MSG):
-            result = self._check_load(value)
+        with pytest.warns(IrisLoadWarning, match=self._LOAD_FAIL_MSG):
+            result = self._check_load(value, succeed=False)
         # written directly, comes back as an array scalar of int64
         assert result.dtype == np.int64
         assert result == 3
@@ -120,8 +126,8 @@ class TestStash(LoadTestCommon):
     def test_tuple_value__fail(self):
         # As they cast to arrays, we expect lists to behave the same
         value = (2, 3, 7)
-        with pytest.warns(UserWarning, match=self._LOAD_FAIL_MSG):
-            result = self._check_load(value)
+        with pytest.warns(IrisLoadWarning, match=self._LOAD_FAIL_MSG):
+            result = self._check_load(value, succeed=False)
         # written directly, comes back as an array of int64, shape (3,)
         assert result.dtype == np.int64
         assert result.shape == (3,)

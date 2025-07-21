@@ -2429,7 +2429,8 @@ class Saver:
                     )
                     warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
                     # Resolve by setting the expected attr to the "raw" string repr
-                    attr_name = handler.NetcdfIdentifyingNames[0]
+                    # NB we expect the default written name to be the last listed
+                    attr_name = handler.NetcdfIdentifyingNames[-1]
                     value = string_value
 
             if attr_name in _CF_GLOBAL_ATTRS:

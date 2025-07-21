@@ -32,10 +32,12 @@ class AttributeHandler(metaclass=ABCMeta):
     #: The storage name(s) which identify this type of data in actual files, which thus
     #  identify attributes which we should attempt to decode with this coder.
     # NOTES:
-    # (1) for save the attribute name is dynamically determined by the "encode" call.
-    # (2) for load, in (presumably extremely rare) case of multiples appearing, "the"
+    # (1) for load, in (presumably extremely rare) case of multiples appearing, "the"
     #  internal attribute is taken from the earliest appearing name: The other values
     #  are lost, and a warning will be issued.
+    # (2) for save ,the attribute name is dynamically determined by the "encode" call.
+    #  On translation failure, however, we assume it is the last name listed -- since
+    #  it is so for StashHandler, the only one it currently matters for.
     NetcdfIdentifyingNames: List[str] = []
 
     @abstractmethod
