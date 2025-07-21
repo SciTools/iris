@@ -559,7 +559,7 @@ def action_all_managed_attributes(engine):
                 + "".join(f"\n  {name!r}: {val!r}" for name, val in matches)
                 + "\n- only the first of these is actioned."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, category=_WarnComboLoadIgnoring)
 
         if len(matches) > 0:
             input_name, input_value = matches[0]
@@ -572,7 +572,7 @@ def action_all_managed_attributes(engine):
                     f"Iris '.{iris_name}' attribute is set to this untranslated raw "
                     "value -- which will not save out."
                 )
-                warnings.warn(msg)
+                warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
 
             # process as a rule
             action_managed_attribute(engine, iris_name, iris_value)

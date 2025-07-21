@@ -2427,7 +2427,7 @@ class Saver:
                         f"Invalid value in managed '{attr_name}' attribute: {value!r}. "
                         f"File attribute set to raw (string) value {string_value!r}."
                     )
-                    warnings.warn(msg)
+                    warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
                     # Resolve by setting the expected attr to the "raw" string repr
                     attr_name = handler.NetcdfIdentifyingNames[0]
                     value = string_value
