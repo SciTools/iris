@@ -65,6 +65,25 @@ This document explains the changes made to Iris for this release
    See `CRS Grid Mappings and Projections`_ for more information.
    (:issue:`3388`:, :pull:`6536`:)
 
+#. `@ESadek-MO`_ made MeshCoords immutable. :class:`iris.MeshCoord`s are now updated automatically when
+   changing the attached mesh. All changes to the :class:`iris.MeshCoord` should instead be done to
+   the relevant :class:`iris.Coord` located on the attached :class:`iris.MeshXY`. This change also affects 
+   the behaviour when calling :attr:`iris.MeshCoord.points` and :attr:`MeshCoord.bounds`, which will return
+   real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
+
+#. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
+   (:pull: 6517).
+
+#. `@HGWright`_ and `@pp-mo`_ enabled correct loading and saving of the bounds of CF
+   parametric coordinates (that is, Iris derived coordinates).  This was previously
+   incorrect.  However the fix is opt-in, controlled by the ``derived_bounds`` flag in
+   the :data:`iris.FUTURE` object, to avoid breaking existing code.
+   (:issue:`3678`, :pull:`6481`, :pull:`6540`)
+
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data payload when saving to NetCDF
+   to also include any auxiliary coordinates and ancillary variables with the same ``shape``.
+   (:issue:`6539`, :pull:`6552`)
+
 
 🐛 Bugs Fixed
 =============
@@ -96,16 +115,21 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ fixed a bug which caused :meth:`~iris.cube.CubeList.concatenate_cube`
    to fail when concatenating over multiple axes. (:pull:`6533`)
 
+#. `@bjlittle`_ fixed :func:`~iris.pandas.as_data_frame` to correctly convert a
+   scalar cube to a :class:`pandas.DataFrame`. (:issue:`6419`, :pull:`6567`)
+
 
 💣 Incompatible Changes
 =======================
 
 #. N/A
 
+
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@pp-mo`_ implemented automatic rechunking of hybrid (aka factory/derived)
+   coordinates to avoid excessive memory usage. (:issue:`6404`, :pull:`6516`)
 
 
 🔥 Deprecations
@@ -132,6 +156,9 @@ This document explains the changes made to Iris for this release
    :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
    (:pull:`6529`)
 
+#. `@tkknight`_ updated image to ensure it renders correctly using various web browsers
+   on Windows and Linux. (:pull:`6560`)
+
 
 💼 Internal
 ===========
@@ -147,12 +174,18 @@ This document explains the changes made to Iris for this release
    benchmark data generation, showing developers the root problem at-a-glance
    without needing local replication. (:pull:`6524`)
 
+#. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
+   and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
+
+#. `@DarkVoyager11`_ added a round trip integration test for NetCDF calendar attributes.
+   (:issue:`2985`, :pull:`6562`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@DarkVoyager11: https://github.com/DarkVoyager11
 
 
 .. comment
@@ -161,3 +194,4 @@ This document explains the changes made to Iris for this release
 .. _CRS WKT in the CF Conventions: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
 .. _CRS Grid Mappings and Projections: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#grid-mappings-and-projections
 .. _Ncdata: https://github.com/pp-mo/ncdata
+.. _Trusted Publishing: https://docs.pypi.org/trusted-publishers/

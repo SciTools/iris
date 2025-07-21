@@ -28,6 +28,7 @@ from cf_units import Unit
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+from packaging.version import Version
 
 import iris._constraints
 from iris._data_manager import DataManager
@@ -59,6 +60,15 @@ import iris.warnings
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
 
+
+# Determine the numpy printoptions legacy setting.
+_NP_VERSION = Version(np.__version__)
+_NP_LEGACY_VERSION = Version("2.2")
+NP_PRINTOPTIONS_LEGACY = (
+    str(_NP_LEGACY_VERSION)
+    if Version(f"{_NP_VERSION.major}.{_NP_VERSION.minor}") > _NP_LEGACY_VERSION
+    else False
+)
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
@@ -162,7 +172,7 @@ class CubeList(list):
 
     def xml(self, checksum=False, order=True, byteorder=True):
         """Return a string of the XML that this list of cubes represents."""
-        with np.printoptions(legacy="2.2"):
+        with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
             cubes_xml_element = doc.createElement("cubes")
             cubes_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
@@ -3891,7 +3901,7 @@ class Cube(CFVariableMixin):
         byteorder: bool = True,
     ) -> str:
         """Return a fully valid CubeML string representation of the Cube."""
-        with np.printoptions(legacy="2.2"):
+        with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
 
             cube_xml_element = self._xml_element(
