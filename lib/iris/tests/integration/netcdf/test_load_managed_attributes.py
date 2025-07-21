@@ -4,9 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for netcdf loading of attributes with "special" handling."""
 
+# Annoyingly, this import is *not* redundant, as pytest import fails without it.
 import warnings
 
-# Annoyingly, this import is *not* redundant, as pytest import fails without it.
 import iris_grib  # noqa: F401
 from iris_grib.grib_phenom_translation._gribcode import (
     GenericConcreteGRIBCode,

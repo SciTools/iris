@@ -2428,9 +2428,9 @@ class Saver:
                         f"File attribute set to raw (string) value {string_value!r}."
                     )
                     warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
-                    # Resolve by setting the expected attr to the "raw" string repr
+                    # Resolve by setting the **Iris** attr-name to the "raw" string repr
                     # NB we expect the default written name to be the last listed
-                    attr_name = handler.NetcdfIdentifyingNames[-1]
+                    attr_name = handler.IrisIdentifyingName
                     value = string_value
 
             if attr_name in _CF_GLOBAL_ATTRS:

@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for netcdf saving of attributes with "special" handling."""
 
+# Unfortunately not redundant since pytest fails to import iris_grib without it.
+import iris_grib  # noqa: F401
 from iris_grib.grib_phenom_translation._gribcode import GRIBCode
 import pytest
 
@@ -36,8 +38,13 @@ class SaveTestCommon:
 
 
 class TestStash(SaveTestCommon):
-    def _check_save(self, value):
-        return self._check_save_inner("STASH", "um_stash_source", value)
+    def _check_save(self, value, succeed=True):
+        # If succeed=False, expect failed translation writes a "STASH" attribute
+        return self._check_save_inner(
+            iris_name="STASH",
+            nc_name="um_stash_source" if succeed else "STASH",
+            value=value,
+        )
 
     def test_simple_object(self):
         stash = STASH(1, 2, 324)
@@ -52,22 +59,22 @@ class TestStash(SaveTestCommon):
     def test_bad_string__fail(self):
         bad_str = "xxx"
         with pytest.warns(UserWarning, match="Invalid value in managed.* attribute"):
-            result = self._check_save(bad_str)
+            result = self._check_save(bad_str, succeed=False)
         assert result == "xxx"
 
     def test_empty_string__fail(self):
         with pytest.warns(UserWarning, match="Invalid value in managed.* attribute"):
-            result = self._check_save("")
+            result = self._check_save("", succeed=False)
         assert result == ""
 
     def test_bad_object__fail(self):
         with pytest.warns(UserWarning, match="Invalid value in managed.* attribute"):
-            result = self._check_save({})
+            result = self._check_save({}, succeed=False)
         assert result == "{}"
 
     def test_none_object__fail(self):
         with pytest.warns(UserWarning, match="Invalid value in managed.* attribute"):
-            result = self._check_save(None)
+            result = self._check_save(None, succeed=False)
         assert result == "None"
 
 

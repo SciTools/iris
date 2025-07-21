@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.netcdf._attribute_handlers.StashHandler`."""
 
+# Unfortunately not redundant since pytest fails to import iris_grib without it.
+import iris_grib  # noqa: F401
 from iris_grib.grib_phenom_translation._gribcode import (
     GenericConcreteGRIBCode,
     GRIBCode,
