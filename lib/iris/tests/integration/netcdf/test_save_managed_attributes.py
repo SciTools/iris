@@ -5,11 +5,11 @@
 """Integration tests for netcdf saving of attributes with "special" handling."""
 
 from iris_grib.grib_phenom_translation._gribcode import GRIBCode
-import netCDF4 as nc
 import pytest
 
 import iris
 from iris.cube import Cube
+from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper as NcDataset
 from iris.fileformats.pp import STASH
 
 
@@ -30,7 +30,7 @@ class SaveTestCommon:
         cube = Cube([1], var_name="x", attributes={iris_name: value})
         # Save : NB can fail
         iris.save(cube, self.tmp_ncpath)
-        ds = nc.Dataset(self.tmp_ncpath)
+        ds = NcDataset(self.tmp_ncpath)
         result = ds.variables["x"].getncattr(nc_name)
         return result
 

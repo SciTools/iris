@@ -6,16 +6,18 @@
 
 import warnings
 
+# Annoyingly, this import is *not* redundant, as pytest import fails without it.
+import iris_grib  # noqa: F401
 from iris_grib.grib_phenom_translation._gribcode import (
     GenericConcreteGRIBCode,
     GRIBCode,
 )
-import netCDF4 as nc
 import numpy as np
 import pytest
 
 import iris
 from iris.cube import Cube
+from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper as NcDataset
 from iris.fileformats.pp import STASH
 
 
@@ -38,7 +40,7 @@ class LoadTestCommon:
         # Save : NB can fail
         iris.save(cube, self.tmp_ncpath)
         # Reopen for updating with netcdf
-        ds = nc.Dataset(self.tmp_ncpath, "r+")
+        ds = NcDataset(self.tmp_ncpath, "r+")
         # Add the test attribute content.
         ds.variables["x"].setncattr(nc_name, value)
         ds.close()
@@ -75,10 +77,11 @@ class TestStash(LoadTestCommon):
         # Test the highly unusual case where both names occur.
         result = self._check_load(value="xxx")
         # Modify the file variable to have *both* attributes
-        with nc.Dataset(self.tmp_ncpath, "r+") as ds:
-            var = ds.variables["x"]
-            var.um_stash_source = "x1"
-            var.ukmo__um_stash_source = "x2"
+        ds = NcDataset(self.tmp_ncpath, "r+")
+        var = ds.variables["x"]
+        var.um_stash_source = "x1"
+        var.ukmo__um_stash_source = "x2"
+        ds.close()
 
         # When re-loaded, this should raise a warning.
         msg = "Multiple file attributes would set .*STASH"
