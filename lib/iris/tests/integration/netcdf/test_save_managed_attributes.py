@@ -4,9 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for netcdf saving of attributes with "special" handling."""
 
-# Unfortunately not redundant since pytest fails to import iris_grib without it.
-import iris_grib  # noqa: F401
-from iris_grib.grib_phenom_translation._gribcode import GRIBCode
+try:
+    import iris_grib
+    from iris_grib.grib_phenom_translation._gribcode import GRIBCode
+except ImportError:
+    iris_grib = None
+
 import pytest
 
 import iris
@@ -127,6 +130,7 @@ class TestUkmoProcessFlags(SaveTestCommon):
         assert result == "None"
 
 
+@pytest.mark.skipif(iris_grib is None, reason="iris_grib is not available")
 class TestGribParam(SaveTestCommon):
     def _check_save(self, value):
         return self._check_save_inner("GRIB_PARAM", "GRIB_PARAM", value)

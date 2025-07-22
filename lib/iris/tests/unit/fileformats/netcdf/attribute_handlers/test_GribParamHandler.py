@@ -4,14 +4,14 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.netcdf._attribute_handlers.StashHandler`."""
 
-# Unfortunately not redundant since pytest fails to import iris_grib without it.
-import iris_grib  # noqa: F401
+import pytest
+
+iris_grib = pytest.importorskip("iris_grib")
 from iris_grib.grib_phenom_translation._gribcode import (
     GenericConcreteGRIBCode,
     GRIBCode,
 )
 import numpy as np
-import pytest
 
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 

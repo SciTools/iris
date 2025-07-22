@@ -7,11 +7,15 @@
 # Annoyingly, this import is *not* redundant, as pytest import fails without it.
 import warnings
 
-import iris_grib  # noqa: F401
-from iris_grib.grib_phenom_translation._gribcode import (
-    GenericConcreteGRIBCode,
-    GRIBCode,
-)
+try:
+    import iris_grib  # noqa: F401
+    from iris_grib.grib_phenom_translation._gribcode import (
+        GenericConcreteGRIBCode,
+        GRIBCode,
+    )
+except ImportError:
+    iris_grib = None
+
 import numpy as np
 import pytest
 
@@ -178,6 +182,7 @@ class TestUkmoProcessFlags(LoadTestCommon):
         assert result == ("[2", "3", "7]")
 
 
+@pytest.mark.skipif(iris_grib is None, reason="iris_grib is not available")
 class TestGribParam(LoadTestCommon):
     def _check_load(self, value):
         return self._check_load_inner("GRIB_PARAM", "GRIB_PARAM", value)
