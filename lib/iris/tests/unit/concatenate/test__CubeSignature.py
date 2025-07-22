@@ -18,17 +18,19 @@ from iris.cube import Cube
 from iris.util import new_axis
 
 
+@dataclass
+class SampleData:
+    series_inc: CubeSignature | None = None
+    series_inc_cube: Cube | None = None
+    series_dec: CubeSignature | None = None
+    series_dec_cube: Cube | None = None
+    scalar_cube: Cube | None = None
+
+
 class Test__coordinate_dim_metadata_equality:
     @pytest.fixture()
-    def sample_data(self):
+    def sample_data(self) -> SampleData:
         # Return a standard set of test items, wrapped in a data object
-        @dataclass
-        class SampleData:
-            series_inc: CubeSignature = None
-            series_inc_cube: Cube = None
-            series_dec: CubeSignature = None
-            series_dec_cube: Cube = None
-            scalar_cube: Cube = None
 
         data = SampleData()
 
