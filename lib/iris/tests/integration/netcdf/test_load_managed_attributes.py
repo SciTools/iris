@@ -26,11 +26,6 @@ from iris.fileformats.pp import STASH
 from iris.warnings import IrisLoadWarning
 
 
-@pytest.fixture(autouse=True, scope="session")
-def iris_futures():
-    iris.FUTURE.save_split_attrs = True
-
-
 class LoadTestCommon:
     @pytest.fixture(autouse=True)
     def tmp_filepath(self, tmp_path_factory):
@@ -43,7 +38,9 @@ class LoadTestCommon:
         # quickly create a valid netcdf file with a simple cube in it.
         cube = Cube([1], var_name="x")
         # Save : NB can fail
-        iris.save(cube, self.tmp_ncpath)
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(cube, self.tmp_ncpath)
+
         # Reopen for updating with netcdf
         ds = NcDataset(self.tmp_ncpath, "r+")
         # Add the test attribute content.

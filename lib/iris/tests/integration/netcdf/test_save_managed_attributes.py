@@ -18,11 +18,6 @@ from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper as NcDataset
 from iris.fileformats.pp import STASH
 
 
-@pytest.fixture(autouse=True, scope="session")
-def iris_futures():
-    iris.FUTURE.save_split_attrs = True
-
-
 class SaveTestCommon:
     @pytest.fixture(autouse=True)
     def tmp_filepath(self, tmp_path_factory):
@@ -34,7 +29,9 @@ class SaveTestCommon:
     def _check_save_inner(self, iris_name, nc_name, value):
         cube = Cube([1], var_name="x", attributes={iris_name: value})
         # Save : NB can fail
-        iris.save(cube, self.tmp_ncpath)
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(cube, self.tmp_ncpath)
+
         ds = NcDataset(self.tmp_ncpath)
         result = ds.variables["x"].getncattr(nc_name)
         return result
