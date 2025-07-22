@@ -159,11 +159,10 @@ class GribParamHandler(AttributeHandler):
         if isinstance(iris_value, GenericConcreteGRIBCode):
             gribcode = iris_value
         else:
-            # Attempt to convert to string, if not already
-            gribcode = str(iris_value)
-            # Attempt to create a gribcode from that.
-            # NB let it fail if it will -- caller deals with this !
-            gribcode = GRIBCode(gribcode)
+            # Create a gribcode from that.
+            # N.B. (1) implicitly uses str() to convert the arg
+            # N.B. (2) can fail : let it, caller deals with this !
+            gribcode = GRIBCode(iris_value)
 
         # The correct file attribute is the repr of a GRIBCode object.
         grib_string = repr(gribcode)
@@ -172,7 +171,7 @@ class GribParamHandler(AttributeHandler):
     def decode_attribute(self, attr_name: str, attr_value):
         from iris_grib.grib_phenom_translation._gribcode import GRIBCode
 
-        attr_value = str(attr_value)
+        # As above, a str() conversion is implied here.
         result = GRIBCode(attr_value)
         return result
 
@@ -197,142 +196,3 @@ try:
 
 except ImportError:
     pass
-
-
-#
-# Mechanism tests
-#
-def _decode_gribcode(grib_code: str):
-    return GribParamHandler().decode_attribute("x", grib_code)
-    # from iris_grib.grib_phenom_translation._gribcode import GRIBCode
-    #
-    # result = None
-    # # Use the helper function to construct a suitable GenericConcreteGRIBCode object.
-    # try:
-    #     result = GRIBCode(grib_code)
-    # except (TypeError, ValueError):
-    #     pass
-    #
-    # return result
-
-
-def make_gribcode(*args, **kwargs):
-    from iris_grib.grib_phenom_translation._gribcode import GRIBCode
-
-    return GRIBCode(*args, **kwargs)
-
-
-class TestGribDecode:
-    def test_grib_1(self):
-        assert _decode_gribcode(
-            "GRIBCode(edition=1, table_version=2, centre_number=3, number=4)"
-        ) == make_gribcode(1, 2, 3, 4)
-
-    def test_grib_2(self):
-        assert _decode_gribcode("GRIBCode(2,5,7,13)") == make_gribcode(2, 5, 7, 13)
-
-    def test_grib_3(self):
-        assert _decode_gribcode(
-            "GRIBCode(2,5, number=13, centre_number=7)"
-        ) == make_gribcode(2, 5, 7, 13)
-
-    def test_grib_4(self):
-        assert _decode_gribcode("GRIBxXCode(2,5,7,13)") == make_gribcode(2, 5, 7, 13)
-
-    def test_grib_5(self):
-        assert _decode_gribcode("GRIBCode()") is None
-
-    def test_grib_6(self):
-        assert _decode_gribcode("GRIBCode(xxx)") is None
-
-    def test_grib_7(self):
-        assert _decode_gribcode(
-            "GRIBCode(xxx-any-junk..1, 2,qytw3dsa, 4)"
-        ) == make_gribcode(1, 2, 3, 4)
-
-
-def _sample_decode_rawlbproc(lbproc):
-    from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
-
-    return tuple(
-        sorted(
-            [
-                name
-                for value, name in LBPROC_MAP.items()
-                if isinstance(value, int) and lbproc & value
-            ]
-        )
-    )
-
-
-def _check_pf_roundtrip(contents):
-    print(f"original: {contents!r}")
-    handler = UkmoProcessFlagsHandler()
-    name, val = handler.encode_object(contents)
-    reconstruct = handler.decode_attribute(name, val)
-    print(f"  -> encoded: {val!r}")
-    print(f"  -> reconstructed: {reconstruct!r}")
-    assert name == "ukmo__process_flags"
-    n_val = 0 if val == "" else len(val.split(" "))  # because split is odd
-    assert n_val == len(contents)
-    assert reconstruct == contents
-
-
-class TestProcessFlagsRoundtrip:
-    def test_pf_1(self):
-        sample = ("A example", "b", "another-thing with spaces")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_2(self):
-        sample = ("single",)
-        _check_pf_roundtrip(sample)
-
-    def test_pf_3(self):
-        sample = ("nonempty", "", "nonempty2")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_4(self):
-        sample = ()
-        _check_pf_roundtrip(sample)
-
-    def test_pf_5(self):
-        sample = ("a", "")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_6(self):
-        sample = ("", "b")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_7(self):
-        sample = ("",)
-        _check_pf_roundtrip(sample)
-
-    def test_pf_8(self):
-        sample = (" ",)
-        _check_pf_roundtrip(sample)
-
-    def test_pf_9(self):
-        sample = ("", "")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_10(self):
-        sample = (" a", "b")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_11(self):
-        sample = ("a ", "b")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_12(self):
-        sample = ("a", " b")
-        _check_pf_roundtrip(sample)
-
-    def test_pf_13(self):
-        sample = ("a", "b ")
-        _check_pf_roundtrip(sample)
-
-
-#
-# NOTE: also need to test both encode + decode separately, as there are corner cases.
-# LIKE: leading+trailing, empty entries ...
-#
