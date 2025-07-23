@@ -77,14 +77,14 @@ class TestDecodeAttribute:
 
     def test_grib1(self):
         test_string = "GRIBCode(edition=1, table_version=2, centre_number=3, number=4)"
-        result = GP_HANDLER.decode_attribute("", test_string)
+        result = GP_HANDLER.decode_attribute(test_string)
         expected = GRIBCode(1, 2, 3, 4)
         assert isinstance(result, GenericConcreteGRIBCode)
         assert result == expected
 
     def test_grib2(self):
         test_string = "GRIBCode(edition=2, discipline=3, category=4, number=5)"
-        result = GP_HANDLER.decode_attribute("", test_string)
+        result = GP_HANDLER.decode_attribute(test_string)
         expected = GRIBCode(2, 3, 4, 5)
         assert isinstance(result, GenericConcreteGRIBCode)
         assert result == expected
@@ -92,7 +92,7 @@ class TestDecodeAttribute:
     def test_odd_array_case(self):
         test_value = np.array([1.7, 5.4])
         # Bizarrely, this converts to a string which *will* parse
-        result = GP_HANDLER.decode_attribute("", test_value)
+        result = GP_HANDLER.decode_attribute(test_value)
         expected = GRIBCode(1, 7, 5, 4)
         assert isinstance(result, GenericConcreteGRIBCode)
         assert result == expected
@@ -105,4 +105,4 @@ class TestDecodeAttribute:
     def test_badvalue__fail(self, badval):
         # It can convert random values to strings, but they mostly won't satisfy.
         with pytest.raises(ValueError):
-            GP_HANDLER.decode_attribute("", badval)
+            GP_HANDLER.decode_attribute(badval)

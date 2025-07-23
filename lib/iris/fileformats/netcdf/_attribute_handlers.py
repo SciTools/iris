@@ -56,7 +56,7 @@ class AttributeHandler(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def decode_attribute(self, attr_name: str, attr_value: Any) -> Any:
+    def decode_attribute(self, attr_value: Any) -> Any:
         """Decode an attribute name and value into the appropriate attribute object.
 
         The 'value' is typically a string, but possibly other attribute content types,
@@ -94,7 +94,7 @@ class StashHandler(AttributeHandler):
         # We always write "um_stash_source", not the legacy one.
         return self.NetcdfIdentifyingNames[1], msi_string
 
-    def decode_attribute(self, attr_name: str, attr_value: Any) -> Any:
+    def decode_attribute(self, attr_value: Any) -> Any:
         # In this case the attribute name does not matter.
         from iris.fileformats.pp import STASH
 
@@ -129,7 +129,7 @@ class UkmoProcessFlagsHandler(AttributeHandler):
         value = " ".join([value_fix(x) for x in value])
         return self.NetcdfIdentifyingNames[0], value
 
-    def decode_attribute(self, attr_name: str, attr_value: Any) -> Any:
+    def decode_attribute(self, attr_value: Any) -> Any:
         # In this case the attribute name does not matter.
         attr_value = str(attr_value)
 
@@ -179,7 +179,7 @@ class GribParamHandler(AttributeHandler):
         grib_string = repr(gribcode)
         return self.NetcdfIdentifyingNames[0], grib_string
 
-    def decode_attribute(self, attr_name: str, attr_value: Any) -> Any:
+    def decode_attribute(self, attr_value: Any) -> Any:
         from iris_grib.grib_phenom_translation._gribcode import GRIBCode
 
         # As above, a str() conversion is implied here.

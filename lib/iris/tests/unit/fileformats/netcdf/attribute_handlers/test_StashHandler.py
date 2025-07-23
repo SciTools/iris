@@ -56,23 +56,23 @@ class TestDecodeAttribute:
     def test_standard(self):
         """Test valid MSI string."""
         test_string = "m01s02i213"
-        result = STASH_HANDLER.decode_attribute("", test_string)
+        result = STASH_HANDLER.decode_attribute(test_string)
         expected = STASH(1, 2, 213)
         assert result == expected
 
     def test_alternate_format(self):
         """Test the slight tolerances in formatting."""
         test_string = "  m1S002i3  "
-        result = STASH_HANDLER.decode_attribute("", test_string)
+        result = STASH_HANDLER.decode_attribute(test_string)
         expected = STASH(1, 2, 3)
         assert result == expected
 
     def test_invalid(self):
         test_string = "xxx"
         with pytest.raises(ValueError, match="Expected STASH code MSI"):
-            STASH_HANDLER.decode_attribute("", test_string)
+            STASH_HANDLER.decode_attribute(test_string)
 
     def test_empty(self):
         test_string = ""
         with pytest.raises(ValueError, match="Expected STASH code MSI"):
-            STASH_HANDLER.decode_attribute("", test_string)
+            STASH_HANDLER.decode_attribute(test_string)

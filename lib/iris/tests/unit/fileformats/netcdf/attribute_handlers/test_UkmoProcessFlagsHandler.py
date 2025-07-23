@@ -71,40 +71,40 @@ class TestDecodeAttribute:
 
     def test_standard(self):
         test_string = "one two"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("one", "two")
 
     def test_empty(self):
         test_string = ""
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ()
 
     def test_empty_element(self):
         test_string = "<EMPTY>"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("",)
 
     def test_empty_among_elements(self):
         test_string = "a <EMPTY> b"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("a", "", "b")
 
     def test_embedded_spaces(self):
         """Extra spaces result in additional empty elements. Never mind!."""
         test_string = "a  b   c"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("a", "", "b", "", "", "c")
 
     def test_underscores(self):
         """Extra spaces result in additional empty elements. Never mind!."""
         test_string = "_a b_c _ d_"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == (" a", "b c", " ", "d ")
 
     def test_junk_string(self):
         """There's no such thing as an undecodable string."""
         test_string = "xxx"
-        result = UPF_HANDLER.decode_attribute("", test_string)
+        result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("xxx",)
 
     @pytest.mark.parametrize("badtype", ("int", "intarray", "floatarray"))
@@ -122,5 +122,5 @@ class TestDecodeAttribute:
         else:
             raise ValueError(f"Unrecognised param : {badtype}")
 
-        result = UPF_HANDLER.decode_attribute("", test_value)
+        result = UPF_HANDLER.decode_attribute(test_value)
         assert result == expected

@@ -574,7 +574,7 @@ def action_all_managed_attributes(engine):
             # Take the first as priority
             input_name, input_value = matches[0]
             try:
-                iris_value = handler.decode_attribute(input_name, input_value)
+                iris_value = handler.decode_attribute(input_value)
                 # process as a rule
                 action_managed_attribute(engine, iris_name, iris_value)
 
