@@ -69,9 +69,16 @@ _LOCAL_TEST_ATTRS = (
     iris.fileformats.netcdf.saver._CF_DATA_ATTRS
     + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
 )
-# Don't test iris_extended_grid_mapping, as it is a special attribute that
-# is not expected to always roundtrip.
-_LOCAL_TEST_ATTRS = [a for a in _LOCAL_TEST_ATTRS if a != "iris_extended_grid_mapping"]
+# For simplicity, we exclude several special cases that don't act with "standard"
+#  behaviour (because they translate in special ways):
+#   * "iris_extended_grid_mapping" : not expected to always roundtrip
+#   * "ukmo__process_flags" : has an odd value structure
+#   * "um_stash_source" : should only occur in files, not in Iris attribute dicts
+_LOCAL_TEST_ATTRS = [
+    a
+    for a in _LOCAL_TEST_ATTRS
+    if a not in ("iris_extended_grid_mapping", "ukmo__process_flags", "um_stash_source")
+]
 
 
 # Define a fixture to parametrise over the 'local-style' test attributes.
@@ -979,12 +986,9 @@ class TestRoundtrip(MixinAttrsTesting):
         if local_attr == "missing_value":
             # Special-cases : 'missing_value' type must be compatible with the variable
             attrval = 303
-        elif local_attr == "ukmo__process_flags":
-            # What this does when a GLOBAL attr seems to be weird + unintended.
-            # 'this' --> 't h i s'
-            attrval = "process"
-            # NOTE: it's also supposed to handle vector values - which we are not
-            # testing.
+        elif local_attr == "STASH":
+            # Provide a valid content.
+            attrval = "m01s02i123"
 
         # NOTE: results *should* be the same whether the original attribute is written
         # as global or a variable attribute
@@ -1477,51 +1481,43 @@ class TestSave(MixinAttrsTesting):
             [None, "value", "value", None], expected_warnings=msg_regexp
         )
 
+    def _teststr_safevalue(self, attrname, value, offset=0):
+        if attrname == "STASH":
+            value = f"m01s02i{213 + offset}"
+        return value
+
     def test_localstyle__single(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value"])
+        value_single = self._teststr_safevalue(local_attr, "value-single")
+        self.run_save_testcase_legacytype(local_attr, [value_single])
 
         # Defaults to local
-        expected_results = [None, "value"]
-        # .. but a couple of special cases
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [None, "v a l u e"]
-        elif local_attr == "STASH":
+        expected_results = [None, value_single]
+        # .. but a special case
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
 
         self.check_save_results(expected_results)
 
     def test_localstyle__multiple_same(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value-same", "value-same"])
+        value_same = self._teststr_safevalue(local_attr, "value-same")
+        self.run_save_testcase_legacytype(local_attr, [value_same, value_same])
 
         # They remain separate + local
-        expected_results = [None, "value-same", "value-same"]
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [
-                None,
-                "v a l u e - s a m e",
-                "v a l u e - s a m e",
-            ]
-        elif local_attr == "STASH":
+        expected_results = [None, value_same, value_same]
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
 
         self.check_save_results(expected_results)
 
     def test_localstyle__multiple_different(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value-A", "value-B"])
+        value_a = self._teststr_safevalue(local_attr, "value-A", 1)
+        value_b = self._teststr_safevalue(local_attr, "value-B", 2)
+        self.run_save_testcase_legacytype(local_attr, [value_a, value_b])
         # Different values are treated just the same as matching ones.
-        expected_results = [None, "value-A", "value-B"]
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [
-                None,
-                "v a l u e - A",
-                "v a l u e - B",
-            ]
-        elif local_attr == "STASH":
+        expected_results = [None, value_a, value_b]
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
         self.check_save_results(expected_results)

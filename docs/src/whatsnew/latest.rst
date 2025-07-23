@@ -72,7 +72,7 @@ This document explains the changes made to Iris for this release
    real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
 
 #. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
-   (:pull: 6517).
+   (:pull:`6517`).
 
 #. `@HGWright`_ and `@pp-mo`_ enabled correct loading and saving of the bounds of CF
    parametric coordinates (that is, Iris derived coordinates).  This was previously
@@ -83,6 +83,11 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data payload when saving to NetCDF
    to also include any auxiliary coordinates and ancillary variables with the same ``shape``.
    (:issue:`6539`, :pull:`6552`)
+
+#. `@pp-mo`_ added support for saving and loading the special ``GRIB_PARAM`` attributes to netcdf, as used
+   by iris-grib to record the exact grib-file encoding of phenomenon types.  This means that data sourced
+   from GRIB grib files can be freely saved and re-loaded to netcdf without loss of information.
+   (`Issue Iris-grib#596 <https://github.com/SciTools/iris-grib/issues/596>`__, :pull:`6566`).
 
 
 🐛 Bugs Fixed
@@ -185,6 +190,10 @@ This document explains the changes made to Iris for this release
 #. `@DarkVoyager11`_ added a round trip integration test for NetCDF calendar attributes.
    (:issue:`2985`, :pull:`6562`)
 
+#. `@pp-mo`_ made a unified mechanism for 'managed' cube attributes: ones which get
+   converted between an iris-internal and an in-file form for saving/loading to netcdf,
+   such as STASH objects in a STASH attribute.
+   (:pull:`6566`).
 
 
 .. comment

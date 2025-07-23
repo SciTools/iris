@@ -49,6 +49,7 @@ from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
+from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 import iris.io
 import iris.util
 import iris.warnings
@@ -652,9 +653,11 @@ class Saver:
                 local_keys = set()
             else:
                 local_keys = set(local_keys)
-            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS, ["GRIB_PARAM"])
 
             # Add global attributes taking into account local_keys.
+            # NOTE: we never need to "convert" managed global attributes, as they are all
+            #  data-local type, i.e. included in "local_keys" above.
             cube_attributes = cube.attributes
             global_attributes = {
                 k: v
@@ -2398,12 +2401,13 @@ class Saver:
                 local_keys = set()
             else:
                 local_keys = set(local_keys)
-            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS)
+            local_keys.update(_CF_DATA_ATTRS, _UKMO_DATA_ATTRS, ["GRIB_PARAM"])
 
             # Add any cube attributes whose keys are in local_keys as
             # CF-netCDF data variable attributes.
             attr_names = set(cube.attributes).intersection(local_keys)
 
+        # Write all the variable attributes
         for attr_name in sorted(attr_names):
             # Do not output 'conventions' or extended grid mapping attribute.
             if attr_name.lower() in ["conventions", "iris_extended_grid_mapping"]:
@@ -2411,14 +2415,23 @@ class Saver:
 
             value = cube.attributes[attr_name]
 
-            if attr_name == "STASH":
-                # Adopting provisional Metadata Conventions for representing MO
-                # Scientific Data encoded in NetCDF Format.
-                attr_name = "um_stash_source"
-                value = str(value)
-
-            if attr_name == "ukmo__process_flags":
-                value = " ".join([x.replace(" ", "_") for x in value])
+            # Convert any "managed" attributes. These convert between an internal
+            #  convenience representation and what is actually stored in the file.
+            handler = ATTRIBUTE_HANDLERS.get(attr_name)
+            if handler is not None:
+                try:
+                    attr_name, value = handler.encode_object(value)
+                except (TypeError, ValueError):
+                    string_value = str(value)
+                    msg = (
+                        f"Invalid value in managed '{attr_name}' attribute: {value!r}. "
+                        f"File attribute set to raw (string) value {string_value!r}."
+                    )
+                    warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
+                    # Resolve by setting the **Iris** attr-name to the "raw" string repr
+                    # NB we expect the default written name to be the last listed
+                    attr_name = handler.iris_name
+                    value = string_value
 
             if attr_name in _CF_GLOBAL_ATTRS:
                 msg = (

@@ -44,7 +44,6 @@ import warnings
 
 from iris.config import get_logger
 import iris.fileformats.cf
-import iris.fileformats.pp as pp
 from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.warnings
 
@@ -533,49 +532,64 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
 
 
 @action_function
-def action_ukmo_stash(engine):
-    """Convert 'ukmo stash' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__um_stash_source"
-    var = engine.cf_var
-    attr_name = "ukmo__um_stash_source"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        attr_name = "um_stash_source"  # legacy form
-        attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        try:
-            stash_code = pp.STASH.from_msi(attr_value)
-        except (TypeError, ValueError):
-            engine.cube.attributes[attr_name] = attr_value
-            msg = (
-                "Unable to set attribute STASH as not a valid MSI "
-                f'string "mXXsXXiXXX", got "{attr_value}"'
-            )
-            logger.debug(msg)
-        else:
-            engine.cube.attributes["STASH"] = stash_code
-
+def action_managed_attribute(engine, attr_name, attr_value):
+    """Record a managed attribute, as successfully translated."""
+    rule_name = f"fc_special_attribute__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
     return rule_name
 
 
 @action_function
-def action_ukmo_processflags(engine):
-    """Convert 'ukmo process flags' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__process_flags"
-    var = engine.cf_var
-    attr_name = "ukmo__process_flags"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        flags = [x.replace("_", " ") for x in attr_value.split(" ")]
-        engine.cube.attributes["ukmo__process_flags"] = tuple(flags)
-
+def action_unmanaged_attribute(engine, attr_name, attr_value):
+    """Record the original attribute, when translation of a managed one failed."""
+    rule_name = f"fc_special_attribute__fallback__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
     return rule_name
+
+
+def action_all_managed_attributes(engine):
+    """Check for and convert all 'handled' attributes."""
+    from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+
+    var = engine.cf_var
+    for handler in ATTRIBUTE_HANDLERS.values():
+        # Each handler can have several match names, but ideally only 0 or 1 appears !
+        iris_name = handler.iris_name
+        matches = []
+        for match_name in handler.netcdf_names:
+            match_value = getattr(var, match_name, None)
+            if match_value is not None:
+                matches.append((match_name, match_value))
+
+        if len(matches) > 1:
+            msg = (
+                f"Multiple file attributes would set the iris '.{iris_name}' cube "
+                "attribute:"
+                + "".join(f"\n  {name!r}: {val!r}" for name, val in matches)
+                + "\n- only the first of these is actioned."
+            )
+            warnings.warn(msg, category=_WarnComboLoadIgnoring)
+
+        if len(matches) > 0:
+            # Take the first as priority
+            input_name, input_value = matches[0]
+            try:
+                iris_value = handler.decode_attribute(input_value)
+                # process as a rule
+                action_managed_attribute(engine, iris_name, iris_value)
+
+            except (ValueError, TypeError):
+                msg = (
+                    f"Invalid content for managed attribute name {match_name!r} "
+                    f"= {input_value!r}: The attribute is retained untranslated, which "
+                    "may not re-save correctly."
+                )
+                warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
+
+                # ALSO record the attribute on the cube since, now it has been fetched
+                #  by the CF interpreting code, it will be discounted from inclusion.
+                # Since translation failed, record as original name=value.
+                action_unmanaged_attribute(engine, input_name, input_value)
 
 
 @action_function
@@ -693,10 +707,9 @@ def run_actions(engine):
     for auxcoord_fact in auxcoord_facts:
         action_build_auxiliary_coordinate(engine, auxcoord_fact)
 
-    # Detect + process and special 'ukmo' attributes
+    # Detect + process and special handling attributes
     # Run on every cube : they choose themselves whether to trigger.
-    action_ukmo_stash(engine)
-    action_ukmo_processflags(engine)
+    action_all_managed_attributes(engine)
 
     # cell measures
     cellm_facts = engine.fact_list("cell_measure")
