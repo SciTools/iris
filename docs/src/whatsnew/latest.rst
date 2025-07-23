@@ -89,6 +89,10 @@ This document explains the changes made to Iris for this release
    from GRIB grib files can be freely saved and re-loaded to netcdf without loss of information.
    (`Issue Iris-grib#596 <https://github.com/SciTools/iris-grib/issues/596>`__, :pull:`6566`).
 
+#. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
+   horizontal grid.
+   (:issue:``, :pull:``)
+
 
 🐛 Bugs Fixed
 =============

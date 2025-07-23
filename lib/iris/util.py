@@ -28,6 +28,7 @@ from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
+from iris.coord_systems import GeogCS
 import iris.exceptions
 import iris.warnings
 
@@ -2541,3 +2542,103 @@ def combine_cubes(
         opts_dict.update(kwargs)
 
     return _combine_cubes(cubes, opts_dict)
+
+
+# Storage for the default gridcube coordinate system.
+# This is actually always == GeogCs(iris.fileformats.pp.EARTH_RADIUS), but cannot be
+#  setup on import due to circular import problems.
+_DEFAULT_GRIDCUBE_CS = None
+
+
+def make_gridcube(
+    nx: int = 30,
+    ny: int = 20,
+    xlims: tuple[float | int, float | int] = (0.0, 360.0),
+    ylims: tuple[float | int, float | int] = (-90.0, 90.0),
+    *,
+    x_points: np.typing.ArrayLike | None = None,
+    y_points: np.typing.ArrayLike | None = None,
+    coord_system: iris.coord_systems.CoordSystem | None = None,
+) -> Cube:
+    """Make a 2D sample cube with a specified XY grid.
+
+    The cube is suitable as a regridding target, amongst other uses.
+
+    It has one-dimensional X and Y coordinates in a given coordinate system, which may
+     have regular or irregular points.
+    It is suitable as a regridding target,
+
+    Parameters
+    ----------
+    nx, ny : int, optional
+        Number of points on X and Y axes.
+        Defaults to `nx` = 30 and `ny` = 20.
+    xlims, ylims : pairs of floats, optional
+        Limits of the x/y coordinates, (lower, upper).
+        Default to `x_lims` = (0., 360.) and `y_lims` = (-90., 90.).
+    x_points, y_points : array-like or None, optional
+        Exact values for x- or y-points.  Defaults to None.
+        When not None, these override the `nx`/`xlims` or `ny`/`ylims` settings.
+        NOTE: the points define a DimCoord, so must be one-dimensional and strictly
+        monotonic (increasing or decreasing).
+    coord_system : iris.coord_system.CoordSystem, optional
+        The coordinate system of the cube.
+        This determines the coordinate system and standard names of the x and y
+        coordinates of the resulting cube.
+        If None, defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical
+        lat-lon), with a standard :data:`iris.fileformats.pp.EARTH_RADIUS` radius.
+
+    Returns
+    -------
+    cube: iris.cube.Cube
+        A cube with the specified grid, and an all-zeroes (lazy) data payload.
+
+    """
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+
+    global _DEFAULT_GRIDCUBE_CS
+
+    def dimco(
+        name: str,
+        units: str,
+        points: np.typing.ArrayLike | None,
+        lims: tuple[float | int, float | int],
+        num: int,
+        coord_system: iris.coord_systems.CoordSystem,
+    ):
+        """Build a dim-coord with given name+units, from points or n-points + limits."""
+        if points is None:
+            points = np.linspace(lims[0], lims[1], num)
+        co = DimCoord(
+            points, standard_name=name, units=units, coord_system=coord_system
+        )
+        return co
+
+    if coord_system is None:
+        if _DEFAULT_GRIDCUBE_CS is None:
+            # This import needs to be dynamic, to avoid a circular import problem.
+            from iris.fileformats.pp import EARTH_RADIUS
+
+            _DEFAULT_GRIDCUBE_CS = GeogCS(EARTH_RADIUS)
+
+        coord_system = _DEFAULT_GRIDCUBE_CS
+
+    if isinstance(coord_system, GeogCS):
+        x_name, y_name = "longitude", "latitude"
+        units = "degrees"
+    elif isinstance(coord_system, iris.coord_systems.RotatedGeogCS):
+        x_name, y_name = "grid_longitude", "grid_latitude"
+        units = "degrees"
+    else:
+        x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
+        units = "m"
+
+    xco = dimco(x_name, units, x_points, xlims, nx, coord_system=coord_system)
+    yco = dimco(y_name, units, y_points, ylims, ny, coord_system=coord_system)
+    cube = Cube(
+        da.zeros((yco.shape[0], xco.shape[0])),
+        long_name="grid_cube",
+        dim_coords_and_dims=((yco, 0), (xco, 1)),
+    )
+    return cube
