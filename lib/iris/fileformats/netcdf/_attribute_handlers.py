@@ -28,7 +28,7 @@ from iris.fileformats.pp import STASH
 class AttributeHandler(metaclass=ABCMeta):
     #: The user-visible attribute name used within Iris, which identifies attributes
     #  which we should attempt to encode with this coder.
-    IrisIdentifyingName: str = ""
+    _IrisIdentifyingName: str = ""
     #: The storage name(s) which identify this type of data in actual files, which thus
     #  identify attributes which we should attempt to decode with this coder.
     # NOTES:
@@ -38,7 +38,31 @@ class AttributeHandler(metaclass=ABCMeta):
     # (2) for save ,the attribute name is dynamically determined by the "encode" call.
     #  On translation failure, however, we assume it is the last name listed -- since
     #  it is so for StashHandler, the only one it currently matters for.
-    NetcdfIdentifyingNames: list[str] = []
+    _NetcdfIdentifyingNames: list[str] = []
+
+    @property
+    def iris_name(self) -> str:
+        """Provide the iris attribute name which this handler deals with.
+
+        Read-only access to the information configured at the class-level.
+        """
+        return self._IrisIdentifyingName
+
+    @property
+    def netcdf_names(self) -> list[str]:
+        """Provide the netcdf attribute name(s) which this handler deals with.
+
+        Read-only access to the information configured at the class-level.
+        """
+        # N.B. return a list copy to avoid any possibility of in-place change !
+        return list(self._NetcdfIdentifyingNames)
+
+    @property
+    def _primary_nc_name(self):
+        """The "usual" file attribute name."""
+        # N.B. for now, this only matters for STASH, so take the *last* name. Because
+        #  the first name is dominant, but that is the 'legacy' version.
+        return self._NetcdfIdentifyingNames[-1]
 
     @abstractmethod
     def encode_object(self, content: Any) -> tuple[str, str]:
@@ -70,10 +94,10 @@ class AttributeHandler(metaclass=ABCMeta):
 class StashHandler(AttributeHandler):
     """Convert STASH object attribute to/from a netcdf string attribute."""
 
-    IrisIdentifyingName = "STASH"
+    _IrisIdentifyingName = "STASH"
     # Note: two possible in-file attribute names, the first one is a 'legacy' version
     #  but takes priority in a conflict.
-    NetcdfIdentifyingNames = ["ukmo__um_stash_source", "um_stash_source"]
+    _NetcdfIdentifyingNames = ["ukmo__um_stash_source", "um_stash_source"]
 
     def encode_object(self, stash: Any) -> tuple[str, str]:
         if isinstance(stash, STASH):
@@ -92,7 +116,7 @@ class StashHandler(AttributeHandler):
 
         msi_string = str(stash_object)  # convert to standard MSI string representation
         # We always write "um_stash_source", not the legacy one.
-        return self.NetcdfIdentifyingNames[1], msi_string
+        return self._primary_nc_name, msi_string
 
     def decode_attribute(self, attr_value: Any) -> Any:
         # In this case the attribute name does not matter.
@@ -105,8 +129,8 @@ class StashHandler(AttributeHandler):
 class UkmoProcessFlagsHandler(AttributeHandler):
     """Convert ukmo__process_flags tuple attribute to/from a netcdf string attribute."""
 
-    IrisIdentifyingName = "ukmo__process_flags"
-    NetcdfIdentifyingNames = ["ukmo__process_flags"]
+    _IrisIdentifyingName = "ukmo__process_flags"
+    _NetcdfIdentifyingNames = ["ukmo__process_flags"]
 
     def encode_object(self, value: Any) -> tuple[str, str]:
         if not isinstance(value, tuple) or any(
@@ -127,7 +151,7 @@ class UkmoProcessFlagsHandler(AttributeHandler):
             return value
 
         value = " ".join([value_fix(x) for x in value])
-        return self.NetcdfIdentifyingNames[0], value
+        return self._primary_nc_name, value
 
     def decode_attribute(self, attr_value: Any) -> Any:
         # In this case the attribute name does not matter.
@@ -155,8 +179,8 @@ class GribParamHandler(AttributeHandler):
     Use the mechanisms in iris_grib.
     """
 
-    IrisIdentifyingName = "GRIB_PARAM"
-    NetcdfIdentifyingNames = ["GRIB_PARAM"]
+    _IrisIdentifyingName = "GRIB_PARAM"
+    _NetcdfIdentifyingNames = ["GRIB_PARAM"]
 
     def encode_object(self, iris_value: Any) -> Any:
         # 'iris_value' is typically an
@@ -177,7 +201,7 @@ class GribParamHandler(AttributeHandler):
 
         # The correct file attribute is the repr of a GRIBCode object.
         grib_string = repr(gribcode)
-        return self.NetcdfIdentifyingNames[0], grib_string
+        return self._primary_nc_name, grib_string
 
     def decode_attribute(self, attr_value: Any) -> Any:
         from iris_grib.grib_phenom_translation._gribcode import GRIBCode
@@ -192,7 +216,7 @@ ATTRIBUTE_HANDLERS: dict[str, AttributeHandler] = {}
 
 
 def _add_handler(handler: AttributeHandler):
-    ATTRIBUTE_HANDLERS[handler.IrisIdentifyingName] = handler
+    ATTRIBUTE_HANDLERS[handler._IrisIdentifyingName] = handler
 
 
 # Always include the "STASH" and "ukmo__process_flags" handlers.

@@ -554,9 +554,9 @@ def action_all_managed_attributes(engine):
     var = engine.cf_var
     for handler in ATTRIBUTE_HANDLERS.values():
         # Each handler can have several match names, but ideally only 0 or 1 appears !
-        iris_name = handler.IrisIdentifyingName
+        iris_name = handler.iris_name
         matches = []
-        for match_name in handler.NetcdfIdentifyingNames:
+        for match_name in handler.netcdf_names:
             match_value = getattr(var, match_name, None)
             if match_value is not None:
                 matches.append((match_name, match_value))

@@ -2430,7 +2430,7 @@ class Saver:
                     warnings.warn(msg, category=iris.warnings.IrisSaveWarning)
                     # Resolve by setting the **Iris** attr-name to the "raw" string repr
                     # NB we expect the default written name to be the last listed
-                    attr_name = handler.IrisIdentifyingName
+                    attr_name = handler.iris_name
                     value = string_value
 
             if attr_name in _CF_GLOBAL_ATTRS:
