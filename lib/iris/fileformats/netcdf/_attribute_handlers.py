@@ -20,7 +20,7 @@ At present, there are 3 of these :
 """
 
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from iris.fileformats.pp import STASH
 
@@ -38,10 +38,10 @@ class AttributeHandler(metaclass=ABCMeta):
     # (2) for save ,the attribute name is dynamically determined by the "encode" call.
     #  On translation failure, however, we assume it is the last name listed -- since
     #  it is so for StashHandler, the only one it currently matters for.
-    NetcdfIdentifyingNames: List[str] = []
+    NetcdfIdentifyingNames: list[str] = []
 
     @abstractmethod
-    def encode_object(self, content) -> Tuple[str, str]:
+    def encode_object(self, content) -> tuple[str, str]:
         """Encode an object as an attribute name and value.
 
         We already do change the name of STASH attributes to "um_stash_source" on save
@@ -177,7 +177,7 @@ class GribParamHandler(AttributeHandler):
 
 
 # Define the available attribute handlers.
-ATTRIBUTE_HANDLERS: Dict[str, AttributeHandler] = {}
+ATTRIBUTE_HANDLERS: dict[str, AttributeHandler] = {}
 
 
 def _add_handler(handler: AttributeHandler):
