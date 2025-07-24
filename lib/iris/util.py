@@ -2563,35 +2563,45 @@ def make_gridcube(
     """Make a 2D sample cube with a specified XY grid.
 
     The cube is suitable as a regridding target, amongst other uses.
-
-    It has one-dimensional X and Y coordinates in a given coordinate system, which may
-     have regular or irregular points.
-    It is suitable as a regridding target,
+    It has one-dimensional X and Y coordinates, in a specific coordinate system.
+    Both can be given either regularly spaced or irregular points.
 
     Parameters
     ----------
-    nx, ny : int, optional
-        Number of points on X and Y axes.
-        Defaults to `nx` = 30 and `ny` = 20.
-    xlims, ylims : pairs of floats, optional
-        Limits of the x/y coordinates, (lower, upper).
-        Default to `x_lims` = (0., 360.) and `y_lims` = (-90., 90.).
-    x_points, y_points : array-like or None, optional
-        Exact values for x- or y-points.  Defaults to None.
-        When not None, these override the `nx`/`xlims` or `ny`/`ylims` settings.
+    nx : int, optional
+        Number of points on the X axis. Defaults to 30.
+    ny : int, optional
+        Number of points on the Y axis. Defaults to 20.
+    xlims : pair of floats or ints, optional
+        End points of the x coordinates, (lower, upper).
+        Defaults to (0., 360.).
+    xlims : pair of floats or ints, optional
+        End points of the x coordinates, (lower, upper).
+        Defaults to (-90., +90.).
+    x_points : array-like or None, optional
+        If not None, this sets the number and exact values of x points: in this case,
+        `nx` and `xlims` are ignored.
+        Defaults to None.
+        NOTE: the points define a DimCoord, so must be one-dimensional and strictly
+        monotonic (increasing or decreasing).
+    y_points : array-like or None, optional
+        If not None, this sets the number and exact values of y points: in this case,
+        `ny` and `ylims` are ignored.
+        Defaults to None.
         NOTE: the points define a DimCoord, so must be one-dimensional and strictly
         monotonic (increasing or decreasing).
     coord_system : iris.coord_system.CoordSystem, optional
         The coordinate system of the cube.
         This determines the coordinate system and standard names of the x and y
         coordinates of the resulting cube.
-        If None, defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical
-        lat-lon), with a standard :data:`iris.fileformats.pp.EARTH_RADIUS` radius.
+        If None, the coord-system defaults to a :class:`iris.coord_systems.GeogCS`
+        (i.e. spherical lat-lon), with a standard radius of
+        :data:`iris.fileformats.pp.EARTH_RADIUS`.
 
     Returns
     -------
     cube: iris.cube.Cube
-        A cube with the specified grid, and an all-zeroes (lazy) data payload.
+        A cube with the specified grid, and all-zeroes (lazy) data.
 
     """
     from iris.coords import DimCoord
@@ -2599,7 +2609,14 @@ def make_gridcube(
 
     global _DEFAULT_GRIDCUBE_CS
 
+    # float32 zero, to force minimum 'f4' floating point precision
+    zero_f4 = np.asarray(
+        0.0,
+        dtype="f4",  # single precision (minimum), or what was passed
+    )
+
     def dimco(
+        axis: str,  # 'x' or 'y'
         name: str,
         units: str,
         points: np.typing.ArrayLike | None,
@@ -2607,9 +2624,54 @@ def make_gridcube(
         num: int,
         coord_system: iris.coord_systems.CoordSystem,
     ):
-        """Build a dim-coord with given name+units, from points or n-points + limits."""
-        if points is None:
-            points = np.linspace(lims[0], lims[1], num)
+        """Build a dim-coord with given name+units`, from points or n-points + limits."""
+        if points is not None:
+            orig_points = points  # just for an error message
+            ok = isinstance(points, Iterable)
+            if ok:
+                points = np.asarray(points)
+                ok = points.ndim == 1 and points.size >= 2 and points.dtype.kind in "if"
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision,
+                # just for greater clarity.
+                points = points + zero_f4
+
+                # Also (pre-)check monotonicity.
+                # Just to avoid a confusing error when creating a DimCoord.
+                dp = np.diff(points)
+                ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}_points' arg : {orig_points!s}.\n"
+                    "Must be a monotonic 1-d array-like of floats or ints."
+                )
+                raise ValueError(msg)
+
+        else:
+            # points is None : interpret n? / ?lims
+            if not isinstance(num, int):
+                msg = f"Bad value for 'n{axis}' arg : {num}.\nMust be an integer."  # type: ignore[unreachable]
+                raise ValueError(msg)
+
+            ok = isinstance(lims, Iterable)
+            if ok:
+                limsarr = np.asarray(lims)
+                ok = limsarr.shape == (2,) and limsarr.dtype.kind in "if"
+
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision.
+                limsarr = limsarr + zero_f4
+
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}lims' arg : {lims}.\n"
+                    "Must be a pair of floats or ints."
+                )
+                raise ValueError(msg)
+
+            # set points from n? / ?lims
+            points = np.linspace(limsarr[0], limsarr[1], num)
+
         co = DimCoord(
             points, standard_name=name, units=units, coord_system=coord_system
         )
@@ -2634,8 +2696,8 @@ def make_gridcube(
         x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
         units = "m"
 
-    xco = dimco(x_name, units, x_points, xlims, nx, coord_system=coord_system)
-    yco = dimco(y_name, units, y_points, ylims, ny, coord_system=coord_system)
+    xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
+    yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
     cube = Cube(
         da.zeros((yco.shape[0], xco.shape[0])),
         long_name="grid_cube",

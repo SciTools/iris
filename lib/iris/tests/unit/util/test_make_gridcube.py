@@ -37,18 +37,20 @@ class TestMakeGridcube:
         assert co_x.shape == (30,)
         assert not co_x.has_bounds()
         assert np.all(co_x.points == np.linspace(0.0, 360.0, 30))
+        assert co_x.points.dtype == np.dtype("f8")
 
         assert co_y.standard_name == "latitude"
         assert co_y.units == "degrees"
         assert co_y.shape == (20,)
         assert not co_y.has_bounds()
         assert np.all(co_y.points == np.linspace(-90.0, 90.0, 20))
+        assert co_y.points.dtype == np.dtype("f8")
 
         assert cube.has_lazy_data()
         assert cube.shape == (20, 30)
         assert np.all(cube.data == 0)
 
-    def test_points_region(self):
+    def test_regular_region(self):
         """Check use of n? and ?lims args."""
         cube = make_gridcube(xlims=(20, 30), nx=5, ylims=(10, 25), ny=4)
         assert cube.shape == (4, 5)
@@ -56,16 +58,95 @@ class TestMakeGridcube:
         assert np.allclose(co_x.points, [20.0, 22.5, 25.0, 27.5, 30.0])
         assert np.allclose(co_y.points, [10.0, 15.0, 20.0, 25.0])
 
-    def test_points_positional(self):
+    def test_regular_positional(self):
         """Check function of positional arguments."""
         cube = make_gridcube(3, 4, (20, 40), (10, 25))
         co_x, co_y = [cube.coord(axis=ax) for ax in "xy"]
         assert np.allclose(co_x.points, [20.0, 30.0, 40.0])
         assert np.allclose(co_y.points, [10.0, 15.0, 20.0, 25.0])
 
-    def test_points_values(self):
+    @pytest.mark.parametrize("nname", ["nx", "ny"])
+    @pytest.mark.parametrize("num", ["none", "object", "list", "array", "np_scalar"])
+    def test_regular_badnumber__fail(self, num, nname):
+        """Check errors from bad 'nx'/'ny'."""
+        if num == "none":
+            val = None
+        elif num == "object":
+            val = {}
+        elif num == "list":
+            val = [3]
+        elif num == "array":
+            val = np.array([3])
+        elif num == "np_scalar":
+            val = np.array(3)
+        else:
+            raise ValueError(f"Unrecognised parameter : nx = {num!r}")
+
+        msg = f"Bad value for '{nname}' arg"
+        kwargs = {nname: val}
+        with pytest.raises(ValueError, match=msg):
+            make_gridcube(**kwargs)
+
+    @pytest.fixture(params=["int", "float", "i2", "i4", "i8", "f2", "f4", "f8"])
+    def arg_dtype(self, request):
+        """Check all valid numeric argument types."""
+        yield request.param
+
+    @staticmethod
+    def f4_promoted_dtype(typename):
+        """How ?points/?lims dtypes are promoted to define the coord dtype."""
+        return {
+            "i2": "f4",
+            "i4": "f8",
+            "i8": "f8",
+            "f2": "f4",
+            "f4": "f4",
+            "f8": "f8",
+        }[typename]
+
+    def test_lims_types(self, arg_dtype):
+        vals = [1, 2]
+        expect_dtype = np.dtype("f8")
+        if arg_dtype == "int":
+            # Python ints
+            xlims = vals
+        elif arg_dtype == "float":
+            # Python floats
+            xlims = [float(x) for x in vals]
+        else:
+            # Various numpy dtypes
+            xlims = np.asarray(vals, dtype=arg_dtype)
+            # The dtypes here are the outcome of np.linspace:  OK with these.
+            expect_dtype = self.f4_promoted_dtype(arg_dtype)
+
+        # All valid arg dtypes are acceptable, and equivalent.
+        cube = make_gridcube(xlims=xlims)
+        # Point values are float64 in all cases.
+        assert cube.coord(axis="x").points.dtype == expect_dtype
+
+    @pytest.mark.parametrize("axis", ["x", "y"])
+    @pytest.mark.parametrize("lims", ["none", "object", "1pt", "3pt"])
+    def test_regular_badlims__fail(self, lims, axis):
+        if lims == "none":
+            lims = None
+        elif lims == "object":
+            lims = {}
+        elif lims == "1pt":
+            lims = [3]
+        elif lims == "3pt":
+            lims = [1, 2, 3]
+        else:
+            raise ValueError(f"Unrecognised parameter : xlims = {lims!r}")
+
+        msg = f"Bad value for '{axis}lims' arg"
+        kwargs = {f"{axis}lims": lims}
+        with pytest.raises(ValueError, match=msg):
+            make_gridcube(**kwargs)
+
+    def test_points(self):
         """Check use of full (irregular) points arrays."""
-        xpts = [1.0, 2.0, 4.0, 5.0]
+        # NB also show that either tuples/lists of floats/ints work.
+        xpts = (1, 2, 4, 5)
         ypts = [10.0, -13.0, -20.0]
         # NB we set the nx/ny/xlims/ylims, to show that they are ignored.
         cube = make_gridcube(
@@ -76,14 +157,95 @@ class TestMakeGridcube:
         assert np.allclose(co_x.points, xpts)
         assert np.allclose(co_y.points, ypts)
 
-    def test_points_mixed(self):
-        """Check that you can have X and Y specified in different ways."""
+    def test_xregular_ypoints(self):
+        """Check different spec types : X-regular / Y-points combination."""
         xpts = [1.0, 2.0, 5.0, 15.0]
         cube = make_gridcube(x_points=xpts, ny=3, ylims=(0.0, 20.0))
         assert cube.shape == (3, 4)
         co_x, co_y = [cube.coord(axis=ax) for ax in "xy"]
         assert np.allclose(co_x.points, xpts)
         assert np.allclose(co_y.points, [0.0, 10.0, 20.0])
+
+    def test_xpoints_yregular(self):
+        """Check different spec types : X-points / Y-regular combination."""
+        ypts = [1.0, 2.0, 5.0, 15.0]
+        cube = make_gridcube(nx=3, xlims=(0.0, 20.0), y_points=ypts)
+        assert cube.shape == (4, 3)
+        co_x, co_y = [cube.coord(axis=ax) for ax in "xy"]
+        assert np.allclose(co_x.points, [0.0, 10.0, 20.0])
+        assert np.allclose(co_y.points, ypts)
+
+    def test_points_types(self, arg_dtype):
+        # Check type handling of points array creation
+        vals = [1, 2, 5, 7]
+        expect_dtype = np.dtype("f8")
+        if arg_dtype == "int":
+            # Python ints
+            xpts = vals
+        elif arg_dtype == "float":
+            # Python floats
+            xpts = [float(x) for x in vals]
+        else:
+            # Various numpy dtypes
+            xpts = np.asarray(vals, dtype=arg_dtype)
+            expect_dtype = self.f4_promoted_dtype(arg_dtype)
+
+        cube = make_gridcube(x_points=xpts)
+        co_x = cube.coord(axis="x")
+        assert co_x.points.dtype == expect_dtype
+
+    @pytest.mark.parametrize(
+        "ptype",
+        ["noniterable", "string", "2d", "no_points", "one_point", "strings", "objects"],
+    )
+    def test_points_badtypes__fail(self, ptype):
+        # Check various bad types for points array arg.
+        if ptype == "noniterable":
+            pts = 17
+        elif ptype == "string":
+            pts = "this"
+        elif ptype == "2d":
+            pts = [[1, 2], [3, 4]]
+        elif ptype == "no_points":
+            pts = []
+        elif ptype == "one_point":
+            pts = [17]
+        elif ptype == "strings":
+            pts = ["ab", "cde"]
+        elif ptype == "objects":
+            pts = [None, {}]
+        else:
+            raise ValueError(f"Unrecognised parameter : ptype = {ptype!r}")
+
+        msg = "Bad value for 'x_points' arg"
+        with pytest.raises(ValueError, match=msg):
+            make_gridcube(x_points=pts)
+
+    @pytest.mark.parametrize("pvals", ["increasing", "decreasing", "repeat", "nonmono"])
+    def test_points_values(self, pvals):
+        # Check various cases where points values are valid or invalid.
+        expect_ok = True
+        if pvals == "increasing":
+            pts = [-3, 1, 2, 3]
+        elif pvals == "decreasing":
+            pts = [3, 2, 1, -4]
+        elif pvals == "repeat":
+            # Repeated value (or pause in rise/fall) is an error.
+            pts = [1, 2, 2, 3]
+            expect_ok = False
+        elif pvals == "nonmono":
+            # Change in rise/fall is an error.
+            pts = [1, 2, 3, 2]
+            expect_ok = False
+        else:
+            raise ValueError(f"Unrecognised parameter : pvals = {pvals!r}")
+
+        if expect_ok:
+            assert make_gridcube(x_points=pts) is not None
+        else:
+            msg = "Bad value for 'x_points' arg"
+            with pytest.raises(ValueError, match=msg):
+                make_gridcube(x_points=pts)
 
     @pytest.mark.parametrize("cs", ["latlon", "rotated", "projection"])
     def test_coord_system(self, cs):
