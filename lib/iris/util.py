@@ -2652,7 +2652,7 @@ def make_gridcube(
 
         else:
             # points is None : interpret n? / ?lims
-            if not isinstance(num, int) or num < 2:
+            if not isinstance(num, int) or num < 1:
                 msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."  # type: ignore[unreachable]
                 raise ValueError(msg)
 
@@ -2663,10 +2663,12 @@ def make_gridcube(
             if ok:
                 # Force to always floating-point, minimum 'f4' precision.
                 limsarr = limsarr + zero_f4
+                ok = num == 1 or limsarr[0] != limsarr[1]
+
             if not ok:
                 msg = (
                     f"Bad value for '{axis}lims' arg : {lims}. "
-                    "Must be a pair of floats or ints."
+                    f"Must be a pair of floats or ints, different unless `n{axis}`=1."
                 )
                 raise ValueError(msg)
 

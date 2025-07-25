@@ -67,7 +67,7 @@ class TestMakeGridcube:
 
     @pytest.mark.parametrize("nname", ["nx", "ny"])
     @pytest.mark.parametrize(
-        "num", ["none", "object", "list", "array", "np_scalar", "-1", "0", "1"]
+        "num", ["none", "object", "list", "array", "np_scalar", "-1", "0"]
     )
     def test_regular_badnumber__fail(self, num, nname):
         """Check errors from bad 'nx'/'ny'."""
@@ -81,7 +81,7 @@ class TestMakeGridcube:
             val = np.array([3])
         elif num == "np_scalar":
             val = np.array(3)
-        elif num in ("-1", "0", "1"):
+        elif num in ("-1", "0"):
             # Set of obvious bad values
             val = int(num)
         else:
@@ -91,6 +91,50 @@ class TestMakeGridcube:
         kwargs = {nname: val}
         with pytest.raises(ValueError, match=msg):
             make_gridcube(**kwargs)
+
+    @pytest.mark.parametrize("usecase", ["single", "decrease", "single_zerorange"])
+    def test_regular_cases(self, usecase):
+        """Some specific testcases which should work."""
+        if usecase == "single":
+            nx = 1
+            xlims = [10, 100]
+            expect_xpts = [10]
+        elif usecase == "decrease":
+            nx = 3
+            xlims = [40, -20]
+            expect_xpts = [40, 10, -20]
+        elif usecase == "single_zerorange":
+            nx = 1
+            xlims = [40, 40]
+            expect_xpts = [40]
+        else:
+            raise ValueError(f"Unrecognised parameter : usecase = {usecase!r}")
+
+        cube = make_gridcube(nx=nx, xlims=xlims)
+        assert np.all(cube.coord(axis="x").points == expect_xpts)
+
+    @pytest.mark.parametrize("lims", ["none", "object", "1pt", "3pt", "equal"])
+    def test_regular_badlims__fail(self, lims):
+        """Some input cases that should fail."""
+        if lims == "none":
+            lims = None
+        elif lims == "object":
+            lims = {}
+        elif lims == "1pt":
+            lims = [3]
+        elif lims == "3pt":
+            lims = [1, 2, 3]
+        elif lims == "equal":
+            lims = [10, 10]
+        else:
+            raise ValueError(f"Unrecognised parameter : lims = {lims!r}")
+
+        msg = (
+            "Bad value for 'xlims' arg.*"
+            "Must be a pair of floats or ints, different unless `nx`=1"
+        )
+        with pytest.raises(ValueError, match=msg):
+            make_gridcube(xlims=lims)
 
     @pytest.fixture(params=["int", "float", "i2", "i4", "i8", "f2", "f4", "f8"])
     def arg_dtype(self, request):
@@ -128,25 +172,6 @@ class TestMakeGridcube:
         cube = make_gridcube(xlims=xlims)
         # Point values are float64 in all cases.
         assert cube.coord(axis="x").points.dtype == expect_dtype
-
-    @pytest.mark.parametrize("axis", ["x", "y"])
-    @pytest.mark.parametrize("lims", ["none", "object", "1pt", "3pt"])
-    def test_regular_badlims__fail(self, lims, axis):
-        if lims == "none":
-            lims = None
-        elif lims == "object":
-            lims = {}
-        elif lims == "1pt":
-            lims = [3]
-        elif lims == "3pt":
-            lims = [1, 2, 3]
-        else:
-            raise ValueError(f"Unrecognised parameter : xlims = {lims!r}")
-
-        msg = f"Bad value for '{axis}lims' arg.*Must be a pair of floats or ints"
-        kwargs = {f"{axis}lims": lims}
-        with pytest.raises(ValueError, match=msg):
-            make_gridcube(**kwargs)
 
     def test_points(self):
         """Check use of full (irregular) points arrays."""
