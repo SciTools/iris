@@ -199,6 +199,11 @@ class TestMakeGridcube:
         co_x = cube.coord(axis="x")
         assert co_x.points.dtype == expect_dtype
 
+    _POINTS_FAIL_MSG = (
+        "Bad value for 'x_points' arg.*"
+        "Must be a monotonic 1-d array-like of at least 2 floats or ints"
+    )
+
     @pytest.mark.parametrize(
         "ptype",
         ["noniterable", "string", "2d", "no_points", "one_point", "strings", "objects"],
@@ -222,21 +227,24 @@ class TestMakeGridcube:
         else:
             raise ValueError(f"Unrecognised parameter : ptype = {ptype!r}")
 
-        msg = (
-            "Bad value for 'x_points' arg.*"
-            "Must be a monotonic 1-d array-like of floats or ints"
-        )
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(ValueError, match=self._POINTS_FAIL_MSG):
             make_gridcube(x_points=pts)
 
-    @pytest.mark.parametrize("pvals", ["increasing", "decreasing", "repeat", "nonmono"])
+    @pytest.mark.parametrize(
+        "pvals", ["rising", "falling", "0_pts", "1_pts", "2_pts", "repeat", "nonmono"]
+    )
     def test_points_values(self, pvals):
         # Check various cases where points values are valid or invalid.
         expect_ok = True
-        if pvals == "increasing":
+        if pvals == "rising":
             pts = [-3, 1, 2, 3]
-        elif pvals == "decreasing":
+        elif pvals == "falling":
             pts = [3, 2, 1, -4]
+        elif pvals.endswith("_pts"):
+            # zero or one point is not allowed, 2 is OK.
+            n_pts = int(pvals[:1])
+            pts = [3, 2, 1, -4][:n_pts]
+            expect_ok = n_pts >= 2
         elif pvals == "repeat":
             # Repeated value (or pause in rise/fall) is an error.
             pts = [1, 2, 2, 3]
@@ -251,11 +259,7 @@ class TestMakeGridcube:
         if expect_ok:
             assert make_gridcube(x_points=pts) is not None
         else:
-            msg = (
-                "Bad value for 'x_points' arg.*"
-                "Must be a monotonic 1-d array-like of floats or ints"
-            )
-            with pytest.raises(ValueError, match=msg):
+            with pytest.raises(ValueError, match=self._POINTS_FAIL_MSG):
                 make_gridcube(x_points=pts)
 
     @pytest.mark.parametrize("cs", ["latlon", "rotated", "projection"])

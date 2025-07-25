@@ -2645,7 +2645,7 @@ def make_gridcube(
             if not ok:
                 msg = (
                     f"Bad value for '{axis}_points' arg : {orig_points!s}. "
-                    "Must be a monotonic 1-d array-like of floats or ints."
+                    "Must be a monotonic 1-d array-like of at least 2 floats or ints."
                 )
                 raise ValueError(msg)
 
