@@ -695,7 +695,7 @@ class GhPost(_SubParserGenerator):
         pass
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
             "Run the repository performance benchmarks (using Airspeed Velocity)."
@@ -717,7 +717,7 @@ def main():
     )
     subparsers = parser.add_subparsers(required=True)
 
-    parser_generators: tuple[type(_SubParserGenerator), ...] = (
+    parser_generators: tuple[type[_SubParserGenerator], ...] = (
         Overnight,
         Branch,
         CPerf,

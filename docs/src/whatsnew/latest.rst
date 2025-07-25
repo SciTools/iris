@@ -40,11 +40,54 @@ This document explains the changes made to Iris for this release
    now preserved when it was not previously. See also: :ref:`load-problems`.
    (:pull:`6465`, :pull:`6529`)
 
+#. `@wjbenfold`_ and `@trexfeathers`_ added ``crs_wkt`` to the attributes when
+   saving a :class:`~iris.coord_systems.CoordSystem` to a NetCDF file. Note that
+   ``crs_wkt`` is considered *supplementary* by the CF conventions, with
+   ``grid_mapping`` being the primary source of information, and ``crs_wkt`` not
+   expected to contain conflicting information. Because of this, Iris generates
+   :class:`~iris.coord_systems.CoordSystem` exclusively from ``grid_mapping``
+   when loading, and writes a fresh ``crs_wkt`` whenever a
+   :class:`~iris.coord_systems.CoordSystem` is saved. If your use case goes
+   beyond the CF conventions, you can modify the save and load process for your
+   needs by using the `Ncdata`_ package.
+   See `CRS WKT in the CF Conventions`_ for more. (:issue:`3796`, :pull:`6519`)
+
+#. `@ukmo-ccbunney`_ and `@trexfeathers`_ added support for
+   **multiple coordinate systems** and **ordered coordinates** when loading
+   and saving NetCDF files.
+   This allows for coordinates to be explicitly associated with a coordinate
+   system via an extended syntax in the ``grid_mapping`` attribute of a NetCDF
+   data variable. This extended syntax also supports specification of multiple
+   coordinate systems per data variable. Setting the property
+   ``cube.extended_grid_mapping = True`` will enable extended grid mapping
+   syntax when saving a NetCDF file and also generate an associated **well known
+   text** attribute (``crs_wkt``; as described in :issue:`3796`).
+   See `CRS Grid Mappings and Projections`_ for more information.
+   (:issue:`3388`:, :pull:`6536`:)
+
 #. `@ESadek-MO`_ made MeshCoords immutable. :class:`iris.MeshCoord`s are now updated automatically when
    changing the attached mesh. All changes to the :class:`iris.MeshCoord` should instead be done to
    the relevant :class:`iris.Coord` located on the attached :class:`iris.MeshXY`. This change also affects 
    the behaviour when calling :attr:`iris.MeshCoord.points` and :attr:`MeshCoord.bounds`, which will return
    real data but will leave the :class:`iris.MeshCoord` (and attached mesh) lazy. (:issue:`4757`, :pull:`6405`)
+
+#. `@pp-mo`_ made it possible for the reference surfaces of derived coordinates, like orography, to be lazy.
+   (:pull:`6517`).
+
+#. `@HGWright`_ and `@pp-mo`_ enabled correct loading and saving of the bounds of CF
+   parametric coordinates (that is, Iris derived coordinates).  This was previously
+   incorrect.  However the fix is opt-in, controlled by the ``derived_bounds`` flag in
+   the :data:`iris.FUTURE` object, to avoid breaking existing code.
+   (:issue:`3678`, :pull:`6481`, :pull:`6540`)
+
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data payload when saving to NetCDF
+   to also include any auxiliary coordinates and ancillary variables with the same ``shape``.
+   (:issue:`6539`, :pull:`6552`)
+
+#. `@pp-mo`_ added support for saving and loading the special ``GRIB_PARAM`` attributes to netcdf, as used
+   by iris-grib to record the exact grib-file encoding of phenomenon types.  This means that data sourced
+   from GRIB grib files can be freely saved and re-loaded to netcdf without loss of information.
+   (`Issue Iris-grib#596 <https://github.com/SciTools/iris-grib/issues/596>`__, :pull:`6566`).
 
 
 🐛 Bugs Fixed
@@ -77,11 +120,15 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ fixed a bug which caused :meth:`~iris.cube.CubeList.concatenate_cube`
    to fail when concatenating over multiple axes. (:pull:`6533`)
 
+#. `@bjlittle`_ fixed :func:`~iris.pandas.as_data_frame` to correctly convert a
+   scalar cube to a :class:`pandas.DataFrame`. (:issue:`6419`, :pull:`6567`)
+
 
 💣 Incompatible Changes
 =======================
 
 #. N/A
+
 
 🚀 Performance Enhancements
 ===========================
@@ -114,6 +161,9 @@ This document explains the changes made to Iris for this release
    :ref:`load-problems-explanation`, :ref:`filtering-warnings-explanation`.
    (:pull:`6529`)
 
+#. `@tkknight`_ updated image to ensure it renders correctly using various web browsers
+   on Windows and Linux. (:pull:`6560`)
+
 
 💼 Internal
 ===========
@@ -134,13 +184,34 @@ This document explains the changes made to Iris for this release
    home-space is shared between multiple machines, as with some virtual desktop
    arrangements. (:pull:`6550`)
 
+#. `@bjlittle`_ added support for `Trusted Publishing`_ of source distributions
+   and binary wheels to PyPI and Test PyPI. (:pull:`6543`)
+
+#. `@ESadek-MO`_ moved `@rcomer`_'s `mocked_compute` testing fixture into the
+   `conftest.py` for the unit testing directory, and used this fixture in
+   :mod:`iris/tests/unit/analysis/maths/test__arith_dask_array.py` and
+   :mod:`iris/tests/unit/util/maths/test_broadcast_to_shape.py`. (:issue:`5704`, :pull:`6564`)
+
+#. `@DarkVoyager11`_ added a round trip integration test for NetCDF calendar attributes.
+   (:issue:`2985`, :pull:`6562`)
+
+#. `@pp-mo`_ made a unified mechanism for 'managed' cube attributes: ones which get
+   converted between an iris-internal and an in-file form for saving/loading to netcdf,
+   such as STASH objects in a STASH attribute.
+   (:pull:`6566`).
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@DarkVoyager11: https://github.com/DarkVoyager11
 
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _CRS WKT in the CF Conventions: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#use-of-the-crs-well-known-text-format
+.. _CRS Grid Mappings and Projections: https://cfconventions.org/Data/cf-conventions/cf-conventions-1.12/cf-conventions.html#grid-mappings-and-projections
+.. _Ncdata: https://github.com/pp-mo/ncdata
+.. _Trusted Publishing: https://docs.pypi.org/trusted-publishers/
