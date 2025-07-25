@@ -2600,7 +2600,7 @@ def make_gridcube(
     Warnings
     --------
     If given, the `x_points` or `y_points` args define a DimCoord, and so must be
-    one-dimensional, have at least 2 values, and be strictly monotonic
+    one-dimensional, have at least 1 value, and be strictly monotonic
     (increasing or decreasing).
 
     """
