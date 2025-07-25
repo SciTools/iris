@@ -72,7 +72,10 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ fixed benchmark result comparison to inspect the results
+   for the current machine only. This is useful for setups where a single
+   home-space is shared between multiple machines, as with some virtual desktop
+   arrangements. (:pull:`6550`)
 
 
 .. comment
