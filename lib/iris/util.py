@@ -2588,7 +2588,7 @@ def make_gridcube(
         Defaults to None.
     coord_system : iris.coord_system.CoordSystem, optional
         The coordinate system of the cube: also sets the coordinate system and
-        ``standard_name``s of the X and Y coordinates.
+        ``standard_name`` s of the X and Y coordinates.
         Defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical lat-lon), with
         a standard radius of :data:`iris.fileformats.pp.EARTH_RADIUS`.
 
