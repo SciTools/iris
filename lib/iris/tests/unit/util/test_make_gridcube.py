@@ -66,7 +66,9 @@ class TestMakeGridcube:
         assert np.allclose(co_y.points, [10.0, 15.0, 20.0, 25.0])
 
     @pytest.mark.parametrize("nname", ["nx", "ny"])
-    @pytest.mark.parametrize("num", ["none", "object", "list", "array", "np_scalar"])
+    @pytest.mark.parametrize(
+        "num", ["none", "object", "list", "array", "np_scalar", "-1", "0", "1"]
+    )
     def test_regular_badnumber__fail(self, num, nname):
         """Check errors from bad 'nx'/'ny'."""
         if num == "none":
@@ -79,10 +81,13 @@ class TestMakeGridcube:
             val = np.array([3])
         elif num == "np_scalar":
             val = np.array(3)
+        elif num in ("-1", "0", "1"):
+            # Set of obvious bad values
+            val = int(num)
         else:
-            raise ValueError(f"Unrecognised parameter : nx = {num!r}")
+            raise ValueError(f"Unrecognised parameter : num = {num!r}")
 
-        msg = f"Bad value for '{nname}' arg"
+        msg = rf"Bad value for '{nname}' arg.*Must be an integer >= 1"
         kwargs = {nname: val}
         with pytest.raises(ValueError, match=msg):
             make_gridcube(**kwargs)
@@ -138,7 +143,7 @@ class TestMakeGridcube:
         else:
             raise ValueError(f"Unrecognised parameter : xlims = {lims!r}")
 
-        msg = f"Bad value for '{axis}lims' arg"
+        msg = f"Bad value for '{axis}lims' arg.*Must be a pair of floats or ints"
         kwargs = {f"{axis}lims": lims}
         with pytest.raises(ValueError, match=msg):
             make_gridcube(**kwargs)
@@ -217,7 +222,10 @@ class TestMakeGridcube:
         else:
             raise ValueError(f"Unrecognised parameter : ptype = {ptype!r}")
 
-        msg = "Bad value for 'x_points' arg"
+        msg = (
+            "Bad value for 'x_points' arg.*"
+            "Must be a monotonic 1-d array-like of floats or ints"
+        )
         with pytest.raises(ValueError, match=msg):
             make_gridcube(x_points=pts)
 
@@ -243,7 +251,10 @@ class TestMakeGridcube:
         if expect_ok:
             assert make_gridcube(x_points=pts) is not None
         else:
-            msg = "Bad value for 'x_points' arg"
+            msg = (
+                "Bad value for 'x_points' arg.*"
+                "Must be a monotonic 1-d array-like of floats or ints"
+            )
             with pytest.raises(ValueError, match=msg):
                 make_gridcube(x_points=pts)
 

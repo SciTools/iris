@@ -2573,23 +2573,19 @@ def make_gridcube(
     ny : int, optional
         Number of points on the Y axis. Defaults to 20.
     xlims : pair of floats or ints, optional
-        End points of the x coordinates, (lower, upper).
+        End points of the X coordinate, (lower, upper).
         Defaults to (0., 360.).
-    xlims : pair of floats or ints, optional
-        End points of the x coordinates, (lower, upper).
+    ylims : pair of floats or ints, optional
+        End points of the Y coordinate, (lower, upper).
         Defaults to (-90., +90.).
     x_points : array-like or None, optional
         If not None, this sets the number and exact values of x points: in this case,
         `nx` and `xlims` are ignored.
         Defaults to None.
-        NOTE: the points define a DimCoord, so must be one-dimensional and strictly
-        monotonic (increasing or decreasing).
     y_points : array-like or None, optional
         If not None, this sets the number and exact values of y points: in this case,
         `ny` and `ylims` are ignored.
         Defaults to None.
-        NOTE: the points define a DimCoord, so must be one-dimensional and strictly
-        monotonic (increasing or decreasing).
     coord_system : iris.coord_system.CoordSystem, optional
         The coordinate system of the cube.
         This determines the coordinate system and standard names of the x and y
@@ -2602,6 +2598,12 @@ def make_gridcube(
     -------
     cube: iris.cube.Cube
         A cube with the specified grid, and all-zeroes (lazy) data.
+
+    Warnings
+    --------
+    If given, the `x_points` or `y_points` args define a DimCoord, and so must be
+    one-dimensional, have at least 2 values, and be strictly monotonic
+    (increasing or decreasing).
 
     """
     from iris.coords import DimCoord
@@ -2637,34 +2639,32 @@ def make_gridcube(
                 points = points + zero_f4
 
                 # Also (pre-)check monotonicity.
-                # Just to avoid a confusing error when creating a DimCoord.
+                # Just to avoid a more confusing error when creating a DimCoord.
                 dp = np.diff(points)
                 ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
             if not ok:
                 msg = (
-                    f"Bad value for '{axis}_points' arg : {orig_points!s}.\n"
+                    f"Bad value for '{axis}_points' arg : {orig_points!s}. "
                     "Must be a monotonic 1-d array-like of floats or ints."
                 )
                 raise ValueError(msg)
 
         else:
             # points is None : interpret n? / ?lims
-            if not isinstance(num, int):
-                msg = f"Bad value for 'n{axis}' arg : {num}.\nMust be an integer."  # type: ignore[unreachable]
+            if not isinstance(num, int) or num < 2:
+                msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."  # type: ignore[unreachable]
                 raise ValueError(msg)
 
             ok = isinstance(lims, Iterable)
             if ok:
                 limsarr = np.asarray(lims)
                 ok = limsarr.shape == (2,) and limsarr.dtype.kind in "if"
-
             if ok:
                 # Force to always floating-point, minimum 'f4' precision.
                 limsarr = limsarr + zero_f4
-
             if not ok:
                 msg = (
-                    f"Bad value for '{axis}lims' arg : {lims}.\n"
+                    f"Bad value for '{axis}lims' arg : {lims}. "
                     "Must be a pair of floats or ints."
                 )
                 raise ValueError(msg)
