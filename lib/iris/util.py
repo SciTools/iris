@@ -2573,26 +2573,24 @@ def make_gridcube(
     ny : int, optional
         Number of points on the Y axis. Defaults to 20.
     xlims : pair of floats or ints, optional
-        End points of the X coordinate, (lower, upper).
+        End points of the X coordinate: (first, last).
         Defaults to (0., 360.).
     ylims : pair of floats or ints, optional
-        End points of the Y coordinate, (lower, upper).
+        End points of the Y coordinate: (first, last).
         Defaults to (-90., +90.).
-    x_points : array-like or None, optional
+    x_points : array-like, optional
         If not None, this sets the number and exact values of x points: in this case,
         `nx` and `xlims` are ignored.
         Defaults to None.
-    y_points : array-like or None, optional
+    y_points : array-like, optional
         If not None, this sets the number and exact values of y points: in this case,
         `ny` and `ylims` are ignored.
         Defaults to None.
     coord_system : iris.coord_system.CoordSystem, optional
-        The coordinate system of the cube.
-        This determines the coordinate system and standard names of the x and y
-        coordinates of the resulting cube.
-        If None, the coord-system defaults to a :class:`iris.coord_systems.GeogCS`
-        (i.e. spherical lat-lon), with a standard radius of
-        :data:`iris.fileformats.pp.EARTH_RADIUS`.
+        The coordinate system of the cube: also sets the coordinate system and
+        ``standard_name``s of the X and Y coordinates.
+        Defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical lat-lon), with
+        a standard radius of :data:`iris.fileformats.pp.EARTH_RADIUS`.
 
     Returns
     -------
@@ -2702,7 +2700,7 @@ def make_gridcube(
     xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
     yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
     cube = Cube(
-        da.zeros((yco.shape[0], xco.shape[0])),
+        da.zeros((yco.shape[0], xco.shape[0]), dtype=np.int8),
         long_name="grid_cube",
         dim_coords_and_dims=((yco, 0), (xco, 1)),
     )
