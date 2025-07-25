@@ -201,12 +201,12 @@ class TestMakeGridcube:
 
     _POINTS_FAIL_MSG = (
         "Bad value for 'x_points' arg.*"
-        "Must be a monotonic 1-d array-like of at least 2 floats or ints"
+        "Must be a monotonic 1-d array-like of at least 1 floats or ints"
     )
 
     @pytest.mark.parametrize(
         "ptype",
-        ["noniterable", "string", "2d", "no_points", "one_point", "strings", "objects"],
+        ["noniterable", "string", "2d", "strings", "objects"],
     )
     def test_points_badtypes__fail(self, ptype):
         # Check various bad types for points array arg.
@@ -216,10 +216,6 @@ class TestMakeGridcube:
             pts = "this"
         elif ptype == "2d":
             pts = [[1, 2], [3, 4]]
-        elif ptype == "no_points":
-            pts = []
-        elif ptype == "one_point":
-            pts = [17]
         elif ptype == "strings":
             pts = ["ab", "cde"]
         elif ptype == "objects":
@@ -244,7 +240,7 @@ class TestMakeGridcube:
             # zero or one point is not allowed, 2 is OK.
             n_pts = int(pvals[:1])
             pts = [3, 2, 1, -4][:n_pts]
-            expect_ok = n_pts >= 2
+            expect_ok = n_pts >= 1
         elif pvals == "repeat":
             # Repeated value (or pause in rise/fall) is an error.
             pts = [1, 2, 2, 3]

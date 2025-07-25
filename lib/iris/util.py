@@ -2632,20 +2632,21 @@ def make_gridcube(
             ok = isinstance(points, Iterable)
             if ok:
                 points = np.asarray(points)
-                ok = points.ndim == 1 and points.size >= 2 and points.dtype.kind in "if"
+                ok = points.ndim == 1 and points.size >= 1 and points.dtype.kind in "if"
             if ok:
                 # Force to always floating-point, minimum 'f4' precision,
                 # just for greater clarity.
                 points = points + zero_f4
 
-                # Also (pre-)check monotonicity.
-                # Just to avoid a more confusing error when creating a DimCoord.
-                dp = np.diff(points)
-                ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
+                if points.size > 1:
+                    # Also (pre-)check monotonicity.
+                    # Just to avoid a more confusing error when creating a DimCoord.
+                    dp = np.diff(points)
+                    ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
             if not ok:
                 msg = (
                     f"Bad value for '{axis}_points' arg : {orig_points!s}. "
-                    "Must be a monotonic 1-d array-like of at least 2 floats or ints."
+                    "Must be a monotonic 1-d array-like of at least 1 floats or ints."
                 )
                 raise ValueError(msg)
 
