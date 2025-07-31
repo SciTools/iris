@@ -87,7 +87,7 @@ Outdated API
 * Many of the methods that perform operations on dimensional metadata have useless duplication.
   For example, adding cell_measures requires a unique method call, even though it shares an API
   with most other metadata.
-   * **ACTION**: Create an issue for the above. This should probably be a dragon.
+  * **ACTION**: Create an issue for the above. This should probably be a dragon.
 
 * The way we approach dask is confusing in places. Our approach to data realisation is based on a
   legacy understanding. We want to ensure you can't accidentally realise data.
