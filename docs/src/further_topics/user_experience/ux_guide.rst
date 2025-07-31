@@ -18,11 +18,11 @@ Below are some potential topics to guide future discussions on the Iris user exp
 Topics
 ======
 
-* ### Community
+* **Community**
 
   * How do we make it easy for our users to contribute, ask questions, and generally get involved?
 
-* ### Documentation
+* **Documentation**
 
   * How accessible/complete are Iris' docs?
 
@@ -31,7 +31,7 @@ Topics
 
   * How transparent are our philosophy, past development decisions, and future plans?
 
-* ### Codebase
+* **Codebase**
 
   * How aligned is Iris with other packages in the wider community? e.g. common api, common jargon
 
@@ -39,6 +39,6 @@ Topics
 
   * Is the API as simple as possible for users to understand and access?
 
-* ### Culture
+* **Culture**
 
   * Are there any procedures or habits that our developers should introduce/change?

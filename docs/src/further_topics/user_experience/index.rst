@@ -9,7 +9,6 @@ UX doesn't fall behind. These pages offer some insight into what sort of things 
 and hopefully offers some extra transparency behind our development process.
 
 ..note ::
-
     If you have any thoughts or comments on either the user experience of Iris, or on this page,
     please create a GitHub discussion, or comment in an existing one! We'd love to hear from you!
 

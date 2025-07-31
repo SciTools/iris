@@ -62,24 +62,22 @@ We've found numerous examples of methods etc. that follow a different pattern th
 
 # Most cube methods *could* just be root level. There's pros and cons to this. Most operations require a cube anyway, so one school of thought suggests making them methods is redundant, and many repos have moved away from this. **However**, it was raised that chaining methods are a useful utility, and that this move might not make much difference to users. We didn't come to a decision on this, but we were leaning against.
 
-  * **ACTION** - *???*: Make a formal decision to either close the issue as unplanned, or to put it in the next major release.
+  * **ACTION**: Add to v4.0 milestone, or close this issue.
 
 # We have a number of in-place operations, that really shouldn't be. We have an issue for this, but we think this should definately be in the next major release.
 
-  * **ACTION** - *???*: Formalise it being in the next major release (new milestone?)
+  * **ACTION**: Add to v4.0 milestone
 
 # cube.copy() currently offers the ability to overwrite the data of the cube by adding the new data as a parameter. This is not the same as other packages, and adds unnecessary confusion to dataless cubes. There is an issue exiting for this.
 
-  * **ACTION** - *???*: Formalise it being in the next major release (new milestone?)
+  * **ACTION**: Add to v4.0 milestone
 
 Ease of Debugging
 =================
 
-We've been bitten a few times by silently failing bugs, either because errors aren't clear enough, or that Iris doesn't raise an error at all when something doesn't work.
-
-* **ACTION** - *CULTURE*: Ensure when workarounds are created (often in surgeries), that these are either documented on Iris, or there is a related issue raised.
-
-* **ACTION** - *CULTURE*: Create an issue if any unclear issues are found. These could have the UX label.
+We've been bitten a few times by silently failing bugs, either because errors aren't clear enough,
+or that Iris doesn't raise an error at all when something doesn't work. Any solutions for this seem
+to be more cultural than an immediate action, as these silent failures aren't noticed
 
 Outdated API
 ============
@@ -87,6 +85,7 @@ Outdated API
 * Many of the methods that perform operations on dimensional metadata have useless duplication.
   For example, adding cell_measures requires a unique method call, even though it shares an API
   with most other metadata.
+
   * **ACTION**: Create an issue for the above. This should probably be a dragon.
 
 * The way we approach dask is confusing in places. Our approach to data realisation is based on a
@@ -94,22 +93,25 @@ Outdated API
 
   # Why is it a method to access the dask array, and a property to realise the data?!
 
-    * **ACTION** - *???*: Create an issue to make realising data a method, and accessing the lazy array a property.
+    * **ACTION**: Create an issue to make realising data a method, and accessing the lazy array a property.
 
   # Why do we have cube.data.rechunk, rather than cube.rechunk. Is this just a convenience that will open us up to further troubles?
 
     * Would a thin wrapper be the way forward?
 
-      * **ACTION** - *???*: Create a discussion for the above.
+      * **ACTION**: Create a discussion for the above.
 
 
 Culture
 *******
 
-* **ACTION**: Create the a UX label to track related work. As a follow on task, consider some existing issues or PRs which would fit having the label.
+* **ACTION**: Ensure when bug workarounds are created, that these
+  are either documented or Iris or that there is a related issue raised.
 
 * **ACTION**: Plan a regular session for discussing the state of the user experience.
   We discussed making this yearly, although it could be more or less frequent as needed.
+
+* **ACTION**: Create a UX label to tag related issues and PRs.
 
 Further Notes
 *************
