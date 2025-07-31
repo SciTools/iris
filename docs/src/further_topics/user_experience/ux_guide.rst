@@ -8,7 +8,12 @@ Below are some potential topics to guide future discussions on the Iris user exp
 ..note ::
 
     If you have any thoughts or comments on either the user experience of Iris, or on this page,
-    please create a GitHub discussion, or comment in an existing one! We'd love to hear from you!
+    please create a GitHub discussion, or comment in an existing one
+    (`See our UX discussion! <https://github.com/SciTools/iris/discussions/6594>`__)!
+
+    We'd love to hear from you!
+
+
 
 Topics
 ======
