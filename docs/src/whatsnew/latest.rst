@@ -32,6 +32,10 @@ This document explains the changes made to Iris for this release
 
 #. N/A
 
+#. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
+   horizontal grid.
+   (:issue:`5770`, :pull:`6581`)
+
 
 🐛 Bugs Fixed
 =============
