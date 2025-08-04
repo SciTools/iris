@@ -578,7 +578,7 @@ class LoadProblems(threading.local):
                 loaded = self.loaded
             return f'{self.filename}: "{self.stack_trace}", {loaded}'
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._problems: list[LoadProblems.Problem] = []
 

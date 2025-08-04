@@ -12,14 +12,20 @@ import pickle
 import pytest
 
 import iris
+from iris.cube import Cube
 from iris.tests import MIN_PICKLE_PROTOCOL
+from iris.tests.stock import simple_2d
+from iris.tests.stock.mesh import sample_mesh_cube
 
 TESTED_PROTOCOLS = list(range(MIN_PICKLE_PROTOCOL, pickle.HIGHEST_PROTOCOL + 1))
 
 
-def pickle_cube(path, protocol, filename):
+def pickle_cube(cube_or_path, protocol, filename):
     # Ensure that data proxies are pickleable.
-    cube = iris.load(path)[0]
+    if isinstance(cube_or_path, Cube):
+        cube = cube_or_path
+    else:
+        cube = iris.load(cube_or_path)[0]
     with open(filename, "wb") as f:
         pickle.dump(cube, f, protocol)
     with open(filename, "rb") as f:
@@ -51,3 +57,13 @@ def test_ff(protocol, tmp_path):
     path = tests.get_data_path(("FF", "n48_multi_field"))
     tmp_file = tmp_path / "ff.pkl"
     pickle_cube(path, protocol, tmp_file)
+
+
+@pytest.mark.parametrize("protocol", TESTED_PROTOCOLS)
+@pytest.mark.parametrize("cubetype", ["regular", "mesh"])
+def test_synthetic(protocol, cubetype, tmp_path):
+    """Check that simple cubes can be pickled, including mesh cubes."""
+    source_fn = {"regular": simple_2d, "mesh": sample_mesh_cube}[cubetype]
+    test_cube = source_fn()
+    tmp_filepath = tmp_path / "tmp.pkl"
+    pickle_cube(test_cube, protocol, tmp_filepath)

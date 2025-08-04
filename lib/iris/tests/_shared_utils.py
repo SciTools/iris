@@ -2,7 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides testing capabilities and customisations specific to Iris."""
+"""Provides testing capabilities and customisations specific to Iris.
+
+.. note:: This module is private, and is subject to change on short notice.
+"""
 
 import collections
 from collections.abc import Mapping
