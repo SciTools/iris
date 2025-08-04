@@ -2,17 +2,18 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
+import pytest
 
-import iris.tests as tests  # isort:skip
+from iris.tests import _shared_utils  # isort:skip
 import numpy as np
 import PIL.Image
 
 import iris
 
 
-@tests.skip_gdal
-@tests.skip_data
-class TestGeoTiffExport(tests.IrisTest):
+@_shared_utils.skip_gdal
+@_shared_utils.skip_data
+class TestGeoTiffExport:
     def check_tiff_header(self, tiff_filename, expect_keys, expect_entries):
         """Checks the given tiff file's metadata contains the expected keys,
         and some matching values (not all).
@@ -24,17 +25,18 @@ class TestGeoTiffExport(tests.IrisTest):
 
             missing_keys = sorted(set(expect_keys) - set(file_keys))
             msg_nokeys = "Tiff header has missing keys : {}."
-            self.assertEqual(missing_keys, [], msg_nokeys.format(missing_keys))
+            assert missing_keys == [], msg_nokeys.format(missing_keys)
 
             extra_keys = sorted(set(file_keys) - set(expect_keys))
             msg_extrakeys = "Tiff header has extra unexpected keys : {}."
-            self.assertEqual(extra_keys, [], msg_extrakeys.format(extra_keys))
+            assert extra_keys == [], msg_extrakeys.format(extra_keys)
 
             msg_badval = "Tiff header entry {} has value {} != {}."
             for key, value in expect_entries.items():
                 content = im.tag[key]
-                self.assertEqual(content, value, msg_badval.format(key, content, value))
+                assert content == value, msg_badval.format(key, content, value)
 
+    @pytest.fixture
     def check_tiff(self, cube, header_keys, header_items):
         # Check that the cube saves correctly to TIFF :
         #   * the header contains expected keys and (some) values
@@ -110,7 +112,7 @@ class TestGeoTiffExport(tests.IrisTest):
             33550: (1.125, 1.125, 0.0),
             33922: (0.0, 0.0, 0.0, -0.5625, 89.4375, 0.0),
         }
-        fin = tests.get_data_path(
+        fin = _shared_utils.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
         cube = iris.load_cube(fin)[0]
@@ -150,7 +152,3 @@ class TestGeoTiffExport(tests.IrisTest):
 
     def test_inverted(self):
         self._check_tiff_export(masked=False, inverted=True)
-
-
-if __name__ == "__main__":
-    tests.main()
