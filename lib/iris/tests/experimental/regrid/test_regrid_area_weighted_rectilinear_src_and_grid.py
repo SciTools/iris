@@ -4,23 +4,19 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test area weighted regridding."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import pytest
-
-from iris.tests import _shared_utils  # isort:skip
-
 import copy
 import random
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris.analysis._interpolation
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 RESULT_DIR = (
