@@ -14,7 +14,7 @@ Conversion Checklist
 
 #. Before making any manual changes, run https://github.com/dannysepler/pytestify
    on the file. This does a lot of the brunt work for you!
-#. Check for references to :class:`iris.tests.IrisTest`. If a class inherits
+#. Check for references to :class:`IrisTest`. If a class inherits
    from this, remove the inheritance. Inheritance is unnecessary for
    pytest tests, so :class:`iris.tests.IrisTest` has been deprecated
    and its convenience methods have been moved to the
@@ -30,7 +30,7 @@ Conversion Checklist
    Some :class:`iris.tests.IrisTest` assertions have not been converted into
    :mod:`iris.tests._shared_utils`, as these were deemed easy to achieve via
    simple ``assert ...`` statements.
-#. Check for references to ``setUp()``. Replace this with ``_setup()`` instead.
+#. Check for references to ``setup_method()``. Replace this with ``_setup()`` instead.
    Ensure that this is decorated with ``@pytest.fixture(autouse=True)``.
 
    .. code-block:: python
@@ -52,6 +52,7 @@ Conversion Checklist
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
 #. Check for ``mock.patch("warnings.warn")``. This can be replaced with
    ``pytest.warns(match=message)``.
+#. Ensure that all test classes start with ``Test``. Tests will not run in pytest without it.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
 
