@@ -142,13 +142,13 @@ class TestGeoTiffExport:
         self.check_tiff(cube, tif_header_keys, tif_header_entries, tmp_fn)
 
     def test_unmasked(self, tmp_path):
-        with tmp_path / "tmp.tif" as fn:
-            self._check_tiff_export(masked=False, tmp_fn=fn)
+        fn = tmp_path / "unmasked.tif"
+        self._check_tiff_export(masked=False, tmp_fn=fn)
 
     def test_masked(self, tmp_path):
-        with tmp_path / "tmp.tif" as fn:
-            self._check_tiff_export(masked=True, tmp_fn=fn)
+        fn = tmp_path / "masked.tif"
+        self._check_tiff_export(masked=True, tmp_fn=fn)
 
     def test_inverted(self, tmp_path):
-        with tmp_path / "tmp.tif" as fn:
-            self._check_tiff_export(masked=False, inverted=True, tmp_fn=fn)
+        fn = tmp_path / "inverted.tif"
+        self._check_tiff_export(masked=False, inverted=True, tmp_fn=fn)
