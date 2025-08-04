@@ -58,7 +58,7 @@ class TestGeoTiffExport:
             im_data = np.array(im)
             # Currently we only support writing 32-bit tiff, when comparing
             # the data ensure that it is also 32-bit
-            np.testing.assert_array_equal(im_data, data.astype(np.float32))
+            _shared_utils.assert_array_equal(im_data, data.astype(np.float32))
 
     def _check_tiff_export(self, masked, inverted=False):
         tif_header_keys = [
