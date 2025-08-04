@@ -4,9 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.broadcast_to_shape`."""
 
-from unittest import mock
-
-import dask
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -44,7 +41,6 @@ class Test_broadcast_to_shape:
             for j in range(4):
                 _shared_utils.assert_array_equal(b[i, :, j, :].T, a)
 
-    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
     def test_lazy_added_dimensions_transpose(self, mocked_compute):
         # adding dimensions and having the dimensions of the input
         # transposed
@@ -66,7 +62,6 @@ class Test_broadcast_to_shape:
             for j in range(4):
                 _shared_utils.assert_masked_array_equal(b[i, :, j, :].T, m)
 
-    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
     def test_lazy_masked(self, mocked_compute):
         # masked arrays are also accepted
         rng = np.random.default_rng()
@@ -80,7 +75,6 @@ class Test_broadcast_to_shape:
                     b[i, :, j, :].compute().T, m.compute()
                 )
 
-    @mock.patch.object(dask.base, "compute", wraps=dask.base.compute)
     def test_lazy_chunks(self, mocked_compute):
         # chunks can be specified along with the target shape and are only used
         # along new dimensions or on dimensions that have size 1 in the source

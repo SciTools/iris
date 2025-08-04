@@ -217,7 +217,12 @@ class Future(threading.local):
             may need to defend against floating point precision issues where
             you didn't need to before.
         derived_bounds : bool, default=False
-            When True, uses the new form for deriving bounds with the load.
+            When ``True``, uses the correct CF rules for bounds of derived coordinates
+            for both loading and saving NetCDF.  This requires that these must be linked
+            via a separate "formula_terms" attribute on the bounds variable.
+            If ``False``, bounds are only linked with a "bounds" attribute, though this
+            is strictly incorrect for CF >= v1.7.
+            See `here in CF <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#cell-boundaries>`_.
         lam_pole_offset : bool, default=False
             When True, saving a cube on a "Limited Area Model" (LAM) domain
             to a PP file will set the pole longitude (PP field ``bplon``) to

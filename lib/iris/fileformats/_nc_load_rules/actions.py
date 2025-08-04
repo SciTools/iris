@@ -44,7 +44,6 @@ import warnings
 
 from iris.config import get_logger
 import iris.fileformats.cf
-import iris.fileformats.pp as pp
 from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.warnings
 
@@ -203,7 +202,10 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
 
         def build_outer(engine_, cf_var_):
             coordinate_system = builder(engine_, cf_var_)
-            engine_.cube_parts["coordinate_system"] = coordinate_system
+            # We can now handle more than one coordinate_system, so store as dictionary:
+            engine_.cube_parts["coordinate_systems"][cf_var_.cf_name] = (
+                coordinate_system
+            )
 
         # Part 1 - only building - adding takes place downstream in
         #  helpers.build_and_add_dimension/auxiliary_coordinate().
@@ -218,11 +220,8 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
             ),
         )
 
-        # Check there is not an existing one.
-        # ATM this is guaranteed by the caller, "run_actions".
-        assert engine.fact_list("grid-type") == []
-
-        engine.add_fact("grid-type", (grid_mapping_type,))
+        # Store grid-mapping name along with grid-type to match them later on
+        engine.add_fact("grid-type", (var_name, grid_mapping_type))
 
     else:
         message = "Coordinate system not created. Debug info:\n"
@@ -343,7 +342,35 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
         # Non-conforming lon/lat/projection coords will be classed as
         # dim-coords by cf.py, but 'action_provides_coordinate' will give them
         # a coord-type of 'miscellaneous' : hence, they have no coord-system.
-        coord_system = engine.cube_parts.get("coordinate_system")
+        #
+        # At this point, we need to match any "coordinate_system" entries in
+        # the engine to the coord we are building. There are a couple of cases here:
+        #  1. Simple `grid_mapping = crs` is used, in which case
+        #     we should just apply that mapping to all dim coords.
+        #  2. Extended `grid_mapping = crs: coord1 coord2 crs: coord3 coord4`
+        #     is used in which case we need to match the crs to the coord here.
+
+        # We can have multiple coordinate_system, so now stored as a list (note plural key)
+        coord_systems = engine.cube_parts.get("coordinate_systems")
+        coord_system = None
+
+        if len(coord_systems):
+            # Find which coord system applies to this coordinate.
+            cs_mappings = engine.cube_parts.get("coordinate_system_mappings")
+            if cs_mappings and coord_systems:
+                if len(coord_systems) == 1 and None in cs_mappings:
+                    # Simple grid mapping (a single coord_system with no explicit coords)
+                    # Applies to spatial DimCoord(s) only. In this case only one
+                    # coordinate_system will have been built, so just use it.
+                    (coord_system,) = coord_systems.values()
+                    (cs_name,) = cs_mappings.values()
+                else:
+                    # Extended grid mapping, e.g.
+                    #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+                    # We need to search for coord system that references our coordinate.
+                    if cs_name := cs_mappings.get(cf_var.cf_name):
+                        coord_system = coord_systems.get(cs_name, None)
+
         # Translate the specific grid-mapping type to a grid-class
         if coord_system is None:
             succeed = True
@@ -352,8 +379,13 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             # Get a grid-class from the grid-type
             # i.e. one of latlon/rotated/projected, as for coord_grid_class.
             gridtypes_factlist = engine.fact_list("grid-type")
-            (gridtypes_fact,) = gridtypes_factlist  # only 1 fact
-            (cs_gridtype,) = gridtypes_fact  # fact contains 1 term
+
+            # potentially multiple grid-type facts; find one for CRS varname
+            cs_gridtype = None
+            for fact_cs_name, fact_cs_type in gridtypes_factlist:
+                if fact_cs_name == cs_name:
+                    cs_gridtype = fact_cs_type
+
             if cs_gridtype == "latitude_longitude":
                 cs_gridclass = "latlon"
             elif cs_gridtype == "rotated_latitude_longitude":
@@ -446,6 +478,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     """Convert a CFAuxiliaryCoordinateVariable into a cube aux-coord."""
     (var_name,) = auxcoord_fact
     rule_name = "fc_build_auxiliary_coordinate"
+    cf_var = engine.cf_var.cf_group[var_name]
 
     # Identify any known coord "type" : latitude/longitude/time/time_period
     # If latitude/longitude, this sets the standard_name of the built AuxCoord
@@ -473,56 +506,90 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     if coord_type:
         rule_name += f"_{coord_type}"
 
-    cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
-    hh.build_and_add_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
+    # Check if we have a coord_system specified for this coordinate.
+    # (Only possible via extended grid_mapping attribute)
+    coord_systems = engine.cube_parts.get("coordinate_systems")
+    coord_system = None
 
-    return rule_name
-
-
-@action_function
-def action_ukmo_stash(engine):
-    """Convert 'ukmo stash' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__um_stash_source"
-    var = engine.cf_var
-    attr_name = "ukmo__um_stash_source"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        attr_name = "um_stash_source"  # legacy form
-        attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        try:
-            stash_code = pp.STASH.from_msi(attr_value)
-        except (TypeError, ValueError):
-            engine.cube.attributes[attr_name] = attr_value
-            msg = (
-                "Unable to set attribute STASH as not a valid MSI "
-                f'string "mXXsXXiXXX", got "{attr_value}"'
-            )
-            logger.debug(msg)
+    cs_mappings = engine.cube_parts.get("coordinate_system_mappings", None)
+    if cs_mappings and coord_systems:
+        if len(coord_systems) == 1 and None in cs_mappings:
+            # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
+            pass
         else:
-            engine.cube.attributes["STASH"] = stash_code
+            # Extended grid mapping, e.g.
+            #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+            # We need to search for coord system that references our coordinate.
+            if cs_name := cs_mappings.get(cf_var.cf_name):
+                coord_system = coord_systems.get(cs_name, None)
+
+    cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
+    hh.build_and_add_auxiliary_coordinate(
+        engine, cf_var, coord_name=coord_name, coord_system=coord_system
+    )
 
     return rule_name
 
 
 @action_function
-def action_ukmo_processflags(engine):
-    """Convert 'ukmo process flags' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__process_flags"
-    var = engine.cf_var
-    attr_name = "ukmo__process_flags"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        flags = [x.replace("_", " ") for x in attr_value.split(" ")]
-        engine.cube.attributes["ukmo__process_flags"] = tuple(flags)
-
+def action_managed_attribute(engine, attr_name, attr_value):
+    """Record a managed attribute, as successfully translated."""
+    rule_name = f"fc_special_attribute__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
     return rule_name
+
+
+@action_function
+def action_unmanaged_attribute(engine, attr_name, attr_value):
+    """Record the original attribute, when translation of a managed one failed."""
+    rule_name = f"fc_special_attribute__fallback__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
+    return rule_name
+
+
+def action_all_managed_attributes(engine):
+    """Check for and convert all 'handled' attributes."""
+    from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+
+    var = engine.cf_var
+    for handler in ATTRIBUTE_HANDLERS.values():
+        # Each handler can have several match names, but ideally only 0 or 1 appears !
+        iris_name = handler.iris_name
+        matches = []
+        for match_name in handler.netcdf_names:
+            match_value = getattr(var, match_name, None)
+            if match_value is not None:
+                matches.append((match_name, match_value))
+
+        if len(matches) > 1:
+            msg = (
+                f"Multiple file attributes would set the iris '.{iris_name}' cube "
+                "attribute:"
+                + "".join(f"\n  {name!r}: {val!r}" for name, val in matches)
+                + "\n- only the first of these is actioned."
+            )
+            warnings.warn(msg, category=_WarnComboLoadIgnoring)
+
+        if len(matches) > 0:
+            # Take the first as priority
+            input_name, input_value = matches[0]
+            try:
+                iris_value = handler.decode_attribute(input_value)
+                # process as a rule
+                action_managed_attribute(engine, iris_name, iris_value)
+
+            except (ValueError, TypeError):
+                msg = (
+                    f"Invalid content for managed attribute name {match_name!r} "
+                    f"= {input_value!r}: The attribute is retained untranslated, which "
+                    "may not re-save correctly."
+                )
+                warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
+
+                # ALSO record the attribute on the cube since, now it has been fetched
+                #  by the CF interpreting code, it will be discounted from inclusion.
+                # Since translation failed, record as original name=value.
+                action_unmanaged_attribute(engine, input_name, input_value)
 
 
 @action_function
@@ -615,10 +682,9 @@ def run_actions(engine):
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 
-    # deal with grid-mappings
+    # deal with grid-mappings; potentially multiple mappings if extended grid_mapping used.
     grid_mapping_facts = engine.fact_list("grid_mapping")
-    # For now, there should be at most *one* of these.
-    assert len(grid_mapping_facts) in (0, 1)
+
     for grid_mapping_fact in grid_mapping_facts:
         action_provides_grid_mapping(engine, grid_mapping_fact)
 
@@ -641,10 +707,9 @@ def run_actions(engine):
     for auxcoord_fact in auxcoord_facts:
         action_build_auxiliary_coordinate(engine, auxcoord_fact)
 
-    # Detect + process and special 'ukmo' attributes
+    # Detect + process and special handling attributes
     # Run on every cube : they choose themselves whether to trigger.
-    action_ukmo_stash(engine)
-    action_ukmo_processflags(engine)
+    action_all_managed_attributes(engine)
 
     # cell measures
     cellm_facts = engine.fact_list("cell_measure")
