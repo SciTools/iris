@@ -4,17 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis.AreaWeighted`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+import pytest
 
 from iris.analysis import AreaWeighted
 
 
-class Test(tests.IrisTest):
-    def check_call(self, mdtol=None):
+class Test:
+    def check_call(self, mocker, mdtol=None):
         # Check that `iris.analysis.AreaWeighted` correctly calls an
         # `iris.analysis._area_weighted.AreaWeightedRegridder` object.
         if mdtol is None:
@@ -22,18 +18,20 @@ class Test(tests.IrisTest):
             mdtol = 1
         else:
             area_weighted = AreaWeighted(mdtol=mdtol)
-        self.assertEqual(area_weighted.mdtol, mdtol)
+        assert area_weighted.mdtol == mdtol
 
-        with mock.patch(
+        with mocker.patch(
             "iris.analysis.AreaWeightedRegridder",
-            return_value=mock.sentinel.regridder,
+            return_value=mocker.sentinel.regridder,
         ) as awr:
-            regridder = area_weighted.regridder(mock.sentinel.src, mock.sentinel.target)
+            regridder = area_weighted.regridder(
+                mocker.sentinel.src, mocker.sentinel.target
+            )
 
         awr.assert_called_once_with(
-            mock.sentinel.src, mock.sentinel.target, mdtol=mdtol
+            mocker.sentinel.src, mocker.sentinel.target, mdtol=mdtol
         )
-        self.assertIs(regridder, mock.sentinel.regridder)
+        assert regridder is mocker.sentinel.regridder
 
     def test_default(self):
         self.check_call()
@@ -43,14 +41,10 @@ class Test(tests.IrisTest):
 
     def test_invalid_high_mdtol(self):
         msg = "mdtol must be in range 0 - 1"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, msg):
             AreaWeighted(mdtol=1.2)
 
     def test_invalid_low_mdtol(self):
         msg = "mdtol must be in range 0 - 1"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, msg):
             AreaWeighted(mdtol=-0.2)
-
-
-if __name__ == "__main__":
-    tests.main()
