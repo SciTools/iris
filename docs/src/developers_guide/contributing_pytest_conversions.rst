@@ -50,7 +50,7 @@ Conversion Checklist
 #. Check for references to ``self.tmp_dir``. In pytest, ``tmp_path`` is used instead,
    and can be passed into functions as a fixture.
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
-#  Replace any remaining references to :mod:`iris.tests` with references to 
+#. Replace any remaining references to :mod:`iris.tests` with references to 
    :mod:`iris.tests._shared_utils`. (E.g. :func:`iris.tests.get_data_path` to
    :func:`iris.tests._shared_utils.get_data_path`).
 #. Remove the top-level import of :mod:`iris.tests` (usually ``import iris.tests as tests``).
