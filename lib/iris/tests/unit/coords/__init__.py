@@ -107,23 +107,31 @@ class CoordTestMixin:
     def setup_test_arrays(self, shape=(3,), masked=False):
         _setup_test_arrays(self, shape=shape, masked=masked)
 
-    def assert_arrays_share_data(self, a1, a2, msg):
+    def assert_arrays_share_data(self, a1, a2, msg=None):
         # Check that two arrays are both real, same dtype, and based on the
         # same underlying data (so changing one will change the other).
         self.assert_is_real_array(a1)
         self.assert_is_real_array(a2)
         assert a1.dtype == a2.dtype
+        if not msg:
+            msg = f"Array {a1} should share data with {a2}"
         assert arrays_share_data(a1, a2), msg
 
-    def assert_arrays_do_not_share_data(self, a1, a2, msg):
+    def assert_arrays_do_not_share_data(self, a1, a2, msg=None):
+        if not msg:
+            msg = f"Array {a1} should not share data with {a2}"
         assert not arrays_share_data(a1, a2), msg
 
-    def assert_is_real_array(self, array, msg):
+    def assert_is_real_array(self, array, msg=None):
         # Check that the arg is a real array.
+        if not msg:
+            msg = f"Array {array} is not a real array"
         assert is_real_data(array), msg
 
-    def assert_is_lazy_array(self, array, msg):
+    def assert_is_lazy_array(self, array, msg=None):
         # Check that the arg is a lazy array.
+        if not msg:
+            msg = f"Array {array} is not a lazy array"
         assert is_lazy_data(array), msg
 
     def assert_equal_real_arrays_and_dtypes(self, a1, a2):
