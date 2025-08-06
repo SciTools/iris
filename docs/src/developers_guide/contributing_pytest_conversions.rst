@@ -40,9 +40,13 @@ Conversion Checklist
          ...
 
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
-#. Check for references to ``with mock.patch("...")``. These should be replaced with either
-   ``with mocker.patch("...")`` or ``mocker.patch("..."). Note that ``mocker`` is a fixture,
-   and should be passed into relevant functions as a parameter.
+#. Check for ``mock.patch("warnings.warn")``. This can be replaced with
+   ``pytest.warns(match=message)``.
+#. Check for references to ``mock`` or ``self.patch``. These should be changed to use
+   the ``mocker`` fixture - see the `pytest-mock docs`_. Note that pytest-mock's 
+   ``patch`` does not support the context-manager syntax; in most cases this is made
+   unnecessary (see `Usage as context manager`_), in advanced cases consider using
+   the `monkeypatch`_ fixture to provide a context-manager.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
 #. Check for references to ``super()``. Most test classes used to inherit from
@@ -50,12 +54,10 @@ Conversion Checklist
 #. Check for references to ``self.tmp_dir``. In pytest, ``tmp_path`` is used instead,
    and can be passed into functions as a fixture.
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
-#. Replace any remaining references to :mod:`iris.tests` with references to 
-   :mod:`iris.tests._shared_utils`. (E.g. :func:`iris.tests.get_data_path` to
-   :func:`iris.tests._shared_utils.get_data_path`).
 #. Remove the top-level import of :mod:`iris.tests` (usually ``import iris.tests as tests``).
-#. Check for ``mock.patch("warnings.warn")``. This can be replaced with
-   ``pytest.warns(match=message)``.
+   Having followed the above steps, any remaining calls 
+   (e.g. :func:`iris.tests.get_data_path`) should be easily replacable with calls to
+   :mod:`iris.tests._shared_utils` (e.g. :func:`iris.tests._shared_utils.get_data_path`).
 #. Ensure that all test classes start with ``Test``. Tests will not run in pytest without it.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
@@ -82,3 +84,7 @@ Common Translations
    * - ``with mock.patch.object(...) as x:``
      - ``x = mocker.patch.object(...)``
 
+
+.. _pytest-mock docs: https://pytest-mock.readthedocs.io/en/latest/index.html
+.. _Usage as context manager: https://pytest-mock.readthedocs.io/en/latest/usage.html#usage-as-context-manager
+.. _monkeypatch: https://docs.pytest.org/en/stable/how-to/monkeypatch.html
