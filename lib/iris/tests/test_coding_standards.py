@@ -3,10 +3,6 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris.tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import ast
 from datetime import datetime
 from fnmatch import fnmatch
@@ -15,6 +11,8 @@ import os
 from pathlib import Path
 import subprocess
 from typing import List, Tuple
+
+import pytest
 
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
@@ -179,7 +177,7 @@ def test_categorised_warnings():
     )
 
 
-class TestLicenseHeaders(tests.IrisTest):
+class TestLicenseHeaders:
     @staticmethod
     def whatchanged_parse(whatchanged_output):
         r"""Returns a generator of tuples of data parsed from
@@ -254,7 +252,7 @@ class TestLicenseHeaders(tests.IrisTest):
         except ValueError as err:
             # Caught the case where this is not a git repo.
             msg = "Iris installation did not look like a git repo?\nERR = {}\n\n"
-            return self.skipTest(msg.format(str(err)))
+            return pytest.skip(msg.format(str(err)))
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
@@ -280,7 +278,3 @@ class TestLicenseHeaders(tests.IrisTest):
 
         if failed:
             raise ValueError("There were license header failures. See stdout.")
-
-
-if __name__ == "__main__":
-    tests.main()
