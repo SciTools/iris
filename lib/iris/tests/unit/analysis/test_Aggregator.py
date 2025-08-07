@@ -34,40 +34,40 @@ class Test_aggregate:
         # Providing masked array with no tolerance keyword (mdtol) provided.
         axis = 0
         mock_return = self.expected_result_axis0.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis0)
+        )
+        result = self.TEST.aggregate(self.array, axis)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
+        )
+        result = self.TEST.aggregate(self.array, axis)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_masked_above_tol(self, mocker):
         # Providing masked array with a high tolerance (mdtol) provided.
         axis = 0
         mock_return = self.expected_result_axis0.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.55)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis0)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.55)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.55)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.55)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_masked_below_tol(self, mocker):
@@ -77,20 +77,20 @@ class Test_aggregate:
         result_axis_0 = self.expected_result_axis0.copy()
         result_axis_0.mask = np.array([True, True, False])
         mock_return = ma.array([1, 2, 3], mask=None)
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
-            _shared_utils.assert_masked_array_almost_equal(result, result_axis_0)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
+        _shared_utils.assert_masked_array_almost_equal(result, result_axis_0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_masked_below_tol_alt(self, mocker):
@@ -100,11 +100,11 @@ class Test_aggregate:
         result_axis_1 = self.expected_result_axis1.copy()
         result_axis_1.mask = np.array([True, True])
         mock_return = self.expected_result_axis1.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.1)
-            _shared_utils.assert_masked_array_almost_equal(result, result_axis_1)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.1)
+        _shared_utils.assert_masked_array_almost_equal(result, result_axis_1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_unmasked_with_mdtol(self, mocker):
@@ -114,20 +114,20 @@ class Test_aggregate:
 
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis, mdtol=0.5)
-            _shared_utils.assert_array_almost_equal(result, mock_return.copy())
+        )
+        result = self.TEST.aggregate(data, axis, mdtol=0.5)
+        _shared_utils.assert_array_almost_equal(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis, mdtol=0.5)
-            _shared_utils.assert_array_almost_equal(result, mock_return.copy())
+        )
+        result = self.TEST.aggregate(data, axis, mdtol=0.5)
+        _shared_utils.assert_array_almost_equal(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_unmasked(self, mocker):
@@ -137,20 +137,20 @@ class Test_aggregate:
 
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis)
-            _shared_utils.assert_array_almost_equal(result, mock_return.copy())
+        )
+        result = self.TEST.aggregate(data, axis)
+        _shared_utils.assert_array_almost_equal(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis)
-            _shared_utils.assert_array_almost_equal(result, mock_return.copy())
+        )
+        result = self.TEST.aggregate(data, axis)
+        _shared_utils.assert_array_almost_equal(result, mock_return.copy())
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_allmasked_1_d_with_mdtol(self, mocker):
@@ -158,10 +158,10 @@ class Test_aggregate:
         axis = 0
         mdtol = 0.5
         mock_return = ma.masked
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis, mdtol=mdtol)
+        )
+        result = self.TEST.aggregate(data, axis, mdtol=mdtol)
 
         assert result is mock_return
         mock_method.assert_called_once_with(data, axis=axis)
@@ -172,11 +172,11 @@ class Test_aggregate:
         axis = -1
         data = self.array.flatten()
         mock_return = 2
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis, mdtol=1)
-            _shared_utils.assert_masked_array_equal(result, ma.array(2, mask=False))
+        )
+        result = self.TEST.aggregate(data, axis, mdtol=1)
+        _shared_utils.assert_masked_array_equal(result, ma.array(2, mask=False))
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_returning_scalar_mdtol_alt(self, mocker):
@@ -186,11 +186,11 @@ class Test_aggregate:
         axis = -1
         data = self.array.flatten()
         mock_return = 2
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(data, axis, mdtol=0)
-            _shared_utils.assert_masked_array_equal(result, ma.array(2, mask=True))
+        )
+        result = self.TEST.aggregate(data, axis, mdtol=0)
+        _shared_utils.assert_masked_array_equal(result, ma.array(2, mask=True))
         mock_method.assert_called_once_with(data, axis=axis)
 
     def test_returning_non_masked_array_from_masked_array(self, mocker):
@@ -199,20 +199,20 @@ class Test_aggregate:
         axis = 0
         mock_return = self.expected_result_axis0.data.copy()
         result_axis_0 = ma.array(mock_return, mask=[True, True, False])
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
-            _shared_utils.assert_masked_array_almost_equal(result, result_axis_0)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
+        _shared_utils.assert_masked_array_almost_equal(result, result_axis_0)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
         axis = 1
         mock_return = self.expected_result_axis1.data.copy()
-        with mocker.patch.object(
+        mock_method = mocker.patch.object(
             self.TEST, "call_func", return_value=mock_return
-        ) as mock_method:
-            result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
-            _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
+        )
+        result = self.TEST.aggregate(self.array, axis, mdtol=0.45)
+        _shared_utils.assert_masked_array_equal(result, self.expected_result_axis1)
         mock_method.assert_called_once_with(self.array, axis=axis)
 
     def test_kwarg_pass_through_no_kwargs(self, mocker):
@@ -264,7 +264,7 @@ class Test_aggregate:
     def test_no_lazy_func(self):
         dummy_agg = Aggregator("custom_op", lambda x: 1)
         expected = "custom_op aggregator does not support lazy operation"
-        with pytest.raises(LazyAggregatorError, expected):
+        with pytest.raises(LazyAggregatorError, match=expected):
             dummy_agg.lazy_aggregate(np.arange(10), axis=0)
 
 
