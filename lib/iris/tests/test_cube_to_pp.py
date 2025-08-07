@@ -284,7 +284,7 @@ class FakePPEnvironment:
 class TestPPSaveRules:
     def test_default_coord_system(self):
         GeogCS = iris.coord_systems.GeogCS
-        cube = iris.tests.stock.lat_lon_cube()
+        cube = stock.lat_lon_cube()
         reference_txt_path = _shared_utils.get_result_path(
             ("cube_to_pp", "default_coord_system.txt")
         )
