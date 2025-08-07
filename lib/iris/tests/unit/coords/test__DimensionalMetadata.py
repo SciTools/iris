@@ -4,13 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords._DimensionalMetadata` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-
 from cf_units import Unit
 import numpy as np
+import pytest
 
 import iris._lazy_data as lazy
 from iris.coord_systems import GeogCS
@@ -26,10 +22,10 @@ from iris.tests.stock import climatology_3d as cube_with_climatology
 from iris.tests.stock.mesh import sample_meshcoord
 
 
-class Test___init____abstractmethod(tests.IrisTest):
+class Test___init____abstractmethod:
     def test(self):
         emsg = "Can't instantiate abstract class _DimensionalMetadata"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             _ = _DimensionalMetadata(0)
 
 
@@ -168,7 +164,7 @@ class Mixin__string_representations:
         coord = self.sample_coord(*args, **kwargs)
         return self.repr_str_strings(coord)
 
-    def assertLines(self, list_of_expected_lines, string_result):
+    def assert_lines(self, list_of_expected_lines, string_result):
         r"""Assert equality between a result and expected output lines.
 
         For convenience, the 'expected lines' are joined with a '\\n',
@@ -176,10 +172,10 @@ class Mixin__string_representations:
         They should then match the actual result, which is a simple string.
 
         """
-        self.assertEqual(list_of_expected_lines, string_result.split("\n"))
+        assert list_of_expected_lines == string_result.split("\n")
 
 
-class Test__print_common(Mixin__string_representations, tests.IrisTest):
+class Test__print_common(Mixin__string_representations):
     """Test aspects of __str__ and __repr__ output common to all
     _DimensionalMetadata instances.
     I.E. those from CFVariableMixin, plus values array (data-manager).
@@ -205,7 +201,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_minimal(self):
         result = self.coord_representations(long_name=None, units=None, shape=(1,))
@@ -216,7 +212,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    shape: (1,)",
             "    dtype: float64",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_names(self):
         result = self.coord_representations(
@@ -232,7 +228,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'this'",
             "    var_name: 'x_var'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_bounded(self):
         result = self.coord_representations(shape=(3,), bounded=True)
@@ -248,7 +244,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_masked(self):
         result = self.coord_representations(masked=True)
@@ -260,7 +256,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_dtype_int(self):
         result = self.coord_representations(units="1", datatype=np.int16)
@@ -272,7 +268,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: int16",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_dtype_date(self):
         # Note: test with a date 'longer' than the built-in one in
@@ -290,7 +286,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_attributes(self):
         # NOTE: scheduled for future change, to put each attribute on a line
@@ -331,7 +327,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             ),
             "        float                          4.3",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_lazy_points(self):
         result = self.coord_representations(lazy_points=True)
@@ -343,7 +339,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_lazy_bounds(self):
         result = self.coord_representations(lazy_bounds=True)
@@ -356,7 +352,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_lazy_points_and_bounds(self):
         result = self.coord_representations(lazy_points=True, lazy_bounds=True)
@@ -369,7 +365,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_scalar(self):
         result = self.coord_representations(shape=(1,), bounded=True)
@@ -382,7 +378,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_scalar_masked(self):
         result = self.coord_representations(shape=(1,), bounded=True, masked=True)
@@ -395,7 +391,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_length_short(self):
         result = self.coord_representations(shape=(2,), bounded=True)
@@ -410,7 +406,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_length_medium(self):
         # Where bounds are truncated, but points not.
@@ -431,7 +427,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_length_long(self):
         # Completely truncated representations
@@ -450,7 +446,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_strings(self):
         result = self.coord_representations(datatype=str)
@@ -462,7 +458,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: <U5",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_strings_long_aligned(self):
         result = self.coord_representations(datatype=str, shape=(15,))
@@ -479,7 +475,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: <U10",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_onepoint_toolong_placeholder(self):
         # When even one point won't display, get "[...]".
@@ -493,7 +489,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_dates_scalar(self):
         # Printouts for a scalar date coord.
@@ -520,7 +516,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    standard_name: 'time'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_dates_bounds(self):
         result = self.coord_representations(dates=True, bounded=True)
@@ -541,7 +537,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_dates_masked(self):
         result = self.coord_representations(dates=True, masked=True)
@@ -556,7 +552,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_untypical_bounds(self):
         # Check printing when n-bounds > 2
@@ -578,7 +574,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_multidimensional(self):
         # Demonstrate formatting of multdimensional arrays
@@ -617,7 +613,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_multidimensional_small(self):
         # Demonstrate that a small-enough multidim will print in the repr.
@@ -632,7 +628,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: int64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_integers_short(self):
         result = self.coord_representations(datatype=np.int16)
@@ -644,7 +640,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: int16",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_integers_masked(self):
         result = self.coord_representations(datatype=int, masked=True)
@@ -656,7 +652,7 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: int64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_integers_masked_long(self):
         result = self.coord_representations(shape=(20,), datatype=int, masked=True)
@@ -668,10 +664,10 @@ class Test__print_common(Mixin__string_representations, tests.IrisTest):
             "    dtype: int64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
 
-class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
+class Test__print_Coord(Mixin__string_representations):
     """Test Coord-specific aspects of __str__ and __repr__ output.
 
     Aspects :
@@ -692,7 +688,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_coord_system(self):
         result = self.coord_representations(coord_system=GeogCS(1000.0))
@@ -705,7 +701,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'x'",
             "    coord_system: GeogCS(1000.0)",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_climatological(self):
         cube = cube_with_climatology()
@@ -725,7 +721,7 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
             "    standard_name: 'time'",
             "    climatological: True",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_circular(self):
         coord = self.sample_coord(shape=(2,), dimcoord=True)
@@ -740,10 +736,10 @@ class Test__print_Coord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'x'",
             "    circular: True",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
 
-class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
+class Test__print_noncoord(Mixin__string_representations):
     """Limited testing of other _DimensionalMetadata subclasses.
 
     * AncillaryVariable
@@ -768,7 +764,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'v_aux'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_cellmeasure(self):
         # Check we can print an AncillaryVariable
@@ -790,7 +786,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'cell_area'",
             "    measure: 'area'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_connectivity(self):
         # Check we can print a Connectivity
@@ -814,7 +810,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    start_index: 0",
             "    location_axis: 0",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_connectivity__start_index(self):
         # Check we can print a Connectivity
@@ -842,7 +838,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    start_index: 1",
             "    location_axis: 0",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_connectivity__location_axis(self):
         # Check we can print a Connectivity
@@ -869,7 +865,7 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    start_index: 0",
             "    location_axis: 1",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_meshcoord(self):
         meshco = sample_meshcoord()
@@ -894,17 +890,17 @@ class Test__print_noncoord(Mixin__string_representations, tests.IrisTest):
             "    standard_name: 'longitude'",
             "    axis: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
 
-class Test_summary(Mixin__string_representations, tests.IrisTest):
+class Test_summary(Mixin__string_representations):
     """Test the controls of the 'summary' method."""
 
     def test_shorten(self):
         coord = self.sample_coord()
         expected = self.repr_str_strings(coord)
         result = coord.summary(shorten=True) + "\n" + coord.summary()
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_max_values__default(self):
         coord = self.sample_coord()
@@ -916,7 +912,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_max_values__2(self):
         coord = self.sample_coord()
@@ -928,7 +924,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_max_values__bounded__2(self):
         coord = self.sample_coord(bounded=True)
@@ -946,7 +942,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_max_values__0(self):
         coord = self.sample_coord(bounded=True)
@@ -959,7 +955,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_linewidth__default(self):
         coord = self.sample_coord()
@@ -972,7 +968,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
         # Show that, when unset, it follows the numpy setting
         with np.printoptions(linewidth=35):
@@ -987,7 +983,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_linewidth__set(self):
         coord = self.sample_coord()
@@ -1003,12 +999,12 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    long_name: 'x'",
         ]
         result = coord.summary(linewidth=35)
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
         with np.printoptions(linewidth=999):
             # Show that, when set, it ignores the numpy setting
             result = coord.summary(linewidth=35)
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
     def test_convert_dates(self):
         coord = self.sample_coord(dates=True)
@@ -1022,7 +1018,7 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
+        self.assert_lines(expected, result)
 
         result = coord.summary(convert_dates=False)
         expected = [
@@ -1032,8 +1028,4 @@ class Test_summary(Mixin__string_representations, tests.IrisTest):
             "    dtype: float64",
             "    long_name: 'x'",
         ]
-        self.assertLines(expected, result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        self.assert_lines(expected, result)
