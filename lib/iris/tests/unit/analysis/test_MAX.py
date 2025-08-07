@@ -69,5 +69,4 @@ class Test_aggregate_shape:
         kwargs = dict()
         assert MAX.aggregate_shape(**kwargs) == shape
         kwargs = dict(wibble="wobble")
-        # self.assertTupleEqual(MAX.aggregate_shape(**kwargs), shape)
         assert MAX.aggregate_shape(**kwargs) == shape
