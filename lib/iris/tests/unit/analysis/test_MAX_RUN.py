@@ -147,7 +147,6 @@ class LazyMixin:
 
     def check_array(self, result, expected, expected_chunks):
         assert is_lazy_data(result)
-        # self.assertTupleEqual(result.chunks, expected_chunks)
         assert result.chunks == expected_chunks
         result = as_concrete_data(result)
         _shared_utils.assert_array_equal(result, expected)
