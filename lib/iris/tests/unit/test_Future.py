@@ -4,11 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.Future` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import warnings
+
+import pytest
 
 from iris import Future
 import iris._deprecation
@@ -33,34 +31,34 @@ def patched_future(value=False, deprecated=False, error=False):
     return future
 
 
-class Test___setattr__(tests.IrisTest):
+class Test___setattr__:
     def test_valid_setting(self):
         future = patched_future()
         new_value = not future.example_future_flag
         with warnings.catch_warnings():
             warnings.simplefilter("error")  # Check no warning emitted !
             future.example_future_flag = new_value
-        self.assertEqual(future.example_future_flag, new_value)
+        assert future.example_future_flag == new_value
 
     def test_deprecated_warning(self):
         future = patched_future(deprecated=True, error=False)
         msg = "'Future' property 'example_future_flag' is deprecated"
-        with self.assertWarnsRegex(iris._deprecation.IrisDeprecation, msg):
+        with pytest.warns(iris._deprecation.IrisDeprecation, match=msg):
             future.example_future_flag = False
 
     def test_deprecated_error(self):
         future = patched_future(deprecated=True, error=True)
         exp_emsg = "'Future' property 'example_future_flag' has been deprecated"
-        with self.assertRaisesRegex(AttributeError, exp_emsg):
+        with pytest.raises(AttributeError, match=exp_emsg):
             future.example_future_flag = False
 
     def test_invalid_attribute(self):
         future = Future()
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             future.numberwang = 7
 
 
-class Test_context(tests.IrisTest):
+class Test_context:
     def test_generic_no_args(self):
         # While Future has no properties, it is necessary to patch Future in
         # order for these tests to work. This test is not a precise emulation
@@ -69,12 +67,12 @@ class Test_context(tests.IrisTest):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             future = patched_future(value=False)
-            self.assertFalse(future.example_future_flag)
+            assert not future.example_future_flag
             with future.context():
-                self.assertFalse(future.example_future_flag)
+                assert not future.example_future_flag
                 future.example_future_flag = True
-                self.assertTrue(future.example_future_flag)
-            self.assertFalse(future.example_future_flag)
+                assert future.example_future_flag
+            assert not future.example_future_flag
 
     def test_generic_with_arg(self):
         # While Future has no properties, it is necessary to patch Future in
@@ -84,15 +82,15 @@ class Test_context(tests.IrisTest):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             future = patched_future(value=False)
-            self.assertFalse(future.example_future_flag)
-            self.assertFalse(future.example_future_flag)
+            assert not future.example_future_flag
+            assert not future.example_future_flag
             with future.context(example_future_flag=True):
-                self.assertTrue(future.example_future_flag)
-            self.assertFalse(future.example_future_flag)
+                assert future.example_future_flag
+            assert not future.example_future_flag
 
     def test_invalid_arg(self):
         future = Future()
-        with self.assertRaises(AttributeError):
+        with pytest.raises(AttributeError):
             with future.context(this_does_not_exist=True):
                 # Don't need to do anything here... the context manager
                 # will (assuming it's working!) have already raised the
@@ -116,7 +114,7 @@ class Test_context(tests.IrisTest):
                     raise LocalTestException()
             except LocalTestException:
                 pass
-            self.assertEqual(future.example_future_flag, False)
+            assert future.example_future_flag is False
 
 
 class Test__str_repr:
@@ -139,7 +137,3 @@ class Test__str_repr:
         future = Future()
         text = repr(future)
         self._check_content(future, text)
-
-
-if __name__ == "__main__":
-    tests.main()
