@@ -20,3 +20,4 @@ Extra information on specific technical issues.
    ugrid/index
    which_regridder_to_use
    controlling_merge
+   user_experience/index
