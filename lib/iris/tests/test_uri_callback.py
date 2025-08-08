@@ -3,25 +3,19 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import os
 
 import iris
+from iris.tests import _shared_utils
 
 
-@tests.skip_data
-class TestCallbacks(tests.IrisTest):
-    def test_pp_callback(self):
+@_shared_utils.skip_data
+class TestCallbacks:
+    def test_pp_callback(self, request):
         def pp_callback(cube, field, filename):
             cube.attributes["filename"] = os.path.basename(filename)
             cube.attributes["lbyr"] = field.lbyr
 
-        fname = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+        fname = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
         cube = iris.load_cube(fname, callback=pp_callback)
-        self.assertCML(cube, ["uri_callback", "pp_global.cml"])
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_CML(request, cube, ["uri_callback", "pp_global.cml"])
