@@ -557,7 +557,8 @@ class TestCube2d:
 class Test2dIndexing(TestCube2d):
     def test_indexing_of_0d_cube(self):
         c = self.t[0, 0]
-        pytest.raises(IndexError, c.__getitem__, (slice(None, None),))
+        with pytest.raises(IndexError, match="More slices requested than dimensions"):
+            _ = c[:]
 
     def test_cube_indexing_0d(self, request):
         _shared_utils.assert_CML(
@@ -625,8 +626,10 @@ class Test2dIndexing(TestCube2d):
         _shared_utils.assert_CML(request, [self.t], ("cube_slice", "2d_orig.cml"))
 
     def test_overspecified(self):
-        pytest.raises(IndexError, self.t.__getitem__, (0, 0, Ellipsis, 0))
-        pytest.raises(IndexError, self.t.__getitem__, (0, 0, 0))
+        with pytest.raises(IndexError, match="More slices requested than dimensions"):
+            _ = self.t[0, 0, Ellipsis, 0]
+        with pytest.raises(IndexError, match="More slices requested than dimensions"):
+            _ = self.t[0, 0, 0]
 
     def test_ellipsis(self, request):
         _shared_utils.assert_CML(
@@ -703,7 +706,8 @@ class Test2dSlicing(TestCube2d):
         )
 
     def test_cube_slice_zero_len_slice(self):
-        pytest.raises(IndexError, self.t.__getitem__, (slice(0, 0)))
+        with pytest.raises(IndexError, match="Cannot index with zero length slice"):
+            _ = self.t[0:0]
 
     def test_cube_slice_with_non_existant_coords(self):
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
@@ -1176,16 +1180,11 @@ class TestDataManagerIndexing(TestCube2d):
             request, cube, ("cube_slice", "real_data_dual_tuple_indexing3.cml")
         )
 
-        pytest.raises(
-            IndexError,
-            self.cube.__getitem__,
-            ((0, 4, 5, 2), (3, 5, 5), 0, 0, 4),
-        )
-        pytest.raises(
-            IndexError,
-            self.cube.__getitem__,
-            (Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis, Ellipsis),
-        )
+        with pytest.raises(IndexError, match="More slices requested than dimensions"):
+            _ = self.cube[(0, 4, 5, 2), (3, 5, 5), 0, 0, 4]
+        six_ellipsis = [Ellipsis] * 6
+        with pytest.raises(IndexError, match="More slices requested than dimensions"):
+            _ = self.cube[*six_ellipsis]
 
     def test_fancy_indexing_bool_array(self):
         cube = self.cube

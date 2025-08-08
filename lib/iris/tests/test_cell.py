@@ -40,7 +40,8 @@ class TestCells:
             units="1",
             bounds=np.arange(48).reshape(3, 4, 4),
         )
-        pytest.raises(IndexError, coord.cell, 0)
+        with pytest.raises(IndexError, match="did not uniquely identify"):
+            coord.cell(0)
         assert Cell(point=3, bound=(12, 13, 14, 15)) == coord.cell((0, 3))
 
     def test_mod(self):
@@ -62,7 +63,8 @@ class TestCells:
         assert c.contains_point(359.49951)
 
     def test_pointless(self):
-        pytest.raises(ValueError, iris.coords.Cell, None, (359.49951, 359.5004))
+        with pytest.raises(ValueError, match="Point must be defined"):
+            iris.coords.Cell(None, (359.49951, 359.5004))
 
     def test_add(self):
         # Check that applying the mod function is not modifying the original

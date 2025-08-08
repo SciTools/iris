@@ -49,4 +49,5 @@ class Test_get_xy_grids:
             iris.coords.AuxCoord(np.arange(100, 160).reshape(5, 3, 4), "longitude"),
             (0, 1, 2),
         )
-        pytest.raises(ValueError, iris.analysis.cartography.get_xy_grids, cube)
+        with pytest.raises(ValueError, match="Expected 1D or 2D XY coords"):
+            _ = iris.analysis.cartography.get_xy_grids(cube)
