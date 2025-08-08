@@ -3,17 +3,16 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import importlib
 import pathlib
+
+import pytest
 
 BASE = pathlib.Path("..")
 IGNORE = ["__init__.py", "__pycache__", "pandas.py", "raster.py", "tests"]
 
 
-class TestImports(tests.IrisTest):
+class TestImports:
     @staticmethod
     def itree(path, prefix=None, debug=False):
         if prefix is None:
@@ -36,8 +35,7 @@ class TestImports(tests.IrisTest):
                 try:
                     importlib.import_module(package)
                 except (ImportError, ModuleNotFoundError):
-                    print(emsg.format(package))
-                    raise
+                    pytest.fail(emsg.format(package))
                 for child in children:
                     parent = f"{prefix}.{child.stem}" if child.is_dir() else prefix
                     TestImports.itree(child, prefix=parent, debug=debug)
@@ -48,12 +46,7 @@ class TestImports(tests.IrisTest):
             try:
                 importlib.import_module(package)
             except (ImportError, ModuleNotFoundError):
-                print(emsg.format(package))
-                raise
+                pytest.fail(emsg.format(package))
 
     def test_imports(self):
         self.itree(BASE, debug=False)
-
-
-if __name__ == "__main__":
-    tests.main()
