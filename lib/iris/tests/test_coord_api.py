@@ -114,7 +114,8 @@ class TestCoordIntersection:
         # Coordinates which do not share common points but with common
         # bounds should fail
         self.a.points = self.a.points + 200
-        pytest.raises(ValueError, self.a.intersect, self.b)
+        with pytest.raises(ValueError, match="No intersection between"):
+            self.a.intersect(self.b)
 
     def test_intersection_one_fewer_upper_bound_than_lower(self):
         self.b.bounds[4, 1] = self.b.bounds[0, 1]
@@ -128,17 +129,20 @@ class TestCoordIntersection:
         a = self.a.copy()
         a.bounds = None
         a.guess_bounds(bound_position=0.25)
-        pytest.raises(ValueError, a.intersect, self.b)
+        with pytest.raises(ValueError, match="No intersection between"):
+            a.intersect(self.b)
 
     def test_no_intersection_on_name(self):
         # Coordinates which do not share the same name should fail
         self.a.long_name = "foobar"
-        pytest.raises(ValueError, self.a.intersect, self.b)
+        with pytest.raises(ValueError, match="differing metadata"):
+            self.a.intersect(self.b)
 
     def test_no_intersection_on_unit(self):
         # Coordinates which do not share the same unit should fail
         self.a.units = "kilometer"
-        pytest.raises(ValueError, self.a.intersect, self.b)
+        with pytest.raises(ValueError, match="differing metadata"):
+            self.a.intersect(self.b)
 
     @_shared_utils.skip_data
     def test_commutative(self):
