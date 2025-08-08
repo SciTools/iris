@@ -4,20 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the intersection of Coords."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 
 import iris
 import iris.coord_systems
 import iris.coords
 import iris.cube
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
-class TestCubeIntersectTheoretical(tests.IrisTest):
-    def test_simple_intersect(self):
+class TestCubeIntersectTheoretical:
+    def test_simple_intersect(self, request):
         cube = iris.cube.Cube(
             np.array(
                 [
@@ -94,10 +92,12 @@ class TestCubeIntersectTheoretical(tests.IrisTest):
         cube2.rename("")
 
         r = iris.analysis.maths.intersection_of_cubes(cube, cube2)
-        self.assertCML(r, ("cdm", "test_simple_cube_intersection.cml"))
+        _shared_utils.assert_CML(
+            request, r, ("cdm", "test_simple_cube_intersection.cml")
+        )
 
 
-class TestCoordIntersect(tests.IrisTest):
+class TestCoordIntersect:
     def test_commutative(self):
         step = 4.0
         c1 = iris.coords.DimCoord(np.arange(100) * step)
@@ -107,8 +107,4 @@ class TestCoordIntersect(tests.IrisTest):
 
         i1 = c1.intersect(c2)
         i2 = c2.intersect(c1)
-        self.assertEqual(i1, i2)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert i1 == i2
