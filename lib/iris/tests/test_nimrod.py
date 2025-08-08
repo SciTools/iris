@@ -3,15 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris
 from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules as nimrod_load_rules
+from iris.tests import _shared_utils
 
 
 def mock_nimrod_field():
@@ -21,12 +19,12 @@ def mock_nimrod_field():
     return field
 
 
-class TestLoad(tests.IrisTest):
-    @tests.skip_data
-    def test_multi_field_load(self):
+class TestLoad:
+    @_shared_utils.skip_data
+    def test_multi_field_load(self, request):
         # load a cube with two fields
         cube = iris.load(
-            tests.get_data_path(
+            _shared_utils.get_data_path(
                 (
                     "NIMROD",
                     "uk2km",
@@ -35,10 +33,10 @@ class TestLoad(tests.IrisTest):
                 )
             )
         )
-        self.assertCML(cube, ("nimrod", "load_2flds.cml"))
+        _shared_utils.assert_CML(request, cube, ("nimrod", "load_2flds.cml"))
 
-    @tests.skip_data
-    def test_huge_field_load(self):
+    @_shared_utils.skip_data
+    def test_huge_field_load(self, request):
         # load a wide range of cubes with all meta-data variations
         for datafile in {
             "u1096_ng_ek07_precip0540_accum180_18km",
@@ -72,22 +70,22 @@ class TestLoad(tests.IrisTest):
             "probability_fields",
         }:
             cube = iris.load(
-                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile))
+                _shared_utils.get_data_path(("NIMROD", "uk2km", "cutouts", datafile))
             )
-            self.assertCML(cube, ("nimrod", f"{datafile}.cml"))
+            _shared_utils.assert_CML(request, cube, ("nimrod", f"{datafile}.cml"))
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_load_kwarg(self):
         """Tests that the handle_metadata_errors kwarg is effective by setting it to
         False with a file with known incomplete meta-data (missing ellipsoid).
         """
         datafile = "u1096_ng_ek00_pressure_2km"
-        with self.assertRaisesRegex(
+        with pytest.raises(
             TranslationError,
-            "Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
+            match="Ellipsoid not supported, proj_biaxial_ellipsoid:-32767, horizontal_grid_type:0",
         ):
             with open(
-                tests.get_data_path(("NIMROD", "uk2km", "cutouts", datafile)),
+                _shared_utils.get_data_path(("NIMROD", "uk2km", "cutouts", datafile)),
                 "rb",
             ) as infile:
                 iris.fileformats.nimrod_load_rules.run(
@@ -95,7 +93,7 @@ class TestLoad(tests.IrisTest):
                     handle_metadata_errors=False,
                 )
 
-    def test_orography(self):
+    def test_orography(self, request):
         # Mock an orography field we've seen.
         field = mock_nimrod_field()
         cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
@@ -121,9 +119,9 @@ class TestLoad(tests.IrisTest):
         nimrod_load_rules.vertical_coord(cube, field)
         nimrod_load_rules.attributes(cube, field)
 
-        self.assertCML(cube, ("nimrod", "mockography.cml"))
+        _shared_utils.assert_CML(request, cube, ("nimrod", "mockography.cml"))
 
-    def test_levels_below_ground(self):
+    def test_levels_below_ground(self, request):
         # Mock a soil temperature field we've seen.
         field = mock_nimrod_field()
         cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
@@ -135,9 +133,9 @@ class TestLoad(tests.IrisTest):
         field.vertical_coord = 42
         nimrod_load_rules.vertical_coord(cube, field)
 
-        self.assertCML(cube, ("nimrod", "levels_below_ground.cml"))
+        _shared_utils.assert_CML(request, cube, ("nimrod", "levels_below_ground.cml"))
 
-    def test_period_of_interest(self):
+    def test_period_of_interest(self, request):
         # mock a pressure field
         field = mock_nimrod_field()
         cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
@@ -159,8 +157,4 @@ class TestLoad(tests.IrisTest):
 
         nimrod_load_rules.time(cube, field)
 
-        self.assertCML(cube, ("nimrod", "period_of_interest.cml"))
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_CML(request, cube, ("nimrod", "period_of_interest.cml"))
