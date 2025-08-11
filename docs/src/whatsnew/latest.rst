@@ -70,7 +70,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@rcomer`_ updated all Cartopy references to point to the new location at
+   https://cartopy.readthedocs.io (:pull:`6636`)
 
 
 💼 Internal
