@@ -212,13 +212,13 @@ class Test__assert_axioms:
         self.dm._real_array = None
         self.dm._shape = None
         emsg = "Unexpected data state, got no lazy or real data, and no shape."
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.dm._assert_axioms()
 
     def test_array_all(self):
         self.dm._lazy_array = self.lazy_array
         emsg = "Unexpected data state, got both lazy and real data."
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             self.dm._assert_axioms()
 
 
@@ -275,25 +275,25 @@ class Test__deepcopy:
     def test_real_with_real_failure(self):
         dm = DataManager(self.real_array)
         emsg = "Cannot copy"
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_real_with_lazy_failure(self):
         dm = DataManager(self.real_array)
         emsg = "Cannot copy"
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
     def test_lazy_with_real_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
         emsg = "Cannot copy"
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             dm._deepcopy(self.memo, data=np.array(0))
 
     def test_lazy_with_lazy_failure(self):
         dm = DataManager(as_lazy_data(self.real_array))
         emsg = "Cannot copy"
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             dm._deepcopy(self.memo, data=as_lazy_data(np.array(0)))
 
 
@@ -453,7 +453,7 @@ class Test_data__setter:
     def test_scalar_1d_to_zero_ndim_fail(self):
         dm = DataManager(np.array([123]))
         emsg = r"Require data with shape \(1,\), got \(\)."
-        with pytest.raises(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             dm.data = 456
 
     def test_nd_real_to_nd_real(self):
