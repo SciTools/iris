@@ -4,16 +4,14 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.experimental.stratify.relevel` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from functools import partial
 
 import numpy as np
 from numpy.testing import assert_array_equal
+import pytest
 
 from iris.coords import AuxCoord, DimCoord
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 
 try:
@@ -24,9 +22,10 @@ except ImportError:
     stratify = None
 
 
-@tests.skip_stratify
-class Test(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_stratify
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = stock.simple_3d()[:, :1, :1]
         #: The data from which to get the levels.
         self.src_levels = cube.copy()
@@ -40,13 +39,13 @@ class Test(tests.IrisTest):
     def test_broadcast_fail_src_levels(self):
         emsg = "Cannot broadcast the cube and src_levels"
         data = np.arange(60).reshape(3, 4, 5)
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             relevel(self.cube, AuxCoord(data), [1, 2, 3])
 
     def test_broadcast_fail_tgt_levels(self):
         emsg = "Cannot broadcast the cube and tgt_levels"
         data = np.arange(60).reshape(3, 4, 5)
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             relevel(self.cube, self.coord, data)
 
     def test_standard_input(self):
@@ -54,14 +53,14 @@ class Test(tests.IrisTest):
             result = relevel(self.cube, self.src_levels, [-1, 0, 5.5], axis=axis)
             assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 55]))
             expected = DimCoord([-1, 0, 5.5], units=1, long_name="thingness")
-            self.assertEqual(expected, result.coord("thingness"))
+            assert expected == result.coord("thingness")
 
     def test_non_monotonic(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [2, 3, 2], axis=axis)
             assert_array_equal(result.data.flatten(), np.array([20, 30, np.nan]))
             expected = AuxCoord([2, 3, 2], units=1, long_name="thingness")
-            self.assertEqual(result.coord("thingness"), expected)
+            assert result.coord("thingness") == expected
 
     def test_static_level(self):
         for axis in self.axes:
@@ -77,7 +76,7 @@ class Test(tests.IrisTest):
 
         for axis in self.axes:
             result = relevel(self.cube, source, [0, 12, 13], axis=axis)
-            self.assertEqual(result.shape, (3, 1, 1))
+            assert result.shape == (3, 1, 1)
             assert_array_equal(result.data.flatten(), [0, 120, np.nan])
 
     def test_custom_interpolator(self):
@@ -93,7 +92,7 @@ class Test(tests.IrisTest):
             )
             assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 120]))
 
-    def test_multi_dim_target_levels(self):
+    def test_multi_dim_target_levels(self, request):
         interpolator = partial(
             stratify.interpolate,
             interpolation="linear",
@@ -109,8 +108,4 @@ class Test(tests.IrisTest):
                 interpolator=interpolator,
             )
             assert_array_equal(result.data.flatten(), np.array([0, 120]))
-            self.assertCML(result)
-
-
-if __name__ == "__main__":
-    tests.main()
+            _shared_utils.assert_CML(request, result)
