@@ -50,16 +50,16 @@ class Test___deepcopy__:
         dm = DataManager(np.array(0))
         method = "iris._data_manager.DataManager._deepcopy"
         return_value = mocker.sentinel.return_value
-        with mocker.patch(method) as mocked:
-            mocked.return_value = return_value
-            result = copy.deepcopy(dm)
-            assert mocked.call_count == 1
-            [args], kwargs = mocked.call_args
-            assert kwargs == dict()
-            assert len(args) == 2
-            expected = [return_value, [dm]]
-            for item in args.values():
-                assert item in expected
+        mocked = mocker.patch(method)
+        mocked.return_value = return_value
+        result = copy.deepcopy(dm)
+        assert mocked.call_count == 1
+        [args], kwargs = mocked.call_args
+        assert kwargs == dict()
+        assert len(args) == 2
+        expected = [return_value, [dm]]
+        for item in args.values():
+            assert item in expected
         assert result is return_value
 
 
@@ -641,10 +641,10 @@ class Test_copy:
     def test(self, mocker):
         dm = DataManager(np.array(0))
         kwargs = dict(data=self.data)
-        with mocker.patch(self.method) as mocked:
-            mocked.return_value = self.return_value
-            result = dm.copy(data=self.data)
-            mocked.assert_called_once_with(self.memo, **kwargs)
+        mocked = mocker.patch(self.method)
+        mocked.return_value = self.return_value
+        result = dm.copy(data=self.data)
+        mocked.assert_called_once_with(self.memo, **kwargs)
         assert result is self.return_value
 
 
