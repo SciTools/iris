@@ -48,7 +48,7 @@ class TestCaching:
 @_shared_utils.skip_data
 class TestCFReader:
     @pytest.fixture(autouse=True)
-    def set_up(self):
+    def _setup(self):
         filename = _shared_utils.get_data_path(
             ("NetCDF", "rotated", "xyt", "small_rotPole_precipitation.nc")
         )
@@ -301,7 +301,7 @@ class TestLoad:
 @_shared_utils.skip_data
 class TestClimatology:
     @pytest.fixture(autouse=True)
-    def set_up(self):
+    def _setup(self):
         filename = _shared_utils.get_data_path(
             (
                 "NetCDF",
@@ -327,7 +327,7 @@ class TestClimatology:
 @_shared_utils.skip_data
 class TestLabels:
     @pytest.fixture(autouse=True)
-    def set_up(self):
+    def _setup(self):
         filename = _shared_utils.get_data_path(
             (
                 "NetCDF",
