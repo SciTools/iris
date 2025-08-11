@@ -598,19 +598,21 @@ def assert_logs(caplog, logger=None, level=None, msg_regex=None):
     just to check that there are no formatting errors.
 
     """
+    caplog_count = len(caplog.records)
     with caplog.at_level(level, logger.name):
-        assert len(caplog.records) != 0
-        # Check for any formatting errors by running all the formatters.
-        for record in caplog.records:
-            for handler in caplog.logger.handlers:
-                handler.format(record)
+        yield
 
-        # Check message, if requested.
-        if msg_regex:
-            assert len(caplog.records) == 1
-            rec = caplog.records[0]
-            assert level == rec.levelname
-            assert re.match(msg_regex, rec.msg)
+    assert len(caplog.records) > caplog_count
+    # Check for any formatting errors by running all the formatters.
+    for record in caplog.records:
+        # for handler in caplog.logger.handlers:
+        caplog.handler.format(record)
+
+    # Check message, if requested.
+    if msg_regex:
+        rec = caplog.records[-1]
+        assert level == rec.levelname
+        assert re.match(msg_regex, rec.msg)
 
 
 @contextlib.contextmanager
