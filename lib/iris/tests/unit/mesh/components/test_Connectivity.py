@@ -140,7 +140,8 @@ class TestStandard:
         assert different != self.connectivity
 
     def test_no_cube_dims(self):
-        pytest.raises(NotImplementedError, self.connectivity.cube_dims, 1)
+        with pytest.raises(NotImplementedError):
+            self.connectivity.cube_dims(1)
 
     def test_shape(self):
         assert self.kwargs["indices"].shape == self.connectivity.shape
