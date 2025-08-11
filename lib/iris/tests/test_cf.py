@@ -327,7 +327,7 @@ class TestClimatology:
 @_shared_utils.skip_data
 class TestLabels:
     @pytest.fixture(autouse=True)
-    def set_up(self):
+    def _setup(self):
         filename = _shared_utils.get_data_path(
             (
                 "NetCDF",
