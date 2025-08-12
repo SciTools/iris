@@ -15,7 +15,7 @@ import iris.coord_categorisation as ccat
 import iris.coords
 import iris.cube
 import iris.exceptions
-from iris.tests import IrisTest
+from iris.tests import _shared_utils
 from iris.warnings import IrisSaveWarning
 
 
@@ -108,7 +108,7 @@ def test_explicit_result_names(cube, categorisation_func):
     assert len(result_coords) == 1, fmt.format(categorisation_func.__name__)
 
 
-def test_basic(cube, time_coord):
+def test_basic(cube, time_coord, request):
     ccat.add_year(cube, time_coord, "my_year")
     ccat.add_day_of_month(cube, time_coord, "my_day_of_month")
     ccat.add_day_of_year(cube, time_coord, "my_day_of_year")
@@ -142,16 +142,16 @@ def test_basic(cube, time_coord):
             coord.points = coord.points.astype(np.int64)
 
     # check values
-    IrisTest.assertCML(IrisTest(), cube, ("categorisation", "quickcheck.cml"))
+    _shared_utils.assert_CML(request, cube, ("categorisation", "quickcheck.cml"))
 
 
-def test_add_season_nonstandard(cube, time_coord):
+def test_add_season_nonstandard(cube, time_coord, request):
     # season categorisations work for non-standard seasons?
     seasons = ["djfm", "amjj", "ason"]
     ccat.add_season(cube, time_coord, name="seasons", seasons=seasons)
     ccat.add_season_number(cube, time_coord, name="season_numbers", seasons=seasons)
     ccat.add_season_year(cube, time_coord, name="season_years", seasons=seasons)
-    IrisTest.assertCML(IrisTest(), cube, ("categorisation", "customcheck.cml"))
+    _shared_utils.assert_CML(request, cube, ("categorisation", "customcheck.cml"))
 
 
 @pytest.mark.parametrize("backwards", [None, False, True])
@@ -201,7 +201,7 @@ def test_add_season_year(cube, time_coord, backwards, nonstandard):
     # Subset to just the 'season' of interest.
     actual_years = actual_years[season_slice]
 
-    np.testing.assert_array_almost_equal(actual_years, expected_years)
+    _shared_utils.assert_array_almost_equal(actual_years, expected_years)
 
 
 def test_add_season_membership(cube):
@@ -213,7 +213,7 @@ def test_add_season_membership(cube):
     coord_membership = cube.coord("in_season")
     season_locations = np.where(coord_season.points == season)[0]
     membership_locations = np.where(coord_membership.points)[0]
-    np.testing.assert_array_almost_equal(membership_locations, season_locations)
+    _shared_utils.assert_array_almost_equal(membership_locations, season_locations)
 
 
 def test_add_season_invalid_spec(cube, season_cat_func):
