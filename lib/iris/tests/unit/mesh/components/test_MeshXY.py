@@ -1165,7 +1165,7 @@ class TestOperations2D(TestOperations1D):
             assert axis == coord.axis
 
 
-class InitValidation(TestMeshCommon):
+class TestInitValidation(TestMeshCommon):
     def test_invalid_topology(self):
         kwargs = {
             "topology_dimension": 0,
