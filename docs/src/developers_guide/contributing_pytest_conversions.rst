@@ -39,6 +39,23 @@ Conversion Checklist
       def _setup(self):
          ...
 
+#. Check for references to ``super()``. Most test classes used to inherit from
+   :class:`iris.tests.IrisTest`, so references to this should be removed. Any
+   inheritance patterns in ``_setup()`` (see above) can be achieved by
+   'chaining' fixtures; note that each setup fixture needs a unique name:
+
+   .. code-block:: python
+
+      class TestFoo:
+          @pytest.fixture(autouse=True)
+          def _setup_foo(self):
+              ...
+
+      class TestBar(TestFoo):
+          @pytest.fixture(autouse=True)
+          def _setup(self, _setup_foo):
+              ...
+
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for ``mock.patch("warnings.warn")``. This can be replaced with
    ``pytest.warns(match=message)``.
@@ -49,10 +66,9 @@ Conversion Checklist
    the `monkeypatch`_ fixture to provide a context-manager.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
-#. Check for references to ``super()``. Most test classes used to inherit from
-   :class:`iris.tests.IrisTest`, so references to this should be removed.
-#. Check for references to ``self.tmp_dir``. In pytest, ``tmp_path`` is used instead,
-   and can be passed into functions as a fixture.
+#. Check for references to ``self.tmp_dir`` and ``self.temp_filename``. In
+   pytest, ``tmp_path`` is used instead, and can be passed into functions as a
+   fixture.
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
 #. Remove the top-level import of :mod:`iris.tests` (usually ``import iris.tests as tests``).
    Having followed the above steps, any remaining calls 

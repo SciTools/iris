@@ -4,50 +4,48 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.CubeRepresentation` class."""
 
-import pytest
-
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from html import escape
 
 import numpy as np
+import pytest
 
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod
 from iris.cube import Cube
 from iris.experimental.representation import CubeRepresentation
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.tests.stock.mesh import sample_mesh
 
 
-@tests.skip_data
-class Test__instantiation(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__instantiation:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
 
     def test_cube_attributes(self):
-        self.assertEqual(id(self.cube), self.representer.cube_id)
+        assert id(self.cube) == self.representer.cube_id
 
 
-@tests.skip_data
-class Test__get_dim_names(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__get_dim_names:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.realistic_4d()
         self.dim_names = [c.name() for c in self.cube.coords(dim_coords=True)]
         self.representer = CubeRepresentation(self.cube)
 
     def test_basic(self):
         result_names = self.representer._get_dim_names()
-        self.assertEqual(result_names, self.dim_names)
+        assert result_names == self.dim_names
 
     def test_one_anonymous_dim(self):
         self.cube.remove_coord("time")
         expected_names = ["--"]
         expected_names.extend(self.dim_names[1:])
         result_names = self.representer._get_dim_names()
-        self.assertEqual(result_names, expected_names)
+        assert result_names == expected_names
 
     def test_anonymous_dims(self):
         target_dims = [1, 3]
@@ -60,12 +58,13 @@ class Test__get_dim_names(tests.IrisTest):
             self.cube.remove_coord(this_dim_coord)
             expected_names[dim] = "--"
         result_names = self.representer._get_dim_names()
-        self.assertEqual(result_names, expected_names)
+        assert result_names == expected_names
 
 
-@tests.skip_data
-class Test__summary_content(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__summary_content:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.lat_lon_cube()
         # Check we're not tripped up by names containing spaces.
         self.cube.rename("Electron density (&<html>)")
@@ -76,7 +75,7 @@ class Test__summary_content(tests.IrisTest):
         # Check the cube name is being set and formatted correctly.
         expected = escape(self.cube.name().replace("_", " ").title())
         result = self.representer.name
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_names(self):
         # Check the dimension names used as column headings are split out and
@@ -86,25 +85,25 @@ class Test__summary_content(tests.IrisTest):
         ]
         result_coord_names = self.representer.names[1:]
         for result in result_coord_names:
-            self.assertIn(result, expected_coord_names)
+            assert result in expected_coord_names
 
     def test_units(self):
         # Check the units is being set correctly.
         expected = self.cube.units
         result = self.representer.units
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_shapes(self):
         # Check cube dim lengths are split out correctly from the
         # summary string.
         expected = self.cube.shape
         result = self.representer.shapes
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_ndims(self):
         expected = self.cube.ndim
         result = self.representer.ndims
-        self.assertEqual(expected, result)
+        assert expected == result
 
 
 @pytest.fixture
@@ -121,7 +120,7 @@ def realistic_4d():
     return cube
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 def test_realistic(realistic_4d):
     representer = CubeRepresentation(realistic_4d)
     result = representer._make_content()
@@ -280,9 +279,10 @@ def test_realistic(realistic_4d):
     assert expected == result
 
 
-@tests.skip_data
-class Test__make_header(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__make_header:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
         self.header_emts = self.representer._make_header().split("\n")
@@ -295,44 +295,46 @@ class Test__make_header(tests.IrisTest):
         expected = "{name} ({units})".format(
             name=self.cube.name(), units=self.cube.units
         )
-        self.assertIn(expected.lower(), name_and_units_cell.lower())
+        assert expected.lower() in name_and_units_cell.lower()
 
     def test_number_of_columns(self):
         # There should be one headings column, plus a column per dimension.
         # Ignore opening and closing <tr> tags.
         result_cols = self.header_emts[1:-1]
         expected = self.cube.ndim + 1
-        self.assertEqual(len(result_cols), expected)
+        assert len(result_cols) == expected
 
     def test_row_headings(self):
         # Get only the dimension heading cells and not the headings column.
         dim_coord_names = [c.name() for c in self.cube.coords(dim_coords=True)]
         dim_col_headings = self.header_emts[2:-1]
         for coord_name, col_heading in zip(dim_coord_names, dim_col_headings):
-            self.assertIn(coord_name, col_heading)
+            assert coord_name in col_heading
 
 
-@tests.skip_data
-class Test__make_shapes_row(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__make_shapes_row:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
         self.result = self.representer._make_shapes_row().split("\n")
 
     def test_row_title(self):
         title_cell = self.result[1]
-        self.assertIn("Shape", title_cell)
+        assert "Shape" in title_cell
 
     def test_shapes(self):
         expected_shapes = self.cube.shape
         result_shapes = self.result[2:-1]
         for expected, result in zip(expected_shapes, result_shapes):
-            self.assertIn(str(expected), result)
+            assert str(expected) in result
 
 
-@tests.skip_data
-class Test__make_row(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__make_row:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         cm = CellMethod("mean", "time", "6hr")
         self.cube.add_cell_method(cm)
@@ -344,12 +346,12 @@ class Test__make_row(tests.IrisTest):
         # A cell for the title, an empty cell for each cube dimension, plus row
         # opening and closing tags.
         expected_len = self.cube.ndim + 3
-        self.assertEqual(len(row), expected_len)
+        assert len(row) == expected_len
         # Check for specific content.
         row_str = "\n".join(element for element in row)
-        self.assertIn(title.strip(":"), row_str)
+        assert title.strip(":") in row_str
         expected_html_class = "iris-title"
-        self.assertIn(expected_html_class, row_str)
+        assert expected_html_class in row_str
 
     def test__inclusion_row(self):
         # An inclusion row has x/- to indicate whether a coordinate describes
@@ -360,18 +362,18 @@ class Test__make_row(tests.IrisTest):
         # A cell for the title, a cell for each cube dimension, plus row
         # opening and closing tags.
         expected_len = len(body) + 3
-        self.assertEqual(len(row), expected_len)
+        assert len(row) == expected_len
         # Check for specific content.
         row_str = "\n".join(element for element in row)
-        self.assertIn(title, row_str)
-        self.assertIn("x", row_str)
-        self.assertIn("-", row_str)
+        assert title in row_str
+        assert "x" in row_str
+        assert "-" in row_str
         expected_html_class_1 = "iris-word-cell"
         expected_html_class_2 = "iris-inclusion-cell"
-        self.assertIn(expected_html_class_1, row_str)
-        self.assertIn(expected_html_class_2, row_str)
+        assert expected_html_class_1 in row_str
+        assert expected_html_class_2 in row_str
         # We do not expect a colspan to be set.
-        self.assertNotIn("colspan", row_str)
+        assert "colspan" not in row_str
 
     def test__attribute_row(self):
         # An attribute row does not contain inclusion indicators.
@@ -382,19 +384,20 @@ class Test__make_row(tests.IrisTest):
         # We only expect two cells here: the row title cell and one other cell
         # that spans a number of columns. We also need to open and close the
         # tr html element, giving 4 bits making up the row.
-        self.assertEqual(len(row), 4)
+        assert len(row) == 4
         # Check for specific content.
         row_str = "\n".join(element for element in row)
-        self.assertIn(title, row_str)
-        self.assertIn(body, row_str)
+        assert title in row_str
+        assert body in row_str
         # We expect a colspan to be set.
         colspan_str = 'colspan="{}"'.format(colspan)
-        self.assertIn(colspan_str, row_str)
+        assert colspan_str in row_str
 
 
-@tests.skip_data
-class Test__make_content(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test__make_content:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         self.representer = CubeRepresentation(self.cube)
         self.result = self.representer._make_content()
@@ -424,45 +427,43 @@ class Test__make_content(tests.IrisTest):
 
     def test_included(self):
         included = "Dimension coordinates"
-        self.assertIn(included, self.result)
+        assert included in self.result
         dim_coord_names = [c.name() for c in self.cube.dim_coords]
         for coord_name in dim_coord_names:
-            self.assertIn(coord_name, self.result)
+            assert coord_name in self.result
 
     def test_not_included(self):
         # `stock.simple_3d()` only contains the `Dimension coordinates` attr.
         not_included = list(self.sections_keys)
         not_included.pop(not_included.index("Dimension coordinates:"))
         for heading in not_included:
-            self.assertNotIn(heading, self.result)
+            assert heading not in self.result
 
     def test_mesh_included(self):
         # self.mesh_cube contains a `Mesh coordinates` section.
-        self.assertIn(
-            '<td class="iris-title iris-word-cell">Mesh coordinates</td>',
-            self.mesh_result,
+        assert (
+            '<td class="iris-title iris-word-cell">Mesh coordinates</td>'
+            in self.mesh_result
         )
         # and a `Mesh:` section.
-        self.assertIn(
-            '<td class="iris-title iris-word-cell">Mesh</td>', self.mesh_result
-        )
+        assert '<td class="iris-title iris-word-cell">Mesh</td>' in self.mesh_result
         mesh_coord_names = [c.name() for c in self.mesh_cube.coords(mesh_coords=True)]
         for coord_name in mesh_coord_names:
-            self.assertIn(coord_name, self.result)
+            assert coord_name in self.result
 
     def test_mesh_not_included(self):
         # self.mesh_cube _only_ contains a `Mesh coordinates` section.
         not_included = list(self.sections_keys)
         not_included.pop(not_included.index("Mesh coordinates:"))
         for heading in not_included:
-            self.assertNotIn(heading, self.result)
+            assert heading not in self.result
 
-    def test_mesh_result(self):
+    def test_mesh_result(self, request):
         # A plain snapshot of a simple meshcube case.
-        self.assertString(self.mesh_result)
+        _shared_utils.assert_string(request, self.mesh_result)
 
 
-class Test__make_content__string_attrs(tests.IrisTest):
+class Test__make_content__string_attrs:
     # Check how we handle "multi-line" string attributes.
     # NOTE: before the adoption of iris._representation.CubeSummary, these
     # used to appear as extra items in sections_data, identifiable by
@@ -479,24 +480,24 @@ class Test__make_content__string_attrs(tests.IrisTest):
         result = representer._make_content()
         return result
 
-    def test_simple_string_attribute(self):
+    def test_simple_string_attribute(self, request):
         html = self._cube_stringattribute_html("single-string", "single string")
-        self.assertString(html)
+        _shared_utils.assert_string(request, html)
 
-    def test_long_string_attribute(self):
+    def test_long_string_attribute(self, request):
         attr = "long string.. " * 20
         html = self._cube_stringattribute_html("long-string", attr)
-        self.assertString(html)
+        _shared_utils.assert_string(request, html)
 
-    def test_embedded_newlines_string_attribute(self):
+    def test_embedded_newlines_string_attribute(self, request):
         attr = "string\nwith\nnewlines"
         html = self._cube_stringattribute_html("newlines-string", attr)
-        self.assertString(html)
+        _shared_utils.assert_string(request, html)
 
-    def test_multi_string_attribute(self):
+    def test_multi_string_attribute(self, request):
         attr = ["vector", "of", "strings"]
         html = self._cube_stringattribute_html("multi-string", attr)
-        self.assertString(html)
+        _shared_utils.assert_string(request, html)
 
     def test_coord_distinguishing_attributes(self):
         # Printout of differing attributes to differentiate same-named coords.
@@ -541,7 +542,7 @@ class Test__make_content__string_attrs(tests.IrisTest):
             '    <td class="iris-word-cell" colspan="1">1</td>\n'
             "</tr>"
         )
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_coord_extra_attributes__array(self):
         cube = Cube(0, long_name="name", units=1)
@@ -572,7 +573,7 @@ class Test__make_content__string_attrs(tests.IrisTest):
             '    <td class="iris-word-cell" colspan="0">3.4</td>\n'
             "</tr>"
         )
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_coord_extra_attributes__array__long(self):
         # Also test with a long array representation.
@@ -600,7 +601,7 @@ class Test__make_content__string_attrs(tests.IrisTest):
             '    <td class="iris-word-cell" colspan="0">2</td>\n'
             "</tr>"
         )
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_coord_extra_attributes__string_escaped(self):
         cube = Cube(0, long_name="name", units=1)
@@ -629,22 +630,19 @@ class Test__make_content__string_attrs(tests.IrisTest):
             '    <td class="iris-word-cell" colspan="0">2</td>\n'
             "</tr>"
         )
-        self.assertEqual(result, expected)
+        assert result == expected
 
 
-@tests.skip_data
-class Test_repr_html(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test_repr_html:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         representer = CubeRepresentation(self.cube)
         self.result = representer.repr_html()
 
     def test_contents_added(self):
         included = "Dimension coordinates"
-        self.assertIn(included, self.result)
+        assert included in self.result
         not_included = "Auxiliary coordinates"
-        self.assertNotIn(not_included, self.result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert not_included not in self.result

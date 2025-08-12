@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridConnectivityVariable`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import re
 import warnings
 
@@ -25,7 +21,7 @@ def named_variable(name):
     return netcdf_variable(name, "", int)
 
 
-class TestIdentify(tests.IrisTest):
+class TestIdentify:
     def test_cf_identities(self):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
@@ -43,7 +39,7 @@ class TestIdentify(tests.IrisTest):
             setattr(ref_source, identity, subject_name)
             vars_all = dict({"ref_source": ref_source}, **vars_common)
             result = CFUGridConnectivityVariable.identify(vars_all)
-            self.assertDictEqual(expected, result)
+            assert expected == result
 
     def test_duplicate_refs(self):
         subject_name = "ref_subject"
@@ -66,7 +62,7 @@ class TestIdentify(tests.IrisTest):
             subject_name: CFUGridConnectivityVariable(subject_name, ref_subject)
         }
         result = CFUGridConnectivityVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_cf_roles(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -89,7 +85,7 @@ class TestIdentify(tests.IrisTest):
             for name, var in ref_subject_vars.items()
         }
         result = CFUGridConnectivityVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_part_ref_ignored(self):
         # Not expected to handle more than one variable for a connectivity
@@ -104,7 +100,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         result = CFUGridConnectivityVariable.identify(vars_all)
-        self.assertDictEqual({}, result)
+        assert {} == result
 
     def test_string_type_ignored(self):
         subject_name = "ref_subject"
@@ -117,7 +113,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         result = CFUGridConnectivityVariable.identify(vars_all)
-        self.assertDictEqual({}, result)
+        assert {} == result
 
     def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -142,7 +138,7 @@ class TestIdentify(tests.IrisTest):
             )
         }
         result = CFUGridConnectivityVariable.identify(vars_all, ignore=subject_names[1])
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -166,7 +162,7 @@ class TestIdentify(tests.IrisTest):
             )
         }
         result = CFUGridConnectivityVariable.identify(vars_all, target=source_names[0])
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_warn(self):
         subject_name = "ref_subject"
@@ -183,7 +179,7 @@ class TestIdentify(tests.IrisTest):
                 category=iris.warnings.IrisUserWarning,
             )
             result = CFUGridConnectivityVariable.identify(vars_all, warn=warn)
-            self.assertDictEqual({}, result)
+            assert {} == result
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID connectivity variable {subject_name}.*"
