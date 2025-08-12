@@ -605,7 +605,6 @@ def assert_logs(caplog, logger=None, level=None, msg_regex=None):
     assert len(caplog.records) > caplog_count
     # Check for any formatting errors by running all the formatters.
     for record in caplog.records:
-        # for handler in caplog.logger.handlers:
         caplog.handler.format(record)
 
     # Check message, if requested.
