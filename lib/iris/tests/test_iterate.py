@@ -24,7 +24,7 @@ from iris.warnings import IrisUserWarning
 @_shared_utils.skip_data
 class TestIterateFunctions:
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def _setup(self):
         self.cube_a = iris.tests.stock.realistic_4d()[0, :2, :4, :3]
         self.cube_b = iris.tests.stock.realistic_4d()[1, :2, :4, :3]
         self.coord_names = ["grid_latitude", "grid_longitude"]
