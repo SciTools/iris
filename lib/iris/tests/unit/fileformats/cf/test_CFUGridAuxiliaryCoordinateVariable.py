@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridAuxiliaryCoordinateVariable`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import re
 import warnings
 
@@ -24,8 +20,9 @@ def named_variable(name):
     return netcdf_variable(name, "", int)
 
 
-class TestIdentify(tests.IrisTest):
-    def setUp(self):
+class TestIdentify:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cf_identities = [
             "node_coordinates",
             "edge_coordinates",
@@ -50,7 +47,7 @@ class TestIdentify(tests.IrisTest):
             setattr(ref_source, identity, subject_name)
             vars_all = dict({"ref_source": ref_source}, **vars_common)
             result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-            self.assertDictEqual(expected, result)
+            assert expected == result
 
     def test_duplicate_refs(self):
         subject_name = "ref_subject"
@@ -73,7 +70,7 @@ class TestIdentify(tests.IrisTest):
             subject_name: CFUGridAuxiliaryCoordinateVariable(subject_name, ref_subject)
         }
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_coords(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -96,7 +93,7 @@ class TestIdentify(tests.IrisTest):
             for name, var in ref_subject_vars.items()
         }
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_part_ref(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -115,7 +112,7 @@ class TestIdentify(tests.IrisTest):
             for name, var in ref_subject_vars.items()
         }
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_string_type_ignored(self):
         subject_name = "ref_subject"
@@ -128,7 +125,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-        self.assertDictEqual({}, result)
+        assert {} == result
 
     def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -155,7 +152,7 @@ class TestIdentify(tests.IrisTest):
         result = CFUGridAuxiliaryCoordinateVariable.identify(
             vars_all, ignore=subject_names[1]
         )
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -181,7 +178,7 @@ class TestIdentify(tests.IrisTest):
         result = CFUGridAuxiliaryCoordinateVariable.identify(
             vars_all, target=source_names[0]
         )
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_warn(self):
         subject_name = "ref_subject"
@@ -198,7 +195,7 @@ class TestIdentify(tests.IrisTest):
                 category=iris.warnings.IrisUserWarning,
             )
             result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all, warn=warn)
-            self.assertDictEqual({}, result)
+            assert {} == result
 
         # Missing warning.
         warn_regex = (
