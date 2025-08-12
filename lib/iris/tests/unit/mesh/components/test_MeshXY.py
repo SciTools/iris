@@ -977,7 +977,7 @@ class TestOperations1D(TestMeshCommon):
         self.mesh.remove_coords(self.EDGE_LON)
         assert None is self.mesh.edge_coords.edge_x
 
-    def test_to_mesh_coord(self):
+    def test_to_MeshCoord(self):
         location = "node"
         axis = "x"
         result = self.mesh.to_MeshCoord(location, axis)
@@ -985,13 +985,13 @@ class TestOperations1D(TestMeshCommon):
         assert location == result.location
         assert axis == result.axis
 
-    def test_to_mesh_coord_face(self):
+    def test_to_MeshCoord_face(self):
         location = "face"
         axis = "x"
         with pytest.raises(CoordinateNotFoundError):
             self.mesh.to_MeshCoord(location, axis)
 
-    def test_to_mesh_coords(self):
+    def test_to_MeshCoords(self):
         location = "node"
         result = self.mesh.to_MeshCoords(location)
         assert len(self.mesh.AXES) == len(result)
@@ -1001,7 +1001,7 @@ class TestOperations1D(TestMeshCommon):
             assert location == coord.location
             assert axis == coord.axis
 
-    def test_to_mesh_coords_face(self):
+    def test_to_MeshCoords_face(self):
         location = "face"
         with pytest.raises(CoordinateNotFoundError):
             self.mesh.to_MeshCoords(location)
@@ -1144,7 +1144,7 @@ class TestOperations2D(TestOperations1D):
         self.mesh.remove_coords(location="face")
         assert None is self.mesh.face_coords.face_x
 
-    def test_to_mesh_coord_face(self):
+    def test_to_MeshCoord_face(self):
         self.mesh.add_coords(face_x=self.FACE_LON)
         location = "face"
         axis = "x"
@@ -1153,7 +1153,7 @@ class TestOperations2D(TestOperations1D):
         assert location == result.location
         assert axis == result.axis
 
-    def test_to_mesh_coords_face(self):
+    def test_to_MeshCoords_face(self):
         self.mesh.add_coords(face_x=self.FACE_LON, face_y=self.FACE_LAT)
         location = "face"
         result = self.mesh.to_MeshCoords(location)
