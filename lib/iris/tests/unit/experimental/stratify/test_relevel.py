@@ -7,7 +7,6 @@
 from functools import partial
 
 import numpy as np
-from numpy.testing import assert_array_equal
 import pytest
 
 from iris.coords import AuxCoord, DimCoord
@@ -51,21 +50,25 @@ class Test:
     def test_standard_input(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [-1, 0, 5.5], axis=axis)
-            assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 55]))
+            _shared_utils.assert_array_equal(
+                result.data.flatten(), np.array([np.nan, 0, 55])
+            )
             expected = DimCoord([-1, 0, 5.5], units=1, long_name="thingness")
             assert expected == result.coord("thingness")
 
     def test_non_monotonic(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [2, 3, 2], axis=axis)
-            assert_array_equal(result.data.flatten(), np.array([20, 30, np.nan]))
+            _shared_utils.assert_array_equal(
+                result.data.flatten(), np.array([20, 30, np.nan])
+            )
             expected = AuxCoord([2, 3, 2], units=1, long_name="thingness")
             assert result.coord("thingness") == expected
 
     def test_static_level(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [2, 2], axis=axis)
-            assert_array_equal(result.data.flatten(), np.array([20, 20]))
+            _shared_utils.assert_array_equal(result.data.flatten(), np.array([20, 20]))
 
     def test_coord_input(self):
         source = AuxCoord(self.src_levels.data)
@@ -77,7 +80,7 @@ class Test:
         for axis in self.axes:
             result = relevel(self.cube, source, [0, 12, 13], axis=axis)
             assert result.shape == (3, 1, 1)
-            assert_array_equal(result.data.flatten(), [0, 120, np.nan])
+            _shared_utils.assert_array_equal(result.data.flatten(), [0, 120, np.nan])
 
     def test_custom_interpolator(self):
         interpolator = partial(stratify.interpolate, interpolation="nearest")
@@ -90,7 +93,9 @@ class Test:
                 axis=axis,
                 interpolator=interpolator,
             )
-            assert_array_equal(result.data.flatten(), np.array([np.nan, 0, 120]))
+            _shared_utils.assert_array_equal(
+                result.data.flatten(), np.array([np.nan, 0, 120])
+            )
 
     def test_multi_dim_target_levels(self, request):
         interpolator = partial(
@@ -107,5 +112,5 @@ class Test:
                 axis=axis,
                 interpolator=interpolator,
             )
-            assert_array_equal(result.data.flatten(), np.array([0, 120]))
+            _shared_utils.assert_array_equal(result.data.flatten(), np.array([0, 120]))
             _shared_utils.assert_CML(request, result)
