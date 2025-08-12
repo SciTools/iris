@@ -20,7 +20,7 @@ associated metadata as first-class objects includes:
 .. rst-class:: squarelist
 
 * visualisation interface based on `matplotlib <https://matplotlib.org/>`_ and
-  `cartopy <https://scitools.org.uk/cartopy/docs/latest/>`_,
+  `cartopy <https://cartopy.readthedocs.io/stable/>`_,
 * unit conversion,
 * subsetting and extraction,
 * merge and concatenate,
