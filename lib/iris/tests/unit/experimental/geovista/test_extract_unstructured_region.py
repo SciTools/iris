@@ -4,19 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.geovista.extract_unstructured_region` function."""
 
-from unittest.mock import MagicMock, Mock
-
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 import numpy as np
 import pytest
 
 from iris.experimental.geovista import extract_unstructured_region
+from iris.tests import _shared_utils
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock.mesh import sample_mesh_cube
 
 
 class TestRegionExtraction:
-    @pytest.fixture()
+    @pytest.fixture
     def cube_2d(self):
         return sample_2d_latlons()
 
@@ -24,25 +23,25 @@ class TestRegionExtraction:
     def cube_mesh(self, request):
         self.cube_mesh = sample_mesh_cube(location=request.param, n_z=10)
 
-    @pytest.fixture()
+    @pytest.fixture
     def cube_mesh_edge(self):
         return sample_mesh_cube(location="edge")
 
     @pytest.fixture(autouse=True)
-    def mocked_polydata(self):
+    def mocked_polydata(self, mocker):
         mock_polydata_scalars = {
             VTK_CELL_IDS: np.arange(2),
             VTK_POINT_IDS: np.arange(14),
         }
-        polydata = MagicMock()
+        polydata = mocker.MagicMock()
         polydata.__getitem__.side_effect = mock_polydata_scalars.__getitem__
         polydata.GetNumberOfCells.return_value = 3
         polydata.GetNumberOfPoints.return_value = 15
         self.mocked_polydata = polydata
 
     @pytest.fixture(autouse=True)
-    def mocked_region(self):
-        region = Mock()
+    def mocked_region(self, mocker):
+        region = mocker.Mock()
         region.enclosed.return_value = self.mocked_polydata
         self.mocked_region = region
 
@@ -107,16 +106,16 @@ class TestRegionExtraction:
         )
         if self.cube_mesh.location == "face":
             mesh_coords = extracted_region.coords(mesh_coords=True)
-            np.testing.assert_array_equal(
+            _shared_utils.assert_array_equal(
                 mesh_coords[0].bounds,
                 [[1200, 1201, 1202, 1203], [1204, 1205, 1206, 1207]],
             )
-            np.testing.assert_array_equal(mesh_coords[0].points, [3200, 3201])
-            np.testing.assert_array_equal(
+            _shared_utils.assert_array_equal(mesh_coords[0].points, [3200, 3201])
+            _shared_utils.assert_array_equal(
                 mesh_coords[1].bounds,
                 [[1100, 1101, 1102, 1103], [1104, 1105, 1106, 1107]],
             )
-            np.testing.assert_array_equal(mesh_coords[1].points, [3100, 3101])
+            _shared_utils.assert_array_equal(mesh_coords[1].points, [3100, 3101])
 
     def test_no_mesh(self, cube_2d):
         cube = cube_2d
