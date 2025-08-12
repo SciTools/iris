@@ -11,7 +11,6 @@ import iris.coord_systems
 import iris.coords
 import iris.cube
 from iris.tests import _shared_utils
-import iris.tests.stock
 
 
 class TestCubeIntersectTheoretical:
