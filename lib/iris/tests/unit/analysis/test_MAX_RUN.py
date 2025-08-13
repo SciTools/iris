@@ -4,24 +4,23 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis.MAX_RUN` aggregator."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.analysis import MAX_RUN
+from iris.tests import _shared_utils
 
 
 def bool_func(x):
     return x == 1
 
 
-class UnmaskedTest(tests.IrisTest):
-    def setUp(self):
+class UnmaskedTest:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
@@ -53,8 +52,9 @@ class UnmaskedTest(tests.IrisTest):
         self.expected_2d_axis1 = self.expected_2d_axis0
 
 
-class MaskedTest(tests.IrisTest):
-    def setUp(self):
+class MaskedTest:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
@@ -138,7 +138,7 @@ class RealMixin:
         return MAX_RUN.call_func(*args, **kwargs)
 
     def check_array(self, result, expected):
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
 
 class LazyMixin:
@@ -146,10 +146,10 @@ class LazyMixin:
         return MAX_RUN.lazy_func(*args, **kwargs)
 
     def check_array(self, result, expected, expected_chunks):
-        self.assertTrue(is_lazy_data(result))
-        self.assertTupleEqual(result.chunks, expected_chunks)
+        assert is_lazy_data(result)
+        assert result.chunks == expected_chunks
         result = as_concrete_data(result)
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
 
 class TestBasic(UnmaskedTest, RealMixin):
@@ -294,15 +294,11 @@ class TestMasked(MaskedTest, RealMixin):
         self.check_array(result, self.expected_2d_axis1)
 
 
-class Test_name(tests.IrisTest):
+class Test_name:
     def test(self):
-        self.assertEqual(MAX_RUN.name(), "max_run")
+        assert MAX_RUN.name() == "max_run"
 
 
-class Test_cell_method(tests.IrisTest):
+class Test_cell_method:
     def test(self):
-        self.assertIsNone(MAX_RUN.cell_method)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert MAX_RUN.cell_method is None
