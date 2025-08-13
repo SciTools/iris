@@ -219,27 +219,27 @@ def test_add_season_membership(cube):
 def test_add_season_invalid_spec(cube, season_cat_func):
     # custom seasons with an invalid season raises an error?
     seasons = ("djf", "maj", "jja", "son")  # MAJ not a season!
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="unrecognised season:"):
         season_cat_func(cube, "time", name="my_category", seasons=seasons)
 
 
 def test_add_season_repeated_months(cube, season_cat_func):
     # custom seasons with repeated months raises an error?
     seasons = ("djfm", "mam", "jja", "son")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="some months appear in more than one season:"):
         season_cat_func(cube, "time", name="my_category", seasons=seasons)
 
 
 def test_add_season_missing_months(cube, season_cat_func):
     # custom seasons with missing months raises an error?
     seasons = ("djfm", "amjj")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="some months do not appear in any season"):
         season_cat_func(cube, "time", name="my_category", seasons=seasons)
 
 
 def test_add_season_membership_invalid_spec(cube):
     season = "maj"  # not a season!
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=f"unrecognised season: {season}"):
         ccat.add_season_membership(cube, "time", season, name="maj_season")
 
 
