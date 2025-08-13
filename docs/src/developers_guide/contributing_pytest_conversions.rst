@@ -61,6 +61,9 @@ Conversion Checklist
 #. Ensure that all test classes start with ``Test``. Tests will not run in pytest without it.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
+#. Ensure that all the tests are *passing*. Some tests are set to skip if certain packages
+   aren't installed in your environment. These are often also skipped in the Iris CI also,
+   so make sure that they run and pass locally.
 
 Common Translations
 -------------------
