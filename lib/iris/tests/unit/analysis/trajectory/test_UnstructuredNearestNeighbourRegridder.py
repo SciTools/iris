@@ -7,22 +7,21 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.analysis.trajectory import UnstructuredNearestNeigbourRegridder as unn_gridder
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
+from iris.tests._shared_utils import assert_array_equal
 
 
 class MixinExampleSetup:
     # Common code for regridder test classes.
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Basic test values.
         src_x_y_value = np.array(
             [
@@ -95,48 +94,45 @@ class MixinExampleSetup:
         result = gridder(src_cube)
         if expected_coord_names is not None:
             # Check result coordinate identities.
-            self.assertEqual(
-                [coord.name() for coord in result.coords()],
-                expected_coord_names,
-            )
+            assert [coord.name() for coord in result.coords()] == expected_coord_names
         if expected_data is None:
             # By default, check against the 'standard' data result.
             expected_data = self.expected_data
-        self.assertArrayEqual(result.data, expected_data)
+        assert_array_equal(result.data, expected_data)
         return result
 
 
-class Test__init__(MixinExampleSetup, tests.IrisTest):
+class Test__init__(MixinExampleSetup):
     # Exercise all the constructor argument checks.
 
     def test_fail_no_src_x(self):
         self.src_cube.remove_coord("longitude")
         msg_re = "Source cube must have X- and Y-axis coordinates"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_src_y(self):
         self.src_cube.remove_coord("latitude")
         msg_re = "Source cube must have X- and Y-axis coordinates"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_bad_src_dims(self):
         self.src_cube = self.grid_cube
         msg_re = "Source.*same cube dimensions"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_mixed_latlons(self):
         self.src_cube.coord("longitude").rename("projection_x_coordinate")
         msg_re = "any.*latitudes/longitudes.*all must be"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_bad_latlon_units(self):
         self.grid_cube.coord("longitude").units = "m"
         msg_re = 'does not convert to "degrees"'
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_non_latlon_units_mismatch(self):
@@ -150,33 +146,33 @@ class Test__init__(MixinExampleSetup, tests.IrisTest):
         # Change one of the output units.
         self.grid_cube.coord(axis="x").units = "1"
         msg_re = "Source and target.*must have the same units"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_tgt_x(self):
         self.grid_cube.remove_coord("longitude")
         msg_re = "must contain a single 1D x coordinate"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_no_tgt_y(self):
         self.grid_cube.remove_coord("latitude")
         msg_re = "must contain a single 1D y coordinate"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_src_cs_mismatch(self):
         cs = GeogCS(1000.0)
         self.src_cube.coord("latitude").coord_system = cs
         msg_re = "must all have the same coordinate system"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_tgt_cs_mismatch(self):
         cs = GeogCS(1000.0)
         self.grid_cube.coord("latitude").coord_system = cs
         msg_re = "x.*and y.*must have the same coordinate system"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
     def test_fail_src_tgt_cs_mismatch(self):
@@ -184,11 +180,11 @@ class Test__init__(MixinExampleSetup, tests.IrisTest):
         self.src_cube.coord("latitude").coord_system = cs
         self.src_cube.coord("longitude").coord_system = cs
         msg_re = "Source and target.*same coordinate system"
-        with self.assertRaisesRegex(ValueError, msg_re):
+        with pytest.raises(ValueError, match=msg_re):
             unn_gridder(self.src_cube, self.grid_cube)
 
 
-class Test__call__(MixinExampleSetup, tests.IrisTest):
+class Test__call__(MixinExampleSetup):
     # Test regridder operation and results.
 
     def test_basic_latlon(self):
@@ -244,10 +240,10 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
         new_grid_cube = self.grid_cube.copy()
         new_grid_cube.transpose((1, 0))
         # Check that the new grid is in (X, Y) order.
-        self.assertEqual(
-            [coord.name() for coord in new_grid_cube.coords()],
-            ["longitude", "latitude"],
-        )
+        assert [coord.name() for coord in new_grid_cube.coords()] == [
+            "longitude",
+            "latitude",
+        ]
         # Check that the result is the same, dimension order is still Y,X.
         self._check_expected(
             grid_cube=new_grid_cube,
@@ -259,11 +255,12 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
         # source cube for the regridder creation.
         gridder = unn_gridder(self.src_cube, self.grid_cube)
         result = gridder(self.src_z_cube)
-        self.assertEqual(
-            [coord.name() for coord in result.coords()],
-            ["z", "latitude", "longitude"],
-        )
-        self.assertArrayEqual(result.data, self.expected_data_zxy)
+        assert [coord.name() for coord in result.coords()] == [
+            "z",
+            "latitude",
+            "longitude",
+        ]
+        assert_array_equal(result.data, self.expected_data_zxy)
 
     def test_fail_incompatible_source(self):
         # Check that a slightly modified source cube is *not* acceptable.
@@ -273,7 +270,7 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
         modified_src_cube.coord(axis="x").points = points
         gridder = unn_gridder(self.src_cube, self.grid_cube)
         msg = "not defined on the same source grid"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             gridder(modified_src_cube)
 
     def test_transposed_source(self):
@@ -289,7 +286,7 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
             self.src_cube.coord(axis=axis_name).convert_units("radians")
             self.grid_cube.coord(axis=axis_name).convert_units("degrees")
         result = self._check_expected()
-        self.assertEqual(result.coord(axis="x").units, "degrees")
+        assert result.coord(axis="x").units == "degrees"
 
     def test_degrees_radians(self):
         # Check source + target unit conversions, grid and result in radians.
@@ -297,7 +294,7 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
             self.src_cube.coord(axis=axis_name).convert_units("degrees")
             self.grid_cube.coord(axis=axis_name).convert_units("radians")
         result = self._check_expected()
-        self.assertEqual(result.coord(axis="x").units, "radians")
+        assert result.coord(axis="x").units == "radians"
 
     def test_alternative_cs(self):
         # Check the result is just the same in a different coordinate system.
@@ -310,7 +307,3 @@ class Test__call__(MixinExampleSetup, tests.IrisTest):
             for coord_name in ("longitude", "latitude"):
                 cube.coord(coord_name).coord_system = cs
         self._check_expected()
-
-
-if __name__ == "__main__":
-    tests.main()
