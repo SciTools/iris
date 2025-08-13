@@ -81,13 +81,19 @@ netcdf test {{
 
     def test_stash_empty(self):
         value = ""
-        cube = self.run_testcase(ukmo__um_stash_source=value)
+        cube = self.run_testcase(
+            ukmo__um_stash_source=value,
+            warning_regex="Invalid content for managed attribute name 'um_stash_source'",
+        )
         self.assertNotIn("STASH", cube.attributes)
         self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
 
     def test_stash_invalid(self):
         value = "XXX"
-        cube = self.run_testcase(ukmo__um_stash_source="XXX")
+        cube = self.run_testcase(
+            ukmo__um_stash_source="XXX",
+            warning_regex="Invalid content for managed attribute name 'um_stash_source'",
+        )
         self.assertNotIn("STASH", cube.attributes)
         self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
 
@@ -103,7 +109,7 @@ netcdf test {{
 
     def test_processflags_empty(self):
         cube = self.run_testcase(ukmo__process_flags="")
-        expected_result = [""]  # May seem odd, but that's what it does.
+        expected_result = ()
         self.check_result(cube, processflags=expected_result)
 
 

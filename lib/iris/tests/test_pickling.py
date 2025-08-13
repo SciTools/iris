@@ -4,9 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test pickling of Iris objects."""
 
-# Import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
 import io
 import pickle
 
@@ -15,10 +12,10 @@ import numpy as np
 
 import iris
 from iris._lazy_data import as_concrete_data, as_lazy_data
-from iris.tests import MIN_PICKLE_PROTOCOL
+from iris.tests import MIN_PICKLE_PROTOCOL, _shared_utils
 
 
-class TestPickle(tests.IrisTest):
+class TestPickle:
     def pickle_then_unpickle(self, obj):
         """Returns a generator of ("pickle protocol number", object) tuples."""
         for protocol in range(MIN_PICKLE_PROTOCOL, pickle.HIGHEST_PROTOCOL + 1):
@@ -37,34 +34,39 @@ class TestPickle(tests.IrisTest):
         # comparison checks.
         return as_concrete_data(cube.core_data())
 
-    def assertCubeData(self, cube1, cube2):
-        self.assertArrayEqual(self._real_data(cube1), self._real_data(cube2))
+    def assert_cube_data(self, cube1, cube2):
+        _shared_utils.assert_array_equal(self._real_data(cube1), self._real_data(cube2))
 
-    @tests.skip_data
-    def test_cube_pickle(self):
-        cube = iris.load_cube(tests.get_data_path(("PP", "globClim1", "theta.pp")))
-        self.assertTrue(cube.has_lazy_data())
-        self.assertCML(cube, ("cube_io", "pickling", "theta.cml"), checksum=False)
+    @_shared_utils.skip_data
+    def test_cube_pickle(self, request):
+        cube = iris.load_cube(
+            _shared_utils.get_data_path(("PP", "globClim1", "theta.pp"))
+        )
+        assert cube.has_lazy_data()
+        _shared_utils.assert_CML(
+            request, cube, ("cube_io", "pickling", "theta.cml"), checksum=False
+        )
 
         for p, recon_cube in self.pickle_then_unpickle(cube):
-            self.assertTrue(recon_cube.has_lazy_data())
-            self.assertCML(
+            assert recon_cube.has_lazy_data()
+            _shared_utils.assert_CML(
+                request,
                 recon_cube,
                 ("cube_io", "pickling", "theta.cml"),
                 checksum=False,
             )
-            self.assertCubeData(cube, recon_cube)
+            self.assert_cube_data(cube, recon_cube)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_cube_with_coord_points(self):
-        filename = tests.get_data_path(
+        filename = _shared_utils.get_data_path(
             ("NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc")
         )
         cube = iris.load_cube(filename)
         # Pickle and unpickle. Do not perform any CML tests
         # to avoid side effects.
         _, recon_cube = next(self.pickle_then_unpickle(cube))
-        self.assertEqual(recon_cube, cube)
+        assert recon_cube == cube
 
     def test_cube_with_deferred_unit_conversion(self):
         real_data = np.arange(12.0).reshape((3, 4))
@@ -72,30 +74,35 @@ class TestPickle(tests.IrisTest):
         cube = iris.cube.Cube(lazy_data, units="m")
         cube.convert_units("ft")
         _, recon_cube = next(self.pickle_then_unpickle(cube))
-        self.assertEqual(recon_cube, cube)
+        assert recon_cube == cube
 
-    @tests.skip_data
-    def test_cubelist_pickle(self):
+    @_shared_utils.skip_data
+    def test_cubelist_pickle(self, request):
         cubelist = iris.load(
-            tests.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
+            _shared_utils.get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
         )
         single_cube = cubelist[0]
 
-        self.assertCML(cubelist, ("cube_io", "pickling", "cubelist.cml"))
-        self.assertCML(single_cube, ("cube_io", "pickling", "single_cube.cml"))
+        _shared_utils.assert_CML(
+            request, cubelist, ("cube_io", "pickling", "cubelist.cml")
+        )
+        _shared_utils.assert_CML(
+            request, single_cube, ("cube_io", "pickling", "single_cube.cml")
+        )
 
         for _, reconstructed_cubelist in self.pickle_then_unpickle(cubelist):
-            self.assertCML(
-                reconstructed_cubelist, ("cube_io", "pickling", "cubelist.cml")
+            _shared_utils.assert_CML(
+                request, reconstructed_cubelist, ("cube_io", "pickling", "cubelist.cml")
             )
-            self.assertCML(
+            _shared_utils.assert_CML(
+                request,
                 reconstructed_cubelist[0],
                 ("cube_io", "pickling", "single_cube.cml"),
             )
 
             for cube_orig, cube_reconstruct in zip(cubelist, reconstructed_cubelist):
-                self.assertArrayEqual(cube_orig.data, cube_reconstruct.data)
-                self.assertEqual(cube_orig, cube_reconstruct)
+                _shared_utils.assert_array_equal(cube_orig.data, cube_reconstruct.data)
+                assert cube_orig == cube_reconstruct
 
     def test_picking_equality_misc(self):
         items_to_test = [
@@ -116,8 +123,4 @@ class TestPickle(tests.IrisTest):
                     "at protocol {}.\nOrig item: {!r}\nNew item: {!r}"
                 )
                 fail_msg = fail_msg.format(protocol, orig_item, reconst_item)
-                self.assertEqual(orig_item, reconst_item, fail_msg)
-
-
-if __name__ == "__main__":
-    tests.main()
+                assert orig_item == reconst_item, fail_msg

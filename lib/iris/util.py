@@ -31,6 +31,7 @@ from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shape_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
+from iris.coord_systems import GeogCS
 import iris.exceptions
 import iris.warnings
 
@@ -2647,3 +2648,166 @@ def combine_cubes(
         opts_dict.update(kwargs)
 
     return _combine_cubes(cubes, opts_dict)
+
+
+# Storage for the default gridcube coordinate system.
+# This is actually always == GeogCs(iris.fileformats.pp.EARTH_RADIUS), but cannot be
+#  setup on import due to circular import problems.
+_DEFAULT_GRIDCUBE_CS = None
+
+
+def make_gridcube(
+    nx: int = 30,
+    ny: int = 20,
+    xlims: tuple[float | int, float | int] = (0.0, 360.0),
+    ylims: tuple[float | int, float | int] = (-90.0, 90.0),
+    *,
+    x_points: np.typing.ArrayLike | None = None,
+    y_points: np.typing.ArrayLike | None = None,
+    coord_system: iris.coord_systems.CoordSystem | None = None,
+) -> Cube:
+    """Make a 2D sample cube with a specified XY grid.
+
+    The cube is suitable as a regridding target, amongst other uses.
+    It has one-dimensional X and Y coordinates, in a specific coordinate system.
+    Both can be given either regularly spaced or irregular points.
+
+    Parameters
+    ----------
+    nx : int, optional
+        Number of points on the X axis. Defaults to 30.
+    ny : int, optional
+        Number of points on the Y axis. Defaults to 20.
+    xlims : pair of floats or ints, optional
+        End points of the X coordinate: (first, last).
+        Defaults to (0., 360.).
+    ylims : pair of floats or ints, optional
+        End points of the Y coordinate: (first, last).
+        Defaults to (-90., +90.).
+    x_points : array-like, optional
+        If not None, this sets the number and exact values of x points: in this case,
+        `nx` and `xlims` are ignored.
+        Defaults to None.
+    y_points : array-like, optional
+        If not None, this sets the number and exact values of y points: in this case,
+        `ny` and `ylims` are ignored.
+        Defaults to None.
+    coord_system : iris.coord_system.CoordSystem, optional
+        The coordinate system of the cube: also sets the coordinate system and
+        ``standard_name`` s of the X and Y coordinates.
+        Defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical lat-lon), with
+        a standard radius of :data:`iris.fileformats.pp.EARTH_RADIUS`.
+
+    Returns
+    -------
+    cube: iris.cube.Cube
+        A cube with the specified grid, and all-zeroes (lazy) data.
+
+    Warnings
+    --------
+    If given, the `x_points` or `y_points` args define a DimCoord, and so must be
+    one-dimensional, have at least 1 value, and be strictly monotonic
+    (increasing or decreasing).
+
+    """
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+
+    global _DEFAULT_GRIDCUBE_CS
+
+    # float32 zero, to force minimum 'f4' floating point precision
+    zero_f4 = np.asarray(
+        0.0,
+        dtype="f4",  # single precision (minimum), or what was passed
+    )
+
+    def dimco(
+        axis: str,  # 'x' or 'y'
+        name: str,
+        units: str,
+        points: np.typing.ArrayLike | None,
+        lims: tuple[float | int, float | int],
+        num: int,
+        coord_system: iris.coord_systems.CoordSystem,
+    ):
+        """Build a dim-coord with given name+units`, from points or n-points + limits."""
+        if points is not None:
+            orig_points = points  # just for an error message
+            ok = isinstance(points, Iterable)
+            if ok:
+                points = np.asarray(points)
+                ok = points.ndim == 1 and points.size >= 1 and points.dtype.kind in "if"
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision,
+                # just for greater clarity.
+                points = points + zero_f4
+
+                if points.size > 1:
+                    # Also (pre-)check monotonicity.
+                    # Just to avoid a more confusing error when creating a DimCoord.
+                    dp = np.diff(points)
+                    ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}_points' arg : {orig_points!s}. "
+                    "Must be a monotonic 1-d array-like of at least 1 floats or ints."
+                )
+                raise ValueError(msg)
+
+        else:
+            # points is None : interpret n? / ?lims
+            if not isinstance(num, int) or num < 1:
+                msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."  # type: ignore[unreachable]
+                raise ValueError(msg)
+
+            ok = isinstance(lims, Iterable)
+            if ok:
+                limsarr = np.asarray(lims)
+                ok = limsarr.shape == (2,) and limsarr.dtype.kind in "if"
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision.
+                limsarr = limsarr + zero_f4
+                ok = num == 1 or limsarr[0] != limsarr[1]
+
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}lims' arg : {lims}. "
+                    f"Must be a pair of floats or ints, different unless `n{axis}`=1."
+                )
+                raise ValueError(msg)
+
+            # set points from n? / ?lims
+            points = np.linspace(limsarr[0], limsarr[1], num)
+
+        co = DimCoord(
+            points, standard_name=name, units=units, coord_system=coord_system
+        )
+        return co
+
+    if coord_system is None:
+        if _DEFAULT_GRIDCUBE_CS is None:
+            # This import needs to be dynamic, to avoid a circular import problem.
+            from iris.fileformats.pp import EARTH_RADIUS
+
+            _DEFAULT_GRIDCUBE_CS = GeogCS(EARTH_RADIUS)
+
+        coord_system = _DEFAULT_GRIDCUBE_CS
+
+    if isinstance(coord_system, GeogCS):
+        x_name, y_name = "longitude", "latitude"
+        units = "degrees"
+    elif isinstance(coord_system, iris.coord_systems.RotatedGeogCS):
+        x_name, y_name = "grid_longitude", "grid_latitude"
+        units = "degrees"
+    else:
+        x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
+        units = "m"
+
+    xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
+    yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
+    cube = Cube(
+        da.zeros((yco.shape[0], xco.shape[0]), dtype=np.int8),
+        long_name="grid_cube",
+        dim_coords_and_dims=((yco, 0), (xco, 1)),
+    )
+    return cube

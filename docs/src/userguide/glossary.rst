@@ -12,7 +12,7 @@ Glossary
         Allows plotting on these maps, over a range of projections.
 
         | **Related:** :term:`Matplotlib`
-        | **More information:** `CartoPy Site <https://scitools.org.uk/cartopy/docs/latest/>`_
+        | **More information:** `CartoPy Site <https://cartopy.readthedocs.io/stable/>`_
         |
 
    CF Conventions
