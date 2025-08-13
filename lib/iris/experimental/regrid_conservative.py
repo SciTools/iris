@@ -71,7 +71,7 @@ def _make_esmpy_field(x_coord, y_coord, ref_name="field", data=None, mask=None):
 
     """
     # Lazy import so we can build the docs with no ESMF.
-    import ESMF
+    import esmpy as ESMF
 
     # Create a Grid object describing the coordinate cells.
     dims = [len(coord.points) for coord in (x_coord, y_coord)]
@@ -204,7 +204,7 @@ def regrid_conservative_via_esmpy(source_cube, grid_cube):
     warn_deprecated(wmsg)
 
     # Lazy import so we can build the docs with no ESMF.
-    import ESMF
+    import esmpy as ESMF
 
     # Get source + target XY coordinate pairs and check they are suitable.
     src_coords = get_xy_dim_coords(source_cube)
