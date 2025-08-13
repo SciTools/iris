@@ -28,7 +28,7 @@ import shapely
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
-from iris._shapefiles import create_shapefile_mask
+from iris._shapefiles import create_shape_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 import iris.exceptions
@@ -2199,11 +2199,43 @@ def mask_cube_from_shapefile(
     in_place: bool = False,
     minimum_weight: float = 0.0,
     **kwargs,
-):
+) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shapefile object.
 
-    Mask a :class:`~iris.cube.Cube` with any shapefile object, (e.g. Natural Earth Shapefiles via cartopy).
-    Finds the overlap between the `shapefile` shape and the :class:`~iris.cube.Cube` and
+    .. deprecated:: 3.x.x
+
+    This function is scheduled for removal in a future release, being
+    replaced by :func:`iris.util.mask_cube_from_shape`, which offers richer
+    shape handling.
+    """
+    message = (
+        "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
+        "future release. Please use iris.util.mask_cube_from_shape instead."
+    )
+    warn_deprecated(message)
+    # Call the new function `mask_cube_from_shape`with the same parameters.
+    return mask_cube_from_shape(
+        cube,
+        shape,
+        shape_crs,
+        in_place=in_place,
+        minimum_weight=minimum_weight,
+        **kwargs,
+    )
+
+
+def mask_cube_from_shape(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | pyproj.CRS,
+    in_place: bool = False,
+    minimum_weight: float = 0.0,
+    **kwargs,
+) -> iris.cube.Cube | None:
+    """Mask all points in a cube that do not intersect a shape object.
+
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via cartopy).
+    Finds the overlap between the `shape` and the :class:`~iris.cube.Cube` and
     masks out any cells that __do not__ intersect the shape.
 
     Shapes can be polygons, lines or points.
@@ -2292,6 +2324,13 @@ def mask_cube_from_shapefile(
     >>> wgs84 = CRS.from_epsg(4326)
     >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
 
+    Notes
+    -----
+    Iris does not handle the shape loading so it is agnostic to the source type of the shape.
+    The shape can be loaded from an Esri shapefile, created using the `shapely` library, or
+    any other source that can be interpreted as a `shapely.Geometry` object, such as shapes
+    encoded in a geoJSON or KML file.
+
     Warning
     -------
     For best masking results, both the cube _and_ masking geometry should have a
@@ -2303,7 +2342,7 @@ def mask_cube_from_shapefile(
     If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
 
     """
-    shapefile_mask = create_shapefile_mask(
+    shapefile_mask = create_shape_mask(
         geometry=shape,
         geometry_crs=shape_crs,
         cube=cube,

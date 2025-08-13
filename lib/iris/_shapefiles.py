@@ -39,14 +39,14 @@ pyproj.network.set_network_enabled(active=False)
 
 
 # @mutually_exclusive_keywords("minimum_weight", "all_touched")
-def create_shapefile_mask(
+def create_shape_mask(
     geometry: shapely.Geometry,
     geometry_crs: ccrs.CRS | CRS,
     cube: iris.cube.Cube,
     minimum_weight: float = 0.0,
     **kwargs,
 ) -> np.array:
-    """Make a mask for a cube from a shape.
+    """Make a mask for a cube from a shape geometry.
 
     Get the mask of the intersection between the
     given shapely geometry and cube with x/y DimCoords.
