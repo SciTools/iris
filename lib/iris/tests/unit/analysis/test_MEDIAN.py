@@ -6,6 +6,7 @@
 
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris._lazy_data import (
     as_concrete_data,
@@ -28,7 +29,8 @@ def _get_data(lazy=False, masked=False):
 
 
 class Test_basics:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = _get_data()
 
     def test_name(self):
@@ -40,7 +42,8 @@ class Test_basics:
 
 
 class Test_masked:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = _get_data(masked=True)
 
     def test_output_is_masked(self):
@@ -57,7 +60,8 @@ class Test_masked:
 
 
 class Test_lazy:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = _get_data(lazy=True)
 
     def test_output_is_lazy(self):
@@ -76,7 +80,8 @@ class Test_lazy:
 
 
 class Test_lazy_masked:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.data = _get_data(lazy=True, masked=True)
 
     def test_output_is_lazy_and_masked(self):
