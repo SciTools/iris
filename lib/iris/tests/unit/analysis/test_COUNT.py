@@ -67,7 +67,8 @@ class Test_units_func:
 
 
 class Test_masked:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = Cube(ma.masked_equal([1, 2, 3, 4, 5], 3))
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
         self.func = lambda x: x >= 3
@@ -78,7 +79,8 @@ class Test_masked:
 
 
 class Test_lazy_masked:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         lazy_data = as_lazy_data(ma.masked_equal([1, 2, 3, 4, 5], 3))
         self.lazy_cube = Cube(lazy_data)
         self.lazy_cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
