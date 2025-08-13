@@ -4,17 +4,16 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coord_systems.AlbersEqualArea` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
+import pytest
 
 from iris.coord_systems import AlbersEqualArea, GeogCS
+from iris.tests import _shared_utils
 
 
-class Test_as_cartopy_crs(tests.IrisTest):
-    def setUp(self):
+class Test_as_cartopy_crs:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.latitude_of_projection_origin = 0.0
         self.longitude_of_central_meridian = 0.0
         self.semi_major_axis = 6377563.396
@@ -47,21 +46,22 @@ class Test_as_cartopy_crs(tests.IrisTest):
             self.standard_parallels,
             globe=globe,
         )
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_fail_too_few_parallels(self):
         emsg = "parallels"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             AlbersEqualArea(standard_parallels=())
 
     def test_fail_too_many_parallels(self):
         emsg = "parallels"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             AlbersEqualArea(standard_parallels=(1, 2, 3))
 
 
-class Test_as_cartopy_projection(tests.IrisTest):
-    def setUp(self):
+class Test_as_cartopy_projection:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.latitude_of_projection_origin = 0.0
         self.longitude_of_central_meridian = 0.0
         self.semi_major_axis = 6377563.396
@@ -94,10 +94,10 @@ class Test_as_cartopy_projection(tests.IrisTest):
             self.standard_parallels,
             globe=globe,
         )
-        self.assertEqual(res, expected)
+        assert res == expected
 
 
-class Test_init_defaults(tests.IrisTest):
+class Test_init_defaults:
     def test_set_optional_args(self):
         # Check that setting optional arguments works as expected.
         crs = AlbersEqualArea(
@@ -108,31 +108,31 @@ class Test_init_defaults(tests.IrisTest):
             standard_parallels=(-37, 21.4),
         )
 
-        self.assertEqualAndKind(crs.longitude_of_central_meridian, 123.0)
-        self.assertEqualAndKind(crs.latitude_of_projection_origin, -17.0)
-        self.assertEqualAndKind(crs.false_easting, 100.0)
-        self.assertEqualAndKind(crs.false_northing, -200.0)
-        self.assertEqual(len(crs.standard_parallels), 2)
-        self.assertEqualAndKind(crs.standard_parallels[0], -37.0)
-        self.assertEqualAndKind(crs.standard_parallels[1], 21.4)
+        _shared_utils.assert_equal_and_kind(crs.longitude_of_central_meridian, 123.0)
+        _shared_utils.assert_equal_and_kind(crs.latitude_of_projection_origin, -17.0)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 100.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, -200.0)
+        assert len(crs.standard_parallels) == 2
+        _shared_utils.assert_equal_and_kind(crs.standard_parallels[0], -37.0)
+        _shared_utils.assert_equal_and_kind(crs.standard_parallels[1], 21.4)
 
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.
-        self.assertEqualAndKind(crs.longitude_of_central_meridian, 0.0)
-        self.assertEqualAndKind(crs.latitude_of_projection_origin, 0.0)
-        self.assertEqualAndKind(crs.false_easting, 0.0)
-        self.assertEqualAndKind(crs.false_northing, 0.0)
-        self.assertEqual(len(crs.standard_parallels), 2)
-        self.assertEqualAndKind(crs.standard_parallels[0], 20.0)
-        self.assertEqualAndKind(crs.standard_parallels[1], 50.0)
+        _shared_utils.assert_equal_and_kind(crs.longitude_of_central_meridian, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.latitude_of_projection_origin, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, 0.0)
+        assert len(crs.standard_parallels) == 2
+        _shared_utils.assert_equal_and_kind(crs.standard_parallels[0], 20.0)
+        _shared_utils.assert_equal_and_kind(crs.standard_parallels[1], 50.0)
 
     def test_no_optional_args(self):
         # Check expected defaults with no optional args.
         crs = AlbersEqualArea()
         self._check_crs_defaults(crs)
 
-    def test_optional_args_None(self):
+    def test_optional_args_none(self):
         # Check expected defaults with optional args=None.
         crs = AlbersEqualArea(
             longitude_of_central_meridian=None,
@@ -142,7 +142,3 @@ class Test_init_defaults(tests.IrisTest):
             false_northing=None,
         )
         self._check_crs_defaults(crs)
-
-
-if __name__ == "__main__":
-    tests.main()
