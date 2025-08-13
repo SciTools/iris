@@ -41,7 +41,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ corrected the ESMF/ESMPy import in
    :mod:`iris.experimental.regrid_conservative` (the module was renamed to ESMPy
    in v8.4). Note that :mod:`~iris.experimental.regrid_conservative`
-   is already deprecated and will be removed in a future release. (:pull:`6641`)
+   is already deprecated and will be removed in a future release. (:pull:`6643`)
 
 
 💣 Incompatible Changes
