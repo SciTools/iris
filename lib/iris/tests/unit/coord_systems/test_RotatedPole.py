@@ -31,7 +31,7 @@ class Test_init:
         if cartopy.__version__ < "0.12":
             with pytest.warns() as warn:
                 _ = self.rp_crs.as_cartopy_crs()
-                assert len(warn) == 1
+            assert len(warn) == 1
         else:
             accrs = self.rp_crs.as_cartopy_crs()
             expected = ccrs.RotatedGeodetic(
@@ -45,7 +45,7 @@ class Test_init:
         if cartopy.__version__ < "0.12":
             with pytest.warns() as warn:
                 _ = self.rp_crs.as_cartopy_projection()
-                assert len(warn) == 1
+            assert len(warn) == 1
         else:
             accrsp = self.rp_crs.as_cartopy_projection()
             expected = ccrs.RotatedPole(
