@@ -42,7 +42,7 @@ class Test_basics:
 
 
 class Test_masked:
-    def setup_method(self):
+    def _setup(self):
         self.cube = Cube(ma.masked_greater([1, 2, 3, 4, 5], 3))
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
 
@@ -52,7 +52,7 @@ class Test_masked:
 
 
 class Test_lazy_masked:
-    def setup_method(self):
+    def _setup(self):
         masked_data = ma.masked_greater([1, 2, 3, 4, 5], 3)
         self.cube = Cube(as_lazy_data(masked_data))
         self.cube.add_dim_coord(DimCoord([6, 7, 8, 9, 10], long_name="foo"), 0)
