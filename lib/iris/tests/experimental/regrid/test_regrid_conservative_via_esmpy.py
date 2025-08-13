@@ -363,7 +363,8 @@ class TestConservativeRegrid:
         c2.add_dim_coord(x_coord_2, 1)
 
         # NOTE: at present, this causes an error inside ESMF ...
-        context = pytest.raises(ValueError)
+        emsg = "ESMC_FieldRegridStore failed with rc = 506."
+        context = pytest.raises(ValueError, match=emsg)
         global_cell_supported = False
         if global_cell_supported:
             context = _donothing_context_manager()
@@ -589,7 +590,11 @@ class TestConservativeRegrid:
         c2.data[:] = 0.0
         c2.coord("latitude").coord_system = None
 
-        with pytest.raises(ValueError):
+        emsg = (
+            r"The cube's x \('longitude'\) and y \('latitude'\) "
+            "coordinates must have the same coordinate system."
+        )
+        with pytest.raises(ValueError, match=emsg):
             regrid_conservative_via_esmpy(c1, c2)
 
     def test_fail_different_cs(self):
@@ -605,16 +610,24 @@ class TestConservativeRegrid:
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         regrid_conservative_via_esmpy(c1, c2)
 
+        emsg = (
+            r"The cube's x \('grid_longitude'\) and y \('grid_latitude'\) coordinates "
+            "must have the same coordinate system."
+        )
         # Replace the coord_system one of the source coords + check this fails.
         c1.coord("grid_longitude").coord_system = c2.coord("longitude").coord_system
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_conservative_via_esmpy(c1, c2)
 
+        emsg = (
+            r"The cube's x \('longitude'\) and y \('latitude'\) coordinates "
+            "must have the same coordinate system."
+        )
         # Repeat with target coordinate fiddled.
         c1 = _make_test_cube(shape1, xlims1, ylims1, pole_latlon=(45.0, 35.0))
         c2 = _make_test_cube(shape2, xlims2, ylims2)
         c2.coord("latitude").coord_system = c1.coord("grid_latitude").coord_system
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_conservative_via_esmpy(c1, c2)
 
     def test_rotated(self):

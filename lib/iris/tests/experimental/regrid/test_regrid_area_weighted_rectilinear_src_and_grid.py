@@ -147,35 +147,43 @@ class TestAreaWeightedRegrid:
         self.simple_cube.coord("longitude").guess_bounds(0.0)
 
     def test_no_bounds(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have contiguous bounds."
+        )
         src = self.simple_cube.copy()
         src.coord("latitude").bounds = None
         dest = self.simple_cube.copy()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
         src.coord("longitude").bounds = None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.coord("latitude").bounds = None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         dest = self.simple_cube.copy()
         dest.coord("longitude").bounds = None
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_non_contiguous_bounds(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have contiguous bounds."
+        )
         src = self.simple_cube.copy()
         bounds = src.coord("latitude").bounds.copy()
         bounds[1, 1] -= 0.1
         src.coord("latitude").bounds = bounds
         dest = self.simple_cube.copy()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
@@ -183,35 +191,40 @@ class TestAreaWeightedRegrid:
         bounds = dest.coord("longitude").bounds.copy()
         bounds[1, 1] -= 0.1
         dest.coord("longitude").bounds = bounds
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_missing_coords(self):
+        emsg = r"Cube 'unknown' must contain a single 1D . coordinate\."
         dest = self.simple_cube.copy()
         # Missing src_x.
         src = self.simple_cube.copy()
         src.remove_coord("longitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing src_y.
         src = self.simple_cube.copy()
         src.remove_coord("latitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing dest_x.
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.remove_coord("longitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing dest_y.
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.remove_coord("latitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_different_cs(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have the same coordinate system."
+        )
         src = self.simple_cube.copy()
         src_cs = copy.copy(src.coord("latitude").coord_system)
         src_cs.semi_major_axis = 7000000
@@ -222,7 +235,7 @@ class TestAreaWeightedRegrid:
         dest_cs.semi_major_axis = 7000001
         dest.coord("longitude").coord_system = dest_cs
         dest.coord("latitude").coord_system = dest_cs
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_regrid_to_same_grid(self, request):
