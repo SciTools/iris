@@ -573,8 +573,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
     def __setattr__(self, key, value):
         if getattr(self, "_mesh_timestamps", None) is not None:
-            for timestamp in self._mesh_timestamps:
-                timestamp.update()
+            if key in ("points", "bounds", "_values", "indices"):
+                for timestamp in self._mesh_timestamps:
+                    timestamp.update()
         object.__setattr__(self, key, value)
 
     def __str__(self):

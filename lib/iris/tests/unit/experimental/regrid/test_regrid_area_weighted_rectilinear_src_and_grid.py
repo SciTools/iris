@@ -7,12 +7,9 @@
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
@@ -20,14 +17,16 @@ from iris.cube import Cube
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid,
 )
+from iris.tests import _shared_utils
 from iris.tests.experimental.regrid.test_regrid_area_weighted_rectilinear_src_and_grid import (
     _resampled_grid,
 )
 
 
-class TestMdtol(tests.IrisTest):
+class TestMdtol:
     # Tests to check the masking behaviour controlled by mdtol kwarg.
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # A (3, 2, 4) cube with a masked element.
         cube = Cube(np.ma.arange(24, dtype=np.int32).reshape((3, 2, 4)))
         cs = GeogCS(6371229)
@@ -56,20 +55,20 @@ class TestMdtol(tests.IrisTest):
         res = regrid(self.src_cube, self.grid_cube)
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[2:5, 1, 4:7] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+        _shared_utils.assert_array_equal(res.data.mask, expected_mask)
 
     def test_zero(self):
         res = regrid(self.src_cube, self.grid_cube, mdtol=0)
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[2:5, 1, 4:7] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+        _shared_utils.assert_array_equal(res.data.mask, expected_mask)
 
     def test_one(self):
         res = regrid(self.src_cube, self.grid_cube, mdtol=1)
         expected_mask = np.zeros((7, 2, 9), bool)
         # Only a single cell has all contributing cells masked.
         expected_mask[3, 1, 5] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+        _shared_utils.assert_array_equal(res.data.mask, expected_mask)
 
     def test_fraction_below_min(self):
         # Cells in target grid that overlap with the masked src cell
@@ -89,7 +88,7 @@ class TestMdtol(tests.IrisTest):
         res = regrid(self.src_cube, self.grid_cube, mdtol=mdtol)
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[2:5, 1, 4:7] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+        _shared_utils.assert_array_equal(res.data.mask, expected_mask)
 
     def test_fraction_between_min_and_max(self):
         # Threshold between min and max fraction. See
@@ -100,17 +99,17 @@ class TestMdtol(tests.IrisTest):
         expected_mask = np.zeros((7, 2, 9), bool)
         expected_mask[2:5, 1, 5] = True
         expected_mask[3, 1, 6] = True
-        self.assertArrayEqual(res.data.mask, expected_mask)
+        _shared_utils.assert_array_equal(res.data.mask, expected_mask)
 
     def test_src_not_masked_array(self):
         self.src_cube.data = self.src_cube.data.filled(1.0)
         res = regrid(self.src_cube, self.grid_cube, mdtol=0.9)
-        self.assertFalse(ma.isMaskedArray(res.data))
+        assert not ma.isMaskedArray(res.data)
 
     def test_boolean_mask(self):
         self.src_cube.data = np.ma.arange(24).reshape(3, 2, 4)
         res = regrid(self.src_cube, self.grid_cube, mdtol=0.9)
-        self.assertEqual(ma.count_masked(res.data), 0)
+        assert ma.count_masked(res.data) == 0
 
     def test_scalar_no_overlap(self):
         # Slice src so result collapses to a scalar.
@@ -118,7 +117,7 @@ class TestMdtol(tests.IrisTest):
         # Regrid to a single cell with no overlap with masked src cells.
         grid_cube = self.grid_cube[2, 1, 3]
         res = regrid(src_cube, grid_cube, mdtol=0.8)
-        self.assertFalse(ma.isMaskedArray(res.data))
+        assert not ma.isMaskedArray(res.data)
 
     def test_scalar_with_overlap_below_mdtol(self):
         # Slice src so result collapses to a scalar.
@@ -127,7 +126,7 @@ class TestMdtol(tests.IrisTest):
         grid_cube = self.grid_cube[3, 1, 4]
         # Set threshold (mdtol) to greater than 0.5 (50%).
         res = regrid(src_cube, grid_cube, mdtol=0.6)
-        self.assertEqual(ma.count_masked(res.data), 0)
+        assert ma.count_masked(res.data) == 0
 
     def test_scalar_with_overlap_above_mdtol(self):
         # Slice src so result collapses to a scalar.
@@ -136,10 +135,10 @@ class TestMdtol(tests.IrisTest):
         grid_cube = self.grid_cube[3, 1, 4]
         # Set threshold (mdtol) to less than 0.5 (50%).
         res = regrid(src_cube, grid_cube, mdtol=0.4)
-        self.assertEqual(ma.count_masked(res.data), 1)
+        assert ma.count_masked(res.data) == 1
 
 
-class TestWrapAround(tests.IrisTest):
+class TestWrapAround:
     def test_float_tolerant_equality(self):
         # Ensure that floating point numbers are treated appropriately when
         # introducing precision difference from wrap_around.
@@ -183,8 +182,4 @@ class TestWrapAround(tests.IrisTest):
 
         res = regrid(source, grid)
         # The result should be equal to the source data and NOT be masked.
-        self.assertArrayEqual(res.data, np.array([1.0]))
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_equal(res.data, np.array([1.0]))

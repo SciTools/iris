@@ -164,6 +164,16 @@ class TestAsSeries(tests.IrisTest):
 class TestAsDataFrame(tests.IrisTest):
     """Test conversion of 2D cubes to Pandas using as_data_frame()."""
 
+    def test_scalar_cube(self):
+        cube = Cube(1.0)
+        data_frame = iris.pandas.as_data_frame(cube)
+        expected_index = [0]
+        expected_columns = [0]
+        self.assertArrayEqual(data_frame, cube.data)
+        self.assertArrayEqual(data_frame.index, expected_index)
+        self.assertArrayEqual(data_frame.columns, expected_columns)
+        self.assertIsNone(data_frame.index.name)
+
     def test_no_dim_coords(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo")
         expected_index = [0, 1]
@@ -322,6 +332,15 @@ class TestAsDataFrameNDim(tests.IrisTest):
     @pytest.fixture(autouse=True)
     def _activate_pandas_ndim(self, activate_pandas_ndim):
         pass
+
+    def test_scalar_cube(self):
+        cube = Cube(1.0, long_name="foo")
+        data_frame = iris.pandas.as_data_frame(cube)
+        expected_index = [0]
+        self.assertArrayEqual(data_frame.foo.values, cube.data)
+        self.assertEqual(data_frame.index.nlevels, 1)
+        self.assertIsNone(data_frame.index.names[0])
+        self.assertArrayEqual(data_frame.index.levels[0], expected_index)
 
     def test_no_dim_coords(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo")
