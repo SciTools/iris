@@ -3,16 +3,16 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-import iris.tests as tests  # isort:skip
 import numpy as np
 import PIL.Image
 
 import iris
+from iris.tests import _shared_utils
 
 
-@tests.skip_gdal
-@tests.skip_data
-class TestGeoTiffExport(tests.IrisTest):
+@_shared_utils.skip_gdal
+@_shared_utils.skip_data
+class TestGeoTiffExport:
     def check_tiff_header(self, tiff_filename, expect_keys, expect_entries):
         """Checks the given tiff file's metadata contains the expected keys,
         and some matching values (not all).
@@ -24,41 +24,40 @@ class TestGeoTiffExport(tests.IrisTest):
 
             missing_keys = sorted(set(expect_keys) - set(file_keys))
             msg_nokeys = "Tiff header has missing keys : {}."
-            self.assertEqual(missing_keys, [], msg_nokeys.format(missing_keys))
+            assert missing_keys == [], msg_nokeys.format(missing_keys)
 
             extra_keys = sorted(set(file_keys) - set(expect_keys))
             msg_extrakeys = "Tiff header has extra unexpected keys : {}."
-            self.assertEqual(extra_keys, [], msg_extrakeys.format(extra_keys))
+            assert extra_keys == [], msg_extrakeys.format(extra_keys)
 
             msg_badval = "Tiff header entry {} has value {} != {}."
             for key, value in expect_entries.items():
                 content = im.tag[key]
-                self.assertEqual(content, value, msg_badval.format(key, content, value))
+                assert content == value, msg_badval.format(key, content, value)
 
-    def check_tiff(self, cube, header_keys, header_items):
+    def check_tiff(self, cube, header_keys, header_items, tmp_fn):
         # Check that the cube saves correctly to TIFF :
         #   * the header contains expected keys and (some) values
         #   * the data array retrieves correctly
         import iris.experimental.raster
 
-        with self.temp_filename(".tif") as temp_filename:
-            iris.experimental.raster.export_geotiff(cube, temp_filename)
+        iris.experimental.raster.export_geotiff(cube, tmp_fn)
 
-            # Check the metadata is correct.
-            self.check_tiff_header(temp_filename, header_keys, header_items)
+        # Check the metadata is correct.
+        self.check_tiff_header(tmp_fn, header_keys, header_items)
 
-            # Ensure that north is at the top then check the data is correct.
-            coord_y = cube.coord(axis="Y", dim_coords=True)
-            data = cube.data
-            if np.diff(coord_y.bounds[0]) > 0:
-                data = cube.data[::-1, :]
-            im = PIL.Image.open(temp_filename)
-            im_data = np.array(im)
-            # Currently we only support writing 32-bit tiff, when comparing
-            # the data ensure that it is also 32-bit
-            np.testing.assert_array_equal(im_data, data.astype(np.float32))
+        # Ensure that north is at the top then check the data is correct.
+        coord_y = cube.coord(axis="Y", dim_coords=True)
+        data = cube.data
+        if np.diff(coord_y.bounds[0]) > 0:
+            data = cube.data[::-1, :]
+        im = PIL.Image.open(tmp_fn)
+        im_data = np.array(im)
+        # Currently we only support writing 32-bit tiff, when comparing
+        # the data ensure that it is also 32-bit
+        _shared_utils.assert_array_equal(im_data, data.astype(np.float32))
 
-    def _check_tiff_export(self, masked, inverted=False):
+    def _check_tiff_export(self, masked, tmp_fn, inverted=False):
         tif_header_keys = [
             256,
             257,
@@ -110,7 +109,7 @@ class TestGeoTiffExport(tests.IrisTest):
             33550: (1.125, 1.125, 0.0),
             33922: (0.0, 0.0, 0.0, -0.5625, 89.4375, 0.0),
         }
-        fin = tests.get_data_path(
+        fin = _shared_utils.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
         cube = iris.load_cube(fin)[0]
@@ -140,17 +139,16 @@ class TestGeoTiffExport(tests.IrisTest):
             coord.guess_bounds()
             cube.data = cube.data[::-1, :]
 
-        self.check_tiff(cube, tif_header_keys, tif_header_entries)
+        self.check_tiff(cube, tif_header_keys, tif_header_entries, tmp_fn)
 
-    def test_unmasked(self):
-        self._check_tiff_export(masked=False)
+    def test_unmasked(self, tmp_path):
+        fn = tmp_path / "unmasked.tif"
+        self._check_tiff_export(masked=False, tmp_fn=fn)
 
-    def test_masked(self):
-        self._check_tiff_export(masked=True)
+    def test_masked(self, tmp_path):
+        fn = tmp_path / "masked.tif"
+        self._check_tiff_export(masked=True, tmp_fn=fn)
 
-    def test_inverted(self):
-        self._check_tiff_export(masked=False, inverted=True)
-
-
-if __name__ == "__main__":
-    tests.main()
+    def test_inverted(self, tmp_path):
+        fn = tmp_path / "inverted.tif"
+        self._check_tiff_export(masked=False, inverted=True, tmp_fn=fn)

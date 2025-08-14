@@ -26,4 +26,6 @@ __all__ = [
 ]
 
 # Configure the logger as a root logger.
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET")
+logger = get_logger(
+    __name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET", propagate=True
+)

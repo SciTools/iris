@@ -30,8 +30,6 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
-
 #. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
@@ -40,7 +38,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@trexfeathers`_ corrected the ESMF/ESMPy import in
+   :mod:`iris.experimental.regrid_conservative` (the module was renamed to ESMPy
+   in v8.4). Note that :mod:`~iris.experimental.regrid_conservative`
+   is already deprecated and will be removed in a future release. (:pull:`6643`)
 
 
 💣 Incompatible Changes
@@ -70,7 +71,8 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@rcomer`_ updated all Cartopy references to point to the new location at
+   https://cartopy.readthedocs.io (:pull:`6636`)
 
 
 💼 Internal
