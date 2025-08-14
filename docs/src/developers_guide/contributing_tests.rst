@@ -205,7 +205,7 @@ There is no fixed naming scheme for integration tests.
 _shared_utils
 -------------
 
-Iris has a custom testing module, `_shared_utils.py`, which holds custom
+Iris has a custom testing module, ``_shared_utils.py``, which holds custom
 assertions for use in Iris' testing. When calling functions from this
 module, please include the module in each call, i.e.
 
