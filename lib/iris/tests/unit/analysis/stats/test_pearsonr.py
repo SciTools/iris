@@ -140,7 +140,8 @@ class TestLazy(Mixin):
         _shared_utils.assert_array_almost_equal(r_test.data, r_ref.data.T)
 
     def test_weight_error(self):
-        with pytest.raises(ValueError):
+        expected = "weights array should have dimensions"
+        with pytest.raises(ValueError, match=expected):
             stats.pearsonr(
                 self.cube_a,
                 self.cube_b[0, :, :],
@@ -209,7 +210,8 @@ class TestCoordHandling(Mixin):
         stats.pearsonr(self.cube_a, self.cube_b)
 
     def test_incompatible_cubes(self):
-        with pytest.raises(ValueError):
+        expected = "Insufficient matching coordinate metadata to resolve cubes"
+        with pytest.raises(ValueError, match=expected):
             stats.pearsonr(self.cube_a[:, 0, :], self.cube_b[0, :, :], "longitude")
 
     def test_single_coord(self):
@@ -217,5 +219,6 @@ class TestCoordHandling(Mixin):
         stats.pearsonr(self.cube_a, self.cube_b, "latitude")
 
     def test_non_existent_coord(self):
-        with pytest.raises(CoordinateNotFoundError):
+        expected = "Expected to find exactly 1 .* coordinate"
+        with pytest.raises(CoordinateNotFoundError, match=expected):
             stats.pearsonr(self.cube_a, self.cube_b, "bad_coord")
