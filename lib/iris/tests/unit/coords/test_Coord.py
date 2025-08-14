@@ -4,14 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coords.Coord` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import collections
 from datetime import datetime
-from unittest import mock
-import warnings
 
 import cf_units
 import dask.array as da
@@ -30,8 +24,9 @@ from iris.warnings import IrisVagueMetadataWarning
 Pair = collections.namedtuple("Pair", "points bounds")
 
 
-class Test_nearest_neighbour_index__ascending(tests.IrisTest):
-    def setUp(self):
+class Test_nearest_neighbour_index__ascending:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         points = [0.0, 90.0, 180.0, 270.0]
         self.coord = DimCoord(points, circular=False, units="degrees")
 
@@ -44,7 +39,7 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
             self.coord.bounds = bounds
         self.coord.circular = circular
         results = [self.coord.nearest_neighbour_index(ind) for ind in ext_pnts]
-        self.assertEqual(results, target)
+        assert results == target
 
     def test_nobounds(self):
         target = [0, 0, 1, 3, 3]
@@ -80,11 +75,12 @@ class Test_nearest_neighbour_index__ascending(tests.IrisTest):
     def test_bounded_float_point(self):
         coord = DimCoord(1, bounds=[0, 2])
         result = coord.nearest_neighbour_index(2.5)
-        self.assertEqual(result, 0)
+        assert result == 0
 
 
-class Test_nearest_neighbour_index__descending(tests.IrisTest):
-    def setUp(self):
+class Test_nearest_neighbour_index__descending:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         points = [270.0, 180.0, 90.0, 0.0]
         self.coord = DimCoord(points, circular=False, units="degrees")
 
@@ -95,7 +91,7 @@ class Test_nearest_neighbour_index__descending(tests.IrisTest):
             self.coord.bounds = _bounds
         self.coord.circular = circular
         results = [self.coord.nearest_neighbour_index(ind) for ind in ext_pnts]
-        self.assertEqual(results, target)
+        assert results == target
 
     def test_nobounds(self):
         target = [3, 3, 2, 0, 0]
@@ -114,8 +110,9 @@ class Test_nearest_neighbour_index__descending(tests.IrisTest):
         self._test_nearest_neighbour_index(target, bounds=True, circular=True)
 
 
-class Test_guess_bounds(tests.IrisTest):
-    def setUp(self):
+class Test_guess_bounds:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.coord = DimCoord(
             np.array([-160, -120, 0, 30, 150, 170]),
             units="degree",
@@ -136,7 +133,7 @@ class Test_guess_bounds(tests.IrisTest):
                 [160.0, 180.0],
             ]
         )
-        self.assertArrayEqual(target, self.coord.bounds)
+        _shared_utils.assert_array_equal(target, self.coord.bounds)
 
     def test_circular_increasing(self):
         self.coord.guess_bounds()
@@ -150,7 +147,7 @@ class Test_guess_bounds(tests.IrisTest):
                 [160.0, 185.0],
             ]
         )
-        self.assertArrayEqual(target, self.coord.bounds)
+        _shared_utils.assert_array_equal(target, self.coord.bounds)
 
     def test_circular_decreasing(self):
         self.coord.points = self.coord.points[::-1]
@@ -165,7 +162,7 @@ class Test_guess_bounds(tests.IrisTest):
                 [-140.0, -175.0],
             ]
         )
-        self.assertArrayEqual(target, self.coord.bounds)
+        _shared_utils.assert_array_equal(target, self.coord.bounds)
 
     def test_circular_increasing_alt_range(self):
         self.coord.points = np.array([10, 30, 90, 150, 210, 220])
@@ -180,7 +177,7 @@ class Test_guess_bounds(tests.IrisTest):
                 [215.0, 295.0],
             ]
         )
-        self.assertArrayEqual(target, self.coord.bounds)
+        _shared_utils.assert_array_equal(target, self.coord.bounds)
 
     def test_circular_decreasing_alt_range(self):
         self.coord.points = np.array([10, 30, 90, 150, 210, 220])[::-1]
@@ -195,49 +192,57 @@ class Test_guess_bounds(tests.IrisTest):
                 [20, -65],
             ]
         )
-        self.assertArrayEqual(target, self.coord.bounds)
+        _shared_utils.assert_array_equal(target, self.coord.bounds)
 
 
-class Test_guess_bounds__default_enabled_latitude_clipping(tests.IrisTest):
+class Test_guess_bounds__default_enabled_latitude_clipping:
     def test_all_inside(self):
         lat = DimCoord([-10, 0, 20], units="degree", standard_name="latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-15, -5], [-5, 10], [10, 30]])
+        _shared_utils.assert_array_equal(lat.bounds, [[-15, -5], [-5, 10], [10, 30]])
 
     def test_points_inside_bounds_outside(self):
         lat = DimCoord([-80, 0, 70], units="degree", standard_name="latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
+        _shared_utils.assert_array_equal(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
 
     def test_points_inside_bounds_outside_grid_latitude(self):
         lat = DimCoord([-80, 0, 70], units="degree", standard_name="grid_latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
+        _shared_utils.assert_array_equal(lat.bounds, [[-90, -40], [-40, 35], [35, 90]])
 
     def test_points_to_edges_bounds_outside(self):
         lat = DimCoord([-90, 0, 90], units="degree", standard_name="latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-90, -45], [-45, 45], [45, 90]])
+        _shared_utils.assert_array_equal(lat.bounds, [[-90, -45], [-45, 45], [45, 90]])
 
     def test_points_outside(self):
         lat = DimCoord([-100, 0, 120], units="degree", standard_name="latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-150, -50], [-50, 60], [60, 180]])
+        _shared_utils.assert_array_equal(
+            lat.bounds, [[-150, -50], [-50, 60], [60, 180]]
+        )
 
     def test_points_inside_bounds_outside_wrong_unit(self):
         lat = DimCoord([-80, 0, 70], units="feet", standard_name="latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+        _shared_utils.assert_array_equal(
+            lat.bounds, [[-120, -40], [-40, 35], [35, 105]]
+        )
 
     def test_points_inside_bounds_outside_wrong_name(self):
         lat = DimCoord([-80, 0, 70], units="degree", standard_name="longitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+        _shared_utils.assert_array_equal(
+            lat.bounds, [[-120, -40], [-40, 35], [35, 105]]
+        )
 
     def test_points_inside_bounds_outside_wrong_name_2(self):
         lat = DimCoord([-80, 0, 70], units="degree", long_name="other_latitude")
         lat.guess_bounds()
-        self.assertArrayEqual(lat.bounds, [[-120, -40], [-40, 35], [35, 105]])
+        _shared_utils.assert_array_equal(
+            lat.bounds, [[-120, -40], [-40, 35], [35, 105]]
+        )
 
 
 def test_guess_bounds_monthly_and_yearly():
@@ -311,7 +316,7 @@ class Test_Guess_Bounds_Monthly:
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
         expected_dates = units.num2date(expected)
-        np.testing.assert_array_equal(dates, expected_dates)
+        _shared_utils.assert_array_equal(dates, expected_dates)
 
     def test_monthly_multiple_years(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
@@ -325,7 +330,7 @@ class Test_Guess_Bounds_Monthly:
         coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
-        np.testing.assert_array_equal(dates, expected)
+        _shared_utils.assert_array_equal(dates, expected)
 
     def test_monthly_single_point(self):
         units = cf_units.Unit("days since epoch", calendar="gregorian")
@@ -337,7 +342,7 @@ class Test_Guess_Bounds_Monthly:
         coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
         coord.guess_bounds(monthly=True)
         dates = units.num2date(coord.bounds)
-        np.testing.assert_array_equal(dates, expected)
+        _shared_utils.assert_array_equal(dates, expected)
 
 
 class Test_Guess_Bounds_Yearly:
@@ -394,48 +399,45 @@ class Test_Guess_Bounds_Yearly:
         coord.guess_bounds(yearly=True)
         dates = units.num2date(coord.bounds)
         expected_dates = units.num2date(expected)
-        np.testing.assert_array_equal(dates, expected_dates)
+        _shared_utils.assert_array_equal(dates, expected_dates)
 
 
-class Test_cell(tests.IrisTest):
-    def _mock_coord(self):
-        coord = mock.Mock(
+class Test_cell:
+    def _mock_coord(self, mocker):
+        coord = mocker.Mock(
             spec=Coord,
             ndim=1,
         )
-        coord.core_points = lambda: np.array([mock.sentinel.time])
+        coord.core_points = lambda: np.array([mocker.sentinel.time])
         coord.core_bounds = lambda: np.array(
-            [[mock.sentinel.lower, mock.sentinel.upper]]
+            [[mocker.sentinel.lower, mocker.sentinel.upper]]
         )
 
         return coord
 
-    def test_time_as_object(self):
+    def test_time_as_object(self, mocker):
         # Ensure Coord.cell() converts the point/bound values to
         # "datetime" objects.
-        coord = self._mock_coord()
-        coord.units.num2date = mock.Mock(
+        coord = self._mock_coord(mocker)
+        coord.units.num2date = mocker.Mock(
             side_effect=[
-                mock.sentinel.datetime,
-                (mock.sentinel.datetime_lower, mock.sentinel.datetime_upper),
+                mocker.sentinel.datetime,
+                (mocker.sentinel.datetime_lower, mocker.sentinel.datetime_upper),
             ]
         )
         cell = Coord.cell(coord, 0)
-        self.assertIs(cell.point, mock.sentinel.datetime)
-        self.assertEqual(
-            cell.bound,
-            (mock.sentinel.datetime_lower, mock.sentinel.datetime_upper),
+        assert cell.point is mocker.sentinel.datetime
+        assert cell.bound == (
+            mocker.sentinel.datetime_lower,
+            mocker.sentinel.datetime_upper,
         )
-        self.assertEqual(
-            coord.units.num2date.call_args_list,
-            [
-                mock.call((mock.sentinel.time,)),
-                mock.call((mock.sentinel.lower, mock.sentinel.upper)),
-            ],
-        )
+        assert coord.units.num2date.call_args_list == [
+            mocker.call((mocker.sentinel.time,)),
+            mocker.call((mocker.sentinel.lower, mocker.sentinel.upper)),
+        ]
 
 
-class Test_collapsed(tests.IrisTest, CoordTestMixin):
+class Test_collapsed(CoordTestMixin):
     def test_serialize(self):
         # Collapse a string AuxCoord, causing it to be serialised.
         string = Pair(
@@ -468,11 +470,13 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             for points, bounds in [string, string_nobounds, string_multi]:
                 coord = AuxCoord(points=points, bounds=bounds, units=units)
                 collapsed_coord = coord.collapsed()
-                self.assertArrayEqual(collapsed_coord.points, _serialize(points))
+                _shared_utils.assert_array_equal(
+                    collapsed_coord.points, _serialize(points)
+                )
                 if bounds is not None:
                     for index in np.ndindex(bounds.shape[1:]):
                         index_slice = (slice(None),) + tuple(index)
-                        self.assertArrayEqual(
+                        _shared_utils.assert_array_equal(
                             collapsed_coord.bounds[index_slice],
                             _serialize(bounds[index_slice]),
                         )
@@ -485,10 +489,12 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         )
         for units in ["unknown", "no_unit", 1, "K"]:
             coord.units = units
-            with self.assertNoWarningsRegexp():
+            with _shared_utils.assert_no_warnings_regexp():
                 collapsed_coord = coord.collapsed()
-            self.assertArrayEqual(collapsed_coord.points, np.mean(coord.points))
-            self.assertArrayEqual(
+            _shared_utils.assert_array_equal(
+                collapsed_coord.points, np.mean(coord.points)
+            )
+            _shared_utils.assert_array_equal(
                 collapsed_coord.bounds,
                 [[coord.bounds.min(), coord.bounds.max()]],
             )
@@ -497,168 +503,174 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         # Lazy points should stay lazy after collapse.
         coord = AuxCoord(points=da.from_array(np.arange(5), chunks=5))
         collapsed_coord = coord.collapsed()
-        self.assertTrue(collapsed_coord.has_lazy_bounds())
-        self.assertTrue(collapsed_coord.has_lazy_points())
+        assert collapsed_coord.has_lazy_bounds()
+        assert collapsed_coord.has_lazy_points()
 
     def test_numeric_nd(self):
         coord = AuxCoord(points=np.array([[1, 2, 4, 5], [4, 5, 7, 8], [7, 8, 10, 11]]))
 
         collapsed_coord = coord.collapsed()
-        self.assertArrayEqual(collapsed_coord.points, np.array([6]))
-        self.assertArrayEqual(collapsed_coord.bounds, np.array([[1, 11]]))
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([6]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[1, 11]]))
 
         # Test partially collapsing one dimension...
         collapsed_coord = coord.collapsed(1)
-        self.assertArrayEqual(collapsed_coord.points, np.array([3.0, 6.0, 9.0]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([3.0, 6.0, 9.0])
+        )
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[1, 5], [4, 8], [7, 11]])
         )
 
         # ... and the other
         collapsed_coord = coord.collapsed(0)
-        self.assertArrayEqual(collapsed_coord.points, np.array([4, 5, 7, 8]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([4, 5, 7, 8]))
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds,
             np.array([[1, 7], [2, 8], [4, 10], [5, 11]]),
         )
 
     def test_numeric_nd_bounds_all(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
 
         collapsed_coord = coord.collapsed()
-        self.assertArrayEqual(collapsed_coord.points, np.array([55]))
-        self.assertArrayEqual(collapsed_coord.bounds, np.array([[-2, 112]]))
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([55]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[-2, 112]]))
 
     def test_numeric_nd_bounds_second(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         collapsed_coord = coord.collapsed(1)
-        self.assertArrayEqual(collapsed_coord.points, np.array([15, 55, 95]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
 
     def test_numeric_nd_bounds_first(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         # ... and the other..
         collapsed_coord = coord.collapsed(0)
-        self.assertArrayEqual(collapsed_coord.points, np.array([40, 50, 60, 70]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([40, 50, 60, 70])
+        )
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds,
             np.array([[-2, 82], [8, 92], [18, 102], [28, 112]]),
         )
 
     def test_numeric_nd_bounds_last(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
         # ... and again with -ve dimension specification.
         collapsed_coord = coord.collapsed(-1)
-        self.assertArrayEqual(collapsed_coord.points, np.array([15, 55, 95]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
 
     def test_lazy_nd_bounds_all(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
         collapsed_coord = coord.collapsed()
 
         # Note that the new points get recalculated from the lazy bounds
         #  and so end up as lazy
-        self.assertTrue(collapsed_coord.has_lazy_points())
-        self.assertTrue(collapsed_coord.has_lazy_bounds())
+        assert collapsed_coord.has_lazy_points()
+        assert collapsed_coord.has_lazy_bounds()
 
-        self.assertArrayEqual(collapsed_coord.points, np.array([55]))
-        self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([55]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, da.array([[-2, 112]]))
 
     def test_lazy_nd_bounds_second(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
         collapsed_coord = coord.collapsed(1)
-        self.assertArrayEqual(collapsed_coord.points, np.array([15, 55, 95]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
 
     def test_lazy_nd_bounds_first(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
         collapsed_coord = coord.collapsed(0)
-        self.assertArrayEqual(collapsed_coord.points, np.array([40, 50, 60, 70]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([40, 50, 60, 70])
+        )
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds,
             np.array([[-2, 82], [8, 92], [18, 102], [28, 112]]),
         )
 
     def test_lazy_nd_bounds_last(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_lazy)
 
         collapsed_coord = coord.collapsed(-1)
-        self.assertArrayEqual(collapsed_coord.points, np.array([15, 55, 95]))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
 
     def test_lazy_nd_points_and_bounds(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy)
 
         collapsed_coord = coord.collapsed()
 
-        self.assertTrue(collapsed_coord.has_lazy_points())
-        self.assertTrue(collapsed_coord.has_lazy_bounds())
+        assert collapsed_coord.has_lazy_points()
+        assert collapsed_coord.has_lazy_bounds()
 
-        self.assertArrayEqual(collapsed_coord.points, da.array([55]))
-        self.assertArrayEqual(collapsed_coord.bounds, da.array([[-2, 112]]))
+        _shared_utils.assert_array_equal(collapsed_coord.points, da.array([55]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, da.array([[-2, 112]]))
 
     def test_numeric_nd_multidim_bounds_warning(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
 
         msg = (
             "Collapsing a multi-dimensional coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             coord.collapsed()
 
     def test_lazy_nd_multidim_bounds_warning(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
 
         msg = (
             "Collapsing a multi-dimensional coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             coord.collapsed()
 
     def test_numeric_nd_noncontiguous_bounds_warning(self):
-        self.setupTestArrays((3))
+        self.setup_test_arrays((3))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real, long_name="y")
 
         msg = (
             "Collapsing a non-contiguous coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             coord.collapsed()
 
     def test_lazy_nd_noncontiguous_bounds_warning(self):
-        self.setupTestArrays((3))
+        self.setup_test_arrays((3))
         coord = AuxCoord(self.pts_lazy, bounds=self.bds_lazy, long_name="y")
 
         msg = (
             "Collapsing a non-contiguous coordinate. "
             "Metadata may not be fully descriptive for 'y'."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             coord.collapsed()
 
     def test_numeric_3_bounds(self):
@@ -673,14 +685,16 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             r"1D coordinates with 2 bounds. Metadata may not be fully "
             r"descriptive for 'x'. Ignoring bounds."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             collapsed_coord = coord.collapsed()
 
-        self.assertFalse(collapsed_coord.has_lazy_points())
-        self.assertFalse(collapsed_coord.has_lazy_bounds())
+        assert not collapsed_coord.has_lazy_points()
+        assert not collapsed_coord.has_lazy_bounds()
 
-        self.assertArrayAlmostEqual(collapsed_coord.points, np.array([4.0]))
-        self.assertArrayAlmostEqual(collapsed_coord.bounds, np.array([[2.0, 6.0]]))
+        _shared_utils.assert_array_almost_equal(collapsed_coord.points, np.array([4.0]))
+        _shared_utils.assert_array_almost_equal(
+            collapsed_coord.bounds, np.array([[2.0, 6.0]])
+        )
 
     def test_lazy_3_bounds(self):
         points = da.arange(3) * 2.0
@@ -694,14 +708,16 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             r"1D coordinates with 2 bounds. Metadata may not be fully "
             r"descriptive for 'x'. Ignoring bounds."
         )
-        with self.assertWarnsRegex(IrisVagueMetadataWarning, msg):
+        with pytest.warns(IrisVagueMetadataWarning, match=msg):
             collapsed_coord = coord.collapsed()
 
-        self.assertTrue(collapsed_coord.has_lazy_points())
-        self.assertTrue(collapsed_coord.has_lazy_bounds())
+        assert collapsed_coord.has_lazy_points()
+        assert collapsed_coord.has_lazy_bounds()
 
-        self.assertArrayAlmostEqual(collapsed_coord.points, da.array([2.0]))
-        self.assertArrayAlmostEqual(collapsed_coord.bounds, da.array([[0.0, 4.0]]))
+        _shared_utils.assert_array_almost_equal(collapsed_coord.points, da.array([2.0]))
+        _shared_utils.assert_array_almost_equal(
+            collapsed_coord.bounds, da.array([[0.0, 4.0]])
+        )
 
     def test_string_masked(self):
         points = ma.array(["foo", "bar", "bing"], mask=[0, 1, 0], dtype=str)
@@ -710,10 +726,10 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
         collapsed_coord = coord.collapsed(0)
 
         expected = "foo|--|bing"
-        self.assertEqual(collapsed_coord.points, expected)
+        assert collapsed_coord.points == expected
 
     def test_string_nd_first(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str))
 
         collapsed_coord = coord.collapsed(0)
@@ -724,10 +740,10 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "30.0|70.0|110.0",
         ]
 
-        self.assertArrayEqual(collapsed_coord.points, expected)
+        _shared_utils.assert_array_equal(collapsed_coord.points, expected)
 
     def test_string_nd_second(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str))
 
         collapsed_coord = coord.collapsed(1)
@@ -737,19 +753,19 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "80.0|90.0|100.0|110.0",
         ]
 
-        self.assertArrayEqual(collapsed_coord.points, expected)
+        _shared_utils.assert_array_equal(collapsed_coord.points, expected)
 
     def test_string_nd_both(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str))
 
         collapsed_coord = coord.collapsed()
         expected = ["0.0|10.0|20.0|30.0|40.0|50.0|60.0|70.0|80.0|90.0|100.0|110.0"]
 
-        self.assertArrayEqual(collapsed_coord.points, expected)
+        _shared_utils.assert_array_equal(collapsed_coord.points, expected)
 
     def test_string_nd_bounds_first(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
 
         collapsed_coord = coord.collapsed(0)
@@ -769,11 +785,11 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "32.0|72.0|112.0",
         ]
 
-        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
-        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 0], expected_lower)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 1], expected_upper)
 
     def test_string_nd_bounds_second(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
 
         collapsed_coord = coord.collapsed(1)
@@ -791,11 +807,11 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "82.0|92.0|102.0|112.0",
         ]
 
-        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
-        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 0], expected_lower)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 1], expected_upper)
 
     def test_string_nd_bounds_both(self):
-        self.setupTestArrays((3, 4))
+        self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real.astype(str), bounds=self.bds_real.astype(str))
 
         collapsed_coord = coord.collapsed()
@@ -806,53 +822,51 @@ class Test_collapsed(tests.IrisTest, CoordTestMixin):
             "2.0|12.0|22.0|32.0|42.0|52.0|62.0|72.0|82.0|92.0|102.0|112.0"
         ]
 
-        self.assertArrayEqual(collapsed_coord.bounds[:, 0], expected_lower)
-        self.assertArrayEqual(collapsed_coord.bounds[:, 1], expected_upper)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 0], expected_lower)
+        _shared_utils.assert_array_equal(collapsed_coord.bounds[:, 1], expected_upper)
 
 
-class Test_is_compatible(tests.IrisTest):
-    def setUp(self):
+class Test_is_compatible:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.test_coord = AuxCoord([1.0])
         self.other_coord = self.test_coord.copy()
 
     def test_noncommon_array_attrs_compatible(self):
         # Non-common array attributes should be ok.
         self.test_coord.attributes["array_test"] = np.array([1.0, 2, 3])
-        self.assertTrue(self.test_coord.is_compatible(self.other_coord))
+        assert self.test_coord.is_compatible(self.other_coord)
 
     def test_matching_array_attrs_compatible(self):
         # Matching array attributes should be ok.
         self.test_coord.attributes["array_test"] = np.array([1.0, 2, 3])
         self.other_coord.attributes["array_test"] = np.array([1.0, 2, 3])
-        self.assertTrue(self.test_coord.is_compatible(self.other_coord))
+        assert self.test_coord.is_compatible(self.other_coord)
 
     def test_different_array_attrs_incompatible(self):
         # Differing array attributes should make coords incompatible.
         self.test_coord.attributes["array_test"] = np.array([1.0, 2, 3])
         self.other_coord.attributes["array_test"] = np.array([1.0, 2, 777.7])
-        self.assertFalse(self.test_coord.is_compatible(self.other_coord))
+        assert not self.test_coord.is_compatible(self.other_coord)
 
 
-class Test_contiguous_bounds(tests.IrisTest):
+class Test_contiguous_bounds:
     def test_1d_coord_no_bounds_warning(self):
         coord = DimCoord([0, 1, 2], standard_name="latitude")
         msg = "Coordinate 'latitude' is not bounded, guessing contiguous bounds."
-        with warnings.catch_warnings():
-            # Cause all warnings to raise Exceptions
-            warnings.simplefilter("error")
-            with self.assertRaisesRegex(Warning, msg):
-                coord.contiguous_bounds()
+        with pytest.warns(match=msg):
+            coord.contiguous_bounds()
 
     def test_2d_coord_no_bounds_error(self):
         coord = AuxCoord(np.array([[0, 0], [5, 5]]), standard_name="latitude")
         emsg = "Guessing bounds of 2D coords is not currently supported"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord.contiguous_bounds()
 
-    def test__sanity_check_bounds_call(self):
+    def test__sanity_check_bounds_call(self, mocker):
         coord = DimCoord([5, 15, 25], bounds=[[0, 10], [10, 20], [20, 30]])
-        with mock.patch("iris.coords.Coord._sanity_check_bounds") as bounds_check:
-            coord.contiguous_bounds()
+        bounds_check = mocker.patch("iris.coords.Coord._sanity_check_bounds")
+        coord.contiguous_bounds()
         bounds_check.assert_called_once()
 
     def test_1d_coord(self):
@@ -863,7 +877,7 @@ class Test_contiguous_bounds(tests.IrisTest):
         )
         expected = np.array([1, 3, 5, 7])
         result = coord.contiguous_bounds()
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
     def test_1d_coord_discontiguous(self):
         coord = DimCoord(
@@ -873,7 +887,7 @@ class Test_contiguous_bounds(tests.IrisTest):
         )
         expected = np.array([1, 4, 5, 7])
         result = coord.contiguous_bounds()
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
     def test_2d_lon_bounds(self):
         coord = AuxCoord(
@@ -884,7 +898,7 @@ class Test_contiguous_bounds(tests.IrisTest):
         )
         expected = np.array([[0, 2, 4], [0, 2, 4], [0, 2, 4]])
         result = coord.contiguous_bounds()
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
     def test_2d_lat_bounds(self):
         coord = AuxCoord(
@@ -895,31 +909,31 @@ class Test_contiguous_bounds(tests.IrisTest):
         )
         expected = np.array([[0, 0, 0], [2, 2, 2], [4, 4, 4]])
         result = coord.contiguous_bounds()
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
 
-class Test_is_contiguous(tests.IrisTest):
+class Test_is_contiguous:
     def test_no_bounds(self):
         coord = DimCoord([1, 3])
         result = coord.is_contiguous()
-        self.assertFalse(result)
+        assert not result
 
-    def test__discontiguity_in_bounds_call(self):
+    def test__discontiguity_in_bounds_call(self, mocker):
         # Check that :meth:`iris.coords.Coord._discontiguity_in_bounds` is
         # called.
         coord = DimCoord([1, 3], bounds=[[0, 2], [2, 4]])
-        with mock.patch(
-            "iris.coords.Coord._discontiguity_in_bounds"
-        ) as discontiguity_check:
-            # Discontiguity returns two objects that are unpacked in
-            # `coord.is_contiguous`.
-            discontiguity_check.return_value = [None, None]
-            coord.is_contiguous(rtol=1e-1, atol=1e-3)
+
+        discontiguity_check = mocker.patch("iris.coords.Coord._discontiguity_in_bounds")
+        # Discontiguity returns two objects that are unpacked in
+        # `coord.is_contiguous`.
+        discontiguity_check.return_value = [None, None]
+        coord.is_contiguous(rtol=1e-1, atol=1e-3)
         discontiguity_check.assert_called_with(rtol=1e-1, atol=1e-3)
 
 
-class Test__discontiguity_in_bounds(tests.IrisTest):
-    def setUp(self):
+class Test__discontiguity_in_bounds:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.points_3by3 = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
         self.lon_bounds_3by3 = np.array(
             [
@@ -939,29 +953,29 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
     def test_1d_contiguous(self):
         coord = DimCoord([-20, 0, 20], bounds=[[-30, -10], [-10, 10], [10, 30]])
         contiguous, diffs = coord._discontiguity_in_bounds()
-        self.assertTrue(contiguous)
-        self.assertArrayEqual(diffs, np.zeros(2))
+        assert contiguous
+        _shared_utils.assert_array_equal(diffs, np.zeros(2))
 
     def test_1d_discontiguous(self):
         coord = DimCoord([10, 20, 40], bounds=[[5, 15], [15, 25], [35, 45]])
         contiguous, diffs = coord._discontiguity_in_bounds()
-        self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs, np.array([False, True]))
+        assert not contiguous
+        _shared_utils.assert_array_equal(diffs, np.array([False, True]))
 
     def test_1d_one_cell(self):
         # Test a 1D coord with a single cell.
         coord = DimCoord(20, bounds=[[10, 30]])
         contiguous, diffs = coord._discontiguity_in_bounds()
-        self.assertTrue(contiguous)
-        self.assertArrayEqual(diffs, np.array([]))
+        assert contiguous
+        _shared_utils.assert_array_equal(diffs, np.array([]))
 
     def test_2d_contiguous_both_dirs(self):
         coord = AuxCoord(self.points_3by3, bounds=self.lon_bounds_3by3)
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertTrue(not diffs_along_y.any())
+        assert contiguous
+        assert not diffs_along_x.any()
+        assert not diffs_along_y.any()
 
     def test_2d_discontiguous_along_x(self):
         coord = AuxCoord(
@@ -969,9 +983,11 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([True, True, True]).reshape(3, 1))
-        self.assertTrue(not diffs_along_y.any())
+        assert not contiguous
+        _shared_utils.assert_array_equal(
+            diffs_along_x, np.array([True, True, True]).reshape(3, 1)
+        )
+        assert not diffs_along_y.any()
 
     def test_2d_discontiguous_along_y(self):
         coord = AuxCoord(
@@ -979,9 +995,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertFalse(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertArrayEqual(diffs_along_y, np.array([[True, True, True]]))
+        assert not contiguous
+        assert not diffs_along_x.any()
+        _shared_utils.assert_array_equal(diffs_along_y, np.array([[True, True, True]]))
 
     def test_2d_discontiguous_along_x_and_y(self):
         coord = AuxCoord(
@@ -994,9 +1010,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         diffs_along_x, diffs_along_y = diffs
         exp_x_diffs = np.array([True, False]).reshape(2, 1)
         exp_y_diffs = np.array([True, False]).reshape(1, 2)
-        self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, exp_x_diffs)
-        self.assertArrayEqual(diffs_along_y, exp_y_diffs)
+        assert not contiguous
+        _shared_utils.assert_array_equal(diffs_along_x, exp_x_diffs)
+        _shared_utils.assert_array_equal(diffs_along_y, exp_y_diffs)
 
     def test_2d_contiguous_along_x_atol(self):
         coord = AuxCoord(
@@ -1005,11 +1021,11 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         # Set a high atol that allows small discontiguities.
         contiguous, diffs = coord._discontiguity_in_bounds(atol=5)
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertArrayEqual(
+        assert contiguous
+        _shared_utils.assert_array_equal(
             diffs_along_x, np.array([False, False, False]).reshape(3, 1)
         )
-        self.assertTrue(not diffs_along_y.any())
+        assert not diffs_along_y.any()
 
     def test_2d_one_cell(self):
         # Test a 2D coord with a single cell, where the coord has shape (1, 1).
@@ -1019,9 +1035,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
         expected_diffs = np.array([], dtype=np.int64)
-        self.assertTrue(contiguous)
-        self.assertArrayEqual(diffs_along_x, expected_diffs.reshape(1, 0))
-        self.assertArrayEqual(diffs_along_y, expected_diffs.reshape(0, 1))
+        assert contiguous
+        _shared_utils.assert_array_equal(diffs_along_x, expected_diffs.reshape(1, 0))
+        _shared_utils.assert_array_equal(diffs_along_y, expected_diffs.reshape(0, 1))
 
     def test_2d_one_cell_along_x(self):
         # Test a 2D coord with a single cell along the x axis, where the coord
@@ -1029,9 +1045,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         coord = AuxCoord(self.points_3by3[:, :1], bounds=self.lat_bounds_3by3[:, :1, :])
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertArrayEqual(diffs_along_y, np.array([0, 0]).reshape(2, 1))
+        assert contiguous
+        assert not diffs_along_x.any()
+        _shared_utils.assert_array_equal(diffs_along_y, np.array([0, 0]).reshape(2, 1))
 
     def test_2d_one_cell_along_y(self):
         # Test a 2D coord with a single cell along the y axis, where the coord
@@ -1039,9 +1055,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         coord = AuxCoord(self.points_3by3[:1, :], bounds=self.lon_bounds_3by3[:1, :, :])
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertTrue(not diffs_along_y.any())
+        assert contiguous
+        assert not diffs_along_x.any()
+        assert not diffs_along_y.any()
 
     def test_2d_contiguous_mod_360(self):
         # Test that longitude coordinates are adjusted by the 360 modulus when
@@ -1058,9 +1074,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertTrue(not diffs_along_y.any())
+        assert contiguous
+        assert not diffs_along_x.any()
+        assert not diffs_along_y.any()
 
     def test_2d_discontiguous_mod_360(self):
         # Test that longitude coordinates are adjusted by the 360 modulus when
@@ -1077,9 +1093,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([[True], [True]]))
-        self.assertTrue(not diffs_along_y.any())
+        assert not contiguous
+        _shared_utils.assert_array_equal(diffs_along_x, np.array([[True], [True]]))
+        assert not diffs_along_y.any()
 
     def test_2d_contiguous_mod_360_not_longitude(self):
         # Test that non-longitude coordinates are not adjusted by the 360
@@ -1096,9 +1112,9 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertTrue(contiguous)
-        self.assertTrue(not diffs_along_x.any())
-        self.assertTrue(not diffs_along_y.any())
+        assert contiguous
+        assert not diffs_along_x.any()
+        assert not diffs_along_y.any()
 
     def test_2d_discontiguous_mod_360_not_longitude(self):
         # Test that non-longitude coordinates are not adjusted by the 360
@@ -1115,12 +1131,12 @@ class Test__discontiguity_in_bounds(tests.IrisTest):
         )
         contiguous, diffs = coord._discontiguity_in_bounds()
         diffs_along_x, diffs_along_y = diffs
-        self.assertFalse(contiguous)
-        self.assertArrayEqual(diffs_along_x, np.array([[True], [True]]))
-        self.assertTrue(not diffs_along_y.any())
+        assert not contiguous
+        _shared_utils.assert_array_equal(diffs_along_x, np.array([[True], [True]]))
+        assert not diffs_along_y.any()
 
 
-class Test__sanity_check_bounds(tests.IrisTest):
+class Test__sanity_check_bounds:
     def test_coord_1d_2_bounds(self):
         # Check that a 1d coord with 2 bounds does not raise an error.
         coord = iris.coords.DimCoord(
@@ -1131,7 +1147,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
     def test_coord_1d_no_bounds(self):
         coord = iris.coords.DimCoord([0, 1], standard_name="latitude")
         emsg = "Contiguous bounds are only defined for 1D coordinates with 2 bounds."
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord._sanity_check_bounds()
 
     def test_coord_1d_1_bounds(self):
@@ -1139,7 +1155,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
             [0, 1], standard_name="latitude", bounds=np.array([[0], [1]])
         )
         emsg = "Contiguous bounds are only defined for 1D coordinates with 2 bounds."
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord._sanity_check_bounds()
 
     def test_coord_2d_4_bounds(self):
@@ -1155,7 +1171,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
     def test_coord_2d_no_bounds(self):
         coord = iris.coords.AuxCoord([[0, 0], [1, 1]], standard_name="latitude")
         emsg = "Contiguous bounds are only defined for 2D coordinates with 4 bounds."
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord._sanity_check_bounds()
 
     def test_coord_2d_2_bounds(self):
@@ -1165,7 +1181,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
             bounds=np.array([[[0, 1], [0, 1]], [[1, 2], [1, 2]]]),
         )
         emsg = "Contiguous bounds are only defined for 2D coordinates with 4 bounds."
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord._sanity_check_bounds()
 
     def test_coord_3d(self):
@@ -1174,7 +1190,7 @@ class Test__sanity_check_bounds(tests.IrisTest):
             "Contiguous bounds are not defined for coordinates with more "
             "than 2 dimensions."
         )
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             coord._sanity_check_bounds()
 
 
@@ -1208,7 +1224,7 @@ class Test_convert_units:
         )
 
 
-class Test___str__(tests.IrisTest):
+class Test___str__:
     def test_short_time_interval(self):
         coord = DimCoord([5], standard_name="time", units="days since 1970-01-01")
         expected = "\n".join(
@@ -1221,7 +1237,7 @@ class Test___str__(tests.IrisTest):
             ]
         )
         result = coord.__str__()
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_short_time_interval__bounded(self):
         coord = DimCoord([5, 6], standard_name="time", units="days since 1970-01-01")
@@ -1239,7 +1255,7 @@ class Test___str__(tests.IrisTest):
             ]
         )
         result = coord.__str__()
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_long_time_interval(self):
         coord = DimCoord([5], standard_name="time", units="years since 1970-01-01")
@@ -1253,7 +1269,7 @@ class Test___str__(tests.IrisTest):
             ]
         )
         result = coord.__str__()
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_long_time_interval__bounded(self):
         coord = DimCoord([5, 6], standard_name="time", units="years since 1970-01-01")
@@ -1271,7 +1287,7 @@ class Test___str__(tests.IrisTest):
             ]
         )
         result = coord.__str__()
-        self.assertEqual(expected, result)
+        assert expected == result
 
     def test_non_time_unit(self):
         coord = DimCoord([1.0])
@@ -1284,10 +1300,10 @@ class Test___str__(tests.IrisTest):
             ]
         )
         result = coord.__str__()
-        self.assertEqual(expected, result)
+        assert expected == result
 
 
-class TestClimatology(tests.IrisTest):
+class TestClimatology:
     # Variety of tests for the climatological property of a coord.
     # Only using AuxCoord since there is no different behaviour between Aux
     # and DimCoords for this property.
@@ -1299,10 +1315,10 @@ class TestClimatology(tests.IrisTest):
             units="days since 1970-01-01",
             climatological=True,
         )
-        self.assertTrue(coord.climatological)
+        assert coord.climatological
 
     def test_create_no_bounds_no_set(self):
-        with self.assertRaisesRegex(ValueError, "Cannot set.*no bounds exist"):
+        with pytest.raises(ValueError, match="Cannot set.*no bounds exist"):
             AuxCoord(
                 points=[0, 1],
                 units="days since 1970-01-01",
@@ -1311,28 +1327,28 @@ class TestClimatology(tests.IrisTest):
 
     def test_create_no_time_no_set(self):
         emsg = "Cannot set climatological .* valid time reference units.*"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]], climatological=True)
 
     def test_absent(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
-        self.assertFalse(coord.climatological)
+        assert not coord.climatological
 
     def test_absent_no_bounds_no_set(self):
         coord = AuxCoord(points=[0, 1], units="days since 1970-01-01")
-        with self.assertRaisesRegex(ValueError, "Cannot set.*no bounds exist"):
+        with pytest.raises(ValueError, match="Cannot set.*no bounds exist"):
             coord.climatological = True
 
     def test_absent_no_time_no_set(self):
         coord = AuxCoord(points=[0, 1], bounds=[[0, 1], [1, 2]])
         emsg = "Cannot set climatological .* valid time reference units.*"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             coord.climatological = True
 
     def test_absent_no_bounds_unset(self):
         coord = AuxCoord(points=[0, 1])
         coord.climatological = False
-        self.assertFalse(coord.climatological)
+        assert not coord.climatological
 
     def test_bounds_set(self):
         coord = AuxCoord(
@@ -1341,7 +1357,7 @@ class TestClimatology(tests.IrisTest):
             units="days since 1970-01-01",
         )
         coord.climatological = True
-        self.assertTrue(coord.climatological)
+        assert coord.climatological
 
     def test_bounds_unset(self):
         coord = AuxCoord(
@@ -1351,7 +1367,7 @@ class TestClimatology(tests.IrisTest):
             climatological=True,
         )
         coord.climatological = False
-        self.assertFalse(coord.climatological)
+        assert not coord.climatological
 
     def test_remove_bounds(self):
         coord = AuxCoord(
@@ -1361,7 +1377,7 @@ class TestClimatology(tests.IrisTest):
             climatological=True,
         )
         coord.bounds = None
-        self.assertFalse(coord.climatological)
+        assert not coord.climatological
 
     def test_change_units(self):
         coord = AuxCoord(
@@ -1370,9 +1386,9 @@ class TestClimatology(tests.IrisTest):
             units="days since 1970-01-01",
             climatological=True,
         )
-        self.assertTrue(coord.climatological)
+        assert coord.climatological
         coord.units = "K"
-        self.assertFalse(coord.climatological)
+        assert not coord.climatological
 
 
 class TestIgnoreAxis:
@@ -1391,7 +1407,7 @@ class TestIgnoreAxis:
             sample_coord.ignore_axis = "foo"
 
     @pytest.mark.parametrize(
-        "ignore_axis, copy_or_from, result",
+        ("ignore_axis", "copy_or_from", "result"),
         [
             (True, "copy", True),
             (True, "from_coord", True),
@@ -1408,25 +1424,21 @@ class TestIgnoreAxis:
         assert new_coord.ignore_axis is result
 
 
-class Test___init____abstractmethod(tests.IrisTest):
-    def test(self):
+class Test___init____abstractmethod:
+    def test_abstract(self):
         emsg = "Can't instantiate abstract class Coord"
-        with self.assertRaisesRegex(TypeError, emsg):
+        with pytest.raises(TypeError, match=emsg):
             _ = Coord(points=[0, 1])
 
 
-class Test_cube_dims(tests.IrisTest):
-    def test(self):
+class Test_cube_dims:
+    def test_cube_dims(self, mocker):
         # Check that "coord.cube_dims(cube)" calls "cube.coord_dims(coord)".
-        mock_dims_result = mock.sentinel.COORD_DIMS
-        mock_dims_call = mock.Mock(return_value=mock_dims_result)
-        mock_cube = mock.Mock(Cube, coord_dims=mock_dims_call)
+        mock_dims_result = mocker.sentinel.COORD_DIMS
+        mock_dims_call = mocker.Mock(return_value=mock_dims_result)
+        mock_cube = mocker.Mock(Cube, coord_dims=mock_dims_call)
         test_coord = AuxCoord([1], long_name="test_name")
 
         result = test_coord.cube_dims(mock_cube)
-        self.assertEqual(result, mock_dims_result)
-        self.assertEqual(mock_dims_call.call_args_list, [mock.call(test_coord)])
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert result == mock_dims_result
+        assert mock_dims_call.call_args_list == [mocker.call(test_coord)]

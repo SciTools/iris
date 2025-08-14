@@ -10,7 +10,7 @@ from iris.common import BaseMetadata
 from iris.coords import AuxCoord, CellMethod
 
 
-class Test:
+class TestCellMethod:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.method = "mean"

@@ -15,9 +15,10 @@ import numpy as np
 import numpy.ma as ma
 
 from iris._lazy_data import is_lazy_data
+from iris.tests import _shared_utils
 
 
-def setup_test_arrays(self, shape, masked=False):
+def _setup_test_arrays(self, shape, masked=False):
     # Create concrete and lazy coordinate points and bounds test arrays,
     # given a desired coord shape.
     # If masked=True, also add masked arrays with some or no masked data,
@@ -103,38 +104,46 @@ def coords_all_dtypes_and_lazynesses(self, coord_class):
 
 
 class CoordTestMixin:
-    def setupTestArrays(self, shape=(3,), masked=False):
-        setup_test_arrays(self, shape=shape, masked=masked)
+    def setup_test_arrays(self, shape=(3,), masked=False):
+        _setup_test_arrays(self, shape=shape, masked=masked)
 
-    def assertArraysShareData(self, a1, a2, *args, **kwargs):
+    def assert_arrays_share_data(self, a1, a2, msg=None):
         # Check that two arrays are both real, same dtype, and based on the
         # same underlying data (so changing one will change the other).
-        self.assertIsRealArray(a1)
-        self.assertIsRealArray(a2)
-        self.assertEqual(a1.dtype, a2.dtype)
-        self.assertTrue(arrays_share_data(a1, a2), *args, **kwargs)
+        self.assert_is_real_array(a1)
+        self.assert_is_real_array(a2)
+        assert a1.dtype == a2.dtype
+        if not msg:
+            msg = f"Array {a1} should share data with {a2}"
+        assert arrays_share_data(a1, a2), msg
 
-    def assertArraysDoNotShareData(self, a1, a2, *args, **kwargs):
-        self.assertFalse(arrays_share_data(a1, a2), *args, **kwargs)
+    def assert_arrays_do_not_share_data(self, a1, a2, msg=None):
+        if not msg:
+            msg = f"Array {a1} should not share data with {a2}"
+        assert not arrays_share_data(a1, a2), msg
 
-    def assertIsRealArray(self, array, *args, **kwargs):
+    def assert_is_real_array(self, array, msg=None):
         # Check that the arg is a real array.
-        self.assertTrue(is_real_data(array), *args, **kwargs)
+        if not msg:
+            msg = f"Array {array} is not a real array"
+        assert is_real_data(array), msg
 
-    def assertIsLazyArray(self, array, *args, **kwargs):
+    def assert_is_lazy_array(self, array, msg=None):
         # Check that the arg is a lazy array.
-        self.assertTrue(is_lazy_data(array), *args, **kwargs)
+        if not msg:
+            msg = f"Array {array} is not a lazy array"
+        assert is_lazy_data(array), msg
 
-    def assertEqualRealArraysAndDtypes(self, a1, a2, *args, **kwargs):
+    def assert_equal_real_arrays_and_dtypes(self, a1, a2):
         # Check that two arrays are real, equal, and have same dtype.
-        self.assertIsRealArray(a1)
-        self.assertIsRealArray(a2)
-        self.assertEqual(a1.dtype, a2.dtype)
-        self.assertArrayEqual(a1, a2)
+        self.assert_is_real_array(a1)
+        self.assert_is_real_array(a2)
+        assert a1.dtype == a2.dtype
+        _shared_utils.assert_array_equal(a1, a2)
 
-    def assertEqualLazyArraysAndDtypes(self, a1, a2, *args, **kwargs):
+    def assert_equal_lazy_arrays_and_dtypes(self, a1, a2):
         # Check that two arrays are lazy, equal, and have same dtype.
-        self.assertIsLazyArray(a1)
-        self.assertIsLazyArray(a2)
-        self.assertEqual(a1.dtype, a2.dtype)
-        self.assertArrayEqual(a1.compute(), a2.compute())
+        self.assert_is_lazy_array(a1)
+        self.assert_is_lazy_array(a2)
+        assert a1.dtype == a2.dtype
+        _shared_utils.assert_array_equal(a1.compute(), a2.compute())
