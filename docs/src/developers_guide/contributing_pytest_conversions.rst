@@ -66,6 +66,8 @@ Conversion Checklist
    the `monkeypatch`_ fixture to provide a context-manager.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
+#. Check for ``np.allclose``. This should be swapped for
+   ``_shared_utils.assert_array_all_close``.
 #. Check for references to ``self.tmp_dir`` and ``self.temp_filename``. In
    pytest, ``tmp_path`` is used instead, and can be passed into functions as a
    fixture.
