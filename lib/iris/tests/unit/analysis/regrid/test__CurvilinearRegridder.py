@@ -196,9 +196,8 @@ class Test__derived_coord:
         rg = Regridder(self.src, self.tgt)
         res = rg(self.src)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
         _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude.points
         )
@@ -209,9 +208,8 @@ class Test__derived_coord:
         transposed_cube.transpose([0, 2, 1])
         res = rg(transposed_cube)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
         _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
@@ -220,9 +218,8 @@ class Test__derived_coord:
         rg = Regridder(self.src_t, self.tgt)
         res = rg(self.src_t)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
         _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
@@ -233,9 +230,8 @@ class Test__derived_coord:
         transposed_cube.transpose([0, 2, 1])
         res = rg(transposed_cube)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
         _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude.points
         )
