@@ -4,20 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the function :func:`iris.analysis.maths._output_dtype`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from itertools import product
 import operator
 
 import numpy as np
+import pytest
 
 from iris.analysis.maths import _output_dtype
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Operators which result in a value of the same dtype as their
         # arguments when the arguments' dtypes are the same.
         self.same_result_ops = [
@@ -97,17 +95,13 @@ class Test(tests.IrisTest):
         for dtype in self.dtypes:
             for op in self.same_result_ops:
                 result_dtype = _output_dtype(op, dtype, dtype)
-                self.assertEqual(
-                    dtype,
-                    result_dtype,
-                    self._binary_error_message(op, dtype, dtype, dtype, result_dtype),
+                assert dtype == result_dtype, self._binary_error_message(
+                    op, dtype, dtype, dtype, result_dtype
                 )
             for op in self.unary_same_result_ops:
                 result_dtype = _output_dtype(op, dtype)
-                self.assertEqual(
-                    dtype,
-                    result_dtype,
-                    self._unary_error_message(op, dtype, dtype, result_dtype),
+                assert dtype == result_dtype, self._unary_error_message(
+                    op, dtype, dtype, result_dtype
                 )
 
     def test_binary_float(self):
@@ -127,12 +121,8 @@ class Test(tests.IrisTest):
         for dtype1, dtype2, expected_dtype in cases:
             for op in self.float_ops:
                 result_dtype = _output_dtype(op, dtype1, dtype2)
-                self.assertEqual(
-                    expected_dtype,
-                    result_dtype,
-                    self._binary_error_message(
-                        op, dtype1, dtype2, expected_dtype, result_dtype
-                    ),
+                assert expected_dtype == result_dtype, self._binary_error_message(
+                    op, dtype1, dtype2, expected_dtype, result_dtype
                 )
 
     def test_unary_float(self):
@@ -147,10 +137,8 @@ class Test(tests.IrisTest):
         for dtype, expected_dtype in cases:
             for op in self.unary_float_ops:
                 result_dtype = _output_dtype(op, dtype)
-                self.assertEqual(
-                    expected_dtype,
-                    result_dtype,
-                    self._unary_error_message(op, dtype, expected_dtype, result_dtype),
+                assert expected_dtype == result_dtype, self._unary_error_message(
+                    op, dtype, expected_dtype, result_dtype
                 )
 
     def test_binary_float_argument(self):
@@ -175,12 +163,8 @@ class Test(tests.IrisTest):
         for op in self.all_binary_ops:
             for dtype, expected_dtype in zip(dtypes, expected_dtypes):
                 result_dtype = _output_dtype(op, dtype, np.dtype("f2"))
-                self.assertEqual(
-                    expected_dtype,
-                    result_dtype,
-                    self._binary_error_message(
-                        op, dtype, np.dtype("f2"), expected_dtype, result_dtype
-                    ),
+                assert expected_dtype == result_dtype, self._binary_error_message(
+                    op, dtype, np.dtype("f2"), expected_dtype, result_dtype
                 )
 
     def test_in_place(self):
@@ -189,39 +173,25 @@ class Test(tests.IrisTest):
         for dtype1, dtype2 in product(self.dtypes, self.dtypes):
             for op in self.all_binary_ops:
                 result_dtype = _output_dtype(op, dtype1, dtype2, in_place=True)
-                self.assertEqual(
-                    result_dtype,
-                    dtype1,
-                    self._binary_error_message(
-                        op, dtype1, dtype2, dtype1, result_dtype, in_place=True
-                    ),
+                assert result_dtype == dtype1, self._binary_error_message(
+                    op, dtype1, dtype2, dtype1, result_dtype, in_place=True
                 )
         for dtype in self.dtypes:
             for op in self.all_unary_ops:
                 result_dtype = _output_dtype(op, dtype, in_place=True)
-                self.assertEqual(
-                    result_dtype,
-                    dtype,
-                    self._unary_error_message(
-                        op, dtype, dtype, result_dtype, in_place=True
-                    ),
+                assert result_dtype == dtype, self._unary_error_message(
+                    op, dtype, dtype, result_dtype, in_place=True
                 )
 
-    def test_commuative(self):
+    def test_commutative(self):
         # Check that the operation is commutative if in_place is not specified.
         for dtype1, dtype2 in product(self.dtypes, self.dtypes):
             for op in self.all_binary_ops:
                 result_dtype1 = _output_dtype(op, dtype1, dtype2)
                 result_dtype2 = _output_dtype(op, dtype2, dtype1)
-                self.assertEqual(
-                    result_dtype1,
-                    result_dtype2,
+                assert result_dtype1 == result_dtype2, (
                     "_output_dtype is not commutative with arguments "
                     "{!r} and {!r}: {!r} != {!r}".format(
                         dtype1, dtype2, result_dtype1, result_dtype2
-                    ),
+                    )
                 )
-
-
-if __name__ == "__main__":
-    tests.main()

@@ -4,9 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for cube arithmetic with dask arrays."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-
 import dask.array as da
 
 import iris.cube

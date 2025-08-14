@@ -4,14 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for cube arithmetic involving MeshCoords."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.analysis.maths import add
 from iris.coords import AuxCoord, DimCoord
+from iris.tests import _shared_utils
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 from iris.tests.unit.analysis.maths import (
     CubeArithmeticBroadcastingTestMixin,
@@ -52,9 +50,8 @@ class MeshLocationsMixin:
         return self.cube
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 class TestBroadcastingWithMesh(
-    tests.IrisTest,
     MeshLocationsMixin,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
@@ -67,9 +64,8 @@ class TestBroadcastingWithMesh(
     """
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 class TestBroadcastingWithMeshAndDerived(
-    tests.IrisTest,
     MeshLocationsMixin,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
@@ -93,9 +89,10 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
 
     def _check_no_match(self, dim):
         # Duplicate the basic operation, but convert cubes to meshcubes.
-        cube1, cube2 = self.SetUpNonMatching()
+        cube1, cube2 = self.setup_non_matching()
         self._convert_to_meshcubes([cube1, cube2], dim)
-        with self.assertRaises(ValueError):
+        expected = "Insufficient matching coordinate metadata to resolve cubes"
+        with pytest.raises(ValueError, match=expected):
             add(cube1, cube2)
 
     def test_no_match_dim0(self):
@@ -106,9 +103,10 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
 
     def _check_reversed_points(self, dim):
         # Duplicate the basic operation, but convert cubes to meshcubes.
-        cube1, cube2 = self.SetUpReversed()
+        cube1, cube2 = self.setup_reversed()
         self._convert_to_meshcubes([cube1, cube2], dim)
-        with self.assertRaises(ValueError):
+        expected = "Coordinate '.*' has different points"
+        with pytest.raises(ValueError, match=expected):
             add(cube1, cube2)
 
     def test_reversed_points_dim0(self):
@@ -118,7 +116,7 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
         self._check_reversed_points(1)
 
 
-class TestBasicMeshOperation(tests.IrisTest):
+class TestBasicMeshOperation:
     """Some very basic standalone tests, in an easier-to-comprehend form."""
 
     def test_meshcube_same_mesh(self):
@@ -126,35 +124,35 @@ class TestBasicMeshOperation(tests.IrisTest):
         mesh = sample_mesh()
         cube1 = sample_mesh_cube(mesh=mesh)
         cube2 = sample_mesh_cube(mesh=mesh)
-        self.assertIs(cube1.mesh, mesh)
-        self.assertIs(cube2.mesh, mesh)
+        assert cube1.mesh is mesh
+        assert cube2.mesh is mesh
 
         result = cube1 + cube2
-        self.assertEqual(result.shape, cube1.shape)
-        self.assertIs(result.mesh, mesh)
+        assert result.shape == cube1.shape
+        assert result.mesh is mesh
 
     def test_meshcube_different_equal_mesh(self):
         # Two similar cubes on identical but different meshes.
         cube1 = sample_mesh_cube()
         cube2 = sample_mesh_cube()
-        self.assertEqual(cube1.mesh, cube2.mesh)
-        self.assertIsNot(cube1.mesh, cube2.mesh)
+        assert cube1.mesh == cube2.mesh
+        assert cube1.mesh is not cube2.mesh
 
         result = cube1 + cube2
-        self.assertEqual(result.shape, cube1.shape)
-        self.assertEqual(result.mesh, cube1.mesh)
-        self.assertTrue(result.mesh is cube1.mesh or result.mesh is cube2.mesh)
+        assert result.shape == cube1.shape
+        assert result.mesh == cube1.mesh
+        assert result.mesh is cube1.mesh or result.mesh is cube2.mesh
 
     def test_fail_meshcube_nonequal_mesh(self):
         # Cubes on similar but different meshes -- should *not* combine.
         mesh1 = sample_mesh()
         mesh2 = sample_mesh(n_edges=0)
-        self.assertNotEqual(mesh1, mesh2)
+        assert mesh1 != mesh2
         cube1 = sample_mesh_cube(mesh=mesh1)
         cube2 = sample_mesh_cube(mesh=mesh2)
 
         msg = "Mesh coordinate.* does not match"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             cube1 + cube2
 
     def test_meshcube_meshcoord(self):
@@ -175,15 +173,12 @@ class TestBasicMeshOperation(tests.IrisTest):
         coord_on_mesh.units = "s"  # N.B. the units **must also match**
 
         result = cube / coord
-        self.assertEqual(result.name(), "unknown")
-        self.assertEqual(result.units, "m s-1")
+        assert result.name() == "unknown"
+        assert result.units == "m s-1"
 
         # Moreover : *cannot* do this with the 'equivalent' AuxCoord
         # cf. https://github.com/SciTools/iris/issues/4671
         coord = AuxCoord.from_coord(coord)
-        with self.assertRaises(ValueError):
+        expected = "Could not determine dimension"
+        with pytest.raises(ValueError, match=expected):
             cube / coord
-
-
-if __name__ == "__main__":
-    tests.main()
