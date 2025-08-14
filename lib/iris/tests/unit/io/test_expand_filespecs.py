@@ -85,8 +85,7 @@ class TestExpandFilespecs:
             )
 
     def test_false_bool_absolute(self):
-        tempdir = self.tmpdir
-        msg = os.path.join(tempdir, "no_exist.txt")
+        msg = os.path.join(self.tmpdir, "no_exist.txt")
         (result,) = iio.expand_filespecs([msg], False)
         assert result == msg
 
