@@ -12,13 +12,7 @@ import iris
 import iris._lazy_data
 import iris.analysis.stats as stats
 from iris.exceptions import CoordinateNotFoundError
-from iris.tests._shared_utils import (
-    assert_array_almost_equal,
-    assert_array_equal,
-    assert_masked_array_equal,
-    get_data_path,
-    skip_data,
-)
+from iris.tests import _shared_utils
 
 
 class Mixin:
@@ -26,7 +20,9 @@ class Mixin:
     def _setup_mixin(self):
         # 3D cubes:
         cube_temp = iris.load_cube(
-            get_data_path(("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"))
+            _shared_utils.get_data_path(
+                ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
+            )
         )
         self.cube_a = cube_temp[0:6]
         self.cube_b = cube_temp[20:26]
@@ -37,22 +33,22 @@ class Mixin:
         self.weights = iris.analysis.cartography.area_weights(cube_temp)
 
 
-@skip_data
+@_shared_utils.skip_data
 class TestLazy(Mixin):
     def test_perfect_corr(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_a, ["latitude", "longitude"])
         mocked_compute.assert_not_called()
-        assert_array_equal(r.data, np.array([1.0] * 6))
+        _shared_utils.assert_array_equal(r.data, np.array([1.0] * 6))
 
     def test_perfect_corr_all_dims(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_a)
         mocked_compute.assert_not_called()
-        assert_array_equal(r.data, np.array([1.0]))
+        _shared_utils.assert_array_equal(r.data, np.array([1.0]))
 
     def test_compatible_cubes(self, mocked_compute):
         r = stats.pearsonr(self.cube_a, self.cube_b, ["latitude", "longitude"])
         mocked_compute.assert_not_called()
-        assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             r.data,
             [
                 0.81114936,
@@ -81,8 +77,8 @@ class TestLazy(Mixin):
             ).data
             for i in range(6)
         ]
-        assert_array_equal(r1.data, np.array(r_by_slice))
-        assert_array_equal(r2.data, np.array(r_by_slice))
+        _shared_utils.assert_array_equal(r1.data, np.array(r_by_slice))
+        _shared_utils.assert_array_equal(r2.data, np.array(r_by_slice))
 
     def test_compatible_cubes_weighted(self, mocked_compute):
         r = stats.pearsonr(
@@ -90,7 +86,7 @@ class TestLazy(Mixin):
         )
 
         mocked_compute.assert_not_called()
-        assert_array_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             r.data,
             [
                 0.79105429,
@@ -120,7 +116,7 @@ class TestLazy(Mixin):
             ).data
             for i in range(6)
         ]
-        assert_array_almost_equal(r.data, np.array(r_by_slice))
+        _shared_utils.assert_array_almost_equal(r.data, np.array(r_by_slice))
 
     def test_broadcast_transpose_cubes_weighted(self, mocked_compute):
         # Reference is calculated with no transposition.
@@ -141,7 +137,7 @@ class TestLazy(Mixin):
 
         mocked_compute.assert_not_called()
         # Should get the same result, but transposed.
-        assert_array_almost_equal(r_test.data, r_ref.data.T)
+        _shared_utils.assert_array_almost_equal(r_test.data, r_ref.data.T)
 
     def test_weight_error(self):
         with pytest.raises(ValueError):
@@ -159,8 +155,8 @@ class TestLazy(Mixin):
         r2 = stats.pearsonr(cube_small, cube_small_masked, mdtol=0.49)
 
         mocked_compute.assert_not_called()
-        assert_array_almost_equal(r1.data, np.array([0.74586593]))
-        assert_masked_array_equal(r2.data, ma.array([0], mask=[True]))
+        _shared_utils.assert_array_almost_equal(r1.data, np.array([0.74586593]))
+        _shared_utils.assert_masked_array_equal(r2.data, ma.array([0], mask=[True]))
 
     def test_common_mask_simple(self, mocked_compute):
         cube_small = self.cube_a[:, 0, 0]
@@ -168,7 +164,7 @@ class TestLazy(Mixin):
         r = stats.pearsonr(cube_small, cube_small_masked, common_mask=True)
 
         mocked_compute.assert_not_called()
-        assert_array_almost_equal(r.data, np.array([1.0]))
+        _shared_utils.assert_array_almost_equal(r.data, np.array([1.0]))
 
     def test_common_mask_broadcast(self, mocked_compute):
         cube_small = iris.util.mask_cube(self.cube_a[:, 0, 0], [0, 0, 0, 0, 0, 1])
@@ -192,11 +188,11 @@ class TestLazy(Mixin):
         )
 
         mocked_compute.assert_not_called()
-        assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
+        _shared_utils.assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
         # 2d mask does not vary on unshared coord:
         cube_small_2d.data.mask[0, 0] = 1
         r = stats.pearsonr(cube_small, cube_small_2d, common_mask=True)
-        assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
+        _shared_utils.assert_array_almost_equal(r.data, np.array([1.0, 1.0]))
 
 
 class TestReal(TestLazy):
