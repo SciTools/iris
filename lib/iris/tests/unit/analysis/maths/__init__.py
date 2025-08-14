@@ -258,7 +258,7 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
 class CubeArithmeticCoordsTest:
     # This class sets up pairs of cubes to test iris' ability to reject
     # arithmetic operations on coordinates which do not match.
-    def SetUpNonMatching(self):
+    def setup_non_matching(self):
         # On this cube pair, the coordinates to perform operations on do not
         # match in either points array or name.
         data = np.zeros((3, 4))
@@ -272,7 +272,7 @@ class CubeArithmeticCoordsTest:
 
         return nomatch1, nomatch2
 
-    def SetUpReversed(self):
+    def setup_reversed(self):
         # On this cube pair, the coordinates to perform operations on have
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.

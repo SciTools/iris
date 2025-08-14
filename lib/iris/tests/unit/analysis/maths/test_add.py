@@ -41,13 +41,13 @@ class TestMasking(CubeArithmeticMaskingTestMixin):
 
 class TestCoordMatch(CubeArithmeticCoordsTest):
     def test_no_match(self):
-        cube1, cube2 = self.SetUpNonMatching()
+        cube1, cube2 = self.setup_non_matching()
         expected = "Insufficient matching coordinate metadata to resolve cubes"
         with pytest.raises(ValueError, match=expected):
             add(cube1, cube2)
 
     def test_reversed_points(self):
-        cube1, cube2 = self.SetUpReversed()
+        cube1, cube2 = self.setup_reversed()
         expected = "Coordinate '.*' has different points"
         with pytest.raises(ValueError, match=expected):
             add(cube1, cube2)

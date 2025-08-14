@@ -89,7 +89,7 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
 
     def _check_no_match(self, dim):
         # Duplicate the basic operation, but convert cubes to meshcubes.
-        cube1, cube2 = self.SetUpNonMatching()
+        cube1, cube2 = self.setup_non_matching()
         self._convert_to_meshcubes([cube1, cube2], dim)
         expected = "Insufficient matching coordinate metadata to resolve cubes"
         with pytest.raises(ValueError, match=expected):
@@ -103,7 +103,7 @@ class TestCoordMatchWithMesh(CubeArithmeticCoordsTest):
 
     def _check_reversed_points(self, dim):
         # Duplicate the basic operation, but convert cubes to meshcubes.
-        cube1, cube2 = self.SetUpReversed()
+        cube1, cube2 = self.setup_reversed()
         self._convert_to_meshcubes([cube1, cube2], dim)
         expected = "Coordinate '.*' has different points"
         with pytest.raises(ValueError, match=expected):
