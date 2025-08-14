@@ -14,7 +14,7 @@ from iris.analysis.trajectory import UnstructuredNearestNeigbourRegridder as unn
 from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
-from iris.tests._shared_utils import assert_array_equal
+from iris.tests import _shared_utils
 
 
 class MixinExampleSetup:
@@ -98,7 +98,7 @@ class MixinExampleSetup:
         if expected_data is None:
             # By default, check against the 'standard' data result.
             expected_data = self.expected_data
-        assert_array_equal(result.data, expected_data)
+        _shared_utils.assert_array_equal(result.data, expected_data)
         return result
 
 
@@ -260,7 +260,7 @@ class Test__call__(MixinExampleSetup):
             "latitude",
             "longitude",
         ]
-        assert_array_equal(result.data, self.expected_data_zxy)
+        _shared_utils.assert_array_equal(result.data, self.expected_data_zxy)
 
     def test_fail_incompatible_source(self):
         # Check that a slightly modified source cube is *not* acceptable.

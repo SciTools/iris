@@ -11,12 +11,12 @@ import pytest
 
 from iris.analysis.trajectory import interpolate
 from iris.coords import AuxCoord, DimCoord
-from iris.tests._shared_utils import assert_array_all_close, skip_data
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
 class TestFailCases:
-    @skip_data
+    @_shared_utils.skip_data
     def test_derived_coord(self):
         cube = iris.tests.stock.realistic_4d()
         sample_pts = [("altitude", [0, 10, 50])]
@@ -124,7 +124,9 @@ class TestNearest:
 
         result = interpolate(src_cube, multi_sample_points, method="nearest")
         assert result == expected_multipoint_cube
-        assert np.allclose(result.data.mask, expected_multipoint_cube.data.mask)
+        _shared_utils.assert_array_all_close(
+            result.data.mask, expected_multipoint_cube.data.mask
+        )
 
     def test_dtype_preserved(
         self, src_cube, multi_sample_points, expected_multipoint_cube
@@ -133,7 +135,7 @@ class TestNearest:
 
         result = interpolate(src_cube, multi_sample_points, method="nearest")
         assert result == expected_multipoint_cube
-        assert np.allclose(result.data, expected_multipoint_cube.data)
+        _shared_utils.assert_array_all_close(result.data, expected_multipoint_cube.data)
         assert result.data.dtype == np.int16
 
     def test_aux_coord_noninterpolation_dim(self, src_cube, single_point):
@@ -243,7 +245,7 @@ class TestLinear:
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
         assert result.shape[-1] == 1
-        assert_array_all_close(result.data, self.single_sample_result)
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_multi_point_same_cube(self):
         # Check an exact result for multiple points.
@@ -276,7 +278,7 @@ class TestLinear:
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
         assert result.shape[-1] == 1
-        assert_array_all_close(result.data, self.single_sample_result)
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_one_interp_dim(self):
         # Check exact result with an aux-coord over one interpolation dims.
@@ -286,7 +288,7 @@ class TestLinear:
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
         assert result.shape[-1] == 1
-        assert_array_all_close(result.data, self.single_sample_result)
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_both_interp_dims(self):
         # Check exact result with an aux-coord over both interpolation dims.
@@ -302,7 +304,7 @@ class TestLinear:
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
         assert result.shape[-1] == 1
-        assert_array_all_close(result.data, self.single_sample_result)
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_fail_mixed_dims(self):
         # Check behaviour with an aux-coord mapped over both interpolation and
@@ -329,4 +331,4 @@ class TestLinear:
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
         assert result.shape[-1] == 1
-        assert_array_all_close(result.data, self.single_sample_result)
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
