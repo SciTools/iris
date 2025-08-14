@@ -6,20 +6,11 @@
 
 import os
 import os.path
-import tempfile
 
 import pytest
 
 from iris import sample_data_path
 from iris.tests import _shared_utils
-
-
-def _temp_file(sample_dir):
-    # Return the full path to a new genuine file within our
-    # temporary directory.
-    sample_handle, sample_path = tempfile.mkstemp(dir=sample_dir)
-    os.close(sample_handle)
-    return sample_path
 
 
 @_shared_utils.skip_sample_data
@@ -35,10 +26,12 @@ class TestIrisSampleData_path:
         assert iris_sample_data.path == self.sample_dir
 
     def test_call(self, mocker):
-        sample_file = _temp_file(self.sample_dir)
+        sample_file = self.sample_dir / "sample.txt"
+        sample_file.touch()
+
         mocker.patch("iris_sample_data.path", self.sample_dir)
         result = sample_data_path(os.path.basename(sample_file))
-        assert result == sample_file
+        assert result == str(sample_file)
 
     def test_file_not_found(self, mocker):
         mocker.patch("iris_sample_data.path", self.sample_dir)
@@ -51,7 +44,9 @@ class TestIrisSampleData_path:
             sample_data_path(os.path.abspath("foo"))
 
     def test_glob_ok(self, mocker):
-        sample_path = _temp_file(self.sample_dir)
+        sample_path = self.sample_dir / "sample.txt"
+        sample_path.touch()
+
         sample_glob = "?" + os.path.basename(sample_path)[1:]
         mocker.patch("iris_sample_data.path", self.sample_dir)
         result = sample_data_path(sample_glob)
