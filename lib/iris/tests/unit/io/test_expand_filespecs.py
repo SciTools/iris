@@ -4,40 +4,34 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.io.expand_filespecs` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import os
 from pathlib import Path
-import shutil
-import tempfile
+import re
 import textwrap
+
+import pytest
 
 import iris.io as iio
 
 
-class TestExpandFilespecs(tests.IrisTest):
-    def setUp(self):
-        tests.IrisTest.setUp(self)
-        self.tmpdir = os.path.realpath(tempfile.mkdtemp())
+class TestExpandFilespecs:
+    @pytest.fixture(autouse=True)
+    def _setup(self, tmp_path):
+        self.tmpdir = tmp_path
         self.fnames = ["a.foo", "b.txt"]
         for fname in self.fnames:
-            with open(os.path.join(self.tmpdir, fname), "w") as fh:
-                fh.write("anything")
-
-    def tearDown(self):
-        shutil.rmtree(self.tmpdir)
+            file_path = self.tmpdir / fname
+            file_path.write_text("anything")
 
     def test_absolute_path(self):
         result = iio.expand_filespecs([os.path.join(self.tmpdir, "*")])
         expected = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_double_slash(self):
         product = iio.expand_filespecs(["//" + os.path.join(self.tmpdir, "*")])
         predicted = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
-        self.assertEqual(product, predicted)
+        assert product == predicted
 
     def test_relative_path(self):
         cwd = os.getcwd()
@@ -45,7 +39,7 @@ class TestExpandFilespecs(tests.IrisTest):
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["*"])
             item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
-            self.assertEqual(item_out, item_in)
+            assert item_out == item_in
         finally:
             os.chdir(cwd)
 
@@ -61,24 +55,17 @@ class TestExpandFilespecs(tests.IrisTest):
         ]
         expected = [os.path.join(self.tmpdir, fname) for fname in ["a.foo", "b.txt"]]
         result = iio.expand_filespecs(patterns)
-        self.assertEqual(result, expected)
+        assert result == expected
         result = iio.expand_filespecs(patterns[::-1])
-        self.assertEqual(result, expected[::-1])
+        assert result == expected[::-1]
 
     def test_no_files_found(self):
         msg = r"\/no_exist.txt\" didn\'t match any files"
-        with self.assertRaisesRegex(IOError, msg):
+        with pytest.raises(IOError, match=msg):
             iio.expand_filespecs([os.path.join(self.tmpdir, "no_exist.txt")])
 
     def test_files_and_none(self):
-        with self.assertRaises(IOError) as err:
-            iio.expand_filespecs(
-                [
-                    os.path.join(self.tmpdir, "does_not_exist.txt"),
-                    os.path.join(self.tmpdir, "*"),
-                ]
-            )
-        expected = (
+        emsg = (
             textwrap.dedent(
                 """
             One or more of the files specified did not exist:
@@ -89,21 +76,26 @@ class TestExpandFilespecs(tests.IrisTest):
             .strip()
             .format(self.tmpdir)
         )
-
-        self.assertMultiLineEqual(str(err.exception), expected)
+        with pytest.raises(IOError, match=re.escape(emsg)):
+            iio.expand_filespecs(
+                [
+                    os.path.join(self.tmpdir, "does_not_exist.txt"),
+                    os.path.join(self.tmpdir, "*"),
+                ]
+            )
 
     def test_false_bool_absolute(self):
         tempdir = self.tmpdir
         msg = os.path.join(tempdir, "no_exist.txt")
         (result,) = iio.expand_filespecs([msg], False)
-        self.assertEqual(result, msg)
+        assert result == msg
 
     def test_false_bool_home(self):
         # ensure that not only does files_expected not error,
         # but that the path is still expanded from a ~
         msg = str(Path().home() / "no_exist.txt")
         (result,) = iio.expand_filespecs(["~/no_exist.txt"], False)
-        self.assertEqual(result, msg)
+        assert result == msg
 
     def test_false_bool_relative(self):
         cwd = os.getcwd()
@@ -111,10 +103,6 @@ class TestExpandFilespecs(tests.IrisTest):
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["no_exist.txt"], False)
             item_in = [os.path.join(self.tmpdir, "no_exist.txt")]
-            self.assertEqual(item_out, item_in)
+            assert item_out == item_in
         finally:
             os.chdir(cwd)
-
-
-if __name__ == "__main__":
-    tests.main()
