@@ -1411,7 +1411,7 @@ class TestIgnoreAxis:
             sample_coord.ignore_axis = "foo"
 
     @pytest.mark.parametrize(
-        "ignore_axis, copy_or_from, result",
+        ("ignore_axis", "copy_or_from", "result"),
         [
             (True, "copy", True),
             (True, "from_coord", True),
