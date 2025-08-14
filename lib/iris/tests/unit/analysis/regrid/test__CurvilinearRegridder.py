@@ -14,11 +14,7 @@ from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
-from iris.tests._shared_utils import (
-    assert_array_all_close,
-    assert_masked_array_almost_equal,
-    skip_data,
-)
+from iris.tests import _shared_utils
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
@@ -40,7 +36,7 @@ class Test___init__:
             Regridder(self.src_grid, self.bad, self.weights)
 
 
-@skip_data
+@_shared_utils.skip_data
 class Test___call__:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -203,7 +199,9 @@ class Test__derived_coord:
         assert len(res.aux_factories) == 1 and isinstance(
             res.aux_factories[0], HybridHeightFactory
         )
-        assert_array_all_close(res.coord("altitude").points, self.altitude.points)
+        _shared_utils.assert_array_all_close(
+            res.coord("altitude").points, self.altitude.points
+        )
 
     def test_cube_transposed(self):
         rg = Regridder(self.src, self.tgt)
@@ -214,7 +212,7 @@ class Test__derived_coord:
         assert len(res.aux_factories) == 1 and isinstance(
             res.aux_factories[0], HybridHeightFactory
         )
-        assert_array_all_close(
+        _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
 
@@ -225,7 +223,7 @@ class Test__derived_coord:
         assert len(res.aux_factories) == 1 and isinstance(
             res.aux_factories[0], HybridHeightFactory
         )
-        assert_array_all_close(
+        _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
 
@@ -238,10 +236,12 @@ class Test__derived_coord:
         assert len(res.aux_factories) == 1 and isinstance(
             res.aux_factories[0], HybridHeightFactory
         )
-        assert_array_all_close(res.coord("altitude").points, self.altitude.points)
+        _shared_utils.assert_array_all_close(
+            res.coord("altitude").points, self.altitude.points
+        )
 
 
-@skip_data
+@_shared_utils.skip_data
 class Test___call____bad_src:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -373,4 +373,4 @@ class Test__call__multidimensional:
         )
         assert result.coord("longitude") == grid_cube.coord("longitude")
         assert result.coord("latitude") == grid_cube.coord("latitude")
-        assert_masked_array_almost_equal(result.data, expected_result)
+        _shared_utils.assert_masked_array_almost_equal(result.data, expected_result)
