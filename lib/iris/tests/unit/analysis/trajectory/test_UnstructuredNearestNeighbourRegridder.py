@@ -21,7 +21,7 @@ class MixinExampleSetup:
     # Common code for regridder test classes.
 
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup_mixin(self):
         # Basic test values.
         src_x_y_value = np.array(
             [
