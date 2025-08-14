@@ -183,7 +183,7 @@ class Test:
                     op, dtype, dtype, result_dtype, in_place=True
                 )
 
-    def test_commuative(self):
+    def test_commutative(self):
         # Check that the operation is commutative if in_place is not specified.
         for dtype1, dtype2 in product(self.dtypes, self.dtypes):
             for op in self.all_binary_ops:
