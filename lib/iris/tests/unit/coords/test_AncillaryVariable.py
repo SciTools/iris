@@ -34,7 +34,7 @@ def data_all_dtypes_and_lazynesses(self):
 
 class AncillaryVariableTestMixin(CoordTestMixin):
     # Define a 2-D default array shape.
-    def setupTestArrays(self, shape=(2, 3), masked=False):
+    def setup_test_arrays(self, shape=(2, 3), masked=False):
         # Create concrete and lazy data test arrays, given a desired shape.
         # If masked=True, also add masked arrays with some or no masked data.
         n_vals = np.prod(shape)
@@ -59,7 +59,7 @@ class Test__init__(AncillaryVariableTestMixin):
     # Test for AncillaryVariable creation, with real / lazy data
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays(masked=True)
+        self.setup_test_arrays(masked=True)
 
     def test_lazyness_and_dtype_combinations(self):
         for ancill_var, data_lazyness in data_all_dtypes_and_lazynesses(
@@ -133,7 +133,7 @@ class Test_core_data(AncillaryVariableTestMixin):
     # Test for AncillaryVariable.core_data() with various lazy/real data.
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_real_data(self):
         ancill_var = AncillaryVariable(self.data_real)
@@ -159,7 +159,7 @@ class Test_core_data(AncillaryVariableTestMixin):
 class Test_lazy_data(AncillaryVariableTestMixin):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_real_core(self):
         ancill_var = AncillaryVariable(self.data_real)
@@ -175,7 +175,7 @@ class Test_lazy_data(AncillaryVariableTestMixin):
 class Test_has_lazy_data(AncillaryVariableTestMixin):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_real_core(self):
         ancill_var = AncillaryVariable(self.data_real)
@@ -198,7 +198,7 @@ class Test__getitem__(AncillaryVariableTestMixin):
     # Test for AncillaryVariable indexing with various types of data.
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_partial_slice_data_copy(self):
         parent_ancill_var = AncillaryVariable([1.0, 2.0, 3.0])
@@ -280,7 +280,7 @@ class Test_copy(AncillaryVariableTestMixin):
     # Test for AncillaryVariable.copy() with various types of data.
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_lazyness(self):
         # Copy ancillary variables with real+lazy data, and either an int or
@@ -327,7 +327,7 @@ class Test_copy(AncillaryVariableTestMixin):
 class Test_data__getter(AncillaryVariableTestMixin):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_mutable_real_data(self):
         # Check that ancill_var.data returns a modifiable array, and changes
@@ -361,7 +361,7 @@ class Test_data__getter(AncillaryVariableTestMixin):
 class Test_data__setter(AncillaryVariableTestMixin):
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
     def test_real_set_real(self):
         # Setting new real data does not make a copy.
@@ -470,7 +470,7 @@ class Test___binary_operator__(AncillaryVariableTestMixin):
     # Test maths operations on on real+lazy data.
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.setupTestArrays()
+        self.setup_test_arrays()
 
         self.real_ancill_var = AncillaryVariable(self.data_real)
         self.lazy_ancill_var = AncillaryVariable(self.data_lazy)
