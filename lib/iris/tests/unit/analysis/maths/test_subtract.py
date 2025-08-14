@@ -4,13 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.analysis.maths.subtract` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import operator
 
+import pytest
+
 from iris.analysis.maths import subtract
+from iris.tests import _shared_utils
 from iris.tests.unit.analysis.maths import (
     CubeArithmeticBroadcastingTestMixin,
     CubeArithmeticCoordsTest,
@@ -19,8 +18,8 @@ from iris.tests.unit.analysis.maths import (
 )
 
 
-@tests.skip_data
-class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
+@_shared_utils.skip_data
+class TestBroadcasting(CubeArithmeticBroadcastingTestMixin):
     @property
     def data_op(self):
         return operator.sub
@@ -30,7 +29,7 @@ class TestBroadcasting(tests.IrisTest, CubeArithmeticBroadcastingTestMixin):
         return subtract
 
 
-class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
+class TestMasking(CubeArithmeticMaskingTestMixin):
     @property
     def data_op(self):
         return operator.sub
@@ -43,16 +42,18 @@ class TestMasking(tests.IrisTest, CubeArithmeticMaskingTestMixin):
 class TestCoordMatch(CubeArithmeticCoordsTest):
     def test_no_match(self):
         cube1, cube2 = self.SetUpNonMatching()
-        with self.assertRaises(ValueError):
+        expected = "Insufficient matching coordinate metadata to resolve cubes"
+        with pytest.raises(ValueError, match=expected):
             subtract(cube1, cube2)
 
     def test_reversed_points(self):
         cube1, cube2 = self.SetUpReversed()
-        with self.assertRaises(ValueError):
+        expected = "Coordinate '.*' has different points"
+        with pytest.raises(ValueError, match=expected):
             subtract(cube1, cube2)
 
 
-class TestMaskedConstant(tests.IrisTest, CubeArithmeticMaskedConstantTestMixin):
+class TestMaskedConstant(CubeArithmeticMaskedConstantTestMixin):
     @property
     def data_op(self):
         return operator.sub
@@ -60,7 +61,3 @@ class TestMaskedConstant(tests.IrisTest, CubeArithmeticMaskedConstantTestMixin):
     @property
     def cube_func(self):
         return subtract
-
-
-if __name__ == "__main__":
-    tests.main()
