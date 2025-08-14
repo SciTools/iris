@@ -481,7 +481,7 @@ Similarly, Iris cubes have indexing capability::
 	print(cube[1, ::-2])
 
 
-.. _Cartopy_shapereader: https://scitools.org.uk/cartopy/docs/latest/tutorials/using_the_shapereader.html#id1
+.. _Cartopy_shapereader: https://cartopy.readthedocs.io/stable/tutorials/using_the_shapereader.html#id1
 .. _Natural Earth: https://www.naturalearthdata.com/
 .. _ESRI Shapefiles: https://support.esri.com/en-us/technical-paper/esri-shapefile-technical-description-279
 

@@ -4,21 +4,19 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test area weighted regridding."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import copy
 import random
 
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris.analysis._interpolation
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 RESULT_DIR = (
@@ -137,9 +135,10 @@ def _resampled_grid(cube, x_samplefactor, y_samplefactor):
     return new_cube
 
 
-@tests.skip_data
-class TestAreaWeightedRegrid(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestAreaWeightedRegrid:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # A cube with a hybrid height derived coordinate.
         self.realistic_cube = iris.tests.stock.realistic_4d()[:2, :5, :20, :30]
         # A simple (3, 4) cube.
@@ -148,35 +147,43 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         self.simple_cube.coord("longitude").guess_bounds(0.0)
 
     def test_no_bounds(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have contiguous bounds."
+        )
         src = self.simple_cube.copy()
         src.coord("latitude").bounds = None
         dest = self.simple_cube.copy()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
         src.coord("longitude").bounds = None
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.coord("latitude").bounds = None
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         dest = self.simple_cube.copy()
         dest.coord("longitude").bounds = None
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_non_contiguous_bounds(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have contiguous bounds."
+        )
         src = self.simple_cube.copy()
         bounds = src.coord("latitude").bounds.copy()
         bounds[1, 1] -= 0.1
         src.coord("latitude").bounds = bounds
         dest = self.simple_cube.copy()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
         src = self.simple_cube.copy()
@@ -184,35 +191,40 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         bounds = dest.coord("longitude").bounds.copy()
         bounds[1, 1] -= 0.1
         dest.coord("longitude").bounds = bounds
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_missing_coords(self):
+        emsg = r"Cube 'unknown' must contain a single 1D . coordinate\."
         dest = self.simple_cube.copy()
         # Missing src_x.
         src = self.simple_cube.copy()
         src.remove_coord("longitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing src_y.
         src = self.simple_cube.copy()
         src.remove_coord("latitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing dest_x.
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.remove_coord("longitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
         # Missing dest_y.
         src = self.simple_cube.copy()
         dest = self.simple_cube.copy()
         dest.remove_coord("latitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
     def test_different_cs(self):
+        emsg = (
+            "The horizontal grid coordinates of both the source "
+            "and grid cubes must have the same coordinate system."
+        )
         src = self.simple_cube.copy()
         src_cs = copy.copy(src.coord("latitude").coord_system)
         src_cs.semi_major_axis = 7000000
@@ -223,14 +235,14 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest_cs.semi_major_axis = 7000001
         dest.coord("longitude").coord_system = dest_cs
         dest.coord("latitude").coord_system = dest_cs
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match=emsg):
             regrid_area_weighted(src, dest)
 
-    def test_regrid_to_same_grid(self):
+    def test_regrid_to_same_grid(self, request):
         src = self.simple_cube
         res = regrid_area_weighted(src, src)
-        self.assertEqual(res, src)
-        self.assertCMLApproxData(res, RESULT_DIR + ("simple.cml",))
+        assert res == src
+        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("simple.cml",))
 
     def test_equal_area_numbers(self):
         # Remove coords system and units so it is no longer spherical.
@@ -243,16 +255,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest = _subsampled_grid(src, 4, 3)
         res = regrid_area_weighted(src, dest)
         expected_val = np.mean(src.data)
-        self.assertAlmostEqual(expected_val, res.data)
+        assert expected_val == pytest.approx(res.data)
 
         # Reduce to two cells along x
         src = self.simple_cube.copy()
         dest = _subsampled_grid(src, 2, 3)
         res = regrid_area_weighted(src, dest)
         expected_val_left = np.mean(src.data[:, 0:2])
-        self.assertEqual(expected_val_left, res.data[0])
+        assert expected_val_left == res.data[0]
         expected_val_right = np.mean(src.data[:, 2:4])
-        self.assertAlmostEqual(expected_val_right, res.data[1])
+        assert expected_val_right == pytest.approx(res.data[1])
 
         # Reduce to two cells along x, one three times the size
         # of the other.
@@ -265,9 +277,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.replace_coord(lon)
         res = regrid_area_weighted(src, dest)
         expected_val_left = np.mean(src.data[:, 0:1])
-        self.assertEqual(expected_val_left, res.data[0])
+        assert expected_val_left == res.data[0]
         expected_val_right = np.mean(src.data[:, 1:4])
-        self.assertAlmostEqual(expected_val_right, res.data[1])
+        assert expected_val_right == pytest.approx(res.data[1])
 
     def test_unqeual_area_numbers(self):
         # Remove coords system and units so it is no longer spherical.
@@ -302,14 +314,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             + 3.0 / 12.0 * np.mean(src.data[0, 1:])
             + 6.0 / 12.0 * np.mean(src.data[1:, 1:])
         )
-        self.assertAlmostEqual(expected_val, res.data)
+        assert expected_val == pytest.approx(res.data)
 
-    def test_regrid_latlon_reduced_res(self):
+    def test_regrid_latlon_reduced_res(self, request):
         src = self.simple_cube
         # Reduce from (3, 4) to (2, 2).
         dest = _subsampled_grid(src, 2, 2)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("latlonreduced.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("latlonreduced.cml",)
+        )
 
     def test_regrid_reorder_axis(self):
         src = self.realistic_cube[0, :4, :3, :2]
@@ -318,8 +332,8 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         lon = src.coord("grid_longitude")
         dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(src, (4, 3, 2), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (4, 9, 6), 288.0886, 0.008271061)
+        _shared_utils.assert_array_shape_stats(src, (4, 3, 2), 288.08868, 0.008262919)
+        _shared_utils.assert_array_shape_stats(res, (4, 9, 6), 288.0886, 0.008271061)
         # Reshape src so that the coords are ordered [x, z, y],
         # the mean and std statistics should be the same
         data = np.moveaxis(src.data.copy(), 2, 0)
@@ -328,8 +342,8 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.add_dim_coord(z, 1)
         src.add_dim_coord(lon, 0)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(src, (2, 4, 3), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (6, 4, 9), 288.0886, 0.008271061)
+        _shared_utils.assert_array_shape_stats(src, (2, 4, 3), 288.08868, 0.008262919)
+        _shared_utils.assert_array_shape_stats(res, (6, 4, 9), 288.0886, 0.008271061)
         # Reshape src so that the coords are ordered [y, x, z],
         # the mean and std statistics should be the same
         data = np.moveaxis(src.data.copy(), 2, 0)
@@ -339,35 +353,39 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         src.add_dim_coord(lat, 0)
         dest = _resampled_grid(self.realistic_cube[0, 0, :3, :2], 3, 3)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(src, (3, 2, 4), 288.08868, 0.008262919)
-        self.assertArrayShapeStats(res, (9, 6, 4), 288.0886, 0.008271061)
+        _shared_utils.assert_array_shape_stats(src, (3, 2, 4), 288.08868, 0.008262919)
+        _shared_utils.assert_array_shape_stats(res, (9, 6, 4), 288.0886, 0.008271061)
 
-    def test_regrid_lon_to_half_res(self):
+    def test_regrid_lon_to_half_res(self, request):
         src = self.simple_cube
         dest = _resampled_grid(src, 0.5, 1.0)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("lonhalved.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("lonhalved.cml",)
+        )
 
-    def test_regrid_to_non_int_frac(self):
+    def test_regrid_to_non_int_frac(self, request):
         # Create dest such that bounds do not line up
         # with src: src.shape = (3, 4), dest.shape = (2, 3)
         src = self.simple_cube
         dest = _resampled_grid(src, 0.75, 0.67)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("lower.cml",))
+        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("lower.cml",))
 
-    def test_regrid_to_higher_res(self):
+    def test_regrid_to_higher_res(self, request):
         src = self.simple_cube
         frac = 3.5
         dest = _resampled_grid(src, frac, frac)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("higher.cml",))
+        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("higher.cml",))
 
-    def test_hybrid_height(self):
+    def test_hybrid_height(self, request):
         src = self.realistic_cube
         dest = _resampled_grid(src, 0.7, 0.8)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("hybridheight.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("hybridheight.cml",)
+        )
 
     def test_missing_data(self):
         src = self.simple_cube.copy()
@@ -377,16 +395,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         res = regrid_area_weighted(src, dest)
         mask = np.zeros((7, 9), bool)
         mask[slice(2, 5), slice(4, 7)] = True
-        self.assertArrayEqual(res.data.mask, mask)
-        self.assertArrayEqual(res.data.fill_value, 999)
+        _shared_utils.assert_array_equal(res.data.mask, mask)
+        _shared_utils.assert_array_equal(res.data.fill_value, 999)
 
     def test_masked_data_all_false(self):
         src = self.simple_cube.copy()
         src.data = ma.masked_array(src.data, mask=False, fill_value=999)
         dest = _resampled_grid(self.simple_cube, 2.3, 2.4)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayEqual(res.data.mask, False)
-        self.assertArrayEqual(res.data.fill_value, 999)
+        _shared_utils.assert_array_equal(res.data.mask, False)
+        _shared_utils.assert_array_equal(res.data.fill_value, 999)
 
     def test_no_x_overlap(self):
         src = self.simple_cube
@@ -401,7 +419,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             0.0,
         )
         res = regrid_area_weighted(src, dest)
-        self.assertTrue(res.data.mask.all())
+        assert res.data.mask.all()
 
     def test_no_y_overlap(self):
         src = self.simple_cube
@@ -416,7 +434,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             ),
         )
         res = regrid_area_weighted(src, dest)
-        self.assertTrue(res.data.mask.all())
+        assert res.data.mask.all()
 
     def test_scalar(self):
         src = self.realistic_cube
@@ -424,7 +442,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         j = 3
         dest = src[0, 0, i, j]
         res = regrid_area_weighted(src, dest)
-        self.assertEqual(res, src[:, :, i, j])
+        assert res == src[:, :, i, j]
 
     def test_one_point(self):
         src = self.simple_cube.copy()
@@ -434,7 +452,7 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             indices = tuple([slice(i, i + 1), slice(j, j + 1)])
             dest = src[indices]
             res = regrid_area_weighted(src, dest)
-            self.assertTrue(res, src[indices])
+            assert res, src[indices]
 
     def test_ten_by_ten_subset(self):
         src = _resampled_grid(self.simple_cube, 20, 20)
@@ -444,16 +462,16 @@ class TestAreaWeightedRegrid(tests.IrisTest):
             indices = tuple([slice(i, i + 10), slice(j, j + 10)])
             dest = src[indices]
             res = regrid_area_weighted(src, dest)
-            self.assertEqual(res, src[indices])
+            assert res == src[indices]
 
     def test_lazy_nop(self):
         src = self.realistic_cube[:2, :3, :10, :10]
         src.data = da.asarray(src.data, chunks=((1, 1), (2, 1), (10,), (10,)))
         res = regrid_area_weighted(src, src)
-        self.assertTrue(res.has_lazy_data())
-        self.assertEqual(res, src)
+        assert res.has_lazy_data()
+        assert res == src
 
-    def test_cross_section(self):
+    def test_cross_section(self, request):
         # Slice to get a cross section.
         # Constant latitude
         src = self.realistic_cube[0, :, 10, :]
@@ -465,7 +483,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lon, 1)
         dest.add_aux_coord(src.coord("grid_latitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("const_lat_cross_section.cml",)
+        )
         # Constant latitude, data order [x, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -473,7 +493,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(res, RESULT_DIR + ("const_lat_cross_section.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("const_lat_cross_section.cml",)
+        )
 
         # Constant longitude
         src = self.realistic_cube[0, :, :, 10]
@@ -485,7 +507,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(lat, 1)
         dest.add_aux_coord(src.coord("grid_longitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("const_lon_cross_section.cml",)
+        )
         # Constant longitude, data order [y, z]
         # Using original and transposing the result should give the
         # same answer.
@@ -493,7 +517,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        self.assertCMLApproxData(res, RESULT_DIR + ("const_lon_cross_section.cml",))
+        _shared_utils.assert_CML_approx_data(
+            request, res, RESULT_DIR + ("const_lon_cross_section.cml",)
+        )
 
     def test_scalar_source_cube(self):
         src = self.simple_cube[1, 2]
@@ -501,41 +527,41 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest = src.copy()
         dest.coord("latitude").bounds = np.array([[-0.5, 1.5]])
         res = regrid_area_weighted(src, dest)
-        self.assertTrue(res.data.mask.all())
+        assert res.data.mask.all()
         # Shrink dest to 1/4 of src
         dest = src.copy()
         dest.coord("latitude").bounds = np.array([[0.25, 0.75]])
         dest.coord("longitude").bounds = np.array([[1.25, 1.75]])
         res = regrid_area_weighted(src, dest)
-        self.assertEqual(res.data, src.data)
+        assert res.data == src.data
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_global_data_reduce_res(self):
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
         dest = _resampled_grid(src, 0.4, 0.3)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (21, 38), 280.484932, 15.831545)
+        _shared_utils.assert_array_shape_stats(res, (21, 38), 280.484932, 15.831545)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_global_data_increase_res(self):
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
         dest = _resampled_grid(src, 1.5, 1.5)
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (109, 144), 280.349625, 16.073397)
+        _shared_utils.assert_array_shape_stats(res, (109, 144), 280.349625, 16.073397)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_global_data_same_res(self):
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
         src.coord("longitude").guess_bounds()
         res = regrid_area_weighted(src, src)
-        self.assertArrayShapeStats(res, (73, 96), 279.945160, 16.345842)
+        _shared_utils.assert_array_shape_stats(res, (73, 96), 279.945160, 16.345842)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_global_data_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
@@ -555,9 +581,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 30), 280.979310, 16.640421)
+        _shared_utils.assert_array_shape_stats(res, (40, 30), 280.979310, 16.640421)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_circular_subset(self):
         src = iris.tests.stock.global_pp()
         src.coord("latitude").guess_bounds()
@@ -577,9 +603,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
+        _shared_utils.assert_array_shape_stats(res, (40, 7), 285.653960, 15.212710)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_non_circular_subset(self):
         """Test regridding behaviour when the source grid has circular latitude.
 
@@ -613,9 +639,9 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.653960, 15.212710)
+        _shared_utils.assert_array_shape_stats(res, (40, 7), 285.653960, 15.212710)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test__proper_non_circular_subset(self):
         """Test regridding behaviour when the source grid has circular latitude.
 
@@ -650,14 +676,10 @@ class TestAreaWeightedRegrid(tests.IrisTest):
         dest.add_dim_coord(dest_lon, 1)
 
         res = regrid_area_weighted(src, dest)
-        self.assertArrayShapeStats(res, (40, 7), 285.550814, 15.190245)
+        _shared_utils.assert_array_shape_stats(res, (40, 7), 285.550814, 15.190245)
 
         # The target cells straddling the gap between min and max source
         # longitude should be masked.
         expected_mask = np.zeros(res.shape)
         expected_mask[:, 3] = 1
         assert np.array_equal(expected_mask, res.data.mask)
-
-
-if __name__ == "__main__":
-    tests.main()

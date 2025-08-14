@@ -4,19 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :meth:`iris.mesh.MeshXY.from_coords`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.coords import AuxCoord, DimCoord
 from iris.mesh import Connectivity, MeshXY, logger
+from iris.tests import _shared_utils
 from iris.tests.stock import simple_2d_w_multidim_coords
 
 
-class Test1Dim(tests.IrisTest):
-    def setUp(self):
+class Test1Dim:
+    @pytest.fixture(autouse=True)
+    def _setup_1d(self):
         self.lon = DimCoord(
             points=[0.5, 1.5, 2.5],
             bounds=[[0, 1], [1, 2], [2, 3]],
@@ -42,20 +41,28 @@ class Test1Dim(tests.IrisTest):
 
     def test_dimensionality(self):
         mesh = self.create()
-        self.assertEqual(1, mesh.topology_dimension)
+        assert 1 == mesh.topology_dimension
 
-        self.assertArrayEqual([0, 1, 1, 2, 2, 3], mesh.node_coords.node_x.points)
-        self.assertArrayEqual([0, 1, 2, 3, 1, 2], mesh.node_coords.node_y.points)
-        self.assertArrayEqual([0.5, 1.5, 2.5], mesh.edge_coords.edge_x.points)
-        self.assertArrayEqual([0.5, 2.5, 1.5], mesh.edge_coords.edge_y.points)
-        self.assertIsNone(getattr(mesh, "face_coords", None))
+        _shared_utils.assert_array_equal(
+            [0, 1, 1, 2, 2, 3], mesh.node_coords.node_x.points
+        )
+        _shared_utils.assert_array_equal(
+            [0, 1, 2, 3, 1, 2], mesh.node_coords.node_y.points
+        )
+        _shared_utils.assert_array_equal(
+            [0.5, 1.5, 2.5], mesh.edge_coords.edge_x.points
+        )
+        _shared_utils.assert_array_equal(
+            [0.5, 2.5, 1.5], mesh.edge_coords.edge_y.points
+        )
+        assert getattr(mesh, "face_coords", None) is None
 
         for conn_name in Connectivity.UGRID_CF_ROLES:
             conn = getattr(mesh, conn_name, None)
             if conn_name == "edge_node_connectivity":
-                self.assertArrayEqual([[0, 1], [2, 3], [4, 5]], conn.indices)
+                _shared_utils.assert_array_equal([[0, 1], [2, 3], [4, 5]], conn.indices)
             else:
-                self.assertIsNone(conn)
+                assert conn is None
 
     def test_node_metadata(self):
         mesh = self.create()
@@ -67,8 +74,8 @@ class Test1Dim(tests.IrisTest):
             for attr in ("standard_name", "long_name", "units", "attributes"):
                 expected = getattr(expected_coord, attr)
                 actual = getattr(actual_coord, attr)
-                self.assertEqual(expected, actual)
-            self.assertIsNone(actual_coord.var_name)
+                assert expected == actual
+            assert actual_coord.var_name is None
 
     def test_centre_metadata(self):
         mesh = self.create()
@@ -80,8 +87,8 @@ class Test1Dim(tests.IrisTest):
             for attr in ("standard_name", "long_name", "units", "attributes"):
                 expected = getattr(expected_coord, attr)
                 actual = getattr(actual_coord, attr)
-                self.assertEqual(expected, actual)
-            self.assertIsNone(actual_coord.var_name)
+                assert expected == actual
+            assert actual_coord.var_name is None
 
     def test_mesh_metadata(self):
         # Inappropriate to guess these values from the input coords.
@@ -91,9 +98,9 @@ class Test1Dim(tests.IrisTest):
             "long_name",
             "var_name",
         ):
-            self.assertIsNone(getattr(mesh, attr))
-        self.assertTrue(mesh.units.is_unknown())
-        self.assertDictEqual({}, mesh.attributes)
+            assert getattr(mesh, attr) is None
+        assert mesh.units.is_unknown()
+        assert {} == mesh.attributes
 
     def test_lazy(self):
         self.lon = AuxCoord.from_coord(self.lon)
@@ -103,21 +110,21 @@ class Test1Dim(tests.IrisTest):
         mesh = self.create()
         for coord in list(mesh.all_coords):
             if coord is not None:
-                self.assertTrue(coord.has_lazy_points())
+                assert coord.has_lazy_points()
         for conn in list(mesh.all_connectivities):
             if conn is not None:
-                self.assertTrue(conn.has_lazy_indices())
+                assert conn.has_lazy_indices()
 
     def test_coord_shape_mismatch(self):
         lat_orig = self.lat.copy(self.lat.points, self.lat.bounds)
         self.lat = lat_orig.copy(
             points=lat_orig.points, bounds=np.tile(lat_orig.bounds, 2)
         )
-        with self.assertRaisesRegex(ValueError, "bounds shapes are not identical"):
+        with pytest.raises(ValueError, match="bounds shapes are not identical"):
             _ = self.create()
 
         self.lat = lat_orig.copy(points=lat_orig.points[-1], bounds=lat_orig.bounds[-1])
-        with self.assertRaisesRegex(ValueError, "points shapes are not identical"):
+        with pytest.raises(ValueError, match="points shapes are not identical"):
             _ = self.create()
 
     def test_reorder(self):
@@ -125,26 +132,27 @@ class Test1Dim(tests.IrisTest):
         self.lat, self.lon = self.lon, self.lat
         mesh = self.create()
         # Confirm that the coords have been swapped back to the 'correct' order.
-        self.assertEqual("longitude", mesh.node_coords.node_x.standard_name)
-        self.assertEqual("latitude", mesh.node_coords.node_y.standard_name)
+        assert "longitude" == mesh.node_coords.node_x.standard_name
+        assert "latitude" == mesh.node_coords.node_y.standard_name
 
-    def test_non_xy(self):
+    def test_non_xy(self, caplog):
         for coord in self.lon, self.lat:
             coord.standard_name = None
         lon_name, lat_name = [coord.long_name for coord in (self.lon, self.lat)]
         # Swap the coords.
         self.lat, self.lon = self.lon, self.lat
-        with self.assertLogs(logger, "INFO", "Unable to find 'X' and 'Y'"):
+        with _shared_utils.assert_logs(
+            caplog, logger, "INFO", "Unable to find 'X' and 'Y'"
+        ):
             mesh = self.create()
         # Confirm that the coords have not been swapped back.
-        self.assertEqual(lat_name, mesh.node_coords.node_x.long_name)
-        self.assertEqual(lon_name, mesh.node_coords.node_y.long_name)
+        assert lat_name == mesh.node_coords.node_x.long_name
+        assert lon_name == mesh.node_coords.node_y.long_name
 
 
 class Test2Dim(Test1Dim):
-    def setUp(self):
-        super().setUp()
-
+    @pytest.fixture(autouse=True)
+    def _setup_2d(self, _setup_1d):
         self.lon.bounds = [[0, 0.5, 1], [1, 1.5, 2], [2, 2.5, 3]]
         self.lon.long_name = "triangle longitudes"
         self.lat.bounds = [[0, 1, 0], [2, 3, 2], [1, 2, 1]]
@@ -152,25 +160,31 @@ class Test2Dim(Test1Dim):
 
     def test_dimensionality(self):
         mesh = self.create()
-        self.assertEqual(2, mesh.topology_dimension)
+        assert 2 == mesh.topology_dimension
 
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             [0, 0.5, 1, 1, 1.5, 2, 2, 2.5, 3], mesh.node_coords.node_x.points
         )
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             [0, 1, 0, 2, 3, 2, 1, 2, 1], mesh.node_coords.node_y.points
         )
-        self.assertIsNone(mesh.edge_coords.edge_x)
-        self.assertIsNone(mesh.edge_coords.edge_y)
-        self.assertArrayEqual([0.5, 1.5, 2.5], mesh.face_coords.face_x.points)
-        self.assertArrayEqual([0.5, 2.5, 1.5], mesh.face_coords.face_y.points)
+        assert mesh.edge_coords.edge_x is None
+        assert mesh.edge_coords.edge_y is None
+        _shared_utils.assert_array_equal(
+            [0.5, 1.5, 2.5], mesh.face_coords.face_x.points
+        )
+        _shared_utils.assert_array_equal(
+            [0.5, 2.5, 1.5], mesh.face_coords.face_y.points
+        )
 
         for conn_name in Connectivity.UGRID_CF_ROLES:
             conn = getattr(mesh, conn_name, None)
             if conn_name == "face_node_connectivity":
-                self.assertArrayEqual([[0, 1, 2], [3, 4, 5], [6, 7, 8]], conn.indices)
+                _shared_utils.assert_array_equal(
+                    [[0, 1, 2], [3, 4, 5], [6, 7, 8]], conn.indices
+                )
             else:
-                self.assertIsNone(conn)
+                assert conn is None
 
     def test_centre_metadata(self):
         mesh = self.create()
@@ -182,8 +196,8 @@ class Test2Dim(Test1Dim):
             for attr in ("standard_name", "long_name", "units", "attributes"):
                 expected = getattr(expected_coord, attr)
                 actual = getattr(actual_coord, attr)
-                self.assertEqual(expected, actual)
-            self.assertIsNone(actual_coord.var_name)
+                assert expected == actual
+            assert actual_coord.var_name is None
 
     def test_mixed_shapes(self):
         self.lon = AuxCoord.from_coord(self.lon)
@@ -194,34 +208,36 @@ class Test2Dim(Test1Dim):
         self.lat.bounds = np.ma.masked_equal(lat_bounds, 999)
 
         mesh = self.create()
-        self.assertArrayEqual(mesh.face_node_connectivity.location_lengths(), [4, 4, 3])
-        self.assertEqual(mesh.node_coords.node_x.points[-1], 0.0)
-        self.assertEqual(mesh.node_coords.node_y.points[-1], 0.0)
+        _shared_utils.assert_array_equal(
+            mesh.face_node_connectivity.location_lengths(), [4, 4, 3]
+        )
+        assert mesh.node_coords.node_x.points[-1] == 0.0
+        assert mesh.node_coords.node_y.points[-1] == 0.0
 
 
-class TestInvalidBounds(tests.IrisTest):
+class TestInvalidBounds:
     """Invalid bounds not supported."""
 
     def test_no_bounds(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5])
         lat = AuxCoord(points=[0, 1, 2])
-        with self.assertRaisesRegex(ValueError, "bounds missing from"):
+        with pytest.raises(ValueError, match="bounds missing from"):
             _ = MeshXY.from_coords(lon, lat)
 
     def test_1_bound(self):
         lon = AuxCoord(points=[0.5, 1.5, 2.5], bounds=[[0], [1], [2]])
         lat = AuxCoord(points=[0, 1, 2], bounds=[[0.5], [1.5], [2.5]])
-        with self.assertRaisesRegex(
-            ValueError, r"Expected coordinate bounds.shape \(n, >=2\)"
+        with pytest.raises(
+            ValueError, match=r"Expected coordinate bounds.shape \(n, >=2\)"
         ):
             _ = MeshXY.from_coords(lon, lat)
 
 
-class TestInvalidPoints(tests.IrisTest):
+class TestInvalidPoints:
     """Only 1D coords supported."""
 
     def test_2d_coord(self):
         cube = simple_2d_w_multidim_coords()[:3, :3]
         coord_1, coord_2 = cube.coords()
-        with self.assertRaisesRegex(ValueError, "Expected coordinate ndim == 1"):
+        with pytest.raises(ValueError, match="Expected coordinate ndim == 1"):
             _ = MeshXY.from_coords(coord_1, coord_2)

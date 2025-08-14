@@ -110,7 +110,9 @@ and so should be used where possible.
 `Mocks <https://docs.pytest.org/en/stable/how-to/monkeypatch.html>`_
 --------------------------------------------------------------------
 
-Any mocking should be done with ``pytest.mock``, and monkeypatching where suitable.
+Any mocking should be done with the 
+`pytest-mock <https://pytest-mock.readthedocs.io/en/latest/index.html>`_ plugin, 
+and ``monkeypatch`` where suitable.
 
 .. note::
     If you think we're missing anything important here, please consider creating an
@@ -199,6 +201,33 @@ Within that file the tests might look something like:
 There is no fixed naming scheme for integration tests.
 
 .. _testing_tools:
+
+_shared_utils
+-------------
+
+Iris has a custom testing module, ``_shared_utils.py``, which holds custom
+assertions for use in Iris' testing. When calling functions from this
+module, please include the module in each call, i.e.
+
+.. code-block:: python
+
+    from iris.tests import _shared_utils
+
+    _shared_utils.assert_...()
+
+as opposed to:
+
+.. code-block:: python
+
+    from iris.tests._shared_utils import assert_...
+
+    assert_...()
+
+.. note::
+
+    _shared_utils is a *private* module, and is subject to unannounced,
+    short notice changes. It is not designed for usage outside of Iris' testing
+    suite.
 
 Testing tools
 =============

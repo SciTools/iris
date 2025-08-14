@@ -4,30 +4,27 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.coord_categorisation.add_categorised_coord`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 from cf_units import CALENDARS as calendars
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris.coord_categorisation import add_categorised_coord, add_day_of_year
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 
 
-class Test_add_categorised_coord(tests.IrisTest):
-    def setUp(self):
+class Test_add_categorised_coord:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         # Factor out common variables and objects.
-        self.cube = mock.Mock(name="cube", coords=mock.Mock(return_value=[]))
-        self.coord = mock.Mock(name="coord", points=np.arange(12).reshape(3, 4))
+        self.cube = mocker.Mock(name="cube", coords=mocker.Mock(return_value=[]))
+        self.coord = mocker.Mock(name="coord", points=np.arange(12).reshape(3, 4))
         self.units = "units"
-        self.vectorised = mock.Mock(name="vectorized_result")
+        self.vectorised = mocker.Mock(name="vectorized_result")
 
-    def test_vectorise_call(self):
+    def test_vectorise_call(self, mocker):
         # Check that the function being passed through gets called with
         # numpy.vectorize, before being applied to the points array.
         # The reason we use numpy.vectorize is to support multi-dimensional
@@ -35,13 +32,10 @@ class Test_add_categorised_coord(tests.IrisTest):
         def fn(coord, v):
             return v**2
 
-        with mock.patch(
-            "numpy.vectorize", return_value=self.vectorised
-        ) as vectorise_patch:
-            with mock.patch("iris.coords.AuxCoord") as aux_coord_constructor:
-                add_categorised_coord(
-                    self.cube, "foobar", self.coord, fn, units=self.units
-                )
+        vectorise_patch = mocker.patch("numpy.vectorize", return_value=self.vectorised)
+        aux_coord_constructor = mocker.patch("iris.coords.AuxCoord")
+
+        add_categorised_coord(self.cube, "foobar", self.coord, fn, units=self.units)
 
         # Check the constructor of AuxCoord gets called with the
         # appropriate arguments.
@@ -60,30 +54,25 @@ class Test_add_categorised_coord(tests.IrisTest):
             aux_coord_constructor(), self.cube.coord_dims(self.coord)
         )
 
-    def test_string_vectorised(self):
+    def test_string_vectorised(self, mocker):
         # Check that special case handling of a vectorized string returning
         # function is taking place.
         def fn(coord, v):
             return "0123456789"[:v]
 
-        with mock.patch(
-            "numpy.vectorize", return_value=self.vectorised
-        ) as vectorise_patch:
-            with mock.patch("iris.coords.AuxCoord") as aux_coord_constructor:
-                add_categorised_coord(
-                    self.cube, "foobar", self.coord, fn, units=self.units
-                )
+        vectorise_patch = mocker.patch("numpy.vectorize", return_value=self.vectorised)
+        aux_coord_constructor = mocker.patch("iris.coords.AuxCoord")
 
-        self.assertEqual(
-            aux_coord_constructor.call_args[0][0],
-            vectorise_patch(fn, otypes=[object])(self.coord, self.coord.points).astype(
-                "|S64"
-            ),
-        )
+        add_categorised_coord(self.cube, "foobar", self.coord, fn, units=self.units)
+
+        assert aux_coord_constructor.call_args[0][0] == vectorise_patch(
+            fn, otypes=[object]
+        )(self.coord, self.coord.points).astype("|S64")
 
 
-class Test_add_day_of_year(tests.IrisTest):
-    def setUp(self):
+class Test_add_day_of_year:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.expected = {
             "standard": np.array(list(range(360, 367)) + list(range(1, 4))),
             "gregorian": np.array(list(range(360, 367)) + list(range(1, 4))),
@@ -119,8 +108,6 @@ class Test_add_day_of_year(tests.IrisTest):
             points = cube.coord("day_of_year").points
             expected_points = self.expected[calendar]
             msg = "Test failed for the following calendar: {}."
-            self.assertArrayEqual(points, expected_points, err_msg=msg.format(calendar))
-
-
-if __name__ == "__main__":
-    tests.main()
+            _shared_utils.assert_array_equal(
+                points, expected_points, err_msg=msg.format(calendar)
+            )

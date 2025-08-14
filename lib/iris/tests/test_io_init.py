@@ -4,17 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the io/__init__.py module."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 from io import BytesIO
 from pathlib import Path
 
 import iris.fileformats as iff
 import iris.io
+from iris.tests import _shared_utils
 
 
-class TestDecodeUri(tests.IrisTest):
+class TestDecodeUri:
     def test_decode_uri__str(self):
         tests = {
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
@@ -39,7 +37,7 @@ class TestDecodeUri(tests.IrisTest):
             ),
         }
         for uri, expected in tests.items():
-            self.assertEqual(expected, iris.io.decode_uri(uri))
+            assert expected == iris.io.decode_uri(uri)
 
     def test_decode_uri__path(self):
         tests = {
@@ -57,17 +55,18 @@ class TestDecodeUri(tests.IrisTest):
             ),
         }
         for uri, expected in tests.items():
-            self.assertEqual(expected, iris.io.decode_uri(Path(uri)))
+            assert expected == iris.io.decode_uri(Path(uri))
 
 
-class TestFileFormatPicker(tests.IrisTest):
-    def test_known_formats(self):
-        self.assertString(
+class TestFileFormatPicker:
+    def test_known_formats(self, request):
+        _shared_utils.assert_string(
+            request,
             str(iff.FORMAT_AGENT),
-            tests.get_result_path(("file_load", "known_loaders.txt")),
+            _shared_utils.get_result_path(("file_load", "known_loaders.txt")),
         )
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_format_picker(self):
         # ways to test the format picker = list of (format-name, file-spec)
         test_specs = [
@@ -121,10 +120,10 @@ class TestFileFormatPicker(tests.IrisTest):
 
         # test that each filespec is identified as the expected format
         for expected_format_name, file_spec in test_specs:
-            test_path = tests.get_data_path(file_spec)
+            test_path = _shared_utils.get_data_path(file_spec)
             with open(test_path, "rb") as test_file:
                 a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
-                self.assertEqual(a.name, expected_format_name)
+                assert a.name == expected_format_name
 
     def test_format_picker_nodata(self):
         # The following is to replace the above at some point as no real files
@@ -140,7 +139,7 @@ class TestFileFormatPicker(tests.IrisTest):
                 bh.write(binary_string)
                 bh.name = "fake_file_handle"
                 a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
-            self.assertEqual(a.name, "GRIB")
+            assert a.name == "GRIB"
 
     def test_open_dap(self):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
@@ -148,8 +147,4 @@ class TestFileFormatPicker(tests.IrisTest):
         # supported.
         DAP_URI = "https://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
-        self.assertEqual(a.name, "NetCDF OPeNDAP")
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert a.name == "NetCDF OPeNDAP"
