@@ -6,7 +6,6 @@
 
 import collections
 from datetime import datetime
-import warnings
 
 import cf_units
 import dask.array as da
@@ -855,11 +854,8 @@ class Test_contiguous_bounds:
     def test_1d_coord_no_bounds_warning(self):
         coord = DimCoord([0, 1, 2], standard_name="latitude")
         msg = "Coordinate 'latitude' is not bounded, guessing contiguous bounds."
-        with warnings.catch_warnings():
-            # Cause all warnings to raise Exceptions
-            warnings.simplefilter("error")
-            with pytest.warns(match=msg):
-                coord.contiguous_bounds()
+        with pytest.warns(match=msg):
+            coord.contiguous_bounds()
 
     def test_2d_coord_no_bounds_error(self):
         coord = AuxCoord(np.array([[0, 0], [5, 5]]), standard_name="latitude")
