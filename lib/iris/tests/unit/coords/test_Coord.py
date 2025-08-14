@@ -26,7 +26,8 @@ Pair = collections.namedtuple("Pair", "points bounds")
 
 
 class Test_nearest_neighbour_index__ascending:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         points = [0.0, 90.0, 180.0, 270.0]
         self.coord = DimCoord(points, circular=False, units="degrees")
 
@@ -79,7 +80,8 @@ class Test_nearest_neighbour_index__ascending:
 
 
 class Test_nearest_neighbour_index__descending:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         points = [270.0, 180.0, 90.0, 0.0]
         self.coord = DimCoord(points, circular=False, units="degrees")
 
@@ -110,7 +112,8 @@ class Test_nearest_neighbour_index__descending:
 
 
 class Test_guess_bounds:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.coord = DimCoord(
             np.array([-160, -120, 0, 30, 150, 170]),
             units="degree",
@@ -933,7 +936,8 @@ class Test_is_contiguous:
 
 
 class Test__discontiguity_in_bounds:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.points_3by3 = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
         self.lon_bounds_3by3 = np.array(
             [
