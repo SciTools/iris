@@ -96,7 +96,8 @@ class TestDataMergeCombos:
             if ma.isMaskedArray(data):
                 assert data.fill_value == expected_fill_value
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.dtype = np.dtype("int32")
         fill_value = 1234
         self.lazy_combos = itertools.product([False, True], [False, True])
