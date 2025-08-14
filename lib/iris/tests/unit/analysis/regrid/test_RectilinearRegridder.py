@@ -4,19 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis._regrid.RectilinearRegridder`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
 from iris.coord_systems import OSGB, GeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
@@ -25,8 +23,9 @@ RESULT_DIR = ("analysis", "regrid")
 regrid = Regridder._regrid
 
 
-class Test__regrid__linear(tests.IrisTest):
-    def setUp(self):
+class Test__regrid__linear:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.x = DimCoord(np.linspace(-2, 57, 60))
         self.y = DimCoord(np.linspace(0, 49, 50))
         self.xs, self.ys = np.meshgrid(self.x.points, self.y.points)
@@ -88,7 +87,9 @@ class Test__regrid__linear(tests.IrisTest):
             np.array([xs]),
             np.array([ys]),
         )
-        self.assertArrayAllClose(result, expecteds, rtol=1e-04, equal_nan=True)
+        _shared_utils.assert_array_all_close(
+            result, expecteds, rtol=1e-04, equal_nan=True
+        )
 
         # Check that transposing the input data results in the same values
         ndim = self.data.ndim
@@ -101,7 +102,7 @@ class Test__regrid__linear(tests.IrisTest):
             np.array([xs]),
             np.array([ys]),
         )
-        self.assertArrayEqual(result.T, result2)
+        _shared_utils.assert_array_equal(result.T, result2)
 
     def test_single_values(self):
         # Check that the values are sensible e.g. (3 + 4**2 == 19)
@@ -128,7 +129,7 @@ class Test__regrid__linear(tests.IrisTest):
             self.target_x,
             self.target_y,
         )
-        self.assertArrayEqual(result, self.expected)
+        _shared_utils.assert_array_equal(result, self.expected)
 
     def test_simple_masked(self):
         data = ma.MaskedArray(self.data, mask=True)
@@ -153,7 +154,7 @@ class Test__regrid__linear(tests.IrisTest):
             dtype=bool,
         )
         expected = ma.MaskedArray(self.expected, mask=expected_mask)
-        self.assertMaskedArrayEqual(result, expected)
+        _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_simple_masked_no_mask(self):
         data = ma.MaskedArray(self.data, mask=False)
@@ -166,7 +167,7 @@ class Test__regrid__linear(tests.IrisTest):
             self.target_x,
             self.target_y,
         )
-        self.assertIsInstance(result, ma.MaskedArray)
+        assert isinstance(result, ma.MaskedArray)
 
     def test_result_transpose_shape(self):
         ndim = self.data.ndim
@@ -179,7 +180,7 @@ class Test__regrid__linear(tests.IrisTest):
             self.target_x,
             self.target_y,
         )
-        self.assertArrayEqual(result, self.expected.T)
+        _shared_utils.assert_array_equal(result, self.expected.T)
 
     def test_reverse_x_coord(self):
         index = [slice(None)] * self.data.ndim
@@ -193,7 +194,7 @@ class Test__regrid__linear(tests.IrisTest):
             self.target_x,
             self.target_y,
         )
-        self.assertArrayEqual(result, self.expected)
+        _shared_utils.assert_array_equal(result, self.expected)
 
     def test_circular_x_coord(self):
         # Check that interpolation of a circular src coordinate doesn't result
@@ -209,14 +210,14 @@ class Test__regrid__linear(tests.IrisTest):
             np.array([[58]]),
             np.array([[0]]),
         )
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             result, np.array([56.80398671, 113.60797342], ndmin=self.data.ndim)
         )
 
 
 # Check what happens to NaN values, extrapolated values, and
 # masked values.
-class Test__regrid__extrapolation_modes(tests.IrisTest):
+class Test__regrid__extrapolation_modes:
     values_by_method = {
         "linear": [
             [np.nan, np.nan, 2, 3, np.nan],
@@ -239,7 +240,8 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         "nearest": [[np.nan, 1, 2, 3, 3], [4, 5, 6, 7, 7], [8, 9, 10, 11, 11]],
     }
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.methods = ("linear", "nearest")
         self.test_dtypes = [
             np.dtype(spec) for spec in ("i1", "i2", "i4", "i8", "f2", "f4", "f8")
@@ -265,9 +267,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertNotIsInstance(result, ma.MaskedArray)
+            assert not isinstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
-            self.assertArrayEqual(result, expected)
+            _shared_utils.assert_array_equal(result, expected)
 
     def test_default_maskedarray(self):
         # NaN           -> NaN
@@ -278,11 +280,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_default_maskedarray_none_masked(self):
         # NaN           -> NaN
@@ -292,11 +294,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_default_maskedarray_none_masked_expanded(self):
         # NaN           -> NaN
@@ -308,11 +310,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_method_ndarray(self):
         # NaN           -> NaN
@@ -321,9 +323,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "extrapolate")
-            self.assertNotIsInstance(result, ma.MaskedArray)
+            assert not isinstance(result, ma.MaskedArray)
             expected = self.extrapolate_values_by_method[method]
-            self.assertArrayEqual(result, expected)
+            _shared_utils.assert_array_equal(result, expected)
 
     def test_method_maskedarray(self):
         # NaN           -> NaN
@@ -334,11 +336,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, "extrapolate")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 1]]
             values = self.extrapolate_values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_nan_ndarray(self):
         # NaN           -> NaN
@@ -347,9 +349,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "nan")
-            self.assertNotIsInstance(result, ma.MaskedArray)
+            assert not isinstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
-            self.assertArrayEqual(result, expected)
+            _shared_utils.assert_array_equal(result, expected)
 
     def test_nan_maskedarray(self):
         # NaN           -> NaN
@@ -360,18 +362,18 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, "nan")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_error_ndarray(self):
         # Values irrelevant - the function raises an error.
         data = np.arange(12, dtype=np.float64).reshape(3, 4)
         data[0, 0] = np.nan
         for method in self.methods:
-            with self.assertRaisesRegex(ValueError, "out of bounds"):
+            with pytest.raises(ValueError, match="out of bounds"):
                 self._regrid(data, method, "error")
 
     def test_error_maskedarray(self):
@@ -380,7 +382,7 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         data[2, 3] = ma.masked
         for method in self.methods:
-            with self.assertRaisesRegex(ValueError, "out of bounds"):
+            with pytest.raises(ValueError, match="out of bounds"):
                 self._regrid(data, method, "error")
 
     def test_mask_ndarray(self):
@@ -391,11 +393,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "mask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 0, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_mask_maskedarray(self):
         # NaN           -> NaN
@@ -406,11 +408,11 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, "mask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_nanmask_ndarray(self):
         # NaN           -> NaN
@@ -419,9 +421,9 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[0, 0] = np.nan
         for method in self.methods:
             result = self._regrid(data, method, "nanmask")
-            self.assertNotIsInstance(result, ma.MaskedArray)
+            assert not isinstance(result, ma.MaskedArray)
             expected = self.values_by_method[method]
-            self.assertArrayEqual(result, expected)
+            _shared_utils.assert_array_equal(result, expected)
 
     def test_nanmask_maskedarray(self):
         # NaN           -> NaN
@@ -432,17 +434,17 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
         data[2, 3] = ma.masked
         for method in self.methods:
             result = self._regrid(data, method, "nanmask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0, 1], [0, 0, 0, 0, 1], [0, 0, 0, 1, 1]]
             values = self.values_by_method[method]
             expected = ma.MaskedArray(values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_invalid(self):
         data = np.arange(12, dtype=np.float64).reshape(3, 4)
         emsg = "Invalid extrapolation mode"
         for method in self.methods:
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 self._regrid(data, method, "BOGUS")
 
     def test_method_result_types(self):
@@ -464,11 +466,12 @@ class Test__regrid__extrapolation_modes(tests.IrisTest):
                 expected_types_mapping = {
                     test_dtype: test_dtype for test_dtype in self.test_dtypes
                 }
-            self.assertEqual(result_dtypes, expected_types_mapping)
+            assert result_dtypes == expected_types_mapping
 
 
-class Test___call___lazy(tests.IrisTest):
-    def setUp(self):
+class Test___call___lazy:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = lat_lon_cube()
         # Regridder method and extrapolation-mode.
         self.args = ("linear", "mask")
@@ -479,25 +482,26 @@ class Test___call___lazy(tests.IrisTest):
 
     def test_lazy_regrid(self):
         result = self.lazy_regridder(self.lazy_cube)
-        self.assertTrue(result.has_lazy_data())
+        assert result.has_lazy_data()
         meta = da.utils.meta_from_array(result.core_data())
-        self.assertTrue(meta.__class__ is np.ndarray)
+        assert meta.__class__ is np.ndarray
         expected = self.regridder(self.cube)
-        self.assertEqual(result.dtype, expected.dtype)
-        self.assertTrue(result == expected)
+        assert result.dtype == expected.dtype
+        assert result == expected
 
     def test_lazy_masked_regrid(self):
         result = self.lazy_regridder(self.lazy_masked_cube)
-        self.assertTrue(result.has_lazy_data())
+        assert result.has_lazy_data()
         meta = da.utils.meta_from_array(result.core_data())
-        self.assertTrue(isinstance(meta, np.ma.MaskedArray))
+        assert isinstance(meta, np.ma.MaskedArray)
         expected = self.regridder(self.cube)
-        self.assertEqual(result.dtype, expected.dtype)
-        self.assertTrue(result == expected)
+        assert result.dtype == expected.dtype
+        assert result == expected
 
 
-class Test___call____invalid_types(tests.IrisTest):
-    def setUp(self):
+class Test___call____invalid_types:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = lat_lon_cube()
         # Regridder method and extrapolation-mode.
         self.args = ("linear", "mask")
@@ -505,28 +509,29 @@ class Test___call____invalid_types(tests.IrisTest):
 
     def test_src_as_array(self):
         arr = np.zeros((3, 4))
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Regridder(arr, self.cube, *self.args)
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             self.regridder(arr)
 
     def test_grid_as_array(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Regridder(self.cube, np.zeros((3, 4)), *self.args)
 
     def test_src_as_int(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Regridder(42, self.cube, *self.args)
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             self.regridder(42)
 
     def test_grid_as_int(self):
-        with self.assertRaises(TypeError):
+        with pytest.raises(TypeError):
             Regridder(self.cube, 42, *self.args)
 
 
-class Test___call____missing_coords(tests.IrisTest):
-    def setUp(self):
+class Test___call____missing_coords:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.args = ("linear", "mask")
 
     def ok_bad(self, coord_names):
@@ -539,46 +544,47 @@ class Test___call____missing_coords(tests.IrisTest):
 
     def test_src_missing_lat(self):
         ok, bad = self.ok_bad(["latitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_missing_lat(self):
         ok, bad = self.ok_bad(["latitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
     def test_src_missing_lon(self):
         ok, bad = self.ok_bad(["longitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_missing_lon(self):
         ok, bad = self.ok_bad(["longitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
     def test_src_missing_lat_lon(self):
         ok, bad = self.ok_bad(["latitude", "longitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_missing_lat_lon(self):
         ok, bad = self.ok_bad(["latitude", "longitude"])
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
 
-class Test___call____not_dim_coord(tests.IrisTest):
-    def setUp(self):
+class Test___call____not_dim_coord:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.args = ("linear", "mask")
 
     def ok_bad(self, coord_name):
@@ -594,33 +600,34 @@ class Test___call____not_dim_coord(tests.IrisTest):
 
     def test_src_with_aux_lat(self):
         ok, bad = self.ok_bad("latitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_with_aux_lat(self):
         ok, bad = self.ok_bad("latitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
     def test_src_with_aux_lon(self):
         ok, bad = self.ok_bad("longitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_with_aux_lon(self):
         ok, bad = self.ok_bad("longitude")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
 
-class Test___call____not_dim_coord_share(tests.IrisTest):
-    def setUp(self):
+class Test___call____not_dim_coord_share:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.args = ("linear", "mask")
 
     def ok_bad(self):
@@ -635,20 +642,21 @@ class Test___call____not_dim_coord_share(tests.IrisTest):
 
     def test_src_shares_dim(self):
         ok, bad = self.ok_bad()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_shares_dim(self):
         ok, bad = self.ok_bad()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
 
-class Test___call____bad_georeference(tests.IrisTest):
-    def setUp(self):
+class Test___call____bad_georeference:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.args = ("linear", "mask")
 
     def ok_bad(self, lat_cs, lon_cs):
@@ -662,37 +670,37 @@ class Test___call____bad_georeference(tests.IrisTest):
     def test_src_no_cs(self):
         ok, bad = self.ok_bad(None, None)
         regridder = Regridder(bad, ok, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_no_cs(self):
         ok, bad = self.ok_bad(None, None)
         regridder = Regridder(ok, bad, *self.args)
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(ok)
 
     def test_src_one_cs(self):
         ok, bad = self.ok_bad(None, GeogCS(6371000))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
 
     def test_grid_one_cs(self):
         ok, bad = self.ok_bad(None, GeogCS(6371000))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
     def test_src_inconsistent_cs(self):
         ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(bad, ok, *self.args)
 
     def test_grid_inconsistent_cs(self):
         ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, *self.args)
 
 
-class Test___call____bad_angular_units(tests.IrisTest):
+class Test___call____bad_angular_units:
     def ok_bad(self):
         # Changes the longitude coord to radians on `bad`.
         ok = lat_lon_cube()
@@ -703,12 +711,12 @@ class Test___call____bad_angular_units(tests.IrisTest):
     def test_src_radians(self):
         ok, bad = self.ok_bad()
         regridder = Regridder(bad, ok, "linear", "mask")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_radians(self):
         ok, bad = self.ok_bad()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, "linear", "mask")
 
 
@@ -730,7 +738,7 @@ def uk_cube():
     return uk
 
 
-class Test___call____bad_linear_units(tests.IrisTest):
+class Test___call____bad_linear_units:
     def ok_bad(self):
         # Defines `bad` with an x coordinate in km.
         ok = lat_lon_cube()
@@ -741,19 +749,19 @@ class Test___call____bad_linear_units(tests.IrisTest):
     def test_src_km(self):
         ok, bad = self.ok_bad()
         regridder = Regridder(bad, ok, "linear", "mask")
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             regridder(bad)
 
     def test_grid_km(self):
         ok, bad = self.ok_bad()
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError):
             Regridder(ok, bad, "linear", "mask")
 
 
-class Test___call____no_coord_systems(tests.IrisTest):
+class Test___call____no_coord_systems:
     # Test behaviour in the absence of any coordinate systems.
-
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.mode = "mask"
         self.methods = ("linear", "nearest")
 
@@ -774,11 +782,11 @@ class Test___call____no_coord_systems(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             for coord in result.dim_coords:
-                self.assertEqual(coord, grid.coord(coord))
+                assert coord == grid.coord(coord)
             expected = ma.arange(12).reshape((3, 4)) + 5
             expected[:, 3] = ma.masked
             expected[2, :] = ma.masked
-            self.assertMaskedArrayEqual(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
 
     def test_matching_units(self):
         # Check we are insensitive to the units provided they match.
@@ -796,11 +804,11 @@ class Test___call____no_coord_systems(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             for coord in result.dim_coords:
-                self.assertEqual(coord, grid.coord(coord))
+                assert coord == grid.coord(coord)
             expected = ma.arange(12).reshape((3, 4)) + 5
             expected[:, 3] = ma.masked
             expected[2, :] = ma.masked
-            self.assertMaskedArrayEqual(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
 
     def test_different_units(self):
         src = uk_cube()
@@ -817,7 +825,7 @@ class Test___call____no_coord_systems(tests.IrisTest):
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
             emsg = "matching coordinate metadata"
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 regridder(src)
 
     def test_coord_metadata_mismatch(self):
@@ -828,11 +836,11 @@ class Test___call____no_coord_systems(tests.IrisTest):
         self.remove_coord_systems(lat_lon)
         for method in self.methods:
             regridder = Regridder(uk, lat_lon, method, self.mode)
-            with self.assertRaises(ValueError):
+            with pytest.raises(ValueError):
                 regridder(uk)
 
 
-class Test___call____extrapolation_modes(tests.IrisTest):
+class Test___call____extrapolation_modes:
     values = [
         [np.nan, 6, 7, np.nan],
         [9, 10, 11, np.nan],
@@ -850,7 +858,8 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         [np.nan, np.nan, np.nan, np.nan],
     ]
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.methods = ("linear", "nearest")
 
     def _ndarray_cube(self, method):
@@ -878,8 +887,8 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         result = regridder(src)
 
         surface = result.coord("surface_altitude").points
-        self.assertNotIsInstance(surface, ma.MaskedArray)
-        self.assertArrayEqual(surface, self.surface_values)
+        assert not isinstance(surface, ma.MaskedArray)
+        _shared_utils.assert_array_equal(surface, self.surface_values)
 
         return result.data
 
@@ -889,10 +898,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 0, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_default_maskedarray(self):
         # NaN           -> NaN
@@ -901,10 +910,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 1, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_default_maskedarray_none_masked(self):
         # NaN           -> NaN
@@ -916,10 +925,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
             index = (0, 0) if method == "linear" else (1, 1)
             src.data[index] = np.nan
             result = self._regrid(src, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 0, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_default_maskedarray_none_masked_expanded(self):
         # NaN           -> NaN
@@ -933,10 +942,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
             index = (0, 0) if method == "linear" else (1, 1)
             src.data[index] = np.nan
             result = self._regrid(src, method)
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 0, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_method_ndarray(self):
         # NaN           -> NaN
@@ -944,9 +953,9 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, "extrapolate")
-            self.assertNotIsInstance(result, ma.MaskedArray)
+            assert not isinstance(result, ma.MaskedArray)
             expected = self.extrapolate_values_by_method[method]
-            self.assertArrayEqual(result, expected)
+            _shared_utils.assert_array_equal(result, expected)
 
     def test_nan_ndarray(self):
         # NaN           -> NaN
@@ -954,8 +963,8 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, "nan")
-            self.assertNotIsInstance(result, ma.MaskedArray)
-            self.assertArrayEqual(result, self.values)
+            assert not isinstance(result, ma.MaskedArray)
+            _shared_utils.assert_array_equal(result, self.values)
 
     def test_nan_maskedarray(self):
         # NaN           -> NaN
@@ -964,23 +973,23 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, "nan")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 0], [0, 0, 1, 0], [0, 0, 0, 0]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_error_ndarray(self):
         # Values irrelevant - the function raises an error.
         for method in self.methods:
             src = self._ndarray_cube(method)
-            with self.assertRaisesRegex(ValueError, "out of bounds"):
+            with pytest.raises(ValueError, match="out of bounds"):
                 self._regrid(src, method, "error")
 
     def test_error_maskedarray(self):
         # Values irrelevant - the function raises an error.
         for method in self.methods:
             src = self._masked_cube(method)
-            with self.assertRaisesRegex(ValueError, "out of bounds"):
+            with pytest.raises(ValueError, match="out of bounds"):
                 self._regrid(src, method, "error")
 
     def test_mask_ndarray(self):
@@ -990,10 +999,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, "mask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 0, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_mask_maskedarray(self):
         # NaN           -> NaN
@@ -1002,10 +1011,10 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, "mask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 1, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_nanmask_ndarray(self):
         # NaN           -> NaN
@@ -1013,8 +1022,8 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._ndarray_cube(method)
             result = self._regrid(src, method, "nanmask")
-            self.assertNotIsInstance(result, ma.MaskedArray)
-            self.assertArrayEqual(result, self.values)
+            assert not isinstance(result, ma.MaskedArray)
+            _shared_utils.assert_array_equal(result, self.values)
 
     def test_nanmask_maskedarray(self):
         # NaN           -> NaN
@@ -1023,22 +1032,23 @@ class Test___call____extrapolation_modes(tests.IrisTest):
         for method in self.methods:
             src = self._masked_cube(method)
             result = self._regrid(src, method, "nanmask")
-            self.assertIsInstance(result, ma.MaskedArray)
+            assert isinstance(result, ma.MaskedArray)
             mask = [[0, 0, 0, 1], [0, 0, 1, 1], [1, 1, 1, 1]]
             expected = ma.MaskedArray(self.values, mask)
-            self.assertMaskedArrayEqual(result, expected)
+            _shared_utils.assert_masked_array_equal(result, expected)
 
     def test_invalid(self):
         src = uk_cube()
         emsg = "Invalid extrapolation mode"
         for method in self.methods:
-            with self.assertRaisesRegex(ValueError, emsg):
+            with pytest.raises(ValueError, match=emsg):
                 self._regrid(src, method, "BOGUS")
 
 
-@tests.skip_data
-class Test___call____rotated_to_lat_lon(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test___call____rotated_to_lat_lon:
+    @pytest.fixture(autouse=True)
+    def _setup(self):  # TODO: Mixin?
         self.src = realistic_4d()[:5, :2, ::40, ::30]
         self.mode = "mask"
         self.methods = ("linear", "nearest")
@@ -1053,9 +1063,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
-            self.assertEqual(src.data[1, 1], result.data)
+            assert src.data[1, 1] == result.data
 
-    def test_transposed_src(self):
+    def test_transposed_src(self, request):
         # The source dimensions are in a non-standard order.
         src = self.src
         src.transpose([3, 1, 2, 0])
@@ -1065,7 +1075,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             result = regridder(src)
             result.transpose([3, 1, 2, 0])
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
     def _grid_subset(self):
         # The destination grid points are entirely contained within the
@@ -1075,7 +1085,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         grid.coord("latitude").points = np.linspace(52.372, 52.44, 4)
         return grid
 
-    def test_reversed(self):
+    def test_reversed(self, request):
         src = self.src
         grid = self._grid_subset()
 
@@ -1083,62 +1093,62 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
             regridder = Regridder(src, grid[::-1], method, self.mode)
             result = regridder(src)
-            self.assertCMLApproxData(result[:, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
 
             regridder = Regridder(src, grid[:, ::-1], method, self.mode)
             result = regridder(src)
-            self.assertCMLApproxData(result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
 
             regridder = Regridder(src, grid[::-1, ::-1], method, self.mode)
             result = regridder(src)
-            self.assertCMLApproxData(result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            self.assertCMLApproxData(result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
 
-    def test_grid_subset(self):
+    def test_grid_subset(self, request):
         # The destination grid points are entirely contained within the
         # src grid points.
         grid = self._grid_subset()
@@ -1146,7 +1156,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
     def _big_grid(self):
         grid = self._grid_subset()
@@ -1155,7 +1165,7 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         big_grid.add_dim_coord(grid.coord("longitude"), 4)
         return big_grid
 
-    def test_grid_subset_big(self):
+    def test_grid_subset_big(self, request):
         # Add some extra dimensions to the destination Cube and
         # these should be safely ignored.
         big_grid = self._big_grid()
@@ -1163,9 +1173,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(self.src, big_grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_subset_big_transposed(self):
+    def test_grid_subset_big_transposed(self, request):
         # The order of the grid's dimensions (including the X and Y
         # dimensions) must not affect the result.
         big_grid = self._big_grid()
@@ -1174,9 +1184,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(self.src, big_grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_subset_anon(self):
+    def test_grid_subset_anon(self, request):
         # Must cope OK with anonymous source dimensions.
         src = self.src
         src.remove_coord("time")
@@ -1185,9 +1195,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_anon.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_subset_missing_data_1(self):
+    def test_grid_subset_missing_data_1(self, request):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
         src = self.src
@@ -1198,9 +1208,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_masked_1.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_subset_missing_data_2(self):
+    def test_grid_subset_missing_data_2(self, request):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data.
         src = self.src
@@ -1211,9 +1221,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_masked_2.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_partial_overlap(self):
+    def test_grid_partial_overlap(self, request):
         # The destination grid points are partially contained within the
         # src grid points.
         grid = global_pp()[:4, :4]
@@ -1223,9 +1233,9 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_partial_overlap.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_grid_no_overlap(self):
+    def test_grid_no_overlap(self, request):
         # The destination grid points are NOT contained within the
         # src grid points.
         grid = global_pp()[:4, :4]
@@ -1234,9 +1244,11 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
         for method in self.methods:
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
-            self.assertCMLApproxData(result, RESULT_DIR + ("no_overlap.cml",))
+            _shared_utils.assert_CML_approx_data(
+                request, result, RESULT_DIR + ("no_overlap.cml",)
+            )
 
-    def test_grid_subset_missing_data_aux(self):
+    def test_grid_subset_missing_data_aux(self, request):
         # The destination grid points are entirely contained within the
         # src grid points AND we have missing data on the aux coordinate.
         src = self.src
@@ -1246,12 +1258,13 @@ class Test___call____rotated_to_lat_lon(tests.IrisTest):
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_masked_altitude.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
 
-@tests.skip_data
-class Test___call____NOP(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test___call____NOP:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # The destination grid points are exactly the same as the
         # src grid points.
         self.src = realistic_4d()[:5, :2, ::40, ::30]
@@ -1263,27 +1276,28 @@ class Test___call____NOP(tests.IrisTest):
     def test_nop__linear(self):
         regridder = Regridder(self.src, self.grid, "linear", "mask")
         result = regridder(self.src)
-        self.assertEqual(result, self.src)
+        assert result == self.src
 
     def test_nop__nearest(self):
         regridder = Regridder(self.src, self.grid, "nearest", "mask")
         result = regridder(self.src)
-        self.assertEqual(result, self.src)
+        assert result == self.src
 
     def test_nop__linear_lazy(self):
         regridder = Regridder(self.lazy_src, self.grid, "linear", "mask")
         result = regridder(self.lazy_src)
-        self.assertEqual(result, self.lazy_src)
+        assert result == self.lazy_src
 
     def test_nop__nearest_lazy(self):
         regridder = Regridder(self.lazy_src, self.grid, "nearest", "mask")
         result = regridder(self.lazy_src)
-        self.assertEqual(result, self.lazy_src)
+        assert result == self.lazy_src
 
 
-@tests.skip_data
-class Test___call____circular(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test___call____circular:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         src = global_pp()[::10, ::10]
         level_height = AuxCoord(
             0,
@@ -1308,43 +1322,43 @@ class Test___call____circular(tests.IrisTest):
         self.mode = "mask"
         self.methods = ("linear", "nearest")
 
-    def test_non_circular(self):
+    def test_non_circular(self, request):
         # Non-circular src -> non-circular grid
         for method in self.methods:
             regridder = Regridder(self.src, self.grid, method, self.mode)
             result = regridder(self.src)
-            self.assertFalse(result.coord("longitude").circular)
+            assert not result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_non_circular.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def _check_circular_results(self, src_cube, missingmask=""):
+    def _check_circular_results(self, src_cube, request, missingmask=""):
         results = []
         for method in self.methods:
             regridder = Regridder(src_cube, self.grid, method, self.mode)
             result = regridder(src_cube)
             results.append(result)
-            self.assertFalse(result.coord("longitude").circular)
+            assert not result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_circular_src{}.cml".format(method, missingmask),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
         return results
 
-    def test_circular_src(self):
+    def test_circular_src(self, request):
         # Circular src -> non-circular grid, standard test.
         src = self.src
         src.coord("longitude").circular = True
-        self._check_circular_results(src)
+        self._check_circular_results(src, request)
 
-    def test_circular_src__masked_missingmask(self):
+    def test_circular_src__masked_missingmask(self, request):
         # Test the special case where src_cube.data.mask is just *False*,
         # instead of being an array.
         src = self.src
         src.coord("longitude").circular = True
         src.data = ma.MaskedArray(src.data)
-        self.assertEqual(src.data.mask, False)
-        method_results = self._check_circular_results(src, "missingmask")
+        assert src.data.mask == False  # noqa: E712
+        method_results = self._check_circular_results(src, request, "missingmask")
         for method_result in method_results:
-            self.assertIsInstance(method_result.data.mask, np.ndarray)
-            self.assertTrue(np.all(method_result.data.mask == np.array(False)))
+            assert isinstance(method_result.data.mask, np.ndarray)
+            assert np.all(method_result.data.mask == np.array(False))
 
     def test_circular_src__masked(self):
         # Test that masked source points produce the expected masked results.
@@ -1424,25 +1438,27 @@ class Test___call____circular(tests.IrisTest):
             result_basic = regridder(src_cube_full)
             result_masked = regridder(src_cube_masked)
             # Check we get a masked result
-            self.assertIsInstance(result_masked.data, ma.MaskedArray)
+            assert isinstance(result_masked.data, ma.MaskedArray)
             # Check that the result matches the basic one, except for being
             # masked at the specific expected points.
             expected_result_data = ma.array(result_basic.data)
             expected_result_data.mask = result_masks[method]
-            self.assertMaskedArrayEqual(result_masked.data, expected_result_data)
+            _shared_utils.assert_masked_array_equal(
+                result_masked.data, expected_result_data
+            )
 
-    def test_circular_grid(self):
+    def test_circular_grid(self, request):
         # Non-circular src -> circular grid
         grid = self.grid
         grid.coord("longitude").circular = True
         for method in self.methods:
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
-            self.assertTrue(result.coord("longitude").circular)
+            assert result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_circular_grid.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
+            _shared_utils.assert_CML_approx_data(request, result, cml)
 
-    def test_circular_src_and_grid(self):
+    def test_circular_src_and_grid(self, request):
         # Circular src -> circular grid
         src = self.src
         src.coord("longitude").circular = True
@@ -1451,10 +1467,6 @@ class Test___call____circular(tests.IrisTest):
         for method in self.methods:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
-            self.assertTrue(result.coord("longitude").circular)
+            assert result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_both_circular.cml".format(method),)
-            self.assertCMLApproxData(result, cml)
-
-
-if __name__ == "__main__":
-    tests.main()
+            _shared_utils.assert_CML_approx_data(request, result, cml)
