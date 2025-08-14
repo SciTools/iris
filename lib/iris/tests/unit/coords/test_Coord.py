@@ -858,7 +858,7 @@ class Test_contiguous_bounds:
         with warnings.catch_warnings():
             # Cause all warnings to raise Exceptions
             warnings.simplefilter("error")
-            with pytest.raises(Warning, match=msg):
+            with pytest.warns(match=msg):
                 coord.contiguous_bounds()
 
     def test_2d_coord_no_bounds_error(self):
