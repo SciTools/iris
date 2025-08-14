@@ -34,6 +34,8 @@ dependencies:
   - pandas
   - pip
   - python-stratify
+  - rasterio
+  - affine
 
 # Test dependencies.
   - asv_runner
