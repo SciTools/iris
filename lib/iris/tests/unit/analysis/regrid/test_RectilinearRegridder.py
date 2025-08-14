@@ -506,26 +506,27 @@ class Test___call____invalid_types:
         # Regridder method and extrapolation-mode.
         self.args = ("linear", "mask")
         self.regridder = Regridder(self.cube, self.cube, *self.args)
+        self.assert_msg = "'.*' must be a Cube"
 
     def test_src_as_array(self):
         arr = np.zeros((3, 4))
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             Regridder(arr, self.cube, *self.args)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             self.regridder(arr)
 
     def test_grid_as_array(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             Regridder(self.cube, np.zeros((3, 4)), *self.args)
 
     def test_src_as_int(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             Regridder(42, self.cube, *self.args)
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             self.regridder(42)
 
     def test_grid_as_int(self):
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match=self.assert_msg):
             Regridder(self.cube, 42, *self.args)
 
 
@@ -533,6 +534,7 @@ class Test___call____missing_coords:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.args = ("linear", "mask")
+        self.assert_msg = "Cube '.*' must contain a single 1D [xy] coordinate"
 
     def ok_bad(self, coord_names):
         # Deletes the named coords from `bad`.
@@ -544,41 +546,41 @@ class Test___call____missing_coords:
 
     def test_src_missing_lat(self):
         ok, bad = self.ok_bad(["latitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_missing_lat(self):
         ok, bad = self.ok_bad(["latitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
     def test_src_missing_lon(self):
         ok, bad = self.ok_bad(["longitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_missing_lon(self):
         ok, bad = self.ok_bad(["longitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
     def test_src_missing_lat_lon(self):
         ok, bad = self.ok_bad(["latitude", "longitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_missing_lat_lon(self):
         ok, bad = self.ok_bad(["latitude", "longitude"])
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
 
@@ -586,6 +588,7 @@ class Test___call____not_dim_coord:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.args = ("linear", "mask")
+        self.assert_msg = "Cube '.*' must contain a single 1D [xy] coordinate"
 
     def ok_bad(self, coord_name):
         # Demotes the named DimCoord on `bad` to an AuxCoord.
@@ -600,28 +603,28 @@ class Test___call____not_dim_coord:
 
     def test_src_with_aux_lat(self):
         ok, bad = self.ok_bad("latitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_with_aux_lat(self):
         ok, bad = self.ok_bad("latitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
     def test_src_with_aux_lon(self):
         ok, bad = self.ok_bad("longitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_with_aux_lon(self):
         ok, bad = self.ok_bad("longitude")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
 
@@ -629,6 +632,7 @@ class Test___call____not_dim_coord_share:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.args = ("linear", "mask")
+        self.assert_msg = "Cube '.*' must contain a single 1D [xy] coordinate"
 
     def ok_bad(self):
         # Make lat/lon share a single dimension on `bad`.
@@ -642,15 +646,15 @@ class Test___call____not_dim_coord_share:
 
     def test_src_shares_dim(self):
         ok, bad = self.ok_bad()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(bad, ok, *self.args)
         regridder = Regridder(ok, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             regridder(bad)
 
     def test_grid_shares_dim(self):
         ok, bad = self.ok_bad()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg):
             Regridder(ok, bad, *self.args)
 
 
@@ -658,6 +662,10 @@ class Test___call____bad_georeference:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.args = ("linear", "mask")
+        self.assert_msg_same_cs = "coordinates must have the same coordinate system"
+        self.assert_msg_need_cs = (
+            "both have coordinate systems or both have no coordinate system"
+        )
 
     def ok_bad(self, lat_cs, lon_cs):
         # Updates `bad` to use the given coordinate systems.
@@ -670,33 +678,33 @@ class Test___call____bad_georeference:
     def test_src_no_cs(self):
         ok, bad = self.ok_bad(None, None)
         regridder = Regridder(bad, ok, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_need_cs):
             regridder(bad)
 
     def test_grid_no_cs(self):
         ok, bad = self.ok_bad(None, None)
         regridder = Regridder(ok, bad, *self.args)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_need_cs):
             regridder(ok)
 
     def test_src_one_cs(self):
         ok, bad = self.ok_bad(None, GeogCS(6371000))
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_same_cs):
             Regridder(bad, ok, *self.args)
 
     def test_grid_one_cs(self):
         ok, bad = self.ok_bad(None, GeogCS(6371000))
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_same_cs):
             Regridder(ok, bad, *self.args)
 
     def test_src_inconsistent_cs(self):
         ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_same_cs):
             Regridder(bad, ok, *self.args)
 
     def test_grid_inconsistent_cs(self):
         ok, bad = self.ok_bad(GeogCS(6370000), GeogCS(6371000))
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=self.assert_msg_same_cs):
             Regridder(ok, bad, *self.args)
 
 
@@ -711,12 +719,12 @@ class Test___call____bad_angular_units:
     def test_src_radians(self):
         ok, bad = self.ok_bad()
         regridder = Regridder(bad, ok, "linear", "mask")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported units for coordinate system"):
             regridder(bad)
 
     def test_grid_radians(self):
         ok, bad = self.ok_bad()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported units for coordinate system"):
             Regridder(ok, bad, "linear", "mask")
 
 
@@ -749,12 +757,12 @@ class Test___call____bad_linear_units:
     def test_src_km(self):
         ok, bad = self.ok_bad()
         regridder = Regridder(bad, ok, "linear", "mask")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported units for coordinate system"):
             regridder(bad)
 
     def test_grid_km(self):
         ok, bad = self.ok_bad()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported units for coordinate system"):
             Regridder(ok, bad, "linear", "mask")
 
 
@@ -836,7 +844,8 @@ class Test___call____no_coord_systems:
         self.remove_coord_systems(lat_lon)
         for method in self.methods:
             regridder = Regridder(uk, lat_lon, method, self.mode)
-            with pytest.raises(ValueError):
+            emsg = "matching coordinate metadata"
+            with pytest.raises(ValueError, match=emsg):
                 regridder(uk)
 
 
