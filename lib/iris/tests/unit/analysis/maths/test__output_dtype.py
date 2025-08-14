@@ -4,9 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the function :func:`iris.analysis.maths._output_dtype`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-
 from itertools import product
 import operator
 
