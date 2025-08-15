@@ -7,16 +7,14 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from cf_units import Unit
 import numpy as np
+import pytest
 
 from iris.analysis.cartography import gridcell_angles
 from iris.coords import AuxCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import lat_lon_cube, sample_2d_latlons
 
 
@@ -72,8 +70,9 @@ def _2d_multicells_testcube(cellsize_degrees=1.0):
     return cube
 
 
-class TestGridcellAngles(tests.IrisTest):
-    def setUp(self):
+class TestGridcellAngles:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Make a small "normal" contiguous-bounded cube to test on.
         # This one is regional.
         self.standard_regional_cube = sample_2d_latlons(regional=True, transformed=True)
@@ -110,7 +109,9 @@ class TestGridcellAngles(tests.IrisTest):
         angles_expected = (angles_expected + 360.0) % 360.0
 
         # Assert (toleranced) equality, and return results.
-        self.assertArrayAllClose(angles_calculated, angles_expected, atol=atol_degrees)
+        _shared_utils.assert_array_all_close(
+            angles_calculated, angles_expected, atol=atol_degrees
+        )
 
         return angles_calculated, angles_expected
 
@@ -121,11 +122,11 @@ class TestGridcellAngles(tests.IrisTest):
         # Check properties of the result cube *other than* the data values.
         test_cube = self.standard_regional_cube
         result_cube = self.standard_result_cube
-        self.assertEqual(result_cube.long_name, "gridcell_angle_from_true_east")
-        self.assertEqual(result_cube.units, Unit("degrees"))
-        self.assertEqual(len(result_cube.coords()), 2)
-        self.assertEqual(result_cube.coord(axis="x"), test_cube.coord(axis="x"))
-        self.assertEqual(result_cube.coord(axis="y"), test_cube.coord(axis="y"))
+        assert result_cube.long_name == "gridcell_angle_from_true_east"
+        assert result_cube.units == Unit("degrees")
+        assert len(result_cube.coords()) == 2
+        assert result_cube.coord(axis="x") == test_cube.coord(axis="x")
+        assert result_cube.coord(axis="y") == test_cube.coord(axis="y")
 
     def test_bottom_edge_method(self):
         # Get results with the "other" calculation method + check to tolerance.
@@ -138,15 +139,19 @@ class TestGridcellAngles(tests.IrisTest):
         )
 
         # Not *exactly* the same : this checks we tested the 'other' method !
-        self.assertFalse(np.allclose(r1, r2))
+        #  using .raises in lieu of an assert_array_NOT_all_close function.
+        with pytest.raises(AssertionError, match="ARRAY CHECK FAILED"):
+            _shared_utils.assert_array_all_close(r1, r2)
         # Note: results are a bit different in places.  This is acceptable.
-        self.assertArrayAllClose(r1, r2, atol=0.1)
+        _shared_utils.assert_array_all_close(r1, r2, atol=0.1)
 
     def test_bounded_coord_args(self):
         # Check that passing the coords gives the same result as the cube.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         result = gridcell_angles(co_x, co_y)
-        self.assertArrayAllClose(result.data, self.standard_small_cube_results)
+        _shared_utils.assert_array_all_close(
+            result.data, self.standard_small_cube_results
+        )
 
     def test_coords_radians_args(self):
         # Check it still works with coords converted to radians.
@@ -154,7 +159,9 @@ class TestGridcellAngles(tests.IrisTest):
         for coord in (co_x, co_y):
             coord.convert_units("radians")
         result = gridcell_angles(co_x, co_y)
-        self.assertArrayAllClose(result.data, self.standard_small_cube_results)
+        _shared_utils.assert_array_all_close(
+            result.data, self.standard_small_cube_results
+        )
 
     def test_bounds_array_args(self):
         # Check we can calculate from bounds values alone.
@@ -162,7 +169,7 @@ class TestGridcellAngles(tests.IrisTest):
         # Results drawn from coord bounds should be nearly the same,
         # but not exactly, because of the different 'midpoint' values.
         result = gridcell_angles(co_x.bounds, co_y.bounds)
-        self.assertArrayAllClose(
+        _shared_utils.assert_array_all_close(
             result.data, self.standard_small_cube_results, atol=0.1
         )
 
@@ -175,7 +182,7 @@ class TestGridcellAngles(tests.IrisTest):
         # Note: in this case, we can expect the leftmost and rightmost columns
         # to be rubbish, because the data is not global.
         # But the rest should match okay.
-        self.assertArrayAllClose(
+        _shared_utils.assert_array_all_close(
             result.data[:, 1:-1], self.standard_small_cube_results[:, 1:-1]
         )
 
@@ -184,7 +191,7 @@ class TestGridcellAngles(tests.IrisTest):
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         # As previous, the leftmost and rightmost columns are not good.
         result = gridcell_angles(co_x.points, co_y.points)
-        self.assertArrayAllClose(
+        _shared_utils.assert_array_all_close(
             result.data[:, 1:-1], self.standard_small_cube_results[:, 1:-1]
         )
 
@@ -205,9 +212,11 @@ class TestGridcellAngles(tests.IrisTest):
             coord.bounds = None
         result = gridcell_angles(co_x, co_y)
         # In this case, the match is actually rather poor (!).
-        self.assertArrayAllClose(result.data, global_cube_results, atol=7.5)
+        _shared_utils.assert_array_all_close(result.data, global_cube_results, atol=7.5)
         # Leaving off first + last columns again gives a decent result.
-        self.assertArrayAllClose(result.data[:, 1:-1], global_cube_results[:, 1:-1])
+        _shared_utils.assert_array_all_close(
+            result.data[:, 1:-1], global_cube_results[:, 1:-1]
+        )
 
         # NOTE: although this looks just as bad as 'test_points_array_args',
         # maximum errors there in the end columns are actually > 100 degrees !
@@ -216,48 +225,50 @@ class TestGridcellAngles(tests.IrisTest):
         # Check with points specified in an unexpected coord system.
         cube = sample_2d_latlons(regional=True, rotated=True)
         result = gridcell_angles(cube)
-        self.assertArrayAllClose(result.data, self.standard_small_cube_results)
+        _shared_utils.assert_array_all_close(
+            result.data, self.standard_small_cube_results
+        )
         # Check that the result has transformed (true-latlon) coordinates.
-        self.assertEqual(len(result.coords()), 2)
+        assert len(result.coords()) == 2
         x_coord = result.coord(axis="x")
         y_coord = result.coord(axis="y")
-        self.assertEqual(x_coord.shape, cube.shape)
-        self.assertEqual(y_coord.shape, cube.shape)
-        self.assertIsNotNone(cube.coord_system)
-        self.assertIsNone(x_coord.coord_system)
-        self.assertIsNone(y_coord.coord_system)
+        assert x_coord.shape == cube.shape
+        assert y_coord.shape == cube.shape
+        assert cube.coord_system is not None
+        assert x_coord.coord_system is None
+        assert y_coord.coord_system is None
 
     def test_fail_coords_bad_units(self):
         # Check error with bad coords units.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         co_y.units = "m"
-        with self.assertRaisesRegex(ValueError, "must have angular units"):
+        with pytest.raises(ValueError, match="must have angular units"):
             gridcell_angles(co_x, co_y)
 
     def test_fail_nonarraylike(self):
         # Check error with bad args.
         co_x, co_y = 1, 2
-        with self.assertRaisesRegex(ValueError, "must have array shape property"):
+        with pytest.raises(ValueError, match="must have array shape property"):
             gridcell_angles(co_x, co_y)
 
     def test_fail_non2d_coords(self):
         # Check error with bad args.
         cube = lat_lon_cube()
-        with self.assertRaisesRegex(ValueError, "inputs must have 2-dimensional shape"):
+        with pytest.raises(ValueError, match="inputs must have 2-dimensional shape"):
             gridcell_angles(cube)
 
     def test_fail_different_shapes(self):
         # Check error with mismatched shapes.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
         co_y = co_y[1:]
-        with self.assertRaisesRegex(ValueError, "must have same shape"):
+        with pytest.raises(ValueError, match="must have same shape"):
             gridcell_angles(co_x, co_y)
 
     def test_fail_different_coord_system(self):
         # Check error with mismatched coord systems.
         cube = sample_2d_latlons(regional=True, rotated=True)
         cube.coord(axis="x").coord_system = None
-        with self.assertRaisesRegex(ValueError, "must have same coordinate system"):
+        with pytest.raises(ValueError, match="must have same coordinate system"):
             gridcell_angles(cube)
 
     def test_fail_cube_dims(self):
@@ -272,25 +283,21 @@ class TestGridcellAngles(tests.IrisTest):
         )
         cube.remove_coord(co_x)
         cube.add_aux_coord(co_new_x, (1, 0))
-        with self.assertRaisesRegex(ValueError, "must have the same cube dimensions"):
+        with pytest.raises(ValueError, match="must have the same cube dimensions"):
             gridcell_angles(cube)
 
     def test_fail_coord_noncoord(self):
         # Check that passing a coord + an array gives an error.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
-        with self.assertRaisesRegex(ValueError, "is a Coordinate, but .* is not"):
+        with pytest.raises(ValueError, match="is a Coordinate, but .* is not"):
             gridcell_angles(co_x, co_y.bounds)
 
     def test_fail_noncoord_coord(self):
         # Check that passing an array + a coord gives an error.
         co_x, co_y = (self.standard_regional_cube.coord(axis=ax) for ax in ("x", "y"))
-        with self.assertRaisesRegex(ValueError, "is a Coordinate, but .* is not"):
+        with pytest.raises(ValueError, match="is a Coordinate, but .* is not"):
             gridcell_angles(co_x.points, co_y)
 
     def test_fail_bad_method(self):
-        with self.assertRaisesRegex(ValueError, "unrecognised cell_angle_boundpoints"):
+        with pytest.raises(ValueError, match="unrecognised cell_angle_boundpoints"):
             self._check_multiple_orientations_and_latitudes(method="something_unknown")
-
-
-if __name__ == "__main__":
-    tests.main()

@@ -4,24 +4,23 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.analysis.cartography.project`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
 import numpy as np
+import pytest
 
 from iris.analysis.cartography import project
 import iris.coord_systems
 import iris.coords
 import iris.cube
 import iris.tests
+from iris.tests import _shared_utils
 import iris.tests.stock
 from iris.warnings import IrisDefaultingWarning
 
 ROBINSON = ccrs.Robinson()
 
 
+@pytest.fixture
 def low_res_4d():
     cube = iris.tests.stock.realistic_4d_no_derived()
     cube = cube[0:2, 0:3, ::10, ::10]
@@ -29,8 +28,9 @@ def low_res_4d():
     return cube
 
 
-class TestAll(tests.IrisTest):
-    def setUp(self):
+class TestAll:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cs = iris.coord_systems.GeogCS(6371229)
         self.cube = iris.cube.Cube(np.zeros(25).reshape(5, 5))
         self.cube.add_dim_coord(
@@ -56,107 +56,92 @@ class TestAll(tests.IrisTest):
 
     def test_is_iris_coord_system(self):
         res, _ = project(self.cube, self.tcs)
-        self.assertEqual(res.coord("projection_y_coordinate").coord_system, self.tcs)
-        self.assertEqual(res.coord("projection_x_coordinate").coord_system, self.tcs)
+        assert res.coord("projection_y_coordinate").coord_system == self.tcs
+        assert res.coord("projection_x_coordinate").coord_system == self.tcs
 
-        self.assertIsNot(res.coord("projection_y_coordinate").coord_system, self.tcs)
-        self.assertIsNot(res.coord("projection_x_coordinate").coord_system, self.tcs)
+        assert res.coord("projection_y_coordinate").coord_system is not self.tcs
+        assert res.coord("projection_x_coordinate").coord_system is not self.tcs
 
-    @tests.skip_data
-    def test_bad_resolution_negative(self):
-        cube = low_res_4d()
-        with self.assertRaises(ValueError):
-            project(cube, ROBINSON, nx=-200, ny=200)
+    @_shared_utils.skip_data
+    def test_bad_resolution_negative(self, low_res_4d):
+        with pytest.raises(ValueError, match="must be non-negative"):
+            project(low_res_4d, ROBINSON, nx=-200, ny=200)
 
-    @tests.skip_data
-    def test_bad_resolution_non_numeric(self):
-        cube = low_res_4d()
-        with self.assertRaises(TypeError):
-            project(cube, ROBINSON, nx=200, ny="abc")
+    @_shared_utils.skip_data
+    def test_bad_resolution_non_numeric(self, low_res_4d):
+        with pytest.raises(TypeError):
+            project(low_res_4d, ROBINSON, nx=200, ny="abc")
 
-    @tests.skip_data
-    def test_missing_lat(self):
-        cube = low_res_4d()
-        cube.remove_coord("grid_latitude")
-        with self.assertRaises(ValueError):
-            project(cube, ROBINSON)
+    @_shared_utils.skip_data
+    def test_missing_lat(self, low_res_4d):
+        low_res_4d.remove_coord("grid_latitude")
+        with pytest.raises(
+            ValueError, match="Cannot get latitude/longitude coordinates"
+        ):
+            project(low_res_4d, ROBINSON)
 
-    @tests.skip_data
-    def test_missing_lon(self):
-        cube = low_res_4d()
-        cube.remove_coord("grid_longitude")
-        with self.assertRaises(ValueError):
-            project(cube, ROBINSON)
+    @_shared_utils.skip_data
+    def test_missing_lon(self, low_res_4d):
+        low_res_4d.remove_coord("grid_longitude")
+        with pytest.raises(
+            ValueError, match="Cannot get latitude/longitude coordinates"
+        ):
+            project(low_res_4d, ROBINSON)
 
-    @tests.skip_data
-    def test_missing_latlon(self):
-        cube = low_res_4d()
-        cube.remove_coord("grid_longitude")
-        cube.remove_coord("grid_latitude")
-        with self.assertRaises(ValueError):
-            project(cube, ROBINSON)
+    @_shared_utils.skip_data
+    def test_missing_latlon(self, low_res_4d):
+        low_res_4d.remove_coord("grid_longitude")
+        low_res_4d.remove_coord("grid_latitude")
+        with pytest.raises(
+            ValueError, match="Cannot get latitude/longitude coordinates"
+        ):
+            project(low_res_4d, ROBINSON)
 
-    @tests.skip_data
-    def test_default_resolution(self):
-        cube = low_res_4d()
-        new_cube, extent = project(cube, ROBINSON)
-        self.assertEqual(new_cube.shape, cube.shape)
+    @_shared_utils.skip_data
+    def test_default_resolution(self, low_res_4d):
+        new_cube, extent = project(low_res_4d, ROBINSON)
+        assert new_cube.shape == low_res_4d.shape
 
-    @tests.skip_data
-    def test_explicit_resolution(self):
-        cube = low_res_4d()
+    @_shared_utils.skip_data
+    def test_explicit_resolution(self, low_res_4d):
         nx, ny = 5, 4
-        new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
-        self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
+        new_cube, extent = project(low_res_4d, ROBINSON, nx=nx, ny=ny)
+        assert new_cube.shape == low_res_4d.shape[:2] + (ny, nx)
 
-    @tests.skip_data
-    def test_explicit_resolution_single_point(self):
-        cube = low_res_4d()
+    @_shared_utils.skip_data
+    def test_explicit_resolution_single_point(self, low_res_4d):
         nx, ny = 1, 1
-        new_cube, extent = project(cube, ROBINSON, nx=nx, ny=ny)
-        self.assertEqual(new_cube.shape, cube.shape[:2] + (ny, nx))
+        new_cube, extent = project(low_res_4d, ROBINSON, nx=nx, ny=ny)
+        assert new_cube.shape == low_res_4d.shape[:2] + (ny, nx)
 
-    @tests.skip_data
-    def test_mismatched_coord_systems(self):
-        cube = low_res_4d()
-        cube.coord("grid_longitude").coord_system = None
-        with self.assertRaises(ValueError):
-            project(cube, ROBINSON)
+    @_shared_utils.skip_data
+    def test_mismatched_coord_systems(self, low_res_4d):
+        low_res_4d.coord("grid_longitude").coord_system = None
+        with pytest.raises(ValueError, match="different coordinates systems"):
+            project(low_res_4d, ROBINSON)
 
-    @tests.skip_data
-    def test_extent(self):
-        cube = low_res_4d()
-        _, extent = project(cube, ROBINSON)
-        self.assertEqual(
-            extent,
-            [
-                -17005833.33052523,
-                17005833.33052523,
-                -8625154.6651,
-                8625154.6651,
-            ],
+    @_shared_utils.skip_data
+    def test_extent(self, low_res_4d):
+        _, extent = project(low_res_4d, ROBINSON)
+        assert extent == [
+            -17005833.33052523,
+            17005833.33052523,
+            -8625154.6651,
+            8625154.6651,
+        ]
+
+    @_shared_utils.skip_data
+    def test_cube(self, request, low_res_4d):
+        new_cube, _ = project(low_res_4d, ROBINSON)
+        _shared_utils.assert_CML_approx_data(request, new_cube)
+
+    @_shared_utils.skip_data
+    def test_no_coord_system(self, low_res_4d):
+        low_res_4d.coord("grid_longitude").coord_system = None
+        low_res_4d.coord("grid_latitude").coord_system = None
+        message = (
+            "Coordinate system of latitude and longitude coordinates is not "
+            "specified. Assuming WGS84 Geodetic."
         )
-
-    @tests.skip_data
-    def test_cube(self):
-        cube = low_res_4d()
-        new_cube, _ = project(cube, ROBINSON)
-        self.assertCMLApproxData(new_cube)
-
-    @tests.skip_data
-    def test_no_coord_system(self):
-        cube = low_res_4d()
-        cube.coord("grid_longitude").coord_system = None
-        cube.coord("grid_latitude").coord_system = None
-        with iris.tests.mock.patch("warnings.warn") as warn:
-            _, _ = project(cube, ROBINSON)
-        warn.assert_called_once_with(
-            "Coordinate system of latitude and "
-            "longitude coordinates is not specified. "
-            "Assuming WGS84 Geodetic.",
-            category=IrisDefaultingWarning,
-        )
-
-
-if __name__ == "__main__":
-    tests.main()
+        with pytest.warns(IrisDefaultingWarning, match=message):
+            _, _ = project(low_res_4d, ROBINSON)

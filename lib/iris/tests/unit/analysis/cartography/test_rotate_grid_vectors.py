@@ -7,21 +7,15 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest.mock import Mock
-from unittest.mock import call as mock_call
-
 import numpy as np
 
 from iris.analysis.cartography import rotate_grid_vectors
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import sample_2d_latlons
 
 
-class TestRotateGridVectors(tests.IrisTest):
+class TestRotateGridVectors:
     def _check_angles_calculation(self, angles_in_degrees=True, nan_angles_mask=None):
         # Check basic maths on a 2d latlon grid.
         u_cube = sample_2d_latlons(regional=True, transformed=True)
@@ -59,7 +53,7 @@ class TestRotateGridVectors(tests.IrisTest):
         # Check that vector magnitudes were unchanged.
         out_mags = np.sqrt(out_u * out_u + out_v * out_v)
         expect_mags = in_mags[None, :]
-        self.assertArrayAllClose(out_mags, expect_mags)
+        _shared_utils.assert_array_all_close(out_mags, expect_mags)
 
         # Check that vector angles are all as expected.
         out_angs = np.rad2deg(np.arctan2(out_v, out_u))
@@ -69,14 +63,14 @@ class TestRotateGridVectors(tests.IrisTest):
         ang_diffs[np.abs(out_mags) < 0.001] = 0.0
         ang_diffs[np.isclose(np.abs(ang_diffs), 360.0)] = 0.0
         # Check that any differences are very small.
-        self.assertArrayAllClose(ang_diffs, 0.0)
+        _shared_utils.assert_array_all_close(ang_diffs, 0.0)
 
         # Check that results are always masked arrays, masked at NaN angles.
-        self.assertTrue(np.ma.isMaskedArray(out_u))
-        self.assertTrue(np.ma.isMaskedArray(out_v))
+        assert np.ma.isMaskedArray(out_u)
+        assert np.ma.isMaskedArray(out_v)
         if nan_angles_mask is not None:
-            self.assertArrayEqual(out_u.mask, nan_angles_mask)
-            self.assertArrayEqual(out_v.mask, nan_angles_mask)
+            _shared_utils.assert_array_equal(out_u.mask, nan_angles_mask)
+            _shared_utils.assert_array_equal(out_v.mask, nan_angles_mask)
 
     def test_angles_calculation(self):
         self._check_angles_calculation()
@@ -84,7 +78,7 @@ class TestRotateGridVectors(tests.IrisTest):
     def test_angles_in_radians(self):
         self._check_angles_calculation(angles_in_degrees=False)
 
-    def test_angles_from_grid(self):
+    def test_angles_from_grid(self, mocker):
         # Check it will gets angles from 'u_cube', and pass any kwargs on to
         # the angles routine.
         u_cube = sample_2d_latlons(regional=True, transformed=True)
@@ -100,29 +94,26 @@ class TestRotateGridVectors(tests.IrisTest):
         angles_result_data = np.array([[0.0, 90.0, 180.0], [-180.0, -90.0, 270.0]])
         angles_result_cube = Cube(angles_result_data, units="degrees")
         angles_kwargs = {"this": 2}
-        angles_call_patch = self.patch(
+        angles_call_patch = mocker.patch(
             "iris.analysis._grid_angles.gridcell_angles",
-            Mock(return_value=angles_result_cube),
+            mocker.Mock(return_value=angles_result_cube),
         )
 
         # Call the routine.
         result = rotate_grid_vectors(u_cube, v_cube, grid_angles_kwargs=angles_kwargs)
 
-        self.assertEqual(angles_call_patch.call_args_list, [mock_call(u_cube, this=2)])
+        angles_call_patch.assert_called_once()
+        angles_call_patch.assert_called_with(u_cube, this=2)
 
         out_u, out_v = [cube.data for cube in result]
         # Records what results should be for the various n*90deg rotations.
         expect_u = np.array([[1.0, 0.0, -1.0], [-1.0, 0.0, 0.0]])
         expect_v = np.array([[0.0, 1.0, 0.0], [0.0, -1.0, -1.0]])
         # Check results are as expected.
-        self.assertArrayAllClose(out_u, expect_u)
-        self.assertArrayAllClose(out_v, expect_v)
+        _shared_utils.assert_array_all_close(out_u, expect_u)
+        _shared_utils.assert_array_all_close(out_v, expect_v)
 
     def test_nan_vectors(self):
         bad_angle_points = np.zeros((5, 6), dtype=bool)
         bad_angle_points[2, 3] = True
         self._check_angles_calculation(nan_angles_mask=bad_angle_points)
-
-
-if __name__ == "__main__":
-    tests.main()
