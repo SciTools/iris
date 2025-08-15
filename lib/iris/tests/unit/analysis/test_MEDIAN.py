@@ -15,7 +15,7 @@ from iris._lazy_data import (
     is_lazy_masked_data,
 )
 from iris.analysis import MEDIAN
-from iris.tests._shared_utils import assert_array_almost_equal, assert_array_equal
+from iris.tests import _shared_utils
 
 
 def _get_data(lazy=False, masked=False):
@@ -38,7 +38,7 @@ class Test_basics:
 
     def test_collapse(self):
         data = MEDIAN.aggregate(self.data, axis=(0, 1))
-        assert_array_equal(data, [7.5])
+        _shared_utils.assert_array_equal(data, [7.5])
 
 
 class Test_masked:
@@ -56,7 +56,10 @@ class Test_masked:
         result = MEDIAN.aggregate(self.data, axis=axis)
         data_no_mask = _get_data()
         result_no_mask = MEDIAN.aggregate(data_no_mask, axis=axis)
-        assert not np.allclose(result, result_no_mask)
+
+        # In lieu of `assert_array_NOT_all_close`
+        with pytest.raises(AssertionError, match="ARRAY CHECK FAILED"):
+            _shared_utils.assert_array_all_close(result, result_no_mask)
 
 
 class Test_lazy:
@@ -76,7 +79,7 @@ class Test_lazy:
         axis = 1
         result = MEDIAN.lazy_aggregate(self.data, axis=axis)
         expected = np.median(as_concrete_data(self.data), axis=axis)
-        assert_array_almost_equal(result, expected)
+        _shared_utils.assert_array_almost_equal(result, expected)
 
 
 class Test_lazy_masked:
@@ -92,4 +95,4 @@ class Test_lazy_masked:
         axis = 1
         result = MEDIAN.lazy_aggregate(self.data, axis=axis)
         expected = ma.median(as_concrete_data(self.data), axis=axis)
-        assert_array_almost_equal(result, expected)
+        _shared_utils.assert_array_almost_equal(result, expected)
