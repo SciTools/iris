@@ -20,7 +20,7 @@ def bool_func(x):
 
 class UnmaskedTest:
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup_unmasked(self):
         """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
@@ -54,7 +54,7 @@ class UnmaskedTest:
 
 class MaskedTest:
     @pytest.fixture(autouse=True)
-    def _setup(self):
+    def _setup_masked(self):
         """Set up 1d and 2d unmasked data arrays for max run testing.
 
         Uses 1 and 3 rather than 1 and 0 to check that lambda is being applied.
