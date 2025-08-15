@@ -67,7 +67,7 @@ class Test_lazy_aggregate:
         _shared_utils.assert_array_all_close(result, expected)
 
     def test_last_axis(self):
-        # From setUp:
+        # From _setup:
         # self.data.mask = [[0, 0, 0, 1],
         #                   [0, 0, 1, 1],
         #                   [0, 1, 1, 1]]
