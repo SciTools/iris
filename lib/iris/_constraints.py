@@ -198,7 +198,7 @@ class Constraint:
         return result
 
     def as_indexes(
-        self, cube: iris.cube.Cube, allow_complex: bool = False
+        self, cube: "iris.cube.Cube", allow_complex: bool = False
     ) -> list[int | slice | tuple[int]]:
         """Produce an indexing expression equivalent to this constraint.
 
