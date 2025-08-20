@@ -29,6 +29,7 @@ from iris.common import (
     DimCoordMetadata,
     metadata_manager_factory,
 )
+from iris.common.metadata import hexdigest
 import iris.exceptions
 import iris.time
 import iris.util
@@ -760,7 +761,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
-                if np.any(self.attributes[key] != other.attributes[key]):
+                if hexdigest(self.attributes[key]) != hexdigest(other.attributes[key]):
                     compatible = False
                     break
 
