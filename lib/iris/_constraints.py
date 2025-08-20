@@ -555,7 +555,7 @@ class AttributeConstraint(Constraint):
                         match = False
                         break
                 else:
-                    if cube_attr != value:
+                    if hexdigest(cube_attr) != hexdigest(value):
                         match = False
                         break
             else:
