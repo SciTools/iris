@@ -161,13 +161,18 @@ def _convert_vertical_coords(
         coords_and_dims.append((coord, dim))
 
     # Depth - unbound and bound (mixed).
+    try:
+        svd_lev_eq = brsvd1 == brlev
+    except ValueError:
+        # In case of broadcasting errors.
+        svd_lev_eq = False
     if (
         (len(lbcode) != 5)
         and (lbvc == 2)
-        and (np.any(brsvd1 == brlev) and np.any(brsvd1 != brlev))
+        and (np.any(svd_lev_eq) and np.any(~svd_lev_eq))
     ):
-        lower = np.where(brsvd1 == brlev, blev, brsvd1)
-        upper = np.where(brsvd1 == brlev, blev, brlev)
+        lower = np.where(svd_lev_eq, blev, brsvd1)
+        upper = np.where(svd_lev_eq, blev, brlev)
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
