@@ -9,6 +9,7 @@ import operator
 
 import numpy as np
 
+from iris.common.metadata import hexdigest
 import iris.exceptions
 
 
@@ -531,10 +532,9 @@ class AttributeConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
-        eq = (
-            isinstance(other, AttributeConstraint)
-            and self._attributes == other._attributes
-        )
+        hex_self = {(k, hexdigest(v)) for k, v in self._attributes.items()}
+        hex_other = {(k, hexdigest(v)) for k, v in other._attributes.items()}
+        eq = isinstance(other, AttributeConstraint) and hex_self == hex_other
         return eq
 
     def __hash__(self):
