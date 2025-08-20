@@ -16,6 +16,7 @@ import numpy as np
 from xxhash import xxh3_64
 
 from iris._lazy_data import concatenate as concatenate_arrays
+from iris.common.metadata import hexdigest
 import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
@@ -786,7 +787,7 @@ class _CubeSignature:
             diff_names = []
             for self_key, self_value in self_dict.items():
                 other_value = other_dict[self_key]
-                if self_value != other_value:
+                if hexdigest(self_value) != hexdigest(other_value):
                     diff_names.append(self_key)
             result = (
                 " " + reason,
