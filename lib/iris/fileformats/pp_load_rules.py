@@ -139,8 +139,15 @@ def _convert_vertical_coords(
         )
         coords_and_dims.append((coord, dim))
 
+    # Common calc for Depth
+    try:
+        svd_lev_eq = brsvd1 == brlev
+    except ValueError:
+        # In case of broadcasting errors.
+        svd_lev_eq = False
+
     # Depth - unbound.
-    if (len(lbcode) != 5) and (lbvc == 2) and np.all(brsvd1 == brlev):
+    if (len(lbcode) != 5) and (lbvc == 2) and np.all(svd_lev_eq):
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
@@ -150,7 +157,7 @@ def _convert_vertical_coords(
         coords_and_dims.append((coord, dim))
 
     # Depth - bound.
-    if (len(lbcode) != 5) and (lbvc == 2) and np.all(brsvd1 != brlev):
+    if (len(lbcode) != 5) and (lbvc == 2) and np.all(~svd_lev_eq):
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
@@ -161,11 +168,6 @@ def _convert_vertical_coords(
         coords_and_dims.append((coord, dim))
 
     # Depth - unbound and bound (mixed).
-    try:
-        svd_lev_eq = brsvd1 == brlev
-    except ValueError:
-        # In case of broadcasting errors.
-        svd_lev_eq = False
     if (
         (len(lbcode) != 5)
         and (lbvc == 2)
@@ -194,7 +196,7 @@ def _convert_vertical_coords(
                 units="1",
             )
             coords_and_dims.append((coord, dim))
-        elif np.any(brsvd1 != brlev):
+        elif np.any(~svd_lev_eq):
             # UM populates metadata CORRECTLY,
             # so treat it as the expected (bounded) soil depth.
             coord = _dim_or_aux(
