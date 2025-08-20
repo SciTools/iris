@@ -1453,7 +1453,7 @@ class PPField(metaclass=ABCMeta):
                 if all(attrs):
                     self_attr = getattr(self, attr)
                     other_attr = getattr(other, attr)
-                    if not np.all(self_attr == other_attr):
+                    if not np.array_equal(self_attr, other_attr):
                         result = False
                         break
                 elif any(attrs):
