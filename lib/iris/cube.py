@@ -3386,8 +3386,8 @@ class Cube(CFVariableMixin):
             # Condition1: The two blocks don't themselves wrap
             #             (inside_indices is contiguous).
             # Condition2: Are we chunked at either extreme edge.
-            edge_wrap = (
-                index_of_second_chunk == inside_indices[end_of_first_chunk] + 1
+            edge_wrap = np.array_equal(
+                index_of_second_chunk, inside_indices[end_of_first_chunk] + 1
             ) and index_of_second_chunk in (final_index, 1)
             subsets = None
             if edge_wrap:
