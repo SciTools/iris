@@ -28,6 +28,7 @@ from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
+from iris.common.metadata import hexdigest
 import iris.exceptions
 import iris.warnings
 
@@ -427,7 +428,7 @@ def _masked_array_equal(
             else:
                 ignore |= nanmask
 
-        eqs = ma.getdata(array1) == ma.getdata(array2)
+        eqs = np.array_equal(ma.getdata(array1), ma.getdata(array2))
         if ignore is not None:
             eqs = np.where(ignore, True, eqs)
 
@@ -2106,10 +2107,12 @@ def equalise_attributes(cubes):
     for attrs in cube_attrs[1:]:
         cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
+        hex_attrs = {k: hexdigest(v) for k, v in attrs.items()}
+        hex_cube_attrs_0 = {k: hexdigest(v) for k, v in cube_attrs[0].items()}
         common_keys = [
             key
             for key in common_keys
-            if (key in cube_keys and np.all(attrs[key] == cube_attrs[0][key]))
+            if (key in cube_keys and hex_attrs[key] == hex_cube_attrs_0[key])
         ]
     keys_to_remove.difference_update(common_keys)
 
