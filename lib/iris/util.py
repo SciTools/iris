@@ -428,7 +428,12 @@ def _masked_array_equal(
             else:
                 ignore |= nanmask
 
-        eqs = np.array_equal(ma.getdata(array1), ma.getdata(array2))
+        try:
+            eqs = ma.getdata(array1) == ma.getdata(array2)
+        except ValueError:
+            # In case of broadcasting errors.
+            eqs = np.zeros(array1.shape, dtype=bool)
+
         if ignore is not None:
             eqs = np.where(ignore, True, eqs)
 
