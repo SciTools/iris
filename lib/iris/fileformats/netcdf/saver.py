@@ -41,6 +41,7 @@ from iris.aux_factory import (
     OceanSigmaFactory,
     OceanSigmaZFactory,
 )
+from iris.common import hexdigest
 import iris.config
 import iris.coord_systems
 import iris.coords
@@ -2590,12 +2591,7 @@ def save(
         def attr_values_equal(val1, val2):
             # An equality test which also works when some values are numpy arrays (!)
             # As done in :meth:`iris.common.mixin.LimitedAttributeDict.__eq__`.
-            match = val1 == val2
-            try:
-                match = bool(match)
-            except ValueError:
-                match = match.all()
-            return match
+            return hexdigest(val1) == hexdigest(val2)
 
         cube0 = cubes[0]
         invalid_globals = set(
@@ -2682,7 +2678,7 @@ def save(
             common_keys.intersection_update(keys)
             different_value_keys = []
             for key in common_keys:
-                if np.any(attributes[key] != cube.attributes[key]):
+                if hexdigest(attributes[key]) != hexdigest(cube.attributes[key]):
                     different_value_keys.append(key)
             common_keys.difference_update(different_value_keys)
             local_keys.update(different_value_keys)
