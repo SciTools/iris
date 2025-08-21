@@ -17,7 +17,7 @@ from iris.coords import AuxCoord, DimCoord
 import iris.cube
 from iris.cube import CubeAttrsDict
 import iris.exceptions
-from iris.tests._shared_utils import assert_array_equal, assert_masked_array_equal
+from iris.tests import _shared_utils
 
 
 class TestDataMergeCombos:
@@ -96,7 +96,8 @@ class TestDataMergeCombos:
             if ma.isMaskedArray(data):
                 assert data.fill_value == expected_fill_value
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.dtype = np.dtype("int32")
         fill_value = 1234
         self.lazy_combos = itertools.product([False, True], [False, True])
@@ -112,7 +113,7 @@ class TestDataMergeCombos:
             cubes.append(self._make_cube(1, dtype=self.dtype, lazy=lazy1))
             result = cubes.merge_cube()
             expected = self._make_data([0, 1], dtype=self.dtype)
-            assert_array_equal(result.data, expected)
+            _shared_utils.assert_array_equal(result.data, expected)
             assert result.dtype == self.dtype
             self._check_fill_value(result)
 
@@ -148,7 +149,7 @@ class TestDataMergeCombos:
                 dtype=self.dtype,
                 fill_value=expected_fill_value,
             )
-            assert_masked_array_equal(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
             assert result.dtype == self.dtype
             self._check_fill_value(result, fill0, fill1)
 
@@ -171,7 +172,7 @@ class TestDataMergeCombos:
                 dtype=self.dtype,
                 fill_value=expected_fill_value,
             )
-            assert_masked_array_equal(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
             assert result.dtype == self.dtype
             self._check_fill_value(result, fill1=fill)
 
@@ -194,7 +195,7 @@ class TestDataMergeCombos:
                 dtype=self.dtype,
                 fill_value=expected_fill_value,
             )
-            assert_masked_array_equal(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
             assert result.dtype == self.dtype
             self._check_fill_value(result, fill0=fill)
 
@@ -218,7 +219,7 @@ class TestDataMergeCombos:
                 fill_value=expected_fill_value,
             )
             assert type(result.data) is ma.MaskedArray
-            assert_masked_array_equal(result.data, expected)
+            _shared_utils.assert_masked_array_equal(result.data, expected)
             assert result.dtype == self.dtype
             self._check_fill_value(result, fill0=fill)
 

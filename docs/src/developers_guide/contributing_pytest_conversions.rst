@@ -66,6 +66,8 @@ Conversion Checklist
    the `monkeypatch`_ fixture to provide a context-manager.
 #. Check for ``np.testing.assert...``. This can usually be swapped for
    ``_shared_utils.assert...``.
+#. Check for ``np.allclose``. This should be swapped for
+   ``_shared_utils.assert_array_all_close``.
 #. Check for references to ``self.tmp_dir`` and ``self.temp_filename``. In
    pytest, ``tmp_path`` is used instead, and can be passed into functions as a
    fixture.
@@ -77,6 +79,9 @@ Conversion Checklist
 #. Ensure that all test classes start with ``Test``. Tests will not run in pytest without it.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->
    ``ruff check --select PT <file>``.
+#. Ensure that all the tests are *passing*. Some tests are set to skip if certain packages
+   aren't installed in your environment. These are often also skipped in the Iris CI also,
+   so make sure that they run and pass locally.
 
 Common Translations
 -------------------

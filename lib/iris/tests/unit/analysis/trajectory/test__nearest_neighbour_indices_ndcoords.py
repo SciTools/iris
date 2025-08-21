@@ -7,18 +7,15 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.analysis.trajectory import _nearest_neighbour_indices_ndcoords as nn_ndinds
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 
 
-class Test2d(tests.IrisTest):
+class Test2d:
     def test_nonlatlon_simple_2d(self):
         co_y = DimCoord([10.0, 20.0], long_name="y")
         co_x = DimCoord([1.0, 2.0, 3.0], long_name="x")
@@ -27,7 +24,7 @@ class Test2d(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [("x", 2.8), ("y", 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(1, 2)])
+        assert result == [(1, 2)]
 
     def test_nonlatlon_multiple_2d(self):
         co_y = DimCoord([10.0, 20.0], long_name="y")
@@ -37,7 +34,7 @@ class Test2d(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_points = [("x", [2.8, -350.0, 1.7]), ("y", [18.5, 8.7, 12.2])]
         result = nn_ndinds(cube, sample_points)
-        self.assertEqual(result, [(1, 2), (0, 0), (0, 1)])
+        assert result == [(1, 2), (0, 0), (0, 1)]
 
     def test_latlon_simple_2d(self):
         co_y = DimCoord([10.0, 20.0], standard_name="latitude", units="degrees")
@@ -47,7 +44,7 @@ class Test2d(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [("longitude", 2.8), ("latitude", 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(1, 2)])
+        assert result == [(1, 2)]
 
     def test_latlon_multiple_2d(self):
         co_y = DimCoord([10.0, 20.0], standard_name="latitude", units="degrees")
@@ -61,10 +58,10 @@ class Test2d(tests.IrisTest):
         ]
         result = nn_ndinds(cube, sample_points)
         # Note slight difference from non-latlon version.
-        self.assertEqual(result, [(1, 2), (0, 2), (0, 1)])
+        assert result == [(1, 2), (0, 2), (0, 1)]
 
 
-class Test1d(tests.IrisTest):
+class Test1d:
     def test_nonlatlon_simple_1d(self):
         co_x = AuxCoord([1.0, 2.0, 3.0, 1.0, 2.0, 3.0], long_name="x")
         co_y = AuxCoord([10.0, 10.0, 10.0, 20.0, 20.0, 20.0], long_name="y")
@@ -73,7 +70,7 @@ class Test1d(tests.IrisTest):
         cube.add_aux_coord(co_x, 0)
         sample_point = [("x", 2.8), ("y", 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(5,)])
+        assert result == [(5,)]
 
     def test_latlon_simple_1d(self):
         cube = Cube([11.0, 12.0, 13.0, 21.0, 22.0, 23.0])
@@ -91,10 +88,10 @@ class Test1d(tests.IrisTest):
         cube.add_aux_coord(co_x, 0)
         sample_point = [("longitude", 2.8), ("latitude", 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(5,)])
+        assert result == [(5,)]
 
 
-class TestApiExtras(tests.IrisTest):
+class TestApiExtras:
     # Check operation with alternative calling setups.
     def test_no_y_dim(self):
         # Operate in X only, returned slice should be [:, ix].
@@ -105,7 +102,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [("x", 2.8)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(slice(None), 2)])
+        assert result == [(slice(None), 2)]
 
     def test_no_x_dim(self):
         # Operate in Y only, returned slice should be [iy, :].
@@ -116,7 +113,7 @@ class TestApiExtras(tests.IrisTest):
         cube.add_dim_coord(co_x, 1)
         sample_point = [("y", 18.5)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(1, slice(None))])
+        assert result == [(1, slice(None))]
 
     def test_sample_dictionary(self):
         # Pass sample_point arg as a dictionary: this usage mode is deprecated.
@@ -127,11 +124,11 @@ class TestApiExtras(tests.IrisTest):
         cube.add_aux_coord(co_x, 1)
         sample_point = {"x": 2.8, "y": 18.5}
         exp_emsg = r"must be a list of \(coordinate, value\) pairs"
-        with self.assertRaisesRegex(TypeError, exp_emsg):
+        with pytest.raises(TypeError, match=exp_emsg):
             nn_ndinds(cube, sample_point)
 
 
-class TestLatlon(tests.IrisTest):
+class TestLatlon:
     # Check correct calculations on lat-lon points.
     def _testcube_latlon_1d(self, lats, lons):
         cube = Cube(np.zeros(len(lons)))
@@ -144,7 +141,7 @@ class TestLatlon(tests.IrisTest):
     def _check_latlon_1d(self, lats, lons, sample_point, expect):
         cube = self._testcube_latlon_1d(lats, lons)
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(expect,)])
+        assert result == [(expect,)]
 
     def test_lat_scaling(self):
         # Check that (88, 25) is closer to (88, 0) than to (87, 25)
@@ -163,7 +160,7 @@ class TestLatlon(tests.IrisTest):
         cube.coord("longitude").rename("x_longitude_x")
         sample_point = [("y_latitude_y", 88), ("x_longitude_x", 25)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(0,)])
+        assert result == [(0,)]
 
     def test_alternate_nonlatlon_names_different(self):
         # Check that (88, 25) is **NOT** closer to (88, 0) than to (87, 25)
@@ -173,7 +170,7 @@ class TestLatlon(tests.IrisTest):
         cube.coord("longitude").rename("x")
         sample_point = [("y", 88), ("x", 25)]
         result = nn_ndinds(cube, sample_point)
-        self.assertEqual(result, [(1,)])
+        assert result == [(1,)]
 
     def test_lons_wrap_359_0(self):
         # Check that (0, 359) is closer to (0, 0) than to (0, 350)
@@ -210,7 +207,3 @@ class TestLatlon(tests.IrisTest):
             sample_point=[("latitude", 89), ("longitude", 0)],
             expect=1,
         )
-
-
-if __name__ == "__main__":
-    tests.main()

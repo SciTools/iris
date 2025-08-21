@@ -4,17 +4,14 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the function :func:`iris.analysis.maths._inplace_common_checks`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.analysis.maths import _inplace_common_checks
 from iris.cube import Cube
 
 
-class Test(tests.IrisTest):
+class Test:
     # `_inplace_common_checks` is a pass-through function that does not return
     # anything but will fail iff `cube` and `other` have integer dtype. Thus in
     # a sense we only want to test the failing cases. Doing so, however, leaves
@@ -23,7 +20,8 @@ class Test(tests.IrisTest):
     # fact that functions with no return value implicitly return `None`. If
     # these currently known good cases ever changed these tests would start
     # failing and indicate something was wrong.
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.scalar_int = 5
         self.scalar_float = 5.5
 
@@ -40,88 +38,84 @@ class Test(tests.IrisTest):
 
     def test_float_cubes(self):
         result = _inplace_common_checks(self.float_cube, self.float_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_int_cubes(self):
         result = _inplace_common_checks(self.int_cube, self.int_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_uint_cubes(self):
         result = _inplace_common_checks(self.uint_cube, self.uint_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_float_cube_int_cube(self):
         result = _inplace_common_checks(self.float_cube, self.int_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_float_cube_uint_cube(self):
         result = _inplace_common_checks(self.float_cube, self.uint_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_int_cube_float_cube(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.int_cube, self.float_cube, self.op)
 
     def test_uint_cube_float_cube(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.uint_cube, self.float_cube, self.op)
 
     def test_float_cube__scalar_int(self):
         result = _inplace_common_checks(self.float_cube, self.scalar_int, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_float_cube__scalar_float(self):
         result = _inplace_common_checks(self.float_cube, self.scalar_float, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_float_cube__int_array(self):
         result = _inplace_common_checks(self.float_cube, self.int_data, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_float_cube__float_array(self):
         result = _inplace_common_checks(self.float_cube, self.float_data, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_int_cube__scalar_int(self):
         result = _inplace_common_checks(self.int_cube, self.scalar_int, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_int_cube_uint_cube(self):
         result = _inplace_common_checks(self.int_cube, self.uint_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_uint_cube_uint_cube(self):
         result = _inplace_common_checks(self.uint_cube, self.uint_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_uint_cube_int_cube(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_int_cube__scalar_float(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.int_cube, self.scalar_float, self.op)
 
     def test_int_cube__int_array(self):
         result = _inplace_common_checks(self.int_cube, self.int_cube, self.op)
-        self.assertIsNone(result)
+        assert result is None
 
     def test_int_cube__float_array(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.int_cube, self.float_data, self.op)
 
     def test_uint_cube__scalar_float(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.uint_cube, self.scalar_float, self.op)
 
     def test_uint_cube__int_array(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.uint_cube, self.int_cube, self.op)
 
     def test_uint_cube__float_array(self):
-        with self.assertRaisesRegex(ArithmeticError, self.emsg):
+        with pytest.raises(ArithmeticError, match=self.emsg):
             _inplace_common_checks(self.uint_cube, self.float_data, self.op)
-
-
-if __name__ == "__main__":
-    tests.main()

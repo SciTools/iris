@@ -4,24 +4,23 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coord_systems.Mercator` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
+import pytest
 
 from iris.coord_systems import GeogCS, Mercator
+from iris.tests import _shared_utils
 
 
-class Test_Mercator__basics(tests.IrisTest):
-    def setUp(self):
+class Test_Mercator__basics:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.tm = Mercator(
             longitude_of_projection_origin=90.0,
             ellipsoid=GeogCS(6377563.396, 6356256.909),
         )
 
     def test_construction(self):
-        self.assertXMLElement(self.tm, ("coord_systems", "Mercator.xml"))
+        _shared_utils.assert_XML_element(self.tm, ("coord_systems", "Mercator.xml"))
 
     def test_repr(self):
         expected = (
@@ -32,10 +31,10 @@ class Test_Mercator__basics(tests.IrisTest):
             "scale_factor_at_projection_origin=None, "
             "false_easting=0.0, false_northing=0.0)"
         )
-        self.assertEqual(expected, repr(self.tm))
+        assert expected == repr(self.tm)
 
 
-class Test_init_defaults(tests.IrisTest):
+class Test_init_defaults:
     def test_set_optional_args(self):
         # Check that setting the optional (non-ellipse) args works.
         crs = Mercator(
@@ -44,33 +43,33 @@ class Test_init_defaults(tests.IrisTest):
             false_easting=13,
             false_northing=12,
         )
-        self.assertEqualAndKind(crs.longitude_of_projection_origin, 27.0)
-        self.assertEqualAndKind(crs.standard_parallel, 157.4)
-        self.assertEqualAndKind(crs.false_easting, 13.0)
-        self.assertEqualAndKind(crs.false_northing, 12.0)
+        _shared_utils.assert_equal_and_kind(crs.longitude_of_projection_origin, 27.0)
+        _shared_utils.assert_equal_and_kind(crs.standard_parallel, 157.4)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 13.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, 12.0)
 
     def test_set_optional_scale_factor_alternative(self):
         # Check that setting the optional (non-ellipse) args works.
         crs = Mercator(
             scale_factor_at_projection_origin=1.3,
         )
-        self.assertEqualAndKind(crs.scale_factor_at_projection_origin, 1.3)
+        _shared_utils.assert_equal_and_kind(crs.scale_factor_at_projection_origin, 1.3)
 
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.
-        self.assertEqualAndKind(crs.longitude_of_projection_origin, 0.0)
-        self.assertEqualAndKind(crs.standard_parallel, 0.0)
-        self.assertEqualAndKind(crs.false_easting, 0.0)
-        self.assertEqualAndKind(crs.false_northing, 0.0)
-        self.assertEqualAndKind(crs.scale_factor_at_projection_origin, None)
+        _shared_utils.assert_equal_and_kind(crs.longitude_of_projection_origin, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.standard_parallel, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.scale_factor_at_projection_origin, None)
 
     def test_no_optional_args(self):
         # Check expected defaults with no optional args.
         crs = Mercator()
         self._check_crs_defaults(crs)
 
-    def test_optional_args_None(self):
+    def test_optional_args_none(self):
         # Check expected defaults with optional args=None.
         crs = Mercator(
             longitude_of_projection_origin=None,
@@ -82,7 +81,7 @@ class Test_init_defaults(tests.IrisTest):
         self._check_crs_defaults(crs)
 
 
-class Test_Mercator__as_cartopy_crs(tests.IrisTest):
+class Test_Mercator__as_cartopy_crs:
     def test_simple(self):
         # Check that a projection set up with all the defaults is correctly
         # converted to a cartopy CRS.
@@ -90,7 +89,7 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         res = merc_cs.as_cartopy_crs()
         # expected = ccrs.Mercator(globe=ccrs.Globe())
         expected = ccrs.Mercator(globe=ccrs.Globe(), latitude_true_scale=0.0)
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_extra_kwargs(self):
         # Check that a projection with non-default values is correctly
@@ -122,7 +121,7 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         )
 
         res = merc_cs.as_cartopy_crs()
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_extra_kwargs_scale_factor_alternative(self):
         # Check that a projection with non-default values is correctly
@@ -145,17 +144,17 @@ class Test_Mercator__as_cartopy_crs(tests.IrisTest):
         )
 
         res = merc_cs.as_cartopy_crs()
-        self.assertEqual(res, expected)
+        assert res == expected
 
 
-class Test_as_cartopy_projection(tests.IrisTest):
+class Test_as_cartopy_projection:
     def test_simple(self):
         # Check that a projection set up with all the defaults is correctly
         # converted to a cartopy projection.
         merc_cs = Mercator()
         res = merc_cs.as_cartopy_projection()
         expected = ccrs.Mercator(globe=ccrs.Globe(), latitude_true_scale=0.0)
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_extra_kwargs(self):
         longitude_of_projection_origin = 90.0
@@ -185,7 +184,7 @@ class Test_as_cartopy_projection(tests.IrisTest):
         )
 
         res = merc_cs.as_cartopy_projection()
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_extra_kwargs_scale_factor_alternative(self):
         ellipsoid = GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909)
@@ -206,8 +205,4 @@ class Test_as_cartopy_projection(tests.IrisTest):
         )
 
         res = merc_cs.as_cartopy_projection()
-        self.assertEqual(res, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert res == expected

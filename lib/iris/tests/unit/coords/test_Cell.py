@@ -270,7 +270,7 @@ class Test_numpy_comparison:
 class Test_hashing:
     @pytest.mark.parametrize(
         "point",
-        (
+        [
             pytest.param(np.float32(1.0), id="float32"),
             pytest.param(np.float64(1.0), id="float64"),
             pytest.param(np.int16(1), id="int16"),
@@ -282,7 +282,7 @@ class Test_hashing:
             pytest.param(True, id="bool"),
             pytest.param(np.ma.masked, id="masked"),
             pytest.param(datetime.datetime(2001, 1, 1), id="datetime"),
-        ),
+        ],
     )
     def test_cell_is_hashable(self, point):
         """Test a Cell object is hashable with various point/bound types."""

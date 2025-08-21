@@ -4,13 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.coord_systems.Stereographic` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
+import pytest
 
 from iris.coord_systems import GeogCS, Stereographic
+from iris.tests import _shared_utils
 
 
 def stereo(**kwargs):
@@ -24,13 +22,13 @@ def stereo(**kwargs):
     )
 
 
-class Test_Stereographic_construction(tests.IrisTest):
+class Test_Stereographic_construction:
     def test_stereo(self):
         st = stereo()
-        self.assertXMLElement(st, ("coord_systems", "Stereographic.xml"))
+        _shared_utils.assert_XML_element(st, ("coord_systems", "Stereographic.xml"))
 
 
-class Test_init_defaults(tests.IrisTest):
+class Test_init_defaults:
     # This class *only* tests the defaults for optional constructor args.
 
     def test_set_optional_args(self):
@@ -38,9 +36,9 @@ class Test_init_defaults(tests.IrisTest):
         crs = Stereographic(
             0, 0, false_easting=100, false_northing=-203.7, true_scale_lat=77
         )
-        self.assertEqualAndKind(crs.false_easting, 100.0)
-        self.assertEqualAndKind(crs.false_northing, -203.7)
-        self.assertEqualAndKind(crs.true_scale_lat, 77.0)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 100.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, -203.7)
+        _shared_utils.assert_equal_and_kind(crs.true_scale_lat, 77.0)
 
     def test_set_optional_args_scale_factor_alternative(self):
         # Check that setting the optional (non-ellipse) args works.
@@ -51,24 +49,24 @@ class Test_init_defaults(tests.IrisTest):
             false_northing=-203.7,
             scale_factor_at_projection_origin=1.3,
         )
-        self.assertEqualAndKind(crs.false_easting, 100.0)
-        self.assertEqualAndKind(crs.false_northing, -203.7)
-        self.assertEqualAndKind(crs.scale_factor_at_projection_origin, 1.3)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 100.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, -203.7)
+        _shared_utils.assert_equal_and_kind(crs.scale_factor_at_projection_origin, 1.3)
 
     def _check_crs_defaults(self, crs):
         # Check for property defaults when no kwargs options were set.
         # NOTE: except ellipsoid, which is done elsewhere.
-        self.assertEqualAndKind(crs.false_easting, 0.0)
-        self.assertEqualAndKind(crs.false_northing, 0.0)
-        self.assertIsNone(crs.true_scale_lat)
-        self.assertIsNone(crs.scale_factor_at_projection_origin)
+        _shared_utils.assert_equal_and_kind(crs.false_easting, 0.0)
+        _shared_utils.assert_equal_and_kind(crs.false_northing, 0.0)
+        assert crs.true_scale_lat is None
+        assert crs.scale_factor_at_projection_origin is None
 
     def test_no_optional_args(self):
         # Check expected defaults with no optional args.
         crs = Stereographic(0, 0)
         self._check_crs_defaults(crs)
 
-    def test_optional_args_None(self):
+    def test_optional_args_none(self):
         # Check expected defaults with optional args=None.
         crs = Stereographic(
             0,
@@ -81,7 +79,7 @@ class Test_init_defaults(tests.IrisTest):
         self._check_crs_defaults(crs)
 
 
-class Test_Stereographic_repr(tests.IrisTest):
+class Test_Stereographic_repr:
     def test_stereo(self):
         st = stereo()
         expected = (
@@ -89,7 +87,7 @@ class Test_Stereographic_repr(tests.IrisTest):
             "false_easting=100.0, false_northing=200.0, true_scale_lat=None, "
             "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         )
-        self.assertEqual(expected, repr(st))
+        assert expected == repr(st)
 
     def test_stereo_scale_factor(self):
         st = stereo(scale_factor_at_projection_origin=0.9)
@@ -99,7 +97,7 @@ class Test_Stereographic_repr(tests.IrisTest):
             "scale_factor_at_projection_origin=0.9, "
             "ellipsoid=GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.909))"
         )
-        self.assertEqual(expected, repr(st))
+        assert expected == repr(st)
 
 
 class AsCartopyMixin:
@@ -130,7 +128,7 @@ class AsCartopyMixin:
         )
 
         res = self.as_cartopy_method(st)
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_true_scale_lat(self):
         latitude_of_projection_origin = -90.0
@@ -162,7 +160,7 @@ class AsCartopyMixin:
         )
 
         res = self.as_cartopy_method(st)
-        self.assertEqual(res, expected)
+        assert res == expected
 
     def test_scale_factor(self):
         latitude_of_projection_origin = -90.0
@@ -194,18 +192,16 @@ class AsCartopyMixin:
         )
 
         res = self.as_cartopy_method(st)
-        self.assertEqual(res, expected)
+        assert res == expected
 
 
-class Test_Stereographic_as_cartopy_crs(tests.IrisTest, AsCartopyMixin):
-    def setUp(self):
+class Test_Stereographic_as_cartopy_crs(AsCartopyMixin):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.as_cartopy_method = Stereographic.as_cartopy_crs
 
 
-class Test_Stereographic_as_cartopy_projection(tests.IrisTest, AsCartopyMixin):
-    def setUp(self):
+class Test_Stereographic_as_cartopy_projection(AsCartopyMixin):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.as_cartopy_method = Stereographic.as_cartopy_projection
-
-
-if __name__ == "__main__":
-    tests.main()

@@ -4,33 +4,30 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.analysis.PercentileAggregator` class instance."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import dask.array as da
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_concrete_data
 from iris.analysis import PercentileAggregator
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 
 
-class Test(tests.IrisTest):
-    def test_init(self):
+class Test:
+    def test_init(self, mocker):
         name = "percentile"
-        units_func = mock.sentinel.units_func
+        units_func = mocker.sentinel.units_func
         aggregator = PercentileAggregator(units_func=units_func)
-        self.assertEqual(aggregator.name(), name)
-        self.assertIs(aggregator.units_func, units_func)
-        self.assertIsNone(aggregator.cell_method)
+        assert aggregator.name() == name
+        assert aggregator.units_func is units_func
+        assert aggregator.cell_method is None
 
 
-class Test_post_process(tests.IrisTest):
-    def setUp(self):
+class Test_post_process:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         shape = (2, 5)
         data = np.arange(np.prod(shape))
 
@@ -47,7 +44,7 @@ class Test_post_process(tests.IrisTest):
     def test_missing_mandatory_kwarg(self):
         aggregator = PercentileAggregator()
         emsg = "percentile aggregator requires .* keyword argument 'percent'"
-        with self.assertRaisesRegex(ValueError, emsg):
+        with pytest.raises(ValueError, match=emsg):
             aggregator.aggregate("dummy", axis=0)
 
     def test_simple_single_point(self):
@@ -57,12 +54,12 @@ class Test_post_process(tests.IrisTest):
         data = np.empty(self.cube_simple.shape)
         coords = [self.coord_simple]
         actual = aggregator.post_process(self.cube_simple, data, coords, **kwargs)
-        self.assertEqual(actual.shape, self.cube_simple.shape)
-        self.assertIs(actual.data, data)
+        assert actual.shape == self.cube_simple.shape
+        assert actual.data is data
         name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name, units="percent")
-        self.assertEqual(coord, expected)
+        assert coord == expected
 
     def test_simple_multiple_points(self):
         aggregator = PercentileAggregator()
@@ -72,13 +69,13 @@ class Test_post_process(tests.IrisTest):
         data = np.empty(shape)
         coords = [self.coord_simple]
         actual = aggregator.post_process(self.cube_simple, data, coords, **kwargs)
-        self.assertEqual(actual.shape, percent.shape + self.cube_simple.shape)
+        assert actual.shape == percent.shape + self.cube_simple.shape
         expected = data.T
-        self.assertArrayEqual(actual.data, expected)
+        _shared_utils.assert_array_equal(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name, units="percent")
-        self.assertEqual(coord, expected)
+        assert coord == expected
 
     def test_multi_single_point(self):
         aggregator = PercentileAggregator()
@@ -87,12 +84,12 @@ class Test_post_process(tests.IrisTest):
         data = np.empty(self.cube_multi.shape)
         coords = [self.coord_multi_0]
         actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
-        self.assertEqual(actual.shape, self.cube_multi.shape)
-        self.assertIs(actual.data, data)
+        assert actual.shape == self.cube_multi.shape
+        assert actual.data is data
         name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name, units="percent")
-        self.assertEqual(coord, expected)
+        assert coord == expected
 
     def test_multi_multiple_points(self):
         aggregator = PercentileAggregator()
@@ -102,13 +99,13 @@ class Test_post_process(tests.IrisTest):
         data = np.empty(shape)
         coords = [self.coord_multi_0]
         actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
-        self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
+        assert actual.shape == percent.shape + self.cube_multi.shape
         expected = np.moveaxis(data, -1, 0)
-        self.assertArrayEqual(actual.data, expected)
+        _shared_utils.assert_array_equal(actual.data, expected)
         name = "percentile_over_time"
         coord = actual.coord(name)
         expected = AuxCoord(percent, long_name=name, units="percent")
-        self.assertEqual(coord, expected)
+        assert coord == expected
 
     def test_multi_multiple_points_lazy(self):
         # Check that lazy data is preserved.
@@ -119,11 +116,7 @@ class Test_post_process(tests.IrisTest):
         data = da.arange(np.prod(shape)).reshape(shape)
         coords = [self.coord_multi_0]
         actual = aggregator.post_process(self.cube_multi, data, coords, **kwargs)
-        self.assertEqual(actual.shape, percent.shape + self.cube_multi.shape)
-        self.assertTrue(actual.has_lazy_data())
+        assert actual.shape == percent.shape + self.cube_multi.shape
+        assert actual.has_lazy_data()
         expected = np.moveaxis(as_concrete_data(data), -1, 0)
-        self.assertArrayEqual(actual.data, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_equal(actual.data, expected)
