@@ -9,7 +9,6 @@ import operator
 
 import numpy as np
 
-from iris.common.metadata import hexdigest
 import iris.exceptions
 
 
@@ -532,11 +531,10 @@ class AttributeConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
-        eq = isinstance(other, AttributeConstraint)
-        if eq:
-            hex_self = {(k, hexdigest(v)) for k, v in self._attributes.items()}
-            hex_other = {(k, hexdigest(v)) for k, v in other._attributes.items()}
-            eq = hex_self == hex_other
+        eq = (
+            isinstance(other, AttributeConstraint)
+            and self._attributes == other._attributes
+        )
         return eq
 
     def __hash__(self):
@@ -555,7 +553,12 @@ class AttributeConstraint(Constraint):
                         match = False
                         break
                 else:
-                    if hexdigest(cube_attr) != hexdigest(value):
+                    try:
+                        eq = np.all(cube_attr == value)
+                    except ValueError as err:
+                        message = f"Error comparing {name} attributes: {err}"
+                        raise ValueError(message)
+                    if not eq:
                         match = False
                         break
             else:

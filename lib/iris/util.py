@@ -28,7 +28,6 @@ from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
-from iris.common.metadata import hexdigest
 import iris.exceptions
 import iris.warnings
 
@@ -233,7 +232,12 @@ def describe_diff(cube_a, cube_b, output_file=None):
     else:
         common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
         for key in common_keys:
-            if hexdigest(cube_a.attributes[key]) != hexdigest(cube_b.attributes[key]):
+            try:
+                eq = np.any(cube_a.attributes[key] == cube_b.attributes[key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+            if not eq:
                 output_file.write(
                     '"%s" cube_a attribute value "%s" is not '
                     "compatible with cube_b "
@@ -2112,13 +2116,15 @@ def equalise_attributes(cubes):
     for attrs in cube_attrs[1:]:
         cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
-        hex_attrs = {k: hexdigest(v) for k, v in attrs.items()}
-        hex_cube_attrs_0 = {k: hexdigest(v) for k, v in cube_attrs[0].items()}
-        common_keys = [
-            key
-            for key in common_keys
-            if (key in cube_keys and hex_attrs[key] == hex_cube_attrs_0[key])
-        ]
+
+        def eq(key):
+            try:
+                return np.all(attrs[key] == cube_attrs[0][key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+
+        common_keys = [key for key in common_keys if (key in cube_keys and eq(key))]
     keys_to_remove.difference_update(common_keys)
 
     # Convert back from the resulting 'paired' keys set, extracting just the

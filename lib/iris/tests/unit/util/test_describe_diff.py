@@ -58,3 +58,10 @@ class Test:
                 "incompatible_array_attrs.str.txt",
             ],
         )
+
+    def test_incompatible_array_attributes(self):
+        # test incompatible array attribute
+        self.cube_a.attributes["test_array"] = np.array([1, 2, 3])
+        self.cube_b.attributes["test_array"] = np.array([1, 2])
+        with pytest.raises(ValueError, match="Error comparing test_array attributes"):
+            _ = self._compare_result(self.cube_a, self.cube_b)
