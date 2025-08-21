@@ -2589,13 +2589,7 @@ def save(
         # Fnd any global attributes which are not the same on *all* cubes.
         def attr_values_equal(val1, val2):
             # An equality test which also works when some values are numpy arrays (!)
-            # As done in :meth:`iris.common.mixin.LimitedAttributeDict.__eq__`.
-            match = val1 == val2
-            try:
-                match = bool(match)
-            except ValueError:
-                match = match.all()
-            return match
+            return iris.util._attribute_equal(val1, val2)
 
         cube0 = cubes[0]
         invalid_globals = set(
@@ -2682,7 +2676,9 @@ def save(
             common_keys.intersection_update(keys)
             different_value_keys = []
             for key in common_keys:
-                if np.any(attributes[key] != cube.attributes[key]):
+                if not iris.util._attribute_equal(
+                    attributes[key], cube.attributes[key]
+                ):
                     different_value_keys.append(key)
             common_keys.difference_update(different_value_keys)
             local_keys.update(different_value_keys)

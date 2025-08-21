@@ -215,6 +215,12 @@ v3.12.2 (09 May 2025)
 #. `@trexfeathers`_ refactored Iris loading and saving to make it compatible
    with Dask version ``2025.4.0`` and above. (:pull:`6451`)
 
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ adapted array comparison in response
+   to NumPy v1.25 deprecating comparison of un-broadcastable arrays. It is
+   hoped that users will see no difference in behaviour, but please get in touch
+   if you notice anything. See `NumPy v1.25 expired deprecations`_ and
+   `numpy#22707`_ for more. (:pull:`6665`)
+
 
 📚 Documentation
 ================
@@ -271,3 +277,5 @@ v3.12.2 (09 May 2025)
 
 .. _SPEC 0: https://scientific-python.org/specs/spec-0000/
 .. _Running setuptools commands: https://setuptools.pypa.io/en/latest/deprecated/commands.html
+.. _NumPy v1.25 expired deprecations: https://numpy.org/doc/stable/release/1.25.0-notes.html#expired-deprecations
+.. _numpy#22707: https://github.com/numpy/numpy/pull/22707
