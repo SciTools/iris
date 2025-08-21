@@ -128,6 +128,11 @@ class TestArrayStructure_from_array:
         with pytest.raises(ValueError):
             ArrayStructure.from_array(np.arange(12).reshape(3, 4))
 
+    def test_eq_incompatible_shapes(self):
+        struct1 = ArrayStructure(1, np.array([1, 2]))
+        struct2 = ArrayStructure(1, np.array([1, 2, 3]))
+        assert struct1 != struct2
+
 
 class TestNdarrayAndDimsCases:
     """Defines the test functionality for nd_array_and_dims. This class
