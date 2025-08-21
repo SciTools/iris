@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
 
 import cf_units
@@ -393,6 +393,24 @@ def rolling_window(
         mask = _rolling_window(array_module.ma.getmaskarray(a))
         rw = array_module.ma.masked_array(rw, mask)
     return rw
+
+
+def _attribute_equal(
+    attr1: Any,
+    attr2: Any,
+) -> bool:
+    """Compare two attribute values, including np arrays.
+
+    If either attribute is a NumPy array, :func:`numpy.array_equal` is used, to
+    avoid broadcastability errors in case of mismatches.
+    """
+    # TODO: at next major release replace uses of this with hexdigest
+    #  comparisons, in alignment with iris.common.metadata (consider calling
+    #  a routine in iris.common.metadata).
+    if isinstance(attr1, np.ndarray) or isinstance(attr2, np.ndarray):
+        return np.array_equal(attr1, attr2)
+    else:
+        return attr1 == attr2
 
 
 def _masked_array_equal(

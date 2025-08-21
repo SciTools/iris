@@ -40,7 +40,7 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.aux_factory import AuxCoordFactory
 from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
-from iris.common.metadata import CoordMetadata, hexdigest, metadata_filter
+from iris.common.metadata import CoordMetadata, metadata_filter
 from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
@@ -1435,7 +1435,9 @@ class Cube(CFVariableMixin):
                     ignore = (ignore,)
                 common_keys = common_keys.difference(ignore)
             for key in common_keys:
-                if hexdigest(self.attributes[key]) != hexdigest(other.attributes[key]):
+                if not iris.util._attribute_equal(
+                    self.attributes[key], other.attributes[key]
+                ):
                     compatible = False
                     break
 
