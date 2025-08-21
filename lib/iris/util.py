@@ -233,7 +233,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
         common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
         for key in common_keys:
             try:
-                eq = np.any(cube_a.attributes[key] == cube_b.attributes[key])
+                eq = np.all(cube_a.attributes[key] == cube_b.attributes[key])
             except ValueError as err:
                 message = f"Error comparing {key} attributes: {err}"
                 raise ValueError(message)
