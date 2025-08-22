@@ -93,6 +93,13 @@ class TestArrayStructure_from_array:
         a[0, 0, 0] = 5
         assert self.struct_from_arr(a) is None
 
+    def test_irregular_1d(self):
+        # Note this tests a unique scenario where NumPy raises a broadcasting
+        #  error (having previously allowed elementwise comparison in earlier
+        #  versions).
+        a = np.array([0, 0, 0, 0, 1, 1, 1, 1, 2])
+        assert self.struct_from_arr(a) is None
+
     def test_repeated_3d(self):
         sub = np.array([-1, 3, 1, 2])
         a = construct_nd(sub, 2, (3, 2, 4))
@@ -120,6 +127,11 @@ class TestArrayStructure_from_array:
     def test_multi_dim_array(self):
         with pytest.raises(ValueError):
             ArrayStructure.from_array(np.arange(12).reshape(3, 4))
+
+    def test_eq_incompatible_shapes(self):
+        struct1 = ArrayStructure(1, np.array([1, 2]))
+        struct2 = ArrayStructure(1, np.array([1, 2, 3]))
+        assert struct1 != struct2
 
 
 class TestNdarrayAndDimsCases:

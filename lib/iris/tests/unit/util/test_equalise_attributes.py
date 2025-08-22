@@ -129,6 +129,18 @@ class TestEqualiseAttributes:
         cubes = [self.cube_a1b5v1, self.cube_a1b6v1]
         self._test(cubes, {"a": 1, "v": self.v1}, [{"b": 5}, {"b": 6}])
 
+    @pytest.fixture
+    def make_a1b6v2_incompatible(self):
+        v_array = self.cube_a1b6v2.attributes["v"]
+        self.cube_a1b6v2.attributes["v"] = np.repeat(v_array, 2)
+
+    def test_array_incompatible(self, make_a1b6v2_incompatible):
+        cubes = [self.cube_a1b5v1, self.cube_a1b6v2]
+        with pytest.raises(
+            ValueError, match=r"Error comparing \('local', 'v'\) attributes"
+        ):
+            self._test(cubes, {}, [])
+
     @_shared_utils.skip_data
     def test_complex_nonecommon(self):
         # Example with cell methods and factories, but no common attributes.

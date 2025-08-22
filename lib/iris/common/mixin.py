@@ -115,6 +115,9 @@ class LimitedAttributeDict(dict):
         match = set(self.keys()) == set(other.keys())
         if match:
             for key, value in self.items():
+                # TODO: should this use the iris.common.metadata approach of
+                #  using hexdigest? Might be a breaking change for some corner
+                #  cases, so would need a major release.
                 match = np.array_equal(
                     np.array(value, ndmin=1), np.array(other[key], ndmin=1)
                 )

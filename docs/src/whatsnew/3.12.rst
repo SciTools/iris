@@ -69,13 +69,29 @@ v3.12.2 (09 May 2025)
    :color: primary
    :icon: alert
    :animate: fade-in
-   :open:
 
    The patches in this release of Iris include:
 
    #. Iris is now compatible with Dask versions ``2025.4.0`` and above. We are
       aware that previous incompatibilities had been affecting load and save
       operations for many users.
+
+
+v3.12.3 (22 Aug 2025)
+=====================
+
+.. dropdown:: v3.12.3 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Improved compatibility with NumPy >= v1.25 for array comparisons, in
+      response to deprecations around un-broadcastable arrays. Delivered in a
+      patch release to meet a time-critical need for a specific user.
+      :ref:`See the full entry for more<3_12_3_array_comparison>`.
 
 
 📢 Announcements
@@ -217,6 +233,14 @@ v3.12.2 (09 May 2025)
 #. `@trexfeathers`_ refactored Iris loading and saving to make it compatible
    with Dask version ``2025.4.0`` and above. (:pull:`6451`)
 
+.. _3_12_3_array_comparison:
+
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ adapted array comparison in response
+   to NumPy v1.25 deprecating comparison of un-broadcastable arrays. It is
+   hoped that users will see no difference in behaviour, but please get in touch
+   if you notice anything. See `NumPy v1.25 expired deprecations`_ and
+   `numpy#22707`_ for more. (:pull:`6665`)
+
 
 📚 Documentation
 ================
@@ -273,3 +297,5 @@ v3.12.2 (09 May 2025)
 
 .. _SPEC 0: https://scientific-python.org/specs/spec-0000/
 .. _Running setuptools commands: https://setuptools.pypa.io/en/latest/deprecated/commands.html
+.. _NumPy v1.25 expired deprecations: https://numpy.org/doc/stable/release/1.25.0-notes.html#expired-deprecations
+.. _numpy#22707: https://github.com/numpy/numpy/pull/22707
