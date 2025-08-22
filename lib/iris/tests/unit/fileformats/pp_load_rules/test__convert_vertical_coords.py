@@ -8,6 +8,7 @@
 """
 
 import numpy as np
+import pytest
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, DimCoord
@@ -280,6 +281,29 @@ class TestLBVC002_Depth:
             dim=0,
         )
 
+    def test_unbounded_incompatible_vectors(self):
+        # Confirm this is not vulnerable to the non-broadcastable error.
+        lblev = [1, 2, 3]
+        blev = [10, 20, 30]
+        brsvd1 = [5, 15, 25, 35]
+        brlev = [5, 15, 25]
+        avoided_error = "operands could not be broadcast together"
+        try:
+            self._check_depth(
+                _lbcode(1),
+                lblev=lblev,
+                blev=blev,
+                brsvd1=brsvd1,
+                brlev=brlev,
+                expect_bounds=False,
+                dim=1,
+            )
+        except ValueError as err:
+            if avoided_error in str(err):
+                message = f'Test failed to avoid specified error: "{err}"'
+                pytest.fail(message)
+            pass
+
     def test_bounded(self):
         self._check_depth(
             _lbcode(1), lblev=23.0, brlev=22.5, brsvd1=23.5, expect_bounds=True
@@ -299,6 +323,29 @@ class TestLBVC002_Depth:
             expect_bounds=True,
             dim=1,
         )
+
+    def test_bounded_incompatible_vectors(self):
+        # Confirm this is not vulnerable to the non-broadcastable error.
+        lblev = [1, 2, 3]
+        blev = [10, 20, 30]
+        brsvd1 = [5, 15, 25, 35]
+        brlev = [15, 25, 35]
+        avoided_error = "operands could not be broadcast together"
+        try:
+            self._check_depth(
+                _lbcode(1),
+                lblev=lblev,
+                blev=blev,
+                brsvd1=brsvd1,
+                brlev=brlev,
+                expect_bounds=True,
+                dim=1,
+            )
+        except ValueError as err:
+            if avoided_error in str(err):
+                message = f'Test failed to avoid specified error: "{err}"'
+                pytest.fail(message)
+            pass
 
     def test_cross_section(self):
         self._check_depth(_lbcode(ix=1, iy=2), lblev=23.0, expect_match=False)
@@ -359,6 +406,37 @@ class TestLBVC006_SoilLevel:
     def test_normal__vector(self):
         lblev = np.arange(10)
         self._check_soil_level(_lbcode(0), lblev=lblev, dim=0)
+
+    def test_normal_incompatible_vectors(self):
+        # Confirm this is not vulnerable to the non-broadcastable error.
+        lbvc = 6
+        stash = STASH(1, 1, 1)
+        lbcode = _lbcode(0)
+        lblev = np.arange(10)
+        brsvd1 = [1] * len(lblev)
+        brlev = brsvd1 + [1]
+        blev, bhlev, bhrlev, brsvd2 = None, None, None, None
+
+        avoided_error = "operands could not be broadcast together"
+        try:
+            _ = _convert_vertical_coords(
+                lbcode=lbcode,
+                lbvc=lbvc,
+                blev=blev,
+                lblev=lblev,
+                stash=stash,
+                bhlev=bhlev,
+                bhrlev=bhrlev,
+                brsvd1=brsvd1,
+                brsvd2=brsvd2,
+                brlev=brlev,
+                dim=0,
+            )
+        except ValueError as err:
+            if avoided_error in str(err):
+                message = f'Test failed to avoid specified error: "{err}"'
+                pytest.fail(message)
+            pass
 
     def test_cross_section(self):
         self._check_soil_level(_lbcode(ix=1, iy=2), expect_match=False)
