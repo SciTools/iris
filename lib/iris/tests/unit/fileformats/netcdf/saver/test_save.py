@@ -79,6 +79,21 @@ class Test_attributes(tests.IrisTest):
             ds.close()
         self.assertArrayEqual(res, np.arange(2))
 
+    def test_attributes_arrays_incompatible_shapes(self):
+        # Ensure successful comparison without raising a broadcast error.
+        c1 = Cube([1], attributes={"bar": np.arange(2)})
+        c2 = Cube([2], attributes={"bar": np.arange(3)})
+
+        with self.temp_filename("foo.nc") as nc_out:
+            save([c1, c2], nc_out)
+            ds = _thread_safe_nc.DatasetWrapper(nc_out)
+            with pytest.raises(AttributeError):
+                _ = ds.getncattr("bar")
+            for var in ds.variables.values():
+                res = var.getncattr("bar")
+                self.assertIsInstance(res, np.ndarray)
+            ds.close()
+
     def test_no_special_attribute_clash(self):
         # Ensure that saving multiple cubes with netCDF4 protected attributes
         # works as expected.
