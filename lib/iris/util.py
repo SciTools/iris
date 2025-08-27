@@ -15,7 +15,7 @@ import os
 import os.path
 import sys
 import tempfile
-from typing import TYPE_CHECKING, List, Literal
+from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
 
 import cartopy
@@ -236,7 +236,12 @@ def describe_diff(cube_a, cube_b, output_file=None):
     else:
         common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
         for key in common_keys:
-            if np.any(cube_a.attributes[key] != cube_b.attributes[key]):
+            try:
+                eq = np.all(cube_a.attributes[key] == cube_b.attributes[key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+            if not eq:
                 output_file.write(
                     '"%s" cube_a attribute value "%s" is not '
                     "compatible with cube_b "
@@ -394,6 +399,24 @@ def rolling_window(
     return rw
 
 
+def _attribute_equal(
+    attr1: Any,
+    attr2: Any,
+) -> bool:
+    """Compare two attribute values, including np arrays.
+
+    If either attribute is a NumPy array, :func:`numpy.array_equal` is used, to
+    avoid broadcastability errors in case of mismatches.
+    """
+    # TODO: at next major release replace uses of this with hexdigest
+    #  comparisons, in alignment with iris.common.metadata (consider calling
+    #  a routine in iris.common.metadata).
+    if isinstance(attr1, np.ndarray) or isinstance(attr2, np.ndarray):
+        return np.array_equal(attr1, attr2)
+    else:
+        return attr1 == attr2
+
+
 def _masked_array_equal(
     array1: np.ndarray,
     array2: np.ndarray,
@@ -431,7 +454,12 @@ def _masked_array_equal(
             else:
                 ignore |= nanmask
 
-        eqs = ma.getdata(array1) == ma.getdata(array2)
+        try:
+            eqs = ma.getdata(array1) == ma.getdata(array2)
+        except ValueError:
+            # In case of broadcasting errors.
+            eqs = np.zeros(array1.shape, dtype=bool)
+
         if ignore is not None:
             eqs = np.where(ignore, True, eqs)
 
@@ -2112,11 +2140,15 @@ def equalise_attributes(cubes):
     for attrs in cube_attrs[1:]:
         cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
-        common_keys = [
-            key
-            for key in common_keys
-            if (key in cube_keys and np.all(attrs[key] == cube_attrs[0][key]))
-        ]
+
+        def eq(key):
+            try:
+                return np.all(attrs[key] == cube_attrs[0][key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+
+        common_keys = [key for key in common_keys if (key in cube_keys and eq(key))]
     keys_to_remove.difference_update(common_keys)
 
     # Convert back from the resulting 'paired' keys set, extracting just the

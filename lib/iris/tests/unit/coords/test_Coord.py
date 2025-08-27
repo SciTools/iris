@@ -849,6 +849,12 @@ class Test_is_compatible:
         self.other_coord.attributes["array_test"] = np.array([1.0, 2, 777.7])
         assert not self.test_coord.is_compatible(self.other_coord)
 
+    def test_misshaped_array_attrs_incompatible(self):
+        # Comparison should avoid broadcast failures and return False.
+        self.test_coord.attributes["array_test"] = np.array([1.0, 2, 3])
+        self.other_coord.attributes["array_test"] = np.array([1.0, 2])
+        assert not self.test_coord.is_compatible(self.other_coord)
+
 
 class Test_contiguous_bounds:
     def test_1d_coord_no_bounds_warning(self):

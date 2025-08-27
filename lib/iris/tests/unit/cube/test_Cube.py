@@ -876,6 +876,12 @@ class Test_is_compatible:
         self.other_cube.attributes["array_test"] = np.array([1.0, 2, 777.7])
         assert not self.test_cube.is_compatible(self.other_cube)
 
+    def test_misshaped_array_attrs_incompatible(self):
+        # Comparison should avoid broadcast failures and return False.
+        self.test_cube.attributes["array_test"] = np.array([1.0, 2, 3])
+        self.other_cube.attributes["array_test"] = np.array([1.0, 2])
+        assert not self.test_cube.is_compatible(self.other_cube)
+
 
 class Test_rolling_window:
     @pytest.fixture(autouse=True)

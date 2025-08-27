@@ -221,8 +221,10 @@ class TestLicenseHeaders:
 
         # Call "git whatchanged" to get the details of all the files and when
         # they were last changed.
+        # TODO: whatchanged is deprecated, find an alternative Git command.
         output = subprocess.check_output(
-            ["git", "whatchanged", "--pretty=TIME:%ct"], cwd=IRIS_REPO_DIRPATH
+            ["git", "whatchanged", "--pretty=TIME:%ct", "--i-still-use-this"],
+            cwd=IRIS_REPO_DIRPATH,
         )
 
         output = output.decode().split("\n")
