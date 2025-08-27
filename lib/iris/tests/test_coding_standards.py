@@ -221,8 +221,6 @@ class TestLicenseHeaders:
 
         # Call "git log" to get the details of all the files and when
         # they were last changed.
-        print("repo", IRIS_REPO_DIRPATH)
-        breakpoint()
         output = subprocess.check_output(
             ["git", "log", "--name-status", "--pretty=TIME:%ct"],
             cwd=IRIS_REPO_DIRPATH,
