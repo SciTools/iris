@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :mod:`iris.analysis.maths` module."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from abc import ABCMeta, abstractmethod
 import operator
 
@@ -19,6 +15,7 @@ from iris.analysis import MEAN
 from iris.analysis.maths import add
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 
 
@@ -76,48 +73,48 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
 
         return result
 
-    def test_transposed(self):
+    def test_transposed(self, request):
         cube = self._base_testcube()
         other = cube.copy()
         other.transpose()
         res = self.cube_func(cube, other)
-        self.assertCML(res, checksum=False)
+        _shared_utils.assert_CML(request, res, checksum=False)
         expected_data = self.data_op(cube.data, other.data.T)
-        self.assertArrayEqual(res.data, expected_data)
+        _shared_utils.assert_array_equal(res.data, expected_data)
 
-    def test_collapse_zeroth_dim(self):
+    def test_collapse_zeroth_dim(self, request):
         cube = self._base_testcube()
         other = cube.collapsed("time", MEAN)
         res = self.cube_func(cube, other)
-        self.assertCML(res, checksum=False)
+        _shared_utils.assert_CML(request, res, checksum=False)
         # No modification to other.data is needed as numpy broadcasting
         # should be sufficient.
         expected_data = self.data_op(cube.data, other.data)
         # Use assertMaskedArrayEqual as collapsing with MEAN results
         # in a cube with a masked data array.
-        self.assertMaskedArrayEqual(res.data, expected_data)
+        _shared_utils.assert_masked_array_equal(res.data, expected_data)
 
-    def test_collapse_all_dims(self):
+    def test_collapse_all_dims(self, request):
         cube = self._base_testcube()
         collapse_coords = cube.coords(dim_coords=True)
         other = self._meshcube_collapsesafe(cube, collapse_coords)
         other = other.collapsed(collapse_coords, MEAN)
         res = self.cube_func(cube, other)
-        self.assertCML(res, checksum=False)
+        _shared_utils.assert_CML(request, res, checksum=False)
         # No modification to other.data is needed as numpy broadcasting
         # should be sufficient.
         expected_data = self.data_op(cube.data, other.data)
         # Use assertArrayEqual rather than assertMaskedArrayEqual as
         # collapsing all dims does not result in a masked array.
-        self.assertArrayEqual(res.data, expected_data)
+        _shared_utils.assert_array_equal(res.data, expected_data)
 
-    def test_collapse_last_dims(self):
+    def test_collapse_last_dims(self, request):
         cube = self._base_testcube()
         # Collapse : by 'last' we mean the X+Y ones...
         other = self._meshcube_collapsesafe(cube, self.cube_xy_dimcoords)
         other = other.collapsed(self.cube_xy_dimcoords, MEAN)
         res = self.cube_func(cube, other)
-        self.assertCML(res, checksum=False)
+        _shared_utils.assert_CML(request, res, checksum=False)
         # Transpose the dimensions in self.cube that have been collapsed in
         # other to lie at the front, thereby enabling numpy broadcasting to
         # function when applying data operator. Finish by transposing back
@@ -130,19 +127,19 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             cube.data.transpose(transpose_xy_back2front), other.data
         ).transpose(transpose_xy_front2back)
         # Confirm result content is as expected
-        self.assertMaskedArrayEqual(res.data, expected_data)
+        _shared_utils.assert_masked_array_equal(res.data, expected_data)
 
-    def test_collapse_middle_dim(self):
+    def test_collapse_middle_dim(self, request):
         cube = self._base_testcube()
         other = cube.collapsed(["model_level_number"], MEAN)
         res = self.cube_func(cube, other)
-        self.assertCML(res, checksum=False)
+        _shared_utils.assert_CML(request, res, checksum=False)
         # Add the collapsed dimension back in via np.newaxis to enable
         # numpy broadcasting to function.
         expected_data = self.data_op(cube.data, other.data[:, np.newaxis, ...])
-        self.assertMaskedArrayEqual(res.data, expected_data)
+        _shared_utils.assert_masked_array_equal(res.data, expected_data)
 
-    def test_slice(self):
+    def test_slice(self, request):
         cube = self._base_testcube()
         for dim in range(cube.ndim):
             keys = [slice(None)] * cube.ndim
@@ -163,13 +160,15 @@ class CubeArithmeticBroadcastingTestMixin(metaclass=ABCMeta):
             res = self.cube_func(cube, other)
 
             # NOTE: only one testfile : any dim collapsed gives SAME result
-            self.assertCML(res, checksum=False)
+            _shared_utils.assert_CML(request, res, checksum=False)
             # Add the collapsed dimension back in via np.newaxis to enable
             # numpy broadcasting to function.
             keys[dim] = np.newaxis
             expected_data = self.data_op(cube.data, other.data[tuple(keys)])
             msg = "Problem broadcasting cubes when sliced on dimension {}."
-            self.assertArrayEqual(res.data, expected_data, err_msg=msg.format(dim))
+            _shared_utils.assert_array_equal(
+                res.data, expected_data, err_msg=msg.format(dim)
+            )
 
 
 class MathsAddOperationMixin:
@@ -220,27 +219,27 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         # Cube in_place arithmetic operation.
         com, res, orig_cube = self._test_partial_mask(True)
 
-        self.assertMaskedArrayEqual(com, res.data, strict=True)
-        self.assertIs(res, orig_cube)
+        _shared_utils.assert_masked_array_equal(com, res.data, strict=True)
+        assert res is orig_cube
 
     def test_partial_mask_second_lazy_in_place(self):
         # Only second cube has lazy data.
         com, res, orig_cube = self._test_partial_mask(True, second_lazy=True)
-        self.assertMaskedArrayEqual(com, res.data, strict=True)
-        self.assertIs(res, orig_cube)
+        _shared_utils.assert_masked_array_equal(com, res.data, strict=True)
+        assert res is orig_cube
 
     def test_partial_mask_not_in_place(self):
         # Cube arithmetic not an in_place operation.
         com, res, orig_cube = self._test_partial_mask(False)
 
-        self.assertMaskedArrayEqual(com, res.data, strict=True)
-        self.assertIsNot(res, orig_cube)
+        _shared_utils.assert_masked_array_equal(com, res.data, strict=True)
+        assert res is not orig_cube
 
     def test_partial_mask_second_lazy_not_in_place(self):
         # Only second cube has lazy data.
         com, res, orig_cube = self._test_partial_mask(False, second_lazy=True)
-        self.assertMaskedArrayEqual(com, res.data, strict=True)
-        self.assertIsNot(res, orig_cube)
+        _shared_utils.assert_masked_array_equal(com, res.data, strict=True)
+        assert res is not orig_cube
 
     def test_in_place_introduces_mask(self):
         # If second cube is masked, result should also be masked.
@@ -252,14 +251,14 @@ class CubeArithmeticMaskingTestMixin(metaclass=ABCMeta):
         com = self.data_op(data1, data2)
         res = self.cube_func(cube1, cube2, in_place=True)
 
-        self.assertMaskedArrayEqual(com, res.data, strict=True)
-        self.assertIs(res, cube1)
+        _shared_utils.assert_masked_array_equal(com, res.data, strict=True)
+        assert res is cube1
 
 
-class CubeArithmeticCoordsTest(tests.IrisTest):
+class CubeArithmeticCoordsTest:
     # This class sets up pairs of cubes to test iris' ability to reject
     # arithmetic operations on coordinates which do not match.
-    def SetUpNonMatching(self):
+    def setup_non_matching(self):
         # On this cube pair, the coordinates to perform operations on do not
         # match in either points array or name.
         data = np.zeros((3, 4))
@@ -273,7 +272,7 @@ class CubeArithmeticCoordsTest(tests.IrisTest):
 
         return nomatch1, nomatch2
 
-    def SetUpReversed(self):
+    def setup_reversed(self):
         # On this cube pair, the coordinates to perform operations on have
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.
@@ -303,9 +302,9 @@ class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
         dat = ma.masked_array(0, 1, dtype)
         cube = Cube(dat)
         res = self.cube_func(cube, 5, in_place=True)
-        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
-        self.assertEqual(dtype, res.dtype)
-        self.assertIs(res, cube)
+        _shared_utils.assert_masked_array_equal(ma.masked_array(0, 1), res.data)
+        assert dtype == res.dtype
+        assert res is cube
 
     def test_masked_constant_not_in_place(self):
         # Cube in_place arithmetic operation.
@@ -313,6 +312,6 @@ class CubeArithmeticMaskedConstantTestMixin(metaclass=ABCMeta):
         dat = ma.masked_array(0, 1, dtype)
         cube = Cube(dat)
         res = self.cube_func(cube, 5, in_place=False)
-        self.assertMaskedArrayEqual(ma.masked_array(0, 1), res.data)
-        self.assertEqual(dtype, res.dtype)
-        self.assertIsNot(res, cube)
+        _shared_utils.assert_masked_array_equal(ma.masked_array(0, 1), res.data)
+        assert dtype == res.dtype
+        assert res is not cube

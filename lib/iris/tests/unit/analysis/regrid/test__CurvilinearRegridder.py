@@ -4,13 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.analysis._regrid.CurvilinearRegridder`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import numpy as np
+import pytest
 
 from iris.analysis._regrid import CurvilinearRegridder as Regridder
 from iris.analysis.cartography import rotate_pole
@@ -19,29 +14,32 @@ from iris.coord_systems import GeogCS, RotatedGeogCS
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
+from iris.tests import _shared_utils
 from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
 
-class Test___init__(tests.IrisTest):
-    def setUp(self):
+class Test___init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.src_grid = lat_lon_cube()
         self.bad = np.ones((3, 4))
         self.weights = np.ones(self.src_grid.shape, self.src_grid.dtype)
 
     def test_bad_src_type(self):
-        with self.assertRaisesRegex(TypeError, "'src_grid_cube'"):
+        with pytest.raises(TypeError, match="'src_grid_cube'"):
             Regridder(self.bad, self.src_grid, self.weights)
 
     def test_bad_grid_type(self):
-        with self.assertRaisesRegex(TypeError, "'target_grid_cube'"):
+        with pytest.raises(TypeError, match="'target_grid_cube'"):
             Regridder(self.src_grid, self.bad, self.weights)
 
 
-@tests.skip_data
-class Test___call__(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test___call__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.func_setup = (
             "iris.analysis._regrid._regrid_weighted_curvilinear_to_rectilinear__prepare"
         )
@@ -81,37 +79,41 @@ class Test___call__(tests.IrisTest):
         # can do a cubelist merge on it, which is too complicated to mock out.
         self.dummy_slice_result = Cube([1])
 
-    def test_same_src_as_init(self):
+    def test_same_src_as_init(self, mocker):
         # Check the regridder call calls the underlying routines as expected.
         src_grid = self.src_grid
         target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid, self.weights)
-        with mock.patch(
-            self.func_setup, return_value=mock.sentinel.regrid_info
-        ) as patch_setup:
-            with mock.patch(
-                self.func_operate, return_value=self.dummy_slice_result
-            ) as patch_operate:
-                result = regridder(src_grid)
+
+        patch_setup = mocker.patch(
+            self.func_setup, return_value=mocker.sentinel.regrid_info
+        )
+        patch_operate = mocker.patch(
+            self.func_operate, return_value=self.dummy_slice_result
+        )
+        result = regridder(src_grid)
+
         patch_setup.assert_called_once_with(src_grid, self.weights, target_grid)
-        patch_operate.assert_called_once_with(src_grid, mock.sentinel.regrid_info)
+        patch_operate.assert_called_once_with(src_grid, mocker.sentinel.regrid_info)
         # The result is a re-merged version of the internal result, so it is
         # therefore '==' but not the same object.
-        self.assertEqual(result, self.dummy_slice_result)
+        assert result == self.dummy_slice_result
 
-    def test_no_weights(self):
+    def test_no_weights(self, mocker):
         # Check we can use the regridder without weights.
         src_grid = self.src_grid
         target_grid = self.tgt_grid
         regridder = Regridder(src_grid, target_grid)
-        with mock.patch(
-            self.func_setup, return_value=mock.sentinel.regrid_info
-        ) as patch_setup:
-            with mock.patch(self.func_operate, return_value=self.dummy_slice_result):
-                _ = regridder(src_grid)
+
+        patch_setup = mocker.patch(
+            self.func_setup, return_value=mocker.sentinel.regrid_info
+        )
+        mocker.patch(self.func_operate, return_value=self.dummy_slice_result)
+        _ = regridder(src_grid)
+
         patch_setup.assert_called_once_with(src_grid, None, target_grid)
 
-    def test_diff_src_from_init(self):
+    def test_diff_src_from_init(self, mocker):
         # Check we can call the regridder with a different cube from the one we
         # built it with.
         src_grid = self.src_grid
@@ -121,16 +123,18 @@ class Test___call__(tests.IrisTest):
         different_src_cube = self.src_grid.copy()
         # Rename so we can distinguish them.
         different_src_cube.rename("Different_source")
-        with mock.patch(self.func_setup, return_value=mock.sentinel.regrid_info):
-            with mock.patch(
-                self.func_operate, return_value=self.dummy_slice_result
-            ) as patch_operate:
-                _ = regridder(different_src_cube)
+
+        mocker.patch(self.func_setup, return_value=mocker.sentinel.regrid_info)
+        patch_operate = mocker.patch(
+            self.func_operate, return_value=self.dummy_slice_result
+        )
+        _ = regridder(different_src_cube)
+
         patch_operate.assert_called_once_with(
-            different_src_cube, mock.sentinel.regrid_info
+            different_src_cube, mocker.sentinel.regrid_info
         )
 
-    def test_caching(self):
+    def test_caching(self, mocker):
         # Check that it calculates regrid info just once, and re-uses it in
         # subsequent calls.
         src_grid = self.src_grid
@@ -138,27 +142,27 @@ class Test___call__(tests.IrisTest):
         regridder = Regridder(src_grid, target_grid, self.weights)
         different_src_cube = self.src_grid.copy()
         different_src_cube.rename("Different_source")
-        with mock.patch(
-            self.func_setup, return_value=mock.sentinel.regrid_info
-        ) as patch_setup:
-            with mock.patch(
-                self.func_operate, return_value=self.dummy_slice_result
-            ) as patch_operate:
-                _ = regridder(src_grid)
-                _ = regridder(different_src_cube)
-        patch_setup.assert_called_once_with(src_grid, self.weights, target_grid)
-        self.assertEqual(len(patch_operate.call_args_list), 2)
-        self.assertEqual(
-            patch_operate.call_args_list,
-            [
-                mock.call(src_grid, mock.sentinel.regrid_info),
-                mock.call(different_src_cube, mock.sentinel.regrid_info),
-            ],
+
+        patch_setup = mocker.patch(
+            self.func_setup, return_value=mocker.sentinel.regrid_info
         )
+        patch_operate = mocker.patch(
+            self.func_operate, return_value=self.dummy_slice_result
+        )
+        _ = regridder(src_grid)
+        _ = regridder(different_src_cube)
+
+        patch_setup.assert_called_once_with(src_grid, self.weights, target_grid)
+        assert len(patch_operate.call_args_list) == 2
+        assert patch_operate.call_args_list == [
+            mocker.call(src_grid, mocker.sentinel.regrid_info),
+            mocker.call(different_src_cube, mocker.sentinel.regrid_info),
+        ]
 
 
-class Test__derived_coord(tests.IrisTest):
-    def setUp(self):
+class Test__derived_coord:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         src = realistic_4d()[0]
         tgt = realistic_4d()
         new_lon, new_lat = np.meshgrid(
@@ -192,10 +196,11 @@ class Test__derived_coord(tests.IrisTest):
         rg = Regridder(self.src, self.tgt)
         res = rg(self.src)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
+        _shared_utils.assert_array_all_close(
+            res.coord("altitude").points, self.altitude.points
         )
-        assert np.allclose(res.coord("altitude").points, self.altitude.points)
 
     def test_cube_transposed(self):
         rg = Regridder(self.src, self.tgt)
@@ -203,10 +208,9 @@ class Test__derived_coord(tests.IrisTest):
         transposed_cube.transpose([0, 2, 1])
         res = rg(transposed_cube)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
-        assert np.allclose(
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
+        _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
 
@@ -214,10 +218,9 @@ class Test__derived_coord(tests.IrisTest):
         rg = Regridder(self.src_t, self.tgt)
         res = rg(self.src_t)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
-        )
-        assert np.allclose(
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
+        _shared_utils.assert_array_all_close(
             res.coord("altitude").points, self.altitude_transposed.points
         )
 
@@ -227,15 +230,17 @@ class Test__derived_coord(tests.IrisTest):
         transposed_cube.transpose([0, 2, 1])
         res = rg(transposed_cube)
 
-        assert len(res.aux_factories) == 1 and isinstance(
-            res.aux_factories[0], HybridHeightFactory
+        assert len(res.aux_factories) == 1
+        assert isinstance(res.aux_factories[0], HybridHeightFactory)
+        _shared_utils.assert_array_all_close(
+            res.coord("altitude").points, self.altitude.points
         )
-        assert np.allclose(res.coord("altitude").points, self.altitude.points)
 
 
-@tests.skip_data
-class Test___call____bad_src(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class Test___call____bad_src:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.src_grid = global_pp()
         y = self.src_grid.coord("latitude")
         x = self.src_grid.coord("longitude")
@@ -247,15 +252,15 @@ class Test___call____bad_src(tests.IrisTest):
         self.regridder = Regridder(self.src_grid, self.src_grid, weights)
 
     def test_bad_src_type(self):
-        with self.assertRaisesRegex(TypeError, "must be a Cube"):
+        with pytest.raises(TypeError, match="must be a Cube"):
             self.regridder(np.ones((3, 4)))
 
     def test_bad_src_shape(self):
-        with self.assertRaisesRegex(ValueError, "not defined on the same source grid"):
+        with pytest.raises(ValueError, match="not defined on the same source grid"):
             self.regridder(self.src_grid[::2, ::2])
 
 
-class Test__call__multidimensional(tests.IrisTest):
+class Test__call__multidimensional:
     def test_multidim(self):
         # Testing with >2D data to demonstrate correct operation over
         # additional non-XY dimensions (including data masking), which is
@@ -358,15 +363,10 @@ class Test__call__multidimensional(tests.IrisTest):
 
         # Check all is as expected.
         result = regridder(src_cube)
-        self.assertEqual(result.coord("z"), src_cube.coord("z"))
-        self.assertEqual(
-            result.coord("extra_scalar_coord"),
-            src_cube.coord("extra_scalar_coord"),
+        assert result.coord("z") == src_cube.coord("z")
+        assert result.coord("extra_scalar_coord") == src_cube.coord(
+            "extra_scalar_coord"
         )
-        self.assertEqual(result.coord("longitude"), grid_cube.coord("longitude"))
-        self.assertEqual(result.coord("latitude"), grid_cube.coord("latitude"))
-        self.assertMaskedArrayAlmostEqual(result.data, expected_result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert result.coord("longitude") == grid_cube.coord("longitude")
+        assert result.coord("latitude") == grid_cube.coord("latitude")
+        _shared_utils.assert_masked_array_almost_equal(result.data, expected_result)

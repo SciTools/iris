@@ -14,7 +14,7 @@ from iris.tests import _shared_utils
 
 # Import ESMF if installed, else fail quietly + disable all the tests.
 try:
-    import ESMF
+    import esmpy as ESMF
 except ImportError:
     ESMF = None
 skip_esmf = pytest.mark.skipif(

@@ -4,24 +4,21 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.analysis.geometry.geometry_area_weights` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-
-import iris.tests as tests  # isort:skip
-import warnings
-
 import numpy as np
+import pytest
 import shapely.geometry
 
 from iris.analysis.geometry import geometry_area_weights
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.warnings import IrisGeometryExceedWarning
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         x_coord = DimCoord([1.0, 3.0], "longitude", bounds=[[0, 2], [2, 4]])
         y_coord = DimCoord([1.0, 3.0], "latitude", bounds=[[0, 2], [2, 4]])
         self.data = np.empty((4, 2, 2))
@@ -32,19 +29,19 @@ class Test(tests.IrisTest):
     def test_no_overlap(self):
         geometry = shapely.geometry.Polygon([(4, 4), (4, 6), (6, 6), (6, 4)])
         weights = geometry_area_weights(self.cube, geometry)
-        self.assertEqual(np.sum(weights), 0)
+        assert np.sum(weights) == 0
 
     def test_overlap(self):
         weights = geometry_area_weights(self.cube, self.geometry)
         expected = np.repeat([[[0.0, 0.0], [0.0, 1.0]]], self.data.shape[0], axis=0)
-        self.assertArrayEqual(weights, expected)
+        _shared_utils.assert_array_equal(weights, expected)
 
     def test_overlap_normalize(self):
         weights = geometry_area_weights(self.cube, self.geometry, normalize=True)
         expected = np.repeat([[[0.0, 0.0], [0.0, 0.25]]], self.data.shape[0], axis=0)
-        self.assertArrayEqual(weights, expected)
+        _shared_utils.assert_array_equal(weights, expected)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_distinct_xy(self):
         cube = stock.simple_pp()
         cube = cube[:4, :4]
@@ -70,9 +67,9 @@ class Test(tests.IrisTest):
                 [0, 0, 0, 0],
             ]
         )
-        self.assertTrue(np.allclose(weights, target))
+        _shared_utils.assert_array_all_close(weights, target)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_distinct_xy_bounds(self):
         # cases where geometry bnds are outside cube bnds correctly handled?
         cube = stock.simple_pp()
@@ -103,10 +100,10 @@ class Test(tests.IrisTest):
                 [0, 0, 0, 0],
             ]
         )
-        self.assertTrue(np.allclose(weights, target))
-        self.assertTrue(np.allclose(weights_overshoot, target))
+        _shared_utils.assert_array_all_close(weights, target, rtol=1e-05)
+        _shared_utils.assert_array_all_close(weights_overshoot, target, rtol=1e-05)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_distinct_xy_bounds_pole(self):
         # is UserWarning issued for out-of-bounds? results will be unexpected!
         cube = stock.simple_pp()
@@ -125,15 +122,9 @@ class Test(tests.IrisTest):
         miny = 84.99998474121094
         maxy = 99.99998474121094
         geometry = shapely.geometry.box(minx, miny, maxx, maxy)
-        # see https://stackoverflow.com/a/3892301 to assert warnings
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")  # always trigger all warnings
+        message = "The geometry exceeds the cube's y dimension at the upper end."
+        with pytest.warns(IrisGeometryExceedWarning, match=message):
             weights = geometry_area_weights(cube, geometry)
-            self.assertEqual(
-                str(w[-1].message),
-                "The geometry exceeds the cube's y dimension at the upper end.",
-            )
-            self.assertTrue(issubclass(w[-1].category, IrisGeometryExceedWarning))
         target = np.array(
             [
                 [0, top_cell_half, top_cell_half, 0],
@@ -142,15 +133,11 @@ class Test(tests.IrisTest):
                 [0, 0, 0, 0],
             ]
         )
-        self.assertTrue(np.allclose(weights, target))
+        _shared_utils.assert_array_all_close(weights, target)
 
     def test_shared_xy(self):
         cube = stock.track_1d()
         geometry = shapely.geometry.box(1, 4, 3.5, 7)
         weights = geometry_area_weights(cube, geometry)
         target = np.array([0, 0, 2, 0.5, 0, 0, 0, 0, 0, 0, 0])
-        self.assertTrue(np.allclose(weights, target))
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_all_close(weights, target)

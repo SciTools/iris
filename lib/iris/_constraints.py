@@ -531,6 +531,8 @@ class AttributeConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
+        # Note: equality means that NumPy arrays are not supported for
+        #  AttributeConstraints (get the truth ambiguity error).
         eq = (
             isinstance(other, AttributeConstraint)
             and self._attributes == other._attributes
@@ -553,6 +555,8 @@ class AttributeConstraint(Constraint):
                         match = False
                         break
                 else:
+                    # Note: equality means that NumPy arrays are not supported
+                    #  for AttributeConstraints (get the truth ambiguity error).
                     if cube_attr != value:
                         match = False
                         break
