@@ -23,8 +23,6 @@ import iris
 from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
 
-# from iris.util import mutually_exclusive_keywords
-
 if "iris.cube" in sys.modules:
     import iris.cube
 if "iris.analysis.cartography" in sys.modules:
@@ -38,7 +36,6 @@ if "iris.analysis.cartography" in sys.modules:
 pyproj.network.set_network_enabled(active=False)
 
 
-# @mutually_exclusive_keywords("minimum_weight", "all_touched")
 def create_shape_mask(
     geometry: shapely.Geometry,
     geometry_crs: ccrs.CRS | CRS,

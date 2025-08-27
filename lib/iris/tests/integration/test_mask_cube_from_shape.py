@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Integration tests for :func:`iris.util.mask_cube_from_shapefile`."""
+"""Integration tests for :func:`iris.util.create_shape_mask`."""
 
 import cartopy.io.shapereader as shpreader
 import numpy as np
@@ -12,9 +12,10 @@ from pytest import approx
 from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 
 import iris
+from iris._deprecation import IrisDeprecation
 from iris.coord_systems import GeogCS
 import iris.tests as tests
-from iris.util import mask_cube_from_shapefile
+from iris.util import mask_cube_from_shape, mask_cube_from_shapefile
 
 wgs84 = CRS.from_epsg(4326)
 
@@ -47,7 +48,7 @@ def test_global_proj_china(minimum_weight, all_touched, invert, expected_sum):
         for country in reader.records()
         if "China" in country.attributes["NAME_LONG"]
     ][0]
-    masked_test = mask_cube_from_shapefile(
+    masked_test = mask_cube_from_shape(
         test_global,
         ne_china,
         shape_crs=wgs84,
@@ -74,7 +75,7 @@ def test_global_proj_russia():
     with pytest.raises(
         ValueError, match="Geometry crossing the antimeridian is not supported."
     ):
-        mask_cube_from_shapefile(test_global, ne_russia, shape_crs=wgs84)
+        mask_cube_from_shape(test_global, ne_russia, shape_crs=wgs84)
 
 
 def test_rotated_pole_proj_uk():
@@ -88,7 +89,7 @@ def test_rotated_pole_proj_uk():
         for country in reader.records()
         if "United Kingdom" in country.attributes["NAME_LONG"]
     ][0]
-    masked_test = mask_cube_from_shapefile(test_rotated, ne_uk, shape_crs=wgs84)
+    masked_test = mask_cube_from_shape(test_rotated, ne_uk, shape_crs=wgs84)
     assert masked_test.ndim == 2
     assert approx(np.sum(masked_test.data), rel=0.001) == 102.77
 
@@ -102,7 +103,7 @@ def test_transverse_mercator_proj_uk():
         for country in reader.records()
         if "United Kingdom" in country.attributes["NAME_LONG"]
     ][0]
-    masked_test = mask_cube_from_shapefile(test_transverse, ne_uk, shape_crs=wgs84)
+    masked_test = mask_cube_from_shape(test_transverse, ne_uk, shape_crs=wgs84)
     assert masked_test.ndim == 3
     assert approx(np.sum(masked_test.data), rel=0.001) == 90740.25
 
@@ -118,7 +119,7 @@ def test_rotated_pole_proj_germany_weighted_area():
         for country in reader.records()
         if "Germany" in country.attributes["NAME_LONG"]
     ][0]
-    masked_test = mask_cube_from_shapefile(
+    masked_test = mask_cube_from_shape(
         test_rotated, ne_germany, shape_crs=wgs84, minimum_weight=0.9
     )
     assert masked_test.ndim == 2
@@ -136,7 +137,7 @@ def test_4d_global_proj_brazil():
         for country in reader.records()
         if "Brazil" in country.attributes["NAME_LONG"]
     ][0]
-    masked_test = mask_cube_from_shapefile(
+    masked_test = mask_cube_from_shape(
         test_4d_brazil, ne_brazil, shape_crs=wgs84, all_touched=True
     )
     assert masked_test.ndim == 4
@@ -185,13 +186,35 @@ def test_4d_global_proj_brazil():
 def test_global_proj_uk_shapes(shape, expected_value):
     """Test masking with a variety of shape types."""
     path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
-    test_global = iris.load_cube(path)  # Crop to avoid edge effects
+    test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)
-    masked_test = mask_cube_from_shapefile(
+    masked_test = mask_cube_from_shape(
         test_global,
         shape,
         shape_crs=wgs84,
     )
     assert masked_test.ndim == 3
     assert approx(np.sum(masked_test.data), rel=0.001) == expected_value
+
+
+def test_mask_cube_from_shapefile_depreciation():
+    """Test that the mask_cube_from_shapefile function raises a deprecation warning."""
+    path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
+    test_global = iris.load_cube(path)
+    test_global.coord("latitude").coord_system = GeogCS(6371229)
+    test_global.coord("longitude").coord_system = GeogCS(6371229)
+    ne_china = [
+        country.geometry
+        for country in reader.records()
+        if "China" in country.attributes["NAME_LONG"]
+    ][0]
+
+    with pytest.warns(
+        IrisDeprecation,
+        match=(
+            "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
+            "future release. Please use iris.util.mask_cube_from_shape instead."
+        ),
+    ):
+        mask_cube_from_shapefile(test_global, ne_china, shape_crs=wgs84)
