@@ -219,11 +219,12 @@ class TestLicenseHeaders:
             msg = "{} is not a git repository."
             raise ValueError(msg.format(IRIS_REPO_DIRPATH))
 
-        # Call "git whatchanged" to get the details of all the files and when
+        # Call "git log" to get the details of all the files and when
         # they were last changed.
-        # TODO: whatchanged is deprecated, find an alternative Git command.
+        print("repo", IRIS_REPO_DIRPATH)
+        breakpoint()
         output = subprocess.check_output(
-            ["git", "whatchanged", "--pretty=TIME:%ct", "--i-still-use-this"],
+            ["git", "log", "--name-status", "--pretty=TIME:%ct"],
             cwd=IRIS_REPO_DIRPATH,
         )
 
