@@ -98,9 +98,7 @@ def mock_cube():
         ),
     ],
 )
-def test_basic_weighted_mask(
-    mock_cube, square_polygon, minimum_weight, expected_mask
-):
+def test_basic_weighted_mask(mock_cube, square_polygon, minimum_weight, expected_mask):
     """Test the create_shape_mask function with different minimum weights."""
     # Create a mask using the square polygon
     mask = _get_weighted_mask(mock_cube, square_polygon, minimum_weight=minimum_weight)

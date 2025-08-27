@@ -116,9 +116,7 @@ def test_all_touched_true_create_shapefile_mask(circle_polygon, wgs84_crs, mock_
 def test_all_touched_false_create_shapefile_mask(circle_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
     # Create a mask using the square polygon
-    mask = create_shape_mask(
-        circle_polygon, wgs84_crs, mock_cube, all_touched=False
-    )
+    mask = create_shape_mask(circle_polygon, wgs84_crs, mock_cube, all_touched=False)
 
     # Check that the mask is a boolean array with the same shape as the cube data
     assert mask.shape == mock_cube.data.shape
@@ -188,13 +186,9 @@ class TestCreateShapefileMaskErrors:
                 square_polygon, wgs84_crs, mock_cube, minimum_weight="not_a_number"
             )
         with pytest.raises(TypeError):
-            create_shape_mask(
-                square_polygon, wgs84_crs, mock_cube, minimum_weight=-1
-            )
+            create_shape_mask(square_polygon, wgs84_crs, mock_cube, minimum_weight=-1)
         with pytest.raises(TypeError):
-            create_shape_mask(
-                square_polygon, wgs84_crs, mock_cube, minimum_weight=2
-            )
+            create_shape_mask(square_polygon, wgs84_crs, mock_cube, minimum_weight=2)
 
     def test_invalid_args(self, square_polygon, wgs84_crs, mock_cube):
         # Pass invalid minimum_weight values
