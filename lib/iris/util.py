@@ -2235,11 +2235,19 @@ def mask_cube_from_shapefile(
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shapefile object.
 
-    .. deprecated:: 3.x.x
+    .. deprecated:: 3.14
+        This function is scheduled for removal in a future release, being
+        replaced by :func:`iris.util.mask_cube_from_shape`, which offers richer
+        shape handling.
 
-    This function is scheduled for removal in a future release, being
-    replaced by :func:`iris.util.mask_cube_from_shape`, which offers richer
-    shape handling.
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via cartopy).
+    Finds the overlap between the `shape` and the :class:`~iris.cube.Cube` and
+    masks out any cells that __do not__ intersect the shape.
+
+    See Also
+    --------
+    :func:`~iris.util.mask_cube_from_shape`
+        The preferred function for masking a cube with a shape object.
     """
     message = (
         "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
@@ -2322,26 +2330,26 @@ def mask_cube_from_shape(
     --------
     >>> import shapely
     >>> from pyproj import CRS
-    >>> from iris.util import mask_cube_from_shapefile
+    >>> from iris.util import mask_cube_from_shape
 
     Extract a rectangular region covering the UK from a stereographic projection cube:
 
     >>> cube = iris.load_cube(iris.sample_data_path("toa_brightness_stereographic.nc"))
     >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
     >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
 
     Extract a trajectory by using a line shapefile:
 
     >>> from shapely import LineString
     >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
-    >>> masked_cube = mask_cube_from_shapefile(cube, line, wgs84)
+    >>> masked_cube = mask_cube_from_shape(cube, line, wgs84)
 
     Standard shapely manipulations can be applied.  For example, to extract a trajectory
     with a 1 degree buffer around it:
 
     >>> buffer = line.buffer(1)
-    >>> masked_cube = mask_cube_from_shapefile(cube, buffer, wgs84)
+    >>> masked_cube = mask_cube_from_shape(cube, buffer, wgs84)
 
     You can load more complex shapes from other libraries. For example, to extract the
     Canadian provience of Ontario from a cube:
@@ -2355,7 +2363,7 @@ def mask_cube_from_shape(
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
     >>> wgs84 = CRS.from_epsg(4326)
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape, wgs84)
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
 
     Notes
     -----
@@ -2364,8 +2372,8 @@ def mask_cube_from_shape(
     any other source that can be interpreted as a `shapely.Geometry` object, such as shapes
     encoded in a geoJSON or KML file.
 
-    Warning
-    -------
+    Warnings
+    --------
     For best masking results, both the cube _and_ masking geometry should have a
     coordinate reference system (CRS) defined. Masking results will be most reliable
     when the cube and masking geometry have the same CRS.
@@ -2385,6 +2393,7 @@ def mask_cube_from_shape(
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
+    return None
 
 
 def equalise_cubes(

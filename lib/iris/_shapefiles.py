@@ -112,7 +112,8 @@ def create_shape_mask(
     Where the :class:`iris.cube.Cube` CRS and the geometry CRS differ, the geometry will be
     transformed to the cube CRS using the pyproj library. This is a best-effort
     transformation and may not be perfect, especially for complex geometries and
-    non-standard coordinate reference systems. Consult the `pyproj documentation`_ for
+    non-standard coordinate reference systems. Consult the
+    `pyproj documentation <https://pyproj4.github.io/pyproj/stable/api/transformer.html#pyproj-transformer>`_ for
     more information.
 
     If a CRS is not provided for the the masking geometry, the CRS of the :class:`iris.cube.Cube` is assumed.
@@ -121,8 +122,8 @@ def create_shape_mask(
     a `minimum_weight` > 0 *and* `all_touched` is set to `True`. This is because
     `all_touched=True` is equivalent to `minimum_weight=0`.
 
-    Warning
-    -------
+    Warnings
+    --------
     Because shape vectors are inherently Cartesian in nature, they contain no inherent
     understanding of the spherical geometry underpinning geographic coordinate systems.
     For this reason, shapefiles or shape vectors that cross the antimeridian or poles
@@ -133,8 +134,7 @@ def create_shape_mask(
     See Also
     --------
     :func:`is_geometry_valid`
-
-    .. _`pyproj documentation`: https://pyproj4.github.io/pyproj/stable/api/transformer.html#pyproj-transformer
+        Check the validity of a shape geometry.
     """
     # Check validity of geometry CRS
     is_geometry_valid(geometry, geometry_crs)
