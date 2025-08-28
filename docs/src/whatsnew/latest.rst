@@ -83,11 +83,15 @@ This document explains the changes made to Iris for this release
    home-space is shared between multiple machines, as with some virtual desktop
    arrangements. (:pull:`6550`)
 
+#. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
+   ``git whatchanged`` command. (:pull:`6672`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@melissaKG: https://github.com/melissaKG
 
 
 
