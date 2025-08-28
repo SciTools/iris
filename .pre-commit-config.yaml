@@ -7,7 +7,8 @@ files: |
         setup\.py|
         docs\/.+\.py|
         lib\/.+\.py|
-        benchmarks\/.+\.py
+        benchmarks\/.+\.py|
+        tools\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
 

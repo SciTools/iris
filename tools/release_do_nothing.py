@@ -50,10 +50,10 @@ class IrisRelease(Progress):
 
     github_scitools: str = "upstream"
     github_fork: str = "origin"
-    github_user: str = None
-    patch_min_max_tag: tuple[str, str] = None
-    git_tag: str = None  # v1.2.3rc0
-    sha256: str = None
+    github_user: typing.Optional[str] = None
+    patch_min_max_tag: typing.Optional[tuple[str, str]] = None
+    git_tag: typing.Optional[str] = None  # v1.2.3rc0
+    sha256: typing.Optional[str] = None
 
     @classmethod
     def get_cmd_description(cls) -> str:
@@ -157,8 +157,12 @@ class IrisRelease(Progress):
     def _get_tagged_versions(self) -> list[IrisVersion]:
         tag_regex = re.compile(r"(?<=refs/tags/).*$")
         scitools_tags_raw = self._git_ls_remote_tags().splitlines()
+        scitools_tags_searched = [
+            tag_regex.search(line) for line in scitools_tags_raw
+        ]
         scitools_tags = [
-            tag_regex.search(line).group(0) for line in scitools_tags_raw
+            search.group(0) for search in scitools_tags_searched
+            if search is not None
         ]
 
         def get_version(tag: str) -> IrisVersion | None:
@@ -179,6 +183,7 @@ class IrisRelease(Progress):
 
     def get_release_tag(self):
         def validate(input_tag: str) -> str | None:
+            result = None
             try:
                 version = IrisVersion(input_tag)
             except InvalidVersion as err:
@@ -193,7 +198,8 @@ class IrisRelease(Progress):
                         "Please try again ..."
                     )
                 else:
-                    return input_tag  # v1.2.3rc0
+                    result= input_tag  # v1.2.3rc0
+            return result
 
         message = (
             "Input the release tag you are creating today, including any "
@@ -313,10 +319,11 @@ class IrisRelease(Progress):
 
     @property
     def more_patches_after_this_one(self) -> bool:
-        if self.release_type is self.ReleaseTypes.PATCH:
-            return self.version < self.patch_min_max[1]
-        else:
-            return False
+        return(
+            self.release_type is self.ReleaseTypes.PATCH and
+            self.patch_min_max is not None and
+            self.version < self.patch_min_max[1]
+        )
 
     def apply_patches(self):
         if self.release_type is self.ReleaseTypes.PATCH:
@@ -338,7 +345,7 @@ class IrisRelease(Progress):
                 case "":
                     message = (
                         f"Propose the patch change(s) against {self.version.branch} via "
-                        f"pull request(s). Targetting {self.version.branch} will "
+                        f"pull request(s). Targeting {self.version.branch} will "
                         "avoid later Git conflicts."
                     )
                 case _:
@@ -346,7 +353,7 @@ class IrisRelease(Progress):
                         "Create pull request(s) cherry-picking the patch change(s) "
                         f"from {patch_branch} into {self.version.branch} .\n"
                         "cherry-picking will cause Git conflicts later in the "
-                        "release process; in future consider targetting the patch "
+                        "release process; in future consider targeting the patch "
                         "change(s) directly at the release branch."
                     )
 
@@ -410,7 +417,7 @@ class IrisRelease(Progress):
             f"First release in {self.version.series} series?": self.first_in_series,
             "Current latest Iris release": max(self._get_tagged_versions()),
         }
-        if self.release_type is self.ReleaseTypes.PATCH:
+        if self.release_type is self.ReleaseTypes.PATCH and self.patch_min_max is not None:
             status["Series being patched"] = (
                 f"{self.patch_min_max[0].series} to {self.patch_min_max[1].series}"
             )
@@ -533,7 +540,7 @@ class IrisRelease(Progress):
     class WhatsNewRsts(typing.NamedTuple):
         latest: Path
         release: Path
-        index: Path
+        index_: Path
         template: Path
 
     @property
@@ -574,7 +581,7 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                f"In {self.whats_news.index.absolute()}:\n"
+                f"In {self.whats_news.index_.absolute()}:\n"
                 f"Replace references to {self.whats_news.latest.name} with "
                 f"{self.whats_news.release.name}"
             )
@@ -650,8 +657,8 @@ class IrisRelease(Progress):
         message = (
             "Commit and push all the What's New changes.\n"
             f"git add {self.whats_news.release.absolute()};\n"
-            f"git add {self.whats_news.index.absolute()};\n"
-            f'git commit -m "Whats new updates for {self.version} .";\n'
+            f"git add {self.whats_news.index_.absolute()};\n"
+            f'git commit -m "Whats-New updates for {self.version} .";\n'
             f"git push -u {self.github_fork} {working_branch};"
         )
         self.wait_for_done(message)
@@ -828,8 +835,10 @@ class IrisRelease(Progress):
 
             if not valid:
                 self.report_problem("Invalid SHA256 hash. Please try again ...")
+                result = None
             else:
-                return sha256_string
+                result = sha256_string
+            return result
 
         message = (
             f"Visit the below and click `view hashes` for the Source Distribution"
@@ -1196,7 +1205,7 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                f"In {self.whats_news.index.absolute()}:\n"
+                f"In {self.whats_news.index_.absolute()}:\n"
                 f"Add {self.whats_news.latest.name} to the top of the list of .rst "
                 f"files, "
                 f"and set the top include:: to be {self.whats_news.latest.name} ."
@@ -1205,8 +1214,8 @@ class IrisRelease(Progress):
 
             message = (
                 "Commit and push all the What's New changes.\n"
-                f"git add {self.whats_news.index.absolute()};\n"
-                'git commit -m "Restore latest Whats New files.";\n'
+                f"git add {self.whats_news.index_.absolute()};\n"
+                'git commit -m "Restore latest Whats-New files.";\n'
                 f"git push -u {self.github_fork} {working_branch};"
             )
             self.wait_for_done(message)
