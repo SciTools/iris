@@ -35,6 +35,8 @@ class IrisVersion(Version):
 
     @property
     def series(self) -> str:
+        # TODO: find an alternative word which is meaningful to everyone
+        #  while not being ambiguous.
         return f"v{self.major}.{self.minor}"
 
     @property
