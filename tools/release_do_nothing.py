@@ -553,7 +553,7 @@ class IrisRelease(Progress):
         return self.WhatsNewRsts(
             latest=latest,
             release=whatsnew_dir / (self.version.series[1:] + ".rst"),
-            index=whatsnew_dir / "index.rst",
+            index_=whatsnew_dir / "index.rst",
             template=latest.with_suffix(".rst.template"),
         )
 
