@@ -57,3 +57,6 @@ https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html
 
 # nonfunctional, found in some code examples
 https://www.somehost.com
+
+# FLAKY: used in developers_guide/gitwash
+https://www.mail-archive.com/dri-devel@lists.sourceforge.net/msg39091.html
