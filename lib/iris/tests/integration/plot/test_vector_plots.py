@@ -197,6 +197,11 @@ class TestBarbs(MixinVectorPlotCases, _shared_utils.GraphicsTest):
         # use a scale factor that ensures the barb vector magnitudes fall
         # sufficiently within the default matplotlib barb bins in order to
         # avoid floating point issues where barbs flip/flop between bins.
+        #
+        # TODO: if the barb tests prove to be volatile to floating-point
+        # flip/flopping, then we could back-out this specialization and
+        # re-spin the barbs imagehash with a common scale_factor=30.1 for
+        # all TestBarbs tests.
         scale_factor = 30.1
 
         u_cube, v_cube = self._latlon_uv_cubes(
