@@ -117,14 +117,6 @@ class MixinVectorPlotCases:
         ax.set_global()
         self.check_graphic()
 
-    def test_2d_plain_latlon_on_polar_map(self):
-        # Test 2d vector plotting onto a different projection.
-        u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
-        ax = plt.axes(projection=ccrs.NorthPolarStereo())
-        self.plot("latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude"))
-        ax.coastlines(resolution="110m", color="red")
-        self.check_graphic()
-
     def test_2d_rotated_latlon(self):
         # Test plotting vectors in a rotated latlon coord system.
         u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons(rotated=True))
@@ -188,11 +180,10 @@ class TestBarbs(MixinVectorPlotCases, _shared_utils.GraphicsTest):
         return x, y, u, v
 
     @staticmethod
-    def _latlon_uv_cubes(grid_cube):
+    def _latlon_uv_cubes(grid_cube, scale_factor=30):
         # Increase the range of wind speeds used in the barbs test to test all
         # barbs shapes
         u_cube, v_cube = MixinVectorPlotCases._latlon_uv_cubes(grid_cube)
-        scale_factor = 30
         u_cube.data *= scale_factor
         v_cube.data *= scale_factor
         return u_cube, v_cube
@@ -200,7 +191,36 @@ class TestBarbs(MixinVectorPlotCases, _shared_utils.GraphicsTest):
     def plot_function_to_test(self):
         return barbs
 
+    def test_2d_plain_latlon_on_polar_map(self):
+        # Test 2d vector plotting onto a different projection.
+
+        # use a scale factor that ensures the barb vector magnitudes fall
+        # sufficiently within the default matplotlib barb bins in order to
+        # avoid floating point issues where barbs flip/flop between bins.
+        #
+        # TODO: if the barb tests prove to be volatile to floating-point
+        # flip/flopping, then we could back-out this specialization and
+        # re-spin the barbs imagehash with a common scale_factor=30.1 for
+        # all TestBarbs tests.
+        scale_factor = 30.1
+
+        u_cube, v_cube = self._latlon_uv_cubes(
+            sample_2d_latlons(), scale_factor=scale_factor
+        )
+        ax = plt.axes(projection=ccrs.NorthPolarStereo())
+        self.plot("latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude"))
+        ax.coastlines(resolution="110m", color="red")
+        self.check_graphic()
+
 
 class TestQuiver(MixinVectorPlotCases, _shared_utils.GraphicsTest):
     def plot_function_to_test(self):
         return quiver
+
+    def test_2d_plain_latlon_on_polar_map(self):
+        # Test 2d vector plotting onto a different projection.
+        u_cube, v_cube = self._latlon_uv_cubes(sample_2d_latlons())
+        ax = plt.axes(projection=ccrs.NorthPolarStereo())
+        self.plot("latlon_2d_polar", u_cube, v_cube, coords=("longitude", "latitude"))
+        ax.coastlines(resolution="110m", color="red")
+        self.check_graphic()
