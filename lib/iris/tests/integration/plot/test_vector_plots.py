@@ -180,12 +180,10 @@ class TestBarbs(MixinVectorPlotCases, _shared_utils.GraphicsTest):
         return x, y, u, v
 
     @staticmethod
-    def _latlon_uv_cubes(grid_cube, scale_factor=None):
+    def _latlon_uv_cubes(grid_cube, scale_factor=30):
         # Increase the range of wind speeds used in the barbs test to test all
         # barbs shapes
         u_cube, v_cube = MixinVectorPlotCases._latlon_uv_cubes(grid_cube)
-        if scale_factor is None:
-            scale_factor = 30
         u_cube.data *= scale_factor
         v_cube.data *= scale_factor
         return u_cube, v_cube
