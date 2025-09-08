@@ -43,6 +43,11 @@ This document explains the changes made to Iris for this release
    in v8.4). Note that :mod:`~iris.experimental.regrid_conservative`
    is already deprecated and will be removed in a future release. (:pull:`6643`)
 
+#. `@rcomer`_ fixed a bug in merging cubes with cell measures or ancillary
+   variables. The merged cube now has the cell measures and ancillary variables
+   on the correct dimensions, and merge no longer fails when trying to add
+   them to a dimension of the wrong length. (:issue:`2076`, :pull:`6688`)
+
 
 💣 Incompatible Changes
 =======================
