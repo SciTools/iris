@@ -12,36 +12,36 @@ from iris.tests import _shared_utils
 class TestLoad:
     def test_NAMEIII_field(self, request):
         cubes = iris.load(_shared_utils.get_data_path(("NAME", "NAMEIII_field.txt")))
-        _shared_utils.assert_CML_approx_data(
-            request, cubes, ("name", "NAMEIII_field.cml")
+        _shared_utils.assert_CML(
+            request, cubes, ("name", "NAMEIII_field.cml"), approx_data=True
         )
 
     def test_NAMEII_field(self, request):
         cubes = iris.load(_shared_utils.get_data_path(("NAME", "NAMEII_field.txt")))
-        _shared_utils.assert_CML_approx_data(
-            request, cubes, ("name", "NAMEII_field.cml")
+        _shared_utils.assert_CML(
+            request, cubes, ("name", "NAMEII_field.cml"), approx_data=True
         )
 
     def test_NAMEIII_timeseries(self, request):
         cubes = iris.load(
             _shared_utils.get_data_path(("NAME", "NAMEIII_timeseries.txt"))
         )
-        _shared_utils.assert_CML_approx_data(
-            request, cubes, ("name", "NAMEIII_timeseries.cml")
+        _shared_utils.assert_CML(
+            request, cubes, ("name", "NAMEIII_timeseries.cml"), approx_data=True
         )
 
     def test_NAMEII_timeseries(self, request):
         cubes = iris.load(
             _shared_utils.get_data_path(("NAME", "NAMEII_timeseries.txt"))
         )
-        _shared_utils.assert_CML_approx_data(
-            request, cubes, ("name", "NAMEII_timeseries.cml")
+        _shared_utils.assert_CML(
+            request, cubes, ("name", "NAMEII_timeseries.cml"), approx_data=True
         )
 
     def test_NAMEIII_version2(self, request):
         cubes = iris.load(_shared_utils.get_data_path(("NAME", "NAMEIII_version2.txt")))
-        _shared_utils.assert_CML_approx_data(
-            request, cubes, ("name", "NAMEIII_version2.cml")
+        _shared_utils.assert_CML(
+            request, cubes, ("name", "NAMEIII_version2.cml"), approx_data=True
         )
 
     def test_NAMEIII_trajectory(self, request):
