@@ -287,14 +287,20 @@ class TestCalculusSimple3:
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
 
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade2_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade2_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade2_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade2_wrt_lat.cml"),
+            approx_data=True,
         )
 
 
@@ -352,50 +358,74 @@ class TestCalculusSimple2:
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_y(self):
         t = iris.analysis.calculus.differentiate(self.cube, "y")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_y.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_y.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_lat.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_y(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "y")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_y.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_y.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_lon(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "longitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_lat(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_lat.cml"),
+            approx_data=True,
         )
 
 
@@ -428,14 +458,20 @@ class TestCalculusSimple1:
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_simple_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml"),
+            approx_data=True,
         )
 
 
