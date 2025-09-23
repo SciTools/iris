@@ -8,6 +8,7 @@ from unittest import mock
 
 from cf_units import Unit
 import numpy as np
+from numpy import ma
 import pytest
 
 from iris._lazy_data import as_lazy_data
@@ -44,6 +45,10 @@ class Test_aggregated_by:
             long_name="label",
             units="no_unit",
         )
+        data = ma.arange(11)
+        data.mask = data.data % 2
+        mask_coord = AuxCoord(data, long_name="mask")
+        unmask_coord = AuxCoord(ma.arange(11), long_name="unmask")
         simple_agg_coord = AuxCoord([1, 1, 2, 2], long_name="simple_agg")
         spanning_coord = AuxCoord(np.arange(44).reshape(4, 11), long_name="spanning")
         spanning_label_coord = AuxCoord(
@@ -51,12 +56,21 @@ class Test_aggregated_by:
             long_name="span_label",
             units="no_unit",
         )
+        data = ma.array(np.arange(44).reshape(4, 11), mask=True)
+        spanning_mask_coord = AuxCoord(data, long_name="spanning_mask")
+        spanning_unmask_coord = AuxCoord(
+            ma.arange(44).reshape(4, 11), long_name="spanning_unmask"
+        )
 
         self.cube.add_aux_coord(simple_agg_coord, 0)
         self.cube.add_aux_coord(val_coord, 1)
         self.cube.add_aux_coord(label_coord, 1)
+        self.cube.add_aux_coord(mask_coord, 1)
+        self.cube.add_aux_coord(unmask_coord, 1)
         self.cube.add_aux_coord(spanning_coord, (0, 1))
         self.cube.add_aux_coord(spanning_label_coord, (0, 1))
+        self.cube.add_aux_coord(spanning_mask_coord, (0, 1))
+        self.cube.add_aux_coord(spanning_unmask_coord, (0, 1))
 
         self.mock_agg = mock.Mock(spec=Aggregator)
         self.mock_agg.cell_method = []
@@ -100,6 +114,13 @@ class Test_aggregated_by:
             cube_slice_agg = cube_slice.aggregated_by("simple_agg", self.mock_agg)
             assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
             assert res_slice.coord("span_label") == cube_slice_agg.coord("span_label")
+            assert res_slice.coord("spanning_mask") == cube_slice_agg.coord(
+                "spanning_mask"
+            )
+            actual = res_slice.coord("spanning_unmask")
+            assert actual == cube_slice_agg.coord("spanning_unmask")
+            assert not ma.isMaskedArray(actual.points)
+            assert not ma.isMaskedArray(actual.bounds)
 
     def test_agg_by_label(self):
         # Aggregate a cube on a string coordinate label where label
@@ -116,8 +137,23 @@ class Test_aggregated_by:
             long_name="label",
             units="no_unit",
         )
+        mask_coord = AuxCoord(
+            ma.array([4.0, 6.0, np.nan], mask=[False, False, True]),
+            bounds=ma.array(
+                [[0.0, 8.0], [2.0, 10.0], [np.nan, np.nan]],
+                mask=[[False, False], [False, False], [True, True]],
+            ),
+            long_name="mask",
+        )
+        unmask_coord = AuxCoord(
+            np.array([4.0, 6.0, 7.0]),
+            bounds=np.array([[0.0, 8.0], [2.0, 10.0], [5.0, 9.0]]),
+            long_name="unmask",
+        )
         assert res_cube.coord("val") == val_coord
         assert res_cube.coord("label") == label_coord
+        assert res_cube.coord("mask") == mask_coord
+        assert res_cube.coord("unmask") == unmask_coord
 
     def test_agg_by_label_bounded(self):
         # Aggregate a cube on a string coordinate label where label
@@ -125,6 +161,14 @@ class Test_aggregated_by:
         # coord of bounded cells and a label coord of single string entries.
         val_points = self.cube.coord("val").points
         self.cube.coord("val").bounds = np.array([val_points - 0.5, val_points + 0.5]).T
+        mask_points = self.cube.coord("mask").points
+        self.cube.coord("mask").bounds = ma.array(
+            [mask_points - 0.5, mask_points + 0.5]
+        ).T
+        unmask_points = self.cube.coord("unmask").points
+        self.cube.coord("unmask").bounds = ma.array(
+            [unmask_points - 0.5, unmask_points + 0.5]
+        ).T
         res_cube = self.cube.aggregated_by("label", self.mock_agg)
         val_coord = AuxCoord(
             np.array([1.0, 0.5, 1.0]),
@@ -136,8 +180,23 @@ class Test_aggregated_by:
             long_name="label",
             units="no_unit",
         )
+        mask_coord = AuxCoord(
+            ma.array([4.0, 6.0, np.nan], mask=[False, False, True]),
+            bounds=ma.array(
+                [[-0.5, 8.5], [1.5, 10.5], [np.nan, np.nan]],
+                mask=[[False, False], [False, False], [True, True]],
+            ),
+            long_name="mask",
+        )
+        unmask_coord = AuxCoord(
+            np.array([4.0, 6.0, 7.0]),
+            bounds=np.array([[-0.5, 8.5], [1.5, 10.5], [4.5, 9.5]]),
+            long_name="unmask",
+        )
         assert res_cube.coord("val") == val_coord
         assert res_cube.coord("label") == label_coord
+        assert res_cube.coord("mask") == mask_coord
+        assert res_cube.coord("unmask") == unmask_coord
 
     def test_2d_agg_by_label(self):
         res_cube = self.cube.aggregated_by("label", self.mock_agg)
@@ -148,6 +207,13 @@ class Test_aggregated_by:
         ):
             cube_slice_agg = cube_slice.aggregated_by("label", self.mock_agg)
             assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
+            assert res_slice.coord("spanning_mask") == cube_slice_agg.coord(
+                "spanning_mask"
+            )
+            actual = res_slice.coord("spanning_unmask")
+            assert actual == cube_slice_agg.coord("spanning_unmask")
+            assert not ma.isMaskedArray(actual.points)
+            assert not ma.isMaskedArray(actual.bounds)
 
     def test_agg_by_val(self):
         # Aggregate a cube on a numeric coordinate val where label
@@ -161,8 +227,20 @@ class Test_aggregated_by:
         label_coord = AuxCoord(
             np.array((exp0, exp1, exp2)), long_name="label", units="no_unit"
         )
+        mask_coord = AuxCoord(
+            np.array([3.0, 7.0, 8.0]),
+            bounds=np.array([[0.0, 6.0], [4.0, 10.0], [8.0, 8.0]]),
+            long_name="mask",
+        )
+        unmask_coord = AuxCoord(
+            np.array([4.5, 6.5, 6.5]),
+            bounds=np.array([[0.0, 9.0], [3.0, 10.0], [5.0, 8.0]]),  #
+            long_name="unmask",
+        )
         assert res_cube.coord("val") == val_coord
         assert res_cube.coord("label") == label_coord
+        assert res_cube.coord("mask") == mask_coord
+        assert res_cube.coord("unmask") == unmask_coord
 
     def test_2d_agg_by_val(self):
         res_cube = self.cube.aggregated_by("val", self.mock_agg)
@@ -173,6 +251,13 @@ class Test_aggregated_by:
         ):
             cube_slice_agg = cube_slice.aggregated_by("val", self.mock_agg)
             assert res_slice.coord("spanning") == cube_slice_agg.coord("spanning")
+            assert res_slice.coord("spanning_mask") == cube_slice_agg.coord(
+                "spanning_mask"
+            )
+            actual = res_slice.coord("spanning_unmask")
+            assert actual == cube_slice_agg.coord("spanning_unmask")
+            assert not ma.isMaskedArray(actual.points)
+            assert not ma.isMaskedArray(actual.bounds)
 
     def test_single_string_aggregation(self):
         aux_coords = [
