@@ -506,6 +506,46 @@ class Test_collapsed(CoordTestMixin):
         assert collapsed_coord.has_lazy_bounds()
         assert collapsed_coord.has_lazy_points()
 
+    def test_numeric_masked_all(self):
+        coord = AuxCoord(
+            points=ma.array(
+                [[1, 2, 4, 5], [4, 5, 7, 8], [7, 8, 10, 11]],
+                mask=True,
+            ),
+        )
+
+        collapsed_coord = coord.collapsed()
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            ma.array([-1], mask=True), bounds=ma.array([[-1, -1]], mask=[[True, True]])
+        )
+        assert collapsed_coord == expected
+
+        collapsed_coord = coord.collapsed(dims_to_collapse=1)
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            points=ma.array([-1, -1, -1], mask=[True, True, True]),
+            bounds=ma.array(
+                [[-1, -1], [-1, -1], [-1, -1]],
+                mask=[[True, True], [True, True], [True, True]],
+            ),
+        )
+        assert collapsed_coord == expected
+
+        collapsed_coord = coord.collapsed(dims_to_collapse=0)
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            points=ma.array([-1, -1, -1, -1], mask=[True, True, True, True]),
+            bounds=ma.array(
+                [[-1, -1], [-1, -1], [-1, -1], [-1, -1]],
+                mask=[[True, True], [True, True], [True, True], [True, True]],
+            ),
+        )
+        assert collapsed_coord == expected
+
     def test_numeric_nd(self):
         coord = AuxCoord(points=np.array([[1, 2, 4, 5], [4, 5, 7, 8], [7, 8, 10, 11]]))
 
@@ -530,6 +570,42 @@ class Test_collapsed(CoordTestMixin):
             np.array([[1, 7], [2, 8], [4, 10], [5, 11]]),
         )
 
+    def test_numeric_masked(self):
+        coord = AuxCoord(
+            points=ma.array(
+                [[1, 2, 4, 5], [4, 5, 7, 8], [7, 8, 10, 11]],
+                mask=[
+                    [True, False, False, True],
+                    [True, True, True, True],
+                    [False, True, True, False],
+                ],
+            ),
+        )
+
+        collapsed_coord = coord.collapsed()
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([6]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[2, 11]]))
+
+        collapsed_coord = coord.collapsed(dims_to_collapse=1)
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            points=ma.array([3, -1, 9], mask=[False, True, False]),
+            bounds=ma.array(
+                [[2, 4], [-1, -1], [7, 11]],
+                mask=[[False, False], [True, True], [False, False]],
+            ),
+        )
+        assert collapsed_coord == expected
+
+        collapsed_coord = coord.collapsed(dims_to_collapse=0)
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([7, 2, 4, 11])
+        )
+        _shared_utils.assert_array_equal(
+            collapsed_coord.bounds, np.array([[7, 7], [2, 2], [4, 4], [11, 11]])
+        )
+
     def test_numeric_nd_bounds_all(self):
         self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
@@ -537,6 +613,22 @@ class Test_collapsed(CoordTestMixin):
         collapsed_coord = coord.collapsed()
         _shared_utils.assert_array_equal(collapsed_coord.points, np.array([55]))
         _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[-2, 112]]))
+
+    def test_numeric_no_masked_bounds_all(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.no_masked_pts_real, bounds=self.no_masked_bds_real)
+
+        collapsed_coord = coord.collapsed()
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([55]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[-2, 112]]))
+
+    def test_numeric_masked_bounds_all(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.masked_pts_real, bounds=self.masked_bds_real)
+
+        collapsed_coord = coord.collapsed()
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([75]))
+        _shared_utils.assert_array_equal(collapsed_coord.bounds, np.array([[38, 112]]))
 
     def test_numeric_nd_bounds_second(self):
         self.setup_test_arrays((3, 4))
@@ -546,6 +638,30 @@ class Test_collapsed(CoordTestMixin):
         _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
+
+    def test_numeric_no_masked_bounds_second(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.no_masked_pts_real, bounds=self.no_masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=1)
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
+            collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
+        )
+
+    def test_numeric_masked_bounds_second(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.masked_pts_real, bounds=self.masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=1)
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            ma.array([-1, 55, 95], mask=[True, False, False]),
+            bounds=ma.array(
+                [[-1, -1], [38, 72], [78, 112]],
+                mask=[[True, True], [False, False], [False, False]],
+            ),
+        )
+        assert collapsed_coord == expected
 
     def test_numeric_nd_bounds_first(self):
         self.setup_test_arrays((3, 4))
@@ -560,6 +676,28 @@ class Test_collapsed(CoordTestMixin):
             np.array([[-2, 82], [8, 92], [18, 102], [28, 112]]),
         )
 
+    def test_numeric_no_masked_bounds_first(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.no_masked_pts_real, bounds=self.no_masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=0)
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([40, 50, 60, 70])
+        )
+        _shared_utils.assert_array_equal(
+            collapsed_coord.bounds, np.array([[-2, 82], [8, 92], [18, 102], [28, 112]])
+        )
+
+    def test_numeric_masked_bounds_first(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.masked_pts_real, bounds=self.masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=0)
+        _shared_utils.assert_array_equal(
+            collapsed_coord.points, np.array([60, 70, 80, 90])
+        )
+        _shared_utils.assert_array_equal(
+            collapsed_coord.bounds, np.array([[38, 82], [48, 92], [58, 102], [68, 112]])
+        )
+
     def test_numeric_nd_bounds_last(self):
         self.setup_test_arrays((3, 4))
         coord = AuxCoord(self.pts_real, bounds=self.bds_real)
@@ -569,6 +707,30 @@ class Test_collapsed(CoordTestMixin):
         _shared_utils.assert_array_equal(
             collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
         )
+
+    def test_numeric_no_masked_bounds_last(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.no_masked_pts_real, bounds=self.no_masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=-1)
+        _shared_utils.assert_array_equal(collapsed_coord.points, np.array([15, 55, 95]))
+        _shared_utils.assert_array_equal(
+            collapsed_coord.bounds, np.array([[-2, 32], [38, 72], [78, 112]])
+        )
+
+    def test_numeric_masked_bounds_last(self):
+        self.setup_test_arrays((3, 4), masked=True)
+        coord = AuxCoord(self.masked_pts_real, bounds=self.masked_bds_real)
+        collapsed_coord = coord.collapsed(dims_to_collapse=-1)
+        self.assert_is_masked_array(collapsed_coord.points)
+        self.assert_is_masked_array(collapsed_coord.bounds)
+        expected = AuxCoord(
+            ma.array([-1, 55, 95], mask=[True, False, False]),
+            bounds=ma.array(
+                [[-1, -1], [38, 72], [78, 112]],
+                mask=[[True, True], [False, False], [False, False]],
+            ),
+        )
+        assert collapsed_coord == expected
 
     def test_lazy_nd_bounds_all(self):
         self.setup_test_arrays((3, 4))

@@ -48,6 +48,10 @@ This document explains the changes made to Iris for this release
    on the correct dimensions, and merge no longer fails when trying to add
    them to a dimension of the wrong length. (:issue:`2076`, :pull:`6688`)
 
+#. `@bjlittle`_ added support for preserving masked auxiliary coordinates when
+   using :meth:`~iris.cube.Cube.aggregated_by` or :meth:`~iris.cube.Cube.collapsed`.
+   (:issue:`6473`, :pull:`6706`, :pull:`6719`)
+
 
 💣 Incompatible Changes
 =======================

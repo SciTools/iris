@@ -500,7 +500,7 @@ class Saver:
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available
-            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html>`__.
+            `here <https://docs.unidata.ucar.edu/nug/current/netcdf_perf_chunking.html>`__.
             Basically, you want the chunk size for each dimension to match
             as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
@@ -529,7 +529,7 @@ class Saver:
             describes a numpy integer dtype(i.e. 'i2', 'short', 'u4') or a
             dict of packing parameters as described below. This provides
             support for netCDF data packing as described
-            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values>`__.
+            `here <https://docs.unidata.ucar.edu/nug/current/best_practices.html#bp_Best_Practices>`__.
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict

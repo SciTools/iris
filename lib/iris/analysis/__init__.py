@@ -2490,8 +2490,8 @@ class _Groupby:
                     # Derive new coord's bounds from bounds.
                     item = coord.bounds
                     maxmin_axis: Union[int, tuple[int, int]] = (dim, -1)
-                    first_choices = coord.bounds.take(0, -1)
-                    last_choices = coord.bounds.take(1, -1)
+                    first_choices = coord.bounds.take(0, axis=-1)
+                    last_choices = coord.bounds.take(1, axis=-1)
 
                 else:
                     # Derive new coord's bounds from points.
@@ -2500,7 +2500,7 @@ class _Groupby:
                     first_choices = last_choices = coord.points
 
                 # Check whether item is monotonic along the dimension of interest.
-                deltas = np.diff(item, 1, dim)
+                deltas = np.diff(item, n=1, axis=dim)
                 monotonic = np.all(deltas >= 0) or np.all(deltas <= 0)
 
                 # Construct list of coordinate group boundary pairs.
@@ -2514,32 +2514,43 @@ class _Groupby:
                         ):
                             new_bounds_list.append(
                                 [
-                                    first_choices.take(start, dim),
-                                    first_choices.take(0, dim) + coord.units.modulus,
+                                    first_choices.take(start, axis=dim),
+                                    first_choices.take(0, axis=dim)
+                                    + coord.units.modulus,
                                 ]
                             )
                         else:
                             new_bounds_list.append(
                                 [
-                                    first_choices.take(start, dim),
-                                    last_choices.take(stop, dim),
+                                    first_choices.take(start, axis=dim),
+                                    last_choices.take(stop, axis=dim),
                                 ]
                             )
+                    new_bounds_array = np.array(new_bounds_list)
                 else:
                     # Use min and max bound or point for new bounds.
                     for indices in self._groupby_indices:
-                        item_slice = item.take(indices, dim)
-                        new_bounds_list.append(
+                        item_slice = item.take(indices, axis=dim)
+
+                        sample = ma.array(
                             [
                                 item_slice.min(axis=maxmin_axis),
                                 item_slice.max(axis=maxmin_axis),
                             ]
                         )
 
+                        new_bounds_list.append(sample)
+
+                    # Construct resultant array.
+                    new_bounds_array = ma.array(new_bounds_list)
+
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
                 # original position.
-                new_bounds = np.moveaxis(np.array(new_bounds_list), (0, 1), (dim, -1))
+                new_bounds = np.moveaxis(new_bounds_array, (0, 1), (dim, -1))
+
+                if ma.isMaskedArray(new_bounds) and not np.any(new_bounds.mask):
+                    new_bounds = new_bounds.data
 
                 # Now create the new bounded group shared coordinate.
                 try:
