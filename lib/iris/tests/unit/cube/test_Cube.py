@@ -1275,12 +1275,12 @@ class Test_intersection__Metadata:
     def test_metadata(self, request):
         cube = create_cube(0, 360)
         result = cube.intersection(longitude=(170, 190))
-        _shared_utils.assert_CML_approx_data(request, result)
+        _shared_utils.assert_CML(request, result, approx_data=True)
 
     def test_metadata_wrapped(self, request):
         cube = create_cube(-180, 180)
         result = cube.intersection(longitude=(170, 190))
-        _shared_utils.assert_CML_approx_data(request, result)
+        _shared_utils.assert_CML(request, result, approx_data=True)
 
 
 # Explicitly check the handling of `circular` on the result.

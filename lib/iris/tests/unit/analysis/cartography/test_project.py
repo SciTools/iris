@@ -133,7 +133,7 @@ class TestAll:
     @_shared_utils.skip_data
     def test_cube(self, request, low_res_4d):
         new_cube, _ = project(low_res_4d, ROBINSON)
-        _shared_utils.assert_CML_approx_data(request, new_cube)
+        _shared_utils.assert_CML(request, new_cube, approx_data=True)
 
     @_shared_utils.skip_data
     def test_no_coord_system(self, low_res_4d):
