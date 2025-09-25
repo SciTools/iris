@@ -423,7 +423,7 @@ def assert_CML(
         for i, cube in enumerate(cubes):
             # Build the json stats filename based on CML file path:
             fname = reference_path.removesuffix(".cml")
-            fname += ".data.%d.json" % i
+            fname += f".data.{i}.json"
             assert_data_almost_equal(cube.data, fname, **kwargs)
     if isinstance(cubes, (list, tuple)):
         cml = iris.cube.CubeList(cubes).xml(
