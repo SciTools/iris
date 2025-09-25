@@ -3047,9 +3047,12 @@ class Cube(CFVariableMixin):
 
         # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
+        dataless = self.is_dataless()
 
         # Index with the keys, using orthogonal slicing.
-        dimension_mapping, data = iris.util._slice_data_with_keys(cube_data, keys)
+        dimension_mapping, data = iris.util._slice_data_with_keys(
+            cube_data, keys, shape=self.shape
+        )
 
         # We don't want a view of the data, so take a copy of it.
         data = deepcopy(data)
@@ -3061,14 +3064,11 @@ class Cube(CFVariableMixin):
         if isinstance(data, ma.core.MaskedConstant) and data.dtype != cube_data.dtype:
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
-        # Make the new cube slice
-        cube = self.__class__(data)
-        cube.metadata = deepcopy(self.metadata)
-
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
 
+        aux_coords = {}
         # Slice the coords
         for coord in self.aux_coords:
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
@@ -3078,28 +3078,50 @@ class Cube(CFVariableMixin):
                 # TODO make this except more specific to catch monotonic error
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-            cube.add_aux_coord(new_coord, new_coord_dims(coord))
+            aux_coords[new_coord] = new_coord_dims(coord)
             coord_mapping[id(coord)] = new_coord
 
-        for coord in self.dim_coords:
-            coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
-            new_dims = new_coord_dims(coord)
-            # Try/Catch to handle slicing that makes the points/bounds
-            # non-monotonic
+        dim_coords = {}
+        shape = []
+
+        for dim in range(self.ndim):
             try:
-                new_coord = coord[coord_keys]
-                if not new_dims:
-                    # If the associated dimension has been sliced so the coord
-                    # is a scalar move the coord to the aux_coords container
-                    cube.add_aux_coord(new_coord, new_dims)
-                else:
-                    cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
-                # Attempt to slice it by converting to AuxCoord first
-                new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-                cube.add_aux_coord(new_coord, new_dims)
-            coord_mapping[id(coord)] = new_coord
+                coord = self.coord(dimensions=dim, dim_coords=True)
+                coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
+                new_dims = new_coord_dims(coord)
+                # Try/Catch to handle slicing that makes the points/bounds
+                # non-monotonic
+                try:
+                    new_coord = coord[coord_keys]
+                    if not new_dims:
+                        # If the associated dimension has been sliced so the coord
+                        # is a scalar move the coord to the aux_coords container
+                        aux_coords[new_coord] = new_dims
+                    else:
+                        dim_coords[new_coord] = new_dims
+                        shape.append(len(new_coord.core_points()))
+                except ValueError:
+                    # TODO make this except more specific to catch monotonic error
+                    # Attempt to slice it by converting to AuxCoord first
+                    new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
+                    aux_coords[new_coord] = new_dims
+                coord_mapping[id(coord)] = new_coord
+            except iris.exceptions.CoordinateNotFoundError:
+                points = np.zeros(self.shape[dim])
+                shape.append(len(points[coord_keys]))
+
+        # Make the new cube slice
+        if not dataless:
+            cube = self.__class__(data)
+        else:
+            cube = self.__class__(shape=tuple(shape))
+        cube.metadata = deepcopy(self.metadata)
+
+        for coord, dim in dim_coords.items():
+            cube.add_dim_coord(coord, dim)
+
+        for coord, dims in aux_coords.items():
+            cube.add_aux_coord(coord, dims)
 
         for factory in self.aux_factories:
             cube.add_aux_factory(factory.updated(coord_mapping))
@@ -4364,8 +4386,6 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("collapsed")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4468,7 +4488,7 @@ class Cube(CFVariableMixin):
 
         # If we weren't able to complete a lazy aggregation, compute it
         # directly now.
-        if data_result is None:
+        if data_result is None and not self.is_dataless():
             # Perform the (non-lazy) aggregation over the cube data
             # First reshape the data so that the dimensions being aggregated
             # over are grouped 'at the end' (i.e. axis=-1).
