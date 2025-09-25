@@ -406,7 +406,7 @@ def assert_CML(
     approx_data : bool, optional, default=False
         When True, the cube's data will be compared with the reference
         data and asserted to be within a specified tolerance. Implies
-        `checksum=False`.
+        ``checksum=False``.
 
     """
     _check_for_request_fixture(request, "assert_CML")
