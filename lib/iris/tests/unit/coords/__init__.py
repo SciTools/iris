@@ -56,6 +56,11 @@ def is_real_data(array):
     return isinstance(array, np.ndarray)
 
 
+def is_masked_data(array):
+    # Check the array is a masked array.
+    return ma.isMaskedArray(array)
+
+
 def arrays_share_data(a1, a2):
     # Check whether 2 real arrays with the same content view the same data.
     # For an ndarray x, x.base will either be None (if x owns its data) or a
@@ -133,6 +138,12 @@ class CoordTestMixin:
         if not msg:
             msg = f"Array {array} is not a lazy array"
         assert is_lazy_data(array), msg
+
+    def assert_is_masked_array(self, array, msg=None):
+        # Check that the arg is a masked array.
+        if not msg:
+            msg = f"Array {array} is not a masked array"
+        assert is_masked_data(array), msg
 
     def assert_equal_real_arrays_and_dtypes(self, a1, a2):
         # Check that two arrays are real, equal, and have same dtype.
