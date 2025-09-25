@@ -431,7 +431,6 @@ def assert_CML(
         )
     else:
         cml = cubes.xml(checksum=checksum, order=False, byteorder=False)
-    #   reference_path = get_result_path(reference_filename)
     _check_same(cml, reference_path)
 
 
