@@ -95,6 +95,9 @@ This document explains the changes made to Iris for this release
 #. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
    ``git whatchanged`` command. (:pull:`6672`)
 
+#. `@ukmo-ccbunney` merged functionality of `assert_CML_approx_data` into
+   `assert_CML` via the use of a new `approx_data` keyword. (:pull:`6713`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
