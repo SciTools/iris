@@ -29,6 +29,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 from packaging.version import Version
+from toolz import isiterable
 
 import iris._constraints
 from iris._data_manager import DataManager
@@ -3088,6 +3089,7 @@ class Cube(CFVariableMixin):
             try:
                 coord = self.coord(dimensions=dim, dim_coords=True)
                 coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
+                print("Coord_keys=", coord_keys)
                 new_dims = new_coord_dims(coord)
                 # Try/Catch to handle slicing that makes the points/bounds
                 # non-monotonic
@@ -3107,8 +3109,13 @@ class Cube(CFVariableMixin):
                     aux_coords[new_coord] = new_dims
                 coord_mapping[id(coord)] = new_coord
             except iris.exceptions.CoordinateNotFoundError:
-                points = np.zeros(self.shape[dim])
-                shape.append(len(points[coord_keys]))
+                points = np.zeros(self.shape[dim])[coord_keys]
+                if isiterable(points):
+                    dim_shape = len([points[coord_keys]])
+                else:
+                    dim_shape = 1
+                if dim_shape:
+                    shape.append(dim_shape)
 
         # Make the new cube slice
         if not dataless:
