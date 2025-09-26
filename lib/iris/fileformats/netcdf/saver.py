@@ -3036,9 +3036,7 @@ def save_mesh(
     else:
         meshes = [mesh]
 
-    # Group the generic compression keyword arguments together for
-    # convenience, as they will be applied to other cube metadata
-    # as well as the cube data payload.
+    # Group the generic compression keyword arguments together.
     compression_kwargs = {
         "complevel": complevel,
         "fletcher32": fletcher32,

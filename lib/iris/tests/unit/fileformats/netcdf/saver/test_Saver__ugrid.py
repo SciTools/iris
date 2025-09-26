@@ -329,6 +329,35 @@ def vars_meshdim(vars, location, mesh_name=None):
     return single_location_dim
 
 
+def filter_compression_calls(patch, compression_kwargs, mismatch=False):
+    """Pre-process the mock patch calls for compression kwargs.
+
+    Parameters
+    ----------
+    patch : mock
+        The mock patch instance to be inspected.
+    compression_kwargs : dict
+        The compression kwargs to match as parameters in calls.
+    mismatch : bool, default=False
+        Whether to check for calls that do not match the compression kwargs.
+
+    Returns
+    -------
+    set
+        The netCDF variables serialized with compression kwargs (or not).
+
+    """
+    result = set()
+    for call in patch.call_args_list:
+        kwargs = call.kwargs
+        if all(kwargs.get(k) == v for k, v in compression_kwargs.items()):
+            if not mismatch:
+                result.add(call.args[0])
+        elif mismatch:
+            result.add(call.args[0])
+    return result
+
+
 class TestSaveUgrid__cube(tests.IrisTest):
     """Test for saving cubes which have meshes."""
 
@@ -340,7 +369,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_dir)
 
-    def check_save_cubes(self, cube_or_cubes):
+    def check_save_cubes(self, cube_or_cubes, compression_kwargs=None):
         """Write cubes to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
@@ -352,10 +381,39 @@ class TestSaveUgrid__cube(tests.IrisTest):
         # in the common temporary directory.
         tempfile_path = self.temp_dir / Path(tempfile_path).name
 
+        if compression_kwargs is None:
+            compression_kwargs = {}
+
         # Save data to the file.
-        save(cube_or_cubes, tempfile_path)
+        save(cube_or_cubes, tempfile_path, **compression_kwargs)
 
         return tempfile_path
+
+    def test_compression(self):
+        patch = self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+        )
+        self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+        )
+        cube = make_cube(var_name=(var_name := "a"))
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        _ = self.check_save_cubes(cube, compression_kwargs=compression_kwargs)
+
+        # The following mesh components and cube should be compressed on serialization.
+        result = filter_compression_calls(patch, compression_kwargs)
+        expected = {"node_x", "node_y", "face_x", "face_y", "mesh2d_faces", var_name}
+        assert result == expected
+        # The primary mesh variable (no payload) is never compressed.
+        result = filter_compression_calls(patch, compression_kwargs, mismatch=True)
+        expected = {"Mesh2d"}
+        assert result == expected
 
     def test_basic_mesh(self):
         # Save a small mesh example and check aspects of the resulting file.
@@ -686,7 +744,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
     def tearDownClass(cls):
         shutil.rmtree(cls.temp_dir)
 
-    def check_save_mesh(self, mesh):
+    def check_save_mesh(self, mesh, compression_kwargs=None):
         """Write a mesh to a new file in the common temporary directory.
 
         Use a name unique to this testcase, to avoid any clashes.
@@ -698,10 +756,40 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # in the common temporary directory.
         tempfile_path = self.temp_dir / Path(tempfile_path).name
 
+        if compression_kwargs is None:
+            compression_kwargs = {}
+
         # Save data to the file.
-        save_mesh(mesh, tempfile_path)
+        save_mesh(mesh, tempfile_path, **compression_kwargs)
 
         return tempfile_path
+
+    def test_compression(self):
+        """Test a mesh with compression enabled."""
+        patch = self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+        )
+        self.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+        )
+        mesh = make_mesh()
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        _ = self.check_save_mesh(mesh, compression_kwargs=compression_kwargs)
+
+        # The following mesh components should be compressed on serialization.
+        result = filter_compression_calls(patch, compression_kwargs)
+        expected = {"node_x", "node_y", "face_x", "face_y", "mesh2d_faces"}
+        assert result == expected
+        # The primary mesh variable (no payload) is never compressed.
+        result = filter_compression_calls(patch, compression_kwargs, mismatch=True)
+        expected = {"Mesh2d"}
+        assert result == expected
 
     def test_connectivity_dim_order(self):
         """Test a mesh with some connectivities in the 'other' order.
