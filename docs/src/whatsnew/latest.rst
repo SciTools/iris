@@ -34,6 +34,12 @@ This document explains the changes made to Iris for this release
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
 
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
+   payload when saving to NetCDF to also include any attached `CF-UGRID`_
+   :class:`~iris.mesh.components.MeshXY`. Additionally,
+   :func:`~iris.fileformats.netcdf.saver.save_mesh` also supports ``zlib``
+   compression. (:issue:`6565`, :pull:`6728`)
+
 
 🐛 Bugs Fixed
 =============
