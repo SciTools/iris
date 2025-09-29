@@ -640,17 +640,39 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
     else:
         data = src.lazy_data()
 
+    shape = list(src.shape)
+
     if result is None and data is not None:
         # Ensure dims are not chunked
         in_chunks = list(data.chunks)
         for dim in dims:
-            in_chunks[dim] = src.shape[dim]
-        data = data.rechunk(in_chunks)
+            in_chunks[dim] = (src.shape[dim],)
 
         # Determine output chunks
-        out_chunks = list(data.chunks)
+        out_chunks = in_chunks.copy()
         for dim, size in zip(dims, out_sizes):
-            out_chunks[dim] = size
+            out_chunks[dim] = (size,)
+            shape[dim] = size
+
+        max_outchunks = [max(chunk) for chunk in out_chunks]
+        df = [False]*len(max_outchunks)
+        for dim in dims:
+            df[dim] = True
+        df = tuple(df)
+        opt_outchunks = _optimum_chunksize(max_outchunks, shape, dtype=dtype, dims_fixed=df)
+        for i, (chunk, max_out, opt_out) in enumerate(zip(out_chunks,max_outchunks,opt_outchunks)):
+            if opt_out < max_out:
+                new_chunks = []
+                for c in chunk:
+                    new_chunks.extend((c//opt_out)*[opt_out])
+                    if chunk_end := c % opt_out > 0:
+                        new_chunks.append(chunk_end)
+                in_chunks[i] = tuple(new_chunks)
+                out_chunks[i] = tuple(new_chunks)
+
+
+
+        data = data.rechunk(in_chunks)
 
         # Assume operation preserves mask.
         meta = da.utils.meta_from_array(data).astype(dtype)
