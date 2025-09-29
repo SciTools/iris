@@ -787,6 +787,8 @@ class Saver:
         ----------
         cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
 
         Returns
         -------
