@@ -453,3 +453,61 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
     v_out.data = np.ma.masked_array(vv, mask=mask)
 
     return u_out, v_out
+
+
+def _vectorised_matmul(mats, vecs):
+    return np.einsum("ijk,ji->ki", mats, vecs)
+
+def _generate_180_mats_from_uvecs(uvecs):
+    mats = np.einsum("ji,ki->ijk", uvecs, uvecs) * 2
+    np.einsum("ijj->ij", mats)[:] -= 1
+    return mats
+
+def _2D_guess_bounds_first_pass(array):
+    # average and normalise, boundary buffer represents edges and corners
+    result_array = np.zeros((array.shape[0], array.shape[1] + 1, array.shape[2] + 1))
+    pads = ((0, 1), (1, 0))
+    for pad_i in pads:
+        for pad_j in pads:
+            result_array += np.pad(array, ((0, 0), pad_i, pad_j))
+
+    # normalise
+    result_array /= np.linalg.norm(result_array, ord=2, axis=0)[np.newaxis, ...]
+    return result_array
+
+def _2D_gb_buffer_outer(array_shape):
+    # return appropriate numpy slice for outer halo
+    _, x, y = array_shape
+    x_i = list(range(x)) + ([x - 1] * (y - 2)) + list(range(x))[::-1] + ([0] * (y - 2))
+    y_i = ([0] * (x - 1)) + list(range(y)) + ([y - 1] * (x - 2)) + list(range(1, y))[::-1]
+    return np.s_[:, x_i, y_i]
+
+def _2D_gb_buffer_inner(array_shape):
+    # return appropriate numpy slice for inner halo
+    _, x, y = array_shape
+    x_i = [1] + list(range(1, x - 1)) + ([x - 2] * y) + list(range(1, x - 1))[::-1] + ([1] * (y - 1))
+    y_i = ([1] * x) + list(range(1, y - 1)) + ([y - 1] * x) + list(range(1, y - 1))[::-1]
+    return np.s_[:, x_i, y_i]
+
+def _2D_geuss_bounds(cube):
+    lons = cube.coord(axis="X")
+    lats = cube.coord(axis="Y")
+
+    # TODO: check units and coordsystem and dims and such
+
+    lon_array = lons.points
+    lat_array = lats.points
+    xyz_array = _3d_xyz_from_latlon(lon_array, lat_array)
+
+    result_xyz = _2D_guess_bounds_first_pass(xyz_array)
+    outer_inds = _2D_gb_buffer_outer(xyz_array.shape)
+    inner_inds = _2D_gb_buffer_inner(xyz_array.shape)
+
+    mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+    result_xyz[outer_inds] = _vectorised_matmul(mats, result_xyz[inner_inds])
+
+    result_lon_bounds, result_lat_bounds = _latlon_from_xyz(result_xyz)
+
+    # add these bounds cf style
+    lons.bounds = np.stack([result_lon_bounds[:-1,:-1], result_lon_bounds[:-1,1:], result_lon_bounds[1:,1:], result_lon_bounds[1:,:-1]], axis=2)
+    lats.bounds = np.stack([result_lat_bounds[:-1,:-1], result_lat_bounds[:-1,1:], result_lat_bounds[1:,1:], result_lat_bounds[1:,:-1]], axis=2)
