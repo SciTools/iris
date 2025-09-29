@@ -655,22 +655,24 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
             shape[dim] = size
 
         max_outchunks = [max(chunk) for chunk in out_chunks]
-        df = [False]*len(max_outchunks)
+        df = [False] * len(max_outchunks)
         for dim in dims:
             df[dim] = True
         df = tuple(df)
-        opt_outchunks = _optimum_chunksize(max_outchunks, shape, dtype=dtype, dims_fixed=df)
-        for i, (chunk, max_out, opt_out) in enumerate(zip(out_chunks,max_outchunks,opt_outchunks)):
+        opt_outchunks = _optimum_chunksize(
+            max_outchunks, shape, dtype=dtype, dims_fixed=df
+        )
+        for i, (chunk, max_out, opt_out) in enumerate(
+            zip(out_chunks, max_outchunks, opt_outchunks)
+        ):
             if opt_out < max_out:
                 new_chunks = []
                 for c in chunk:
-                    new_chunks.extend((c//opt_out)*[opt_out])
+                    new_chunks.extend((c // opt_out) * [opt_out])
                     if chunk_end := c % opt_out > 0:
                         new_chunks.append(chunk_end)
                 in_chunks[i] = tuple(new_chunks)
                 out_chunks[i] = tuple(new_chunks)
-
-
 
         data = data.rechunk(in_chunks)
 
