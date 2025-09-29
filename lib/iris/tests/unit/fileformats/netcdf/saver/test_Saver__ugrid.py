@@ -390,9 +390,14 @@ class TestSaveUgrid__cube(tests.IrisTest):
         return tempfile_path
 
     def test_compression(self):
+        # Note that the patch location is "_thread_safe_nc" when it is imported
+        # into the iris.fileformats.netcdf.saver. Also we want to check that the
+        # compression kwargs are passed into the NetCDF4 createVariable method
         patch = self.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
         )
+        # No need to patch this NetCDF4 variable to compensate for the previous patch
+        # on createVariable, which doesn't actually create the variable.
         self.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
         )
