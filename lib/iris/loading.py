@@ -29,18 +29,35 @@ def _generate_cubes(uris, callback, constraints):
 
     for scheme, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == "file":
-            part_names = [x[1] for x in groups]
-            for cube in iris.io.load_files(part_names, callback, constraints):
+        if scheme in ("file", "s3"):
+            filepaths = []
+            for group in groups:
+                filepath = group[1]
+                if scheme == "s3":
+                    # S3-based files are loaded from a bucket mounted *as a filesystem*.
+                    # For this (a) ensure the mount and (b) adjust the filepath.
+                    from iris.io.s3_mounts import s3_mounter
+
+                    # Strip off initial "//"
+                    assert filepath.startswith("//")
+                    bucket_name, filepath = filepath[2:].split("/", maxsplit=1)
+                    bucket_mount_path = s3_mounter.bucket_mountpath(bucket_name)
+                    filepath = str(bucket_mount_path / filepath)
+                filepaths.append(filepath)
+
+            for cube in iris.io.load_files(filepaths, callback, constraints):
                 yield cube
+
         elif scheme in ["http", "https"]:
             urls = [":".join(x) for x in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
+
         elif scheme == "data":
             data_objects = [x[1] for x in groups]
             for cube in iris.io.load_data_objects(data_objects, callback):
                 yield cube
+
         else:
             raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)
 
