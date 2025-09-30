@@ -3086,10 +3086,9 @@ class Cube(CFVariableMixin):
         shape = []
 
         for dim in range(self.ndim):
+            coord_keys = full_slice[dim]
             try:
                 coord = self.coord(dimensions=dim, dim_coords=True)
-                coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
-                print("Coord_keys=", coord_keys)
                 new_dims = new_coord_dims(coord)
                 # Try/Catch to handle slicing that makes the points/bounds
                 # non-monotonic
@@ -3111,7 +3110,7 @@ class Cube(CFVariableMixin):
             except iris.exceptions.CoordinateNotFoundError:
                 points = np.zeros(self.shape[dim])[coord_keys]
                 if isiterable(points):
-                    dim_shape = len([points[coord_keys]])
+                    dim_shape = len([points])
                 else:
                     dim_shape = 1
                 if dim_shape:
