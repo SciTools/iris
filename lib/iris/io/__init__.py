@@ -429,17 +429,6 @@ def save(source, target, saver=None, **kwargs):
     data can result in corruption. Users should proceed with caution when
     attempting to overwrite an existing file.
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
-    Keyword arguments are applied to each :class:`~iris.cube.Cube` within
-    the provided **target**.
-
-    Consider using multiple :func:`~iris.io.save` calls to apply different
-    keyword arguments to separate sequences of :class:`~iris.cube.Cube` targets.
-
     Examples
     --------
     >>> # Setting up
@@ -459,6 +448,11 @@ def save(source, target, saver=None, **kwargs):
 
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
     >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.cube import Cube, CubeList
