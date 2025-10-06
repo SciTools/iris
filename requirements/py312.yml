@@ -34,6 +34,8 @@ dependencies:
   - pandas
   - pip
   - python-stratify
+  - # Fix a problem with Conda resolution order.
+  - pyvista >0.44.1
 
 # Test dependencies.
   - asv_runner
