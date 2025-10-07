@@ -173,7 +173,7 @@ Bugs Fixed
   to reference the said NetCDF variable name. Note that names with a leading
   underscore are not permitted.
 
-.. _NetCDF name tokens: https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_data_set_components.html#object_name
+.. _NetCDF name tokens: https://docs.unidata.ucar.edu/nug/current/netcdf_data_set_components.html#object_name
 
     * :attr:`iris.aux_factory.AuxCoordFactory.var_name`
     * :attr:`iris.coords.CellMeasure.var_name`

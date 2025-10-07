@@ -1221,7 +1221,7 @@ class TestCubeCollapsed:
         if dual_stage.dtype > cube.dtype:
             data = dual_stage.data.astype(cube.dtype)
             dual_stage.data = data
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             request,
             dual_stage,
             (
@@ -1230,13 +1230,14 @@ class TestCubeCollapsed:
             ),
             *args,
             **kwargs,
+            approx_data=True,
         )
 
         single_stage = cube.collapsed([a_name, b_name], iris.analysis.MEAN)
         if single_stage.dtype > cube.dtype:
             data = single_stage.data.astype(cube.dtype)
             single_stage.data = data
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             request,
             single_stage,
             (
@@ -1245,6 +1246,7 @@ class TestCubeCollapsed:
             ),
             *args,
             **kwargs,
+            approx_data=True,
         )
 
         # Compare the cube bits that should match
@@ -1309,20 +1311,22 @@ class TestCubeCollapsed:
             ["model_level_number", "time", "grid_longitude"],
             iris.analysis.MEAN,
         )
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             request,
             triple_collapse,
             ("cube_collapsed", ("triple_collapse_ml_pt_lon.cml")),
+            approx_data=True,
             rtol=5e-04,
         )
 
         triple_collapse = cube.collapsed(
             ["grid_latitude", "model_level_number", "time"], iris.analysis.MEAN
         )
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             request,
             triple_collapse,
             ("cube_collapsed", ("triple_collapse_lat_ml_pt.cml")),
+            approx_data=True,
             rtol=0.05,
         )
         # KNOWN PROBLEM: the previous 'rtol' is very large.

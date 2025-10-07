@@ -37,7 +37,14 @@ This document explains the changes made to Iris for this release
 #. `@hsteptoe <https://github.com/hsteptoe>`_ and `@...`_ (reviewer) extended :func:`iris.util.mask_cube_from_shapefile`
    to handle additional Point and Line shape types.  This change also facilitates the use of shapefiles that 
    use a different projection system to the cube that they are being applied to, and makes performance improvements
-   to the mask weighting calculations. (:issue:`6126`, :pull:`6129`).  
+   to the mask weighting calculations. (:issue:`6126`, :pull:`6129`).
+   
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
+   payload when saving to NetCDF to also include any attached `CF-UGRID`_
+   :class:`~iris.mesh.components.MeshXY`. Additionally,
+   :func:`~iris.fileformats.netcdf.saver.save_mesh` also supports ``zlib``
+   compression. (:issue:`6565`, :pull:`6728`)
+
 
 🐛 Bugs Fixed
 =============
@@ -46,6 +53,15 @@ This document explains the changes made to Iris for this release
    :mod:`iris.experimental.regrid_conservative` (the module was renamed to ESMPy
    in v8.4). Note that :mod:`~iris.experimental.regrid_conservative`
    is already deprecated and will be removed in a future release. (:pull:`6643`)
+
+#. `@rcomer`_ fixed a bug in merging cubes with cell measures or ancillary
+   variables. The merged cube now has the cell measures and ancillary variables
+   on the correct dimensions, and merge no longer fails when trying to add
+   them to a dimension of the wrong length. (:issue:`2076`, :pull:`6688`)
+
+#. `@bjlittle`_ added support for preserving masked auxiliary coordinates when
+   using :meth:`~iris.cube.Cube.aggregated_by` or :meth:`~iris.cube.Cube.collapsed`.
+   (:issue:`6473`, :pull:`6706`, :pull:`6719`)
 
 
 💣 Incompatible Changes
@@ -95,11 +111,15 @@ This document explains the changes made to Iris for this release
 #. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
    ``git whatchanged`` command. (:pull:`6672`)
 
+#. `@ukmo-ccbunney` merged functionality of ``assert_CML_approx_data`` into
+   ``assert_CML`` via the use of a new ``approx_data`` keyword. (:pull:`6713`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@hsteptoe: https://github.com/hsteptoe
 .. _@melissaKG: https://github.com/melissaKG
 
 
