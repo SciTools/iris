@@ -1532,6 +1532,14 @@ class ProtoCube:
             tuple([dim + offset for dim in item.dims])
             for item in vector_aux_coords_and_dims
         ]
+        self._cell_measures_and_dims = [
+            (cm, tuple([dim + offset for dim in dims]))
+            for cm, dims in self._cell_measures_and_dims
+        ]
+        self._ancillary_variables_and_dims = [
+            (av, tuple([dim + offset for dim in dims]))
+            for av, dims in self._ancillary_variables_and_dims
+        ]
 
         # Now factor in the vector payload shape. Note that, for
         # deferred loading, this does NOT change the shape.
