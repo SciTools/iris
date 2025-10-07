@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from itertools import product
 import sys
+from typing import Optional
 import warnings
 
 from affine import Affine
@@ -38,10 +39,11 @@ pyproj.network.set_network_enabled(active=False)
 
 def create_shape_mask(
     geometry: shapely.Geometry,
-    geometry_crs: ccrs.CRS | CRS,
     cube: iris.cube.Cube,
+    geometry_crs: Optional[ccrs.CRS | CRS] = None,
     minimum_weight: float = 0.0,
-    **kwargs,
+    all_touched: Optional[bool] = None,
+    invert: Optional[bool] = None,
 ) -> np.array:
     """Make a mask for a cube from a shape geometry.
 
@@ -54,20 +56,17 @@ def create_shape_mask(
     Parameters
     ----------
     geometry : :class:`shapely.Geometry`
+    cube : :class:`iris.cube.Cube`
+        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
     geometry_crs : :class:`cartopy.crs`, optional
         A :class:`~iris.coord_systems` object describing
         the coord_system of the shapefile. Defaults to None,
         in which case the geometry_crs is assumed to be the
         same as the :class:`iris.cube.Cube`.
-    cube : :class:`iris.cube.Cube`
-        A :class:`~iris.cube.Cube` which has 1d x and y coordinates.
     minimum_weight : float, optional
         The minimum weight of the geometry to be included in the mask.
         If the weight is less than this value, the geometry will not be
         included in the mask. Defaults to 0.0.
-
-    Other Parameters
-    ----------------
     all_touched : bool, optional
         If True, all pixels touched by the geometry will be included in the mask.
         If False, only pixels fully covered by the geometry will be included in the mask.
@@ -136,12 +135,15 @@ def create_shape_mask(
     :func:`is_geometry_valid`
         Check the validity of a shape geometry.
     """
+    if geometry_crs is None:
+        # If no geometry CRS is provided, assume it is the same as the cube CRS
+        geometry_crs = cube.coord_system().as_cartopy_projection()  # type: ignore[union-attr]
     # Check validity of geometry CRS
     is_geometry_valid(geometry, geometry_crs)
 
     # Check cube is a Cube
-    if not isinstance(cube, iris.cube.Cube):
-        if isinstance(cube, iris.cube.CubeList):
+    if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
+        if isinstance(cube, iris.cube.CubeList):  # type: ignore[unreachable]
             msg = "Received CubeList object rather than Cube - \
             to mask a CubeList iterate over each Cube"
             raise TypeError(msg)
@@ -161,7 +163,7 @@ def create_shape_mask(
 
     # Check compatibility of function arguments
     # all_touched and minimum_weight are mutually exclusive
-    if (minimum_weight > 0) and (kwargs.get("all_touched") is True):
+    if (minimum_weight > 0) and (all_touched is True):
         msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
         raise ValueError(msg)
 
@@ -173,12 +175,8 @@ def create_shape_mask(
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
 
-    if geometry_crs is None:
-        # If no geometry CRS is provided, assume it is the same as the cube CRS
-        geometry_crs = cube.coord_system().as_cartopy_projection()
-
     # Check for CRS equality and transform if necessary
-    cube_crs = cube.coord_system().as_cartopy_projection()
+    cube_crs = cube.coord_system().as_cartopy_projection()  # type: ignore[union-attr]
     if not geometry_crs.equals(cube_crs):
         transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
         warnings.warn(transform_warning_msg, category=IrisUserWarning)
@@ -198,16 +196,12 @@ def create_shape_mask(
             minimum_weight=minimum_weight,
         )
     else:
-        if (minimum_weight == 0) and (kwargs.get("all_touched") is None):
+        if (minimum_weight == 0) and (all_touched is None):
             # For speed, if minimum_weight is 0, then
             # we can use the geometry_mask function directly
             # This is equivalent to all_touched=True
             all_touched = True
-        elif (minimum_weight == 0) and (kwargs.get("all_touched") is not None):
-            if not isinstance(kwargs.get("all_touched"), bool):
-                msg = "`all_touched` kwarg must be True or False."
-                raise TypeError(msg)
-            all_touched = kwargs.get("all_touched")
+
         # Define raster transform based on cube
         # This maps the geometry domain onto the cube domain
         tr = _make_raster_cube_transform(cube)
@@ -221,13 +215,10 @@ def create_shape_mask(
 
     # If cube was on circular domain, then the transformed
     # mask template needs shifting to match the cube domain
-    if x_coord.circular:
+    if x_coord.circular:  # type: ignore[union-attr]
         mask_template = np.roll(mask_template, w // 2, axis=1)
 
-    if kwargs.get("invert"):
-        if not isinstance(kwargs.get("invert"), bool):
-            msg = "`invert` kwarg must be True or False."
-            raise TypeError(msg)
+    if invert:
         # Invert the mask
         mask_template = np.logical_not(mask_template)
 
