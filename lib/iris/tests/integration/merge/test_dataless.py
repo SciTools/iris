@@ -15,6 +15,7 @@ class TestMergeDataless:
         # Create a testcube with a scalar Z coord, for merge testing.
         cube = Cube(
             [1, 2, 3],
+            long_name=name,
             dim_coords_and_dims=[(DimCoord([0.0, 1.0, 2], long_name="x"), 0)],
             aux_coords_and_dims=[(AuxCoord([z], long_name="z"), ())],
         )
@@ -22,8 +23,8 @@ class TestMergeDataless:
             cube.data = None
         return cube
 
-    def test_general_nomerge(self):
-        # Check that normal merge works OK with dataless cubes included
+    def test_mixed_passthrough(self):
+        # Check that normal merge can handle dataless alongside dataful cubes.
         cubes = CubeList(
             [
                 self._testcube(name="this", dataless=False),
@@ -34,17 +35,19 @@ class TestMergeDataless:
         assert len(result) == 2
         cube1, cube2 = [result.extract_cube(name) for name in ("this", "that")]
         assert not cube1.is_dataless()
-        assert cube1.is_dataless()
+        assert cube2.is_dataless()
 
     def test_dataless_merge(self):
-        # Check that dataless cubes can be merged correctly.
+        # Check that dataless cubes can be merged.
         cubes = CubeList(
             [
                 self._testcube(z=1, dataless=True),
                 self._testcube(z=2, dataless=True),
             ]
         )
-        cube = cubes.merge_cube()
+        cubes = cubes.merge()
+        assert len(cubes) == 2
+        (cube, cube2) = cubes
         assert cube.is_dataless()
         assert np.all(cube.coord("z").points == [1, 2])
 
