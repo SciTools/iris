@@ -12,6 +12,7 @@ Typically the cube merge process is handled by
 from collections import OrderedDict, namedtuple
 from copy import deepcopy
 
+import dask.array as da
 import numpy as np
 
 from iris._lazy_data import (
@@ -320,7 +321,6 @@ class _CubeSignature(
             "data_type",
             "cell_measures_and_dims",
             "ancillary_variables_and_dims",
-            "is_dataless",
         ],
     )
 ):
@@ -431,10 +431,13 @@ class _CubeSignature(
         if self.data_shape != other.data_shape:
             msg = "cube.shape differs: {} != {}"
             msgs.append(msg.format(self.data_shape, other.data_shape))
-        if self.is_dataless != other.is_dataless:
-            msg = "cube.is_dataless differs: {} != {}"
-            msgs.append(msg.format(self.is_dataless, other.is_dataless))
-        if self.data_type != other.data_type:
+        if (
+            self.data_type is not None
+            and other.data_type is not None
+            and self.data_type != other.data_type
+        ):
+            # N.B. allow "None" to match any other dtype: this means that dataless
+            # cubes can merge with 'dataful' ones.
             msg = "cube data dtype differs: {} != {}"
             msgs.append(msg.format(self.data_type, other.data_type))
         # Both cell_measures_and_dims and ancillary_variables_and_dims are
@@ -1113,9 +1116,6 @@ class ProtoCube:
         source-cube.
 
         """
-        # if cube.is_dataless():
-        #     raise iris.exceptions.DatalessError("merge")
-
         # Default hint ordering for candidate dimension coordinates.
         self._hints = [
             "time",
@@ -1239,41 +1239,68 @@ class ProtoCube:
 
         # Generate group-depth merged cubes from the source-cubes.
         for level in range(group_depth):
-            if self._cube_signature.is_dataless:
-                merged_shape = self._cube_signature.data_shape
-                # ?WRONG? merged_shape = self._stack_shape
-                # ?WRONG? merged_shape = (len(nd_indexes),) + shape
-                merged_data = None
-                all_have_data = False
-            else:
-                # Stack up all the data from all of the relevant source
-                # cubes in a single dask "stacked" array.
-                # If it turns out that all the source cubes already had
-                # their data loaded then at the end we convert the stack back
-                # into a plain numpy array.
-                stack = np.empty(self._stack_shape, "object")
-                all_have_data = True
-                for nd_index in nd_indexes:
-                    # Get the data of the current existing or last known
-                    # good source-cube
-                    group = group_by_nd_index[nd_index]
-                    offset = min(level, len(group) - 1)
-                    data = self._skeletons[group[offset]].data
-                    # Ensure the data is represented as a dask array and
-                    # slot that array into the stack.
+            # Stack up all the data from all of the relevant source
+            # cubes in a single dask "stacked" array.
+            # If it turns out that all the source cubes already had
+            # their data loaded then at the end we convert the stack back
+            # into a plain numpy array.
+            stack = np.empty(self._stack_shape, "object")
+            all_have_real_data = True
+            some_are_dataless = False
+            part_shape: tuple = None
+            part_dtype: np.dtype = None
+            for nd_index in nd_indexes:
+                # Get the data of the current existing or last known
+                # good source-cube
+                group = group_by_nd_index[nd_index]
+                offset = min(level, len(group) - 1)
+                data = self._skeletons[group[offset]].data
+                # Ensure the data is represented as a dask array and
+                # slot that array into the stack.
+                if data is None:
+                    some_are_dataless = True
+                else:
+                    # We have (at least one) array content : Record the shape+dtype
+                    if part_shape is None:
+                        part_shape = data.shape
+                        part_dtype = data.dtype
+                    else:
+                        # We expect that the "parts" should **all be the same**
+                        assert data.shape == part_shape
+                        assert data.dtype == part_dtype
+
+                    # ensure lazy (we make the result real, later, if all were real)
                     if is_lazy_data(data):
-                        all_have_data = False
+                        all_have_real_data = False
                     else:
                         data = as_lazy_data(data)
-                    stack[nd_index] = data
+                stack[nd_index] = data
 
+            if part_shape is None:
+                # NO parts had data : the result will also be dataless
+                merged_data = None
+                merged_shape = self._shape
+            else:
+                # At least some inputs had data : the result will have a data array.
+                if some_are_dataless:
+                    # Some parts were dataless: fill these with a lazy all-missing array.
+                    missing_part = da.ma.masked_array(
+                        data=da.zeros(part_shape, dtype=np.dtype("u1")),
+                        mask=da.ones(part_shape, dtype=bool),
+                        dtype=part_dtype,
+                    )
+                    for inds in np.ndindex(stack.shape):
+                        if stack[inds] is None:
+                            stack[inds] = missing_part
+
+                # Make a single lazy merged result array
                 merged_data = multidim_lazy_stack(stack)
                 merged_shape = None
+                if all_have_real_data:
+                    # All inputs were concrete, so turn the result back into a
+                    # normal array.
+                    merged_data = as_concrete_data(merged_data)
 
-            if all_have_data:
-                # All inputs were concrete, so turn the result back into a
-                # normal array.
-                merged_data = as_concrete_data(merged_data)
             merged_cube = self._get_cube(merged_data, shape=merged_shape)
             merged_cubes.append(merged_cube)
 
@@ -1305,8 +1332,6 @@ class ProtoCube:
             this :class:`ProtoCube`.
 
         """
-        # if cube.is_dataless():
-        #     raise iris.exceptions.DatalessError("merge")
         cube_signature = self._cube_signature
         other = self._build_signature(cube)
         match = cube_signature.match(other, error_on_mismatch)
@@ -1565,6 +1590,12 @@ class ProtoCube:
         Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.
 
+        Parameters
+        ----------
+        data : array_like
+            Cube data content.  If None, `shape` must set and the result is dataless.
+        shape : tuple, optional
+            Cube data shape, only used if data is None.
         """
         signature = self._cube_signature
         dim_coords_and_dims = [
@@ -1726,7 +1757,6 @@ class ProtoCube:
             cube.dtype,
             cube._cell_measures_and_dims,
             cube._ancillary_variables_and_dims,
-            cube.is_dataless(),
         )
 
     def _add_cube(self, cube, coord_payload):

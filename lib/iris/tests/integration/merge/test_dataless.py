@@ -45,9 +45,7 @@ class TestMergeDataless:
                 self._testcube(z=2, dataless=True),
             ]
         )
-        cubes = cubes.merge()
-        assert len(cubes) == 2
-        (cube, cube2) = cubes
+        cube = cubes.merge_cube()
         assert cube.is_dataless()
         assert np.all(cube.coord("z").points == [1, 2])
 
