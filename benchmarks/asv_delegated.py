@@ -63,7 +63,7 @@ class Delegated(_DelegatedABC):
         dask_config = Path().home() / ".config" / "dask"
         dask_config.mkdir(parents=True, exist_ok=True)
         dask_yaml = dask_config / "config.yaml"
-        dask_yaml.write_text("array:\n  chunk-size: 1 KiB\n")
+        dask_yaml.write_text("array:\n  chunk-size: 100 KiB\n")
 
         class Mode(enum.Enum):
             """The scenarios where the correct env setup script is known."""
