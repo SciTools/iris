@@ -10,7 +10,7 @@ import pytest
 import iris
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf._thread_safe_nc import netCDF4 as nc
+from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
 from iris.fileformats.netcdf.saver import Saver
 
 
@@ -41,7 +41,7 @@ class TestDataless:
         iris.save(self.testcube, self.test_path)
         assert Saver._DATALESS_ATTRNAME not in self.testcube.attributes
         # Check the content as seen in the file
-        ncds = nc.Dataset(self.test_path)
+        ncds = DatasetWrapper(self.test_path)
         var = ncds.variables["testdata"]
         assert Saver._DATALESS_ATTRNAME in var.ncattrs()
         assert var.dtype == Saver._DATALESS_DTYPE
