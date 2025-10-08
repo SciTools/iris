@@ -214,93 +214,31 @@ class TestCombination:
 
     def test_separable_combination(self, request):
         cubes = iris.cube.CubeList()
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 1
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 2
-            )
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 10, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 11, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 12, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 13, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 14, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 15, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 16, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 17, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 18, ENSEMBLES", 0
-            )
-        )
+
+        def add(*args):
+            cubes.append(self._make_cube(*args))
+
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0)
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1)
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 0)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 1)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 2)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 10, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 11, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 12, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 13, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 14, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 15, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 16, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 17, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 18, ENSEMBLES", 0)
         cube = cubes.merge()
         assert_CML(
             request, cube, ("merge", "separable_combination.cml"), checksum=False
