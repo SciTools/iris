@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """File loading benchmark tests."""
 
+import dask
+
 from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
 from iris.fileformats.um import structured_um_loading
@@ -54,7 +56,8 @@ class LoadAndRealise:
         # Don't touch cube.data - permanent realisation plays badly with ASV's
         #  re-run strategy.
         assert self.cube.has_lazy_data()
-        self.cube.core_data().compute()
+        with dask.config.set({"array.chunk-size": "1 KiB"}):
+            self.cube.core_data().compute()
 
 
 class STASHConstraint:

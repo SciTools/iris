@@ -59,12 +59,6 @@ class Delegated(_DelegatedABC):
                 file_write.seek(0)
                 file_write.writelines(lines)
 
-        # Use a YAML file to permanently modify the default Dask chunk size.
-        dask_config = Path().home() / ".config" / "dask"
-        dask_config.mkdir(parents=True, exist_ok=True)
-        dask_yaml = dask_config / "config.yaml"
-        dask_yaml.write_text("array:\n  chunk-size: 100 KiB\n")
-
         class Mode(enum.Enum):
             """The scenarios where the correct env setup script is known."""
 
