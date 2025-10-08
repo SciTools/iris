@@ -47,7 +47,7 @@ class LoadAndRealise:
         self.cube = self.load()
 
     def load(self) -> Cube:
-        with dask.config.set({"array.chunk-size": "10 KiB"}):
+        with dask.config.set({"array.chunk-size": "100 KiB"}):
             return load_cube(self.file_path)
 
     def time_load(self, _, __, ___, ____) -> None:
@@ -57,7 +57,7 @@ class LoadAndRealise:
         # Don't touch cube.data - permanent realisation plays badly with ASV's
         #  re-run strategy.
         assert self.cube.has_lazy_data()
-        with dask.config.set({"array.chunk-size": "10 KiB"}):
+        with dask.config.set({"array.chunk-size": "100 KiB"}):
             self.cube.core_data().compute()
 
 
