@@ -40,6 +40,9 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.netcdf.saver.save_mesh` also supports ``zlib``
    compression. (:issue:`6565`, :pull:`6728`)
 
+#. `@pp-mo`_ made it possible to save 'dataless' cubes to a netcdf file, and load them
+   back again. (:issue:`6727`, :pull:`6739`)
+
 
 🐛 Bugs Fixed
 =============
