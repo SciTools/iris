@@ -801,7 +801,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """The fundamental shape of the metadata, expressed as a tuple."""
         return self._values_dm.shape
 
-    def xml_element(self, doc):
+    def xml_element(self, doc, checksum=False):
         """Create XML element.
 
         Create the :class:`xml.dom.minidom.Element` that describes this
@@ -857,6 +857,23 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         element.setAttribute("value_type", str(self._value_type_name()))
         element.setAttribute("shape", str(self.shape))
 
+        # data checksum
+        if checksum:
+            crc = iris.util.array_checksum(self._values)
+            element.setAttribute("checksum", crc)
+
+            if np.ma.isMaskedArray(self._values):
+                # Add the number of masked elements
+                if np.ma.is_masked(self._values):
+                    crc = iris.util.array_checksum(self._values.mask)
+                    element.setAttribute("mask_checksum", crc)
+
+        # masked element count:
+        if np.ma.isMaskedArray(self._values):
+            element.setAttribute(
+                "masked_count", str(np.count_nonzero(self._values.mask))
+            )
+
         # The values are referred to "points" of a coordinate and "data"
         # otherwise.
         if isinstance(self, Coord):
@@ -892,11 +909,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return "%08x" % (crc,)
 
     @staticmethod
-    def _xml_array_repr(data):
+    def _xml_array_repr(data, summarised=True, edgeitems=3):
         if hasattr(data, "to_xml_attr"):
             result = data._values.to_xml_attr()
         else:
-            result = iris.util.format_array(data)
+            result = iris.util.array_summary(data)
         return result
 
     def _value_type_name(self):

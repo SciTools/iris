@@ -22,7 +22,6 @@ import operator
 from typing import TYPE_CHECKING, Any, Optional, TypeGuard
 import warnings
 from xml.dom.minidom import Document
-import zlib
 
 from cf_units import Unit
 import dask.array as da
@@ -4011,30 +4010,13 @@ class Cube(CFVariableMixin):
         # byte order to be native.
         if checksum:
             data = self.data
-
-            # Ensure consistent memory layout for checksums.
-            def normalise(data):
-                data = np.ascontiguousarray(data)
-                if data.dtype.newbyteorder("<") != data.dtype:
-                    data = data.byteswap(False)
-                    data.dtype = data.dtype.newbyteorder("<")
-                return data
-
+            crc = iris.util.array_checksum(data)
+            data_xml_element.setAttribute("checksum", crc)
             if ma.isMaskedArray(data):
-                # Fill in masked values to avoid the checksum being
-                # sensitive to unused numbers. Use a fixed value so
-                # a change in fill_value doesn't affect the
-                # checksum.
-                crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = "0x%08x" % (zlib.crc32(normalise(data.mask)) & 0xFFFFFFFF,)
-                else:
-                    crc = "no-masked-elements"
-                data_xml_element.setAttribute("mask_checksum", crc)
-            else:
-                crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
+                    crc = iris.util.array_checksum(data.mask)
+                    data_xml_element.setAttribute("mask_checksum", crc)
+
         elif self.has_lazy_data():
             data_xml_element.setAttribute("state", "deferred")
         else:
@@ -4065,8 +4047,13 @@ class Cube(CFVariableMixin):
                 if array_byteorder is not None:
                     data_xml_element.setAttribute("byteorder", array_byteorder)
 
-            if order and ma.isMaskedArray(data):
-                data_xml_element.setAttribute("mask_order", _order(data.mask))
+            if ma.isMaskedArray(data):
+                data_xml_element.setAttribute(
+                    "masked_count", str(np.count_nonzero(data.mask))
+                )
+                if order:
+                    data_xml_element.setAttribute("mask_order", _order(data.mask))
+
         else:
             dtype = self.lazy_data().dtype
         data_xml_element.setAttribute("dtype", dtype.name)

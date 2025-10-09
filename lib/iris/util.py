@@ -17,6 +17,7 @@ import sys
 import tempfile
 from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
+import zlib
 
 import cf_units
 from dask import array as da
@@ -2737,3 +2738,131 @@ def make_gridcube(
         dim_coords_and_dims=((yco, 0), (xco, 1)),
     )
     return cube
+
+
+def array_checksum(data: np.typing.ArrayLike) -> str:
+    """Calculate a checksum for a numpy array."""
+
+    # Ensure consistent memory layout for checksums.
+    def normalise(data):
+        data = np.ascontiguousarray(data)
+        if data.dtype.newbyteorder("<") != data.dtype:
+            data = data.byteswap(False)
+            data.dtype = data.dtype.newbyteorder("<")
+        return data
+
+    if ma.isMaskedArray(data):
+        # Fill in masked values to avoid the checksum being
+        # sensitive to unused numbers. Use a fixed value so
+        # a change in fill_value doesn't affect the
+        # checksum.
+        crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
+    else:
+        crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
+
+    return crc
+
+
+def array_summary(
+    data: np.typing.ArrayLike, edgeitems: int = 3, precision: int = 8
+) -> str:
+    """Return a strictly formatted summarised view of an array (first and last N elements).
+
+    Generates a string formatted summary of the array. The first and last `edgeitems` elements
+    are printed out with strictly controlled formatting. Useful for summarising arrays in
+    tests for comparing against known good outputs.
+
+    Multi-dimensional arrays will be flattened prior to summarising.
+
+    Parameters
+    ----------
+    data : array like
+        The array to summarise.
+
+    edgeitems : int
+        The number of elements at the beginning and end of the array to format. Should be
+        a positive value > 1. Defaults to 3.
+
+    precision : int
+        The precision to use for floating point values. Defaults to 8.
+    """
+    edgeitems = max(abs(edgeitems), 1)
+    precision = max(abs(precision), 0)
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+    if data.shape == ():
+        data = np.asanyarray([data])  # Handle scalars
+
+    isnumeric = np.issubdtype(data.dtype, np.number)
+
+    def _get_format_str(data):
+        """Return the format string for the datatype."""
+        # default to empty formatting string (default python formatting)
+        fmt = ""
+
+        # for numeric types, explicitly set the formatter based on
+        # type and size of number:
+        if isnumeric:
+            data = data[np.isfinite(data)]
+
+            if data.size == 0:
+                return ""  # no valid data
+
+            abs_non_zero = np.absolute(data[data != 0])
+            abs_max = np.max(abs_non_zero)
+            abs_min = np.min(abs_non_zero)
+
+            exp_max_cutoff = 1e8
+            exp_min_cutoff = 1e-4
+
+            # If we have very large or very small numbers, prefer scientific
+            # number formatting (e.g. 1.2e7)
+            exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+
+            if issubclass(data.dtype.type, np.floating):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = f".{precision}f"
+            elif issubclass(data.dtype.type, np.integer):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = "d"
+        # For all other types, use default python formatting
+        return fmt
+
+    def _format(value: Any) -> str:
+        """Format a single array element in to a string."""
+        if value is np.ma.masked:
+            return "--"
+        elif isnumeric and np.isnan(value):
+            return "nan"
+        elif isnumeric and np.isinf(value):
+            if np.sign(value) < 0:
+                return "-inf"
+            return "inf"
+        else:
+            # apply the formatter
+            s = f"{value:{fmt}}"
+            if isnumeric:
+                s = s.rstrip("0")  # strip trailing zeros.
+            return s
+
+    data = data.ravel()  # flatten multi-dimensional arrays
+
+    if data.size > edgeitems * 2:
+        summary = np.concatenate((data[:edgeitems], data[-edgeitems:]))
+        fmt = _get_format_str(summary)
+        s = (
+            "["
+            + ", ".join(_format(x) for x in summary[:edgeitems])
+            + ", ..., "
+            + ", ".join(_format(x) for x in summary[-edgeitems:])
+            + "]"
+        )
+    else:
+        fmt = _get_format_str(data)
+        s = "[" + ", ".join(_format(x) for x in data) + "]"
+
+    return s
