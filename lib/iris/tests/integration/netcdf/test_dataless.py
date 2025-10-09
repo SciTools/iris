@@ -85,3 +85,18 @@ class TestDataless:
             self._strip_saveload_additions(cube)
         assert read_dataless == dataless
         assert read_dataful == dataful
+
+    def test_nodata_size(self):
+        # Check that a file saved with a large dataless cube does *not* occupy a large
+        # amount of diskspace.
+        ny, nx = 10000, 10000
+        data_dims = (ny, nx)
+        dataless_cube = Cube(shape=data_dims)
+
+        iris.save(dataless_cube, self.test_path)
+
+        data_size_bytes = ny * nx  # bytes, since dtype is "u1" (approx 100Mb)
+        filesize_bytes = self.test_path.stat().st_size
+        # Check that the file size < 1/10 variable array size
+        # The 0.1 is a bit arbitrary, but it makes the point!
+        assert filesize_bytes < 0.1 * data_size_bytes
