@@ -3900,13 +3900,18 @@ class Cube(CFVariableMixin):
         checksum: bool = False,
         order: bool = True,
         byteorder: bool = True,
+        data_stats: bool = False,
     ) -> str:
         """Return a fully valid CubeML string representation of the Cube."""
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
 
             cube_xml_element = self._xml_element(
-                doc, checksum=checksum, order=order, byteorder=byteorder
+                doc,
+                checksum=checksum,
+                order=order,
+                byteorder=byteorder,
+                data_stats=data_stats,
             )
             cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
             doc.appendChild(cube_xml_element)
@@ -3915,7 +3920,9 @@ class Cube(CFVariableMixin):
             doc = self._sort_xml_attrs(doc)
             return iris.util._print_xml(doc)
 
-    def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
+    def _xml_element(
+        self, doc, checksum=False, order=True, byteorder=True, data_stats=False
+    ):
         cube_xml_element = doc.createElement("cube")
 
         if self.standard_name:
@@ -4005,9 +4012,10 @@ class Cube(CFVariableMixin):
         data_xml_element = doc.createElement("data")
         data_xml_element.setAttribute("shape", str(self.shape))
 
-        # NB. Getting a checksum triggers any deferred loading,
+        # NB. Getting a checksum or data stats triggers any deferred loading,
         # in which case it also has the side-effect of forcing the
         # byte order to be native.
+
         if checksum:
             data = self.data
             crc = iris.util.array_checksum(data)
@@ -4017,10 +4025,33 @@ class Cube(CFVariableMixin):
                     crc = iris.util.array_checksum(data.mask)
                     data_xml_element.setAttribute("mask_checksum", crc)
 
-        elif self.has_lazy_data():
-            data_xml_element.setAttribute("state", "deferred")
-        else:
-            data_xml_element.setAttribute("state", "loaded")
+        if data_stats:
+
+            def fixed_std(data):
+                # When data is constant, std() is too sensitive.
+                if data.max() == data.min():
+                    data_std = 0
+                else:
+                    data_std = data.std()
+                return data_std
+
+            data = self.data
+
+            stats_xml_element = doc.createElement("stats")
+            stats_xml_element.setAttribute("std", str(fixed_std(data)))
+            stats_xml_element.setAttribute("min", str(data.min()))
+            stats_xml_element.setAttribute("max", str(data.max()))
+            stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+            stats_xml_element.setAttribute("mean", str(data.mean()))
+
+            data_xml_element.appendChild(stats_xml_element)
+
+        # We only print the "state" if we have not output checksum or data stats:
+        if not (checksum or data_stats):
+            if self.has_lazy_data():
+                data_xml_element.setAttribute("state", "deferred")
+            else:
+                data_xml_element.setAttribute("state", "loaded")
 
         # Add the dtype, and also the array and mask orders if the
         # data is loaded.
