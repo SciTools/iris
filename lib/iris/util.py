@@ -1188,7 +1188,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-def format_array(arr):
+def format_array(arr, edgeitems=3):
     """Create a new axis as the leading dimension of the cube.
 
     Returns the given array as a string, using the python builtin str
@@ -1209,6 +1209,7 @@ def format_array(arr):
     result = np.array2string(
         arr,
         max_line_len,
+        edgeitems=edgeitems,
         separator=", ",
         threshold=85,
     )

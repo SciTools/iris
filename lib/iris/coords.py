@@ -801,7 +801,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """The fundamental shape of the metadata, expressed as a tuple."""
         return self._values_dm.shape
 
-    def xml_element(self, doc, checksum=False):
+    def xml_element(self, doc, checksum=False, numpy_formatting=True):
         """Create XML element.
 
         Create the :class:`xml.dom.minidom.Element` that describes this
@@ -882,7 +882,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term = "indices"
         else:
             values_term = "data"
-        element.setAttribute(values_term, self._xml_array_repr(self._values))
+        element.setAttribute(
+            values_term,
+            self._xml_array_repr(self._values, numpy_formatting=numpy_formatting),
+        )
 
         return element
 
@@ -909,11 +912,14 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return "%08x" % (crc,)
 
     @staticmethod
-    def _xml_array_repr(data, summarised=True, edgeitems=3):
+    def _xml_array_repr(data, numpy_formatting=True, edgeitems=3):
         if hasattr(data, "to_xml_attr"):
             result = data._values.to_xml_attr()
         else:
-            result = iris.util.array_summary(data)
+            if numpy_formatting:
+                result = iris.util.format_array(data, edgeitems=edgeitems)
+            else:
+                result = iris.util.array_summary(data, edgeitems=edgeitems)
         return result
 
     def _value_type_name(self):
@@ -2561,7 +2567,7 @@ class Coord(_DimensionalMetadata):
 
         return result_index
 
-    def xml_element(self, doc):
+    def xml_element(self, doc, numpy_formatting=True):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`Coord`.
 
         Parameters
@@ -2578,11 +2584,14 @@ class Coord(_DimensionalMetadata):
         """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
-        element = super().xml_element(doc=doc)
+        element = super().xml_element(doc=doc, numpy_formatting=numpy_formatting)
 
         # Add bounds, points are handled by the parent class.
         if self.has_bounds():
-            element.setAttribute("bounds", self._xml_array_repr(self.bounds))
+            element.setAttribute(
+                "bounds",
+                self._xml_array_repr(self.bounds, numpy_formatting=numpy_formatting),
+            )
 
         return element
 
@@ -2967,7 +2976,7 @@ class DimCoord(Coord):
     def is_monotonic(self):
         return True
 
-    def xml_element(self, doc):
+    def xml_element(self, doc, **kwargs):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`DimCoord`.
 
         Parameters
@@ -2982,7 +2991,7 @@ class DimCoord(Coord):
             :class:`DimCoord`.
 
         """
-        element = super().xml_element(doc)
+        element = super().xml_element(doc, **kwargs)
         if self.circular:
             element.setAttribute("circular", str(self.circular))
         return element

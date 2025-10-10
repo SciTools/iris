@@ -3901,6 +3901,7 @@ class Cube(CFVariableMixin):
         order: bool = True,
         byteorder: bool = True,
         data_stats: bool = False,
+        numpy_formatting: bool = False,
     ) -> str:
         """Return a fully valid CubeML string representation of the Cube."""
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
@@ -3912,6 +3913,7 @@ class Cube(CFVariableMixin):
                 order=order,
                 byteorder=byteorder,
                 data_stats=data_stats,
+                numpy_formatting=numpy_formatting,
             )
             cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
             doc.appendChild(cube_xml_element)
@@ -3921,7 +3923,13 @@ class Cube(CFVariableMixin):
             return iris.util._print_xml(doc)
 
     def _xml_element(
-        self, doc, checksum=False, order=True, byteorder=True, data_stats=False
+        self,
+        doc,
+        checksum=False,
+        order=True,
+        byteorder=True,
+        data_stats=False,
+        numpy_formatting=True,
     ):
         cube_xml_element = doc.createElement("cube")
 
@@ -3964,7 +3972,9 @@ class Cube(CFVariableMixin):
             dims = list(dimscall(element))
             if dims:
                 xml_element.setAttribute("datadims", repr(dims))
-            xml_element.appendChild(element.xml_element(doc))
+            xml_element.appendChild(
+                element.xml_element(doc, numpy_formatting=numpy_formatting)
+            )
             return xml_element
 
         coords_xml_element = doc.createElement("coords")
