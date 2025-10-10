@@ -53,8 +53,7 @@ def mangle_cubelist(cubelist, dataless_option):
             or dataless_option == "dataless_all"
         ):
             # Make this one dataless
-            cube = cube.copy()
-            cube.data = None
+            cube = cube.copy(iris.DATALESS)
 
         result.append(cube)
 
