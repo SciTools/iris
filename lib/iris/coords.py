@@ -867,7 +867,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 # Add the number of masked elements
                 if np.ma.is_masked(self._values):
                     crc = iris.util.array_checksum(self._values.mask)
-                    element.setAttribute("mask_checksum", crc)
+                else:
+                    crc = "no-masked-elements"
+                element.setAttribute("mask_checksum", crc)
 
         # masked element count:
         if CML_SETTINGS.masked_value_count and np.ma.isMaskedArray(self._values):
@@ -2998,7 +3000,7 @@ class DimCoord(Coord):
     def is_monotonic(self):
         return True
 
-    def xml_element(self, doc, **kwargs):
+    def xml_element(self, doc):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`DimCoord`.
 
         Parameters
@@ -3013,7 +3015,7 @@ class DimCoord(Coord):
             :class:`DimCoord`.
 
         """
-        element = super().xml_element(doc, **kwargs)
+        element = super().xml_element(doc)
         if self.circular:
             element.setAttribute("circular", str(self.circular))
         return element

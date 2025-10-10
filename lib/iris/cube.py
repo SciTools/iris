@@ -4026,7 +4026,9 @@ class Cube(CFVariableMixin):
             if ma.isMaskedArray(data):
                 if ma.is_masked(data):
                     crc = iris.util.array_checksum(data.mask)
-                    data_xml_element.setAttribute("mask_checksum", crc)
+                else:
+                    crc = "no-masked-elements"
+                data_xml_element.setAttribute("mask_checksum", crc)
 
         if CML_SETTINGS.data_array_stats:
 
