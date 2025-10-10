@@ -802,7 +802,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """The fundamental shape of the metadata, expressed as a tuple."""
         return self._values_dm.shape
 
-    def xml_element(self, doc, checksum=False):
+    def xml_element(self, doc):
         """Create XML element.
 
         Create the :class:`xml.dom.minidom.Element` that describes this
@@ -859,7 +859,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         element.setAttribute("shape", str(self.shape))
 
         # data checksum
-        if checksum:
+        if CML_SETTINGS.coord_checksum:
             crc = iris.util.array_checksum(self._values)
             element.setAttribute("checksum", crc)
 
@@ -870,7 +870,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     element.setAttribute("mask_checksum", crc)
 
         # masked element count:
-        if np.ma.isMaskedArray(self._values):
+        if CML_SETTINGS.masked_value_count and np.ma.isMaskedArray(self._values):
             element.setAttribute(
                 "masked_count", str(np.count_nonzero(self._values.mask))
             )
@@ -887,6 +887,26 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term,
             self._xml_array_repr(self._values),
         )
+
+        if iris.util.CML_SETTINGS.coord_data_array_stats:
+
+            def fixed_std(data):  # TODO: Refactor into util module? Used in cube.py too
+                # When data is constant, std() is too sensitive.
+                if data.max() == data.min():
+                    data_std = 0
+                else:
+                    data_std = data.std()
+                return data_std
+
+            data = self._values
+            stats_xml_element = doc.createElement("stats")
+            stats_xml_element.setAttribute("std", str(fixed_std(data)))
+            stats_xml_element.setAttribute("min", str(data.min()))
+            stats_xml_element.setAttribute("max", str(data.max()))
+            stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+            stats_xml_element.setAttribute("mean", str(data.mean()))
+
+            element.appendChild(stats_xml_element)
 
         return element
 

@@ -55,6 +55,7 @@ if TYPE_CHECKING:
     from iris.mesh import MeshCoord
 import iris.exceptions
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
@@ -4027,7 +4028,7 @@ class Cube(CFVariableMixin):
                     crc = iris.util.array_checksum(data.mask)
                     data_xml_element.setAttribute("mask_checksum", crc)
 
-        if iris.util.CML_SETTINGS.data_array_stats:
+        if CML_SETTINGS.data_array_stats:
 
             def fixed_std(data):
                 # When data is constant, std() is too sensitive.
@@ -4049,7 +4050,7 @@ class Cube(CFVariableMixin):
             data_xml_element.appendChild(stats_xml_element)
 
         # We only print the "state" if we have not output checksum or data stats:
-        if not (checksum or iris.util.CML_SETTINGS.data_array_stats):
+        if not (checksum or CML_SETTINGS.data_array_stats):
             if self.has_lazy_data():
                 data_xml_element.setAttribute("state", "deferred")
             else:
@@ -4080,7 +4081,7 @@ class Cube(CFVariableMixin):
                 if array_byteorder is not None:
                     data_xml_element.setAttribute("byteorder", array_byteorder)
 
-            if ma.isMaskedArray(data):
+            if CML_SETTINGS.masked_value_count and ma.isMaskedArray(data):
                 data_xml_element.setAttribute(
                     "masked_count", str(np.count_nonzero(data.mask))
                 )

@@ -9,13 +9,15 @@ from __future__ import annotations
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
 from contextlib import contextmanager
-from copy import copy, deepcopy
+from copy import deepcopy
+from dataclasses import dataclass
 import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
+import threading
 from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
 import zlib
@@ -2870,33 +2872,93 @@ def array_summary(
     return s
 
 
-class _CMLSettings:
-    def __init__(self):
-        self.numpy_formatting = True
-        self.data_array_stats = False
-        self.coord_data_array_stats = False
-        self.array_edgeitems = 3
+@dataclass
+class _CMLSettings(threading.local):
+    """Settings for controlling the behaviour of the CML output.
+
+    Use the ``set`` method of this class as a context manager to temporarily
+    modify the settings.
+
+    Attributes
+    ----------
+    numpy_formatting : bool
+        Whether to use numpy-style formatting for arrays.
+    data_array_stats : bool
+        Whether to include statistics for data arrays.
+    coord_checksum : bool
+            Whether to include a checksum for coordinate data arrays.
+    coord_data_array_stats : bool
+        Whether to include statistics for coordinate data arrays.
+    array_edgeitems : int
+        The number of elements to display at the edges of arrays.
+    masked_value_count : bool
+        Whether to include a count of masked values in the output.
+    """
+
+    numpy_formatting: bool = True
+    data_array_stats: bool = False
+    coord_checksum: bool = False
+    coord_data_array_stats: bool = False
+    array_edgeitems: int = 3
+    masked_value_count: bool = False
 
     @contextmanager
     def set(
         self,
-        numpy_formatting=False,
+        numpy_formatting=True,
         data_array_stats=False,
+        coord_checksum=False,
         coord_data_array_stats=False,
         array_edgeitems=3,
+        masked_value_count=False,
     ):
-        old = copy(self)
+        """Context manager to control the CML output settings.
+
+        Use this method in a `with` statement to override specific output settings
+        of the Cube Metadata Language (CML), e.g. as generated from ``cube.xml()``.
+
+        Example:
+
+        # Generate a CML output for a cube, but also include array statistics for the
+        # cube coordinate data:
+        >>> with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+        ...     print(cube.xml())
+
+
+        Parameters
+        ----------
+        numpy_formatting : bool
+            Whether to use numpy-style formatting for arrays.
+        data_array_stats : bool
+            Whether to include statistics for data arrays.
+        coord_checksum : bool
+            Whether to include a checksum for coordinate data arrays.
+        coord_data_array_stats : bool
+            Whether to include statistics for coordinate data arrays.
+        array_edgeitems : int
+            The number of elements to display at the edges of arrays.
+        masked_value_count : bool
+            Whether to include a count of masked values in the output.
+        """
+        # Keep track of current state:
+        prev_state = self.__dict__.copy()
+
+        # Set new values:
         self.numpy_formatting = numpy_formatting
         self.data_array_stats = data_array_stats
+        self.coord_checksum = coord_checksum
         self.coord_data_array_stats = coord_data_array_stats
         self.array_edgeitems = array_edgeitems
+        self.masked_value_count = masked_value_count
 
-        yield
+        # Try/finally block needed to ensure previous state is reinstated
+        # if code yielded to raises an exception.
+        try:
+            yield
 
-        self.numpy_formatting = old.numpy_formatting
-        self.data_array_stats = old.data_array_stats
-        self.coord_data_array_stats = old.coord_data_array_stats
-        self.array_edgeitems = old.array_edgeitems
+        finally:
+            # Reinstate previous values
+            self.__dict__.update(prev_state)
 
 
 # Global CML settings object for use as context manager
