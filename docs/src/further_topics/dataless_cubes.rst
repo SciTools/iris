@@ -53,7 +53,8 @@ This is equivalent to ``cube2 = cube.copy(); cube2.data = None``.
 Save and Load
 -------------
 The netcdf file interface can save and re-load dataless cubes correctly.
-See : :ref:`netcdf_dataless`.
+TODO: link to ref e.g. "netcdf_dataless" in netcdf docs,
+when #6339 "Dataless netcdf save+load" is in place.
 
 
 .. _dataless_merge:

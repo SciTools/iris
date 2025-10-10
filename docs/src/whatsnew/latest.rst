@@ -42,11 +42,8 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
    re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
+   Also added a new documentation section on dataless cubes.
    (:issue:`5770`, :pull:`6581`)
-
-#. `@pp-mo`_ added a documentation section on dataless cubes.
-   See: :ref:`dataless-cubes`.
-   (:issue:`XXX`, :pull:`XXX`)
 
 
 🐛 Bugs Fixed
