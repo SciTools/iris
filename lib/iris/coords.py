@@ -32,6 +32,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
@@ -801,7 +802,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         """The fundamental shape of the metadata, expressed as a tuple."""
         return self._values_dm.shape
 
-    def xml_element(self, doc, checksum=False, numpy_formatting=True):
+    def xml_element(self, doc, checksum=False):
         """Create XML element.
 
         Create the :class:`xml.dom.minidom.Element` that describes this
@@ -884,7 +885,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term = "data"
         element.setAttribute(
             values_term,
-            self._xml_array_repr(self._values, numpy_formatting=numpy_formatting),
+            self._xml_array_repr(self._values),
         )
 
         return element
@@ -912,11 +913,12 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         return "%08x" % (crc,)
 
     @staticmethod
-    def _xml_array_repr(data, numpy_formatting=True, edgeitems=3):
+    def _xml_array_repr(data):
         if hasattr(data, "to_xml_attr"):
             result = data._values.to_xml_attr()
         else:
-            if numpy_formatting:
+            edgeitems = CML_SETTINGS.array_edgeitems
+            if CML_SETTINGS.numpy_formatting:
                 result = iris.util.format_array(data, edgeitems=edgeitems)
             else:
                 result = iris.util.array_summary(data, edgeitems=edgeitems)
@@ -2567,7 +2569,7 @@ class Coord(_DimensionalMetadata):
 
         return result_index
 
-    def xml_element(self, doc, numpy_formatting=True):
+    def xml_element(self, doc):
         """Create the :class:`xml.dom.minidom.Element` that describes this :class:`Coord`.
 
         Parameters
@@ -2584,13 +2586,13 @@ class Coord(_DimensionalMetadata):
         """
         # Create the XML element as the camelCaseEquivalent of the
         # class name
-        element = super().xml_element(doc=doc, numpy_formatting=numpy_formatting)
+        element = super().xml_element(doc=doc)
 
         # Add bounds, points are handled by the parent class.
         if self.has_bounds():
             element.setAttribute(
                 "bounds",
-                self._xml_array_repr(self.bounds, numpy_formatting=numpy_formatting),
+                self._xml_array_repr(self.bounds),
             )
 
         return element

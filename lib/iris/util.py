@@ -8,7 +8,8 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
-from copy import deepcopy
+from contextlib import contextmanager
+from copy import copy, deepcopy
 import functools
 import inspect
 import os
@@ -2867,3 +2868,36 @@ def array_summary(
         s = "[" + ", ".join(_format(x) for x in data) + "]"
 
     return s
+
+
+class _CMLSettings:
+    def __init__(self):
+        self.numpy_formatting = True
+        self.data_array_stats = False
+        self.coord_data_array_stats = False
+        self.array_edgeitems = 3
+
+    @contextmanager
+    def set(
+        self,
+        numpy_formatting=False,
+        data_array_stats=False,
+        coord_data_array_stats=False,
+        array_edgeitems=3,
+    ):
+        old = copy(self)
+        self.numpy_formatting = numpy_formatting
+        self.data_array_stats = data_array_stats
+        self.coord_data_array_stats = coord_data_array_stats
+        self.array_edgeitems = array_edgeitems
+
+        yield
+
+        self.numpy_formatting = old.numpy_formatting
+        self.data_array_stats = old.data_array_stats
+        self.coord_data_array_stats = old.coord_data_array_stats
+        self.array_edgeitems = old.array_edgeitems
+
+
+# Global CML settings object for use as context manager
+CML_SETTINGS: _CMLSettings = _CMLSettings()
