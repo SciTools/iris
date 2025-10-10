@@ -477,6 +477,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         with pytest.raises(ValueError, match=msg):
             iris.save(self.testdata, nc_dataset, saver="nc")
 
+    # TODO: this test is sometimes hanging.
     def test_path_string_save_same(self):
         # Ensure that save to a Path is the same as passing a filepath string.
         # Apart from general utility, checks that we won't mistake a Path for a Dataset.

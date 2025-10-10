@@ -8,12 +8,23 @@ Intention is that no other Iris module should import the netCDF4 module.
 
 """
 
-from abc import ABC
+from abc import ABC, abstractmethod
+from contextlib import contextmanager
+from pathlib import Path
 from threading import Lock
 import typing
 
 import netCDF4
 import numpy as np
+
+from . import _dask_locks
+from ._dask_locks import get_worker_lock
+
+if typing.TYPE_CHECKING:
+    try:
+        from distributed import Lock as DistributedLock
+    except ImportError:
+        DistributedLock = Lock
 
 _GLOBAL_NETCDF4_LOCK = Lock()
 
@@ -307,6 +318,142 @@ class DatasetWrapper(GroupWrapper):
         return cls.from_existing(instance)
 
 
+class ManagedDatasets:
+    class LockingDS(typing.NamedTuple):
+        dataset: DatasetWrapper
+        lock: Lock
+
+    class _IoManager(ABC):
+        def __init__(self, path: Path):
+            self.path = path
+
+        @contextmanager
+        @abstractmethod
+        def acquire(self) -> typing.Generator[DatasetWrapper, None, None]:
+            pass
+        
+        @abstractmethod
+        def close(self) -> None:
+            pass
+        
+        def __del__(self) -> None:
+            self.close()
+            
+    class _Reader(_IoManager):
+        # Threads must not share DATASETS.
+        # Multiple Datasets can be open for reading simultaneously.
+        # But threads must still not share DATASETS - locking is per-DATASET.
+        def __init__(self, path: Path):
+            super().__init__(path)
+            self._lock = Lock()
+            self._pool: list[ManagedDatasets.LockingDS] = []
+
+        @contextmanager
+        def acquire(self) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
+
+            # Prevent multiple threads grabbing dataset(s) simultaneously.
+            with self._lock:
+                all_unlocked = filter(lambda l: not l.lock.locked(), self._pool)
+                try:
+                    locking_ds = next(all_unlocked)
+                except StopIteration:
+                    locking_ds = ManagedDatasets.LockingDS(
+                        dataset=DatasetWrapper(self.path, mode="r"),
+                        lock=Lock(),
+                    )
+                    self._pool.append(locking_ds)
+
+            with locking_ds.lock:
+                yield locking_ds.dataset
+
+        def close(self) -> None:
+            with self._lock:
+                for locking_ds in self._pool:
+                    with locking_ds.lock:
+                        locking_ds.dataset.close()
+                self._pool.clear()
+    
+    class _Writer(_IoManager):
+        # Only one Dataset can be open for writing at a time.
+        # Therefore, threads must not share FILES - locking is per-FILE.
+        def __init__(self, path: Path):
+            super().__init__(path)
+            # Files might be shared between processes/nodes, so
+            #  threading.Lock is not always adequate.
+            self._lock = _dask_locks.get_worker_lock(str(path))
+            self._dataset: typing.Optional[DatasetWrapper] = None
+
+        @contextmanager
+        def acquire(self) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
+            with self._lock:
+                if _dask_locks.dask_scheduler_is_distributed():
+                    # Distributed processes cannot share Dataset instances, but
+                    #  only 1 Dataset can be open for writing at a time.
+                    #  Must therefore create-and-destroy at every call.
+                    # High volume of opens/closes via DatasetWrapper causes
+                    #  problems with invalid IDs, so directly use netCDF4 instead.
+                    with _GLOBAL_NETCDF4_LOCK:
+                        dataset = netCDF4.Dataset(self.path, mode="r+")
+                        try:
+                            yield dataset
+                        finally:
+                            dataset.close()
+
+                else:
+                    if self._dataset is None:
+                        self._dataset = DatasetWrapper(self.path, mode="r+")
+                    yield self._dataset
+
+        def close(self) -> None:
+            with self._lock:
+                if self._dataset is not None:
+                    self._dataset.close()
+                    self._dataset = None
+
+    def __init__(self):
+        self._lock = Lock()
+        self._managers: dict[Path, ManagedDatasets._IoManager] = {}
+
+    @contextmanager
+    def checkout(self, path: Path, write=False):
+        with self._lock:
+            # Prevent multiple threads modifying _managers simultaneously.
+
+            if write:
+                manager_cls = ManagedDatasets._Writer
+            else:
+                manager_cls = ManagedDatasets._Reader
+            correct_mode = isinstance(self._managers.get(path), manager_cls)
+            if path not in self._managers or not correct_mode:
+                manager = manager_cls(path)
+                self._managers[path] = manager
+            else:
+                manager = self._managers[path]
+
+        with manager.acquire() as dataset:
+            yield dataset
+
+    def close_file(self, path: Path):
+        with self._lock:
+            if path in self._managers:
+                del self._managers[path]
+
+
+MANAGED_DATASETS = ManagedDatasets()
+
+# DATASET_MANAGER = DatasetManager()
+
+
+# class DatasetAccessors:
+#     def __init__(self):
+#         self.register: dict[tuple[Path, str], DatasetAccesor] = {}
+#
+#     def get_accessor(self, path: Path, mode: str) -> DatasetAccessor:
+#         if (path, mode) not in self.register:
+#             self.register[(path, mode)] = DatasetAccessor(path, mode)
+#         return self.register[(path, mode)]
+
+
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
@@ -328,19 +475,26 @@ class NetCDFDataProxy:
     def dask_meta(self):
         return np.ma.array(np.empty((0,) * self.ndim, dtype=self.dtype), mask=True)
 
+    # def _get_dataset(self) -> DatasetWrapper:
+    #     if self._dataset is None:
+    #         self._dataset = DatasetWrapper(self.path)
+    #     return self._dataset
+    #
+    # def close(self):
+    #     if self._dataset is not None:
+    #         self._dataset.close()
+    #         self._dataset = None
+
     def __getitem__(self, keys):
-        # Using a DatasetWrapper causes problems with invalid ID's and the
-        # netCDF4 library, presumably because __getitem__ gets called so many
-        # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
-        with _GLOBAL_NETCDF4_LOCK:
-            dataset = netCDF4.Dataset(self.path)
-            try:
-                variable = dataset.variables[self.variable_name]
-                # Get the NetCDF variable data and slice.
-                var = variable[keys]
-            finally:
-                dataset.close()
-        return np.asanyarray(var)
+        with MANAGED_DATASETS.checkout(self.path) as dataset:
+            variable = dataset.variables[self.variable_name]
+            var = variable[keys]
+            return np.asanyarray(var)
+        # accessor = DatasetAccessor(self.path, "r", self.variable_name)
+        # variable = dataset.variables[self.variable_name]
+        # # Get the NetCDF variable data and slice.
+        # var = accessor[keys]
+        # return np.asanyarray(var)
 
     def __repr__(self):
         fmt = (
@@ -356,6 +510,15 @@ class NetCDFDataProxy:
     def __setstate__(self, state):
         for key, value in state.items():
             setattr(self, key, value)
+
+    def __del__(self):
+        MANAGED_DATASETS.close_file(self.path)
+
+    # def __del__(self):
+    #     # TODO: are there use cases where the containing Dask array is computed
+    #     #  but kept around? These cases would leave the file open - would that
+    #     #  cause problems?
+    #     self.close()
 
 
 class NetCDFWriteProxy:
@@ -376,26 +539,36 @@ class NetCDFWriteProxy:
         self.lock = file_write_lock
 
     def __setitem__(self, keys, array_data):
-        # Write to the variable.
-        # First acquire a file-specific lock for all workers writing to this file.
-        self.lock.acquire()
-        # Open the file for writing + write to the specific file variable.
-        # Exactly as above, in NetCDFDataProxy : a DatasetWrapper causes problems with
-        # invalid ID's and the netCDF4 library, for so-far unknown reasons.
-        # Instead, use _GLOBAL_NETCDF4_LOCK, and netCDF4 _directly_.
-        with _GLOBAL_NETCDF4_LOCK:
-            dataset = None
-            try:
-                dataset = netCDF4.Dataset(self.path, "r+")
-                var = dataset.variables[self.varname]
-                var[keys] = array_data
-            finally:
-                try:
-                    if dataset:
-                        dataset.close()
-                finally:
-                    # *ALWAYS* let go !
-                    self.lock.release()
+        # # Write to the variable.
+        # # First acquire a file-specific lock for all workers writing to this file.
+        # self.lock.acquire()
+        # # Open the file for writing + write to the specific file variable.
+        # # Exactly as above, in NetCDFDataProxy : a DatasetWrapper causes problems with
+        # # invalid ID's and the netCDF4 library, for so-far unknown reasons.
+        # # Instead, use _GLOBAL_NETCDF4_LOCK, and netCDF4 _directly_.
+
+        # with _GLOBAL_NETCDF4_LOCK:
+        #     dataset = None
+        #     try:
+        #         dataset = netCDF4.Dataset(self.path, "r+")
+        #         var = dataset.variables[self.varname]
+        #         var[keys] = array_data
+        #     finally:
+        #         try:
+        #             if dataset:
+        #                 dataset.close()
+        #         finally:
+        #             # *ALWAYS* let go !
+        #             self.lock.release()
+
+        # TODO: has the manager solution bypassed the need for file_write_lock?
+        with MANAGED_DATASETS.checkout(self.path, write=True) as dataset:
+            var = dataset.variables[self.varname]
+            var[keys] = array_data
+
+    def __del__(self):
+        MANAGED_DATASETS.close_file(self.path)
+
 
     def __repr__(self):
         return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"

@@ -2580,6 +2580,9 @@ class Saver:
 
         # Complete the saves now
         dask.compute(self.delayed_completion())
+        # So long as DataProxy objects still exist, NetCDF Dataset objects might
+        #  still exist - 'holding' the file open.
+        self._delayed_writes.clear()
 
 
 def save(
