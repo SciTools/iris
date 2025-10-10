@@ -331,14 +331,14 @@ class ManagedDatasets:
         @abstractmethod
         def acquire(self) -> typing.Generator[DatasetWrapper, None, None]:
             pass
-        
+
         @abstractmethod
         def close(self) -> None:
             pass
-        
+
         def __del__(self) -> None:
             self.close()
-            
+
     class _Reader(_IoManager):
         # Threads must not share DATASETS.
         # Multiple Datasets can be open for reading simultaneously.
@@ -349,8 +349,9 @@ class ManagedDatasets:
             self._pool: list[ManagedDatasets.LockingDS] = []
 
         @contextmanager
-        def acquire(self) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
-
+        def acquire(
+            self,
+        ) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
             # Prevent multiple threads grabbing dataset(s) simultaneously.
             with self._lock:
                 all_unlocked = filter(lambda l: not l.lock.locked(), self._pool)
@@ -372,7 +373,7 @@ class ManagedDatasets:
                     with locking_ds.lock:
                         locking_ds.dataset.close()
                 self._pool.clear()
-    
+
     class _Writer(_IoManager):
         # Only one Dataset can be open for writing at a time.
         # Therefore, threads must not share FILES - locking is per-FILE.
@@ -384,7 +385,9 @@ class ManagedDatasets:
             self._dataset: typing.Optional[DatasetWrapper] = None
 
         @contextmanager
-        def acquire(self) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
+        def acquire(
+            self,
+        ) -> typing.Generator[DatasetWrapper | netCDF4.Dataset, None, None]:
             with self._lock:
                 if _dask_locks.dask_scheduler_is_distributed():
                     # Distributed processes cannot share Dataset instances, but
@@ -568,7 +571,6 @@ class NetCDFWriteProxy:
 
     def __del__(self):
         MANAGED_DATASETS.close_file(self.path)
-
 
     def __repr__(self):
         return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
