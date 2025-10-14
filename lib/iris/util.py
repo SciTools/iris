@@ -2913,13 +2913,13 @@ class _CMLSettings(threading.local):
     @contextmanager
     def set(
         self,
-        numpy_formatting=True,
-        data_array_stats=False,
-        coord_checksum=False,
-        coord_data_array_stats=False,
-        coord_order=False,
-        array_edgeitems=3,
-        masked_value_count=False,
+        numpy_formatting=None,
+        data_array_stats=None,
+        coord_checksum=None,
+        coord_data_array_stats=None,
+        coord_order=None,
+        array_edgeitems=None,
+        masked_value_count=None,
     ):
         """Context manager to control the CML output settings.
 
@@ -2936,32 +2936,27 @@ class _CMLSettings(threading.local):
 
         Parameters
         ----------
-        numpy_formatting : bool
+        numpy_formatting : bool or None, optional
             Whether to use numpy-style formatting for arrays.
-        data_array_stats : bool
+        data_array_stats : bool or None, optional
             Whether to include statistics for data arrays.
-        coord_checksum : bool
+        coord_checksum : bool or None, optional
             Whether to include a checksum for coordinate data arrays.
-        coord_data_array_stats : bool
+        coord_data_array_stats : bool or None, optional
             Whether to include statistics for coordinate data arrays.
-        coord_order : bool
+        coord_order : bool or None, optional
             Whether to output the array ordering (i.e. Fortran/C) for coordinate data arrays.
-        array_edgeitems : int
+        array_edgeitems : int or None, optional
             The number of elements to display at the edges of arrays.
-        masked_value_count : bool
+        masked_value_count : bool or None, optional
             Whether to include a count of masked values in the output.
         """
         # Keep track of current state:
         prev_state = self.__dict__.copy()
 
-        # Set new values:
-        self.numpy_formatting = numpy_formatting
-        self.data_array_stats = data_array_stats
-        self.coord_checksum = coord_checksum
-        self.coord_data_array_stats = coord_data_array_stats
-        self.coord_order = coord_order
-        self.array_edgeitems = array_edgeitems
-        self.masked_value_count = masked_value_count
+        # Set new values for non-None arguments:
+        opts = {k: v for k, v in list(locals().items()) if v is not None}
+        self.__dict__.update(opts)
 
         # Try/finally block needed to ensure previous state is reinstated
         # if code yielded to raises an exception.
