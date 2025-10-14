@@ -854,6 +854,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             if self.coord_system:
                 element.appendChild(self.coord_system.xml_element(doc))
 
+        is_masked_array = np.ma.isMaskedArray(self._values)
+
         # Add the values
         element.setAttribute("value_type", str(self._value_type_name()))
         element.setAttribute("shape", str(self.shape))
@@ -863,7 +865,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             crc = iris.util.array_checksum(self._values)
             element.setAttribute("checksum", crc)
 
-            if np.ma.isMaskedArray(self._values):
+            if is_masked_array:
                 # Add the number of masked elements
                 if np.ma.is_masked(self._values):
                     crc = iris.util.array_checksum(self._values.mask)
@@ -871,8 +873,22 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     crc = "no-masked-elements"
                 element.setAttribute("mask_checksum", crc)
 
+        # array ordering:
+        def _order(array):
+            order = ""
+            if array.flags["C_CONTIGUOUS"]:
+                order = "C"
+            elif array.flags["F_CONTIGUOUS"]:
+                order = "F"
+            return order
+
+        if CML_SETTINGS.coord_order:
+            element.setAttribute("order", _order(self._values))
+            if is_masked_array:
+                element.setAttribute("mask_order", _order(self._values.mask))
+
         # masked element count:
-        if CML_SETTINGS.masked_value_count and np.ma.isMaskedArray(self._values):
+        if CML_SETTINGS.masked_value_count and is_masked_array:
             element.setAttribute(
                 "masked_count", str(np.count_nonzero(self._values.mask))
             )

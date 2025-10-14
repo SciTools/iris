@@ -4083,10 +4083,11 @@ class Cube(CFVariableMixin):
                 if array_byteorder is not None:
                     data_xml_element.setAttribute("byteorder", array_byteorder)
 
-            if CML_SETTINGS.masked_value_count and ma.isMaskedArray(data):
-                data_xml_element.setAttribute(
-                    "masked_count", str(np.count_nonzero(data.mask))
-                )
+            if ma.isMaskedArray(data):
+                if CML_SETTINGS.masked_value_count:
+                    data_xml_element.setAttribute(
+                        "masked_count", str(np.count_nonzero(data.mask))
+                    )
                 if order:
                     data_xml_element.setAttribute("mask_order", _order(data.mask))
 

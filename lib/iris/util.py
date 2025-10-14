@@ -2896,31 +2896,17 @@ def array_summary(
 
 @dataclass
 class _CMLSettings(threading.local):
-    """Settings for controlling the behaviour of the CML output.
+    """Settings for controlling the behaviour and formatting of the CML output.
 
     Use the ``set`` method of this class as a context manager to temporarily
     modify the settings.
-
-    Attributes
-    ----------
-    numpy_formatting : bool
-        Whether to use numpy-style formatting for arrays.
-    data_array_stats : bool
-        Whether to include statistics for data arrays.
-    coord_checksum : bool
-            Whether to include a checksum for coordinate data arrays.
-    coord_data_array_stats : bool
-        Whether to include statistics for coordinate data arrays.
-    array_edgeitems : int
-        The number of elements to display at the edges of arrays.
-    masked_value_count : bool
-        Whether to include a count of masked values in the output.
     """
 
     numpy_formatting: bool = True
     data_array_stats: bool = False
     coord_checksum: bool = False
     coord_data_array_stats: bool = False
+    coord_order: bool = False
     array_edgeitems: int = 3
     masked_value_count: bool = False
 
@@ -2931,6 +2917,7 @@ class _CMLSettings(threading.local):
         data_array_stats=False,
         coord_checksum=False,
         coord_data_array_stats=False,
+        coord_order=False,
         array_edgeitems=3,
         masked_value_count=False,
     ):
@@ -2957,6 +2944,8 @@ class _CMLSettings(threading.local):
             Whether to include a checksum for coordinate data arrays.
         coord_data_array_stats : bool
             Whether to include statistics for coordinate data arrays.
+        coord_order : bool
+            Whether to output the array ordering (i.e. Fortran/C) for coordinate data arrays.
         array_edgeitems : int
             The number of elements to display at the edges of arrays.
         masked_value_count : bool
@@ -2970,6 +2959,7 @@ class _CMLSettings(threading.local):
         self.data_array_stats = data_array_stats
         self.coord_checksum = coord_checksum
         self.coord_data_array_stats = coord_data_array_stats
+        self.coord_order = coord_order
         self.array_edgeitems = array_edgeitems
         self.masked_value_count = masked_value_count
 
