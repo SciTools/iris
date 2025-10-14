@@ -2745,7 +2745,22 @@ def make_gridcube(
 
 
 def array_checksum(data: np.typing.ArrayLike) -> str:
-    """Calculate a checksum for a numpy array."""
+    """Calculate a checksum for an array.
+
+    Returns the crc32 checksum of the array data as a hex string.
+    Masked data is filled with zeros before calculating to ensure
+    that the checksum is not sensitive to unset values.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to calculate the checksum for.
+
+    Returns
+    -------
+    str :
+        32 bit checksum hexstring, e.g. '0x1a2b3c4d'.
+    """
 
     # Ensure consistent memory layout for checksums.
     def normalise(data):
@@ -2754,6 +2769,8 @@ def array_checksum(data: np.typing.ArrayLike) -> str:
             data = data.byteswap(False)
             data.dtype = data.dtype.newbyteorder("<")
         return data
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
 
     if ma.isMaskedArray(data):
         # Fill in masked values to avoid the checksum being
@@ -2789,6 +2806,11 @@ def array_summary(
 
     precision : int
         The precision to use for floating point values. Defaults to 8.
+
+    Returns
+    -------
+    str :
+        A string formatted summary of the array.
     """
     edgeitems = max(abs(edgeitems), 1)
     precision = max(abs(precision), 0)
