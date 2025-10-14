@@ -4612,8 +4612,6 @@ x            -              -
                     STASH                       m01s00i024
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("aggregated_by")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4716,59 +4714,64 @@ x            -              -
             orig_id = id(self.coord(coord))
             coord_mapping[orig_id] = coord
 
-        # Determine the group-by cube data shape.
-        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
-        data_shape[dimension_to_groupby] = len(groupby)
+        if not self.is_dataless():
+            # Determine the group-by cube data shape.
+            data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
+            data_shape[dimension_to_groupby] = len(groupby)
 
-        # Choose appropriate data and functions for data aggregation.
-        if aggregator.lazy_func is not None and self.has_lazy_data():
-            input_data = self.lazy_data()
-            agg_method = aggregator.lazy_aggregate
-        else:
-            input_data = self.data
-            agg_method = aggregator.aggregate
+            # Choose appropriate data and functions for data aggregation.
+            if aggregator.lazy_func is not None and self.has_lazy_data():
+                input_data = self.lazy_data()
+                agg_method = aggregator.lazy_aggregate
+            else:
+                input_data = self.data
+                agg_method = aggregator.aggregate
 
-        # Create data and weights slices.
-        front_slice = (slice(None),) * dimension_to_groupby
-        back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
+            # Create data and weights slices.
+            front_slice = (slice(None),) * dimension_to_groupby
+            back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
 
-        groupby_subarrs = (
-            iris.util._slice_data_with_keys(
-                input_data, front_slice + (groupby_slice,) + back_slice
-            )[1]
-            for groupby_slice in groupby.group()
-        )
-
-        if weights is not None:
-            groupby_subweights = (
-                weights[front_slice + (groupby_slice,) + back_slice]
+            groupby_subarrs = (
+                iris.util._slice_data_with_keys(
+                    input_data,
+                    front_slice + (groupby_slice,) + back_slice,
+                    shape=(self.shape),
+                )[1]
                 for groupby_slice in groupby.group()
             )
-        else:
-            groupby_subweights = (None for _ in range(len(groupby)))
 
-        # Aggregate data slices.
-        agg = iris.analysis.create_weighted_aggregator_fn(
-            agg_method, axis=dimension_to_groupby, **kwargs
-        )
-        result = tuple(map(agg, groupby_subarrs, groupby_subweights))
+            if weights is not None:
+                groupby_subweights = (
+                    weights[front_slice + (groupby_slice,) + back_slice]
+                    for groupby_slice in groupby.group()
+                )
+            else:
+                groupby_subweights = (None for _ in range(len(groupby)))
 
-        # If weights are returned, "result" is a list of tuples (each tuple
-        # contains two elements; the first is the aggregated data, the
-        # second is the aggregated weights). Convert these to two lists
-        # (one for the aggregated data and one for the aggregated weights)
-        # before combining the different slices.
-        if return_weights:
-            data_result, weights_result = list(zip(*result))
-            aggregateby_weights = _lazy.stack(weights_result, axis=dimension_to_groupby)
-        else:
-            data_result = result
-            aggregateby_weights = None
+            # Aggregate data slices.
+            agg = iris.analysis.create_weighted_aggregator_fn(
+                agg_method, axis=dimension_to_groupby, **kwargs
+            )
+            result = tuple(map(agg, groupby_subarrs, groupby_subweights))
 
-        aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
-        # Ensure plain ndarray is output if plain ndarray was input.
-        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
-            aggregateby_data = ma.getdata(aggregateby_data)
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if return_weights:
+                data_result, weights_result = list(zip(*result))
+                aggregateby_weights = _lazy.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                data_result = result
+                aggregateby_weights = None
+
+            aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
+            # Ensure plain ndarray is output if plain ndarray was input.
+            if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
+                aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
@@ -4810,13 +4813,14 @@ x            -              -
             aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
         # Attach the aggregate-by data into the aggregate-by cube.
-        if aggregateby_weights is None:
-            data_result = aggregateby_data
-        else:
-            data_result = (aggregateby_data, aggregateby_weights)
-        aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, data_result, coordinates, **kwargs
-        )
+        if not self.is_dataless():
+            if aggregateby_weights is None:
+                data_result = aggregateby_data
+            else:
+                data_result = (aggregateby_data, aggregateby_weights)
+            aggregateby_cube = aggregator.post_process(
+                aggregateby_cube, data_result, coordinates, **kwargs
+            )
 
         return aggregateby_cube
 
