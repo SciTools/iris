@@ -2235,19 +2235,13 @@ def mask_cube_from_shapefile(
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shapefile object.
 
+    Notes
+    -----
     .. deprecated:: 3.14
-        This function is scheduled for removal in a future release, being
-        replaced by :func:`iris.util.mask_cube_from_shape`, which offers richer
-        shape handling.
 
-    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via cartopy).
-    Finds the overlap between the `shape` and the :class:`~iris.cube.Cube` and
-    masks out any cells that __do not__ intersect the shape.
-
-    See Also
-    --------
-    :func:`~iris.util.mask_cube_from_shape`
-        The preferred function for masking a cube with a shape object.
+        :func:`mask_cube_from_shapefile` function is scheduled for removal in a
+        future release, being replaced by :func:`iris.util.mask_cube_from_shape`,
+        which offers richer shape handling.
     """
     message = (
         "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
