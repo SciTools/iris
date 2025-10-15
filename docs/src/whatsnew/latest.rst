@@ -70,10 +70,18 @@ This document explains the changes made to Iris for this release
 #. N/A
 
 
-🚀 Performance Enhancements
-===========================
+🚀 Performance
+==============
 
-#. N/A
+#. `@trexfeathers`_ investigated a significant performance regression in NetCDF
+   loading and saving, caused by ``libnetcdf`` version ``4.9.3``.
+   The regression is equal to several milliseconds per chunk
+   of parallel operation; so a dataset containing ~100 chunks could be around
+   0.5 seconds slower to load or save. This regression will NOT be fixed within
+   Iris - doing so would introduce unacceptable complexity and potential
+   concurrency problems. The regession has been reported to the NetCDF team; it
+   is hoped that a future ``libnetcdf`` release will recover the original
+   performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
 
 🔥 Deprecations
@@ -126,3 +134,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183
