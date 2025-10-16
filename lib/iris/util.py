@@ -2835,15 +2835,19 @@ def array_summary(
                 return ""  # no valid data
 
             abs_non_zero = np.absolute(data[data != 0])
-            abs_max = np.max(abs_non_zero)
-            abs_min = np.min(abs_non_zero)
 
-            exp_max_cutoff = 1e8
-            exp_min_cutoff = 1e-4
+            if abs_non_zero.size:
+                abs_max = np.max(abs_non_zero)
+                abs_min = np.min(abs_non_zero)
 
-            # If we have very large or very small numbers, prefer scientific
-            # number formatting (e.g. 1.2e7)
-            exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+                exp_max_cutoff = 1e8
+                exp_min_cutoff = 1e-4
+
+                # If we have very large or very small numbers, prefer scientific
+                # number formatting (e.g. 1.2e7)
+                exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+            else:
+                exp_mode = False  # all data is zero
 
             if issubclass(data.dtype.type, np.floating):
                 if exp_mode:
@@ -2871,8 +2875,10 @@ def array_summary(
         else:
             # apply the formatter
             s = f"{value:{fmt}}"
-            if isnumeric:
-                s = s.rstrip("0")  # strip trailing zeros.
+            if isnumeric and np.issubdtype(type(value), np.floating):
+                s = s.rstrip("0")  # strip trailing zeros from floats
+            elif isinstance(value, (str, bytes)):
+                s = f"'{s}'"  # quote strings
             return s
 
     data = data.ravel()  # flatten multi-dimensional arrays

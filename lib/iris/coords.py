@@ -906,7 +906,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             self._xml_array_repr(self._values),
         )
 
-        if iris.util.CML_SETTINGS.coord_data_array_stats:
+        if iris.util.CML_SETTINGS.coord_data_array_stats and len(self._values) > 1:
 
             def fixed_std(data):  # TODO: Refactor into util module? Used in cube.py too
                 # When data is constant, std() is too sensitive.
@@ -917,14 +917,15 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 return data_std
 
             data = self._values
-            stats_xml_element = doc.createElement("stats")
-            stats_xml_element.setAttribute("std", str(fixed_std(data)))
-            stats_xml_element.setAttribute("min", str(data.min()))
-            stats_xml_element.setAttribute("max", str(data.max()))
-            stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
-            stats_xml_element.setAttribute("mean", str(data.mean()))
+            if np.issubdtype(data.dtype.type, np.number):
+                stats_xml_element = doc.createElement("stats")
+                stats_xml_element.setAttribute("std", str(fixed_std(data)))
+                stats_xml_element.setAttribute("min", str(data.min()))
+                stats_xml_element.setAttribute("max", str(data.max()))
+                stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+                stats_xml_element.setAttribute("mean", str(data.mean()))
 
-            element.appendChild(stats_xml_element)
+                element.appendChild(stats_xml_element)
 
         return element
 
