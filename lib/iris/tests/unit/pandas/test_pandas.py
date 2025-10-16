@@ -660,6 +660,7 @@ class TestSeriesAsCube:
             request,
             iris.pandas.as_cube(series),
             _shared_utils.get_result_path(("pandas", "as_cube", "series_object.cml")),
+            coord_checksum=False,  # Objects don't have reliable hash values
         )
 
     def test_series_masked(self, request):
@@ -780,6 +781,7 @@ class TestDataFrameAsCube:
             _shared_utils.get_result_path(
                 ("pandas", "as_cube", "data_frame_multidim.cml")
             ),
+            coord_checksum=False,  # column names stored as objects which don't have reliable hash values
         )
 
     def test_data_frame_cftime_360(self, request):
