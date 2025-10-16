@@ -78,6 +78,10 @@ This document explains the changes made to Iris for this release
    is hoped that a future ``libnetcdf`` release will recover the original
    performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
+#. `@stephenworsley`_ reduced the memory load for regridding and other operations
+   using :func:`~iris._lazy_data.map_complete_blocks` when the output chunks would
+   exceed the optimum chunksize set in dask. (:pull:`6730`)
+
 
 🔥 Deprecations
 ===============
