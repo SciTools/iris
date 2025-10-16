@@ -2945,7 +2945,7 @@ class _CMLSettings(threading.local):
         numpy_formatting : bool or None, optional
             Whether to use numpy-style formatting for arrays.
         data_array_stats : bool or None, optional
-            Whether to include statistics for data arrays.
+            Whether to include statistics for cube data array.
         coord_checksum : bool or None, optional
             Whether to include a checksum for coordinate data arrays.
         coord_data_array_stats : bool or None, optional
