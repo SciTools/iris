@@ -417,20 +417,29 @@ def assert_CML(
         reference_filename = result_path(request, None, "cml")
     # Note: reference_path could be a tuple of path parts
     reference_path = get_result_path(reference_filename)
+
+    # default CML output options for tests:
+    format_options = {
+        "numpy_formatting": False,
+    }
+
     if approx_data:
-        # compare data payload stats against known good stats
-        checksum = False  # ensure we are not comparing data checksums
+        # compare data payload stats against known good stats.
+        # Make sure options that compare exact data are disabled:
+        checksum = False
+        format_options["data_array_stats"] = False
+
         for i, cube in enumerate(cubes):
             # Build the json stats filename based on CML file path:
             fname = reference_path.removesuffix(".cml")
             fname += f".data.{i}.json"
             assert_data_almost_equal(cube.data, fname, **kwargs)
-    if isinstance(cubes, (list, tuple)):
+
+    with iris.util.CML_SETTINGS.set(**format_options):
         cml = iris.cube.CubeList(cubes).xml(
             checksum=checksum, order=False, byteorder=False
         )
-    else:
-        cml = cubes.xml(checksum=checksum, order=False, byteorder=False)
+
     _check_same(cml, reference_path)
 
 
