@@ -6,10 +6,12 @@
 
 from unittest.mock import Mock, PropertyMock
 
+import dask.config
 import dask.array as da
 import numpy as np
 
 from iris._lazy_data import is_lazy_data, map_complete_blocks
+from iris.cube import Cube
 from iris.tests._shared_utils import assert_array_equal
 
 
@@ -134,3 +136,25 @@ class Test_map_complete_blocks:
         )
         assert is_lazy_data(result)
         assert_array_equal(result.compute(), array + 1)
+
+    def test_rechunking(self):
+        # Choose a dask array with an irregularly chunked dimension to be rechunked.
+        lazy_array = da.ones((5, 9, 10, 10), chunks=(2, 5, 10, 5))
+        cube, _ = create_mock_cube(lazy_array)
+
+        result = map_complete_blocks(
+            cube, self.func, dims=(2, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
+        )
+        assert is_lazy_data(result)
+        # Reduce the optimum dask chunksize.
+        with dask.config.set({"array.chunk-size": "32KiB"}):
+
+            result = map_complete_blocks(
+                cube, self.func, dims=(2, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
+            )
+            assert is_lazy_data(result)
+            expected_chunksize = (1, 2, 30, 40)
+            assert result.chunksize == expected_chunksize
+            # Note that one chunk is irregularly rechunked and the other isn't.
+            expected_chunk = (2, 2, 1, 2, 2)
+            assert result.chunks[1] == expected_chunk

@@ -626,6 +626,14 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
     --------
     :func:`dask.array.map_blocks` : The function used for the mapping.
 
+    Notes
+    -----
+    .. note:
+
+        If the output chunks would larger than the maximum chunksize set
+        in the dask config, the input is rechunked, where possible to
+        optimise the output chunksize.
+
     """
     data = None
     result = None
@@ -654,6 +662,7 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
             out_chunks[dim] = (size,)
             shape[dim] = size
 
+        # Ensure the chunksize of the output is a reasonable size.
         max_outchunks = [max(chunk) for chunk in out_chunks]
         df = [False] * len(max_outchunks)
         for dim in dims:
@@ -670,7 +679,7 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
                 new_chunks = []
                 for c in chunk:
                     new_chunks.extend((c // opt_out) * [opt_out])
-                    if chunk_end := c % opt_out > 0:
+                    if chunk_end := c % opt_out:
                         new_chunks.append(chunk_end)
                 in_chunks[i] = tuple(new_chunks)
                 out_chunks[i] = tuple(new_chunks)
