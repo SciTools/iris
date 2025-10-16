@@ -6,8 +6,8 @@
 
 from unittest.mock import Mock, PropertyMock
 
-import dask.config
 import dask.array as da
+import dask.config
 import numpy as np
 
 from iris._lazy_data import is_lazy_data, map_complete_blocks
@@ -148,7 +148,6 @@ class Test_map_complete_blocks:
         assert is_lazy_data(result)
         # Reduce the optimum dask chunksize.
         with dask.config.set({"array.chunk-size": "32KiB"}):
-
             result = map_complete_blocks(
                 cube, self.func, dims=(2, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
             )
