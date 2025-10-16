@@ -171,7 +171,10 @@ class CubeList(list):
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
-        """Return a string of the XML that this list of cubes represents."""
+        """Return a string of the XML that this list of cubes represents.
+
+        See ``iris.util.CML_SETTINGS`` for controlling the XML output formatting.
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
             cubes_xml_element = doc.createElement("cubes")
@@ -3902,7 +3905,16 @@ class Cube(CFVariableMixin):
         order: bool = True,
         byteorder: bool = True,
     ) -> str:
-        """Return a fully valid CubeML string representation of the Cube."""
+        """Return a fully valid CubeML string representation of the Cube.
+
+        The format of the generated XML can be controlled using the
+        ``iris.util.CML_SETTINGS.set`` method as a context manager.
+
+        For example, to include array statistics for the coordinate data:
+
+        >>> with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+        ...     print(cube.xml())
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
 

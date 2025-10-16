@@ -2901,7 +2901,7 @@ def array_summary(
 
 
 @dataclass
-class _CMLSettings(threading.local):
+class CMLSettings(threading.local):
     """Settings for controlling the behaviour and formatting of the CML output.
 
     Use the ``set`` method of this class as a context manager to temporarily
@@ -2975,4 +2975,4 @@ class _CMLSettings(threading.local):
 
 
 # Global CML settings object for use as context manager
-CML_SETTINGS: _CMLSettings = _CMLSettings()
+CML_SETTINGS: CMLSettings = CMLSettings()
