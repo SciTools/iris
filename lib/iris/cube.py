@@ -3912,7 +3912,7 @@ class Cube(CFVariableMixin):
 
         For example, to include array statistics for the coordinate data:
 
-        >>> with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+        >>> with iris.util.CML_SETTINGS.set(coord_data_array_stats=True):
         ...     print(cube.xml())
         """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
