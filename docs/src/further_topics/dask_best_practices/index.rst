@@ -159,7 +159,7 @@ NetCDF Files
 NetCDF files can include their own chunking specification. This is either
 specified when creating the file, or is automatically assigned if one or
 more of the dimensions is
-`unlimited <https://www.unidata.ucar.edu/software/netcdf/docs/unlimited_dims.html>`_.
+`unlimited <https://docs.unidata.ucar.edu/netcdf-c/current/unlimited_dims.html>`_.
 Importantly, netCDF chunk shapes are **not optimised for Dask
 performance**.
 

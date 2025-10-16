@@ -301,16 +301,24 @@ class TestCubeMergeWithAncils:
     def test_merge_with_cell_measure(self):
         cube1 = self._makecube(0, cm=True)
         cube2 = self._makecube(1, cm=True)
-        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        cube3 = self._makecube(2, cm=True)
+        cubes = iris.cube.CubeList([cube1, cube2, cube3]).merge()
         assert len(cubes) == 1
         assert cube1.cell_measures() == cubes[0].cell_measures()
+        # The cell measure should be on the second (non merged) dimension.
+        (cm,) = cube1.cell_measures()
+        assert cubes[0].cell_measure_dims(cm) == (1,)
 
     def test_merge_with_ancillary_variable(self):
         cube1 = self._makecube(0, av=True)
         cube2 = self._makecube(1, av=True)
-        cubes = iris.cube.CubeList([cube1, cube2]).merge()
+        cube3 = self._makecube(2, av=True)
+        cubes = iris.cube.CubeList([cube1, cube2, cube3]).merge()
         assert len(cubes) == 1
         assert cube1.ancillary_variables() == cubes[0].ancillary_variables()
+        # The ancillary variable should be on the second (non merged) dimension.
+        (av,) = cube1.ancillary_variables()
+        assert cubes[0].ancillary_variable_dims(av) == (1,)
 
     def test_cell_measure_error_msg(self):
         msg = "cube.cell_measures differ"

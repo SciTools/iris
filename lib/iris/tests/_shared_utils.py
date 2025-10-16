@@ -291,28 +291,6 @@ def result_path(request: pytest.FixtureRequest, basename=None, ext=""):
     return str(output_path)
 
 
-def assert_CML_approx_data(
-    request: pytest.FixtureRequest, cubes, reference_filename=None, **kwargs
-):
-    # passes args and kwargs on to approx equal
-    # See result_path() Examples for how to access the ``request`` fixture.
-
-    _check_for_request_fixture(request, "assert_CML_approx_data")
-
-    if isinstance(cubes, iris.cube.Cube):
-        cubes = [cubes]
-    if reference_filename is None:
-        reference_filename = result_path(request, None, "cml")
-        reference_filename = [get_result_path(reference_filename)]
-    for i, cube in enumerate(cubes):
-        fname = list(reference_filename)
-        # don't want the ".cml" for the json stats file
-        fname[-1] = fname[-1].removesuffix(".cml")
-        fname[-1] += ".data.%d.json" % i
-        assert_data_almost_equal(cube.data, fname, **kwargs)
-    assert_CML(request, cubes, reference_filename, checksum=False)
-
-
 def assert_CDL(
     request: pytest.FixtureRequest, netcdf_filename, reference_filename=None, flags="-h"
 ):
@@ -385,13 +363,29 @@ def assert_CDL(
 
 
 def assert_CML(
-    request: pytest.FixtureRequest, cubes, reference_filename=None, checksum=True
+    request: pytest.FixtureRequest,
+    cubes,
+    reference_filename=None,
+    checksum=True,
+    approx_data=False,
+    **kwargs,
 ):
     """Test that the CML for the given cubes matches the contents of
     the reference file.
 
     If the environment variable IRIS_TEST_CREATE_MISSING is
     non-empty, the reference file is created if it doesn't exist.
+
+    The data payload of individual cubes is not compared unless ``checksum``
+    or ``approx_data`` are True.
+
+    Notes
+    -----
+    The ``approx_data`` keyword provides functionality equivalent to the
+    old ``assert_CML_approx_data`` function.
+
+    ``**kwargs`` are passed through to :func:`assert_data_almost_equal` if
+    ``approx_data`` is True.
 
     Parameters
     ----------
@@ -409,6 +403,10 @@ def assert_CML(
     checksum : bool, optional
         When True, causes the CML to include a checksum for each
         Cube's data. Defaults to True.
+    approx_data : bool, optional, default=False
+        When True, the cube's data will be compared with the reference
+        data and asserted to be within a specified tolerance. Implies
+        ``checksum=False``.
 
     """
     _check_for_request_fixture(request, "assert_CML")
@@ -417,15 +415,23 @@ def assert_CML(
         cubes = [cubes]
     if reference_filename is None:
         reference_filename = result_path(request, None, "cml")
-
+    # Note: reference_path could be a tuple of path parts
+    reference_path = get_result_path(reference_filename)
+    if approx_data:
+        # compare data payload stats against known good stats
+        checksum = False  # ensure we are not comparing data checksums
+        for i, cube in enumerate(cubes):
+            # Build the json stats filename based on CML file path:
+            fname = reference_path.removesuffix(".cml")
+            fname += f".data.{i}.json"
+            assert_data_almost_equal(cube.data, fname, **kwargs)
     if isinstance(cubes, (list, tuple)):
-        xml = iris.cube.CubeList(cubes).xml(
+        cml = iris.cube.CubeList(cubes).xml(
             checksum=checksum, order=False, byteorder=False
         )
     else:
-        xml = cubes.xml(checksum=checksum, order=False, byteorder=False)
-    reference_path = get_result_path(reference_filename)
-    _check_same(xml, reference_path)
+        cml = cubes.xml(checksum=checksum, order=False, byteorder=False)
+    _check_same(cml, reference_path)
 
 
 def assert_text_file(source_filename, reference_filename, desc="text file"):

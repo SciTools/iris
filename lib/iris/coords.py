@@ -2219,7 +2219,7 @@ class Coord(_DimensionalMetadata):
                 item = self.core_points()
 
             # Determine the array library for stacking
-            al = da if _lazy.is_lazy_data(item) else np
+            al = da if _lazy.is_lazy_data(item) else ma
 
             # Calculate the bounds and points along the right dims
             bounds = al.stack(
@@ -2230,6 +2230,12 @@ class Coord(_DimensionalMetadata):
                 axis=-1,
             )
             points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
+
+            if ma.isMaskedArray(points) and not np.any(points.mask):
+                points = points.data
+
+            if ma.isMaskedArray(bounds) and not np.any(bounds.mask):
+                bounds = bounds.data
 
             # Create the new collapsed coordinate.
             coord = self.copy(points=points, bounds=bounds)
