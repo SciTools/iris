@@ -2936,8 +2936,11 @@ class CMLSettings(threading.local):
 
         # Generate a CML output for a cube, but also include array statistics for the
         # cube coordinate data:
-        >>> with iris.CML_SETTINGS.set(coord_data_array_stats=True):
-        ...     print(cube.xml())
+
+        .. code-block:: python
+
+            with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
 
 
         Parameters
