@@ -113,10 +113,10 @@ This document explains the changes made to Iris for this release
 #. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
    ``git whatchanged`` command. (:pull:`6672`)
 
-#. `@ukmo-ccbunney` merged functionality of ``assert_CML_approx_data`` into
+#. `@ukmo-ccbunney`_ merged functionality of ``assert_CML_approx_data`` into
    ``assert_CML`` via the use of a new ``approx_data`` keyword. (:pull:`6713`)
 
-#. `@ukmo-ccbunney` ``assert_CML`` now uses stricter array formatting to avoid
+#. `@ukmo-ccbunney`_ ``assert_CML`` now uses stricter array formatting to avoid
    changes in tests due to Numpy version changes. (:pull:`6743`)
 
 
