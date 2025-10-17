@@ -409,7 +409,7 @@ def assert_CML(
         When True, the cube's data will be compared with the reference
         data and asserted to be within a specified tolerance. Implies
         ``checksum=False``.
-    checksum : bool, optional, default = True
+    checksum : bool, optional, default=True
         When True, causes the CML to include a checksum for each
         Cube's data. Defaults to True.
     coord_checksum : bool, optional, default=True
