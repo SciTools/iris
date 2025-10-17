@@ -2919,13 +2919,13 @@ class CMLSettings(threading.local):
     @contextmanager
     def set(
         self,
-        numpy_formatting=None,
-        data_array_stats=None,
-        coord_checksum=None,
-        coord_data_array_stats=None,
-        coord_order=None,
-        array_edgeitems=None,
-        masked_value_count=None,
+        numpy_formatting: bool | None = None,
+        data_array_stats: bool | None = None,
+        coord_checksum: bool | None = None,
+        coord_data_array_stats: bool | None = None,
+        coord_order: bool | None = None,
+        array_edgeitems: int | None = None,
+        masked_value_count: bool | None = None,
     ):
         """Context manager to control the CML output settings.
 
