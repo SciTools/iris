@@ -510,12 +510,107 @@ class Test_collapsed__multidim_weighted_with_arr:
         assert cube_collapsed.units == "unknown"
 
 
-# Simply redo the tests of Test_collapsed__multidim_weighted_with_arr with
+class Test_collapsed__multidim_weighted_with_arr_dataless:
+    @pytest.fixture(autouse=True)
+    def _multidim_arr_dataless_setup(self):
+        self.shape = (2, 3)
+
+        # Test cubes with (same-valued) real and lazy data
+        cube = Cube(None, units="kg m-2 s-1", shape=self.shape)
+        for i_dim, name in enumerate(("y", "x")):
+            npts = cube.shape[i_dim]
+            coord = DimCoord(np.arange(npts), long_name=name)
+            cube.add_dim_coord(coord, i_dim)
+        self.cube = cube
+        # Test weights and expected result for a y-collapse
+        self.y_weights = np.array([0.3, 0.5])
+        self.full_weights_y = np.broadcast_to(
+            self.y_weights.reshape((2, 1)), cube.shape
+        )
+        self.expected_result_y = (3,)
+        # Test weights and expected result for an x-collapse
+        self.x_weights = np.array([0.7, 0.4, 0.6])
+        self.full_weights_x = np.broadcast_to(
+            self.x_weights.reshape((1, 3)), cube.shape
+        )
+        self.expected_result_x = (2,)
+
+    def test_weighted_fullweights_real_y(self):
+        # Supplying full-shape weights for collapsing over a single dimension.
+        cube_collapsed = self.cube.collapsed("y", MEAN, weights=self.full_weights_y)
+        assert cube_collapsed.shape == self.expected_result_y
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_1dweights_real_y(self):
+        # 1-D weights, real data :  Check same results as full-shape.
+        cube_collapsed = self.cube.collapsed("y", MEAN, weights=self.y_weights)
+        assert cube_collapsed.shape == self.expected_result_y
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_fullweights_real_x(self):
+        # Full weights, real data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube.collapsed("x", MEAN, weights=self.full_weights_x)
+        assert cube_collapsed.shape == self.expected_result_x
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_1dweights_real_x(self):
+        # 1-D weights, real data, ** collapse X ** :  as for 'y' case above
+        cube_collapsed = self.cube.collapsed("x", MEAN, weights=self.x_weights)
+        assert cube_collapsed.shape == self.expected_result_x
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_sum_fullweights_adapt_units_real_y(self):
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
+        cube_collapsed = self.cube.collapsed("y", SUM, weights=self.full_weights_y)
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_sum_1dweights_adapt_units_real_y(self):
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
+        # Note: the same test with lazy data fails:
+        # https://github.com/SciTools/iris/issues/5083
+        cube_collapsed = self.cube.collapsed("y", SUM, weights=self.y_weights)
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_sum_with_unknown_units_real_y(self):
+        # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
+        # Note: does not need to be adapted in subclasses since 'unknown'
+        # multiplied by any unit is 'unknown'
+        self.cube.units = "unknown"
+        cube_collapsed = self.cube.collapsed(
+            "y",
+            SUM,
+            weights=self.full_weights_y,
+        )
+        assert cube_collapsed.data is None
+        assert not cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "unknown"
+
+
+# Simply redo the tests of Test_collapsed__multidim_weighted_with_arr (and dataless) with
 # other allowed objects for weights
 
 
 class Test_collapsed__multidim_weighted_with_cube(
-    Test_collapsed__multidim_weighted_with_arr
+    Test_collapsed__multidim_weighted_with_arr,
+    Test_collapsed__multidim_weighted_with_arr_dataless,
 ):
     @pytest.fixture(autouse=True)
     def _multidim_cube_setup(self, _multidim_arr_setup):
