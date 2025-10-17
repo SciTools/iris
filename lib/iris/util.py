@@ -2271,7 +2271,7 @@ def mask_cube_from_shape(
 
     Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via cartopy).
     Finds the overlap between the `shape` and the :class:`~iris.cube.Cube` and
-    masks out any cells that __do not__ intersect the shape.
+    masks out any cells that _do not_ intersect the shape.
 
     Shapes can be polygons, lines or points.
 
