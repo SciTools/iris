@@ -28,6 +28,7 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 from packaging.version import Version
+from toolz import isiterable
 
 import iris._constraints
 from iris._data_manager import DataManager
@@ -3050,9 +3051,12 @@ class Cube(CFVariableMixin):
 
         # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
+        dataless = self.is_dataless()
 
         # Index with the keys, using orthogonal slicing.
-        dimension_mapping, data = iris.util._slice_data_with_keys(cube_data, keys)
+        dimension_mapping, data = iris.util._slice_data_with_keys(
+            cube_data, keys, shape=self.shape
+        )
 
         # We don't want a view of the data, so take a copy of it.
         data = deepcopy(data)
@@ -3064,14 +3068,11 @@ class Cube(CFVariableMixin):
         if isinstance(data, ma.core.MaskedConstant) and data.dtype != cube_data.dtype:
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
-        # Make the new cube slice
-        cube = self.__class__(data)
-        cube.metadata = deepcopy(self.metadata)
-
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
 
+        aux_coords = {}
         # Slice the coords
         for coord in self.aux_coords:
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
@@ -3081,28 +3082,55 @@ class Cube(CFVariableMixin):
                 # TODO make this except more specific to catch monotonic error
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-            cube.add_aux_coord(new_coord, new_coord_dims(coord))
+            aux_coords[new_coord] = new_coord_dims(coord)
             coord_mapping[id(coord)] = new_coord
 
-        for coord in self.dim_coords:
-            coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
-            new_dims = new_coord_dims(coord)
-            # Try/Catch to handle slicing that makes the points/bounds
-            # non-monotonic
+        dim_coords = {}
+        shape = []
+
+        for dim in range(self.ndim):
+            coord_keys = full_slice[dim]
             try:
-                new_coord = coord[coord_keys]
-                if not new_dims:
-                    # If the associated dimension has been sliced so the coord
-                    # is a scalar move the coord to the aux_coords container
-                    cube.add_aux_coord(new_coord, new_dims)
+                coord = self.coord(dimensions=dim, dim_coords=True)
+                new_dims = new_coord_dims(coord)
+                # Try/Catch to handle slicing that makes the points/bounds
+                # non-monotonic
+                try:
+                    new_coord = coord[coord_keys]
+                    if not new_dims:
+                        # If the associated dimension has been sliced so the coord
+                        # is a scalar move the coord to the aux_coords container
+                        aux_coords[new_coord] = new_dims
+                    else:
+                        dim_coords[new_coord] = new_dims
+                        shape.append(len(new_coord.core_points()))
+                except ValueError:
+                    # TODO make this except more specific to catch monotonic error
+                    # Attempt to slice it by converting to AuxCoord first
+                    new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
+                    aux_coords[new_coord] = new_dims
+                coord_mapping[id(coord)] = new_coord
+            except iris.exceptions.CoordinateNotFoundError:
+                points = np.zeros(self.shape[dim])[coord_keys]
+                if isiterable(points):
+                    dim_shape = len([points])
                 else:
-                    cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
-                # Attempt to slice it by converting to AuxCoord first
-                new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-                cube.add_aux_coord(new_coord, new_dims)
-            coord_mapping[id(coord)] = new_coord
+                    dim_shape = 1
+                if dim_shape:
+                    shape.append(dim_shape)
+
+        # Make the new cube slice
+        if not dataless:
+            cube = self.__class__(data)
+        else:
+            cube = self.__class__(shape=tuple(shape))
+        cube.metadata = deepcopy(self.metadata)
+
+        for coord, dim in dim_coords.items():
+            cube.add_dim_coord(coord, dim)
+
+        for coord, dims in aux_coords.items():
+            cube.add_aux_coord(coord, dims)
 
         for factory in self.aux_factories:
             cube.add_aux_factory(factory.updated(coord_mapping))
@@ -4403,8 +4431,6 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("collapsed")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4507,7 +4533,7 @@ class Cube(CFVariableMixin):
 
         # If we weren't able to complete a lazy aggregation, compute it
         # directly now.
-        if data_result is None:
+        if data_result is None and not self.is_dataless():
             # Perform the (non-lazy) aggregation over the cube data
             # First reshape the data so that the dimensions being aggregated
             # over are grouped 'at the end' (i.e. axis=-1).
@@ -4625,8 +4651,6 @@ x            -              -
                     STASH                       m01s00i024
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("aggregated_by")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4729,59 +4753,64 @@ x            -              -
             orig_id = id(self.coord(coord))
             coord_mapping[orig_id] = coord
 
-        # Determine the group-by cube data shape.
-        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
-        data_shape[dimension_to_groupby] = len(groupby)
+        if not self.is_dataless():
+            # Determine the group-by cube data shape.
+            data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
+            data_shape[dimension_to_groupby] = len(groupby)
 
-        # Choose appropriate data and functions for data aggregation.
-        if aggregator.lazy_func is not None and self.has_lazy_data():
-            input_data = self.lazy_data()
-            agg_method = aggregator.lazy_aggregate
-        else:
-            input_data = self.data
-            agg_method = aggregator.aggregate
+            # Choose appropriate data and functions for data aggregation.
+            if aggregator.lazy_func is not None and self.has_lazy_data():
+                input_data = self.lazy_data()
+                agg_method = aggregator.lazy_aggregate
+            else:
+                input_data = self.data
+                agg_method = aggregator.aggregate
 
-        # Create data and weights slices.
-        front_slice = (slice(None),) * dimension_to_groupby
-        back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
+            # Create data and weights slices.
+            front_slice = (slice(None),) * dimension_to_groupby
+            back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
 
-        groupby_subarrs = (
-            iris.util._slice_data_with_keys(
-                input_data, front_slice + (groupby_slice,) + back_slice
-            )[1]
-            for groupby_slice in groupby.group()
-        )
-
-        if weights is not None:
-            groupby_subweights = (
-                weights[front_slice + (groupby_slice,) + back_slice]
+            groupby_subarrs = (
+                iris.util._slice_data_with_keys(
+                    input_data,
+                    front_slice + (groupby_slice,) + back_slice,
+                    shape=(self.shape),
+                )[1]
                 for groupby_slice in groupby.group()
             )
-        else:
-            groupby_subweights = (None for _ in range(len(groupby)))
 
-        # Aggregate data slices.
-        agg = iris.analysis.create_weighted_aggregator_fn(
-            agg_method, axis=dimension_to_groupby, **kwargs
-        )
-        result = tuple(map(agg, groupby_subarrs, groupby_subweights))
+            if weights is not None:
+                groupby_subweights = (
+                    weights[front_slice + (groupby_slice,) + back_slice]
+                    for groupby_slice in groupby.group()
+                )
+            else:
+                groupby_subweights = (None for _ in range(len(groupby)))
 
-        # If weights are returned, "result" is a list of tuples (each tuple
-        # contains two elements; the first is the aggregated data, the
-        # second is the aggregated weights). Convert these to two lists
-        # (one for the aggregated data and one for the aggregated weights)
-        # before combining the different slices.
-        if return_weights:
-            data_result, weights_result = list(zip(*result))
-            aggregateby_weights = _lazy.stack(weights_result, axis=dimension_to_groupby)
-        else:
-            data_result = result
-            aggregateby_weights = None
+            # Aggregate data slices.
+            agg = iris.analysis.create_weighted_aggregator_fn(
+                agg_method, axis=dimension_to_groupby, **kwargs
+            )
+            result = tuple(map(agg, groupby_subarrs, groupby_subweights))
 
-        aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
-        # Ensure plain ndarray is output if plain ndarray was input.
-        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
-            aggregateby_data = ma.getdata(aggregateby_data)
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if return_weights:
+                data_result, weights_result = list(zip(*result))
+                aggregateby_weights = _lazy.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                data_result = result
+                aggregateby_weights = None
+
+            aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
+            # Ensure plain ndarray is output if plain ndarray was input.
+            if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
+                aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
@@ -4823,13 +4852,14 @@ x            -              -
             aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
         # Attach the aggregate-by data into the aggregate-by cube.
-        if aggregateby_weights is None:
-            data_result = aggregateby_data
-        else:
-            data_result = (aggregateby_data, aggregateby_weights)
-        aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, data_result, coordinates, **kwargs
-        )
+        if not self.is_dataless():
+            if aggregateby_weights is None:
+                data_result = aggregateby_data
+            else:
+                data_result = (aggregateby_data, aggregateby_weights)
+            aggregateby_cube = aggregator.post_process(
+                aggregateby_cube, data_result, coordinates, **kwargs
+            )
 
         return aggregateby_cube
 
