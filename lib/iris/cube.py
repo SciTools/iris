@@ -4048,21 +4048,19 @@ class Cube(CFVariableMixin):
                 data_xml_element.setAttribute("mask_checksum", crc)
 
         if CML_SETTINGS.data_array_stats:
-
-            def fixed_std(data):
-                # When data is constant, std() is too sensitive.
-                if data.max() == data.min():
-                    data_std = 0
-                else:
-                    data_std = data.std()
-                return data_std
-
             data = self.data
+            data_min = data.min()
+            data_max = data.max()
+            if data_min == data_max:
+                # When data is constant, std() is too sensitive.
+                data_std = 0
+            else:
+                data_std = data.std()
 
             stats_xml_element = doc.createElement("stats")
-            stats_xml_element.setAttribute("std", str(fixed_std(data)))
-            stats_xml_element.setAttribute("min", str(data.min()))
-            stats_xml_element.setAttribute("max", str(data.max()))
+            stats_xml_element.setAttribute("std", str(data_std))
+            stats_xml_element.setAttribute("min", str(data_min))
+            stats_xml_element.setAttribute("max", str(data_max))
             stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
             stats_xml_element.setAttribute("mean", str(data.mean()))
 

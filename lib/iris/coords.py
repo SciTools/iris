@@ -907,21 +907,21 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         )
 
         if iris.util.CML_SETTINGS.coord_data_array_stats and len(self._values) > 1:
+            data = self._values
 
-            def fixed_std(data):  # TODO: Refactor into util module? Used in cube.py too
-                # When data is constant, std() is too sensitive.
-                if data.max() == data.min():
+            if np.issubdtype(data.dtype.type, np.number):
+                data_min = data.min()
+                data_max = data.max()
+                if data_min == data_max:
+                    # When data is constant, std() is too sensitive.
                     data_std = 0
                 else:
                     data_std = data.std()
-                return data_std
 
-            data = self._values
-            if np.issubdtype(data.dtype.type, np.number):
                 stats_xml_element = doc.createElement("stats")
-                stats_xml_element.setAttribute("std", str(fixed_std(data)))
-                stats_xml_element.setAttribute("min", str(data.min()))
-                stats_xml_element.setAttribute("max", str(data.max()))
+                stats_xml_element.setAttribute("std", str(data_std))
+                stats_xml_element.setAttribute("min", str(data_min))
+                stats_xml_element.setAttribute("max", str(data_max))
                 stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
                 stats_xml_element.setAttribute("mean", str(data.mean()))
 
