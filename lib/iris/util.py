@@ -2800,7 +2800,7 @@ def array_summary(
     data : array like
         The array to summarise.
 
-    edgeitems : int
+    edgeitems : int, optional
         The number of elements at the beginning and end of the array to format. Should be
         a positive value > 1. Defaults to 3.
 
