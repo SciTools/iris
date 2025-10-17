@@ -34,7 +34,7 @@ This document explains the changes made to Iris for this release
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
 
-#. `@hsteptoe <https://github.com/hsteptoe>`_ and `@...`_ (reviewer) extended :func:`iris.util.mask_cube_from_shapefile`
+#. `@hsteptoe <https://github.com/hsteptoe>`_ and `@trexfeathers`_ (reviewer) extended :func:`iris.util.mask_cube_from_shapefile`
    to handle additional Point and Line shape types.  This change also facilitates the use of shapefiles that 
    use a different projection system to the cube that they are being applied to, and makes performance improvements
    to the mask weighting calculations. (:issue:`6126`, :pull:`6129`).
