@@ -382,7 +382,7 @@ def assert_CML(
     or ``approx_data`` are True.
 
     Further control of the CML formatting can be made using the
-    ``iris.util.CML_SETTINGS`` context manager.
+    :data:`iris.util.CML_SETTINGS` context manager.
 
     Notes
     -----
