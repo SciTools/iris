@@ -22,7 +22,6 @@ import operator
 from typing import TYPE_CHECKING, Any, Optional, TypeGuard
 import warnings
 from xml.dom.minidom import Document
-import zlib
 
 from cf_units import Unit
 import dask.array as da
@@ -56,6 +55,7 @@ if TYPE_CHECKING:
     from iris.mesh import MeshCoord
 import iris.exceptions
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
@@ -171,7 +171,10 @@ class CubeList(list):
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
-        """Return a string of the XML that this list of cubes represents."""
+        """Return a string of the XML that this list of cubes represents.
+
+        See :func:`iris.util.CML_SETTINGS.set` for controlling the XML output formatting.
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
             cubes_xml_element = doc.createElement("cubes")
@@ -3902,12 +3905,29 @@ class Cube(CFVariableMixin):
         order: bool = True,
         byteorder: bool = True,
     ) -> str:
-        """Return a fully valid CubeML string representation of the Cube."""
+        """Return a fully valid CubeML string representation of the Cube.
+
+        The format of the generated XML can be controlled using the
+        ``iris.util.CML_SETTINGS.set`` method as a context manager.
+
+        For example, to include array statistics for the coordinate data:
+
+        .. code-block:: python
+
+            with CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
+
+        See :func:`iris.util.CML_SETTINGS.set` for more details.
+
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
 
             cube_xml_element = self._xml_element(
-                doc, checksum=checksum, order=order, byteorder=byteorder
+                doc,
+                checksum=checksum,
+                order=order,
+                byteorder=byteorder,
             )
             cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
             doc.appendChild(cube_xml_element)
@@ -3916,7 +3936,13 @@ class Cube(CFVariableMixin):
             doc = self._sort_xml_attrs(doc)
             return iris.util._print_xml(doc)
 
-    def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
+    def _xml_element(
+        self,
+        doc,
+        checksum=False,
+        order=True,
+        byteorder=True,
+    ):
         cube_xml_element = doc.createElement("cube")
 
         if self.standard_name:
@@ -4006,39 +4032,46 @@ class Cube(CFVariableMixin):
         data_xml_element = doc.createElement("data")
         data_xml_element.setAttribute("shape", str(self.shape))
 
-        # NB. Getting a checksum triggers any deferred loading,
+        # NB. Getting a checksum or data stats triggers any deferred loading,
         # in which case it also has the side-effect of forcing the
         # byte order to be native.
+
         if checksum:
             data = self.data
-
-            # Ensure consistent memory layout for checksums.
-            def normalise(data):
-                data = np.ascontiguousarray(data)
-                if data.dtype.newbyteorder("<") != data.dtype:
-                    data = data.byteswap(False)
-                    data.dtype = data.dtype.newbyteorder("<")
-                return data
-
+            crc = iris.util.array_checksum(data)
+            data_xml_element.setAttribute("checksum", crc)
             if ma.isMaskedArray(data):
-                # Fill in masked values to avoid the checksum being
-                # sensitive to unused numbers. Use a fixed value so
-                # a change in fill_value doesn't affect the
-                # checksum.
-                crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = "0x%08x" % (zlib.crc32(normalise(data.mask)) & 0xFFFFFFFF,)
+                    crc = iris.util.array_checksum(data.mask)
                 else:
                     crc = "no-masked-elements"
                 data_xml_element.setAttribute("mask_checksum", crc)
+
+        if CML_SETTINGS.data_array_stats:
+            data = self.data
+            data_min = data.min()
+            data_max = data.max()
+            if data_min == data_max:
+                # When data is constant, std() is too sensitive.
+                data_std = 0
             else:
-                crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
-        elif self.has_lazy_data():
-            data_xml_element.setAttribute("state", "deferred")
-        else:
-            data_xml_element.setAttribute("state", "loaded")
+                data_std = data.std()
+
+            stats_xml_element = doc.createElement("stats")
+            stats_xml_element.setAttribute("std", str(data_std))
+            stats_xml_element.setAttribute("min", str(data_min))
+            stats_xml_element.setAttribute("max", str(data_max))
+            stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+            stats_xml_element.setAttribute("mean", str(data.mean()))
+
+            data_xml_element.appendChild(stats_xml_element)
+
+        # We only print the "state" if we have not output checksum or data stats:
+        if not (checksum or CML_SETTINGS.data_array_stats):
+            if self.has_lazy_data():
+                data_xml_element.setAttribute("state", "deferred")
+            else:
+                data_xml_element.setAttribute("state", "loaded")
 
         # Add the dtype, and also the array and mask orders if the
         # data is loaded.
@@ -4065,8 +4098,14 @@ class Cube(CFVariableMixin):
                 if array_byteorder is not None:
                     data_xml_element.setAttribute("byteorder", array_byteorder)
 
-            if order and ma.isMaskedArray(data):
-                data_xml_element.setAttribute("mask_order", _order(data.mask))
+            if ma.isMaskedArray(data):
+                if CML_SETTINGS.masked_value_count:
+                    data_xml_element.setAttribute(
+                        "masked_count", str(np.count_nonzero(data.mask))
+                    )
+                if order:
+                    data_xml_element.setAttribute("mask_order", _order(data.mask))
+
         else:
             dtype = self.lazy_data().dtype
         data_xml_element.setAttribute("dtype", dtype.name)
