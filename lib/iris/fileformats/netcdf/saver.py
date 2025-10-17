@@ -2275,6 +2275,10 @@ class Saver:
             if grid_mapping:
                 _setncattr(cf_var_cube, "grid_mapping", grid_mapping)
 
+    _DATALESS_ATTRNAME = "iris_dataless_cube"
+    _DATALESS_DTYPE = np.dtype("u1")
+    _DATALESS_FILLVALUE = 127
+
     def _create_cf_data_variable(
         self,
         cube,
@@ -2315,9 +2319,19 @@ class Saver:
         # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
         # be removed.
         # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
+        is_dataless = cube.is_dataless()
+        if is_dataless:
+            data = None
+        else:
+            data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
 
-        if packing:
+        if is_dataless:
+            # The variable must have *some* dtype, and it must be maskable
+            dtype = self._DATALESS_DTYPE
+            fill_value = self._DATALESS_FILLVALUE
+        elif not packing:
+            dtype = data.dtype.newbyteorder("=")
+        else:
             if isinstance(packing, dict):
                 if "dtype" not in packing:
                     msg = "The dtype attribute is required for packing."
@@ -2355,8 +2369,6 @@ class Saver:
                         add_offset = (cmax + cmin) / 2
                     else:
                         add_offset = cmin + 2 ** (n - 1) * scale_factor
-        else:
-            dtype = data.dtype.newbyteorder("=")
 
         def set_packing_ncattrs(cfvar):
             """Set netCDF packing attributes.
@@ -2380,8 +2392,9 @@ class Saver:
             cf_name, dtype, dimension_names, fill_value=fill_value, **kwargs
         )
 
-        set_packing_ncattrs(cf_var)
-        self._lazy_stream_data(data=data, cf_var=cf_var)
+        if not is_dataless:
+            set_packing_ncattrs(cf_var)
+            self._lazy_stream_data(data=data, cf_var=cf_var)
 
         if cube.standard_name:
             _setncattr(cf_var, "standard_name", cube.standard_name)
@@ -2445,6 +2458,10 @@ class Saver:
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
+
+        # Add the 'dataless' marker if needed
+        if is_dataless:
+            _setncattr(cf_var, self._DATALESS_ATTRNAME, "true")
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
