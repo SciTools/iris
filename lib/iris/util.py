@@ -2797,7 +2797,7 @@ def array_summary(
 
     Parameters
     ----------
-    data : array like
+    data : array-like
         The array to summarise.
 
     edgeitems : int, optional
