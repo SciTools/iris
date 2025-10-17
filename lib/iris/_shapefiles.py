@@ -26,8 +26,6 @@ from iris.warnings import IrisUserWarning
 
 if "iris.cube" in sys.modules:
     import iris.cube
-if "iris.analysis.cartography" in sys.modules:
-    import iris.analysis.cartography
 
 # Set PROJ environment variable network settings to ensure
 # that PROJ forced to disable use of network for grids
@@ -168,8 +166,7 @@ def create_shape_mask(
         raise ValueError(msg)
 
     # Get cube coordinates
-    x_coord = cube.coord(axis="X", dim_coords=True)
-    y_coord = cube.coord(axis="Y", dim_coords=True)
+    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
@@ -204,7 +201,7 @@ def create_shape_mask(
 
         # Define raster transform based on cube
         # This maps the geometry domain onto the cube domain
-        tr = _make_raster_cube_transform(cube)
+        tr = _make_raster_cube_transform(x_coord, y_coord)  # type: ignore[arg-type]
         # Generate mask from geometry
         mask_template = rfeatures.geometry_mask(
             geometries=shapely.get_parts(geometry),
@@ -310,8 +307,7 @@ def is_geometry_valid(
     if not geometry_crs.equals(WGS84_crs):
         # Make pyproj transformer
         # Transforms the input geometry to the WGS84 coordinate system
-        t = Transformer.from_crs(geometry_crs, WGS84_crs, always_xy=True).transform
-        geometry = shapely.ops.transform(t, geometry)
+        geometry = _transform_geometry(geometry, geometry_crs, WGS84_crs)
 
     geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
     if not geom_valid.all():
@@ -370,6 +366,14 @@ def _get_weighted_mask(
 ) -> np.array:
     """Get a mask based on the geometry and minimum weight.
 
+    This function creates a mask for the cube based on the intersection
+    of the geometry with the cube's grid boxes. The mask will
+    only include areas where the geometry has a weight greater than
+    the specified minimum weight.
+
+    Cube grid boxes are rendered in ``shapely`` and uses a STRtree spatial index
+    for efficient spatial querying.
+
     Parameters
     ----------
     cube : :class:`iris.cube.Cube`
@@ -378,8 +382,8 @@ def _get_weighted_mask(
         The geometry to use for masking.
     minimum_weight : float
         The minimum weight of the geometry to be included in the mask.
-        If the weight is less than this value, the geometry will not be
-        included in the mask.
+        Should be a value between 0.0 and 1.0. If the weight is less than
+        this value, the geometry will not be included in the mask.
 
     Returns
     -------
@@ -387,18 +391,15 @@ def _get_weighted_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
     """
-    if not cube.coord(axis="X", dim_coords=True).has_bounds():
-        cube.coord(axis="X", dim_coords=True).guess_bounds()
-    if not cube.coord(axis="Y", dim_coords=True).has_bounds():
-        cube.coord(axis="Y", dim_coords=True).guess_bounds()
+    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
     # Get the shape of the cube
-    w = len(cube.coord(axis="X", dim_coords=True).points)
-    h = len(cube.coord(axis="Y", dim_coords=True).points)
-    # Get the bounds of the cube
-    # x_bounds = _get_mod_rebased_coord_bounds(cube.coord(x_name))
-    # y_bounds = _get_mod_rebased_coord_bounds(cube.coord(y_name))
-    x_bounds = cube.coord(axis="X", dim_coords=True).bounds
-    y_bounds = cube.coord(axis="Y", dim_coords=True).bounds
+    w, h = [len(c.points) for c in (x_coord, y_coord)]
+    # Check and get the bounds of the cube
+    for coord in (x_coord, y_coord):
+        if not coord.has_bounds():
+            coord.guess_bounds()
+    x_bounds, y_bounds = [c.bounds() for c in (x_coord, y_coord)]
+
     # Generate Sort-Tile-Recursive (STR) packed R-tree of bounding boxes
     # https://shapely.readthedocs.io/en/stable/strtree.html
     grid_boxes = [
@@ -424,7 +425,9 @@ def _get_weighted_mask(
     return weighted_mask_template
 
 
-def _make_raster_cube_transform(cube: iris.cube.Cube) -> Affine:
+def _make_raster_cube_transform(
+    x_coord: iris.coords.DimCoord, y_coord: iris.coords.DimCoord
+) -> Affine:
     """Create a rasterio transform for the cube.
 
     Raises
@@ -438,10 +441,10 @@ def _make_raster_cube_transform(cube: iris.cube.Cube) -> Affine:
     :class:`affine.Affine`
         An affine transform object that maps the geometry domain onto the cube domain.
     """
-    x_points = cube.coord(axis="X", dim_coords=True).points
-    y_points = cube.coord(axis="Y", dim_coords=True).points
-    dx = iris.util.regular_step(cube.coord(axis="X", dim_coords=True))
-    dy = iris.util.regular_step(cube.coord(axis="Y", dim_coords=True))
+    x_points = x_coord.points
+    y_points = y_coord.points
+    dx = iris.util.regular_step(x_coord)
+    dy = iris.util.regular_step(y_coord)
     # Create a rasterio transform based on the cube
     # This maps the geometry domain onto the cube domain
     trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)

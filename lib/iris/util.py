@@ -18,17 +18,13 @@ import tempfile
 from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
 
-import cartopy
 import cf_units
 from dask import array as da
 import numpy as np
 import numpy.ma as ma
-import pyproj
-import shapely
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
-from iris._shapefiles import create_shape_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 from iris.coord_systems import GeogCS
@@ -36,6 +32,10 @@ import iris.exceptions
 import iris.warnings
 
 if TYPE_CHECKING:
+    import cartopy
+    import pyproj
+    import shapely
+
     from iris.cube import Cube, CubeList
 
 
@@ -2269,51 +2269,51 @@ def mask_cube_from_shape(
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shape object.
 
-    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via cartopy).
-    Finds the overlap between the `shape` and the :class:`~iris.cube.Cube` and
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via ``cartopy``).
+    Finds the overlap between the ``shape`` and the :class:`~iris.cube.Cube` and
     masks out any cells that _do not_ intersect the shape.
 
     Shapes can be polygons, lines or points.
 
-    By default, all cells touched by geometries are kept (equivalent to `minimum_weight=0`). This behaviour
-    can be changed by increasing the `minimum_weight` keyword argument or setting `all_touched=False`,
+    By default, all cells touched by geometries are kept (equivalent to ``minimum_weight=0``). This behaviour
+    can be changed by increasing the ``minimum_weight`` keyword argument or setting ``all_touched=False``,
     then only the only cells whose center is within the polygon or that are selected by Bresenham’s line algorithm
-    (for line type shapes) are kept.   For points, the `minimum_weight` is ignored, and the cell that intersects the point
+    (for line type shapes) are kept.   For points, the ``minimum_weight`` is ignored, and the cell that intersects the point
     is kept.
 
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`.
+        The ``Cube`` object to masked. Must be singular, rather than a ``CubeList``.
     shape : shapely.Geometry object
-        A single `shape` of the area to remain unmasked on the `cube`.
+        A single ``shape`` of the area to remain unmasked on the ``cube``.
         If it a line object of some kind then minimum_weight will be ignored,
         because you cannot compare the area of a 1D line and 2D Cell.
     shape_crs : cartopy.crs.CRS, default=None
         The coordinate reference system of the shape object.
     in_place : bool, default=False
-        Whether to mask the `cube` in-place or return a newly masked `cube`.
-        Defaults to False.
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
+        Defaults to ``False``.
     minimum_weight : float, default=0.0
-        A number between 0-1 describing what % of a cube cell area must the shape overlap to be masked.
+        A number between 0-1 describing what percentage of a cube cell area must the shape overlap to be masked.
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
 
     Other Parameters
     ----------------
     all_touched : bool, default=None
-        If True, all cells touched by the shape are kept. If False, only cells whose
+        If ``True``, all cells touched by the shape are kept. If ``False``, only cells whose
         center is within the polygon or that are selected by Bresenham’s line algorithm
         (for line type shape) are kept.
     invert : bool, default=False
-        If True, the mask is inverted, meaning that cells that intersect the shape are masked out
-        and cells that do not intersect the shape are kept. If False, the mask is applied normally,
+        If ``True``, the mask is inverted, meaning that cells that intersect the shape are masked out
+        and cells that do not intersect the shape are kept. If ``False``, the mask is applied normally,
         meaning that cells that intersect the shape are kept and cells that do not intersect the shape
         are masked out.
 
     Returns
     -------
     iris.Cube
-        A masked version of the input cube, if in_place is False.
+        A masked version of the input cube, if ``in_place`` is ``False``.
 
     See Also
     --------
@@ -2362,21 +2362,26 @@ def mask_cube_from_shape(
     Notes
     -----
     Iris does not handle the shape loading so it is agnostic to the source type of the shape.
-    The shape can be loaded from an Esri shapefile, created using the `shapely` library, or
-    any other source that can be interpreted as a `shapely.Geometry` object, such as shapes
+    The shape can be loaded from an Esri shapefile, created using the ``shapely`` library, or
+    any other source that can be interpreted as a ``shapely.Geometry`` object, such as shapes
     encoded in a geoJSON or KML file.
 
     Warnings
     --------
     For best masking results, both the cube _and_ masking geometry should have a
-    coordinate reference system (CRS) defined. Masking results will be most reliable
-    when the cube and masking geometry have the same CRS.
+    coordinate reference system (CRS) defined. Note that CRS of the masking geometry
+    must be provided explicitly to this function (via ``geometry_crs``), whereas the
+    cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
 
-    The cube **must** have a coord_system defined.
+    Masking results will be most consistent when the cube and masking geometry have the same CRS.
 
-    If a CRS is not provided for the the masking geometry, the CRS of the cube is assumed.
+    If a CRS is _not_ provided for the the masking geometry, the CRS of the cube is assumed.
+
+    This function requires additional dependencies: ``rasterio`` and ``affine``.
 
     """
+    from iris._shapefiles import create_shape_mask
+
     shapefile_mask = create_shape_mask(
         geometry=shape,
         geometry_crs=shape_crs,

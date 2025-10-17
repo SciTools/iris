@@ -52,9 +52,6 @@ license-files = ["LICENSE"]
 name = "scitools-iris"
 requires-python = ">=3.11"
 
-[project.optional-dependencies]
-RASTERIO = ["rasterio"]
-
 [project.urls]
 Code = "https://github.com/SciTools/iris"
 Discussions = "https://github.com/SciTools/iris/discussions"

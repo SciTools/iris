@@ -94,8 +94,9 @@ This document explains the changes made to Iris for this release
 ===============
 
 #. `@hsteptoe <https://github.com/hsteptoe>`_ added `rasterio <https://rasterio.readthedocs.io/en/stable/index.html>`_ 
-   and `affiine <https://affine.readthedocs.io/en/latest/>`_ as a dependency for :func:`iris.util.mask_cube_from_shapefile`. 
-   This is to support the new functionality of handling additional shapefiles and projections. (:issue:`6126`, :pull:`6129`)
+   and `affine <https://affine.readthedocs.io/en/latest/>`_ as optional dependencies that facilitate 
+   :func:`iris.util.mask_cube_from_shapefile`. These packages support new functionality that handles
+   additional shapefiles and projections. (:issue:`6126`, :pull:`6129`)
 
 📚 Documentation
 ================
