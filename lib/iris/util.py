@@ -2350,8 +2350,8 @@ def mask_cube_from_shape(
 
     >>> import cartopy.io.shapereader as shpreader
     >>> admin1 = shpreader.natural_earth(resolution='110m',
-                                         category='cultural',
-                                         name='admin_1_states_provinces_lakes')
+    ...                                  category='cultural',
+    ...                                  name='admin_1_states_provinces_lakes')
     >>> admin1shp = shpreader.Reader(admin1).geometries()
 
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
