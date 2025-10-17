@@ -190,52 +190,61 @@ class Test_data_dtype_fillvalue:
         assert subcube.data.fill_value == fill_value
 
 
+@pytest.mark.parametrize("dataless", [True, False])
 class Test_extract:
-    def test_scalar_cube_exists(self):
+    def _create_cube(self, dataless, data, shape, long_name="a1"):
+        # moderates behaviour when testing dataless or with-data cubes
+        if dataless:
+            cube = Cube(data=None, long_name=long_name, shape=shape)
+        else:
+            cube = Cube(data=data, long_name=long_name, shape=None)
+        return cube
+
+    def test_scalar_cube_exists(self, dataless):
         # Ensure that extract is able to extract a scalar cube.
         constraint = iris.Constraint(name="a1")
-        cube = Cube(1, long_name="a1")
+        cube = self._create_cube(dataless, data=1, shape=())
         res = cube.extract(constraint)
         assert res is cube
 
-    def test_scalar_cube_noexists(self):
+    def test_scalar_cube_noexists(self, dataless):
         # Ensure that extract does not return a non-matching scalar cube.
         constraint = iris.Constraint(name="a2")
-        cube = Cube(1, long_name="a1")
+        cube = self._create_cube(dataless, data=1, shape=())
         res = cube.extract(constraint)
         assert res is None
 
-    def test_scalar_cube_coord_match(self):
+    def test_scalar_cube_coord_match(self, dataless):
         # Ensure that extract is able to extract a scalar cube according to
         # constrained scalar coordinate.
         constraint = iris.Constraint(scalar_coord=0)
-        cube = Cube(1, long_name="a1")
+        cube = self._create_cube(dataless, data=1, shape=())
         coord = iris.coords.AuxCoord(0, long_name="scalar_coord")
         cube.add_aux_coord(coord, None)
         res = cube.extract(constraint)
         assert res is cube
 
-    def test_scalar_cube_coord_nomatch(self):
+    def test_scalar_cube_coord_nomatch(self, dataless):
         # Ensure that extract is not extracting a scalar cube with scalar
         # coordinate that does not match the constraint.
         constraint = iris.Constraint(scalar_coord=1)
-        cube = Cube(1, long_name="a1")
+        cube = self._create_cube(dataless, data=1, shape=())
         coord = iris.coords.AuxCoord(0, long_name="scalar_coord")
         cube.add_aux_coord(coord, None)
         res = cube.extract(constraint)
         assert res is None
 
-    def test_1d_cube_exists(self):
+    def test_1d_cube_exists(self, dataless):
         # Ensure that extract is able to extract from a 1d cube.
         constraint = iris.Constraint(name="a1")
-        cube = Cube([1], long_name="a1")
+        cube = self._create_cube(dataless, data=[1], shape=(1,))
         res = cube.extract(constraint)
         assert res is cube
 
-    def test_1d_cube_noexists(self):
+    def test_1d_cube_noexists(self, dataless):
         # Ensure that extract does not return a non-matching 1d cube.
         constraint = iris.Constraint(name="a2")
-        cube = Cube([1], long_name="a1")
+        cube = self._create_cube(dataless, data=[1], shape=(1,))
         res = cube.extract(constraint)
         assert res is None
 
