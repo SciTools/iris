@@ -2804,7 +2804,7 @@ def array_summary(
         The number of elements at the beginning and end of the array to format. Should be
         a positive value > 1. Defaults to 3.
 
-    precision : int
+    precision : int, optional
         The precision to use for floating point values. Defaults to 8.
 
     Returns
