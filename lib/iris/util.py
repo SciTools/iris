@@ -37,6 +37,8 @@ import iris.exceptions
 import iris.warnings
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from iris.cube import Cube, CubeList
 
 
@@ -472,7 +474,7 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
 
     Parameters
     ----------
-    array1, array2 : arraylike
+    array1, array2 : array-like
         Args to be compared, normalised if necessary with :func:`np.asarray`.
     withnans : default=False
         When unset (default), the result is False if either input contains NaN
@@ -2593,8 +2595,8 @@ def make_gridcube(
     xlims: tuple[float | int, float | int] = (0.0, 360.0),
     ylims: tuple[float | int, float | int] = (-90.0, 90.0),
     *,
-    x_points: np.typing.ArrayLike | None = None,
-    y_points: np.typing.ArrayLike | None = None,
+    x_points: ArrayLike | None = None,
+    y_points: ArrayLike | None = None,
     coord_system: iris.coord_systems.CoordSystem | None = None,
 ) -> Cube:
     """Make a 2D sample cube with a specified XY grid.
@@ -2656,7 +2658,7 @@ def make_gridcube(
         axis: str,  # 'x' or 'y'
         name: str,
         units: str,
-        points: np.typing.ArrayLike | None,
+        points: ArrayLike | None,
         lims: tuple[float | int, float | int],
         num: int,
         coord_system: iris.coord_systems.CoordSystem,
@@ -2744,7 +2746,7 @@ def make_gridcube(
     return cube
 
 
-def array_checksum(data: np.typing.ArrayLike) -> str:
+def array_checksum(data: ArrayLike) -> str:
     """Calculate a checksum for an array.
 
     Returns the crc32 checksum of the array data as a hex string.
@@ -2784,9 +2786,7 @@ def array_checksum(data: np.typing.ArrayLike) -> str:
     return crc
 
 
-def array_summary(
-    data: np.typing.ArrayLike, edgeitems: int = 3, precision: int = 8
-) -> str:
+def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> str:
     """Return a strictly formatted summarised view of an array (first and last N elements).
 
     Generates a string formatted summary of the array. The first and last `edgeitems` elements
