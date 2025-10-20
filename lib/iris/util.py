@@ -2228,12 +2228,37 @@ def _strip_metadata_from_dims(cube, dims):
 def mask_cube_from_shapefile(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
-    shape_crs: cartopy.crs | pyproj.CRS,
-    in_place: bool = False,
     minimum_weight: float = 0.0,
-    **kwargs,
+    in_place: bool = False,
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shapefile object.
+
+    Parameters
+    ----------
+    cube : :class:`~iris.cube.Cube` object
+        The ``Cube`` object to masked. Must be singular, rather than a ``CubeList``.
+    shape : Shapely.Geometry object
+        A single `shape` of the area to remain unmasked on the ``cube``.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell.
+    minimum_weight : float , default=0.0
+        A number between 0-1 describing what % of a cube cell area must
+        the shape overlap to include it.
+    in_place : bool, default=False
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
+        Defaults to False.
+
+    Returns
+    -------
+    iris.Cube
+        A masked version of the input cube, if in_place is False.
+
+    See Also
+    --------
+    :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
+    :func:`~iris.util.mask_cube_from_shape`
+        Mask any cells in the cube’s data array.
 
     Notes
     -----
@@ -2248,14 +2273,21 @@ def mask_cube_from_shapefile(
         "future release. Please use iris.util.mask_cube_from_shape instead."
     )
     warn_deprecated(message)
+
+    # Make depreciated function defaults:
+    # https://github.com/SciTools/iris/blob/fa6d61dd5f358c9e6b585a132cc213acebf95b70/lib/iris/_shapefiles.py#L142C18-L144C6
+    from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
+
+    shape_crs = iris.coord_systems.GeogCS(
+        DEFAULT_SPHERICAL_EARTH_RADIUS
+    ).as_cartopy_projection()
     # Call the new function `mask_cube_from_shape`with the same parameters.
     return mask_cube_from_shape(
         cube,
         shape,
-        shape_crs,
+        shape_crs=shape_crs,
         in_place=in_place,
         minimum_weight=minimum_weight,
-        **kwargs,
     )
 
 
@@ -2303,7 +2335,10 @@ def mask_cube_from_shape(
     all_touched : bool, default=None
         If ``True``, all cells touched by the shape are kept. If ``False``, only cells whose
         center is within the polygon or that are selected by Bresenham’s line algorithm
-        (for line type shape) are kept.
+        (for line type shape) are kept. Note that ``minimum_weight`` and ``all_touched`` are
+        mutually exclusive options: an error will be raised if a ``minimum_weight`` > 0 *and*
+        ``all_touched`` is set to ``True``. This is because ``all_touched=True`` is equivalent
+        to ``minimum_weight=0``.
     invert : bool, default=False
         If ``True``, the mask is inverted, meaning that cells that intersect the shape are masked out
         and cells that do not intersect the shape are kept. If ``False``, the mask is applied normally,
@@ -2378,6 +2413,11 @@ def mask_cube_from_shape(
     If a CRS is _not_ provided for the the masking geometry, the CRS of the cube is assumed.
 
     This function requires additional dependencies: ``rasterio`` and ``affine``.
+
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.
 
     """
     from iris._shapefiles import create_shape_mask

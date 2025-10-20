@@ -6,7 +6,6 @@
 from __future__ import annotations
 
 from itertools import product
-import sys
 from typing import Optional
 import warnings
 
@@ -24,11 +23,8 @@ import iris
 from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
 
-if "iris.cube" in sys.modules:
-    import iris.cube
-
 # Set PROJ environment variable network settings to ensure
-# that PROJ forced to disable use of network for grids
+# that PROJ forced to disable use of network for downloading grid files.
 # This is equivalent to setting the PROJ_NETWORK environment variable
 # to "OFF" in the environment. Having PROJ_NETWORK = "ON"
 # can lead to some coordinate transformations resulting in Inf values.
@@ -61,17 +57,16 @@ def create_shape_mask(
         the coord_system of the shapefile. Defaults to None,
         in which case the geometry_crs is assumed to be the
         same as the :class:`iris.cube.Cube`.
-    minimum_weight : float, optional
+    minimum_weight : float, default=0.0
         The minimum weight of the geometry to be included in the mask.
         If the weight is less than this value, the geometry will not be
         included in the mask. Defaults to 0.0.
     all_touched : bool, optional
         If True, all pixels touched by the geometry will be included in the mask.
         If False, only pixels fully covered by the geometry will be included in the mask.
-        Defaults to True.
     invert : bool, optional
         If True, the mask will be inverted, so that pixels not covered by the geometry
-        will be included in the mask. Defaults to False.
+        will be included in the mask.
 
     Returns
     -------
@@ -123,8 +118,8 @@ def create_shape_mask(
     --------
     Because shape vectors are inherently Cartesian in nature, they contain no inherent
     understanding of the spherical geometry underpinning geographic coordinate systems.
-    For this reason, shapefiles or shape vectors that cross the antimeridian or poles
-    are not supported by this function to avoid unexpected masking behaviour.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.
 
     Shape geometries can be checked prior to masking using the :func:`is_geometry_valid`.
 
@@ -133,12 +128,6 @@ def create_shape_mask(
     :func:`is_geometry_valid`
         Check the validity of a shape geometry.
     """
-    if geometry_crs is None:
-        # If no geometry CRS is provided, assume it is the same as the cube CRS
-        geometry_crs = cube.coord_system().as_cartopy_projection()  # type: ignore[union-attr]
-    # Check validity of geometry CRS
-    is_geometry_valid(geometry, geometry_crs)
-
     # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
         if isinstance(cube, iris.cube.CubeList):  # type: ignore[unreachable]
@@ -150,9 +139,19 @@ def create_shape_mask(
             raise TypeError(msg)
 
     # Check cube coordinate system
-    if not cube.coord_system():
-        err_msg = "Cube does not have a coordinate references system defined. For reliable results we recommend you add a coordinate system to your cube."
+    cube_crs = cube.coord_system()
+    if cube_crs is None:
+        err_msg = (
+            "Cube coordinates do not have a coordinate references system (CRS)"
+            "defined. A CRS must be defined, to ensure reliable results."
+        )
         raise IrisError(err_msg)
+
+    if geometry_crs is None:
+        # If no geometry CRS is provided, assume it is the same as the cube CRS
+        geometry_crs = cube_crs.as_cartopy_projection()
+    # Check validity of geometry CRS
+    is_geometry_valid(geometry, geometry_crs)
 
     # Check minimum_weight is within range
     if (minimum_weight < 0.0) or (minimum_weight > 1.0):
@@ -311,7 +310,11 @@ def is_geometry_valid(
 
     geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
     if not geom_valid.all():
-        msg = f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid for the given coordinate system {geometry_crs.to_string()}. \nCheck that your coordinates are correctly specified."
+        msg = (
+            f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid "
+            f"for the given coordinate system {geometry_crs.to_string()}.\n"
+            "Check that your coordinates are correctly specified."
+        )
         raise ValueError(msg)
 
     # Check if shape crosses the 180th meridian (or equivalent)
@@ -416,12 +419,14 @@ def _get_weighted_mask(
     ]
     mask_idxs = idxs[mask_idxs_bool]
     mask_xy = [list(product(range(h), range(w)))[i] for i in mask_idxs]
-    # Create mask from grid box indexes
-
+    # Create mask from grid box indices
     weighted_mask_template = np.ones((h, w), dtype=bool)
-    # Set mask = True for grid box indexes identified above
-    for xy in mask_xy:
-        weighted_mask_template[xy] = False
+    # If there are grid box indices that intersect the geometry
+    # ie. mask_xy is not empty, then set mask = False for
+    # grid box indices identified above
+    if mask_xy:
+        ys, xs = zip(*mask_xy)
+        weighted_mask_template[ys, xs] = False
     return weighted_mask_template
 
 
