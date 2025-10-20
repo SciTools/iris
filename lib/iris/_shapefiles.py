@@ -401,7 +401,7 @@ def _get_weighted_mask(
     for coord in (x_coord, y_coord):
         if not coord.has_bounds():
             coord.guess_bounds()
-    x_bounds, y_bounds = [c.bounds() for c in (x_coord, y_coord)]
+    x_bounds, y_bounds = [c.bounds for c in (x_coord, y_coord)]
 
     # Generate Sort-Tile-Recursive (STR) packed R-tree of bounding boxes
     # https://shapely.readthedocs.io/en/stable/strtree.html
