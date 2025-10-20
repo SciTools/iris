@@ -47,13 +47,14 @@ def test_make_raster_cube_transform(mock_cube):
     """Test the `_make_raster_cube__transform` function."""
     x_name = "longitude"
     y_name = "latitude"
+    x_coord, y_coord = [mock_cube.coord(a) for a in (x_name, y_name)]
 
     # Call the function
-    transform = _make_raster_cube_transform(mock_cube)
+    transform = _make_raster_cube_transform(x_coord, y_coord)
 
     # Validate the result
-    dx = regular_step(mock_cube.coord(x_name))
-    dy = regular_step(mock_cube.coord(y_name))
+    dx = regular_step(x_coord)
+    dy = regular_step(y_coord)
     expected_transform = Affine.translation(-dx / 2, -dy / 2) * Affine.scale(dx, dy)
 
     assert isinstance(transform, Affine)
@@ -61,7 +62,10 @@ def test_make_raster_cube_transform(mock_cube):
 
 
 def test_invalid_cube(mock_nonregular_cube):
+    x_coord, y_coord = [
+        mock_nonregular_cube.coord(a) for a in ("longitude", "latitude")
+    ]
     # Assert that all invalid geometries raise the expected error
     errormessage = "Coord longitude is not regular"
     with pytest.raises(CoordinateNotRegularError, match=errormessage):
-        _make_raster_cube_transform(mock_nonregular_cube)
+        _make_raster_cube_transform(x_coord, y_coord)
