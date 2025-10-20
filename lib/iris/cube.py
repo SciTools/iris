@@ -3110,9 +3110,10 @@ class Cube(CFVariableMixin):
             except iris.exceptions.CoordinateNotFoundError:
                 points = np.zeros(self.shape[dim])[coord_keys]
                 if isiterable(points):
-                    dim_shape = len([points])
+                    dim_shape = len(points)
                 else:
-                    dim_shape = 1
+                    # scalar coordinate
+                    dim_shape = None
                 if dim_shape:
                     shape.append(dim_shape)
 
@@ -3805,9 +3806,6 @@ class Cube(CFVariableMixin):
             dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("slices")
-
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
