@@ -626,7 +626,12 @@ def _translate_constraints_to_var_callback(constraints):
 
             result = inner
     elif len(constraints) > 1:
-        if all(isinstance(constraint, iris._constraints.NameConstraint) and constraint.STASH == "none" for constraint in constraints):
+        if all(
+            isinstance(constraint, iris._constraints.NameConstraint)
+            and constraint.STASH == "none"
+            for constraint in constraints
+        ):
+
             def inner(cf_datavar):
                 match = False
                 for constraint in constraints:
@@ -646,6 +651,7 @@ def _translate_constraints_to_var_callback(constraints):
                     if match:
                         break
                 return match
+
             result = inner
     return result
 
