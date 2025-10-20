@@ -213,8 +213,8 @@ class TestAnalysisWeights:
         if a.dtype > np.float32:
             cast_data = a.data.astype(np.float32)
             a.data = cast_data
-        _shared_utils.assert_CML_approx_data(
-            self.request, a, ("analysis", "weighted_mean_lat.cml")
+        _shared_utils.assert_CML(
+            self.request, a, ("analysis", "weighted_mean_lat.cml"), approx_data=True
         )
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
@@ -222,8 +222,8 @@ class TestAnalysisWeights:
             cast_data = b.data.astype(np.float32)
             b.data = cast_data
         b.data = np.asarray(b.data)
-        _shared_utils.assert_CML_approx_data(
-            self.request, b, ("analysis", "weighted_mean_lon.cml")
+        _shared_utils.assert_CML(
+            self.request, b, ("analysis", "weighted_mean_lon.cml"), approx_data=True
         )
         assert b.coord("dummy").shape == (1,)
 
@@ -234,8 +234,8 @@ class TestAnalysisWeights:
         if c.dtype > np.float32:
             cast_data = c.data.astype(np.float32)
             c.data = cast_data
-        _shared_utils.assert_CML_approx_data(
-            self.request, c, ("analysis", "weighted_mean_latlon.cml")
+        _shared_utils.assert_CML(
+            self.request, c, ("analysis", "weighted_mean_latlon.cml"), approx_data=True
         )
         assert c.coord("dummy").shape == (1,)
 
@@ -331,25 +331,32 @@ class TestAnalysisBasic:
         _shared_utils.assert_CML(self.request, self.cube, ("analysis", original_name))
 
         a = self.cube.collapsed("grid_latitude", aggregate)
-        _shared_utils.assert_CML_approx_data(
-            self.request, a, ("analysis", "%s_latitude.cml" % name), *args, **kwargs
+        _shared_utils.assert_CML(
+            self.request,
+            a,
+            ("analysis", "%s_latitude.cml" % name),
+            *args,
+            approx_data=True,
+            **kwargs,
         )
 
         b = a.collapsed("grid_longitude", aggregate)
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             self.request,
             b,
             ("analysis", "%s_latitude_longitude.cml" % name),
             *args,
+            approx_data=True,
             **kwargs,
         )
 
         c = self.cube.collapsed(["grid_latitude", "grid_longitude"], aggregate)
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             self.request,
             c,
             ("analysis", "%s_latitude_longitude_1call.cml" % name),
             *args,
+            approx_data=True,
             **kwargs,
         )
 

@@ -300,6 +300,25 @@ class Test_xml:
         cube.add_ancillary_variable(av, (0, 1))
         _shared_utils.assert_CML(request, cube)
 
+    def test_array_stats(self, request):
+        cube = stock.simple_2d_w_multidim_coords()
+        with iris.util.CML_SETTINGS.set(
+            data_array_stats=True,
+            coord_data_array_stats=True,
+            coord_checksum=True,
+            masked_value_count=True,
+        ):
+            _shared_utils.assert_CML(request, cube)
+
+    def test_alt_array_formatting(self, request):
+        cube = stock.simple_2d_w_multidim_coords()
+        aux = iris.coords.AuxCoord(
+            np.array([f"val_{i}" for i in range(cube.shape[0])]), long_name="baz"
+        )
+        cube.add_aux_coord(aux, 0)
+        with iris.util.CML_SETTINGS.set(numpy_formatting=False, array_edgeitems=4):
+            _shared_utils.assert_CML(request, cube)
+
 
 class Test_collapsed__lazy:
     @pytest.fixture(autouse=True)
@@ -1379,12 +1398,12 @@ class Test_intersection__Metadata:
     def test_metadata(self, request):
         cube = create_cube(0, 360)
         result = cube.intersection(longitude=(170, 190))
-        _shared_utils.assert_CML_approx_data(request, result)
+        _shared_utils.assert_CML(request, result, approx_data=True)
 
     def test_metadata_wrapped(self, request):
         cube = create_cube(-180, 180)
         result = cube.intersection(longitude=(170, 190))
-        _shared_utils.assert_CML_approx_data(request, result)
+        _shared_utils.assert_CML(request, result, approx_data=True)
 
 
 # Explicitly check the handling of `circular` on the result.

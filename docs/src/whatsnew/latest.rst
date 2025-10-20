@@ -34,6 +34,16 @@ This document explains the changes made to Iris for this release
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
 
+#. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
+   payload when saving to NetCDF to also include any attached `CF-UGRID`_
+   :class:`~iris.mesh.components.MeshXY`. Additionally,
+   :func:`~iris.fileformats.netcdf.saver.save_mesh` also supports ``zlib``
+   compression. (:issue:`6565`, :pull:`6728`)
+
+#. `@ukmo-ccbunney`_ added a new :class:`~iris.util.CMLSettings` class to control
+   the formatting of Cube CML output via a context manager.
+   (:issue:`6244`, :pull:`6743`)
+
 
 🐛 Bugs Fixed
 =============
@@ -59,10 +69,18 @@ This document explains the changes made to Iris for this release
 #. N/A
 
 
-🚀 Performance Enhancements
-===========================
+🚀 Performance
+==============
 
-#. N/A
+#. `@trexfeathers`_ investigated a significant performance regression in NetCDF
+   loading and saving, caused by ``libnetcdf`` version ``4.9.3``.
+   The regression is equal to several milliseconds per chunk
+   of parallel operation; so a dataset containing ~100 chunks could be around
+   0.5 seconds slower to load or save. This regression will NOT be fixed within
+   Iris - doing so would introduce unacceptable complexity and potential
+   concurrency problems. The regession has been reported to the NetCDF team; it
+   is hoped that a future ``libnetcdf`` release will recover the original
+   performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
 
 🔥 Deprecations
@@ -95,6 +113,12 @@ This document explains the changes made to Iris for this release
 #. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
    ``git whatchanged`` command. (:pull:`6672`)
 
+#. `@ukmo-ccbunney`_ merged functionality of ``assert_CML_approx_data`` into
+   ``assert_CML`` via the use of a new ``approx_data`` keyword. (:pull:`6713`)
+
+#. `@ukmo-ccbunney`_ ``assert_CML`` now uses stricter array formatting to avoid
+   changes in tests due to Numpy version changes. (:pull:`6743`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -106,3 +130,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183

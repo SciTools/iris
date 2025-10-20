@@ -242,7 +242,9 @@ class TestAreaWeightedRegrid:
         src = self.simple_cube
         res = regrid_area_weighted(src, src)
         assert res == src
-        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("simple.cml",))
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("simple.cml",), approx_data=True
+        )
 
     def test_equal_area_numbers(self):
         # Remove coords system and units so it is no longer spherical.
@@ -321,8 +323,8 @@ class TestAreaWeightedRegrid:
         # Reduce from (3, 4) to (2, 2).
         dest = _subsampled_grid(src, 2, 2)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("latlonreduced.cml",)
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("latlonreduced.cml",), approx_data=True
         )
 
     def test_regrid_reorder_axis(self):
@@ -360,8 +362,8 @@ class TestAreaWeightedRegrid:
         src = self.simple_cube
         dest = _resampled_grid(src, 0.5, 1.0)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("lonhalved.cml",)
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("lonhalved.cml",), approx_data=True
         )
 
     def test_regrid_to_non_int_frac(self, request):
@@ -370,21 +372,25 @@ class TestAreaWeightedRegrid:
         src = self.simple_cube
         dest = _resampled_grid(src, 0.75, 0.67)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("lower.cml",))
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("lower.cml",), approx_data=True
+        )
 
     def test_regrid_to_higher_res(self, request):
         src = self.simple_cube
         frac = 3.5
         dest = _resampled_grid(src, frac, frac)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(request, res, RESULT_DIR + ("higher.cml",))
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("higher.cml",), approx_data=True
+        )
 
     def test_hybrid_height(self, request):
         src = self.realistic_cube
         dest = _resampled_grid(src, 0.7, 0.8)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("hybridheight.cml",)
+        _shared_utils.assert_CML(
+            request, res, RESULT_DIR + ("hybridheight.cml",), approx_data=True
         )
 
     def test_missing_data(self):
@@ -483,8 +489,11 @@ class TestAreaWeightedRegrid:
         dest.add_dim_coord(lon, 1)
         dest.add_aux_coord(src.coord("grid_latitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("const_lat_cross_section.cml",)
+        _shared_utils.assert_CML(
+            request,
+            res,
+            RESULT_DIR + ("const_lat_cross_section.cml",),
+            approx_data=True,
         )
         # Constant latitude, data order [x, z]
         # Using original and transposing the result should give the
@@ -493,8 +502,11 @@ class TestAreaWeightedRegrid:
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("const_lat_cross_section.cml",)
+        _shared_utils.assert_CML(
+            request,
+            res,
+            RESULT_DIR + ("const_lat_cross_section.cml",),
+            approx_data=True,
         )
 
         # Constant longitude
@@ -507,8 +519,11 @@ class TestAreaWeightedRegrid:
         dest.add_dim_coord(lat, 1)
         dest.add_aux_coord(src.coord("grid_longitude").copy(), None)
         res = regrid_area_weighted(src, dest)
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("const_lon_cross_section.cml",)
+        _shared_utils.assert_CML(
+            request,
+            res,
+            RESULT_DIR + ("const_lon_cross_section.cml",),
+            approx_data=True,
         )
         # Constant longitude, data order [y, z]
         # Using original and transposing the result should give the
@@ -517,8 +532,11 @@ class TestAreaWeightedRegrid:
         dest.transpose()
         res = regrid_area_weighted(src, dest)
         res.transpose()
-        _shared_utils.assert_CML_approx_data(
-            request, res, RESULT_DIR + ("const_lon_cross_section.cml",)
+        _shared_utils.assert_CML(
+            request,
+            res,
+            RESULT_DIR + ("const_lon_cross_section.cml",),
+            approx_data=True,
         )
 
     def test_scalar_source_cube(self):
