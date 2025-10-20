@@ -33,7 +33,16 @@ class Test(tests.IrisTest):
     def test_multiple_constraints(self):
         constrs = [
             iris.NameConstraint(standard_name="x_wind"),
-            iris.NameConstraint(var_name="var1"),
+            iris.NameConstraint(var_name="var2"),
+        ]
+        callback = _translate_constraints_to_var_callback(constrs)
+        result = [callback(var) for var in self.data_variables]
+        self.assertArrayEqual(result, [True, True, False, True, False])
+
+    def test_multiple_constraints_invalid(self):
+        constrs = [
+            iris.NameConstraint(standard_name="x_wind"),
+            iris.NameConstraint(var_name="var1", STASH="m01s00i024"),
         ]
         result = _translate_constraints_to_var_callback(constrs)
         self.assertIsNone(result)
