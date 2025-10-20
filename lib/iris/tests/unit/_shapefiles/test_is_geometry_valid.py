@@ -170,7 +170,7 @@ def test_valid_geometry(test_input, request, wgs84_crs):
         (
             "invalid_geometry_bounds",
             ValueError,
-            r"Geometry \[<POLYGON \(\(200 -100, 200 100, -200 100, -200 -100, 200 -100\)\)>\] is not valid for the given coordinate system EPSG:4326. \nCheck that your coordinates are correctly specified.",
+            r"Geometry \[<POLYGON \(\(200 -100, 200 100, -200 100, -200 -100, 200 -100\)\)>\] is not valid for the given coordinate system EPSG:4326.\nCheck that your coordinates are correctly specified.",
         ),
         (
             "not_a_valid_geometry",
