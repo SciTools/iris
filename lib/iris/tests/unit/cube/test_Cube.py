@@ -1124,8 +1124,12 @@ class Test_slices_dim_order:
     ability to correctly re-order the dimensions.
     """
 
-    @pytest.fixture(autouse=True)
-    def _setup(self):
+    @pytest.fixture(
+        autouse=True,
+        params=[(np.array([[[[8.0]]]]), None), (None, (1, 1, 1, 1))],
+        ids=["with data", "dataless"],
+    )
+    def _setup(self, request):
         """Setup a 4D iris cube, each dimension is length 1.
         The dimensions are;
             dim1: time
@@ -1133,14 +1137,14 @@ class Test_slices_dim_order:
             dim3: latitude
             dim4: longitude.
         """
-        self.cube = iris.cube.Cube(np.array([[[[8.0]]]]))
+        data, shape = request.param
+        self.cube = iris.cube.Cube(data=data, shape=shape)
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "time"), [0])
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "height"), [1])
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "latitude"), [2])
         self.cube.add_dim_coord(iris.coords.DimCoord([0], "longitude"), [3])
 
-    @staticmethod
-    def expected_cube_setup(dim1name, dim2name, dim3name):
+    def expected_cube_setup(self, dim1name, dim2name, dim3name):
         """expected_cube_setup.
 
         input:
@@ -1156,7 +1160,14 @@ class Test_slices_dim_order:
             cube: iris cube
                 iris cube with the specified axis holding the data 8
         """
-        cube = iris.cube.Cube(np.array([[[8.0]]]))
+        dataless = self.cube.is_dataless()
+        if dataless:
+            data = None
+            shape = (1, 1, 1)
+        else:
+            data = np.array([[[8.0]]])
+            shape = None
+        cube = iris.cube.Cube(data=data, shape=shape)
         cube.add_dim_coord(iris.coords.DimCoord([0], dim1name), [0])
         cube.add_dim_coord(iris.coords.DimCoord([0], dim2name), [1])
         cube.add_dim_coord(iris.coords.DimCoord([0], dim3name), [2])
@@ -1199,9 +1210,12 @@ class Test_slices_dim_order:
 
 @_shared_utils.skip_data
 class Test_slices_over:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
-        self.cube = stock.realistic_4d()[:, :7, :10, :10]
+    @pytest.fixture(autouse=True, params=[True, False], ids=["dataless", "with data"])
+    def _setup(self, request):
+        cube = stock.realistic_4d()
+        if request.param:
+            cube.data = None
+        self.cube = cube[:, :7, :10, :10]
         # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = range(len(self.cube.coord("model_level_number").points))
         self.exp_iter_2d = np.ndindex(6, 7, 1, 1)

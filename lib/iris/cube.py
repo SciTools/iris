@@ -3898,7 +3898,11 @@ class Cube(CFVariableMixin):
         dm = self._data_manager
         if not self.is_dataless():
             data = dm.core_data().transpose(new_order)
-        self._data_manager = DataManager(data)
+            shape = None
+        else:
+            data = None
+            shape = dm.shape
+        self._data_manager = DataManager(data=data, shape=shape)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
