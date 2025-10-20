@@ -11,7 +11,6 @@ import dask.array as da
 import numpy as np
 
 from iris._lazy_data import is_lazy_data, map_complete_blocks
-from iris.cube import Cube
 from iris.tests._shared_utils import assert_array_equal
 
 
