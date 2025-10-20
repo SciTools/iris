@@ -3152,6 +3152,13 @@ class Test_convert_units:
         assert cube.has_lazy_data()
         _shared_utils.assert_array_all_close(cube.data, real_data_ft)
 
+    def test_dataless_convert(self):
+        cube = iris.cube.Cube(shape=(3, 4), units="m")
+        assert cube.units == "m"
+
+        cube.convert_units("ft")
+        assert cube.units == "ft"
+
     def test_unit_multiply(self):
         _client = Client()
         cube = iris.cube.Cube(da.arange(1), units="m")
@@ -3161,7 +3168,6 @@ class Test_convert_units:
         _client.close()
 
     @pytest.mark.parametrize(
-        "attribute",
         [
             "valid_min",
             "valid_max",

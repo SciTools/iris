@@ -1476,25 +1476,25 @@ class Cube(CFVariableMixin):
         This operation preserves lazy data.
 
         """
+        dataless = self.is_dataless()
         # If the cube has units convert the data.
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("convert_units")
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
                 "Cannot convert from unknown units. "
                 'The "cube.units" attribute may be set directly.'
             )
-        if self.has_lazy_data():
-            # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = Unit(self.units)
-            new_unit = unit
+        if not dataless:
+            if self.has_lazy_data():
+                # Make fixed copies of old + new units for a delayed conversion.
+                old_unit = Unit(self.units)
+                new_unit = unit
 
-            pointwise_convert = partial(old_unit.convert, other=new_unit)
+                pointwise_convert = partial(old_unit.convert, other=new_unit)
 
-            new_data = _lazy.lazy_elementwise(self.lazy_data(), pointwise_convert)
-        else:
-            new_data = self.units.convert(self.data, unit)
-        self.data = new_data
+                new_data = _lazy.lazy_elementwise(self.lazy_data(), pointwise_convert)
+            else:
+                new_data = self.units.convert(self.data, unit)
+            self.data = new_data
         for key in "actual_range", "valid_max", "valid_min", "valid_range":
             if key in self.attributes.locals:
                 self.attributes.locals[key] = self.units.convert(
