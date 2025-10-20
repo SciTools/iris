@@ -2700,14 +2700,22 @@ class Test_dtype:
 
 
 class TestSubset:
-    def test_scalar_coordinate(self):
-        cube = Cube(0, long_name="apricot", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+    )
+    def test_scalar_coordinate(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="apricot", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="banana", units="1"))
         result = cube.subset(cube.coord("banana"))
         assert cube == result
 
-    def test_dimensional_coordinate(self):
-        cube = Cube(np.zeros((4)), long_name="tinned_peach", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"],
+        [[np.zeros(4), None], [None, (4,)]],
+        ids=["with_data", "dataless"],
+    )
+    def test_dimensional_coordinate(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="tinned_peach", units="1")
         cube.add_dim_coord(
             DimCoord([0, 1, 2, 3], long_name="sixteen_ton_weight", units="1"),
             0,
@@ -2715,28 +2723,40 @@ class TestSubset:
         result = cube.subset(cube.coord("sixteen_ton_weight"))
         assert cube == result
 
-    def test_missing_coordinate(self):
-        cube = Cube(0, long_name="raspberry", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+    )
+    def test_missing_coordinate(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="loganberry", units="1"))
         bad_coord = DimCoord([0], long_name="tiger", units="1")
         pytest.raises(CoordinateNotFoundError, cube.subset, bad_coord)
 
-    def test_different_coordinate(self):
-        cube = Cube(0, long_name="raspberry", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+    )
+    def test_different_coordinate(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="loganberry", units="1"))
         different_coord = DimCoord([2], long_name="loganberry", units="1")
         result = cube.subset(different_coord)
         assert result is None
 
-    def test_different_coordinate_vector(self):
-        cube = Cube([0, 1], long_name="raspberry", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"], [[[0, 1], None], [None, (2,)]], ids=["with_data", "dataless"]
+    )
+    def test_different_coordinate_vector(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
         cube.add_dim_coord(DimCoord([0, 1], long_name="loganberry", units="1"), 0)
         different_coord = DimCoord([2], long_name="loganberry", units="1")
         result = cube.subset(different_coord)
         assert result is None
 
-    def test_not_coordinate(self):
-        cube = Cube(0, long_name="peach", units="1")
+    @pytest.mark.parametrize(
+        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+    )
+    def test_not_coordinate(self, data, shape):
+        cube = Cube(data=data, shape=shape, long_name="peach", units="1")
         cube.add_aux_coord(DimCoord([0], long_name="crocodile", units="1"))
         pytest.raises(ValueError, cube.subset, "Pointed Stick")
 

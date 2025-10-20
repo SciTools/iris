@@ -3160,8 +3160,6 @@ class Cube(CFVariableMixin):
         whole cube is returned. As such, the operation is not strict.
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("subset")
         if not isinstance(coord, iris.coords.Coord):
             raise ValueError("coord_to_extract must be a valid Coord.")
 
