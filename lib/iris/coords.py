@@ -32,6 +32,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
@@ -853,9 +854,44 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             if self.coord_system:
                 element.appendChild(self.coord_system.xml_element(doc))
 
+        is_masked_array = np.ma.isMaskedArray(self._values)
+
         # Add the values
         element.setAttribute("value_type", str(self._value_type_name()))
         element.setAttribute("shape", str(self.shape))
+
+        # data checksum
+        if CML_SETTINGS.coord_checksum:
+            crc = iris.util.array_checksum(self._values)
+            element.setAttribute("checksum", crc)
+
+            if is_masked_array:
+                # Add the number of masked elements
+                if np.ma.is_masked(self._values):
+                    crc = iris.util.array_checksum(self._values.mask)
+                else:
+                    crc = "no-masked-elements"
+                element.setAttribute("mask_checksum", crc)
+
+        # array ordering:
+        def _order(array):
+            order = ""
+            if array.flags["C_CONTIGUOUS"]:
+                order = "C"
+            elif array.flags["F_CONTIGUOUS"]:
+                order = "F"
+            return order
+
+        if CML_SETTINGS.coord_order:
+            element.setAttribute("order", _order(self._values))
+            if is_masked_array:
+                element.setAttribute("mask_order", _order(self._values.mask))
+
+        # masked element count:
+        if CML_SETTINGS.masked_value_count and is_masked_array:
+            element.setAttribute(
+                "masked_count", str(np.count_nonzero(self._values.mask))
+            )
 
         # The values are referred to "points" of a coordinate and "data"
         # otherwise.
@@ -865,7 +901,31 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term = "indices"
         else:
             values_term = "data"
-        element.setAttribute(values_term, self._xml_array_repr(self._values))
+        element.setAttribute(
+            values_term,
+            self._xml_array_repr(self._values),
+        )
+
+        if iris.util.CML_SETTINGS.coord_data_array_stats and len(self._values) > 1:
+            data = self._values
+
+            if np.issubdtype(data.dtype.type, np.number):
+                data_min = data.min()
+                data_max = data.max()
+                if data_min == data_max:
+                    # When data is constant, std() is too sensitive.
+                    data_std = 0
+                else:
+                    data_std = data.std()
+
+                stats_xml_element = doc.createElement("stats")
+                stats_xml_element.setAttribute("std", str(data_std))
+                stats_xml_element.setAttribute("min", str(data_min))
+                stats_xml_element.setAttribute("max", str(data_max))
+                stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+                stats_xml_element.setAttribute("mean", str(data.mean()))
+
+                element.appendChild(stats_xml_element)
 
         return element
 
@@ -896,7 +956,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if hasattr(data, "to_xml_attr"):
             result = data._values.to_xml_attr()
         else:
-            result = iris.util.format_array(data)
+            edgeitems = CML_SETTINGS.array_edgeitems
+            if CML_SETTINGS.numpy_formatting:
+                result = iris.util.format_array(data, edgeitems=edgeitems)
+            else:
+                result = iris.util.array_summary(data, edgeitems=edgeitems)
         return result
 
     def _value_type_name(self):
@@ -2565,7 +2629,10 @@ class Coord(_DimensionalMetadata):
 
         # Add bounds, points are handled by the parent class.
         if self.has_bounds():
-            element.setAttribute("bounds", self._xml_array_repr(self.bounds))
+            element.setAttribute(
+                "bounds",
+                self._xml_array_repr(self.bounds),
+            )
 
         return element
 
