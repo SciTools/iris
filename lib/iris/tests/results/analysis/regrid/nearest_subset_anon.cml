@@ -6,117 +6,44 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2, 3]">
-        <auxCoord bounds="[[[[413.93686, 426.63434],
-   [374.8078 , 387.5654 ],
-   [198.09999, 211.12901],
-   [198.09999, 211.12901],
-   [328.79987, 341.62814]],
-
-  [[325.11603, 337.94995],
-   [289.5839 , 302.4724 ],
-   [404.50003, 417.212  ],
-   [404.50003, 417.212  ],
-   [424.16788, 436.84964]],
-
-  [[325.11603, 337.94995],
-   [289.5839 , 302.4724 ],
-   [404.50003, 417.212  ],
-   [404.50003, 417.212  ],
-   [424.16788, 436.84964]],
-
-  [[440.66003, 453.31647],
-   [394.19986, 406.92767],
-   [302.7692 , 315.63745],
-   [302.7692 , 315.63745],
-   [259.79196, 272.72623]]],
-
-
- [[[426.63434, 445.68146],
-   [387.5654 , 406.70258],
-   [211.12901, 230.67299],
-   [211.12901, 230.67299],
-   [341.62814, 360.87125]],
-
-  [[337.94995, 357.20154],
-   [302.4724 , 321.8058 ],
-   [417.212  , 436.28085],
-   [417.212  , 436.28085],
-   [436.84964, 455.8732 ]],
-
-  [[337.94995, 357.20154],
-   [302.4724 , 321.8058 ],
-   [417.212  , 436.28085],
-   [417.212  , 436.28085],
-   [436.84964, 455.8732 ]],
-
-  [[453.31647, 472.30206],
-   [406.92767, 426.0202 ],
-   [315.63745, 334.94046],
-   [315.63745, 334.94046],
-   [272.72623, 292.1282 ]]]]" id="9041e969" points="[[[418.69836, 379.59183, 202.98584, 202.98584,
-   333.6104 ],
-  [329.9287 , 294.41702, 409.26697, 409.26697,
-   428.92346],
-  [329.9287 , 294.41702, 409.26697, 409.26697,
-   428.92346],
-  [445.40613, 398.97272, 307.59473, 307.59473,
-   264.64227]],
-
- [[434.5705 , 395.5391 , 219.27228, 219.27228,
-   349.64597],
-  [345.97134, 310.52786, 425.15723, 425.15723,
-   444.776  ],
-  [345.97134, 310.52786, 425.15723, 425.15723,
-   444.776  ],
-  [461.227  , 414.88275, 323.68027, 323.68027,
-   280.81027]]]" shape="(2, 4, 5)" standard_name="altitude" units="Unit('m')" value_type="float32">
+        <auxCoord bounds="[413.93685913, 426.63433838, 374.80780029, ..., 334.94046021, 272.72622681, 292.12820435]" checksum="0x367bb744" id="9041e969" points="[418.69836426, 379.59182739, 202.98583984, ..., 323.68026733, 323.68026733, 280.81027222]" shape="(2, 4, 5)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord checksum="0x6522df69" id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="77a50eb5" points="[52.372     , 52.39466667, 52.41733333,
- 52.44      ]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x09c3ed14" id="77a50eb5" points="[52.372, 52.39466667, 52.41733333, 52.44]" shape="(4,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[ 0.      , 13.333332],
- [13.333332, 33.333332]]" id="fb105c19" long_name="level_height" points="[ 5.      , 21.666664]" shape="(2,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[0., 13.33333206, 13.33333206, 33.33333206]" checksum="0x10a751c2" id="fb105c19" long_name="level_height" points="[5., 21.66666412]" shape="(2,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[3]">
-        <dimCoord id="f913a8b3" points="[-3.182 , -3.1515, -3.121 , -3.0905, -3.06  ]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x32754c07" id="f913a8b3" points="[-3.182, -3.1515, -3.121, -3.0905, -3.06]" shape="(5,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="38fd0305" points="[1, 2]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+        <dimCoord checksum="0x0381177c" id="38fd0305" points="[1, 2]" shape="(2,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[1.        , 0.99846387],
- [0.99846387, 0.9961619 ]]" id="a5c170db" long_name="sigma" points="[0.9994238, 0.9975044]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[1., 0.99846387, 0.99846387, 0.99616188]" checksum="0xafb1c52f" id="a5c170db" long_name="sigma" points="[0.9994238, 0.99750441]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2, 3]">
-        <auxCoord id="b15e3a2e" points="[[413.93686, 374.8078 , 198.09999, 198.09999,
-  328.79987],
- [325.11603, 289.5839 , 404.50003, 404.50003,
-  424.16788],
- [325.11603, 289.5839 , 404.50003, 404.50003,
-  424.16788],
- [440.66003, 394.19986, 302.7692 , 302.7692 ,
-  259.79196]]" shape="(4, 5)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+        <auxCoord checksum="0x1766f1f1" id="b15e3a2e" points="[413.93685913, 374.80780029, 198.09999084, ..., 302.76919556, 302.76919556, 259.79196167]" shape="(4, 5)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

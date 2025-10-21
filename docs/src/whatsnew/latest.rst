@@ -45,6 +45,10 @@ This document explains the changes made to Iris for this release
    Also added a new documentation section on dataless cubes.
    (:issue:`5770`, :pull:`6581`)
 
+#. `@ukmo-ccbunney`_ added a new :class:`~iris.util.CMLSettings` class to control
+   the formatting of Cube CML output via a context manager.
+   (:issue:`6244`, :pull:`6743`)
+
 
 🐛 Bugs Fixed
 =============
@@ -70,10 +74,18 @@ This document explains the changes made to Iris for this release
 #. N/A
 
 
-🚀 Performance Enhancements
-===========================
+🚀 Performance
+==============
 
-#. N/A
+#. `@trexfeathers`_ investigated a significant performance regression in NetCDF
+   loading and saving, caused by ``libnetcdf`` version ``4.9.3``.
+   The regression is equal to several milliseconds per chunk
+   of parallel operation; so a dataset containing ~100 chunks could be around
+   0.5 seconds slower to load or save. This regression will NOT be fixed within
+   Iris - doing so would introduce unacceptable complexity and potential
+   concurrency problems. The regession has been reported to the NetCDF team; it
+   is hoped that a future ``libnetcdf`` release will recover the original
+   performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
 
 🔥 Deprecations
@@ -106,8 +118,11 @@ This document explains the changes made to Iris for this release
 #. `@melissaKG`_ upgraded Iris' tests to no longer use the deprecated
    ``git whatchanged`` command. (:pull:`6672`)
 
-#. `@ukmo-ccbunney` merged functionality of ``assert_CML_approx_data`` into
+#. `@ukmo-ccbunney`_ merged functionality of ``assert_CML_approx_data`` into
    ``assert_CML`` via the use of a new ``approx_data`` keyword. (:pull:`6713`)
+
+#. `@ukmo-ccbunney`_ ``assert_CML`` now uses stricter array formatting to avoid
+   changes in tests due to Numpy version changes. (:pull:`6743`)
 
 
 .. comment
@@ -120,3 +135,5 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183

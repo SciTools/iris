@@ -6,129 +6,47 @@
     </attributes>
     <coords>
       <coord datadims="[0, 1]">
-        <auxCoord bounds="[[[367.8647 , 380.63293],
-  [372.9328 , 385.69327],
-  [369.95633, 382.72137],
-  ...,
-  [318.71744, 331.5612 ],
-  [299.6496 , 312.52264],
-  [272.7841 , 285.6984 ]],
-
- [[380.63293, 399.78613],
-  [385.69327, 404.83478],
-  [382.72137, 401.86972],
-  ...,
-  [331.5612 , 350.8275 ],
-  [312.52264, 331.83286],
-  [285.6984 , 305.07047]],
-
- [[399.78613, 425.3252 ],
-  [404.83478, 430.35834],
-  [401.86972, 427.4024 ],
-  ...,
-  [350.8275 , 376.51724],
-  [331.83286, 357.58102],
-  [305.07047, 330.90097]],
-
- [[425.3252 , 457.2515 ],
-  [430.35834, 462.26526],
-  [427.4024 , 459.3207 ],
-  ...,
-  [376.51724, 408.6315 ],
-  [357.58102, 389.76822],
-  [330.90097, 363.19095]],
-
- [[457.2515 , 495.56665],
-  [462.26526, 500.5572 ],
-  [459.3207 , 497.62628],
-  ...,
-  [408.6315 , 447.17175],
-  [389.76822, 428.3958 ],
-  [363.19095, 401.94156]]]" id="9041e969" points="[[372.6527 , 377.71793, 374.74316, ...,
-  323.53378, 304.47693, 277.62692],
- [388.6133 , 393.66876, 390.69974, ...,
-  339.5887 , 320.56845, 293.77   ],
- [410.95926, 416.00113, 413.04007, ...,
-  362.0666 , 343.0975 , 316.37115],
- [439.6917 , 444.7161 , 441.76532, ...,
-  390.96838, 372.065  , 345.4312 ],
- [474.81216, 479.81528, 476.87698, ...,
-  426.2954 , 407.4722 , 380.95132]]" shape="(5, 18)" standard_name="altitude" units="Unit('m')" value_type="float32">
+        <auxCoord bounds="[367.86468506, 380.63293457, 372.93280029, ..., 428.39581299, 363.19094849, 401.94155884]" checksum="0xf37fd869" id="9041e969" points="[372.65270996, 377.71792603, 374.74316406, ..., 426.29541016, 407.47219849, 380.95132446]" shape="(5, 18)" standard_name="altitude" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord>
-        <dimCoord id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord checksum="0x6522df69" id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[-0.11925, -0.11835]]" id="f1ab3066" points="[-0.1188]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord bounds="[-0.11925, -0.11835]" checksum="0x87dcaba7" id="f1ab3066" points="[-0.1188]" shape="(1,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[359.57916, 359.5807 ],
- [359.5807 , 359.58215],
- [359.58215, 359.58368],
- [359.58368, 359.58514],
- [359.58514, 359.58667],
- [359.58667, 359.5882 ],
- [359.5882 , 359.58966],
- [359.58966, 359.5912 ],
- [359.5912 , 359.59265],
- [359.59265, 359.59418],
- [359.59418, 359.59564],
- [359.59564, 359.59717],
- [359.59717, 359.59863],
- [359.59863, 359.60016],
- [359.60016, 359.60168],
- [359.60168, 359.60315],
- [359.60315, 359.60468],
- [359.60468, 359.60614]]" id="d3676747" points="[359.57993, 359.58142, 359.58292, 359.5844 ,
- 359.5859 , 359.58743, 359.58893, 359.59042,
- 359.59192, 359.5934 , 359.5949 , 359.5964 ,
- 359.5979 , 359.5994 , 359.60092, 359.60242,
- 359.6039 , 359.6054 ]" shape="(18,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord bounds="[359.5791626, 359.58068848, 359.58068848, ..., 359.60467529, 359.60467529, 359.60614014]" checksum="0x6cc71c00" id="d3676747" points="[359.57992554, 359.5814209, 359.58291626, ..., 359.60241699, 359.60391235, 359.60540771]" shape="(18,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32">
           <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[  0.      ,  13.333332],
- [ 13.333332,  33.333332],
- [ 33.333332,  60.      ],
- [ 60.      ,  93.33332 ],
- [ 93.33332 , 133.33331 ]]" id="fb105c19" long_name="level_height" points="[  5.      ,  21.666664,  45.      ,  75.      ,
- 111.66668 ]" shape="(5,)" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[0., 13.33333206, 13.33333206, ..., 93.33332062, 93.33332062, 133.33331299]" checksum="0x43910445" id="fb105c19" long_name="level_height" points="[5., 21.66666412, 45., 75., 111.66667938]" shape="(5,)" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="38fd0305" points="[1, 2, 3, 4, 5]" shape="(5,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+        <dimCoord checksum="0x2918a990" id="38fd0305" points="[1, 2, 3, 4, 5]" shape="(5,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[1.        , 0.99846387],
- [0.99846387, 0.9961619 ],
- [0.9961619 , 0.9930967 ],
- [0.9930967 , 0.9892719 ],
- [0.9892719 , 0.9846918 ]]" id="a5c170db" long_name="sigma" points="[0.9994238 , 0.9975044 , 0.9948203 , 0.9913746 ,
- 0.98717135]" shape="(5,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord bounds="[1., 0.99846387, 0.99846387, ..., 0.98927188, 0.98927188, 0.9846918]" checksum="0xaf57c9c4" id="a5c170db" long_name="sigma" points="[0.9994238, 0.99750441, 0.9948203, 0.99137461, 0.98717135]" shape="(5,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord id="b15e3a2e" points="[367.8647 , 372.9328 , 369.95633, 364.37534,
- 351.79944, 330.96753, 310.72195, 291.17694,
- 266.74896, 251.6752 , 253.69359, 277.0837 ,
- 304.67914, 329.21207, 332.7192 , 318.71744,
- 299.6496 , 272.7841 ]" shape="(18,)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
+        <auxCoord checksum="0x2dca3a3d" id="b15e3a2e" points="[367.86468506, 372.93280029, 369.95632935, ..., 318.71743774, 299.64959717, 272.78408813]" shape="(18,)" standard_name="surface_altitude" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[347921.16666667]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord checksum="0xadf7a9ce" id="cb784457" points="[347921.16666667]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
