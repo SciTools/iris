@@ -45,7 +45,8 @@ This document explains the changes made to Iris for this release
    (:issue:`6244`, :pull:`6743`)
 
 #. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.extract`,
-   :func:`~iris.cube.Cube.collapsed`, :func:`~iris.cube.Cube.aggregated_by` and
+   :func:`~iris.cube.Cube.collapsed`, :func:`~iris.cube.Cube.aggregated_by`,
+   :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
    :func:`~iris.cube.Cube.slices` to work with dataless cubes.
    (:issue:`6725`, :pull:`6724`)
 
