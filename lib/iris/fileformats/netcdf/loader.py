@@ -592,7 +592,7 @@ def _translate_constraints_to_var_callback(constraints):
 
     Notes
     -----
-    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+    For now, ONLY handles NameConstraints with no 'STASH' component.
 
     """
     import iris._constraints
