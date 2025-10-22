@@ -42,7 +42,7 @@ The data array is simply discarded.
 Cube copy
 ---------
 The syntax that allows you to replace data on copying,
-e.g. ``cube2 = cube.copy(new_data)``, has now extended to accept the special value
+e.g. ``cube2 = cube.copy(new_data)``, has been extended to accept the special value
 :data:`iris.DATALESS`.
 
 So, ``cube2 = cube.copy(iris.DATALESS)`` makes ``cube2`` a
@@ -53,9 +53,7 @@ This is equivalent to ``cube2 = cube.copy(); cube2.data = None``.
 Save and Load
 -------------
 The netcdf file interface can save and re-load dataless cubes correctly.
-TODO: link to ref e.g. "netcdf_dataless" in netcdf docs,
-when #6339 "Dataless netcdf save+load" is in place.
-
+See: :ref:`save_load_dataless`.
 
 .. _dataless_merge:
 

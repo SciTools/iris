@@ -40,11 +40,6 @@ This document explains the changes made to Iris for this release
    :func:`~iris.fileformats.netcdf.saver.save_mesh` also supports ``zlib``
    compression. (:issue:`6565`, :pull:`6728`)
 
-#. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
-   re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
-   Also added a new documentation section on dataless cubes.
-   (:issue:`5770`, :pull:`6581`)
-
 #. `@pp-mo`_ made it possible to save 'dataless' cubes to a netcdf file, and load them
    back again. (:issue:`6727`, :pull:`6739`)
 
@@ -57,6 +52,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
    :func:`~iris.cube.Cube.slices` to work with dataless cubes.
    (:issue:`6725`, :pull:`6724`)
+
+#. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
+   re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
+   Also added a new documentation section on dataless cubes.
+   (:issue:`5770`, :pull:`6581`)
 
 
 🐛 Bugs Fixed
