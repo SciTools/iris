@@ -366,8 +366,10 @@ def assert_CML(
     request: pytest.FixtureRequest,
     cubes,
     reference_filename=None,
-    checksum=True,
     approx_data=False,
+    checksum=True,
+    coord_checksum=None,
+    numpy_formatting=None,
     **kwargs,
 ):
     """Test that the CML for the given cubes matches the contents of
@@ -378,6 +380,9 @@ def assert_CML(
 
     The data payload of individual cubes is not compared unless ``checksum``
     or ``approx_data`` are True.
+
+    Further control of the CML formatting can be made using the
+    :data:`iris.util.CML_SETTINGS` context manager.
 
     Notes
     -----
@@ -393,20 +398,28 @@ def assert_CML(
         A pytest ``request`` fixture passed down from the calling test. Is
         required by :func:`result_path`. See :func:`result_path` Examples
         for how to access the ``request`` fixture.
-    cubes :
+    cubes : iris.cube.Cube or iris.cube.CubeList
         Either a Cube or a sequence of Cubes.
     reference_filename : optional, default=None
         The relative path (relative to the test results directory).
         If omitted, the result is generated from the calling
         method's name, class, and module using
         :meth:`iris.tests.IrisTest.result_path`.
-    checksum : bool, optional
-        When True, causes the CML to include a checksum for each
-        Cube's data. Defaults to True.
     approx_data : bool, optional, default=False
         When True, the cube's data will be compared with the reference
         data and asserted to be within a specified tolerance. Implies
         ``checksum=False``.
+    checksum : bool, optional, default=True
+        When True, causes the CML to include a checksum for each
+        Cube's data. Defaults to True.
+    coord_checksum : bool, optional, default=True
+        When True, causes the CML to include a checksum for each
+        Cube's coordinate data. Defaults to True.
+    numpy_formatting : bool, optional, default=False
+        When True, causes the CML to use numpy-style formatting for
+        array data. When False, uses simplified array formatting
+        that doesn't rely on Numpy's ``arr2string`` formatter.
+        Defaults to False.
 
     """
     _check_for_request_fixture(request, "assert_CML")
@@ -417,20 +430,31 @@ def assert_CML(
         reference_filename = result_path(request, None, "cml")
     # Note: reference_path could be a tuple of path parts
     reference_path = get_result_path(reference_filename)
+
+    # default CML output options for tests:
+    extra_format_options = {"numpy_formatting": False, "coord_checksum": True}
+    # update formatting opts with keywords passed into this function:
+    for k in extra_format_options.keys():
+        if (user_opt := locals()[k]) is not None:
+            extra_format_options[k] = user_opt
+
     if approx_data:
-        # compare data payload stats against known good stats
-        checksum = False  # ensure we are not comparing data checksums
+        # compare data payload stats against known good stats.
+        # Make sure options that compare exact data are disabled:
+        checksum = False
+        extra_format_options["data_array_stats"] = False
+
         for i, cube in enumerate(cubes):
             # Build the json stats filename based on CML file path:
             fname = reference_path.removesuffix(".cml")
             fname += f".data.{i}.json"
             assert_data_almost_equal(cube.data, fname, **kwargs)
-    if isinstance(cubes, (list, tuple)):
+
+    with iris.util.CML_SETTINGS.set(**extra_format_options):
         cml = iris.cube.CubeList(cubes).xml(
             checksum=checksum, order=False, byteorder=False
         )
-    else:
-        cml = cubes.xml(checksum=checksum, order=False, byteorder=False)
+
     _check_same(cml, reference_path)
 
 
