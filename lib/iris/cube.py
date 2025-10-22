@@ -4926,8 +4926,7 @@ x            -               -
         """  # noqa: D214, D406, D407, D410, D411
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("rolling_window")
+        dataless = self.is_dataless()
         weights_info = None
         if kwargs.get("weights") is not None:
             weights_info = _Weights(kwargs["weights"], self)
@@ -4966,13 +4965,13 @@ x            -               -
         key = [slice(None, None)] * self.ndim
         key[dimension] = slice(None, self.shape[dimension] - window + 1)
         new_cube = new_cube[tuple(key)]
-
-        # take a view of the original data using the rolling_window function
-        # this will add an extra dimension to the data at dimension + 1 which
-        # represents the rolled window (i.e. will have a length of window)
-        rolling_window_data = iris.util.rolling_window(
-            self.core_data(), window=window, axis=dimension
-        )
+        if not dataless:
+            # take a view of the original data using the rolling_window function
+            # this will add an extra dimension to the data at dimension + 1 which
+            # represents the rolled window (i.e. will have a length of window)
+            rolling_window_data = iris.util.rolling_window(
+                self.core_data(), window=window, axis=dimension
+            )
 
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
@@ -5021,27 +5020,30 @@ x            -               -
         )
         # and perform the data transformation, generating weights first if
         # needed
-        if isinstance(
-            aggregator, iris.analysis.WeightedAggregator
-        ) and aggregator.uses_weighting(**kwargs):
-            if "weights" in kwargs:
-                weights = kwargs["weights"]
-                if weights.ndim > 1 or weights.shape[0] != window:
-                    raise ValueError(
-                        "Weights for rolling window aggregation "
-                        "must be a 1d array with the same length "
-                        "as the window."
+        if not dataless:
+            if isinstance(
+                aggregator, iris.analysis.WeightedAggregator
+            ) and aggregator.uses_weighting(**kwargs):
+                if "weights" in kwargs:
+                    weights = kwargs["weights"]
+                    if weights.ndim > 1 or weights.shape[0] != window:
+                        raise ValueError(
+                            "Weights for rolling window aggregation "
+                            "must be a 1d array with the same length "
+                            "as the window."
+                        )
+                    kwargs = dict(kwargs)
+                    kwargs["weights"] = iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
                     )
-                kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
-                )
 
-        if aggregator.lazy_func is not None and self.has_lazy_data():
-            agg_method = aggregator.lazy_aggregate
+            if aggregator.lazy_func is not None and self.has_lazy_data():
+                agg_method = aggregator.lazy_aggregate
+            else:
+                agg_method = aggregator.aggregate
+            data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
         else:
-            agg_method = aggregator.aggregate
-        data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
+            data_result = None
         result = aggregator.post_process(new_cube, data_result, [coord], **kwargs)
         return result
 
