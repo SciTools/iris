@@ -169,6 +169,9 @@ def create_shape_mask(
     # Get cube coordinates
     x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
+    if x_coord.units.origin == "radians":
+        x_coord.convert_units("degrees")
+        y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))

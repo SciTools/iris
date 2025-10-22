@@ -73,6 +73,27 @@ def test_basic_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
     assert np.array_equal(mask, expected_mask)
 
 
+def test_basic_create_shapefile_mask_radians(square_polygon, wgs84_crs, mock_cube):
+    """Test the create_shape_mask function."""
+    # Convert mock cube coordinates to radians
+    mock_cube.coord("longitude").convert_units("radians")
+    mock_cube.coord("latitude").convert_units("radians")
+
+    # Create a mask using the square polygon
+    mask = create_shape_mask(
+        geometry=square_polygon, geometry_crs=wgs84_crs, cube=mock_cube
+    )
+
+    # Check that the mask is a boolean array with the same shape as the cube data
+    assert mask.shape == mock_cube.data.shape
+    assert mask.dtype == np.bool_
+
+    # Check that the masked area corresponds to the square polygon
+    expected_mask = np.ones_like(mock_cube.data, dtype=bool)
+    expected_mask[3:6, 3:6] = False  # The square polygon covers this area
+    assert np.array_equal(mask, expected_mask)
+
+
 def test_invert_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
     # Create a mask using the square polygon
