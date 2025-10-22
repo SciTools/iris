@@ -28,7 +28,6 @@ import dask.array as da
 import numpy as np
 import numpy.ma as ma
 from packaging.version import Version
-from toolz import isiterable
 
 import iris._constraints
 from iris._data_manager import DataManager
@@ -3086,7 +3085,7 @@ class Cube(CFVariableMixin):
             coord_mapping[id(coord)] = new_coord
 
         dim_coords = {}
-        shape = []
+        shape = ()
 
         for dim in range(self.ndim):
             coord_keys = full_slice[dim]
@@ -3103,7 +3102,7 @@ class Cube(CFVariableMixin):
                         aux_coords[new_coord] = new_dims
                     else:
                         dim_coords[new_coord] = new_dims
-                        shape.append(len(new_coord.core_points()))
+                        shape += new_coord.core_points().shape
                 except ValueError:
                     # TODO make this except more specific to catch monotonic error
                     # Attempt to slice it by converting to AuxCoord first
@@ -3112,19 +3111,15 @@ class Cube(CFVariableMixin):
                 coord_mapping[id(coord)] = new_coord
             except iris.exceptions.CoordinateNotFoundError:
                 points = np.zeros(self.shape[dim])[coord_keys]
-                if isiterable(points):
-                    dim_shape = len(points)
-                else:
-                    # scalar coordinate
-                    dim_shape = None
-                if dim_shape:
-                    shape.append(dim_shape)
+                if points.shape != ():
+                    dim_shape = points.shape
+                    shape += dim_shape
 
         # Make the new cube slice
-        if not dataless:
-            cube = self.__class__(data)
+        if dataless:
+            cube = self.__class__(shape=shape)
         else:
-            cube = self.__class__(shape=tuple(shape))
+            cube = self.__class__(data)
         cube.metadata = deepcopy(self.metadata)
 
         for coord, dim in dim_coords.items():
@@ -3894,12 +3889,13 @@ class Cube(CFVariableMixin):
 
         # Transpose the data payload.
         dm = self._data_manager
-        if not self.is_dataless():
-            data = dm.core_data().transpose(new_order)
-            shape = None
-        else:
+        if self.is_dataless():
             data = None
             shape = dm.shape
+        else:
+            data = dm.core_data().transpose(new_order)
+            shape = None
+
         self._data_manager = DataManager(data=data, shape=shape)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}

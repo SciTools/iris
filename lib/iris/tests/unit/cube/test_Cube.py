@@ -3168,6 +3168,7 @@ class Test_convert_units:
         _client.close()
 
     @pytest.mark.parametrize(
+        "attribute",
         [
             "valid_min",
             "valid_max",
