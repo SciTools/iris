@@ -3,92 +3,37 @@
   <cube dtype="float32" standard_name="x_wind" units="ms-1">
     <coords>
       <coord datadims="[0, 1, 2]">
-        <auxCoord id="9041e969" points="[[[ 3500.,  3510.,  3520., ...,    80.,    90.,
-     100.],
-  [ 7100.,  7110.,  7120., ...,  3680.,  3690.,
-    3700.],
-  [10700., 10710., 10720., ...,  7280.,  7290.,
-    7300.]],
-
- [[ 3170.,  3179.,  3188., ...,    92.,   101.,
-     110.],
-  [ 6410.,  6419.,  6428., ...,  3332.,  3341.,
-    3350.],
-  [ 9650.,  9659.,  9668., ...,  6572.,  6581.,
-    6590.]],
-
- [[ 2840.,  2848.,  2856., ...,   104.,   112.,
-     120.],
-  [ 5720.,  5728.,  5736., ...,  2984.,  2992.,
-    3000.],
-  [ 8600.,  8608.,  8616., ...,  5864.,  5872.,
-    5880.]],
-
- [[ 2180.,  2186.,  2192., ...,   128.,   134.,
-     140.],
-  [ 4340.,  4346.,  4352., ...,  2288.,  2294.,
-    2300.],
-  [ 6500.,  6506.,  6512., ...,  4448.,  4454.,
-    4460.]]]" shape="(4, 3, 21)" standard_name="altitude" units="Unit('m')" value_type="float64">
+        <auxCoord checksum="0xecdc40f3" id="9041e969" points="[3500., 3510., 3520., ..., 4448., 4454., 4460.]" shape="(4, 3, 21)" standard_name="altitude" units="Unit('m')" value_type="float64">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="4a0cb9d8" points="[-45,   0,  45]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
+        <dimCoord checksum="0x287bb091" id="4a0cb9d8" points="[-45, 0, 45]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="d70a5be9" long_name="level_height" points="[ 0, 20, 40, 80]" shape="(4,)" units="Unit('m')" value_type="int64"/>
+        <dimCoord checksum="0x3e6da33b" id="d70a5be9" long_name="level_height" points="[0, 20, 40, 80]" shape="(4,)" units="Unit('m')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="62e940e0" points="[170., 171., 172., 173., 174., 175., 176., 177.,
- 178., 179., 180., 181., 182., 183., 184., 185.,
- 186., 187., 188., 189., 190.]" shape="(21,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
+        <dimCoord checksum="0x2c3d65f8" id="62e940e0" points="[170., 171., 172., ..., 188., 189., 190.]" shape="(21,)" standard_name="longitude" units="Unit('degrees')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="a5c170db" long_name="sigma" points="[1. , 0.9, 0.8, 0.6]" shape="(4,)" units="Unit('1')" value_type="float64"/>
+        <auxCoord checksum="0x0c3c1d83" id="a5c170db" long_name="sigma" points="[1., 0.9, 0.8, 0.6]" shape="(4,)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="b15e3a2e" points="[[ 3500,  3510,  3520,  3530,  3540,  3550,
-   3560,  3570,  3580,  3590,     0,    10,
-     20,    30,    40,    50,    60,    70,
-     80,    90,   100],
- [ 7100,  7110,  7120,  7130,  7140,  7150,
-   7160,  7170,  7180,  7190,  3600,  3610,
-   3620,  3630,  3640,  3650,  3660,  3670,
-   3680,  3690,  3700],
- [10700, 10710, 10720, 10730, 10740, 10750,
-  10760, 10770, 10780, 10790,  7200,  7210,
-   7220,  7230,  7240,  7250,  7260,  7270,
-   7280,  7290,  7300]]" shape="(3, 21)" standard_name="surface_altitude" units="Unit('m')" value_type="int64"/>
+        <auxCoord checksum="0x256464d8" id="b15e3a2e" points="[3500, 3510, 3520, ..., 7280, 7290, 7300]" shape="(3, 21)" standard_name="surface_altitude" units="Unit('m')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
     <cellMeasures>
       <cell-measure datadims="[1, 2]">
-        <cellMeasure data="[[ 350,  351,  352,  353,  354,  355,  356,  357,
-   358,  359,    0,    1,    2,    3,    4,    5,
-     6,    7,    8,    9,   10],
- [ 710,  711,  712,  713,  714,  715,  716,  717,
-   718,  719,  360,  361,  362,  363,  364,  365,
-   366,  367,  368,  369,  370],
- [1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077,
-  1078, 1079,  720,  721,  722,  723,  724,  725,
-   726,  727,  728,  729,  730]]" id="1f66f27e" measure="area" shape="(3, 21)" standard_name="cell_area" units="Unit('m2')" value_type="int64"/>
+        <cellMeasure checksum="0x37ed72c0" data="[350, 351, 352, ..., 728, 729, 730]" id="1f66f27e" measure="area" shape="(3, 21)" standard_name="cell_area" units="Unit('m2')" value_type="int64"/>
       </cell-measure>
     </cellMeasures>
     <ancillaryVariables>
       <ancillary-var datadims="[1, 2]">
-        <ancillaryVariable data="[[ 350,  351,  352,  353,  354,  355,  356,  357,
-   358,  359,    0,    1,    2,    3,    4,    5,
-     6,    7,    8,    9,   10],
- [ 710,  711,  712,  713,  714,  715,  716,  717,
-   718,  719,  360,  361,  362,  363,  364,  365,
-   366,  367,  368,  369,  370],
- [1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077,
-  1078, 1079,  720,  721,  722,  723,  724,  725,
-   726,  727,  728,  729,  730]]" id="fc39454e" shape="(3, 21)" standard_name="land_area_fraction" units="Unit('%')" value_type="int64"/>
+        <ancillaryVariable checksum="0x37ed72c0" data="[350, 351, 352, ..., 728, 729, 730]" id="fc39454e" shape="(3, 21)" standard_name="land_area_fraction" units="Unit('%')" value_type="int64"/>
       </ancillary-var>
     </ancillaryVariables>
     <data dtype="float32" shape="(4, 3, 21)" state="loaded"/>
