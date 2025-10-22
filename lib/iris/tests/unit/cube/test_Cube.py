@@ -925,7 +925,10 @@ class Test_rolling_window:
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
-    def test_string_coord(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_string_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
         # Rolling window on a cube that contains a string coordinate.
         res_cube = self.cube.rolling_window("val", self.mock_agg, 3)
         val_coord = DimCoord(
@@ -978,38 +981,60 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
-    def test_ancillary_variables_and_cell_measures_kept(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_ancillary_variables_and_cell_measures_kept(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.multi_dim_cube.rolling_window("val", self.mock_agg, 3)
         assert res_cube.ancillary_variables() == [self.ancillary_variable]
         assert res_cube.cell_measures() == [self.cell_measure]
 
-    def test_ancillary_variables_and_cell_measures_removed(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_ancillary_variables_and_cell_measures_removed(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.multi_dim_cube.rolling_window("extra", self.mock_agg, 3)
         assert res_cube.ancillary_variables() == []
         assert res_cube.cell_measures() == []
 
-    def test_weights_arr(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_weights_arr(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = np.array([0, 0, 1, 0, 2])
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg"
 
-    def test_weights_cube(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_weights_cube(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = Cube([0, 0, 1, 0, 2], units="m2")
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg m2"
 
-    def test_weights_str(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_weights_str(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = "val"
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [55])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
-    def test_weights_dim_coord(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_weights_dim_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = self.cube.coord("val")
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [55])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
 
@@ -1095,9 +1120,12 @@ class Test_slices_dim_order:
 
 @_shared_utils.skip_data
 class Test_slices_over:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
+    @pytest.fixture(autouse=True, params=[False, True], ids=["with data", "dataless"])
+    def _setup(self, request):
+        dataless = request.param
         self.cube = stock.realistic_4d()[:, :7, :10, :10]
+        if dataless:
+            self.cube.data = None
         # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = range(len(self.cube.coord("model_level_number").points))
         self.exp_iter_2d = np.ndindex(6, 7, 1, 1)
