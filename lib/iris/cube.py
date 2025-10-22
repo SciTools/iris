@@ -3071,7 +3071,7 @@ class Cube(CFVariableMixin):
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
 
-        aux_coords = {}
+        aux_coords = []
         # Slice the coords
         for coord in self.aux_coords:
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
@@ -3081,10 +3081,10 @@ class Cube(CFVariableMixin):
                 # TODO make this except more specific to catch monotonic error
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-            aux_coords[new_coord] = new_coord_dims(coord)
+            aux_coords.append((new_coord, new_coord_dims(coord)))
             coord_mapping[id(coord)] = new_coord
 
-        dim_coords = {}
+        dim_coords = []
         shape = ()
 
         for dim in range(self.ndim):
@@ -3099,15 +3099,15 @@ class Cube(CFVariableMixin):
                     if not new_dims:
                         # If the associated dimension has been sliced so the coord
                         # is a scalar move the coord to the aux_coords container
-                        aux_coords[new_coord] = new_dims
+                        aux_coords.append((new_coord, new_dims))
                     else:
-                        dim_coords[new_coord] = new_dims
+                        dim_coords.append((new_coord, new_dims))
                         shape += new_coord.core_points().shape
                 except ValueError:
                     # TODO make this except more specific to catch monotonic error
                     # Attempt to slice it by converting to AuxCoord first
                     new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-                    aux_coords[new_coord] = new_dims
+                    aux_coords.append((new_coord, new_dims))
                 coord_mapping[id(coord)] = new_coord
             except iris.exceptions.CoordinateNotFoundError:
                 points = np.zeros(self.shape[dim])[coord_keys]
@@ -3122,10 +3122,10 @@ class Cube(CFVariableMixin):
             cube = self.__class__(data)
         cube.metadata = deepcopy(self.metadata)
 
-        for coord, dim in dim_coords.items():
+        for coord, dim in dim_coords:
             cube.add_dim_coord(coord, dim)
 
-        for coord, dims in aux_coords.items():
+        for coord, dims in aux_coords:
             cube.add_aux_coord(coord, dims)
 
         for factory in self.aux_factories:
