@@ -37,9 +37,9 @@ import iris.warnings
 
 if TYPE_CHECKING:
     import cartopy
+    from numpy.typing import ArrayLike
     import pyproj
     import shapely
-    from numpy.typing import ArrayLike
 
     from iris.cube import Cube, CubeList
 
