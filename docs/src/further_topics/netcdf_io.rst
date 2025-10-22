@@ -189,6 +189,17 @@ Deferred Saving
 TBC
 
 
+Dataless Cubes
+--------------
+It now possible to have "dataless" cubes, where ``cube.data is None``.
+When these are saved to a NetCDF file interface, this results in a netcdf file variable
+with all-unwritten data (meaning that it takes up no storage space).
+
+In order to load such variables back correctly, we also add an extra
+``iris_dataless_cube = "true"`` attribute : this tells the loader to skip array creation
+when loading back in, so that the read-back cube is also dataless.
+
+
 Guessing Coordinate Axes
 ------------------------
 
