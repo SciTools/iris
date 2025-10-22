@@ -40,7 +40,7 @@ reader = shpreader.Reader(ne_countries)
 def test_global_proj_china(minimum_weight, all_touched, invert, expected_sum):
     """Test masking with a shape for China with various parameter combinations."""
     path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
-    test_global = iris.load_cube(path)  # Crop to avoid edge effects
+    test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)
     ne_china = [
@@ -217,4 +217,4 @@ def test_mask_cube_from_shapefile_depreciation():
             "future release. Please use iris.util.mask_cube_from_shape instead."
         ),
     ):
-        mask_cube_from_shapefile(test_global, ne_china, shape_crs=wgs84)
+        mask_cube_from_shapefile(test_global, ne_china)

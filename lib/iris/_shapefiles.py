@@ -131,12 +131,14 @@ def create_shape_mask(
     # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
         if isinstance(cube, iris.cube.CubeList):  # type: ignore[unreachable]
-            msg = "Received CubeList object rather than Cube - \
-            to mask a CubeList iterate over each Cube"
-            raise TypeError(msg)
+            err_msg = (
+                "Received CubeList object rather than Cube - "
+                "to mask a CubeList iterate over each Cube"
+            )
+            raise TypeError(err_msg)
         else:
-            msg = "Received non-Cube object where a Cube is expected"
-            raise TypeError(msg)
+            err_msg = "Received non-Cube object where a Cube is expected"
+            raise TypeError(err_msg)
 
     # Check cube coordinate system
     cube_crs = cube.coord_system()
@@ -155,14 +157,14 @@ def create_shape_mask(
 
     # Check minimum_weight is within range
     if (minimum_weight < 0.0) or (minimum_weight > 1.0):
-        msg = "Minimum weight must be between 0.0 and 1.0"
-        raise ValueError(msg)
+        err_msg = "Minimum weight must be between 0.0 and 1.0"
+        raise ValueError(err_msg)
 
     # Check compatibility of function arguments
     # all_touched and minimum_weight are mutually exclusive
     if (minimum_weight > 0) and (all_touched is True):
-        msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
-        raise ValueError(msg)
+        err_msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
+        raise ValueError(err_msg)
 
     # Get cube coordinates
     x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
@@ -170,11 +172,16 @@ def create_shape_mask(
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
+        # Get revised x coordinate
+        x_coord = cube.coord(axis="X", dim_coords=True)
 
     # Check for CRS equality and transform if necessary
     cube_crs = cube.coord_system().as_cartopy_projection()  # type: ignore[union-attr]
     if not geometry_crs.equals(cube_crs):
-        transform_warning_msg = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
+        transform_warning_msg = (
+            "Geometry CRS does not match cube CRS. Iris will attempt to "
+            "transform the geometry onto the cube CRS..."
+        )
         warnings.warn(transform_warning_msg, category=IrisUserWarning)
         geometry = _transform_geometry(
             geometry=geometry,
@@ -184,6 +191,7 @@ def create_shape_mask(
 
     w = len(x_coord.points)
     h = len(y_coord.points)
+
     # Mask by weight if minimum_weight > 0.0
     if minimum_weight > 0:
         mask_template = _get_weighted_mask(
@@ -200,7 +208,7 @@ def create_shape_mask(
 
         # Define raster transform based on cube
         # This maps the geometry domain onto the cube domain
-        tr = _make_raster_cube_transform(x_coord, y_coord)  # type: ignore[arg-type]
+        tr = _make_raster_cube_transform(x_coord=x_coord, y_coord=y_coord)  # type: ignore[arg-type]
         # Generate mask from geometry
         mask_template = rfeatures.geometry_mask(
             geometries=shapely.get_parts(geometry),
@@ -254,8 +262,8 @@ def is_geometry_valid(
         If the geometry is not a valid shapely geometry.
     ValueError
         If the geometry is not valid for the given coordinate system.
-        This most likely occurs when the geometry coordinates are not within the bounds of the
-        geometry coordinates reference system.
+        This most likely occurs when the geometry coordinates are not
+        within the bounds of the geometry coordinates reference system.
     ValueError
         If the geometry crosses the antimeridian.
     ValueError
@@ -289,13 +297,13 @@ def is_geometry_valid(
 
     # Check crs is valid type
     if not isinstance(geometry_crs, (ccrs.CRS | CRS)):
-        msg = f"Geometry CRS must be a cartopy.crs or pyproj.CRS object, not {type(geometry_crs)}."
-        raise TypeError(msg)
+        err_msg = f"Geometry CRS must be a cartopy.crs or pyproj.CRS object, not {type(geometry_crs)}."
+        raise TypeError(err_msg)
 
     # Check geometry is valid shapely geometry
     if not shapely.is_valid_input(geometry).any():
-        msg = "Shape geometry is not a valid shape (not well formed)."
-        raise TypeError(msg)
+        err_msg = "Shape geometry is not a valid shape (not well formed)."
+        raise TypeError(err_msg)
 
     # Check that the geometry is within the bounds of the coordinate system
     # If the geometry is not in WGS84, transform the geometry to WGS84
@@ -310,27 +318,27 @@ def is_geometry_valid(
 
     geom_valid = lon_lat_bounds.contains(shapely.get_parts(geometry))
     if not geom_valid.all():
-        msg = (
+        err_msg = (
             f"Geometry {shapely.get_parts(geometry)[~geom_valid]} is not valid "
             f"for the given coordinate system {geometry_crs.to_string()}.\n"
             "Check that your coordinates are correctly specified."
         )
-        raise ValueError(msg)
+        raise ValueError(err_msg)
 
     # Check if shape crosses the 180th meridian (or equivalent)
     # Exception for MultiPoint geometries where sequential points
     # may be separated by more than 180 degrees
     if not isinstance(geometry, sgeom.MultiPoint):
         if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
-            msg = "Geometry crossing the antimeridian is not supported."
-            raise ValueError(msg)
+            err_msg = "Geometry crossing the antimeridian is not supported."
+            raise ValueError(err_msg)
 
     # Check if the geometry crosses the poles
     npole = sgeom.Point(0, 90)
     spole = sgeom.Point(0, -90)
     if geometry.intersects(npole) or geometry.intersects(spole):
-        msg = "Geometry crossing the poles is not supported."
-        raise ValueError(msg)
+        err_msg = "Geometry crossing the poles is not supported."
+        raise ValueError(err_msg)
 
     return
 
@@ -452,6 +460,6 @@ def _make_raster_cube_transform(
     dy = iris.util.regular_step(y_coord)
     # Create a rasterio transform based on the cube
     # This maps the geometry domain onto the cube domain
-    trans = Affine.translation(x_points[0] - dx / 2, y_points[0] - dy / 2)
+    trans = Affine.translation(xoff=x_points[0] - dx / 2, yoff=y_points[0] - dy / 2)
     scale = Affine.scale(dx, dy)
     return trans * scale

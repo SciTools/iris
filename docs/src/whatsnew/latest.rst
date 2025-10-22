@@ -34,10 +34,11 @@ This document explains the changes made to Iris for this release
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
 
-#. `@hsteptoe <https://github.com/hsteptoe>`_ and `@trexfeathers`_ (reviewer) extended :func:`iris.util.mask_cube_from_shapefile`
-   to handle additional Point and Line shape types.  This change also facilitates the use of shapefiles that 
-   use a different projection system to the cube that they are being applied to, and makes performance improvements
-   to the mask weighting calculations. (:issue:`6126`, :pull:`6129`).
+#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.util.mask_cube_from_shape`
+   to handle additional Point and Line shape types.  This change also facilitates the use of
+   shapefiles that use a different projection system to the cube that they are being applied to, 
+   and makes performance improvements to the mask weighting calculations. 
+   (:issue:`6126`, :pull:`6129`).
    
 #. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
    payload when saving to NetCDF to also include any attached `CF-UGRID`_
@@ -97,10 +98,9 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. `@hsteptoe <https://github.com/hsteptoe>`_ added `rasterio <https://rasterio.readthedocs.io/en/stable/index.html>`_ 
-   and `affine <https://affine.readthedocs.io/en/latest/>`_ as optional dependencies that facilitate 
-   :func:`iris.util.mask_cube_from_shapefile`. These packages support new functionality that handles
-   additional shapefiles and projections. (:issue:`6126`, :pull:`6129`)
+#. `@hsteptoe`_ added `rasterio`_ and `affine`_ as optional dependencies that facilitate
+   :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that 
+   handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 📚 Documentation
 ================
@@ -108,9 +108,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ updated all Cartopy references to point to the new location at
    https://cartopy.readthedocs.io (:pull:`6636`)
 
-#. `@hsteptoe <https://github.com/hsteptoe>`_ added additional worked examples
-   to the :ref:`iris.util.mask_cube_from_shapefile` documentation, to demonstrate
-   how to use the function with different types of shapefiles. (:pull:`6129`)
+#. `@hsteptoe`_ added additional worked examples to the :ref:`iris.util.mask_cube_from_shape` 
+   documentation, to demonstrate how to use the function with different types of shapefiles. 
+   (:pull:`6129`)
 
 
 💼 Internal
@@ -143,4 +143,10 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
+<<<<<<< Updated upstream
 .. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183
+=======
+.. _affine: https://affine.readthedocs.io/en/latest/
+.. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183
+.. _rasterio: https://rasterio.readthedocs.io/en/stable/index.html
+>>>>>>> Stashed changes
