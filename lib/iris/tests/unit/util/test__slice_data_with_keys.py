@@ -22,12 +22,13 @@ from iris.util import _slice_data_with_keys
 
 class DummyArray:
     # A dummy array-like that records the keys of indexing calls.
-    def __init__(self, shape, _indexing_record_list=None):
+    def __init__(self, shape, _indexing_record_list=None, dataless=False):
         self.shape = shape
         self.ndim = len(shape)
         if _indexing_record_list is None:
             _indexing_record_list = []
         self._getitem_call_keys = _indexing_record_list
+        self.dataless = dataless
 
     def __getitem__(self, keys):
         # Add the indexing keys to the call list.
@@ -37,7 +38,11 @@ class DummyArray:
         shape_array = np.zeros(self.shape)
         shape_array = shape_array.__getitem__(keys)
         new_shape = shape_array.shape
-        return DummyArray(new_shape, _indexing_record_list=self._getitem_call_keys)
+        return DummyArray(
+            new_shape,
+            _indexing_record_list=self._getitem_call_keys,
+            dataless=self.dataless,
+        )
 
 
 class Indexer:
@@ -51,9 +56,15 @@ Index = Indexer()
 
 
 class MixinIndexingTest:
-    def check(self, shape, keys, expect_call_keys=None, expect_map=None):
-        data = DummyArray(shape)
-        dim_map, _ = _slice_data_with_keys(data, keys)
+    def check(
+        self, shape, keys, expect_call_keys=None, expect_map=None, dataless=False
+    ):
+        if not dataless:
+            data = DummyArray(shape)
+            dim_map, _ = _slice_data_with_keys(data, keys)
+        else:
+            data = DummyArray(shape, dataless=True)
+            dim_map, _ = _slice_data_with_keys(data, keys, shape)
         if expect_call_keys is not None:
             calls_got = data._getitem_call_keys
             # Check that the indexing keys applied were the expected ones.
@@ -80,44 +91,51 @@ class MixinIndexingTest:
             assert dim_map == expect_map
 
 
+@pytest.mark.parametrize("dataless", [True, False])
 class Test_indexing(MixinIndexingTest):
     # Check the indexing operations performed for various requested keys.
 
-    def test_0d_nokeys(self):
+    def test_0d_nokeys(self, dataless):
         # Performs *no* underlying indexing operation.
-        self.check((), Index[()], [])
+        self.check((), Index[()], [], dataless=dataless)
 
-    def test_1d_int(self):
-        self.check((4,), Index[2], [(2,)])
+    def test_1d_int(self, dataless):
+        self.check((4,), Index[2], [(2,)], dataless=dataless)
 
-    def test_1d_all(self):
-        self.check((3,), Index[:], [(slice(None),)])
+    def test_1d_all(self, dataless):
+        self.check((3,), Index[:], [(slice(None),)], dataless=dataless)
 
-    def test_1d_tuple(self):
+    def test_1d_tuple(self, dataless):
         # The call makes tuples into 1-D arrays, and a trailing Ellipsis is
         # added (for the 1-D case only).
-        self.check((3,), Index[((2, 0, 1),)], [(np.array([2, 0, 1]), Ellipsis)])
+        self.check(
+            (3,),
+            Index[((2, 0, 1),)],
+            [(np.array([2, 0, 1]), Ellipsis)],
+            dataless=dataless,
+        )
 
-    def test_fail_1d_2keys(self):
+    def test_fail_1d_2keys(self, dataless):
         msg = "More slices .* than dimensions"
         with pytest.raises(IndexError, match=msg):
-            self.check((3,), Index[1, 2])
+            self.check((3,), Index[1, 2], dataless=dataless)
 
-    def test_fail_empty_slice(self):
+    def test_fail_empty_slice(self, dataless):
         msg = "Cannot index with zero length slice"
         with pytest.raises(IndexError, match=msg):
-            self.check((3,), Index[1:1])
+            self.check((3,), Index[1:1], dataless=dataless)
 
-    def test_2d_tuple(self):
+    def test_2d_tuple(self, dataless):
         # Like the above, but there is an extra no-op at the start and no
         # trailing Ellipsis is generated.
         self.check(
             (3, 2),
             Index[((2, 0, 1),)],
             [(slice(None), slice(None)), (np.array([2, 0, 1]), slice(None))],
+            dataless=dataless,
         )
 
-    def test_2d_two_tuples(self):
+    def test_2d_two_tuples(self, dataless):
         # Could be treated as fancy indexing, but must not be !
         # Two separate 2-D indexing operations.
         self.check(
@@ -127,30 +145,34 @@ class Test_indexing(MixinIndexingTest):
                 (np.array([2, 0, 1, 1]), slice(None)),
                 (slice(None), np.array([0, 1, 0, 1])),
             ],
+            dataless=dataless,
         )
 
-    def test_2d_tuple_and_value(self):
+    def test_2d_tuple_and_value(self, dataless):
         # The two keys are applied in separate operations, and in the reverse
         # order (?) :  The second op is then slicing a 1-D array, not 2-D.
         self.check(
             (3, 5),
             Index[(2, 0, 1), 3],
             [(slice(None), 3), (np.array([2, 0, 1]), Ellipsis)],
+            dataless=dataless,
         )
 
-    def test_2d_single_int(self):
-        self.check((3, 4), Index[2], [(2, slice(None))])
+    def test_2d_single_int(self, dataless):
+        self.check((3, 4), Index[2], [(2, slice(None))], dataless=dataless)
 
-    def test_2d_multiple_int(self):
-        self.check((3, 4), Index[2, 1:3], [(2, slice(1, 3))])
+    def test_2d_multiple_int(self, dataless):
+        self.check((3, 4), Index[2, 1:3], [(2, slice(1, 3))], dataless=dataless)
 
-    def test_3d_1int(self):
-        self.check((3, 4, 5), Index[2], [(2, slice(None), slice(None))])
+    def test_3d_1int(self, dataless):
+        self.check(
+            (3, 4, 5), Index[2], [(2, slice(None), slice(None))], dataless=dataless
+        )
 
-    def test_3d_2int(self):
-        self.check((3, 4, 5), Index[2, 3], [(2, 3, slice(None))])
+    def test_3d_2int(self, dataless):
+        self.check((3, 4, 5), Index[2, 3], [(2, 3, slice(None))], dataless=dataless)
 
-    def test_3d_tuple_and_value(self):
+    def test_3d_tuple_and_value(self, dataless):
         # The two keys are applied in separate operations, and in the reverse
         # order (?) : The second op is slicing a 2-D array, not 3-D.
         self.check(
@@ -160,18 +182,25 @@ class Test_indexing(MixinIndexingTest):
                 (slice(None), 4, slice(None)),
                 (np.array([2, 0, 1]), slice(None)),
             ],
+            dataless=dataless,
         )
 
-    def test_3d_ellipsis_last(self):
-        self.check((3, 4, 5), Index[2, ...], [(2, slice(None), slice(None))])
+    def test_3d_ellipsis_last(self, dataless):
+        self.check(
+            (3, 4, 5), Index[2, ...], [(2, slice(None), slice(None))], dataless=dataless
+        )
 
-    def test_3d_ellipsis_first_1int(self):
-        self.check((3, 4, 5), Index[..., 2], [(slice(None), slice(None), 2)])
+    def test_3d_ellipsis_first_1int(self, dataless):
+        self.check(
+            (3, 4, 5), Index[..., 2], [(slice(None), slice(None), 2)], dataless=dataless
+        )
 
-    def test_3d_ellipsis_first_2int(self):
-        self.check((3, 4, 5), Index[..., 2, 3], [(slice(None), 2, 3)])
+    def test_3d_ellipsis_first_2int(self, dataless):
+        self.check(
+            (3, 4, 5), Index[..., 2, 3], [(slice(None), 2, 3)], dataless=dataless
+        )
 
-    def test_3d_multiple_tuples(self):
+    def test_3d_multiple_tuples(self, dataless):
         # Where there are TWO or more tuple keys, this could be misinterpreted
         # as 'fancy' indexing :  It should resolve into multiple calls.
         self.check(
@@ -182,98 +211,137 @@ class Test_indexing(MixinIndexingTest):
                 (np.array([1, 2, 1]), slice(None), slice(None)),
                 (slice(None), slice(None), np.array([2, 2, 3])),
             ],
+            dataless=dataless,
         )
         # NOTE: there seem to be an extra initial [:, :, :].
         # That's just what it does at present.
 
 
+@pytest.mark.parametrize("dataless", [True, False])
 class Test_dimensions_mapping(MixinIndexingTest):
     # Check the dimensions map returned for various requested keys.
 
-    def test_1d_nochange(self):
-        self.check((3,), Index[1:2], expect_map={None: None, 0: 0})
+    def test_1d_nochange(self, dataless):
+        self.check((3,), Index[1:2], expect_map={None: None, 0: 0}, dataless=dataless)
 
-    def test_1d_1int_losedim0(self):
-        self.check((3,), Index[1], expect_map={None: None, 0: None})
+    def test_1d_1int_losedim0(self, dataless):
+        self.check((3,), Index[1], expect_map={None: None, 0: None}, dataless=dataless)
 
-    def test_1d_tuple_nochange(self):
+    def test_1d_tuple_nochange(self, dataless):
         # A selection index leaves the dimension intact.
-        self.check((3,), Index[((1, 0, 1, 2),)], expect_map={None: None, 0: 0})
+        self.check(
+            (3,),
+            Index[((1, 0, 1, 2),)],
+            expect_map={None: None, 0: 0},
+            dataless=dataless,
+        )
 
-    def test_1d_1tuple_nochange(self):
+    def test_1d_1tuple_nochange(self, dataless):
         # A selection index with only one value in it *still* leaves the
         # dimension intact.
-        self.check((3,), Index[((2,),)], expect_map={None: None, 0: 0})
+        self.check(
+            (3,), Index[((2,),)], expect_map={None: None, 0: 0}, dataless=dataless
+        )
 
-    def test_1d_slice_nochange(self):
+    def test_1d_slice_nochange(self, dataless):
         # A slice leaves the dimension intact.
-        self.check((3,), Index[1:7], expect_map={None: None, 0: 0})
+        self.check((3,), Index[1:7], expect_map={None: None, 0: 0}, dataless=dataless)
 
-    def test_2d_nochange(self):
-        self.check((3, 4), Index[:, :], expect_map={None: None, 0: 0, 1: 1})
+    def test_2d_nochange(self, dataless):
+        self.check(
+            (3, 4), Index[:, :], expect_map={None: None, 0: 0, 1: 1}, dataless=dataless
+        )
 
-    def test_2d_losedim0(self):
-        self.check((3, 4), Index[1, :], expect_map={None: None, 0: None, 1: 0})
+    def test_2d_losedim0(self, dataless):
+        self.check(
+            (3, 4),
+            Index[1, :],
+            expect_map={None: None, 0: None, 1: 0},
+            dataless=dataless,
+        )
 
-    def test_2d_losedim1(self):
-        self.check((3, 4), Index[1:4, 2], expect_map={None: None, 0: 0, 1: None})
+    def test_2d_losedim1(self, dataless):
+        self.check(
+            (3, 4),
+            Index[1:4, 2],
+            expect_map={None: None, 0: 0, 1: None},
+            dataless=dataless,
+        )
 
-    def test_2d_loseboth(self):
+    def test_2d_loseboth(self, dataless):
         # Two indices give scalar result.
-        self.check((3, 4), Index[1, 2], expect_map={None: None, 0: None, 1: None})
+        self.check(
+            (3, 4),
+            Index[1, 2],
+            expect_map={None: None, 0: None, 1: None},
+            dataless=dataless,
+        )
 
-    def test_3d_losedim1(self):
+    def test_3d_losedim1(self, dataless):
         # Cutting out the middle dim.
         self.check(
             (3, 4, 2),
             Index[:, 2],
             expect_map={None: None, 0: 0, 1: None, 2: 1},
+            dataless=dataless,
         )
 
 
+@pytest.mark.parametrize("dataless", [True, False])
 class TestResults:
     # Integration-style test, exercising (mostly) the same cases as above,
     # but checking actual results, for both real and lazy array inputs.
 
-    def check(self, real_data, keys, expect_result, expect_map):
-        real_data = np.array(real_data)
-        lazy_data = as_lazy_data(real_data, real_data.shape)
-        real_dim_map, real_result = _slice_data_with_keys(real_data, keys)
-        lazy_dim_map, lazy_result = _slice_data_with_keys(lazy_data, keys)
-        lazy_result = as_concrete_data(lazy_result)
-        _shared_utils.assert_array_equal(real_result, expect_result)
-        _shared_utils.assert_array_equal(lazy_result, expect_result)
+    def check(self, real_data, keys, expect_result, expect_map, dataless):
+        if dataless:
+            shape = np.array(real_data).shape
+            real_dim_map, real_result = _slice_data_with_keys(None, keys, shape=shape)
+        else:
+            real_data = np.array(real_data)
+            lazy_data = as_lazy_data(real_data, real_data.shape)
+            real_dim_map, real_result = _slice_data_with_keys(real_data, keys)
+            lazy_dim_map, lazy_result = _slice_data_with_keys(lazy_data, keys)
+            lazy_result = as_concrete_data(lazy_result)
+            _shared_utils.assert_array_equal(real_result, expect_result)
+            _shared_utils.assert_array_equal(lazy_result, expect_result)
+            assert lazy_dim_map == expect_map
         assert real_dim_map == expect_map
-        assert lazy_dim_map == expect_map
 
-    def test_1d_int(self):
-        self.check([1, 2, 3, 4], Index[2], [3], {None: None, 0: None})
+    def test_1d_int(self, dataless):
+        self.check([1, 2, 3, 4], Index[2], [3], {None: None, 0: None}, dataless)
 
-    def test_1d_all(self):
-        self.check([1, 2, 3], Index[:], [1, 2, 3], {None: None, 0: 0})
+    def test_1d_all(self, dataless):
+        self.check([1, 2, 3], Index[:], [1, 2, 3], {None: None, 0: 0}, dataless)
 
-    def test_1d_tuple(self):
-        self.check([1, 2, 3], Index[((2, 0, 1, 0),)], [3, 1, 2, 1], {None: None, 0: 0})
+    def test_1d_tuple(self, dataless):
+        self.check(
+            [1, 2, 3],
+            Index[((2, 0, 1, 0),)],
+            [3, 1, 2, 1],
+            {None: None, 0: 0},
+            dataless,
+        )
 
-    def test_fail_1d_2keys(self):
+    def test_fail_1d_2keys(self, dataless):
         msg = "More slices .* than dimensions"
         with pytest.raises(IndexError, match=msg):
-            self.check([1, 2, 3], Index[1, 2], None, None)
+            self.check([1, 2, 3], Index[1, 2], None, None, dataless)
 
-    def test_fail_empty_slice(self):
+    def test_fail_empty_slice(self, dataless):
         msg = "Cannot index with zero length slice"
         with pytest.raises(IndexError, match=msg):
-            self.check([1, 2, 3], Index[1:1], None, None)
+            self.check([1, 2, 3], Index[1:1], None, None, dataless)
 
-    def test_2d_tuple(self):
+    def test_2d_tuple(self, dataless):
         self.check(
             [[11, 12], [21, 22], [31, 32]],
             Index[((2, 0, 1),)],
             [[31, 32], [11, 12], [21, 22]],
             {None: None, 0: 0, 1: 1},
+            dataless,
         )
 
-    def test_2d_two_tuples(self):
+    def test_2d_two_tuples(self, dataless):
         # Could be treated as fancy indexing, but must not be !
         # Two separate 2-D indexing operations.
         self.check(
@@ -281,9 +349,10 @@ class TestResults:
             Index[(2, 0), (0, 1, 0, 1)],
             [[31, 32, 31, 32], [11, 12, 11, 12]],
             {None: None, 0: 0, 1: 1},
+            dataless,
         )
 
-    def test_2d_tuple_and_value(self):
+    def test_2d_tuple_and_value(self, dataless):
         # The two keys are applied in separate operations, and in the reverse
         # order (?) :  The second op is then slicing a 1-D array, not 2-D.
         self.check(
@@ -291,25 +360,28 @@ class TestResults:
             Index[(2, 0, 1), 3],
             [34, 14, 24],
             {None: None, 0: 0, 1: None},
+            dataless,
         )
 
-    def test_2d_single_int(self):
+    def test_2d_single_int(self, dataless):
         self.check(
             [[11, 12, 13], [21, 22, 23], [31, 32, 33]],
             Index[1],
             [21, 22, 23],
             {None: None, 0: None, 1: 0},
+            dataless,
         )
 
-    def test_2d_int_slice(self):
+    def test_2d_int_slice(self, dataless):
         self.check(
             [[11, 12, 13], [21, 22, 23], [31, 32, 33]],
             Index[2, 1:3],
             [32, 33],
             {None: None, 0: None, 1: 0},
+            dataless,
         )
 
-    def test_3d_1int(self):
+    def test_3d_1int(self, dataless):
         self.check(
             [
                 [[111, 112, 113], [121, 122, 123]],
@@ -319,9 +391,10 @@ class TestResults:
             Index[1],
             [[211, 212, 213], [221, 222, 223]],
             {None: None, 0: None, 1: 0, 2: 1},
+            dataless,
         )
 
-    def test_3d_2int(self):
+    def test_3d_2int(self, dataless):
         self.check(
             [
                 [[111, 112, 113], [121, 122, 123], [131, 132, 133]],
@@ -330,9 +403,10 @@ class TestResults:
             Index[1, 2],
             [231, 232, 233],
             {None: None, 0: None, 1: None, 2: 0},
+            dataless,
         )
 
-    def test_3d_tuple_and_value(self):
+    def test_3d_tuple_and_value(self, dataless):
         # The two keys are applied in separate operations, and in the reverse
         # order (?) : The second op is slicing a 2-D array, not 3-D.
         self.check(
@@ -344,9 +418,10 @@ class TestResults:
             Index[(2, 0, 1), 1],
             [[321, 322, 323, 324], [121, 122, 123, 124], [221, 222, 223, 224]],
             {None: None, 0: 0, 1: None, 2: 1},
+            dataless,
         )
 
-    def test_3d_ellipsis_last(self):
+    def test_3d_ellipsis_last(self, dataless):
         self.check(
             [
                 [[111, 112, 113], [121, 122, 123]],
@@ -356,9 +431,10 @@ class TestResults:
             Index[2, ...],
             [[311, 312, 313], [321, 322, 323]],
             {None: None, 0: None, 1: 0, 2: 1},
+            dataless,
         )
 
-    def test_3d_ellipsis_first_1int(self):
+    def test_3d_ellipsis_first_1int(self, dataless):
         self.check(
             [
                 [[111, 112, 113, 114], [121, 122, 123, 124]],
@@ -368,9 +444,10 @@ class TestResults:
             Index[..., 2],
             [[113, 123], [213, 223], [313, 323]],
             {None: None, 0: 0, 1: 1, 2: None},
+            dataless,
         )
 
-    def test_3d_ellipsis_mid_1int(self):
+    def test_3d_ellipsis_mid_1int(self, dataless):
         self.check(
             [
                 [[111, 112, 113], [121, 122, 123]],
@@ -380,9 +457,10 @@ class TestResults:
             Index[..., 1, ...],
             [[121, 122, 123], [221, 222, 223], [321, 322, 323]],
             {None: None, 0: 0, 1: None, 2: 1},
+            dataless,
         )
 
-    def test_3d_ellipsis_first_2int(self):
+    def test_3d_ellipsis_first_2int(self, dataless):
         self.check(
             [
                 [[111, 112, 113], [121, 122, 123]],
@@ -392,9 +470,10 @@ class TestResults:
             Index[..., 1, 2],
             [123, 223, 323],
             {None: None, 0: 0, 1: None, 2: None},
+            dataless,
         )
 
-    def test_3d_multiple_tuples(self):
+    def test_3d_multiple_tuples(self, dataless):
         # Where there are TWO or more tuple keys, this could be misinterpreted
         # as 'fancy' indexing :  It should resolve into multiple calls.
         self.check(
@@ -410,6 +489,7 @@ class TestResults:
                 [[213, 213, 214], [223, 223, 224]],
             ],
             {None: None, 0: 0, 1: 1, 2: 2},
+            dataless,
         )
         # NOTE: there seem to be an extra initial [:, :, :].
         # That's just what it does at present.
