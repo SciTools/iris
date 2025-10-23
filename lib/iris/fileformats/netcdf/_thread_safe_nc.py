@@ -10,6 +10,7 @@ Intention is that no other Iris module should import the netCDF4 module.
 
 from abc import ABC
 from threading import Lock
+from time import sleep
 import typing
 
 import netCDF4
@@ -386,7 +387,24 @@ class NetCDFWriteProxy:
         with _GLOBAL_NETCDF4_LOCK:
             dataset = None
             try:
-                dataset = netCDF4.Dataset(self.path, "r+")
+                # Even when fully serialised - no parallelism - HDF still
+                #  occasionally fails to acquire the file. This is despite all
+                #  Python locks being available at expected moments, and the
+                #  file reporting as closed. During testing, 2nd retry always
+                #  succeeded. This is likely caused by HDF-level locking
+                #  running on a different timescale to Python-level locking -
+                #  i.e. sometimes Python has released its locks but HDF still
+                #  has not. Thought to be filesystem-dependent; further
+                #  investigation needed.
+                for attempt in range(5):
+                    try:
+                        dataset = netCDF4.Dataset(self.path, "r+")
+                        break
+                    except OSError:
+                        if attempt < 4:
+                            sleep(0.1)
+                        else:
+                            raise
                 var = dataset.variables[self.varname]
                 var[keys] = array_data
             finally:
