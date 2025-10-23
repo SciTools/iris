@@ -630,7 +630,7 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
     -----
     .. note:
 
-        If the output chunks would larger than the maximum chunksize set
+        If the output chunks would be larger than the maximum chunksize set
         in the dask config, the input is rechunked, where possible to
         optimise the output chunksize.
 
