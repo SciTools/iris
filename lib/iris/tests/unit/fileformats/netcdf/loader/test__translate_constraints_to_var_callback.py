@@ -55,9 +55,9 @@ class Test(tests.IrisTest):
         ]
         callback = _translate_constraints_to_var_callback(constrs)
         # Add 2 extra vars: one passes both name checks, and the other does not
-        vars = self.data_variables +[
+        vars = self.data_variables + [
             CFDataVariable("var1", MagicMock(standard_name="x_wind")),
-            CFDataVariable("var1", MagicMock(standard_name="air_pressure"))
+            CFDataVariable("var1", MagicMock(standard_name="air_pressure")),
         ]
         result = [callback(var) for var in vars]
         self.assertArrayEqual(result, [True, True, False, True, False, True, False])

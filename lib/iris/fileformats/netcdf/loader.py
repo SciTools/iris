@@ -599,14 +599,15 @@ def _translate_constraints_to_var_callback(constraints):
 
     constraints = iris._constraints.list_of_constraints(constraints)
     if len(constraints) == 0 or not all(
-            isinstance(constraint, iris._constraints.NameConstraint)
-            and constraint.STASH == "none"
-            for constraint in constraints
+        isinstance(constraint, iris._constraints.NameConstraint)
+        and constraint.STASH == "none"
+        for constraint in constraints
     ):
         # We can define a var-filtering function to speedup the load, *ONLY* when we
         #  have some constraints, and all are simple NameConstraints with no STASH.
         result = None
     else:
+
         def inner(cf_datavar):
             match_any_constraint = False
             for constraint in constraints:
