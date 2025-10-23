@@ -392,8 +392,17 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    data = _get_cf_var_data(cf_var)
-    cube = Cube(data)
+    from iris.fileformats.netcdf.saver import Saver
+
+    if hasattr(cf_var, Saver._DATALESS_ATTRNAME):
+        # This data-variable represents a dataless cube.
+        # The variable array content was never written (to take up no space).
+        data = None
+        shape = cf_var.shape
+    else:
+        data = _get_cf_var_data(cf_var)
+        shape = None
+    cube = Cube(data=data, shape=shape)
 
     # Reset the actions engine.
     engine.reset()
