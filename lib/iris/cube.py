@@ -3276,8 +3276,8 @@ class Cube(CFVariableMixin):
             which intersects with the requested coordinate intervals.
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("intersection")
+        # if self.is_dataless():
+        #     raise iris.exceptions.DatalessError("intersection")
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
@@ -3349,9 +3349,20 @@ class Cube(CFVariableMixin):
         if len(chunks) == 1:
             result = chunks[0]
         else:
-            chunk_data = [chunk.core_data() for chunk in chunks]
-            data = _lazy.concatenate(chunk_data, axis=dim)
-            result = iris.cube.Cube(data)
+            if self.is_dataless():
+                dim_shape = 0
+                old_shape = list(self.shape)
+                for chunk in chunks:
+                    # sum the shape of the relevant dimension of each chunk together
+                    dim_shape += len(chunk.coord(coord).points)
+                old_shape[dim] = dim_shape
+                new_shape = tuple(old_shape)
+                data = None
+            else:
+                chunk_data = [chunk.core_data() for chunk in chunks]
+                data = _lazy.concatenate(chunk_data, axis=dim)
+                new_shape = None
+            result = iris.cube.Cube(data=data, shape=new_shape)
             result.metadata = deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
