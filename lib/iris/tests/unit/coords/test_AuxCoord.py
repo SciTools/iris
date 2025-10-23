@@ -774,3 +774,24 @@ class TestEquality:
     def test_nanbounds_eq_self(self):
         co1 = AuxCoord([15.0, 25.0], bounds=[[14.0, 16.0], [24.0, np.nan]])
         assert co1 == co1
+
+    def test_lazy_compares_via_hash(self):
+        def lazify(coord):
+            coord.bounds = coord.lazy_bounds()
+
+        co1 = AuxCoord([15.0, 25.0])
+        co2 = AuxCoord([15.0, 25.001])
+        co1.points = co1.lazy_points()
+        co2.points = co2.lazy_points()
+        assert co1.has_lazy_points()
+        assert co2.has_lazy_points()
+        assert not hasattr(co1.core_points(), "_iris_array_hash")
+        assert not hasattr(co2.core_points(), "_iris_array_hash")
+
+        eq = co1 == co2
+        assert not eq
+
+        assert co1.has_lazy_points()
+        assert co2.has_lazy_points()
+        assert hasattr(co1.core_points(), "_iris_array_hash")
+        assert hasattr(co2.core_points(), "_iris_array_hash")
