@@ -104,7 +104,10 @@ class Test_aggregated_by:
         self.simple_weights = np.array([1.0, 0.0, 2.0, 2.0])
         self.val_weights = np.ones_like(self.cube.data, dtype=np.float32)
 
-    def test_2d_coord_simple_agg(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_2d_coord_simple_agg(self, dataless):
+        if dataless:
+            self.cube.data = None
         # For 2d coords, slices of aggregated coord should be the same as
         # aggregated slices.
         res_cube = self.cube.aggregated_by("simple_agg", self.mock_agg)
@@ -122,7 +125,10 @@ class Test_aggregated_by:
             assert not ma.isMaskedArray(actual.points)
             assert not ma.isMaskedArray(actual.bounds)
 
-    def test_agg_by_label(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_agg_by_label(self, dataless):
+        if dataless:
+            self.cube.data = None
         # Aggregate a cube on a string coordinate label where label
         # and val entries are not in step; the resulting cube has a val
         # coord of bounded cells and a label coord of single string entries.
@@ -155,7 +161,10 @@ class Test_aggregated_by:
         assert res_cube.coord("mask") == mask_coord
         assert res_cube.coord("unmask") == unmask_coord
 
-    def test_agg_by_label_bounded(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_agg_by_label_bounded(self, dataless):
+        if dataless:
+            self.cube.data = None
         # Aggregate a cube on a string coordinate label where label
         # and val entries are not in step; the resulting cube has a val
         # coord of bounded cells and a label coord of single string entries.
@@ -198,7 +207,10 @@ class Test_aggregated_by:
         assert res_cube.coord("mask") == mask_coord
         assert res_cube.coord("unmask") == unmask_coord
 
-    def test_2d_agg_by_label(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_2d_agg_by_label(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.cube.aggregated_by("label", self.mock_agg)
         # For 2d coord, slices of aggregated coord should be the same as
         # aggregated slices.
@@ -215,7 +227,10 @@ class Test_aggregated_by:
             assert not ma.isMaskedArray(actual.points)
             assert not ma.isMaskedArray(actual.bounds)
 
-    def test_agg_by_val(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_agg_by_val(self, dataless):
+        if dataless:
+            self.cube.data = None
         # Aggregate a cube on a numeric coordinate val where label
         # and val entries are not in step; the resulting cube has a label
         # coord with serialised labels from the aggregated cells.
@@ -242,7 +257,10 @@ class Test_aggregated_by:
         assert res_cube.coord("mask") == mask_coord
         assert res_cube.coord("unmask") == unmask_coord
 
-    def test_2d_agg_by_val(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_2d_agg_by_val(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.cube.aggregated_by("val", self.mock_agg)
         # For 2d coord, slices of aggregated coord should be the same as
         # aggregated slices.
@@ -259,7 +277,10 @@ class Test_aggregated_by:
             assert not ma.isMaskedArray(actual.points)
             assert not ma.isMaskedArray(actual.bounds)
 
-    def test_single_string_aggregation(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_single_string_aggregation(self, dataless):
+        if dataless:
+            self.cube.data = None
         aux_coords = [
             (AuxCoord(["a", "b", "a"], long_name="foo"), 0),
             (AuxCoord(["a", "a", "a"], long_name="bar"), 0),
@@ -271,12 +292,18 @@ class Test_aggregated_by:
         assert result.shape == (2, 4)
         assert result.coord("bar") == AuxCoord(["a|a", "a"], long_name="bar")
 
-    def test_ancillary_variables_and_cell_measures_kept(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_ancillary_variables_and_cell_measures_kept(self, dataless):
+        if dataless:
+            self.cube.data = None
         cube_agg = self.cube.aggregated_by("val", self.mock_agg)
         assert cube_agg.ancillary_variables() == [self.ancillary_variable]
         assert cube_agg.cell_measures() == [self.cell_measure]
 
-    def test_ancillary_variables_and_cell_measures_removed(self):
+    @pytest.mark.parametrize("dataless", [True, False])
+    def test_ancillary_variables_and_cell_measures_removed(self, dataless):
+        if dataless:
+            self.cube.data = None
         cube_agg = self.cube.aggregated_by("simple_agg", self.mock_agg)
         assert cube_agg.ancillary_variables() == []
         assert cube_agg.cell_measures() == []
@@ -285,7 +312,6 @@ class Test_aggregated_by:
         self.cube.aggregated_by(
             "simple_agg", self.mock_weighted_agg, weights=self.simple_weights
         )
-
         assert self.mock_weighted_agg.aggregate.call_count == 2
 
         # A simple mock.assert_called_with does not work due to ValueError: The
