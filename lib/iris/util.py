@@ -2363,6 +2363,7 @@ def mask_cube_from_shape(
 
     Examples
     --------
+    >>> import numpy as np
     >>> import shapely
     >>> from pyproj import CRS
     >>> from iris.util import mask_cube_from_shape
@@ -2373,6 +2374,18 @@ def mask_cube_from_shape(
     >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
     >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
     >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
+
+    Note that there is no change in the dimensions of the masked cube, only in the mask
+    applied to data values:
+
+    >>> print(cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {np.sum(cube.data.mask)} of {np.multiply(*cube.shape)}")
+    Masked cells: 3152 of 40960
+    >>> print(masked_cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {sum(sum(masked_cube.data.mask))} of {np.multiply(*masked_cube.shape)}")
+    Masked cells: 40062 of 40960
 
     Extract a trajectory by using a line shapefile:
 
