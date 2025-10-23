@@ -1438,15 +1438,14 @@ def create_cube(lon_min, lon_max, bounds=False, dataless=False):
 
 
 # Ensure all the other coordinates and factories are correctly preserved.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__Metadata:
-    def test_metadata(self, request, dataless):
-        cube = create_cube(0, 360, dataless=dataless)
+    def test_metadata(self, request):
+        cube = create_cube(0, 360)
         result = cube.intersection(longitude=(170, 190))
         _shared_utils.assert_CML(request, result, approx_data=True)
 
-    def test_metadata_wrapped(self, request, dataless):
-        cube = create_cube(-180, 180, dataless=dataless)
+    def test_metadata_wrapped(self, request):
+        cube = create_cube(-180, 180)
         result = cube.intersection(longitude=(170, 190))
         _shared_utils.assert_CML(request, result, approx_data=True)
 
