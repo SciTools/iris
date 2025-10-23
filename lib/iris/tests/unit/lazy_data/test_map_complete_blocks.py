@@ -154,5 +154,5 @@ class Test_map_complete_blocks:
             expected_chunksize = (1, 2, 30, 40)
             assert result.chunksize == expected_chunksize
             # Note that one chunk is irregularly rechunked and the other isn't.
-            expected_chunk = (2, 2, 1, 2, 2)
-            assert result.chunks[1] == expected_chunk
+            assert result.chunks[0] == (1, 1, 1, 1, 1)
+            assert result.chunks[1] == (2, 2, 1, 2, 2)  # split from the original chunks of (5, 4)
