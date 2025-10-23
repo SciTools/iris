@@ -5,13 +5,14 @@
 """Unit tests for :func:`iris.util.mask_cube_from_shapefile`."""
 
 import numpy as np
+from pyproj import CRS
 import pytest
 from shapely.geometry import box
 
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.util import mask_cube_from_shapefile
+from iris.util import mask_cube_from_shape
 
 
 @pytest.fixture
@@ -36,15 +37,19 @@ def mock_cube():
     return cube
 
 
-def test_mask_cube_from_shapefile_inplace(
+def test_mask_cube_from_shape_inplace(
     mock_cube,
 ):
     shape = box(0, 0, 10, 10)
-    masked_cube = mask_cube_from_shapefile(mock_cube, shape, in_place=True)
+    masked_cube = mask_cube_from_shape(
+        mock_cube, shape, shape_crs=CRS.from_epsg(4326), in_place=True
+    )
     assert masked_cube is None
 
 
-def test_mask_cube_from_shapefile_not_inplace(mock_cube):
+def test_mask_cube_from_shape_not_inplace(mock_cube):
     shape = box(0, 0, 10, 10)
-    masked_cube = mask_cube_from_shapefile(mock_cube, shape, in_place=False)
+    masked_cube = mask_cube_from_shape(
+        mock_cube, shape, shape_crs=CRS.from_epsg(4326), in_place=False
+    )
     assert masked_cube is not None
