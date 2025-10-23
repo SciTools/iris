@@ -910,7 +910,7 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
-def _slice_data_with_keys(data, keys):
+def _slice_data_with_keys(data, keys, shape=None):
     """Index an array-like object as "data[keys]", with orthogonal indexing.
 
     Parameters
@@ -919,6 +919,9 @@ def _slice_data_with_keys(data, keys):
         Array to index.
     keys : list
         List of indexes, as received from a __getitem__ call.
+    shape : tuple, optional
+        Tuple of dimension lengths. Only used when wanting
+        dim_maps, but no data i.e. in dataless operations.
 
     Returns
     -------
@@ -943,14 +946,31 @@ def _slice_data_with_keys(data, keys):
     # column_slices_generator.
     # By slicing on only one index at a time, this also mostly avoids copying
     # the data, except some cases when a key contains a list of indices.
-    n_dims = len(data.shape)
+    if data is not None:
+        shape = data.shape
+    elif shape is None:
+        raise TypeError("Dataless slicing requires shape.")
+    n_dims = len(shape)
     full_slice = _build_full_slice_given_keys(keys, n_dims)
     dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
-    for this_slice in slices_iter:
-        data = data[this_slice]
-        if data.ndim > 0 and min(data.shape) < 1:
-            # Disallow slicings where a dimension has no points, like "[5:5]".
-            raise IndexError("Cannot index with zero length slice.")
+
+    if data is not None:
+        for this_slice in slices_iter:
+            data = data[this_slice]
+            if data.ndim > 0 and min(data.shape) < 1:
+                # Disallow slicings where a dimension has no points, like "[5:5]".
+                raise IndexError("Cannot index with zero length slice.")
+    else:
+        if not isinstance(keys, tuple):
+            keys = tuple([keys])
+        for key in keys:
+            if isinstance(key, slice):
+                if (
+                    len(shape) > 0
+                    and (key.start and key.stop)
+                    and key.start == key.stop
+                ):
+                    raise IndexError("Cannot index with zero length slice.")
 
     return dims_mapping, data
 
