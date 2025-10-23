@@ -664,10 +664,7 @@ def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
 
         # Ensure the chunksize of the output is a reasonable size.
         max_outchunks = [max(chunk) for chunk in out_chunks]
-        df = [False] * len(max_outchunks)
-        for dim in dims:
-            df[dim] = True
-        df = tuple(df)
+        df = tuple(i in dims for i in range(len(shape)))
         dtype = np.dtype(dtype)
         opt_outchunks = _optimum_chunksize(
             max_outchunks, shape, dtype=dtype, dims_fixed=df
