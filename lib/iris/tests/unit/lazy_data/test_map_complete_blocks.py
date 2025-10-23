@@ -138,27 +138,18 @@ class Test_map_complete_blocks:
 
     def test_rechunking(self):
         # Choose a dask array with an irregularly chunked dimension to be rechunked.
-        lazy_array = da.ones((5, 9, 10, 10), chunks=(2, 5, 10, 5))
+        lazy_array = da.ones((5, 10, 9, 10), chunks=(2, 10, 5, 5))
         cube, _ = create_mock_cube(lazy_array)
 
-        result = map_complete_blocks(
-            cube, self.func, dims=(2, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
-        )
-        assert is_lazy_data(result)
         # Reduce the optimum dask chunksize.
         with dask.config.set({"array.chunk-size": "32KiB"}):
             result = map_complete_blocks(
-                cube, self.func, dims=(2, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
+                cube, self.func, dims=(1, 3), out_sizes=(30, 40), dtype=lazy_array.dtype
             )
             assert is_lazy_data(result)
-            expected_chunksize = (1, 2, 30, 40)
+            expected_chunksize = (1, 30, 2, 40)
             assert result.chunksize == expected_chunksize
             # Note that one chunk is irregularly rechunked and the other isn't.
             assert result.chunks[0] == (1, 1, 1, 1, 1)
-            assert result.chunks[1] == (
-                2,
-                2,
-                1,
-                2,
-                2,
-            )  # split from the original chunks of (5, 4)
+            # split from the original chunks of (5, 4)
+            assert result.chunks[2] == (2, 2, 1, 2, 2)
