@@ -238,14 +238,14 @@ class TestCreateShapefileMaskErrors:
                 cube=mock_cube,
                 minimum_weight="not_a_number",
             )
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             create_shape_mask(
                 geometry=square_polygon,
                 geometry_crs=wgs84_crs,
                 cube=mock_cube,
                 minimum_weight=-1,
             )
-        with pytest.raises(TypeError):
+        with pytest.raises(ValueError):
             create_shape_mask(
                 geometry=square_polygon,
                 geometry_crs=wgs84_crs,
@@ -270,7 +270,3 @@ class TestCreateShapefileMaskErrors:
         warn_message = "Geometry CRS does not match cube CRS. Iris will attempt to transform the geometry onto the cube CRS..."
         with pytest.warns(IrisUserWarning, match=warn_message):
             create_shape_mask(geometry=square_polygon, geometry_crs=crs, cube=mock_cube)
-
-
-# Note: `minimum_weight` keyword argument is tested under its' own unit test
-#       `test_mask_cube_from_shapefile.py` in the `lib/iris/tests/unit/_shapefiles/` directory.
