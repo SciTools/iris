@@ -101,7 +101,33 @@ data_header_float32s = (
 
 
 # data specific header (int16) elements 108-159 (Fortran bytes 411-512)
-data_header_int16s = (
+table_1_data_header_int16s = (
+    "radar_number"
+    "radar_sites"
+    "additional_radar_sites"
+    "clutter_map_number"
+    "calibration_type"
+    "bright_band_height"
+    "bright_band_intensity"
+    "bright_band_test_param_1"
+    "bright_band_test_param_2"
+    "infill_flag"
+    "stop_elevation"
+    ""
+    "sensor_identifier"
+    "meteosat_identifier"
+    ""
+    "software_identifier"
+    "software_major_version"
+    "software_minor_version"
+    "software_micro_version"
+    ""
+    "period_seconds"
+)
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_2_data_header_int16s = (
     "threshold_type",
     "probability_method",
     "recursive_filter_iterations",
@@ -215,7 +241,8 @@ class NimrodField:
         self._read_header_subset(infile, general_header_float32s, np.float32)
         # skip unnamed floats
         infile.seek(4 * (28 - len(general_header_float32s)), os.SEEK_CUR)
-
+        threshold_set = True if self.threshold_value != -32767 else False
+        print(threshold_set)
         # data specific header (float32) elements 60-104 (bytes 175-354)
         self._read_header_subset(infile, data_header_float32s, np.float32)
         # skip unnamed floats
@@ -225,6 +252,14 @@ class NimrodField:
         self.units = _read_chars(infile, 8)
         self.source = _read_chars(infile, 24)
         self.title = _read_chars(infile, 24)
+
+        # determine which of Table 1 or Table 2 is being used
+        if threshold_set:
+            table = "Table_2"
+            data_header_int16s = table_2_data_header_int16s
+        else:
+            table = "Table_1"
+            data_header_int16s = table_1_data_header_int16s
 
         # data specific header (int16) elements 108- (bytes 411-512)
         self._read_header_subset(infile, data_header_int16s, np.int16)
@@ -238,6 +273,8 @@ class NimrodField:
                     leading_length, trailing_length
                 )
             )
+
+        return table
 
     def _read_data(self, infile):
         """Read the data array: int8, int16, int32 or float32.
@@ -289,7 +326,7 @@ class NimrodField:
         self.data = self.data.reshape(self.num_rows, self.num_cols)
 
 
-def load_cubes(filenames, callback=None):
+def load_cubes(filenames, table, callback=None):
     """Load cubes from a list of NIMROD filenames.
 
     Parameters
@@ -317,7 +354,7 @@ def load_cubes(filenames, callback=None):
                         # End of file. Move on to the next file.
                         break
 
-                    cube = iris.fileformats.nimrod_load_rules.run(field)
+                    cube = iris.fileformats.nimrod_load_rules.run(field, table)
 
                     # Were we given a callback?
                     if callback is not None:
