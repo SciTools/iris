@@ -89,6 +89,11 @@ class CFVariable(metaclass=ABCMeta):
 
         self.cf_data = data
         """NetCDF4 Variable data instance."""
+        # Note: *always* disable encoding/decoding translations
+        #  To avoid current known problems
+        #  See https://github.com/Unidata/netcdf4-python/issues/1440
+        data.set_auto_chartostring(False)
+        # ALSO NOTE: not stored. NetCDFDataProxy must re-assert when re-loading.
 
         """File source of the NetCDF content."""
         try:

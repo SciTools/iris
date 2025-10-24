@@ -336,6 +336,11 @@ class NetCDFDataProxy:
             dataset = netCDF4.Dataset(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
+                # ALWAYS disable byte encoding/decoding
+                #  To avoid current known problems
+                #  See https://github.com/Unidata/netcdf4-python/issues/1440
+                variable.set_auto_chartostring(False)
+
                 # Get the NetCDF variable data and slice.
                 var = variable[keys]
             finally:
