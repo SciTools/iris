@@ -82,6 +82,11 @@ This document explains the changes made to Iris for this release
    is hoped that a future ``libnetcdf`` release will recover the original
    performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
+#. `@stephenworsley`_ made NetCDF loading more efficient by filtering variables
+   before they become instantiated as cubes in the case where multiple name
+   constraints are given. This was previously only implemented where one such
+   constraint was given. (:issue:`6228`, :pull:`6754`)
+
 
 🔥 Deprecations
 ===============
