@@ -15,6 +15,7 @@ References
 """
 
 from abc import ABCMeta, abstractmethod
+import codecs
 from collections.abc import Iterable, MutableMapping
 import os
 import re
@@ -807,13 +808,42 @@ class CFLabelVariable(CFVariable):
         label_data = self[:]
 
         if ma.isMaskedArray(label_data):
-            label_data = label_data.filled()
+            label_data = label_data.filled(b"\0")
+
+        default_encoding = "utf-8"
+        encoding = getattr(self, "_Encoding", None)
+        if encoding is None:
+            # utf-8 is a reasonable "safe" default, equivalent to 'ascii' for ascii data
+            encoding = default_encoding
+        else:
+            try:
+                # Accept + normalise naming of encodings
+                encoding = codecs.lookup(encoding).name
+                # NOTE: if encoding does not suit data, errors can occur.
+                # For example, _Encoding = "ascii", with non-ascii content.
+            except LookupError:
+                # Replace some invalid setting with "safe"(ish) fallback.
+                encoding = default_encoding
+
+        def string_from_1d_bytearray(array, encoding):
+            r"""Because numpy bytes arrays behave very oddly.
+
+            Elements which "should" contain a zero byte b'\0' instead appear to contain
+            an *empty* byte b''.  So a "b''.join()" will *omit* any zero bytes.
+            """
+            assert array.dtype.kind == "S" and array.dtype.itemsize == 1
+            assert array.ndim == 1
+            bytelist = [b"\0" if byte == b"" else byte for byte in array]
+            bytes = b"".join(bytelist)
+            assert len(bytes) == array.shape[0]
+            string = bytes.decode(encoding=encoding)
+            result = string.strip()
+            return result
 
         # Determine whether we have a string-valued scalar label
         # i.e. a character variable that only has one dimension (the length of the string).
         if self.ndim == 1:
-            label_string = b"".join(label_data).strip()
-            label_string = label_string.decode("utf8")
+            label_string = string_from_1d_bytearray(label_data, encoding)
             data = np.array([label_string])
         else:
             # Determine the index of the string dimension.
@@ -834,9 +864,10 @@ class CFLabelVariable(CFVariable):
                 else:
                     label_index = index + (slice(None, None),)
 
-                label_string = b"".join(label_data[label_index]).strip()
-                label_string = label_string.decode("utf8")
-                data[index] = label_string
+                label_string = string_from_1d_bytearray(
+                    label_data[label_index], encoding
+                )
+                data[index] = label_string.strip()
 
         return data
 
