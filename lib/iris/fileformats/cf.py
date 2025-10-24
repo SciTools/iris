@@ -836,7 +836,14 @@ class CFLabelVariable(CFVariable):
             bytelist = [b"\0" if byte == b"" else byte for byte in array]
             bytes = b"".join(bytelist)
             assert len(bytes) == array.shape[0]
-            string = bytes.decode(encoding=encoding)
+            try:
+                string = bytes.decode(encoding=encoding)
+            except UnicodeDecodeError:
+                # if encoding == "ascii":
+                #     print("\n\n*** FIX !!")
+                #     string = bytes.decode("utf-8")
+                # else:
+                raise
             result = string.strip()
             return result
 
