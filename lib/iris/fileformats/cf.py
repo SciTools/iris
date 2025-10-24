@@ -802,7 +802,7 @@ class CFLabelVariable(CFVariable):
         label_data = self[:]
 
         if ma.isMaskedArray(label_data):
-            label_data = label_data.filled()
+            label_data = label_data.filled(b"\0")
 
         # Determine whether we have a string-valued scalar label
         # i.e. a character variable that only has one dimension (the length of the string).
