@@ -708,13 +708,13 @@ def build_and_add_global_attributes(engine: Engine):
             ),
         )
         if problem is not None:
-            stack_notes = problem.stack_trace.__notes__
+            stack_notes = problem.stack_trace.__notes__  # type: ignore[attr-defined]
             if stack_notes is None:
                 stack_notes = []
             stack_notes.append(
                 f"Skipping disallowed global attribute '{attr_name}' (see above error)"
             )
-            problem.stack_trace.__notes__ = stack_notes
+            problem.stack_trace.__notes__ = stack_notes  # type: ignore[attr-defined]
 
 
 ################################################################################
@@ -1536,14 +1536,14 @@ def build_and_add_dimension_coordinate(
     )
     if problem is not None:
         coord_var_name = str(cf_coord_var.cf_name)
-        stack_notes = problem.stack_trace.__notes__
+        stack_notes = problem.stack_trace.__notes__  # type: ignore[attr-defined]
         if stack_notes is None:
             stack_notes = []
         stack_notes.append(
             f"Failed to create {coord_var_name} dimension coordinate:\n"
             f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
         )
-        problem.stack_trace.__notes__ = stack_notes
+        problem.stack_trace.__notes__ = stack_notes  # type: ignore[attr-defined]
         problem.handled = True
 
         _ = _add_or_capture(

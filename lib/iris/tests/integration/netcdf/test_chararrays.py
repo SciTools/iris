@@ -101,6 +101,7 @@ tsts = ("utf-8", "ascii", "utf-8")
 
 @pytest.mark.parametrize("encoding", tsts)
 def test_encodings(encoding):
+    # small change
     print(f"\n=========\nTesting encoding: {encoding}")
     filepath = f"tmp_{str(encoding)}.nc"
     do_as = encoding
