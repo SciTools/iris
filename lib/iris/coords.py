@@ -2794,19 +2794,6 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
-        """coord.__deepcopy__() -> Deep copy of coordinate.
-
-        Used if copy.deepcopy is called on a coordinate.
-
-        """
-        new_coord = copy.deepcopy(super(), memo)
-        # Ensure points and bounds arrays are read-only.
-        new_coord._values_dm.data.flags.writeable = False
-        if new_coord._bounds_dm is not None:
-            new_coord._bounds_dm.data.flags.writeable = False
-        return new_coord
-
     @property
     def circular(self):
         return self._metadata_manager.circular
