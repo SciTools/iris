@@ -8,15 +8,19 @@ from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import dataclass
 import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
+import threading
 from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
+import zlib
 
 import cf_units
 from dask import array as da
@@ -33,6 +37,8 @@ import iris.exceptions
 import iris.warnings
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
+
     from iris.cube import Cube, CubeList
 
 
@@ -468,7 +474,7 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
 
     Parameters
     ----------
-    array1, array2 : arraylike
+    array1, array2 : array-like
         Args to be compared, normalised if necessary with :func:`np.asarray`.
     withnans : default=False
         When unset (default), the result is False if either input contains NaN
@@ -902,7 +908,7 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
-def _slice_data_with_keys(data, keys):
+def _slice_data_with_keys(data, keys, shape=None):
     """Index an array-like object as "data[keys]", with orthogonal indexing.
 
     Parameters
@@ -911,6 +917,9 @@ def _slice_data_with_keys(data, keys):
         Array to index.
     keys : list
         List of indexes, as received from a __getitem__ call.
+    shape : tuple, optional
+        Tuple of dimension lengths. Only used when wanting
+        dim_maps, but no data i.e. in dataless operations.
 
     Returns
     -------
@@ -935,14 +944,31 @@ def _slice_data_with_keys(data, keys):
     # column_slices_generator.
     # By slicing on only one index at a time, this also mostly avoids copying
     # the data, except some cases when a key contains a list of indices.
-    n_dims = len(data.shape)
+    if data is not None:
+        shape = data.shape
+    elif shape is None:
+        raise TypeError("Dataless slicing requires shape.")
+    n_dims = len(shape)
     full_slice = _build_full_slice_given_keys(keys, n_dims)
     dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
-    for this_slice in slices_iter:
-        data = data[this_slice]
-        if data.ndim > 0 and min(data.shape) < 1:
-            # Disallow slicings where a dimension has no points, like "[5:5]".
-            raise IndexError("Cannot index with zero length slice.")
+
+    if data is not None:
+        for this_slice in slices_iter:
+            data = data[this_slice]
+            if data.ndim > 0 and min(data.shape) < 1:
+                # Disallow slicings where a dimension has no points, like "[5:5]".
+                raise IndexError("Cannot index with zero length slice.")
+    else:
+        if not isinstance(keys, tuple):
+            keys = tuple([keys])
+        for key in keys:
+            if isinstance(key, slice):
+                if (
+                    len(shape) > 0
+                    and (key.start and key.stop)
+                    and key.start == key.stop
+                ):
+                    raise IndexError("Cannot index with zero length slice.")
 
     return dims_mapping, data
 
@@ -1187,7 +1213,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-def format_array(arr):
+def format_array(arr, edgeitems=3):
     """Create a new axis as the leading dimension of the cube.
 
     Returns the given array as a string, using the python builtin str
@@ -1208,6 +1234,7 @@ def format_array(arr):
     result = np.array2string(
         arr,
         max_line_len,
+        edgeitems=edgeitems,
         separator=", ",
         threshold=85,
     )
@@ -2588,8 +2615,8 @@ def make_gridcube(
     xlims: tuple[float | int, float | int] = (0.0, 360.0),
     ylims: tuple[float | int, float | int] = (-90.0, 90.0),
     *,
-    x_points: np.typing.ArrayLike | None = None,
-    y_points: np.typing.ArrayLike | None = None,
+    x_points: ArrayLike | None = None,
+    y_points: ArrayLike | None = None,
     coord_system: iris.coord_systems.CoordSystem | None = None,
 ) -> Cube:
     """Make a 2D sample cube with a specified XY grid.
@@ -2651,7 +2678,7 @@ def make_gridcube(
         axis: str,  # 'x' or 'y'
         name: str,
         units: str,
-        points: np.typing.ArrayLike | None,
+        points: ArrayLike | None,
         lims: tuple[float | int, float | int],
         num: int,
         coord_system: iris.coord_systems.CoordSystem,
@@ -2737,3 +2764,238 @@ def make_gridcube(
         dim_coords_and_dims=((yco, 0), (xco, 1)),
     )
     return cube
+
+
+def array_checksum(data: ArrayLike) -> str:
+    """Calculate a checksum for an array.
+
+    Returns the crc32 checksum of the array data as a hex string.
+    Masked data is filled with zeros before calculating to ensure
+    that the checksum is not sensitive to unset values.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to calculate the checksum for.
+
+    Returns
+    -------
+    str :
+        32 bit checksum hexstring, e.g. '0x1a2b3c4d'.
+    """
+
+    # Ensure consistent memory layout for checksums.
+    def normalise(data):
+        data = np.ascontiguousarray(data)
+        if data.dtype.newbyteorder("<") != data.dtype:
+            data = data.byteswap(False)
+            data.dtype = data.dtype.newbyteorder("<")
+        return data
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+
+    if ma.isMaskedArray(data):
+        # Fill in masked values to avoid the checksum being
+        # sensitive to unused numbers. Use a fixed value so
+        # a change in fill_value doesn't affect the
+        # checksum.
+        crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
+    else:
+        crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
+
+    return crc
+
+
+def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> str:
+    """Return a strictly formatted summarised view of an array (first and last N elements).
+
+    Generates a string formatted summary of the array. The first and last `edgeitems` elements
+    are printed out with strictly controlled formatting. Useful for summarising arrays in
+    tests for comparing against known good outputs.
+
+    Multi-dimensional arrays will be flattened prior to summarising.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to summarise.
+
+    edgeitems : int, optional
+        The number of elements at the beginning and end of the array to format. Should be
+        a positive value > 1. Defaults to 3.
+
+    precision : int, optional
+        The precision to use for floating point values. Defaults to 8.
+
+    Returns
+    -------
+    str :
+        A string formatted summary of the array.
+    """
+    edgeitems = max(abs(edgeitems), 1)
+    precision = max(abs(precision), 0)
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+    if data.shape == ():
+        data = np.asanyarray([data])  # Handle scalars
+
+    isnumeric = np.issubdtype(data.dtype, np.number)
+
+    def _get_format_str(data):
+        """Return the format string for the datatype."""
+        # default to empty formatting string (default python formatting)
+        fmt = ""
+
+        # for numeric types, explicitly set the formatter based on
+        # type and size of number:
+        if isnumeric:
+            data = data[np.isfinite(data)]
+
+            if data.size == 0:
+                return ""  # no valid data
+
+            abs_non_zero = np.absolute(data[data != 0])
+
+            if abs_non_zero.size:
+                abs_max = np.max(abs_non_zero)
+                abs_min = np.min(abs_non_zero)
+
+                exp_max_cutoff = 1e8
+                exp_min_cutoff = 1e-4
+
+                # If we have very large or very small numbers, prefer scientific
+                # number formatting (e.g. 1.2e7)
+                exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+            else:
+                exp_mode = False  # all data is zero
+
+            if issubclass(data.dtype.type, np.floating):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = f".{precision}f"
+            elif issubclass(data.dtype.type, np.integer):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = "d"
+        # For all other types, use default python formatting
+        return fmt
+
+    def _format(value: Any) -> str:
+        """Format a single array element in to a string."""
+        if value is np.ma.masked:
+            return "--"
+        elif isnumeric and np.isnan(value):
+            return "nan"
+        elif isnumeric and np.isinf(value):
+            if np.sign(value) < 0:
+                return "-inf"
+            return "inf"
+        else:
+            # apply the formatter
+            s = f"{value:{fmt}}"
+            if isnumeric and np.issubdtype(type(value), np.floating):
+                s = s.rstrip("0")  # strip trailing zeros from floats
+            elif isinstance(value, (str, bytes)):
+                s = f"'{s}'"  # quote strings
+            return s
+
+    data = data.ravel()  # flatten multi-dimensional arrays
+
+    if data.size > edgeitems * 2:
+        summary = np.concatenate((data[:edgeitems], data[-edgeitems:]))
+        fmt = _get_format_str(summary)
+        s = (
+            "["
+            + ", ".join(_format(x) for x in summary[:edgeitems])
+            + ", ..., "
+            + ", ".join(_format(x) for x in summary[-edgeitems:])
+            + "]"
+        )
+    else:
+        fmt = _get_format_str(data)
+        s = "[" + ", ".join(_format(x) for x in data) + "]"
+
+    return s
+
+
+@dataclass
+class CMLSettings(threading.local):
+    """Settings for controlling the behaviour and formatting of the CML output.
+
+    Use the ``set`` method of this class as a context manager to temporarily
+    modify the settings.
+    """
+
+    numpy_formatting: bool = True
+    data_array_stats: bool = False
+    coord_checksum: bool = False
+    coord_data_array_stats: bool = False
+    coord_order: bool = False
+    array_edgeitems: int = 3
+    masked_value_count: bool = False
+
+    @contextmanager
+    def set(
+        self,
+        numpy_formatting: bool | None = None,
+        data_array_stats: bool | None = None,
+        coord_checksum: bool | None = None,
+        coord_data_array_stats: bool | None = None,
+        coord_order: bool | None = None,
+        array_edgeitems: int | None = None,
+        masked_value_count: bool | None = None,
+    ):
+        """Context manager to control the CML output settings.
+
+        Use this method in a `with` statement to override specific output settings
+        of the Cube Metadata Language (CML), e.g. as generated from ``cube.xml()``.
+
+        Example:
+
+        # Generate a CML output for a cube, but also include array statistics for the
+        # cube coordinate data:
+
+        .. code-block:: python
+
+            with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
+
+
+        Parameters
+        ----------
+        numpy_formatting : bool or None, optional
+            Whether to use numpy-style formatting for arrays.
+        data_array_stats : bool or None, optional
+            Whether to include statistics for cube data array.
+        coord_checksum : bool or None, optional
+            Whether to include a checksum for coordinate data arrays.
+        coord_data_array_stats : bool or None, optional
+            Whether to include statistics for coordinate data arrays.
+        coord_order : bool or None, optional
+            Whether to output the array ordering (i.e. Fortran/C) for coordinate data arrays.
+        array_edgeitems : int or None, optional
+            The number of elements to display at the edges of arrays.
+        masked_value_count : bool or None, optional
+            Whether to include a count of masked values in the output.
+        """
+        # Keep track of current state:
+        prev_state = self.__dict__.copy()
+
+        # Set new values for non-None arguments:
+        opts = {k: v for k, v in list(locals().items()) if v is not None}
+        self.__dict__.update(opts)
+
+        # Try/finally block needed to ensure previous state is reinstated
+        # if code yielded to raises an exception.
+        try:
+            yield
+
+        finally:
+            # Reinstate previous values
+            self.__dict__.update(prev_state)
+
+
+# Global CML settings object for use as context manager
+CML_SETTINGS: CMLSettings = CMLSettings()
