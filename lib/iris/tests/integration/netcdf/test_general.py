@@ -314,6 +314,13 @@ class TestConstrainedLoad(tests.IrisTest):
         self.assertEqual(len(cubes), 1)
         self.assertEqual(cubes[0].var_name, "cdf_temp_dmax_tmean_abs")
 
+    def test_netcdf_with_2_NameConstraints(self):
+        var_names = ["cdf_temp_dmax_tmean_abs", "temp_dmax_tmean_abs"]
+        constrs = [iris.NameConstraint(var_name=var_name) for var_name in var_names]
+        cubes = iris.load(self.filename, constrs)
+        self.assertEqual(len(cubes), 2)
+        self.assertEqual(sorted([cube.var_name for cube in cubes]), var_names)
+
     def test_netcdf_with_no_constraint(self):
         cubes = iris.load(self.filename)
         self.assertEqual(len(cubes), 3)

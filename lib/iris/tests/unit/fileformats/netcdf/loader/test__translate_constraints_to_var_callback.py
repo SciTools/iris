@@ -33,10 +33,34 @@ class Test(tests.IrisTest):
     def test_multiple_constraints(self):
         constrs = [
             iris.NameConstraint(standard_name="x_wind"),
-            iris.NameConstraint(var_name="var1"),
+            iris.NameConstraint(var_name="var2"),
+        ]
+        callback = _translate_constraints_to_var_callback(constrs)
+        result = [callback(var) for var in self.data_variables]
+        self.assertArrayEqual(result, [True, True, False, True, False])
+
+    def test_multiple_constraints_invalid(self):
+        constrs = [
+            iris.NameConstraint(standard_name="x_wind"),
+            iris.NameConstraint(var_name="var1", STASH="m01s00i024"),
         ]
         result = _translate_constraints_to_var_callback(constrs)
         self.assertIsNone(result)
+
+    def test_multiple_constraints__multiname(self):
+        # Modify the first constraint to require BOTH var-name and std-name match
+        constrs = [
+            iris.NameConstraint(standard_name="x_wind", var_name="var1"),
+            iris.NameConstraint(var_name="var2"),
+        ]
+        callback = _translate_constraints_to_var_callback(constrs)
+        # Add 2 extra vars: one passes both name checks, and the other does not
+        vars = self.data_variables + [
+            CFDataVariable("var1", MagicMock(standard_name="x_wind")),
+            CFDataVariable("var1", MagicMock(standard_name="air_pressure")),
+        ]
+        result = [callback(var) for var in vars]
+        self.assertArrayEqual(result, [True, True, False, True, False, True, False])
 
     def test_non_NameConstraint(self):
         constr = iris.AttributeConstraint(STASH="m01s00i002")
@@ -89,6 +113,11 @@ class Test(tests.IrisTest):
     def test_NameConstraint_with_STASH(self):
         constr = iris.NameConstraint(standard_name="x_wind", STASH="m01s00i024")
         result = _translate_constraints_to_var_callback(constr)
+        self.assertIsNone(result)
+
+    def test_no_constraints(self):
+        constrs = []
+        result = _translate_constraints_to_var_callback(constrs)
         self.assertIsNone(result)
 
 
