@@ -2999,3 +2999,24 @@ class CMLSettings(threading.local):
 
 # Global CML settings object for use as context manager
 CML_SETTINGS: CMLSettings = CMLSettings()
+
+
+def convert_bytesarray_to_strings(
+    byte_array, encoding="utf-8", string_length: int | None = None
+):
+    """Convert bytes to strings.
+
+    N.B. for now at least, we assume the string dim is **always the last one**.
+    """
+    bytes_shape = byte_array.shape
+    var_shape = bytes_shape[:-1]
+    if string_length is None:
+        string_length = bytes_shape[-1]
+    string_dtype = f"U{string_length}"
+    result = np.empty(var_shape, dtype=string_dtype)
+    for ndindex in np.ndindex(var_shape):
+        element_bytes = byte_array[ndindex]
+        bytes = b"".join([b if b else b"\0" for b in element_bytes])
+        string = bytes.decode(encoding)
+        result[ndindex] = string
+    return result
