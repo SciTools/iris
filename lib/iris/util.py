@@ -2625,6 +2625,9 @@ def make_gridcube(
     It has one-dimensional X and Y coordinates, in a specific coordinate system.
     Both can be given either regularly spaced or irregular points.
 
+    The cube is dataless, meaning that ``cube.data`` is ``None``, but data can easily be
+    assigned if required.  See :ref:`dataless-cubes`.
+
     Parameters
     ----------
     nx : int, optional
@@ -2654,7 +2657,7 @@ def make_gridcube(
     Returns
     -------
     cube: iris.cube.Cube
-        A cube with the specified grid, and all-zeroes (lazy) data.
+        A cube with the specified grid, but no data.
 
     Warnings
     --------
@@ -2671,7 +2674,7 @@ def make_gridcube(
     # float32 zero, to force minimum 'f4' floating point precision
     zero_f4 = np.asarray(
         0.0,
-        dtype="f4",  # single precision (minimum), or what was passed
+        dtype="f4",
     )
 
     def dimco(
@@ -2759,7 +2762,8 @@ def make_gridcube(
     xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
     yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
     cube = Cube(
-        da.zeros((yco.shape[0], xco.shape[0]), dtype=np.int8),
+        data=None,
+        shape=(yco.shape[0], xco.shape[0]),
         long_name="grid_cube",
         dim_coords_and_dims=((yco, 0), (xco, 1)),
     )

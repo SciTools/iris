@@ -38,6 +38,12 @@ Data assignment
 You can make an existing cube dataless, by setting ``cube.data = None``.
 The data array is simply discarded.
 
+Likewise, you can add data by assigning any data array of the correct shape, which
+turns it into a 'normal' cube.
+
+Note that ``cube.dtype`` always matches ``cube.data.dtype``.  A dataless cube has a
+dtype of ``None``.
+
 
 Cube copy
 ---------
