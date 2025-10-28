@@ -96,6 +96,10 @@ This document explains the changes made to Iris for this release
    constraints are given. This was previously only implemented where one such
    constraint was given. (:issue:`6228`, :pull:`6754`)
 
+#. `@stephenworsley`_ reduced the memory load for regridding and other operations
+   using :func:`~iris._lazy_data.map_complete_blocks` when the output chunks would
+   exceed the optimum chunksize set in dask. (:pull:`6730`)
+
 
 🔥 Deprecations
 ===============
