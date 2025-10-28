@@ -56,7 +56,7 @@ def mock_cube():
     return cube
 
 
-def test_basic_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
+def test_basic_create_shape_mask(square_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
     # Create a mask using the square polygon
     mask = create_shape_mask(
@@ -73,7 +73,24 @@ def test_basic_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
     assert np.array_equal(mask, expected_mask)
 
 
-def test_basic_create_shapefile_mask_radians(square_polygon, wgs84_crs, mock_cube):
+def test_basic_create_shape_mask_with_None_crs(square_polygon, mock_cube):
+    """Test the create_shape_mask function."""
+    # Create a mask using the square polygon
+    # Here we pass None for geometry_crs to test default behaviour
+    # which assumes the geometry is in the same CRS as the cube
+    mask = create_shape_mask(geometry=square_polygon, geometry_crs=None, cube=mock_cube)
+
+    # Check that the mask is a boolean array with the same shape as the cube data
+    assert mask.shape == mock_cube.data.shape
+    assert mask.dtype == np.bool_
+
+    # Check that the masked area corresponds to the square polygon
+    expected_mask = np.ones_like(mock_cube.data, dtype=bool)
+    expected_mask[3:6, 3:6] = False  # The square polygon covers this area
+    assert np.array_equal(mask, expected_mask)
+
+
+def test_basic_create_shape_mask_radians(square_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
     # Convert mock cube coordinates to radians
     mock_cube.coord("longitude").convert_units("radians")
@@ -94,7 +111,7 @@ def test_basic_create_shapefile_mask_radians(square_polygon, wgs84_crs, mock_cub
     assert np.array_equal(mask, expected_mask)
 
 
-def test_invert_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
+def test_invert_create_shape_mask(square_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
     # Create a mask using the square polygon
     mask = create_shape_mask(
@@ -111,9 +128,9 @@ def test_invert_create_shapefile_mask(square_polygon, wgs84_crs, mock_cube):
     assert np.array_equal(mask, expected_mask)
 
 
-def test_all_touched_true_create_shapefile_mask(circle_polygon, wgs84_crs, mock_cube):
+def test_all_touched_true_create_shape_mask(circle_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
-    # Create a mask using the square polygon
+    # Create a mask using the circular polygon
     mask = create_shape_mask(
         geometry=circle_polygon,
         geometry_crs=wgs84_crs,
@@ -143,9 +160,9 @@ def test_all_touched_true_create_shapefile_mask(circle_polygon, wgs84_crs, mock_
     assert np.array_equal(mask, expected_mask)
 
 
-def test_all_touched_false_create_shapefile_mask(circle_polygon, wgs84_crs, mock_cube):
+def test_all_touched_false_create_shape_mask(circle_polygon, wgs84_crs, mock_cube):
     """Test the create_shape_mask function."""
-    # Create a mask using the square polygon
+    # Create a mask using the circular polygon
     mask = create_shape_mask(
         geometry=circle_polygon,
         geometry_crs=wgs84_crs,
@@ -175,48 +192,21 @@ def test_all_touched_false_create_shapefile_mask(circle_polygon, wgs84_crs, mock
     assert np.array_equal(mask, expected_mask)
 
 
-def test_create_shapefile_mask_(square_polygon, wgs84_crs, mock_cube):
-    """Test the create_shape_mask function."""
-    # Create a mask using the square polygon
-    mask = create_shape_mask(
-        geometry=square_polygon,
-        geometry_crs=wgs84_crs,
-        cube=mock_cube,
-        invert=True,
-    )
-
-    # Check that the mask is a boolean array with the same shape as the cube data
-    assert mask.shape == mock_cube.data.shape
-    assert mask.dtype == np.bool_
-
-    # Check that the masked area corresponds to the square polygon
-    expected_mask = np.zeros_like(mock_cube.data, dtype=bool)
-    expected_mask[3:6, 3:6] = True  # The square polygon covers this area
-    assert np.array_equal(mask, expected_mask)
-
-
-class TestCreateShapefileMaskErrors:
-    def test_invalid_polygon_type(self, wgs84_crs, mock_cube):
-        # Pass an invalid geometry type (e.g., a string)
-        with pytest.raises(TypeError):
-            create_shape_mask(
-                geometry="not_a_polygon", geometry_crs=wgs84_crs, cube=mock_cube
-            )
-
-    def test_invalid_crs_type(self, square_polygon, mock_cube):
-        # Pass an invalid CRS type (e.g., a string)
-        with pytest.raises(TypeError):
-            create_shape_mask(
-                geometry=square_polygon, geometry_crs="not_a_crs", cube=mock_cube
-            )
-
+class TestCreateShapeMaskErrors:
     def test_invalid_cube_type(self, square_polygon, wgs84_crs):
         # Pass an invalid cube type (e.g., a string or CubeList)
-        with pytest.raises(TypeError):
+        err_message = "Received non-Cube object where a Cube is expected"
+        with pytest.raises(TypeError, match=err_message):
             create_shape_mask(
                 geometry=square_polygon, geometry_crs=wgs84_crs, cube="not_a_cube"
             )
-        with pytest.raises(TypeError):
+
+    def test_invalid_cubelist_type(self, square_polygon, wgs84_crs):
+        err_message = (
+            "Received CubeList object rather than Cube - "
+            "to mask a CubeList iterate over each Cube"
+        )
+        with pytest.raises(TypeError, match=err_message):
             create_shape_mask(
                 geometry=square_polygon, geometry_crs=wgs84_crs, cube=CubeList()
             )
@@ -224,38 +214,55 @@ class TestCreateShapefileMaskErrors:
     def test_invalid_cube_crs(self, square_polygon, wgs84_crs):
         # Pass a cube without a coordinate system
         cube = Cube(np.ones((10, 10)), dim_coords_and_dims=[])
-        with pytest.raises(IrisError):
+        err_message = (
+            "Cube coordinates do not have a coordinate references system \\(CRS\\) "
+            "defined. A CRS must be defined to ensure reliable results."
+        )
+        with pytest.raises(IrisError, match=err_message):
             create_shape_mask(
                 geometry=square_polygon, geometry_crs=wgs84_crs, cube=cube
             )
 
-    def test_invalid_minimum_weight(self, square_polygon, wgs84_crs):
+    @pytest.mark.parametrize(
+        "minimum_weight, error_type",
+        [(-1, ValueError), (2, ValueError)],
+    )
+    def test_invalid_minimum_weight(
+        self, square_polygon, wgs84_crs, mock_cube, minimum_weight, error_type
+    ):
         # Pass invalid minimum_weight values
-        with pytest.raises(TypeError):
+        err_message = "Minimum weight must be between 0.0 and 1.0"
+        with pytest.raises(error_type, match=err_message):
             create_shape_mask(
                 geometry=square_polygon,
                 geometry_crs=wgs84_crs,
                 cube=mock_cube,
-                minimum_weight="not_a_number",
+                minimum_weight=minimum_weight,
+                all_touched=None,
             )
-        with pytest.raises(ValueError):
+
+    @pytest.mark.parametrize(
+        "minimum_weight, error_type",
+        [(-1, ValueError), (2, ValueError)],
+    )
+    def test_invalid_minimum_weight_with_all_touched(
+        self, square_polygon, wgs84_crs, mock_cube, minimum_weight, error_type
+    ):
+        # Pass invalid minimum_weight values
+        err_message = "Minimum weight must be between 0.0 and 1.0"
+        with pytest.raises(error_type, match=err_message):
             create_shape_mask(
                 geometry=square_polygon,
                 geometry_crs=wgs84_crs,
                 cube=mock_cube,
-                minimum_weight=-1,
-            )
-        with pytest.raises(ValueError):
-            create_shape_mask(
-                geometry=square_polygon,
-                geometry_crs=wgs84_crs,
-                cube=mock_cube,
-                minimum_weight=2,
+                minimum_weight=minimum_weight,
+                all_touched=False,
             )
 
     def test_invalid_args(self, square_polygon, wgs84_crs, mock_cube):
         # Pass invalid minimum_weight values
-        with pytest.raises(ValueError):
+        err_message = "Cannot use minimum_weight > 0.0 with all_touched=True."
+        with pytest.raises(ValueError, match=err_message):
             create_shape_mask(
                 geometry=square_polygon,
                 geometry_crs=wgs84_crs,

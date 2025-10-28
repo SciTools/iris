@@ -14,22 +14,24 @@ import iris
 from iris._shapefiles import _transform_geometry
 from iris.tests import _shared_utils, stock
 
-wgs84 = CRS.from_epsg(4326)  # WGS84 coordinate system
-osgb = CRS.from_epsg(27700)  # OSGB coordinate system
+
+@pytest.fixture
+def wgs84_crs():
+    return CRS.from_epsg(4326)  # WGS84 coordinate system
 
 
 @pytest.mark.parametrize(
-    "input_geometry, input_geometry_crs, input_cube_crs, output_expected_geometry",
+    "input_geometry, wgs84_crs, input_cube_crs, output_expected_geometry",
     [
         (  # Basic geometry in WGS84, no transformation needed
             shapely.geometry.box(-10, 50, 2, 60),
-            wgs84,
+            "wgs84_crs",
             stock.simple_pp().coord_system()._crs,
             shapely.geometry.box(-10, 50, 2, 60),
         ),
         (  # Basic geometry in WGS84, transformed to OSGB
             shapely.geometry.box(-10, 50, 2, 60),
-            wgs84,
+            "wgs84_crs",
             iris.load_cube(
                 _shared_utils.get_data_path(
                     ("NetCDF", "transverse_mercator", "tmean_1910_1910.nc")
@@ -37,7 +39,7 @@ osgb = CRS.from_epsg(27700)  # OSGB coordinate system
             )
             .coord_system()
             .as_cartopy_projection(),
-            Polygon(
+            Polygon(  # Known Good Output
                 [
                     (686600.5247600826, 18834.835866007765),
                     (622998.2965261642, 1130592.5248690117),
@@ -49,27 +51,28 @@ osgb = CRS.from_epsg(27700)  # OSGB coordinate system
         ),
         (  # Basic geometry in WGS84, no transformation needed
             LineString([(-10, 50), (2, 60)]),
-            wgs84,
+            "wgs84_crs",
             stock.simple_pp().coord_system()._crs,
             LineString([(-10, 50), (2, 60)]),
         ),
         (  # Basic geometry in WGS84, no transformation needed
             Point((-10, 50)),
-            wgs84,
+            "wgs84_crs",
             stock.simple_pp().coord_system()._crs,
             Point((-10, 50)),
         ),
     ],
+    indirect=["wgs84_crs"],
 )
 def test_transform_geometry(
     input_geometry,
-    input_geometry_crs,
+    wgs84_crs,
     input_cube_crs,
     output_expected_geometry,
 ):
     # Assert that all invalid geometries raise the expected error
     out_geometry = _transform_geometry(
-        input_geometry, input_geometry_crs, input_cube_crs
+        geometry=input_geometry, geometry_crs=wgs84_crs, cube_crs=input_cube_crs
     )
     assert isinstance(out_geometry, shapely.geometry.base.BaseGeometry)
     assert output_expected_geometry == out_geometry
@@ -81,7 +84,7 @@ def test_transform_geometry(
     [
         (  # Basic geometry in WGS84, no transformation needed
             "bad_input_geometry",
-            wgs84,
+            "wgs84_crs",
             stock.simple_pp().coord_system()._crs,
             AttributeError,
         ),
@@ -93,7 +96,7 @@ def test_transform_geometry(
         ),
         (  # Basic geometry in WGS84, no transformation needed
             shapely.geometry.box(-10, 50, 2, 60),
-            wgs84,
+            wgs84_crs,
             "bad_input_cube_crs",
             pyproj_exceptions.CRSError,
         ),

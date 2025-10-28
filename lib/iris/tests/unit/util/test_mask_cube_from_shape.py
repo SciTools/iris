@@ -12,7 +12,7 @@ from shapely.geometry import box
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.util import mask_cube_from_shape
+from iris.util import is_masked, mask_cube_from_shape
 
 
 @pytest.fixture
@@ -40,16 +40,20 @@ def mock_cube():
 def test_mask_cube_from_shape_inplace(
     mock_cube,
 ):
-    shape = box(0, 0, 10, 10)
+    shape = box(5, 5, 10, 10)
     masked_cube = mask_cube_from_shape(
         mock_cube, shape, shape_crs=CRS.from_epsg(4326), in_place=True
     )
     assert masked_cube is None
+    assert is_masked(mock_cube.data)
 
 
 def test_mask_cube_from_shape_not_inplace(mock_cube):
-    shape = box(0, 0, 10, 10)
+    shape = box(5, 5, 10, 10)
     masked_cube = mask_cube_from_shape(
         mock_cube, shape, shape_crs=CRS.from_epsg(4326), in_place=False
     )
     assert masked_cube is not None
+    assert is_masked(masked_cube.data)
+    # Original cube should remain unmasked
+    assert not is_masked(mock_cube.data)

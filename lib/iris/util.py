@@ -2293,6 +2293,10 @@ def mask_cube_from_shapefile(
         :func:`mask_cube_from_shapefile` function is scheduled for removal in a
         future release, being replaced by :func:`iris.util.mask_cube_from_shape`,
         which offers richer shape handling.
+
+    Warnings
+    --------
+    This function requires additional dependencies: ``rasterio`` and ``affine``.
     """
     message = (
         "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
@@ -2323,7 +2327,8 @@ def mask_cube_from_shape(
     shape_crs: cartopy.crs | pyproj.CRS,
     in_place: bool = False,
     minimum_weight: float = 0.0,
-    **kwargs,
+    all_touched: bool | None = None,
+    invert: bool = False,
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shape object.
 
@@ -2357,9 +2362,6 @@ def mask_cube_from_shape(
     minimum_weight : float, default=0.0
         A number between 0-1 describing what percentage of a cube cell area must the shape overlap to be masked.
         Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
-
-    Other Parameters
-    ----------------
     all_touched : bool, default=None
         If ``True``, all cells touched by the shape are kept. If ``False``, only cells whose
         center is within the polygon or that are selected by Bresenham’s line algorithm
@@ -2446,7 +2448,7 @@ def mask_cube_from_shape(
     --------
     For best masking results, both the cube _and_ masking geometry should have a
     coordinate reference system (CRS) defined. Note that CRS of the masking geometry
-    must be provided explicitly to this function (via ``geometry_crs``), whereas the
+    must be provided explicitly to this function (via ``shape_crs``), whereas the
     cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
 
     Masking results will be most consistent when the cube and masking geometry have the same CRS.
@@ -2458,7 +2460,10 @@ def mask_cube_from_shape(
     Because shape vectors are inherently Cartesian in nature, they contain no inherent
     understanding of the spherical geometry underpinning geographic coordinate systems.
     For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
-    are not supported by this function** to avoid unexpected masking behaviour.
+    are not supported by this function** to avoid unexpected masking behaviour.  For shapes
+    that do cross these boundaries, this function expects the user to undertake fixes upstream
+    of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
+    `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
 
     """
     from iris._shapefiles import create_shape_mask
@@ -2468,7 +2473,8 @@ def mask_cube_from_shape(
         geometry_crs=shape_crs,
         cube=cube,
         minimum_weight=minimum_weight,
-        **kwargs,
+        all_touched=all_touched,
+        invert=invert,
     )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:

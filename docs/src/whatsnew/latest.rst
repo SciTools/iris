@@ -81,7 +81,12 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. Existing users of :func:`iris.util.mask_cube_from_shapefile` will need to
+   install the additional dependencies `rasterio`_ and `affine`_ to continue
+   using this function. These dependencies are necessary to support bug fixes 
+   implemented in (:issue:`6126`, :pull:`6129`).  Note that this function will 
+   be deprecated in a future version of Iris in favour of the new 
+   :func:`iris.util.mask_cube_from_shape`, which offers richer shape handling.
 
 
 🚀 Performance

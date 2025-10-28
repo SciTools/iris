@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from itertools import product
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 import warnings
 
 from affine import Affine
@@ -20,15 +20,12 @@ import shapely.geometry as sgeom
 import shapely.ops
 
 import iris
+from iris.coords import DimCoord
 from iris.exceptions import IrisError
 from iris.warnings import IrisUserWarning
 
-# Set PROJ environment variable network settings to ensure
-# that PROJ forced to disable use of network for downloading grid files.
-# This is equivalent to setting the PROJ_NETWORK environment variable
-# to "OFF" in the environment. Having PROJ_NETWORK = "ON"
-# can lead to some coordinate transformations resulting in Inf values.
-pyproj.network.set_network_enabled(active=False)
+if TYPE_CHECKING:
+    from iris.util import Axis
 
 
 def create_shape_mask(
@@ -128,6 +125,15 @@ def create_shape_mask(
     :func:`is_geometry_valid`
         Check the validity of a shape geometry.
     """
+    # Set PROJ environment variable network settings to ensure
+    # that PROJ forced to disable use of network for downloading grid files.
+    # This is equivalent to setting the PROJ_NETWORK environment variable
+    # to "OFF" in the environment. Having PROJ_NETWORK = "ON"
+    # can lead to some coordinate transformations resulting in Inf values.
+    default_pyproj_network = pyproj.network.is_network_enabled()
+    if default_pyproj_network:
+        pyproj.network.set_network_enabled(active=False)
+
     # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
         if isinstance(cube, iris.cube.CubeList):  # type: ignore[unreachable]
@@ -144,8 +150,8 @@ def create_shape_mask(
     cube_crs = cube.coord_system()
     if cube_crs is None:
         err_msg = (
-            "Cube coordinates do not have a coordinate references system (CRS)"
-            "defined. A CRS must be defined, to ensure reliable results."
+            "Cube coordinates do not have a coordinate references system (CRS) "
+            "defined. A CRS must be defined to ensure reliable results."
         )
         raise IrisError(err_msg)
 
@@ -155,19 +161,20 @@ def create_shape_mask(
     # Check validity of geometry CRS
     is_geometry_valid(geometry, geometry_crs)
 
+    # Check compatibility of function arguments
+    # all_touched and minimum_weight are mutually exclusive
+    if (all_touched is True) and (minimum_weight > 0):
+        err_msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
+        raise ValueError(err_msg)
+
     # Check minimum_weight is within range
     if (minimum_weight < 0.0) or (minimum_weight > 1.0):
         err_msg = "Minimum weight must be between 0.0 and 1.0"
         raise ValueError(err_msg)
 
-    # Check compatibility of function arguments
-    # all_touched and minimum_weight are mutually exclusive
-    if (minimum_weight > 0) and (all_touched is True):
-        err_msg = "Cannot use minimum_weight > 0.0 with all_touched=True."
-        raise ValueError(err_msg)
-
     # Get cube coordinates
-    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
+    axes: tuple[Axis, Axis] = ("X", "Y")
+    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in axes]
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
     if x_coord.units.origin == "radians":
         x_coord.convert_units("degrees")
@@ -178,9 +185,12 @@ def create_shape_mask(
         # Get revised x coordinate
         x_coord = cube.coord(axis="X", dim_coords=True)
 
+    assert isinstance(x_coord, DimCoord)
+    assert isinstance(y_coord, DimCoord)
+
     # Check for CRS equality and transform if necessary
-    cube_crs = cube.coord_system().as_cartopy_projection()  # type: ignore[union-attr]
-    if not geometry_crs.equals(cube_crs):
+    cube_cartopy_crs = cube_crs.as_cartopy_projection()
+    if not geometry_crs.equals(cube_cartopy_crs):
         transform_warning_msg = (
             "Geometry CRS does not match cube CRS. Iris will attempt to "
             "transform the geometry onto the cube CRS..."
@@ -189,7 +199,7 @@ def create_shape_mask(
         geometry = _transform_geometry(
             geometry=geometry,
             geometry_crs=geometry_crs,
-            cube_crs=cube_crs,
+            cube_crs=cube_cartopy_crs,
         )
 
     w = len(x_coord.points)
@@ -228,6 +238,10 @@ def create_shape_mask(
     if invert:
         # Invert the mask
         mask_template = np.logical_not(mask_template)
+
+    # Reset PROJ network settings to default state
+    if default_pyproj_network is True:
+        pyproj.network.set_network_enabled(active=True)
 
     return mask_template
 
@@ -333,8 +347,11 @@ def is_geometry_valid(
     # may be separated by more than 180 degrees
     if not isinstance(geometry, sgeom.MultiPoint):
         if bool(abs(geometry.bounds[2] - geometry.bounds[0]) > 180.0):
-            err_msg = "Geometry crossing the antimeridian is not supported."
-            raise ValueError(err_msg)
+            antimeridian_warning_msg = (
+                "Geometry crossing the antimeridian is not supported. "
+                "Cannot verify non-crossing given current geometry bounds."
+            )
+            warnings.warn(antimeridian_warning_msg, category=IrisUserWarning)
 
     # Check if the geometry crosses the poles
     npole = sgeom.Point(0, 90)
@@ -405,7 +422,8 @@ def _get_weighted_mask(
         An array of the shape of the x & y coordinates of the cube, with points
         to mask equal to True.
     """
-    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in ("X", "Y")]  # type: ignore[arg-type]
+    axes: tuple[Axis, Axis] = ("X", "Y")
+    x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in axes]
     # Get the shape of the cube
     w, h = [len(c.points) for c in (x_coord, y_coord)]
     # Check and get the bounds of the cube
