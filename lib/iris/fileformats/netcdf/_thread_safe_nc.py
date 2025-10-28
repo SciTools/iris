@@ -393,6 +393,8 @@ class NetCDFWriteProxy:
             try:
                 dataset = netCDF4.Dataset(self.path, "r+")
                 var = dataset.variables[self.varname]
+                # **Always** disable encode/decode of bytes to strings
+                var.set_auto_chartostring(False)
                 var[keys] = array_data
             finally:
                 try:

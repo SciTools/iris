@@ -14,6 +14,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
+import codecs
 import collections
 from itertools import repeat, zip_longest
 import os
@@ -1801,19 +1802,73 @@ class Saver:
         if np.issubdtype(data.dtype, np.str_):
             # Deal with string-type variables.
             # Typically CF label variables, but also possibly ancil-vars ?
-            string_dimension_depth = data.dtype.itemsize
-            if data.dtype.kind == "U":
-                string_dimension_depth //= 4
-            string_dimension_name = "string%d" % string_dimension_depth
+
+            # Encode data into bytes, and determine the string-dimension length.
+            #  * we can't work this out without first encoding the data
+            #    * UNLESS the target length is given (.iris_string_dimlength)
+            #  * we can't create the dimension before we know the length
+            #  * we can't create the variable before creating the dim (if needed)
+            # TODO: we can keep data lazy IFF there is a user-specified string-length
+
+            # Calculate encoding to apply.
+            default_encoding = "utf-8"
+            encoding = element.attributes.get("_Encoding", None)
+            if encoding is None:
+                # utf-8 is a reasonable "safe" default, equivalent to 'ascii' for ascii data
+                encoding = default_encoding
+            else:
+                try:
+                    # Accept + normalise naming of encodings
+                    encoding = codecs.lookup(encoding).name
+                    # NOTE: if encoding does not suit data, errors can occur.
+                    # For example, _Encoding = "ascii", with non-ascii content.
+                except LookupError:
+                    # Replace some invalid setting with "safe"(ish) fallback.
+                    encoding = default_encoding
+
+            # Convert data from an array of strings into a character array
+            # with an extra string-length dimension.
+
+            # TODO: support lazy in some cases??
+            #  (N.B. can do when 'iris_string_dimlength' is provided)
+            if is_lazy_data(data):
+                data = dask.compute(data)
+
+            element_shape = data.shape
+            max_length = 1  # this is a MINIMUM - i.e. not zero!
+            data_elements = np.zeros(element_shape, dtype=object)
+            for index in np.ndindex(element_shape):
+                data_element = data[index].encode(encoding)
+                element_length = len(data_element)
+                data_elements[index] = data_element
+                if element_length > max_length:
+                    max_length = element_length
+
+            string_dimension_length = element.attributes.get(
+                "iris_string_dimlength", None
+            )
+            if string_dimension_length is None:
+                string_dimension_length = max_length
+
+            # We already encoded all the strings, but stored them in an object-array as
+            #  we didn't yet know the fixed byte-length to convert to.
+            # Now convert to fixed-width char array
+            data = np.zeros(element_shape + (string_dimension_length,), dtype="S1")
+            right_pad = b"\0" * string_dimension_length
+            for index in np.ndindex(element_shape):
+                bytes = data_elements[index]
+                bytes = (bytes + right_pad)[:string_dimension_length]
+                data[index] = [bytes[i : i + 1] for i in range(string_dimension_length)]
 
             # Determine whether to create the string length dimension.
+            string_dimension_name = f"string{string_dimension_length}"
             if string_dimension_name not in self._dataset.dimensions:
                 while string_dimension_name in self._dataset.variables:
                     # Also avoid collision with variable names.
                     # See '_get_dim_names' for reason.
                     string_dimension_name = self._increment_name(string_dimension_name)
                 self._dataset.createDimension(
-                    string_dimension_name, string_dimension_depth
+                    string_dimension_name, string_dimension_length
                 )
 
             # Add the string length dimension to the variable dimensions.
@@ -1821,26 +1876,11 @@ class Saver:
 
             # Create the label coordinate variable.
             cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
+            # Force to always exchange data as byte arrays
+            # TODO: ?remove when bug fixed
+            #  see : https://github.com/Unidata/netcdf4-python/issues/1440
+            cf_var.set_auto_chartostring(False)
 
-            # Convert data from an array of strings into a character array
-            # with an extra string-length dimension.
-            if len(element_dims) == 1:
-                # Scalar variable (only has string dimension).
-                data_first = data[0]
-                if is_lazy_data(data_first):
-                    data_first = dask.compute(data_first)
-                data = list("%- *s" % (string_dimension_depth, data_first))
-            else:
-                # NOTE: at present, can't do this lazily??
-                orig_shape = data.shape
-                new_shape = orig_shape + (string_dimension_depth,)
-                new_data = np.zeros(new_shape, cf_var.dtype)
-                for index in np.ndindex(orig_shape):
-                    index_slice = tuple(list(index) + [slice(None, None)])
-                    new_data[index_slice] = list(
-                        "%- *s" % (string_dimension_depth, data[index])
-                    )
-                    data = new_data
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.
