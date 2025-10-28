@@ -3350,12 +3350,9 @@ class Cube(CFVariableMixin):
             result = chunks[0]
         else:
             if self.is_dataless():
-                dim_shape = 0
                 old_shape = list(self.shape)
-                for chunk in chunks:
-                    # sum the shape of the relevant dimension of each chunk together
-                    dim_shape += len(chunk.coord(coord).points)
-                old_shape[dim] = dim_shape
+                newlen = sum(chunk.coord(coord).shape[0] for chunk in chunks)
+                old_shape[dim] = newlen
                 new_shape = tuple(old_shape)
                 data = None
             else:
