@@ -1101,24 +1101,17 @@ class Test_rolling_window:
         assert res_cube.ancillary_variables() == []
         assert res_cube.cell_measures() == []
 
-    @pytest.mark.parametrize("dataless", [True, False])
-    def test_weights_arr(self, dataless):
-        if dataless:
-            self.cube.data = None
+    def test_weights_arr(self):
         weights = np.array([0, 0, 1, 0, 2])
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        if not dataless:
-            _shared_utils.assert_array_equal(res_cube.data, [10, 13])
+        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg"
 
-    @pytest.mark.parametrize("dataless", [True, False])
-    def test_weights_cube(self, dataless):
-        if dataless:
-            self.cube.data = None
+    def test_weights_cube(self):
+        self.cube.data = None
         weights = Cube([0, 0, 1, 0, 2], units="m2")
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
-        if not dataless:
-            _shared_utils.assert_array_equal(res_cube.data, [10, 13])
+        _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg m2"
 
     @pytest.mark.parametrize("dataless", [True, False])

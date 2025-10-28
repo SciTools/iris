@@ -3276,8 +3276,6 @@ class Cube(CFVariableMixin):
             which intersects with the requested coordinate intervals.
 
         """
-        # if self.is_dataless():
-        #     raise iris.exceptions.DatalessError("intersection")
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
