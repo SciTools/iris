@@ -790,15 +790,27 @@ class CFLabelVariable(CFVariable):
 
         # Determine the name of the label string (or length) dimension by
         # finding the dimension name that doesn't exist within the data dimensions.
-        str_dim_name = list(set(self.dimensions) - set(cf_data_var.dimensions))
+        str_dim_names = list(set(self.dimensions) - set(cf_data_var.dimensions))
+        n_nondata_dims = len(str_dim_names)
 
-        if len(str_dim_name) != 1:
+        if n_nondata_dims == 0:
+            # *All* dims are shared with the data-variable.
+            # This is only ok if the data-var is *also* a string type.
+            dim_ok = _is_str_dtype(cf_data_var)
+            # In this case, we must just *assume* that the last dimension is "the"
+            #  string dimension
+            str_dim_name = self.dimensions[-1]
+        else:
+            # If there is exactly one non-data dim, that is the one we want
+            dim_ok = len(str_dim_names) == 1
+            (str_dim_name,) = str_dim_names
+
+        if not dim_ok:
             raise ValueError(
                 "Invalid string dimensions for CF-netCDF label variable %r"
                 % self.cf_name
             )
 
-        str_dim_name = str_dim_name[0]
         label_data = self[:]
 
         if ma.isMaskedArray(label_data):
