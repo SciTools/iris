@@ -1261,14 +1261,8 @@ class ProtoCube:
                     some_are_dataless = True
                 else:
                     # We have (at least one) array content : Record the shape+dtype
-                    if part_shape is None:
-                        part_shape = data.shape
-                        part_dtype = data.dtype
-                    else:
-                        # We expect that the "parts" should **all be the same**
-                        assert data.shape == part_shape
-                        assert data.dtype == part_dtype
-
+                    part_shape = data.shape
+                    part_dtype = data.dtype
                     # ensure lazy (we make the result real, later, if all were real)
                     if is_lazy_data(data):
                         all_have_real_data = False
