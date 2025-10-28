@@ -49,8 +49,12 @@ This document explains the changes made to Iris for this release
 
 #. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.extract`,
    :func:`~iris.cube.Cube.collapsed`, :func:`~iris.cube.Cube.aggregated_by`,
-   and other single cube operations to work with dataless cubes.
-   (:issue:`6725`, :pull:`6724`, :pull:`6757`)
+   :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
+   :func:`~iris.cube.Cube.slices` to work with dataless cubes.
+   (:issue:`6725`, :pull:`6724`)
+
+#. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.rolling_window` and
+   :func:`~iris.cube.Cube.intersection` to work with dataless cubes. (:pull:`6757`)
 
 
 🐛 Bugs Fixed
