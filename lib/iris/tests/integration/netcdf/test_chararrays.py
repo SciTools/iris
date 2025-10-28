@@ -80,6 +80,7 @@ def show_result(filepath):
             print(
                 "\n".join(iris.loading.LOAD_PROBLEMS._problems[0].stack_trace.format())
             )
+            iris.loading.LOAD_PROBLEMS._problems = []
         print("-data-")
         print(repr(cube.data))
         if INCLUDE_COORD:
@@ -92,11 +93,16 @@ def show_result(filepath):
         print(repr(err))
 
 
-# tsts = (None, "ascii", "utf-8", "utf-32",)
+tsts = (
+    None,
+    "ascii",
+    "utf-8",
+    "utf-32",
+)
 # tsts = ("utf-8",)
 # tsts = ("utf-8", "utf-32",)
 # tsts = ("utf-32",)
-tsts = ("utf-8", "ascii", "utf-8")
+# tsts = ("utf-8", "ascii", "utf-8")
 
 
 @pytest.mark.parametrize("encoding", tsts)
