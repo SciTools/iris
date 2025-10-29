@@ -1738,6 +1738,7 @@ class Saver:
         element_dims=None,
         fill_value=None,
         compression_kwargs=None,
+        packing_controls: dict | None = None,
         is_dataless=False,
     ):
         """Create theCF-netCDF variable given dimensional_metadata.
@@ -1904,7 +1905,10 @@ class Saver:
             else:
                 element_type = type(element).__name__
                 data = self._ensure_valid_dtype(data, element_type, element)
-                dtype = data.dtype.newbyteorder("=")
+                if not packing_controls:
+                    dtype = data.dtype.newbyteorder("=")
+                else:
+                    dtype = packing_controls["dtype"]
 
             # Check if this is a dim-coord.
             is_dimcoord = cube is not None and element in cube.dim_coords
@@ -1937,6 +1941,10 @@ class Saver:
 
         # Add the data to the CF-netCDF variable.
         if not is_dataless:
+            if packing_controls:
+                # We must set packing attributes (if any), before assigning values.
+                for key, value in packing_controls["attributes"]:
+                    _setncattr(cf_var, key, value)
             self._lazy_stream_data(data=data, cf_var=cf_var)
 
         # Add names + units
@@ -2371,11 +2379,10 @@ class Saver:
         # Get the values in a form which is valid for the file format.
         is_dataless = cube.is_dataless()
 
-        if not is_dataless:
+        packing_controls = None
+        if packing and not is_dataless:
             data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
-            if not packing:
-                dtype = data.dtype.newbyteorder("=")
-            elif isinstance(packing, dict):
+            if isinstance(packing, dict):
                 if "dtype" not in packing:
                     msg = "The dtype attribute is required for packing."
                     raise ValueError(msg)
@@ -2413,26 +2420,14 @@ class Saver:
                     else:
                         add_offset = cmin + 2 ** (n - 1) * scale_factor
 
-        def set_packing_ncattrs(cfvar):
-            """Set netCDF packing attributes.
+            packing_controls = {
+                "dtype": dtype,
+                "attributes": [
+                    ("scale_factor", scale_factor),
+                    ("add_offset", add_offset),
+                ],
+            }
 
-            NOTE: cfvar needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
-
-            """
-            assert hasattr(cfvar, "THREAD_SAFE_FLAG")
-            if packing:
-                if scale_factor:
-                    _setncattr(cfvar, "scale_factor", scale_factor)
-                if add_offset:
-                    _setncattr(cfvar, "add_offset", add_offset)
-
-        # cf_name = self._get_element_variable_name(cube_or_mesh=None, element=cube)
-        # while cf_name in self._dataset.variables:
-        #     cf_name = self._increment_name(cf_name)
-        #
-        # cf_var = self._dataset.createVariable(
-        #     cf_name, dtype, dimension_names, fill_value=fill_value, **kwargs
-        # )
         # Create the cube CF-netCDF data variable with data payload.
         cf_name = self._create_generic_cf_array_var(
             cube,
@@ -2441,28 +2436,13 @@ class Saver:
             element_dims=dimension_names,
             fill_value=fill_value,
             compression_kwargs=kwargs,
+            packing_controls=packing_controls,
             is_dataless=is_dataless,
         )
         cf_var = self._dataset.variables[cf_name]
 
-        if not is_dataless:
-            set_packing_ncattrs(cf_var)
-
-        # if cube.standard_name:
-        #     _setncattr(cf_var, "standard_name", cube.standard_name)
-        #
-        # if cube.long_name:
-        #     _setncattr(cf_var, "long_name", cube.long_name)
-        #
-        # if cube.units.is_udunits():
-        #     _setncattr(cf_var, "units", str(cube.units))
-        #
-        # # Add the CF-netCDF calendar attribute.
-        # if cube.units.calendar:
-        #     _setncattr(cf_var, "calendar", cube.units.calendar)
-
-        # Set attributes: NB this part is cube-specific (not the same for components)
-        # - therefore 'set_cf_var_attributes' doesn't set attributes if element is a Cube
+        # Set general attrs: NB this part is cube-specific (not the same for components)
+        # - so 'set_cf_var_attributes' *doesn't* set these, if element is a Cube
         if iris.FUTURE.save_split_attrs:
             attr_names = cube.attributes.locals.keys()
         else:
