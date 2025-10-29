@@ -12,7 +12,6 @@ import warnings
 from affine import Affine
 import cartopy.crs as ccrs
 import numpy as np
-import pyproj
 from pyproj import CRS, Transformer
 import rasterio.features as rfeatures
 import shapely
@@ -125,15 +124,6 @@ def create_shape_mask(
     :func:`is_geometry_valid`
         Check the validity of a shape geometry.
     """
-    # Set PROJ environment variable network settings to ensure
-    # that PROJ forced to disable use of network for downloading grid files.
-    # This is equivalent to setting the PROJ_NETWORK environment variable
-    # to "OFF" in the environment. Having PROJ_NETWORK = "ON"
-    # can lead to some coordinate transformations resulting in Inf values.
-    default_pyproj_network = pyproj.network.is_network_enabled()
-    if default_pyproj_network:
-        pyproj.network.set_network_enabled(active=False)
-
     # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
         if isinstance(cube, iris.cube.CubeList):  # type: ignore[unreachable]
@@ -238,10 +228,6 @@ def create_shape_mask(
     if invert:
         # Invert the mask
         mask_template = np.logical_not(mask_template)
-
-    # Reset PROJ network settings to default state
-    if default_pyproj_network is True:
-        pyproj.network.set_network_enabled(active=True)
 
     return mask_template
 
@@ -387,7 +373,15 @@ def _transform_geometry(
         crs_from=geometry_crs, crs_to=cube_crs, always_xy=True
     ).transform
     # Transform geometry
-    return shapely.ops.transform(t, geometry)
+    transformed_geometry = shapely.ops.transform(t, geometry)
+    # Check for Inf in transformed geometry which indicates a failed transform
+    if np.isinf(transformed_geometry.bounds).any():
+        raise ValueError(
+            "Error transforming geometry: geometry contains Inf coordinates.  This is likely due to a failed CRS transformation."
+            "\nFailed transforms are often caused by network issues, often due to incorrectly configured SSL certificate paths."
+        )
+
+    return transformed_geometry
 
 
 def _get_weighted_mask(

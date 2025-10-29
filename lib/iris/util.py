@@ -2324,7 +2324,7 @@ def mask_cube_from_shapefile(
 def mask_cube_from_shape(
     cube: iris.cube.Cube,
     shape: shapely.Geometry,
-    shape_crs: cartopy.crs | pyproj.CRS,
+    shape_crs: cartopy.crs | pyproj.CRS = None,
     in_place: bool = False,
     minimum_weight: float = 0.0,
     all_touched: bool | None = None,
@@ -2332,16 +2332,16 @@ def mask_cube_from_shape(
 ) -> iris.cube.Cube | None:
     """Mask all points in a cube that do not intersect a shape object.
 
-    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles via ``cartopy``).
-    Finds the overlap between the ``shape`` and the :class:`~iris.cube.Cube` and
-    masks out any cells that *do not* intersect the shape.
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles
+    via ``cartopy``). Finds the overlap between the ``shape`` and the :class:`~iris.cube.Cube`
+    and masks out any cells that *do not* intersect the shape.
 
     Shapes can be Polygons, Lines or Points, or their multi-part equivalents.
 
-    By default, all cells touched by geometries are kept (equivalent to ``minimum_weight=0``). This behaviour
-    can be changed by increasing the ``minimum_weight`` keyword argument or setting ``all_touched=False``,
-    then only the only cells whose *centre* is within the polygon or that are selected by Bresenham’s line algorithm
-    (for line type shapes) are kept.
+    By default, all cells touched by geometries are kept (equivalent to ``minimum_weight=0``).
+    This behaviour can be changed by increasing the ``minimum_weight`` keyword argument or
+    setting ``all_touched=False``, then only the only cells whose *centre* is within the
+    polygon or that are selected by Bresenham’s line algorithm (for line type shapes) are kept.
 
     For points, ``minimum_weight`` is ignored, and the cell that intersects the point
     is kept.
