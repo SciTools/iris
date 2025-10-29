@@ -34,6 +34,12 @@ This document explains the changes made to Iris for this release
    horizontal grid.
    (:issue:`5770`, :pull:`6581`)
 
+#. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.util.mask_cube_from_shape`
+   to handle additional Point and Line shape types.  This change also facilitates the use of
+   shapefiles that use a different projection system to the cube that they are being applied to, 
+   and makes performance improvements to the mask weighting calculations. 
+   (:issue:`6126`, :pull:`6129`).
+   
 #. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
    payload when saving to NetCDF to also include any attached `CF-UGRID`_
    :class:`~iris.mesh.components.MeshXY`. Additionally,
@@ -75,7 +81,12 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. Existing users of :func:`iris.util.mask_cube_from_shapefile` will need to
+   install the additional dependencies `rasterio`_ and `affine`_ to continue
+   using this function. These dependencies are necessary to support bug fixes 
+   implemented in (:issue:`6126`, :pull:`6129`).  Note that this function will 
+   be deprecated in a future version of Iris in favour of the new 
+   :func:`iris.util.mask_cube_from_shape`, which offers richer shape handling.
 
 
 🚀 Performance
@@ -110,14 +121,19 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
-
+#. `@hsteptoe`_ added `rasterio`_ and `affine`_ as optional dependencies that facilitate
+   :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that 
+   handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 📚 Documentation
 ================
 
 #. `@rcomer`_ updated all Cartopy references to point to the new location at
    https://cartopy.readthedocs.io (:pull:`6636`)
+
+#. `@hsteptoe`_ added additional worked examples to the :func:`iris.util.mask_cube_from_shape` 
+   documentation, to demonstrate how to use the function with different types of shapefiles. 
+   (:pull:`6129`)
 
 
 💼 Internal
@@ -142,6 +158,7 @@ This document explains the changes made to Iris for this release
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
+.. _@hsteptoe: https://github.com/hsteptoe
 .. _@melissaKG: https://github.com/melissaKG
 
 
@@ -149,4 +166,6 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 
+.. _affine: https://affine.readthedocs.io/en/latest/
 .. _netcdf-c#3183: https://github.com/Unidata/netcdf-c/issues/3183
+.. _rasterio: https://rasterio.readthedocs.io/en/stable/index.html
