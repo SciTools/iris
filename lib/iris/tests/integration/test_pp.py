@@ -21,9 +21,9 @@ from iris.cube import Cube
 from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
-from iris.fileformats.rules import _LAZY_DERIVED_LOADING
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
+from iris.fileformats.rules import _LAZY_DERIVED_LOADING
 import iris.util
 from iris.warnings import IrisUserWarning
 
@@ -205,7 +205,7 @@ class TestVertical(tests.IrisTest):
 
         assert data_cube.coord("surface_air_pressure").has_lazy_points()
 
-        #TODO: _LAZY_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
+        # TODO: _LAZY_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
         load_2 = mock.Mock(return_value=iter([pressure_field, data_field]))
         with mock.patch("iris.fileformats.pp.load", new=load_2) as load_2:
             with _LAZY_DERIVED_LOADING.context():

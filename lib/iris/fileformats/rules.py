@@ -36,6 +36,7 @@ class _LazyDerivedLoading:
         finally:
             self._state = True
 
+
 # TODO: this is a temporary fix, either remove this when a permanent fix exists
 #  or else make this public if this is deemed necessary.
 _LAZY_DERIVED_LOADING = _LazyDerivedLoading()
