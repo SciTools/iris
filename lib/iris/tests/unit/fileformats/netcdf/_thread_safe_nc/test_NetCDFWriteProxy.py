@@ -49,12 +49,13 @@ class UnreliableDatasetMaker:
     debug at the Python layer - pending further investigation.
     """
 
-    def __init__(self):
+    def __init__(self, attempts_before_success=1):
+        self.attempts_before_success = attempts_before_success
         self.call_count = 0
 
     def __call__(self, *args, **kwargs) -> nc.Dataset:
         self.call_count += 1
-        if self.call_count < 2:
+        if self.call_count <= self.attempts_before_success:
             raise OSError("Simulated non-deterministic HDF locking error")
         else:
             return DatasetOriginal(*args, **kwargs)
@@ -74,3 +75,12 @@ def test_handle_hdf_locking_error(dataset_path, monkeypatch, write_proxy):
         write_proxy[0] = 1.0
     except OSError:
         pytest.fail("NetCDFWriteProxy failed to handle HDF locking error")
+
+
+def test_abandon_many_failures(dataset_path, monkeypatch, write_proxy):
+    """Test that NetCDFWriteProxy gives up after many failed attempts."""
+    monkeypatch.setattr(
+        nc, "Dataset", UnreliableDatasetMaker(attempts_before_success=10)
+    )
+    with pytest.raises(OSError, match="Simulated non-deterministic HDF locking error"):
+        write_proxy[0] = 1.0
