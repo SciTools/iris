@@ -1683,12 +1683,26 @@ class Saver:
         else:
             units_str = str(element.units)
 
-        if cf_units.as_unit(units_str).is_udunits():
-            _setncattr(cf_var, "units", units_str)
+        # NB this bit is a nasty hack to preserve existing behaviour through a refactor:
+        #  The attributes for Coords are created in the order units, standard_name,
+        #   whereas for data-variables (aka Cubes) it is the other way around.
+        # Needed now that this routine is also called from _create_cf_data_variable.
+        # TODO: when we can break things, rationalise these to be the same.
+        def add_units():
+            if cf_units.as_unit(units_str).is_udunits():
+                _setncattr(cf_var, "units", units_str)
 
-        standard_name = element.standard_name
-        if standard_name is not None:
-            _setncattr(cf_var, "standard_name", standard_name)
+        def add_stdname():
+            standard_name = element.standard_name
+            if standard_name is not None:
+                _setncattr(cf_var, "standard_name", standard_name)
+
+        if isinstance(element, Cube):
+            add_stdname()
+            add_units()
+        else:
+            add_units()
+            add_stdname()
 
         long_name = element.long_name
         if long_name is not None:
