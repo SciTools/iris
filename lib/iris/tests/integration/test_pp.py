@@ -12,6 +12,7 @@ import os
 from unittest import mock
 
 from cf_units import Unit
+import dask.array as da
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -20,6 +21,7 @@ from iris.cube import Cube
 from iris.exceptions import IgnoreCubeException
 import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
+from iris.fileformats.rules import _LAZY_DERIVED_LOADING
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
 import iris.util
@@ -146,7 +148,7 @@ class TestVertical(tests.IrisTest):
     @staticmethod
     def _field_with_data(scale=1, **kwargs):
         x, y = 40, 30
-        mock_data = np.arange(1200).reshape(y, x) * scale
+        mock_data = da.arange(1200).reshape(y, x) * scale
         mock_core_data = mock.MagicMock(return_value=mock_data)
         field = mock.MagicMock(
             core_data=mock_core_data,
@@ -200,6 +202,15 @@ class TestVertical(tests.IrisTest):
         load = mock.Mock(return_value=iter([pressure_field, data_field]))
         with mock.patch("iris.fileformats.pp.load", new=load) as load:
             pressure_cube, data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+
+        assert data_cube.coord("surface_air_pressure").has_lazy_points()
+
+        #TODO: _LAZY_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
+        load_2 = mock.Mock(return_value=iter([pressure_field, data_field]))
+        with mock.patch("iris.fileformats.pp.load", new=load_2) as load_2:
+            with _LAZY_DERIVED_LOADING.context():
+                _, realised_data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+        assert not realised_data_cube.coord("surface_air_pressure").has_lazy_points()
 
         # Check the reference surface cube looks OK.
         self.assertEqual(pressure_cube.standard_name, "surface_air_pressure")
