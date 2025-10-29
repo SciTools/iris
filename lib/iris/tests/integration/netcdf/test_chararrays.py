@@ -3,8 +3,6 @@ import numpy as np
 import pytest
 
 import iris
-
-iris.FUTURE.save_split_attrs = True
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 
@@ -16,6 +14,12 @@ TEST_COORD_VALS = ["bun", "éclair", "sandwich"]
 VARS_COORDS_SHARE_STRING_DIM = False
 if VARS_COORDS_SHARE_STRING_DIM:
     TEST_COORD_VALS[-1] = "Xsandwich"  # makes the max coord strlen same as data one
+
+
+@pytest.fixture(scope="module", autouse=True)
+def enable_split_attrs():
+    with iris.FUTURE.context(save_split_attrs=True):
+        yield
 
 
 def convert_strings_to_chararray(string_array_1d, maxlen, encoding="utf-8"):
@@ -192,8 +196,15 @@ def test_save_encodings(encoding):
     )
     print(cube)
     filepath = f"tmp_save_{str(encoding)}.nc"
-    iris.save(cube, filepath)
-    show_result(filepath)
+    if encoding == "ascii":
+        with pytest.raises(
+            UnicodeEncodeError,
+            match="'ascii' codec can't encode character.*not in range",
+        ):
+            iris.save(cube, filepath)
+    else:
+        iris.save(cube, filepath)
+        show_result(filepath)
 
 
 # @pytest.mark.parametrize("ndim", [1, 2])

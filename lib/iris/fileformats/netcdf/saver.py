@@ -1813,7 +1813,7 @@ class Saver:
         if cube is not None and data is not None and cube.shape != data.shape:
             compression_kwargs = {}
 
-        if np.issubdtype(data.dtype, np.str_):
+        if not is_dataless and np.issubdtype(data.dtype, np.str_):
             # Deal with string-type variables.
             # Typically CF label variables, but also possibly ancil-vars ?
 
@@ -1898,8 +1898,13 @@ class Saver:
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.
-            element_type = type(element).__name__
-            data = self._ensure_valid_dtype(data, element_type, element)
+            if is_dataless:
+                dtype = self._DATALESS_DTYPE
+                fill_value = self._DATALESS_FILLVALUE
+            else:
+                element_type = type(element).__name__
+                data = self._ensure_valid_dtype(data, element_type, element)
+                dtype = data.dtype.newbyteorder("=")
 
             # Check if this is a dim-coord.
             is_dimcoord = cube is not None and element in cube.dim_coords
@@ -1913,7 +1918,7 @@ class Saver:
             # Create the CF-netCDF variable.
             cf_var = self._dataset.createVariable(
                 cf_name,
-                data.dtype.newbyteorder("="),
+                dtype,
                 element_dims,
                 fill_value=fill_value,
                 **compression_kwargs,
@@ -2365,19 +2370,12 @@ class Saver:
         # be removed.
         # Get the values in a form which is valid for the file format.
         is_dataless = cube.is_dataless()
-        if is_dataless:
-            data = None
-        else:
-            data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
 
-        if is_dataless:
-            # The variable must have *some* dtype, and it must be maskable
-            dtype = self._DATALESS_DTYPE
-            fill_value = self._DATALESS_FILLVALUE
-        elif not packing:
-            dtype = data.dtype.newbyteorder("=")
-        else:
-            if isinstance(packing, dict):
+        if not is_dataless:
+            data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
+            if not packing:
+                dtype = data.dtype.newbyteorder("=")
+            elif isinstance(packing, dict):
                 if "dtype" not in packing:
                     msg = "The dtype attribute is required for packing."
                     raise ValueError(msg)
