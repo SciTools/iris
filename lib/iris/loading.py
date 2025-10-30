@@ -17,7 +17,7 @@ from iris.warnings import IrisLoadWarning
 
 
 class _ConcreteDerivedLoading(threading.local):
-    """A thread-safe state for controlling the laziness of loaded coordinates.
+    """An object to control whether factory references are loaded with lazy or real data.
 
     Use via the run-time switch :const:`~iris.loading._CONCRETE_DERIVED_LOADING`.
     Use :meth:`context` to temporarily activate.
