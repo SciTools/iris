@@ -1108,7 +1108,6 @@ class Test_rolling_window:
         assert res_cube.units == "kg"
 
     def test_weights_cube(self):
-        self.cube.data = None
         weights = Cube([0, 0, 1, 0, 2], units="m2")
         res_cube = self.cube.rolling_window("val", SUM, 5, weights=weights)
         _shared_utils.assert_array_equal(res_cube.data, [10, 13])
