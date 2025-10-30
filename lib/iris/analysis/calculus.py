@@ -149,7 +149,7 @@ def cube_delta(cube, coord):
     .. note:: Missing data support not yet implemented.
 
     .. note::
-            This function does not maintain laziness when called; it realises data.
+            This function maintains laziness when called; it does not realise data.
             See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
@@ -175,7 +175,7 @@ def cube_delta(cube, coord):
     # Calculate the actual delta, taking into account whether the given
     # coordinate is circular.
     delta_cube_data = delta(
-        cube.data, delta_dim, circular=getattr(coord, "circular", False)
+        cube.core_data(), delta_dim, circular=getattr(coord, "circular", False)
     )
 
     # If the coord/dim is circular there is no change in cube shape
@@ -260,7 +260,7 @@ def differentiate(cube, coord_to_differentiate):
     .. note:: Spherical differentiation does not occur in this routine.
 
     .. note::
-            This function does not maintain laziness when called; it realises data.
+            This function maintains laziness when called; it does not realise data.
             See more at :doc:`/userguide/real_and_lazy_data`.
 
     """

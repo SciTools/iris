@@ -59,6 +59,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.slices` to work with dataless cubes.
    (:issue:`6725`, :pull:`6724`)
 
+#. `@trexfeathers`_ and `@jrackham-mo`_ added support for lazy calculation in
+   :func:`iris.analysis.calculus.cube_delta` (used in the
+   :func:`~iris.analysis.calculus.differentiate` function). (:issue:`6734`,
+   :pull:`6772`)
+
 
 🐛 Bugs Fixed
 =============
