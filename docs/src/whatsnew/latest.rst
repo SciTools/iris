@@ -30,9 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
-   horizontal grid.
-   (:issue:`5770`, :pull:`6581`)
+#. `@pp-mo`_ added the :func:`~iris.util.make_gridcube` utility function, for making a
+   dataless test-cube with a specified 2D horizontal grid.
+   (:issue:`5770`, :pull:`6581`, :pull:`6741`)
 
 #. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.util.mask_cube_from_shape`
    to handle additional Point and Line shape types.  This change also facilitates the use of
@@ -58,6 +58,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
    :func:`~iris.cube.Cube.slices` to work with dataless cubes.
    (:issue:`6725`, :pull:`6724`)
+
+#. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
+   re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
+   Also added a new documentation section on dataless cubes.
+   (:issue:`6740`, :pull:`6741`)
 
 
 🐛 Bugs Fixed

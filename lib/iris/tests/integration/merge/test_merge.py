@@ -10,6 +10,7 @@ import numpy as np
 import pytest
 
 from iris.coords import AuxCoord, DimCoord
+import iris.cube
 from iris.cube import Cube, CubeList
 from iris.tests._shared_utils import (
     assert_array_equal,
@@ -18,6 +19,113 @@ from iris.tests._shared_utils import (
     skip_data,
 )
 import iris.tests.stock
+
+_ORIGINAL_MERGE = iris.cube.CubeList.merge
+_ORIGINAL_MERGE_CUBE = iris.cube.CubeList.merge_cube
+
+# Testing options for checking that merge works ~same when some inputs are dataless
+_DATALESS_TEST_OPTIONS = [
+    "dataless_none",
+    "dataless_one",
+    "dataless_all",
+    "dataless_allbut1",
+]
+
+
+@pytest.fixture(params=_DATALESS_TEST_OPTIONS)
+def dataless_option(request):
+    return request.param
+
+
+def mangle_cubelist(cubelist, dataless_option):
+    """Return a modified cubelist, where some cubes are dataless.
+
+    'dataless_option' controls whether 0, 1, N or N-1 cubes are made dataless.
+    """
+    assert isinstance(cubelist, CubeList)
+    n_cubes = len(cubelist)
+    result = CubeList([])
+    ind_one = len(cubelist) // 3
+    for i_cube, cube in enumerate(cubelist):
+        if (
+            (dataless_option == "dataless_one" and i_cube == ind_one)
+            or (dataless_option == "dataless_allbut1" and i_cube != ind_one)
+            or dataless_option == "dataless_all"
+        ):
+            # Make this one dataless
+            cube = cube.copy(iris.DATALESS)
+
+        result.append(cube)
+
+    # Do a quick post-test
+    assert len(result) == len(cubelist)
+    count = sum([cube.is_dataless() for cube in result])
+    expected = {
+        "dataless_none": 0,
+        "dataless_one": 1,
+        "dataless_all": n_cubes,
+        "dataless_allbut1": n_cubes - 1,
+    }[dataless_option]
+    assert count == expected
+
+    return result
+
+
+def check_merge_against_dataless_cases(
+    function, original_input, *args, dataless_option=None
+):
+    # Compute the "normal" result.
+    original_result = function(original_input, *args)
+
+    if dataless_option != "dataless_none":
+        # Re-run with "mangled" inputs, and compare the result with the normal case.
+        mangled_input = mangle_cubelist(original_input, dataless_option)
+        mangled_result = function(mangled_input, *args)
+
+        # Normalise to get a list of cubes
+        if isinstance(original_result, Cube):  # I.E. not if a single Cube
+            result_cubes = [original_result]
+            mangled_cubes = [mangled_result]
+        else:
+            result_cubes = original_result
+            mangled_cubes = mangled_result
+
+        # If **all** input is dataless, all output should be dataless too
+        if dataless_option == "dataless_all":
+            assert all([cube.is_dataless() for cube in mangled_cubes])
+
+        # We should get all the same cubes, **except** for the data content
+        assert len(mangled_cubes) == len(result_cubes)
+        for cube1, cube2 in zip(mangled_cubes, result_cubes):
+            cube1, cube2 = [cube.copy() for cube in (cube1, cube2)]
+            for cube in (cube1, cube2):
+                cube.data = None
+            if cube1 != cube2:
+                assert cube1 == cube2
+
+    return original_result
+
+
+class DatalessMixin:
+    # Mixin class to make every merge check for operation with dataless cubes
+    @pytest.fixture(autouse=True)
+    def setup_patch(self, mocker, dataless_option):
+        # NB these patch functions must be generated dynamically (for each test
+        #  parametrisation), so that they can access the 'dataless_option' switch.
+        def patched_merge(cubelist, unique=True):
+            return check_merge_against_dataless_cases(
+                _ORIGINAL_MERGE, cubelist, unique, dataless_option=dataless_option
+            )
+
+        def patched_merge_cube(cubelist):
+            return check_merge_against_dataless_cases(
+                _ORIGINAL_MERGE_CUBE, cubelist, dataless_option=dataless_option
+            )
+
+        # Patch **all** uses of CubeList.merge/merge_cube within these tests, to compare
+        #  "normal" results with those which have some dataless inputs.
+        mocker.patch("iris.cube.CubeList.merge", patched_merge)
+        mocker.patch("iris.cube.CubeList.merge_cube", patched_merge_cube)
 
 
 class MergeMixin:
@@ -45,7 +153,7 @@ class MergeMixin:
 
 
 @skip_data
-class TestSingleCube(MergeMixin):
+class TestSingleCube(MergeMixin, DatalessMixin):
     def setup_method(self):
         self._data_path = get_data_path(("PP", "globClim1", "theta.pp"))
         self._num_cubes = 1
@@ -53,7 +161,7 @@ class TestSingleCube(MergeMixin):
 
 
 @skip_data
-class TestMultiCube(MergeMixin):
+class TestMultiCube(MergeMixin, DatalessMixin):
     def setup_method(self):
         self._data_path = get_data_path(("PP", "globClim1", "dec_subset.pp"))
         self._num_cubes = 4
@@ -75,7 +183,7 @@ class TestMultiCube(MergeMixin):
 
 
 @skip_data
-class TestColpex:
+class TestColpex(DatalessMixin):
     def setup_method(self):
         self._data_path = get_data_path(("PP", "COLPEX", "small_colpex_theta_p_alt.pp"))
 
@@ -86,7 +194,7 @@ class TestColpex:
 
 
 @skip_data
-class TestDataMerge:
+class TestDataMerge(DatalessMixin):
     def test_extended_proxy_data(self, request):
         # Get the empty theta cubes for T+1.5 and T+2
         data_path = get_data_path(("PP", "COLPEX", "theta_and_orog_subset.pp"))
@@ -119,7 +227,7 @@ class TestDataMerge:
         assert_CML(request, cubes, ["merge", "theta.cml"])
 
 
-class TestDimensionSplitting:
+class TestDimensionSplitting(DatalessMixin):
     def _make_cube(self, a, b, c, data):
         cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
@@ -182,7 +290,7 @@ class TestDimensionSplitting:
         assert_CML(request, cube, ("merge", "multi_split.cml"))
 
 
-class TestCombination:
+class TestCombination(DatalessMixin):
     def _make_cube(self, a, b, c, d, data=0):
         cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
@@ -214,100 +322,38 @@ class TestCombination:
 
     def test_separable_combination(self, request):
         cubes = iris.cube.CubeList()
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 1
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 2
-            )
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1)
-        )
-        cubes.append(
-            self._make_cube("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2)
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 10, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 11, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 12, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 13, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 14, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 15, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 16, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 17, ENSEMBLES", 0
-            )
-        )
-        cubes.append(
-            self._make_cube(
-                "2502", "UK Met Office", "HadCM3, Sys 51, Met 18, ENSEMBLES", 0
-            )
-        )
+
+        def add(*args):
+            cubes.append(self._make_cube(*args))
+
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 0)
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 1)
+        add("2005", "ECMWF", "HOPE-E, Sys 1, Met 1, ENSEMBLES", 2)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 0)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 1)
+        add("2026", "UK Met Office", "HadGEM2, Sys 1, Met 1, ENSEMBLES", 2)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 0)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 1)
+        add("2002", "CERFACS", "GELATO, Sys 0, Met 1, ENSEMBLES", 2)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 0)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 1)
+        add("2002", "IFM-GEOMAR", "ECHAM5, Sys 1, Met 10, ENSEMBLES", 2)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 10, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 11, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 12, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 13, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 14, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 15, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 16, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 17, ENSEMBLES", 0)
+        add("2502", "UK Met Office", "HadCM3, Sys 51, Met 18, ENSEMBLES", 0)
         cube = cubes.merge()
         assert_CML(
             request, cube, ("merge", "separable_combination.cml"), checksum=False
         )
 
 
-class TestDimSelection:
+class TestDimSelection(DatalessMixin):
     def _make_cube(self, a, b, data=0, a_dim=False, b_dim=False):
         cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
@@ -422,7 +468,7 @@ class TestDimSelection:
         assert cube.coord("b") in cube.aux_coords
 
 
-class TestTimeTripleMerging:
+class TestTimeTripleMerging(DatalessMixin):
     def _make_cube(self, a, b, c, data=0):
         cube_data = np.empty((4, 5), dtype=np.float32)
         cube_data[:] = data
@@ -645,7 +691,7 @@ class TestTimeTripleMerging:
         assert_CML(request, cube, ("merge", "time_triple_merging5.cml"), checksum=False)
 
 
-class TestCubeMergeTheoretical:
+class TestCubeMergeTheoretical(DatalessMixin):
     def test_simple_bounds_merge(self, request):
         cube1 = iris.tests.stock.simple_2d()
         cube2 = iris.tests.stock.simple_2d()
@@ -711,7 +757,7 @@ class TestCubeMergeTheoretical:
         assert_CML(request, r, ("cube_merge", "test_simple_attributes3.cml"))
 
 
-class TestContiguous:
+class TestContiguous(DatalessMixin):
     def test_form_contiguous_dimcoord(self):
         # Test that cube sliced up and remerged in the opposite order maintains
         # contiguity.

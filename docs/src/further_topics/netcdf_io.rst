@@ -188,9 +188,10 @@ Deferred Saving
 
 TBC
 
+.. _save_load_dataless:
 
-Dataless Cubes
---------------
+Dataless Cubes in NetCDF files
+------------------------------
 It now possible to have "dataless" cubes, where ``cube.data is None``.
 When these are saved to a NetCDF file interface, this results in a netcdf file variable
 with all-unwritten data (meaning that it takes up no storage space).

@@ -34,12 +34,16 @@ class DataManager:
             dataless.
 
         """
-        if (shape is None) and (data is None):
-            msg = 'one of "shape" or "data" should be provided; both are None'
-            raise ValueError(msg)
-        elif (shape is not None) and (data is not None):
-            msg = '"shape" should only be provided if "data" is None'
-            raise ValueError(msg)
+        if shape is None:
+            if data is None:
+                msg = 'one of "shape" or "data" should be provided; both are None'
+                raise ValueError(msg)
+        else:
+            if data is not None:
+                msg = '"shape" should only be provided if "data" is None'
+                raise ValueError(msg)
+            # Normalise how shape is recorded
+            shape = tuple(shape)
 
         # Initialise the instance.
         self._shape = shape

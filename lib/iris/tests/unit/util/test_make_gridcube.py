@@ -28,6 +28,8 @@ class TestMakeGridcube:
         assert cube.standard_name is None
         assert cube.long_name == "grid_cube"
         assert cube.coord_system() == _GLOBE
+        assert cube.is_dataless()
+        assert cube.shape == (20, 30)
 
         assert len(cube.coords()) == 2
         co_x, co_y = [cube.coord(axis=ax) for ax in "xy"]
@@ -45,10 +47,6 @@ class TestMakeGridcube:
         assert not co_y.has_bounds()
         assert np.all(co_y.points == np.linspace(-90.0, 90.0, 20))
         assert co_y.points.dtype == np.dtype("f8")
-
-        assert cube.has_lazy_data()
-        assert cube.shape == (20, 30)
-        assert np.all(cube.data == 0)
 
     def test_regular_region(self):
         """Check use of n? and ?lims args."""
