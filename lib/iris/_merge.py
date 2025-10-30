@@ -1587,7 +1587,7 @@ class ProtoCube:
         Parameters
         ----------
         data : array_like
-            Cube data content.  If None, `shape` must set and the result is dataless.
+            Cube data content.  If None, `shape` must be set and the result is dataless.
         shape : tuple, optional
             Cube data shape, only used if data is None.
         """

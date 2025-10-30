@@ -32,7 +32,7 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ added the :func:`~iris.util.make_gridcube` utility function, for making a
    dataless test-cube with a specified 2D horizontal grid.
-   (:issue:`5770`, :pull:`6581`)
+   (:issue:`5770`, :pull:`6581`, :pull:`6741`)
 
 #. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
    payload when saving to NetCDF to also include any attached `CF-UGRID`_
@@ -56,7 +56,7 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
    re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
    Also added a new documentation section on dataless cubes.
-   (:issue:`5770`, :pull:`6581`)
+   (:issue:`6740`, :pull:`6741`)
 
 
 🐛 Bugs Fixed
