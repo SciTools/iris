@@ -125,6 +125,12 @@ This document explains the changes made to Iris for this release
    :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that 
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
+#. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
+   netCDF4<1.7.3.  All of these introduce problems that won't necessarily be fixed soon,
+   so we anticipate that these pins will be wanted for the v3.14 release.
+   (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
+
+
 📚 Documentation
 ================
 
