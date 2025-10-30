@@ -77,6 +77,10 @@ This document explains the changes made to Iris for this release
    using :meth:`~iris.cube.Cube.aggregated_by` or :meth:`~iris.cube.Cube.collapsed`.
    (:issue:`6473`, :pull:`6706`, :pull:`6719`)
 
+#. `@trexfeathers`_ protected the NetCDF saving code from a transient I/O
+   error, caused by bad synchronisation between Python-layer and HDF-layer
+   file locking on certain filesystems. (:pull:`6760`).
+
 
 💣 Incompatible Changes
 =======================
