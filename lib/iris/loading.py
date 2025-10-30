@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism."""
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import itertools
 import threading
@@ -14,6 +15,26 @@ import warnings
 from iris.common import CFVariableMixin
 from iris.warnings import IrisLoadWarning
 
+
+class _ConcreteDerivedLoading(threading.local):
+    def __init__(self):
+        self._state = False
+
+    def __bool__(self):
+        return self._state
+
+    @contextmanager
+    def context(self):
+        try:
+            self._state = True
+            yield
+        finally:
+            self._state = False
+
+
+# TODO: this is a temporary fix, either remove this when a permanent fix exists
+#  or else make this public if this is deemed necessary.
+_CONCRETE_DERIVED_LOADING = _ConcreteDerivedLoading()
 
 def _generate_cubes(uris, callback, constraints):
     import iris.io

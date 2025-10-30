@@ -5,7 +5,6 @@
 """Generalised mechanisms for metadata translation and cube construction."""
 
 import collections
-from contextlib import contextmanager
 import threading
 import warnings
 
@@ -15,31 +14,11 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.loading import _CONCRETE_DERIVED_LOADING
 import iris.warnings
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
 ReferenceTarget = collections.namedtuple("ReferenceTarget", ("name", "transform"))
-
-
-class _LazyDerivedLoading:
-    def __init__(self):
-        self._state = True
-
-    def __bool__(self):
-        return self._state
-
-    @contextmanager
-    def context(self):
-        try:
-            self._state = False
-            yield
-        finally:
-            self._state = True
-
-
-# TODO: this is a temporary fix, either remove this when a permanent fix exists
-#  or else make this public if this is deemed necessary.
-_LAZY_DERIVED_LOADING = _LazyDerivedLoading()
 
 
 class ConcreteReferenceTarget:
@@ -180,10 +159,10 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                 # match the grid of this cube.
                 src, cube = _ensure_aligned(regrid_cache, src, cube)
                 if src is not None:
-                    if _LAZY_DERIVED_LOADING:
-                        data = src.core_data()
-                    else:
+                    if _CONCRETE_DERIVED_LOADING:
                         data = src.data
+                    else:
+                        data = src.core_data()
                     new_coord = iris.coords.AuxCoord(
                         data,
                         src.standard_name,
