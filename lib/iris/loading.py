@@ -45,7 +45,7 @@ class _ConcreteDerivedLoading(threading.local):
         Parameters
         ----------
         load_real : bool, default True
-            sets whether references are loaded as concrete data, within the context.
+            Sets whether references are loaded as concrete data, within the context.
 
         Example
         -------
