@@ -1279,7 +1279,7 @@ class ProtoCube:
                 if some_are_dataless:
                     # Some parts were dataless: fill these with a lazy all-missing array.
                     missing_part = da.ma.masked_array(
-                        data=da.zeros(part_shape, dtype=np.dtype("u1")),
+                        data=da.zeros(part_shape, dtype=part_dtype),
                         mask=da.ones(part_shape, dtype=bool),
                         dtype=part_dtype,
                     )
