@@ -50,7 +50,9 @@ keywords = [
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "scitools-iris"
-requires-python = ">=3.11"
+# NOTE: currently pinning to avoid Python 3.14
+#  see : https://github.com/SciTools/iris/issues/6775
+requires-python = ">=3.11,<3.14"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"

@@ -7,7 +7,6 @@ matplotlib>=3.5
 netcdf4<1.7.3  # https://github.com/SciTools/iris/issues/6777
 numpy>=1.24,!=1.24.3
 pyproj
-python<3.14  # https://github.com/SciTools/iris/issues/6775
 scipy
 shapely!=1.8.3
 xxhash
