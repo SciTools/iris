@@ -168,6 +168,12 @@ This document explains the changes made to Iris for this release
 #. `@ukmo-ccbunney`_ ``assert_CML`` now uses stricter array formatting to avoid
    changes in tests due to Numpy version changes. (:pull:`6743`)
 
+#. `@stephenworsley`_ added a private switch :obj:`~iris.loading._CONCRETE_DERIVED_LOADING`
+   for controlling laziness of coordinates from pp loading, avoiding a
+   slowdown due to merging. Note: this object is temporary and is likely
+   to be replaced by a permanent solution or else be renamed.
+   (:issue:`6755`, :pull:`6767`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

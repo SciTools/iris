@@ -12,6 +12,7 @@ import os
 from unittest import mock
 
 from cf_units import Unit
+import dask.array as da
 import numpy as np
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
@@ -22,6 +23,7 @@ import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
+from iris.loading import _CONCRETE_DERIVED_LOADING
 import iris.util
 from iris.warnings import IrisUserWarning
 
@@ -144,9 +146,12 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(field.blev, potm_value)
 
     @staticmethod
-    def _field_with_data(scale=1, **kwargs):
+    def _field_with_data(scale=1, lazy=False, **kwargs):
         x, y = 40, 30
-        mock_data = np.arange(1200).reshape(y, x) * scale
+        if lazy:
+            mock_data = da.arange(1200).reshape(y, x) * scale
+        else:
+            mock_data = np.arange(1200).reshape(y, x) * scale
         mock_core_data = mock.MagicMock(return_value=mock_data)
         field = mock.MagicMock(
             core_data=mock_core_data,
@@ -252,6 +257,42 @@ class TestVertical(tests.IrisTest):
         self.assertEqual(data_field.blev, sigma)
         self.assertEqual(data_field.brlev, sigma_lower)
         self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
+
+    def test_hybrid_pressure_lazy_load(self):
+        pressure_field = self._field_with_data(
+            10,
+            lazy=True,
+            stash=iris.fileformats.pp.STASH(1, 0, 409),
+            lbuser=[0, 0, 0, 409, 0, 0, 0],
+        )
+
+        # Make a fake data field which needs the reference surface.
+        model_level = 5678
+        sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
+        delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
+        data_field = self._field_with_data(
+            lbvc=9,
+            lblev=model_level,
+            bhlev=delta,
+            bhrlev=delta_lower,
+            blev=sigma,
+            brlev=sigma_lower,
+            brsvd=[sigma_upper, delta_upper],
+        )
+
+        # Convert both fields to cubes.
+        load = mock.Mock(return_value=iter([pressure_field, data_field]))
+        with mock.patch("iris.fileformats.pp.load", new=load) as load:
+            pressure_cube, data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+
+        assert data_cube.coord("surface_air_pressure").has_lazy_points()
+
+        # TODO: _CONCRETE_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
+        load = mock.Mock(return_value=iter([pressure_field, data_field]))
+        with mock.patch("iris.fileformats.pp.load", new=load) as load:
+            with _CONCRETE_DERIVED_LOADING.context():
+                _, realised_data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+        assert not realised_data_cube.coord("surface_air_pressure").has_lazy_points()
 
     def test_hybrid_pressure_with_duplicate_references(self):
         # Make a fake reference surface field.
