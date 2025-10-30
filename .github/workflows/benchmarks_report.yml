@@ -54,7 +54,7 @@ jobs:
           echo "reports_exist=$reports_exist" >> "$GITHUB_OUTPUT"
 
       - name: Store artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: benchmark_reports
           path: benchmark_reports
