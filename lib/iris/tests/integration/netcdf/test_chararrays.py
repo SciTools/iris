@@ -6,13 +6,13 @@
 
 import subprocess
 
-import netCDF4 as nc
 import numpy as np
 import pytest
 
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import env_bin_path
 
 NX, N_STRLEN = 3, 64
@@ -69,7 +69,8 @@ INCLUDE_NUMERIC_AUXCOORD = True
 
 
 def make_testfile(filepath, chararray, coordarray, encoding_str=None):
-    with nc.Dataset(filepath, "w") as ds:
+    ds = _thread_safe_nc.DatasetWrapper(filepath, "w")
+    try:
         ds.createDimension("x", NX)
         ds.createDimension("nstr", N_STRLEN)
         vx = ds.createVariable("x", int, dimensions=("x"))
@@ -110,6 +111,8 @@ def make_testfile(filepath, chararray, coordarray, encoding_str=None):
             if INCLUDE_NUMERIC_AUXCOORD:
                 coords_str += " v_num"
             v.coordinates = coords_str
+    finally:
+        ds.close()
 
 
 def make_testcube(
