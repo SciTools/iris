@@ -28,6 +28,7 @@ class _ConcreteDerivedLoading(threading.local):
     performance issues during loading (see https://github.com/SciTools/iris/issues/6755)
     This is expected to be either removed or renamed in a future version.
     """
+
     def __init__(self):
         self._state = False
 
