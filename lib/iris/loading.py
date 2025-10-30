@@ -20,7 +20,8 @@ class _ConcreteDerivedLoading(threading.local):
     """An object to control whether factory references are loaded with lazy or real data.
 
     Use via the run-time switch :const:`~iris.loading._CONCRETE_DERIVED_LOADING`.
-    Use :meth:`context` to temporarily activate.
+    Use :meth:`context` to temporarily activate or assign the property
+    `load_real_references` to True.
 
     Notes
     -----
@@ -30,18 +31,33 @@ class _ConcreteDerivedLoading(threading.local):
     """
 
     def __init__(self):
-        self._state = False
+        self.load_real_references = False
 
     def __bool__(self):
-        return self._state
+        return self.load_real_references
 
     @contextmanager
-    def context(self):
+    def context(self, load_real=True):
+        """Control whether references are loaded lazily.
+
+        Defines a context block within which the setting is applied.
+
+        Parameters
+        ----------
+        load_real : bool, default True
+            sets whether references are loaded as concrete data, within the context.
+
+        Example
+        -------
+        >>> with _CONCRETE_DERIVED_LOADING.context(load_real=True):
+        ...     <code>
+        """
         try:
-            self._state = True
+            old_value = self.load_real_references
+            self.load_real_references = load_real
             yield
         finally:
-            self._state = False
+            self.load_real_references = old_value
 
 
 # TODO: this is a temporary fix, either remove this when a permanent fix exists
