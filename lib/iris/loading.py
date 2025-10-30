@@ -36,6 +36,7 @@ class _ConcreteDerivedLoading(threading.local):
 #  or else make this public if this is deemed necessary.
 _CONCRETE_DERIVED_LOADING = _ConcreteDerivedLoading()
 
+
 def _generate_cubes(uris, callback, constraints):
     import iris.io
 
