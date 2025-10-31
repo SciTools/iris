@@ -1,30 +1,50 @@
 .. include:: ../common_links.inc
 
-|iris_version| |build_date| [unreleased]
-****************************************
+v3.14 (31 Oct 2025 [release candidate])
+***************************************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: 3.14 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
    :open:
 
-   The highlights for this major/minor release of Iris include:
+   The highlights for this minor release of Iris include:
 
-   * N/A
+   * Added a convenience function :func:`~iris.util.make_gridcube` for creating
+     a 2D cube with a grid of a specified shape. This is useful for functions
+     such as regridding where creating a target cube of a given size is common.
+
+   * Improved functionality of :ref:`dataless-cubes`. Dataless cubes were introduced in
+     Iris 3.12 with limited functionality, it is now possible to load, save and do the
+     following operations: :func:`~iris.cube.Cube.extract`,
+     :func:`~iris.cube.Cube.collapsed`, :func:`~iris.cube.Cube.aggregated_by`,
+     :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
+     :func:`~iris.cube.Cube.slices`.
+
+   * Added the utility :func:`~iris.util.mask_cube_from_shape`, superceding
+     :func:`~iris.util.mask_cube_from_shapefile` and adding the ability to handle
+     shapefiles that use different coordinate systems to the cube they are being
+     applied to, adding the ability to handle additional Point and Line shape types
+     and improving the performance. This was a major piece of work from an external
+     colaborator so big thanks to `@hsteptoe`_!
+
+   * Various performance improvements including:
+
+     * Extending zlib compression to include `CF-UGRID`_ data.
+
+     * Improved NetCDF loading when constraining by multiple names.
+
+     * Prevented transient failures in parallelised NetCDF saving (caused by an HDF locking delay).
+
+     * Improved the memory-per-chunk resulting from regridding.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
-
-
-📢 Announcements
-================
-
-#. N/A
 
 
 ✨ Features
@@ -125,12 +145,6 @@ This document explains the changes made to Iris for this release
 #. `@stephenworsley`_ reduced the memory load for regridding and other operations
    using :func:`~iris._lazy_data.map_complete_blocks` when the output chunks would
    exceed the optimum chunksize set in dask. (:pull:`6730`)
-
-
-🔥 Deprecations
-===============
-
-#. N/A
 
 
 🔗 Dependencies
