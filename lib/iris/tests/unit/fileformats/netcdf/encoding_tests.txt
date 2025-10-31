@@ -1,0 +1,18 @@
+
+forms in files:
+    * char chardata(dim1, dim2, strlen_xx);    # char data
+    * string data(dim1, dim2);
+
+forms in numpy:
+    * np.ndarray(dtype="S1")  # char data
+    * np.ndarray(dtype="Snn")  # char data
+    * np.ndarray(dtype="Unn")  # strings
+    * np.ndarray(dtype="")
+
+possibilities in createVariable:
+"""
+    The datatype can be a numpy datatype object, or a string that describes a numpy dtype object ...
+    datatype can also be a CompoundType instance (for a structured, or compound array), a VLType instance (for a variable-length array),
+**  or the python str builtin (for a variable-length string array).
+**  Numpy string and unicode datatypes with length greater than one are aliases for str.
+"""
