@@ -192,8 +192,6 @@ v3.11.1 (19 Dec 2024)
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-.. _@jrackham-mo: https://github.com/jrackham-mo
-
 
 .. comment
     Whatsnew resources in alphabetical order:

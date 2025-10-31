@@ -288,7 +288,6 @@ v3.12.3 (22 Aug 2025)
 
 .. _@fnattino: https://github.com/fnattino
 .. _@jfrost-mo: https://github.com/jfrost-mo
-.. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@stefsmeets: https://github.com/stefsmeets
 .. _@valeriupredoi: https://github.com/valeriupredoi
 

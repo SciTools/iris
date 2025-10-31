@@ -67,6 +67,7 @@
 .. _@HGWright: https://github.com/HGWright
 .. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
+.. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@marqh: https://github.com/marqh
