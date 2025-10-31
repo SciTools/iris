@@ -5160,7 +5160,7 @@ x            -               -
 
         """
         if self.is_dataless():
-            raise iris.exceptions.DatalessError("interoplate")
+            raise iris.exceptions.DatalessError("interpolate")
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
         return interp(points, collapse_scalar=collapse_scalar)

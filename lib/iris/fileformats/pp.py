@@ -54,7 +54,7 @@ __all__ = [
     "save_pairs_from_cube",
 ]
 
-
+#: Standard spherical earth radius, as defined for MetOffice Unified Model.
 EARTH_RADIUS = 6371229.0
 
 

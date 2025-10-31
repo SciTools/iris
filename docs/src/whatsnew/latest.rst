@@ -30,9 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
-   horizontal grid.
-   (:issue:`5770`, :pull:`6581`)
+#. `@pp-mo`_ added the :func:`~iris.util.make_gridcube` utility function, for making a
+   dataless test-cube with a specified 2D horizontal grid.
+   (:issue:`5770`, :pull:`6581`, :pull:`6741`)
 
 #. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.util.mask_cube_from_shape`
    to handle additional Point and Line shape types.  This change also facilitates the use of
@@ -59,6 +59,11 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.slices` to work with dataless cubes.
    (:issue:`6725`, :pull:`6724`)
 
+#. `@pp-mo`_ added the ability to merge dataless cubes.  This also means they can be
+   re-loaded normally with :meth:`iris.load`.  See: :ref:`dataless_merge`.
+   Also added a new documentation section on dataless cubes.
+   (:issue:`6740`, :pull:`6741`)
+
 #. `@trexfeathers`_ and `@jrackham-mo`_ added support for lazy calculation in
    :func:`iris.analysis.calculus.cube_delta` (used in the
    :func:`~iris.analysis.calculus.differentiate` function). (:issue:`6734`,
@@ -81,6 +86,10 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ added support for preserving masked auxiliary coordinates when
    using :meth:`~iris.cube.Cube.aggregated_by` or :meth:`~iris.cube.Cube.collapsed`.
    (:issue:`6473`, :pull:`6706`, :pull:`6719`)
+
+#. `@trexfeathers`_ protected the NetCDF saving code from a transient I/O
+   error, caused by bad synchronisation between Python-layer and HDF-layer
+   file locking on certain filesystems. (:pull:`6760`).
 
 
 💣 Incompatible Changes
@@ -130,6 +139,12 @@ This document explains the changes made to Iris for this release
    :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that 
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
+#. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
+   netCDF4<1.7.3.  All of these introduce problems that won't necessarily be fixed soon,
+   so we anticipate that these pins will be wanted for the v3.14 release.
+   (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
+
+
 📚 Documentation
 ================
 
@@ -157,6 +172,12 @@ This document explains the changes made to Iris for this release
 
 #. `@ukmo-ccbunney`_ ``assert_CML`` now uses stricter array formatting to avoid
    changes in tests due to Numpy version changes. (:pull:`6743`)
+
+#. `@stephenworsley`_ added a private switch :obj:`~iris.loading._CONCRETE_DERIVED_LOADING`
+   for controlling laziness of coordinates from pp loading, avoiding a
+   slowdown due to merging. Note: this object is temporary and is likely
+   to be replaced by a permanent solution or else be renamed.
+   (:issue:`6755`, :pull:`6767`)
 
 
 .. comment
