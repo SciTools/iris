@@ -21,22 +21,26 @@ This document explains the changes made to Iris for this release
 
    * Improved functionality of :ref:`dataless-cubes`. Dataless cubes were introduced in
      Iris 3.12 with limited functionality, it is now possible to load, save and do the
-     following opperations: func:`~iris.cube.Cube.extract`,
+     following opperations: :func:`~iris.cube.Cube.extract`,
      :func:`~iris.cube.Cube.collapsed`, :func:`~iris.cube.Cube.aggregated_by`,
      :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
      :func:`~iris.cube.Cube.slices`.
 
    * Added the utility :func:`~iris.util.mask_cube_from_shape`, superceding
-     :func:`~iris.util.mask_cube_from_shapefile` and adding the abbility to handle
+     :func:`~iris.util.mask_cube_from_shapefile` and adding the ability to handle
      shapefiles that use different coordinate systems to the cube they are being
      applied to, adding the ability to handle additional Point and Line shape types
      and improving the performance. This was a major piece of work from an external
      colaborator so big thanks to `@hsteptoe`_!
 
    * Various performance improvements including:
+
      * Extending zlib compression to include `CF-UGRID`_ data.
+
      * Improved NetCDF loading when constraining by multiple names.
-     * Prevented a transient issue with HDF which caused saving to sometimes fail.
+
+     * Prevented transient failures in parallelised NetCDF saving (caused by an HDF locking delay).
+
      * Improved the memory-per-chunk resulting from regridding.
 
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
