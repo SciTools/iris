@@ -361,7 +361,7 @@ greater than 290 K.
     >>> print(cube_temp.summary(shorten=True))
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
     >>> type(cube_temp.data)
-    numpy.ndarray
+    <class 'numpy.ndarray'>
 
 Note that this example cube has 4 dimensions: time and model level number in
 addition to grid latitude, and grid longitude. The data array associated with
@@ -375,7 +375,7 @@ array:
     >>> print(cube_masked.summary(shorten=True))
     air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
     >>> type(cube_masked.data)
-    numpy.ma.MaskedArray
+    <class 'numpy.ma.MaskedArray'>
 
 The masked cube will have the same shape and coordinates as the original cube,
 but the data array now includes an associated boolean mask, and the cube's
