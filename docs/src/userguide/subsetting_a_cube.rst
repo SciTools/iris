@@ -332,40 +332,135 @@ on bounds can be done in the following way::
 The above example constrains to cells where either the upper or lower bound occur
 after 1st January 2008.
 
+.. _cube_masking:
+
 Cube Masking
 --------------
+
+Masking a cube allows you to hide unwanted data points without changing the 
+shape or size of the cube.  This can be achieved by two methods:
+
+1. Masking a cube using a boolean mask array via :func:`iris.util.mask_cube`.
+2. Masking a cube using a shapefile via :func:`iris.util.mask_cube_from_shape`.
+
+.. _masking-from-boolean:
+
+Masking a cube using a boolean mask array
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The :func:`iris.util.mask_cube` function allows you to mask unwanted data points
+in a cube using a boolean mask array. The mask array must have the same shape as
+the data array in the cube, with ``True`` values indicating points to be masked.
+
+For example, the mask could be based on a threshold value. In the following
+example we mask all points in a cube where the air potential temperature is
+greater than 290 K.
+
+    >>> filename = iris.sample_data_path('uk_hires.pp')
+    >>> cube_temp = iris.load_cube(filename, 'air_potential_temperature')
+    >>> print(cube_temp.summary(shorten=True))
+    air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    >>> type(cube_temp.data)
+    numpy.ndarray
+
+Note that this example cube has 4 dimensions: time and model level number in
+addition to grid latitude, and grid longitude. The data array associated with
+the cube is a regular :py:class:`numpy.ndarray`.
+
+We can build a boolean mask array by applying a condition to the cube's data
+array:
+
+    >>> mask = cube_temp.data > 290
+    >>> cube_masked = iris.util.mask_cube(cube_temp, mask)
+    >>> print(cube_masked.summary(shorten=True))
+    air_potential_temperature / (K)     (time: 3; model_level_number: 7; grid_latitude: 204; grid_longitude: 187)
+    >>> type(cube_masked.data)
+    numpy.ma.MaskedArray
+
+The masked cube will have the same shape and coordinates as the original cube,
+but the data array now includes an associated boolean mask, and the cube's
+`data` property is now a :py:class:`numpy.ma.MaskedArray`.
 
 .. _masking-from-shapefile:
 
 Masking from a shapefile
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often we want to perform some kind of analysis over a complex geographical feature e.g.,
+Often we want to perform analysis over a complex geographical feature e.g.,
 
-- over only land/sea points
+- over only land or sea points
 - over a continent, country, or list of countries
-- over a river watershed or lake basin
-- over states or administrative regions of a country
+- extract data along the trajectory of a storm track
+- extract data at specific points of interest such as cities or weather stations
 
-These geographical features can often be described by `ESRI Shapefiles`_. Shapefiles are a file format first developed for GIS software in the 1990s, and `Natural Earth`_ maintain a large freely usable database of shapefiles of many geographical and political divisions,
-accessible via `cartopy`_. Users may also provide their own custom shapefiles for `cartopy`_ to load, or their own underlying geometry in the same format as a shapefile geometry.
+These geographical features can often be described by `ESRI Shapefiles`_. 
+Shapefiles are a file format first developed for GIS software in the 1990s, and
+`Natural Earth`_ maintain a large freely usable database of shapefiles of many
+geographical and political divisions, accessible via `cartopy`_. Users may also
+provide or create their own custom shapefiles for `cartopy`_ to load, or or any
+other source that can be interpreted as a `shapely.Geometry`_  object, such as
+shapes encoded in a geoJSON or KML file.
 
-These shapefiles can be used to mask an iris cube, so that any data outside the bounds of the shapefile is hidden from further analysis or plotting.
+The :func:`iris.util.mask_cube_from_shape` function facilitates cube masking
+from shapefiles. Once a shape is loaded as a `shapely.Geometry`, and passed to
+the function, any data outside the bounds of the shape geometry is masked.
 
-First, we load the correct shapefile from NaturalEarth via the `Cartopy_shapereader`_ instructions. Here we get one for Brazil.
-The `.geometry` attribute of the records in the reader contain the `Shapely`_ polygon we're interested in. They contain the coordinates that define the polygon (or set of lines) being masked
-and once we have those we just need to provide them to the :class:`iris.util.mask_cube_from_shapefile` function. 
-This returns a copy of the cube with a :class:`numpy.masked_array` as the data payload, where the data outside the shape is hidden by the masked array. We can see this in the following example.
+.. important::
+    For best masking results, both the cube **and** masking shape (geometry)
+    should have a coordinate reference system (CRS) defined. Note that the CRS of
+    the masking geometry must be provided explicitly to :func:`iris.util.mask_cube_from_shape`
+    (via the ``shape_crs`` keyword argument), whereas the :class:`iris.cube.Cube`
+    CRS is read from the cube itself. 
+    
+    The cube **must** have a :attr:`iris.coords.Coord.coord_system` defined
+    otherwise an error will be raised.
 
+.. note::
+    Because shape vectors are inherently Cartesian in nature, they contain no
+    inherent understanding of the spherical geometry underpinning geographic
+    coordinate systems. For this reason, **shapefiles or shape vectors that
+    cross the antimeridian or poles are not supported by this function** to
+    avoid unexpected masking behaviour.  
+    
+    For shapes that do cross these boundaries, this function expects the user
+    to undertake fixes upstream of Iris, using tools like `GDAL`_ or
+    `antimeridian`_ to ensure correct geometry wrapping.
+
+As an introductory example, we load a shapefile of country borders for Brazil
+from `Natural Earth`_ via the `Cartopy_shapereader`_. The `.geometry` attribute
+of the records in the reader contain the `Shapely`_ polygon we're interested in.
+They contain the coordinates that define the polygon being masked under the
+WGS84 coordinate system. We pass this to the :class:`iris.util.mask_cube_from_shape`
+function and this returns a copy of the cube with a :py:class:`numpy.masked_array`
+as the data payload, where the data outside the shape is hidden by the masked
+array.
 
 .. plot:: userguide/plotting_examples/masking_brazil_plot.py
    :include-source:
 
-We can see that the dimensions of the cube haven't changed - the plot is still global. But only the data over Brazil is plotted - the rest has been masked out. 
+We can see that the dimensions of the cube haven't changed - the plot still has
+a global extent. But only the data over Brazil is plotted - the rest has been
+masked out.
 
-.. note::
-    While Iris will try to dynamically adjust the shapefile to mask cubes of different projections, it can struggle with rotated pole projections and cubes with Meridians not at 0°
-    Converting your Cube's coordinate system may help if you get a fully masked cube as the output from this function unexpectedly.
+.. important::
+    Because we do not explicitly pass a CRS for the shape geometry to 
+    :func:`iris.util.mask_cube_from_shape`, the function assumes the geometry
+    has the same CRS as the cube.
+
+However, a :class:`iris.cube.Cube` and `Shapely`_ geometry do not need to have
+the same CRS, as long as both have a CRS defined.  Where the CRS of the 
+:class:`iris.cube.Cube` and geometry differ, :func:`iris.util.mask_cube_from_shape`
+will reproject the geometry (via `GDAL`_) onto the cube's CRS prior to masking.
+The masked cube will be returned in the same CRS as the input cube.
+
+In the following example, we load a cube containing satellite derived temperature
+data in a stereographic projection (with projected coordinates with units of 
+metres), and mask it to only show data over the United Kingdom, based on a
+shapefile of the UK boundary defined in WGS84 lat-lon coordinates.
+
+.. plot:: userguide/plotting_examples/masking_stereograhic_plot.py
+   :include-source:
+
 
 
 Cube Iteration
@@ -481,8 +576,11 @@ Similarly, Iris cubes have indexing capability::
 	print(cube[1, ::-2])
 
 
+.. _antimeridian: https://www.gadom.ski/antimeridian/latest/
 .. _Cartopy_shapereader: https://cartopy.readthedocs.io/stable/tutorials/using_the_shapereader.html#id1
-.. _Natural Earth: https://www.naturalearthdata.com/
 .. _ESRI Shapefiles: https://support.esri.com/en-us/technical-paper/esri-shapefile-technical-description-279
+.. _GDAL: https://gdal.org/en/stable/programs/ogr2ogr.html
+.. _Natural Earth: https://www.naturalearthdata.com/
+.. _shapely.Geometry: https://shapely.readthedocs.io/en/stable/geometry.html
 
 

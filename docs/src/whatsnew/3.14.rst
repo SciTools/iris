@@ -166,8 +166,9 @@ This document explains the changes made to Iris for this release
 #. `@rcomer`_ updated all Cartopy references to point to the new location at
    https://cartopy.readthedocs.io (:pull:`6636`)
 
-#. `@hsteptoe`_ added additional worked examples to the :func:`iris.util.mask_cube_from_shape` 
-   documentation, to demonstrate how to use the function with different types of shapefiles. 
+#. `@hsteptoe`_ added additional worked examples to :ref:`cube_masking` in the user guide, 
+   and :func:`iris.util.mask_cube_from_shape` documentation, to demonstrate how to use the
+   function with different types of shapefiles. 
    (:pull:`6129`)
 
 
