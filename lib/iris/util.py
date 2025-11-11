@@ -2353,7 +2353,7 @@ def mask_cube_from_shape(
     ----------
     cube : :class:`~iris.cube.Cube` object
         The :class:`~iris.cube.Cube` object to masked. Must be singular,
-         rather than a :class:`~iris.cube.CubeList`.
+        rather than a :class:`~iris.cube.CubeList`.
     shape : shapely.Geometry object
         A single ``shape`` of the area to remain unmasked on the ``cube``.
         If it a line object of some kind then minimum_weight will be ignored,

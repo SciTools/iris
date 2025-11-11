@@ -386,10 +386,12 @@ but the data array now includes an associated boolean mask, and the cube's
 Masking from a shapefile
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-Often we want to perform analysis over a complex geographical feature e.g.,
+Often we want to perform some kind of analysis over a complex geographical feature e.g.,
 
-- over only land or sea points
+- over only land/sea points
 - over a continent, country, or list of countries
+- over a river watershed or lake basin
+- over states or administrative regions of a country
 - extract data along the trajectory of a storm track
 - extract data at specific points of interest such as cities or weather stations
 
@@ -458,7 +460,7 @@ data in a stereographic projection (with projected coordinates with units of
 metres), and mask it to only show data over the United Kingdom, based on a
 shapefile of the UK boundary defined in WGS84 lat-lon coordinates.
 
-.. plot:: userguide/plotting_examples/masking_stereograhic_plot.py
+.. plot:: userguide/plotting_examples/masking_stereographic_plot.py
    :include-source:
 
 
