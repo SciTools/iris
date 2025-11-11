@@ -30,7 +30,6 @@ plt.figure(figsize=(12, 5))
 ax = plt.subplot(131)
 qplt.pcolormesh(cube, vmin=210, vmax=330)
 plt.gca().coastlines()
-plt.suptitle("Original Data")
 
 # Plot #2: UK geometry
 ax = plt.subplot(132, title="Mask Geometry", projection=ccrs.Orthographic(-5, 45))
@@ -46,10 +45,9 @@ ax.add_geometries(
 plt.gca().coastlines()
 
 # Plot #3 masked data
-ax = plt.subplot(133, title="Masked Data")
+ax = plt.subplot(133)
 qplt.pcolormesh(uk_cube, vmin=210, vmax=330)
 plt.gca().coastlines()
-plt.suptitle("Masked Data")
 
 plt.tight_layout()
 plt.show()
