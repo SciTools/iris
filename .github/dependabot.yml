@@ -16,5 +16,9 @@ updates:
       day: "thursday"
       time: "01:00"
       timezone: "Europe/London"
+    groups:
+      gha:
+        patterns:
+          - "*"
     labels:
       - "Bot"
