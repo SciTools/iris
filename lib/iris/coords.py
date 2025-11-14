@@ -2402,8 +2402,12 @@ class Coord(_DimensionalMetadata):
                 points = np.empty(self.shape[0] + 2)
                 points[1:-1] = self.points
                 direction = 1 if self.points[-1] > self.points[0] else -1
-                points[0] = self.points[-1] - (self.units.modulus * direction)
-                points[-1] = self.points[0] + (self.units.modulus * direction)
+                modulus_type = np.promote_types(
+                    self.points.dtype, type(self.units.modulus)
+                )
+                (modulus,) = np.array([self.units.modulus], dtype=modulus_type)
+                points[0] = self.points[-1] - (modulus * direction)
+                points[-1] = self.points[0] + (modulus * direction)
                 diffs = np.diff(points)
             else:
                 diffs = np.diff(self.points)

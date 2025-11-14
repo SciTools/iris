@@ -194,6 +194,15 @@ class Test_guess_bounds:
         )
         _shared_utils.assert_array_equal(target, self.coord.bounds)
 
+    def test_circular_n216_float32(self):
+        # Values represent longitude taken from an N216 pp-file.
+        coord = DimCoord.from_regular(
+            -0.41666666, 0.8333333, 432, units="degrees", circular=True
+        )
+        coord.guess_bounds()
+        # The last bound should match up to the first.
+        assert coord.bounds[-1, -1] - coord.bounds[0, 0] == 360
+
 
 class Test_guess_bounds__default_enabled_latitude_clipping:
     def test_all_inside(self):
