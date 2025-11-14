@@ -1,13 +1,13 @@
 .. include:: ../common_links.inc
 
-v3.14 (31 Oct 2025 [release candidate])
-***************************************
+v3.14 (14 Nov 2025)
+*******************
 
 This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: 3.14 Release Highlights
+.. dropdown:: v3.14 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in
