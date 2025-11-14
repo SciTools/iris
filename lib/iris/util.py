@@ -2262,7 +2262,8 @@ def mask_cube_from_shapefile(
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube` object
-        The ``Cube`` object to masked. Must be singular, rather than a ``CubeList``.
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+         rather than a :class:`~iris.cube.CubeList`.
     shape : Shapely.Geometry object
         A single `shape` of the area to remain unmasked on the ``cube``.
         If it a line object of some kind then minimum_weight will be ignored,
@@ -2284,7 +2285,7 @@ def mask_cube_from_shapefile(
     :func:`~iris.util.mask_cube`
         Mask any cells in the cube’s data array.
     :func:`~iris.util.mask_cube_from_shape`
-        Mask any cells in the cube’s data array.
+        Mask all points in a cube that do not intersect a shape object.
 
     Notes
     -----
@@ -2296,7 +2297,9 @@ def mask_cube_from_shapefile(
 
     Warnings
     --------
-    This function requires additional dependencies: ``rasterio`` and ``affine``.
+    This function requires additional dependencies:
+    `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
     """
     message = (
         "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
@@ -2349,13 +2352,14 @@ def mask_cube_from_shape(
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube` object
-        The ``Cube`` object to masked. Must be singular, rather than a ``CubeList``.
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+        rather than a :class:`~iris.cube.CubeList`.
     shape : shapely.Geometry object
         A single ``shape`` of the area to remain unmasked on the ``cube``.
         If it a line object of some kind then minimum_weight will be ignored,
         because you cannot compare the area of a 1D line and 2D Cell.
     shape_crs : cartopy.crs.CRS, default=None
-        The coordinate reference system of the shape object.
+        The coordinate reference system of the ``shape`` object.
     in_place : bool, default=False
         Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
         Defaults to ``False``.
@@ -2440,22 +2444,24 @@ def mask_cube_from_shape(
     Notes
     -----
     Iris does not handle the shape loading so it is agnostic to the source type of the shape.
-    The shape can be loaded from an Esri shapefile, created using the ``shapely`` library, or
-    any other source that can be interpreted as a ``shapely.Geometry`` object, such as shapes
-    encoded in a geoJSON or KML file.
+    The shape can be loaded from an Esri shapefile, created using the
+    `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
+    can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
+    object, such as shapes encoded in a geoJSON or KML file.
 
     Warnings
     --------
-    For best masking results, both the cube _and_ masking geometry should have a
+    For best masking results, both the cube **and** masking geometry should have a
     coordinate reference system (CRS) defined. Note that CRS of the masking geometry
     must be provided explicitly to this function (via ``shape_crs``), whereas the
     cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
 
     Masking results will be most consistent when the cube and masking geometry have the same CRS.
 
-    If a CRS is _not_ provided for the the masking geometry, the CRS of the cube is assumed.
+    If a CRS is **not** provided for the the masking geometry, the CRS of the cube is assumed.
 
-    This function requires additional dependencies: ``rasterio`` and ``affine``.
+    This function requires additional dependencies: `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
 
     Because shape vectors are inherently Cartesian in nature, they contain no inherent
     understanding of the spherical geometry underpinning geographic coordinate systems.
