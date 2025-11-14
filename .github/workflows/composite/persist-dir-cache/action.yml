@@ -1,0 +1,42 @@
+name: "persist-dir-cache"
+description: "Use caching to persist a directory across workflow runs"
+
+inputs:
+  cache_path:
+    description: "path to the directory to cache"
+    required: true
+
+env:
+  CACHE_BUILD: 0
+  CACHE_WEEKS: 2
+
+runs:
+  using: "composite"
+  steps:
+    - id: define-cache-period
+      run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${{ env.CACHE_WEEKS }})" >> $GITHUB_OUTPUT
+
+    - id: sanitise-cache-path
+      run: echo "SANITISED_PATH=$(echo '${{ inputs.cache_path }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
+
+    - id: define-cache-key
+      run: |
+        OS="${{ runner.os }}"
+        DIR_PATH="${{ steps.sanitise-cache-path.outputs.SANITISED_PATH }}"
+        PERIOD="${{ steps.define-cache-period.outputs.CACHE_PERIOD }}"
+        BUILD="${{ env.CACHE_BUILD }}"
+        CACHE_KEY="${OS}-${DIR_PATH}_cached-p${PERIOD}-b${BUILD}"
+        echo "CACHE_KEY=$CACHE_KEY" >> $GITHUB_ENV
+
+    - id: restore-dir-cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ inputs.cache_path }}
+        key: ${{ env.CACHE_KEY }}
+
+  post:
+    - id: save-dir-cache
+      uses: actions/cache/save@v4
+      with:
+        path: ${{ inputs.cache_path }}
+        key: ${{ env.CACHE_KEY }}
