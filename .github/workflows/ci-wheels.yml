@@ -74,12 +74,10 @@ jobs:
         echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> ${GITHUB_ENV}
         echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
+    # Note: this cache is shared across workflows, so sets its own cache period
+    #  and build number.
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
-      with:
-        cache_build: 0
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
 
     - name: "conda install"
       uses: conda-incubator/setup-miniconda@v3

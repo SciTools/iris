@@ -1,22 +1,24 @@
 name: "conda-pkg-cache"
-description: "cache the conda environment packages"
+description: "standardise conda package cache to ~/conda_pkgs_dir and cache across workflow runs"
 
-inputs:
-  cache_build:
-    description: "conda environment cache build number"
-    required: false
-    default: "0"
-  cache_period:
-    description: "conda environment cache timestamp"
-    required: true
-  env_name:
-    description: "environment name"
-    required: true
+env:
+  # Lets us manually bump the cache to rebuild.
+  CACHE_BUILD: 0
+  # Maximum cache period (in weeks) before forcing a cache refresh.
+  CACHE_WEEKS: 2
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - id: set-pkg-dir
+      run: conda config --add pkgs_dirs ~/conda_pkgs_dir
+
+    - id: set-cache-period
+      run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${{ env.CACHE_WEEKS }})" >> $GITHUB_OUTPUT
+
+    - id: conda-pkg-cache
+      uses: ./.github/workflows/composite/persist-dir-cache
       with:
-        path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+        cache_path: ~/conda_pkgs_dir
+        cache_build: ${{ env.CACHE_BUILD }}
+        cache_period: ${{ steps.set-cache-period.outputs.CACHE_PERIOD }}
