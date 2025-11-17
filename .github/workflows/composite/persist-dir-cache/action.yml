@@ -17,9 +17,11 @@ runs:
   using: "composite"
   steps:
     - id: sanitise-cache-path
+      shell: bash
       run: echo "SANITISED_PATH=$(echo '${{ inputs.cache_path }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
 
     - id: define-cache-key
+      shell: bash
       run: |
         OS="${{ runner.os }}"
         DIR_PATH="${{ steps.sanitise-cache-path.outputs.SANITISED_PATH }}"

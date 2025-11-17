@@ -11,9 +11,11 @@ runs:
   using: "composite"
   steps:
     - id: set-pkg-dir
+      shell: bash
       run: conda config --add pkgs_dirs ~/conda_pkgs_dir
 
     - id: set-cache-period
+      shell: bash
       run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${{ env.CACHE_WEEKS }})" >> $GITHUB_OUTPUT
 
     - id: conda-pkg-cache
