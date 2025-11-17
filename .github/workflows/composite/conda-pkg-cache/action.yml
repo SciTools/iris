@@ -13,7 +13,7 @@ runs:
     - id: set-cache-period
       shell: bash
       env:
-        # Maximum cache period (in weeks) before forcing a cache refresh.
+        # Maximum cache period (in weeks) before forcing a cache refresh..
         CACHE_WEEKS: 2
       run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> $GITHUB_OUTPUT
 
