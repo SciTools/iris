@@ -7,10 +7,6 @@ inputs:
     required: false
     default: "3.13"
 
-env:
-  # Maximum cache period (in weeks) before forcing a cache refresh.
-  CACHE_WEEKS: 2
-
 runs:
   using: "composite"
   steps:
@@ -21,7 +17,8 @@ runs:
     - id: set-cache-period
       shell: bash
       env:
-        CACHE_WEEKS: ${{ env.CACHE_WEEKS }}
+        # Maximum cache period (in weeks) before forcing a cache refresh.
+        CACHE_WEEKS: 2
       run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> $GITHUB_OUTPUT
 
     - id: conda-pkg-cache
