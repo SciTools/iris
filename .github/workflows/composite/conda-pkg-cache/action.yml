@@ -30,3 +30,4 @@ runs:
         cache_path: ~/conda_pkgs_dir
         cache_build: ${{ env.CACHE_BUILD }}
         cache_period: ${{ steps.set-cache-period.outputs.CACHE_PERIOD }}
+        key_suffix: "py${{ inputs.python_version }}"
