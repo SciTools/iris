@@ -20,6 +20,12 @@ inputs:
 runs:
   using: "composite"
   steps:
+    # Work around bug where inputs.cache_path is unavailable for the post-cache
+    #  step. https://github.com/actions/runner/issues/2009
+    - id: store-path
+      shell: bash
+      run: echo "CACHE_PATH=${{ inputs.cache_path }}" >> $GITHUB_ENV
+
     - id: sanitise-cache-path
       shell: bash
       run: echo "SANITISED_PATH=$(echo '${{ inputs.cache_path }}' | sed 's|/|_|g')" >> $GITHUB_OUTPUT
@@ -38,7 +44,7 @@ runs:
     - id: dir-cache
       uses: actions/cache@v4
       with:
-        path: ${{ inputs.cache_path }}
+        path: ${{ env.CACHE_PATH }}
         # This pattern allows continual updating of the cache_path with each new
         #  commit. The most recent cache matching CACHE_KEY will be used, while
         #  any updates will create a new cache entry specific to the commit SHA,
