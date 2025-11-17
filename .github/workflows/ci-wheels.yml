@@ -88,20 +88,8 @@ jobs:
         auto-update-conda: false
         use-only-tar-bz2: true
 
-    - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
-      with:
-        cache_build: 0
-        cache_period: ${{ env.CACHE_PERIOD }}
-        env_name: ${{ env.ENV_NAME }}
-        install_packages: "nox pip"
-
-    - name: "nox cache"
-      uses: ./.github/workflows/composite/nox-cache
-      with:
-        cache_build: 1
-        env_name: ${{ env.ENV_NAME }}
-        lock_file: ${{ env.LOCK_FILE }}
+    - name: "install nox + pip"
+      run: conda install --quiet --name ${{ env.ENV_NAME }} nox pip
 
     - name: "nox install and test wheel"
       env:

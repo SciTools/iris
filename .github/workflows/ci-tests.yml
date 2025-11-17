@@ -86,13 +86,8 @@ jobs:
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
 
-      - name: "conda environment cache"
-        uses: ./.github/workflows/composite/conda-env-cache
-        with:
-          cache_build: 6
-          cache_period: ${{ env.CACHE_PERIOD }}
-          env_name: ${{ env.ENV_NAME }}
-          install_packages: "cartopy nox pip"
+      - name: "install cartopy + nox + pip"
+        run: conda install --quiet --name ${{ env.ENV_NAME }} cartopy nox pip
 
       - name: "conda info"
         run: |
@@ -105,13 +100,6 @@ jobs:
           cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
-
-      - name: "nox cache"
-        uses: ./.github/workflows/composite/nox-cache
-        with:
-          cache_build: 6
-          env_name: ${{ env.ENV_NAME }}
-          lock_file: ${{ env.LOCK_FILE }}
 
       # TODO: drop use of site.cfg and explicit use of mplrc
       - name: "iris configure"
