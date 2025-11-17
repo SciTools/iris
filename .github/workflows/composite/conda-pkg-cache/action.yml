@@ -1,6 +1,12 @@
 name: "conda-pkg-cache"
 description: "standardise conda package cache to ~/conda_pkgs_dir and cache across workflow runs"
 
+inputs:
+  python_version:
+    description: "conda package cache python version"
+    required: false
+    default: "3.13"
+
 env:
   # Lets us manually bump the cache to rebuild.
   CACHE_BUILD: 0

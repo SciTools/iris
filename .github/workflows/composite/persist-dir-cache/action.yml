@@ -12,6 +12,10 @@ inputs:
   cache_period:
     description: "persist dir cache timestamp"
     required: true
+  key_suffix:
+    description: "optional suffix to append to the cache key"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -27,18 +31,19 @@ runs:
         DIR_PATH="${{ steps.sanitise-cache-path.outputs.SANITISED_PATH }}"
         PERIOD="${{ inputs.cache_period }}"
         BUILD="${{ inputs.cache_build }}"
-        CACHE_KEY="${DIR_PATH}_cached-${OS}-p${PERIOD}-b${BUILD}"
+        SUFFIX="${{ inputs.key_suffix }}"
+        CACHE_KEY="${DIR_PATH}_cached-${OS}-p${PERIOD}-b${BUILD}-${SUFFIX}"
         echo "CACHE_KEY=$CACHE_KEY" >> $GITHUB_ENV
 
-    - id: restore-dir-cache
-      uses: actions/cache/restore@v4
+    - id: dir-cache
+      uses: actions/cache@v4
       with:
         path: ${{ inputs.cache_path }}
-        key: ${{ env.CACHE_KEY }}
-
-  post:
-    - id: save-dir-cache
-      uses: actions/cache/save@v4
-      with:
-        path: ${{ inputs.cache_path }}
-        key: ${{ env.CACHE_KEY }}
+        # This pattern allows continual updating of the cache_path with each new
+        #  commit. The most recent cache matching CACHE_KEY will be used, while
+        #  any updates will create a new cache entry specific to the commit SHA,
+        #  which will then be available to the next run as the new most-recent
+        #  cache.
+        key: ${{ env.CACHE_KEY }}-{{ github.sha }}
+        restore-keys: |
+          ${{ env.CACHE_KEY }}

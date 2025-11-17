@@ -78,6 +78,8 @@ jobs:
     #  and build number.
     - name: "conda package cache"
       uses: ./.github/workflows/composite/conda-pkg-cache
+      with:
+        python_version: ${{ matrix.python-version }}
 
     - name: "conda install"
       uses: conda-incubator/setup-miniconda@v3
