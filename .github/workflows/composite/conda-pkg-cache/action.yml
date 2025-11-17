@@ -28,7 +28,7 @@ runs:
         BUILD="${{ env.CACHE_BUILD }}"
         PY="${{ inputs.python_version }}"
         REQ="${{ hashFiles('requirements/locks/**') }}"
-        CACHE_KEY="$conda_pkgs_dir-${OS}-p${PERIOD}-b${BUILD}-py${PY}-${REQ}"
+        CACHE_KEY="conda_pkgs_dir-${OS}-p${PERIOD}-b${BUILD}-py${PY}-${REQ}"
         echo "CACHE_KEY=$CACHE_KEY" >> $GITHUB_ENV
 
     - id: set-pkg-dir
