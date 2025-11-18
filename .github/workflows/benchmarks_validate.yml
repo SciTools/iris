@@ -21,10 +21,6 @@ jobs:
   validate:
     runs-on: ubuntu-latest
 
-    env:
-      # Lets us manually bump the cache to rebuild
-      ENV_CACHE_BUILD: "0"
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v5
@@ -34,15 +30,10 @@ jobs:
       - name: Install run dependencies
         run: pip install asv nox!=2025.05.01
 
-      - name: Cache environment directories
-        id: cache-env-dir
-        uses: actions/cache@v4
-        with:
-          path: |
-            .nox
-            benchmarks/.asv/env
-            $CONDA/pkgs
-          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
+      # Note: this cache is shared across workflows, so sets its own cache period
+      #  and build number.
+      - name: Cache Conda package directory
+        uses: ./.github/workflows/composite/conda-pkg-cache
 
       - name: Validate setup
         run: nox -s benchmarks -- validate
