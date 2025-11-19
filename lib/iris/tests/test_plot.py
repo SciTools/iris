@@ -469,13 +469,10 @@ def load_4d_testcube():
 
     Scoped to only load once - used many times so this is much faster.
     """
-
-    @_shared_utils.skip_data
-    def _get_data():
-        # Load example 4d data (TZYX).
-        return iris.tests.stock.realistic_4d()
-
-    test_cube = _get_data()
+    # Load example 4d data (TZYX).
+    # skip_data() uses PyTest to raise a Skip Exception if test data is unavailable.
+    realistic_4d = _shared_utils.skip_data(iris.tests.stock.realistic_4d)
+    test_cube = realistic_4d()
     # Replace forecast_period coord with a multi-valued version.
     time_coord = test_cube.coord("time")
     n_times = len(time_coord.points)
@@ -506,14 +503,11 @@ def load_wind_no_bounds():
 
     Scoped to only load once - used many times so this is much faster.
     """
-
-    @_shared_utils.skip_data
-    def _get_data():
-        # Load the COLPEX data => TZYX
-        path = _shared_utils.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
-        return iris.load_cube(path, "x_wind")
-
-    wind = _get_data()
+    # Load the COLPEX data => TZYX
+    path = _shared_utils.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
+    # skip_data() uses PyTest to raise a Skip Exception if test data is unavailable.
+    load_cube = _shared_utils.skip_data(iris.load_cube)
+    wind = load_cube(path, "x_wind")
 
     # Remove bounds from all coords that have them.
     wind.coord("grid_latitude").bounds = None
