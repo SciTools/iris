@@ -660,6 +660,38 @@ def attributes(cube, field):
     cube.attributes["institution"] = "Met Office"
 
 
+def table_1_attributes(cube, field):
+    """Add attributes to the cube."""
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            if "radius" in item:
+                value = f"{value} km"
+            cube.attributes[item] = value
+
+    add_attr("radar_number")
+    add_attr("radar_sites")
+    add_attr("additional_radar_sites")
+    add_attr("clutter_map_number")
+    add_attr("calibration_type")
+    add_attr("bright_band_height")
+    add_attr("bright_band_intensity")
+    add_attr("bright_band_test_param_1")
+    add_attr("bright_band_test_param_2")
+    add_attr("infill_flag")
+    add_attr("stop_elevation")
+    add_attr("sensor_identifier")
+    add_attr("meteosat_identifier")
+    add_attr("software_identifier")
+    add_attr("software_major_version")
+    add_attr("software_minor_version")
+    add_attr("software_micro_version")
+
+
 def known_threshold_coord(field):
     """Supply known threshold coord meta-data for known use cases.
 
@@ -894,7 +926,7 @@ def time_averaging(cube, field):
         cube.attributes["processing"] = averaging_attributes
 
 
-def run(field, handle_metadata_errors=True):
+def run(field, table, handle_metadata_errors=True):
     """Convert a NIMROD field to an Iris cube.
 
     Parameters
@@ -930,10 +962,17 @@ def run(field, handle_metadata_errors=True):
     # vertical
     vertical_coord(cube, field)
 
-    # add other stuff, if present
-    soil_type_coord(cube, field)
-    probability_coord(cube, field, handle_metadata_errors)
-    ensemble_member(cube, field)
+    # add Table 1 specific stuff
+    if table == "Table_1":
+        table_1_attributes(cube, field)
+
+    # add Table 2 specific stuff
+    if table == "Table_2":
+        soil_type_coord(cube, field)
+        probability_coord(cube, field, handle_metadata_errors)
+        ensemble_member(cube, field)
+
+    # add other generic stuff, if present
     time_averaging(cube, field)
     attributes(cube, field)
 
