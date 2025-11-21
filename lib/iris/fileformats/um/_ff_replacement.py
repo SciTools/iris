@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support for UM "fieldsfile-like" files.
 
-At present, the only UM file types supported are true FieldsFiles and LBCs.
+UM file types known to be supported: FieldsFiles, LBCs, Ancillaries.
 Other types of UM file may fail to load correctly (or at all).
 
 """
