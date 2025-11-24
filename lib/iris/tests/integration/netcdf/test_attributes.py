@@ -105,7 +105,7 @@ class TestStandardName:
     def test_standard_name_roundtrip(self, tmp_path):
         standard_name = "air_temperature detection_minimum"
         cube = iris.cube.Cube(1, standard_name=standard_name)
-        fout = tmp_path / ".nc"
+        fout = tmp_path / "standard_name.nc"
         iris.save(cube, fout)
         detection_limit_cube = iris.load_cube(fout)
         assert detection_limit_cube.standard_name == standard_name
