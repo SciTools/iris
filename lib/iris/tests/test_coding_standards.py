@@ -71,7 +71,7 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    all_supported = ["3.11", "3.12", "3.13", "3.14"]
+    all_supported = ["3.12", "3.13", "3.14"]
     _parsed = [Version(v) for v in all_supported]
     latest_supported = str(max(_parsed))
 

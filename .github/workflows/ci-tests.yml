@@ -48,9 +48,6 @@ jobs:
           - os: "ubuntu-latest"
             python-version: "3.12"
             session: "tests"
-          - os: "ubuntu-latest"
-            python-version: "3.11"
-            session: "tests"
 
     env:
       # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
