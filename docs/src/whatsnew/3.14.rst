@@ -59,6 +59,7 @@ v3.14.1 (Date TBD)
 
    #. Fixed compatibility with NumPy v2 for :meth:`~iris.coords.Coord.guess_bounds`
       :ref:`See the full entry for more<3_14_1_guess_bounds>`.
+
    #. Tentative compatibility with Python 3.14, pending full CI support later.
       :ref:`See Dependencies for more<3_14_dependencies>`.
 
