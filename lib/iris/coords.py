@@ -2804,7 +2804,13 @@ class DimCoord(Coord):
         Used if copy.deepcopy is called on a coordinate.
 
         """
-        new_coord = copy.deepcopy(super(), memo)
+        # Inspired by matplotlib#30198.
+        # Replicates the default copy behaviour, which can then be modified below.
+        cls = self.__class__
+        memo[id(self)] = new_coord = cls.__new__(cls)
+        for key, val in self.__dict__.items():
+            setattr(new_coord, key, copy.deepcopy(val, memo))
+
         # Ensure points and bounds arrays are read-only.
         new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
