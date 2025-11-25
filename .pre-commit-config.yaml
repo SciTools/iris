@@ -1,6 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: "style: pre-commit fixes"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autoupdate_schedule: "monthly"
+
 files: |
     (?x)(
         noxfile\.py|
