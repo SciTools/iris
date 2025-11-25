@@ -70,8 +70,8 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.13"
-    all_supported = ["3.11", "3.12", latest_supported]
+    latest_supported = "3.14"
+    all_supported = ["3.11", "3.12", "3.13", latest_supported]
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"

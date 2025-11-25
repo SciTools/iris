@@ -1,0 +1,63 @@
+name: iris-dev
+
+channels:
+  - conda-forge
+
+dependencies:
+  - python =3.14
+
+# Setup dependencies.
+  - setuptools >=77.0.3
+  - setuptools-scm >=8
+
+# Core dependencies.
+  - cartopy >=0.21
+  - cf-units >=3.1
+  - cftime >=1.5
+  - dask-core >=2025.1.0,<2025.10.0  # https://github.com/SciTools/iris/issues/6776
+  - libnetcdf !=4.9.1
+  - matplotlib-base >=3.5, !=3.9.1
+  - netcdf4<1.7.3  # https://github.com/SciTools/iris/issues/6777
+  - numpy >=1.24, !=1.24.3
+  - python-xxhash
+  - pyproj
+  - scipy
+  - shapely !=1.8.3
+
+# Optional dependencies.
+  - esmpy >=7.0
+  - geovista
+  - graphviz
+  - iris-sample-data >=2.4.0
+  - mo_pack
+  - nc-time-axis >=1.4
+  - pandas
+  - pip
+  - python-stratify
+  - rasterio
+  - affine
+
+# Test dependencies.
+  - asv_runner
+  - distributed
+  - filelock
+  - imagehash >=4.0
+  - pre-commit
+  - psutil
+  - pytest
+  - pytest-cov
+  - pytest-mock
+  - pytest-xdist
+  - requests
+
+# Documentation dependencies.
+  - sphinx <8.2
+  - sphinxcontrib-apidoc
+  - sphinx-copybutton
+  - sphinx-gallery >=0.11.0
+  - sphinx-design
+  - pydata-sphinx-theme >=0.13.0
+
+# Temporary minimum pins.
+# See https://github.com/SciTools/iris/pull/5051
+  - graphviz >=6.0.0
