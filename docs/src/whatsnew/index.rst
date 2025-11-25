@@ -6,11 +6,15 @@
 What's New in Iris
 ------------------
 
-.. include:: 3.14.rst
+.. Commented out temporarily because Sphinx can't cope with a file that includes
+   labels being referenced twice.
+   include:: 3.14.rst
+   toctree::
+   :maxdepth: 1
+   :hidden:
 
 .. toctree::
    :maxdepth: 1
-   :hidden:
 
    3.14.rst
    3.13.rst
