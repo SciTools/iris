@@ -4,15 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for fast-loading FF and PP files."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 from collections.abc import Iterable
-import shutil
-import tempfile
 
 import numpy as np
+import pytest
 
 import iris
 from iris.coord_systems import GeogCS
@@ -29,10 +24,10 @@ class Mixin_FieldTest:
     #   * create 'raw' cubes to produce the desired PP fields in a test file.
     #   * save 'raw' cubes to temporary PP files that get deleted afterwards.
     #   * control whether tests run with 'normal' or 'fast' loading.
-
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _fieldtest_setup(self, tmp_path):
         # Create a private temporary directory.
-        self.temp_dir_path = tempfile.mkdtemp()
+        self.temp_dir_path = tmp_path
         # Initialise temporary filename generation.
         self.tempfile_count = 0
         self.tempfile_path_fmt = (
@@ -48,12 +43,8 @@ class Mixin_FieldTest:
             # N.B. we can't use a 'with', so issue separate 'enter' and 'exit'
             # calls instead.
             self.load_context.__enter__()
-
-    def tearDown(self):
-        # Delete temporary directory.
-        shutil.rmtree(self.temp_dir_path)
+        yield
         if self.do_fast_loads:
-            # End the 'fast loading' context.
             self.load_context.__exit__(None, None, None)
 
     def _temp_filepath(self, user_name="", suffix=".pp"):
@@ -274,7 +265,7 @@ class MixinBasic:
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
         expected = CubeList(flds).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_phenomena(self):
         # Show that different phenomena are merged into distinct cubes.
@@ -282,7 +273,7 @@ class MixinBasic:
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
         expected = CubeList(flds).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_cross_file_concatenate(self):
         # Combine vector dimensions (i.e. concatenate) across multiple files.
@@ -292,7 +283,7 @@ class MixinBasic:
         file_2 = self.save_fieldcubes(fldset_2)
         results = iris.load((file_1, file_2))
         expected = CubeList(fldset_1 + fldset_2).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_cell_method(self):
         # Check that cell methods (i.e. LBPROC values) produce distinct
@@ -303,7 +294,7 @@ class MixinBasic:
         expected = CubeList(
             CubeList(flds[i_start::3]).merge_cube() for i_start in range(3)
         )
-        self.assertEqual(results, expected)
+        assert results == expected
 
 
 class MixinCallDetails:
@@ -322,7 +313,7 @@ class MixinCallDetails:
         stash_attribute = airtemp_flds[0].attributes["STASH"]
         results = iris.load(file, iris.AttributeConstraint(STASH=stash_attribute))
         expected = CubeList(airtemp_flds).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_ordinary_constraint(self):
         # Check that a 'normal' constraint functions correctly.
@@ -332,7 +323,7 @@ class MixinCallDetails:
         height_constraint = iris.Constraint(height=lambda h: 150.0 < h < 350.0)
         results = iris.load(file, height_constraint)
         expected = CubeList(flds[1:3]).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_callback(self):
         # Use 2 timesteps each of (air-temp on height) and (rh on pressure).
@@ -342,7 +333,7 @@ class MixinCallDetails:
         if not self.do_fast_loads:
 
             def callback(cube, field, filename):
-                self.assertEqual(filename, file)
+                assert filename == file
                 lbvc = field.lbvc
                 if lbvc == 1:
                     # reject the height level data (accept only pressure).
@@ -354,7 +345,7 @@ class MixinCallDetails:
         else:
 
             def callback(cube, collation, filename):
-                self.assertEqual(filename, file)
+                assert filename == file
                 lbvcs = [fld.lbvc for fld in collation.fields]
                 lbvc0 = lbvcs[0]
                 if not np.all(lbvcs == lbvc0):
@@ -377,14 +368,14 @@ class MixinCallDetails:
         else:
             expected[0].attributes["A_LBVC"] = [np.int32(8)] * 2
 
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_load_cube(self):
         flds = self.fields(c_t="123", cft="000", ctp="123", c_p=0)
         file = self.save_fieldcubes(flds)
         results = iris.load_cube(file)
         expected = CubeList(flds).merge_cube()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_load_cubes(self):
         flds = self.fields(c_h="0123")
@@ -402,7 +393,7 @@ class MixinCallDetails:
                 CubeList(flds).merge_cube(),
             ]
         )
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_load_raw(self):
         fldset_1 = self.fields(c_t="015", phn="001")
@@ -443,7 +434,7 @@ class MixinCallDetails:
         expected = sorted(expected, key=timeorder)
         results = sorted(results, key=timeorder)
 
-        self.assertEqual(results, expected)
+        assert results == expected
 
 
 class MixinDimsAndOrdering:
@@ -459,7 +450,7 @@ class MixinDimsAndOrdering:
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
         expected = CubeList(flds).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_odd_order(self):
         # Show that an erratic interleaving of phenomena fields still works.
@@ -468,7 +459,7 @@ class MixinDimsAndOrdering:
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
         expected = CubeList(flds).merge()
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_v_t_order(self):
         # With height varying faster than time, first dimension is time,
@@ -478,9 +469,9 @@ class MixinDimsAndOrdering:
         results = iris.load(file)
         expected = CubeList(flds).merge()
         # Order is (t, h, y, x), which is "standard".
-        self.assertEqual(expected[0].coord_dims("time"), (0,))
-        self.assertEqual(expected[0].coord_dims("height"), (1,))
-        self.assertEqual(results, expected)
+        assert expected[0].coord_dims("time") == (0,)
+        assert expected[0].coord_dims("height") == (1,)
+        assert results == expected
 
     def test_t_v_order(self):
         # With time varying faster than height, first dimension is height,
@@ -491,14 +482,14 @@ class MixinDimsAndOrdering:
         expected = CubeList(flds).merge()
         if not self.do_fast_loads:
             # Order is (t, h, y, x), which is "standard".
-            self.assertEqual(results[0].coord_dims("time"), (0,))
-            self.assertEqual(results[0].coord_dims("height"), (1,))
+            assert results[0].coord_dims("time") == (0,)
+            assert results[0].coord_dims("height") == (1,)
         else:
             # Order is (h, t, y, x), which is *not* "standard".
-            self.assertEqual(results[0].coord_dims("time"), (1,))
-            self.assertEqual(results[0].coord_dims("height"), (0,))
+            assert results[0].coord_dims("time") == (1,)
+            assert results[0].coord_dims("height") == (0,)
             expected[0].transpose((1, 0, 2, 3))
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_missing_combination(self):
         # A case where one field is 'missing' to make a 2d result.
@@ -506,8 +497,8 @@ class MixinDimsAndOrdering:
         file = self.save_fieldcubes(flds)
         results = iris.load(file)
         expected = CubeList(flds).merge()
-        self.assertEqual(expected[0].coord_dims("time"), (0,))
-        self.assertEqual(expected[0].coord_dims("height"), (0,))
+        assert expected[0].coord_dims("time") == (0,)
+        assert expected[0].coord_dims("height") == (0,)
         if self.do_fast_loads:
             # Something a bit weird happens to the 'height' coordinate in this
             # case (and not for standard load).
@@ -516,7 +507,7 @@ class MixinDimsAndOrdering:
                     cube.coord("height").points, dtype=np.float32
                 )
                 cube.coord("height").attributes = {}
-        self.assertEqual(results, expected)
+        assert results == expected
 
 
 class MixinProblemCases:
@@ -546,7 +537,7 @@ class MixinProblemCases:
             # repeatable ordering, because ??somehow?? the random temporary
             # directory name affects the ordering of the cubes in the result !
             results = CubeList(sorted(results, key=lambda cube: cube.shape))
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_FAIL_phenomena_nostash(self):
         # If we remove the 'STASH' attributes, certain phenomena can still be
@@ -586,7 +577,7 @@ class MixinProblemCases:
             )
             one_cube.add_aux_coord(co_t_new, 0)
             expected = [one_cube]
-        self.assertEqual(results, expected)
+        assert results == expected
 
     def test_FAIL_pseudo_levels(self):
         # Show how pseudo levels are handled.
@@ -619,56 +610,44 @@ class MixinProblemCases:
         #            # Make a cubelist with this single cube.
         #            expected = CubeList([nine_timepoints_cube])
 
-        self.assertEqual(results, expected)
+        assert results == expected
 
 
-class TestBasic__Iris(Mixin_FieldTest, MixinBasic, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestBasic__Iris(Mixin_FieldTest, MixinBasic):
     # run the 'basic' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestBasic__Fast(Mixin_FieldTest, MixinBasic, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestBasic__Fast(Mixin_FieldTest, MixinBasic):
     # run the 'basic' tests with *FAST* loading.
     do_fast_loads = True
 
 
-class TestCallDetails__Iris(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestCallDetails__Iris(Mixin_FieldTest, MixinCallDetails):
     # run the 'call details' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestCallDetails__Fast(Mixin_FieldTest, MixinCallDetails, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestCallDetails__Fast(Mixin_FieldTest, MixinCallDetails):
     # run the 'call details' tests with *FAST* loading.
     do_fast_loads = True
 
 
-class TestDimsAndOrdering__Iris(Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestDimsAndOrdering__Iris(Mixin_FieldTest, MixinDimsAndOrdering):
     # run the 'dimensions and ordering' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestDimsAndOrdering__Fast(Mixin_FieldTest, MixinDimsAndOrdering):
     # run the 'dimensions and ordering' tests with *FAST* loading.
     do_fast_loads = True
 
 
-class TestProblems__Iris(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestProblems__Iris(Mixin_FieldTest, MixinProblemCases):
     # run the 'failure cases' tests with *normal* loading.
     do_fast_loads = False
 
 
-class TestProblems__Fast(Mixin_FieldTest, MixinProblemCases, tests.IrisTest):
-    # Finally, an actual test-class (unittest.TestCase) :
+class TestProblems__Fast(Mixin_FieldTest, MixinProblemCases):
     # run the 'failure cases' tests with *FAST* loading.
     do_fast_loads = True
-
-
-if __name__ == "__main__":
-    tests.main()
