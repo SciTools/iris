@@ -1,0 +1,34 @@
+dimensions:
+	latitude = 181 ;
+	levelist = 60 ;
+	longitude = 360 ;
+	time = 1 ;
+variables:
+	double co2(time, levelist, latitude, longitude) ;
+		co2:long_name = "Carbon Dioxide" ;
+		co2:units = "kg kg**-1" ;
+	int time(time) ;
+		time:axis = "T" ;
+		time:units = "hours since 1900-01-01 00:00:0.0" ;
+		time:standard_name = "time" ;
+		time:long_name = "time" ;
+		time:calendar = "standard" ;
+	int levelist(levelist) ;
+		levelist:long_name = "model_level_number" ;
+	float latitude(latitude) ;
+		latitude:axis = "Y" ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+		latitude:long_name = "latitude" ;
+	float longitude(longitude) ;
+		longitude:axis = "X" ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+		longitude:long_name = "longitude" ;
+	double lnsp(time, levelist, latitude, longitude) ;
+		lnsp:long_name = "Logarithm of surface pressure" ;
+
+// global attributes:
+		:history = "2009-08-25 13:46:31 GMT by mars2netcdf-0.92" ;
+		:Conventions = "CF-1.7" ;
+}

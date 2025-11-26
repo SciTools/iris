@@ -1,0 +1,11 @@
+dimensions:
+	dim0 = 1 ;
+variables:
+	double air_temperature(dim0) ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+
+// global attributes:
+		:um_version = "4.3" ;
+		:Conventions = "CF-1.7" ;
+}

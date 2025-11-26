@@ -1,0 +1,15 @@
+dimensions:
+	dim0 = 1 ;
+variables:
+	double air_temperature(dim0) ;
+		air_temperature:standard_name = "air_temperature" ;
+		air_temperature:units = "K" ;
+		air_temperature:um_version = "4.3" ;
+	double air_pressure(dim0) ;
+		air_pressure:standard_name = "air_pressure" ;
+		air_pressure:units = "hPa" ;
+		air_pressure:um_version = "4.4" ;
+
+// global attributes:
+		:Conventions = "CF-1.7" ;
+}
