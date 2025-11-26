@@ -312,3 +312,7 @@ def test_2D_guess_bounds():
     _2D_geuss_bounds(cube)
     assert cube.coord("latitude").is_contiguous()
     assert cube.coord("longitude").is_contiguous()
+
+    _2D_geuss_bounds(cube, rotate=False)
+    assert cube.coord("latitude").is_contiguous()
+    assert cube.coord("longitude").is_contiguous()

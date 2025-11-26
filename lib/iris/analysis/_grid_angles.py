@@ -464,6 +464,42 @@ def _generate_180_mats_from_uvecs(uvecs):
     np.einsum("ijj->ij", mats)[:] -= 1
     return mats
 
+def _generate_reflection_mats_from_uvecs(xyz_array):
+    vecs_0 = xyz_array[:,:,0]
+    vecs_1 = xyz_array[:,-1,:]
+    vecs_2 = xyz_array[:,:,-1]
+    vecs_3 = xyz_array[:,0,:]
+
+    def make_reflection_mat(vecs):
+        normals = np.cross(vecs[:,1:], vecs[:,:-1], axis=0)
+        normals = normals / np.linalg.norm(normals, axis=0)[np.newaxis, :]
+        # mats = mats = np.einsum("ji,ki->ijk", normals, normals) * -2
+        # np.einsum("ijj->ij", mats)[:] += 1
+        mats = -_generate_180_mats_from_uvecs(normals)
+        return mats
+
+    mats_0 = make_reflection_mat(vecs_0)
+    mats_1 = make_reflection_mat(vecs_1)
+    mats_2 = make_reflection_mat(vecs_2)
+    mats_3 = make_reflection_mat(vecs_3)
+
+    corner_mat_0 = np.matmul(mats_0[0], mats_3[0])
+    corner_mat_1 = np.matmul(mats_0[-1], mats_1[0])
+    corner_mat_2 = np.matmul(mats_2[-1], mats_1[-1])
+    corner_mat_3 = np.matmul(mats_2[0], mats_3[-1])
+
+    mats = np.concatenate((
+        corner_mat_0[np.newaxis],
+        mats_0,
+        corner_mat_1[np.newaxis],
+        mats_1,
+        corner_mat_2[np.newaxis],
+        mats_2[::-1],
+        corner_mat_3[np.newaxis],
+        mats_3[::-1],
+    ))
+    return mats
+
 
 def _2D_guess_bounds_first_pass(array):
     # average and normalise, boundary buffer represents edges and corners
@@ -504,7 +540,7 @@ def _2D_gb_buffer_inner(array_shape):
     return np.s_[:, x_i, y_i]
 
 
-def _2D_geuss_bounds(cube):
+def _2D_geuss_bounds(cube, rotate=True):
     lons = cube.coord(axis="X")
     lats = cube.coord(axis="Y")
 
@@ -515,10 +551,12 @@ def _2D_geuss_bounds(cube):
     xyz_array = _3d_xyz_from_latlon(lon_array, lat_array)
 
     result_xyz = _2D_guess_bounds_first_pass(xyz_array)
-    outer_inds = _2D_gb_buffer_outer(xyz_array.shape)
-    inner_inds = _2D_gb_buffer_inner(xyz_array.shape)
-
-    mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+    outer_inds = _2D_gb_buffer_outer(result_xyz.shape)
+    inner_inds = _2D_gb_buffer_inner(result_xyz.shape)
+    if rotate:
+        mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+    else:
+        mats = _generate_reflection_mats_from_uvecs(xyz_array)
     result_xyz[outer_inds] = _vectorised_matmul(mats, result_xyz[inner_inds])
 
     result_lon_bounds, result_lat_bounds = _latlon_from_xyz(result_xyz)
