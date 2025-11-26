@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for coord-system-related loading and saving netcdf files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import warnings
 
 import numpy as np
@@ -16,8 +12,8 @@ import pytest
 import iris
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests import stock as stock
-from iris.tests._shared_utils import assert_CML
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.tests.unit.fileformats.netcdf.loader import test_load_cubes as tlc
 
@@ -172,7 +168,7 @@ data:
     """
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 class TestCoordSystem:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -182,11 +178,11 @@ class TestCoordSystem:
 
     def test_load_laea_grid(self, request):
         cube = iris.load_cube(
-            tests.get_data_path(
+            _shared_utils.get_data_path(
                 ("NetCDF", "lambert_azimuthal_equal_area", "euro_air_temp.nc")
             )
         )
-        assert_CML(request, cube, ("netcdf", "netcdf_laea.cml"))
+        _shared_utils.assert_CML(request, cube, ("netcdf", "netcdf_laea.cml"))
 
     def test_load_datum_wkt(self, datum_wkt_cdl):
         expected = "OSGB 1936"

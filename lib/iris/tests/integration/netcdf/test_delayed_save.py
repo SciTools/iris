@@ -15,7 +15,7 @@ import pytest
 
 import iris
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
-import iris.tests
+from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
 
@@ -38,7 +38,7 @@ class Test__lazy_stream_data:
     def output_path(self, tmp_path):
         # A temporary output netcdf-file path, **unique to each test call**.
         self.temp_output_filepath = tmp_path / "tmp.nc"
-        yield self.temp_output_filepath
+        return self.temp_output_filepath
 
     @pytest.fixture(autouse=True, scope="module")
     def all_vars_lazy(self):
@@ -118,8 +118,8 @@ class Test__lazy_stream_data:
             cube.add_cell_measure(cm, cm_dims)
         return cube
 
-    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path):
-        input_filepath = iris.tests.get_data_path(
+    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path, request):
+        input_filepath = _shared_utils.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         original_cubes = iris.load(input_filepath)
