@@ -183,6 +183,7 @@ class TestMultiCube(MergeMixin, DatalessMixin):
 
 @_shared_utils.skip_data
 class TestColpex(DatalessMixin):
+    @pytest.fixture(autouse=True)
     def _setup(self):
         self._data_path = _shared_utils.get_data_path(
             ("PP", "COLPEX", "small_colpex_theta_p_alt.pp")
