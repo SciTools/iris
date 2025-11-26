@@ -66,10 +66,12 @@ _CONCRETE_DERIVED_LOADING = _ConcreteDerivedLoading()
 
 
 def _generate_cubes(uris, callback, constraints):
+    from netCDF4 import Dataset
+
     import iris.io
 
     """Return a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, str) or not isinstance(uris, Iterable):
+    if isinstance(uris, (str, Dataset)) or not isinstance(uris, Iterable):
         # Make a string, or other single item, into an iterable.
         uris = [uris]
 

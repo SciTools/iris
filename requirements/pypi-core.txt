@@ -4,7 +4,7 @@ cftime>=1.5.0
 dask[array]>=2025.1.0,<2025.10.0  # https://github.com/SciTools/iris/issues/6776
 # libnetcdf!=4.9.1 (not available on PyPI)
 matplotlib>=3.5
-netcdf4<1.7.3  # https://github.com/SciTools/iris/issues/6777
+netcdf4
 numpy>=1.24,!=1.24.3
 pyproj
 scipy

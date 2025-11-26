@@ -60,6 +60,8 @@ v3.14.1 (Date TBD)
    #. Fixed compatibility with NumPy v2 for :meth:`~iris.coords.Coord.guess_bounds`
       :ref:`See the full entry for more<3_14_1_guess_bounds>`.
 
+   #. Removed netCDF4<1.7.3 temporary pin.
+
 ✨ Features
 ===========
 
@@ -174,9 +176,12 @@ v3.14.1 (Date TBD)
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 #. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
-   netCDF4<1.7.3.  All of these introduce problems that won't necessarily be fixed soon,
-   so we anticipate that these pins will be wanted for the v3.14 release.
+   netCDF4<1.7.3. Edit 2025-11-25: the netCDF4 pin has now been removed in
+   :pull:`6826`.
    (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
+
+#. `@trexfeathers`_ fixed an incompatibility with the netCDF4 package (relating
+   to dataset iterability). (:issue:`6777`, :pull:`6826`)
 
 
 📚 Documentation
