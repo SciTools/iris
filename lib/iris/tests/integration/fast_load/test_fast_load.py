@@ -43,6 +43,9 @@ class Mixin_FieldTest:
             # N.B. we can't use a 'with', so issue separate 'enter' and 'exit'
             # calls instead.
             self.load_context.__enter__()
+        yield
+        if self.do_fast_loads:
+            self.load_context.__exit__(None, None, None)
 
     def _temp_filepath(self, user_name="", suffix=".pp"):
         # Return the filepath for a new temporary file.
@@ -508,7 +511,7 @@ class MixinDimsAndOrdering:
 
 
 class MixinProblemCases:
-    def test_fail_scalar_vector_concatenate(self):
+    def test_FAIL_scalar_vector_concatenate(self):
         # Structured load can produce a scalar coordinate from one file, and a
         # matching vector one from another file, but these won't "combine".
         # We'd really like to fix this one...
@@ -536,7 +539,7 @@ class MixinProblemCases:
             results = CubeList(sorted(results, key=lambda cube: cube.shape))
         assert results == expected
 
-    def test_fail_phenomena_nostash(self):
+    def test_FAIL_phenomena_nostash(self):
         # If we remove the 'STASH' attributes, certain phenomena can still be
         # successfully encoded+decoded by standard load using LBFC values.
         # Structured loading gets this wrong, because it does not use LBFC in
@@ -576,7 +579,7 @@ class MixinProblemCases:
             expected = [one_cube]
         assert results == expected
 
-    def test_fail_pseudo_levels(self):
+    def test_FAIL_pseudo_levels(self):
         # Show how pseudo levels are handled.
         flds = self.fields(c_t="000111222", pse="123123123")
         file = self.save_fieldcubes(flds)
