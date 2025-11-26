@@ -7,21 +7,20 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import itertools
 
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_lazy_data
+from iris.tests import _shared_utils
 from iris.tests.stock import ocean_sigma_z as stock_sample_osz
 import iris.util
 
 
-class Test_sample(tests.IrisTest):
-    def setUp(self):
+class Test_sample:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock_sample_osz()
         # Snapshot result, printed with ...
         #     >>> np.set_printoptions(linewidth=180,
@@ -93,7 +92,9 @@ class Test_sample(tests.IrisTest):
             expected_result = self.basic_derived_result
         coord = cube.coord(self.derived_coord_name)
         result = coord.points
-        self.assertArrayAllClose(result, expected_result, atol=0.005, **kwargs)
+        _shared_utils.assert_array_all_close(
+            result, expected_result, atol=0.005, **kwargs
+        )
 
     def test_basic(self):
         self._check_result(self.cube)
@@ -108,13 +109,13 @@ class Test_sample(tests.IrisTest):
     def test_nonlazy_cube_has_lazy_derived(self):
         # Check same results when key coords are made lazy.
         cube = self.cube
-        self.assertEqual(cube.coord("depth").has_lazy_points(), False)
-        self.assertEqual(cube.coord(self.derived_coord_name).has_lazy_points(), True)
+        assert not cube.coord("depth").has_lazy_points()
+        assert cube.coord(self.derived_coord_name).has_lazy_points()
 
     def test_lazy_cube_same_result(self):
         cube = self._lazy_testcube()
-        self.assertEqual(cube.coord("depth").has_lazy_points(), True)
-        self.assertEqual(cube.coord(self.derived_coord_name).has_lazy_points(), True)
+        assert cube.coord("depth").has_lazy_points()
+        assert cube.coord(self.derived_coord_name).has_lazy_points()
         self._check_result(cube)
 
     def test_transpose(self):
@@ -174,7 +175,7 @@ class Test_sample(tests.IrisTest):
         trial_cube.coord("sea_surface_height").points[:] = 0.0
         expected = trial_cube.coord(self.derived_coord_name).points
         # Check this has no variation between the two timepoints.
-        self.assertArrayAllClose(expected[0], expected[1])
+        _shared_utils.assert_array_all_close(expected[0], expected[1])
         # Take first time, as no sigma --> result *has* no time dimension.
         expected = expected[0]
 
@@ -182,7 +183,3 @@ class Test_sample(tests.IrisTest):
         cube = self.cube
         cube.remove_coord("sea_surface_height")
         self._check_result(cube, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
