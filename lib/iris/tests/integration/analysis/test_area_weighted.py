@@ -4,23 +4,25 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for area weighted regridding."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
 
 import iris
 from iris.analysis import AreaWeighted
+from iris.tests import _shared_utils
 
 
-@tests.skip_data
-class AreaWeightedTests(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestAreaWeighted:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Prepare a cube and a template
 
-        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
+        cube_file_path = _shared_utils.get_data_path(
+            ["NetCDF", "regrid", "regrid_xyt.nc"]
+        )
         self.cube = iris.load_cube(cube_file_path)
 
-        template_file_path = tests.get_data_path(
+        template_file_path = _shared_utils.get_data_path(
             ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
         )
         self.template_cube = iris.load_cube(template_file_path)
@@ -29,8 +31,8 @@ class AreaWeightedTests(tests.IrisTest):
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, AreaWeighted())
         # Check data is still lazy
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(out.has_lazy_data())
+        assert self.cube.has_lazy_data()
+        assert out.has_lazy_data()
         # Save the data
         with self.temp_filename(suffix=".nc") as fname:
             iris.save(out, fname)
@@ -41,8 +43,8 @@ class AreaWeightedTests(tests.IrisTest):
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, AreaWeighted())
         # Check data is still lazy
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(out.has_lazy_data())
+        assert self.cube.has_lazy_data()
+        assert out.has_lazy_data()
         # Save the data
         with self.temp_filename(suffix=".nc") as fname:
             iris.save(out, fname)
@@ -66,7 +68,3 @@ class AreaWeightedTests(tests.IrisTest):
         # Save the data
         with self.temp_filename(suffix=".nc") as fname:
             iris.save(out, fname)
-
-
-if __name__ == "__main__":
-    tests.main()
