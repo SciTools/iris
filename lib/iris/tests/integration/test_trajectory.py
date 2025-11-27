@@ -4,25 +4,24 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :mod:`iris.analysis.trajectory`."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris
 from iris import COMBINE_POLICY
 from iris._lazy_data import as_lazy_data
 from iris.analysis.trajectory import Trajectory
 from iris.analysis.trajectory import interpolate as traj_interpolate
+from iris.tests import _shared_utils
 import iris.tests.stock as istk
 
 
-@tests.skip_data
-class TestColpex(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestColpex:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Load the COLPEX data => TZYX
-        path = tests.get_data_path(["PP", "COLPEX", "theta_and_orog_subset.pp"])
+        path = _shared_utils.get_data_path(["PP", "COLPEX", "theta_and_orog_subset.pp"])
         # Fix to ignore time-varying orography, for the purposes of these tests
         with COMBINE_POLICY.context(support_multiple_references=False):
             cube = iris.load_cube(path, "air_potential_temperature")
@@ -40,8 +39,12 @@ class TestColpex(tests.IrisTest):
             [("grid_latitude", [-0.1188]), ("grid_longitude", [359.57958984])],
         )
         expected = self.cube[..., 10, 0].data
-        self.assertArrayAllClose(single_point[..., 0].data, expected, rtol=2.0e-7)
-        self.assertCML(single_point, ("trajectory", "single_point.cml"), checksum=False)
+        _shared_utils.assert_array_all_close(
+            single_point[..., 0].data, expected, rtol=2.0e-7
+        )
+        _shared_utils.assert_CML(
+            single_point, ("trajectory", "single_point.cml"), checksum=False
+        )
 
     def test_trajectory_extraction_calc(self):
         # Pull out another point and test against a manually calculated result.
@@ -56,7 +59,9 @@ class TestColpex(tests.IrisTest):
         y1 = scube.data[0, 1]
         expected = y0 + ((y1 - y0) * ((359.584090412 - x0) / (x1 - x0)))
         trajectory_cube = traj_interpolate(scube, single_point)
-        self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
+        _shared_utils.assert_array_all_close(
+            trajectory_cube.data, expected, rtol=2.0e-7
+        )
 
     def _traj_to_sample_points(self, trajectory):
         sample_points = []
@@ -78,7 +83,9 @@ class TestColpex(tests.IrisTest):
         trajectory = Trajectory(waypoints, sample_count=100)
         sample_points = self._traj_to_sample_points(trajectory)
         trajectory_cube = traj_interpolate(self.cube, sample_points)
-        self.assertCML(trajectory_cube, ("trajectory", "constant_latitude.cml"))
+        _shared_utils.assert_CML(
+            trajectory_cube, ("trajectory", "constant_latitude.cml")
+        )
 
     def test_trajectory_extraction_zigzag(self):
         # Extract a zig-zag trajectory
@@ -116,8 +123,12 @@ class TestColpex(tests.IrisTest):
             dtype=np.float32,
         )
 
-        self.assertCML(trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False)
-        self.assertArrayAllClose(trajectory_cube.data, expected, rtol=2.0e-7)
+        _shared_utils.assert_CML(
+            trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False
+        )
+        _shared_utils.assert_array_all_close(
+            trajectory_cube.data, expected, rtol=2.0e-7
+        )
 
     def test_colpex__nearest(self):
         # Check a smallish nearest-neighbour interpolation against a result
@@ -186,14 +197,17 @@ class TestColpex(tests.IrisTest):
             287.8374939,
             287.8374939,
         ]
-        self.assertArrayAllClose(result.data, expected)
+        _shared_utils.assert_array_all_close(result.data, expected)
 
 
-@tests.skip_data
-class TestTriPolar(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestTriPolar:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # load data
-        cubes = iris.load(tests.get_data_path(["NetCDF", "ORCA2", "votemper.nc"]))
+        cubes = iris.load(
+            _shared_utils.get_data_path(["NetCDF", "ORCA2", "votemper.nc"])
+        )
         cube = cubes[0]
         # The netCDF file has different data types for the points and
         # bounds of 'depth'. This wasn't previously supported, so we
@@ -215,12 +229,14 @@ class TestTriPolar(tests.IrisTest):
     def test_tri_polar(self):
         # extract
         sampled_cube = traj_interpolate(self.cube, self.sample_points, method="nearest")
-        self.assertCML(sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml"))
+        _shared_utils.assert_CML(
+            sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml")
+        )
 
     def test_tri_polar_method_linear_fails(self):
         # Try to request linear interpolation.
         # Not allowed, as we have multi-dimensional coords.
-        self.assertRaises(
+        pytest.raises(
             iris.exceptions.CoordinateMultiDimError,
             traj_interpolate,
             self.cube,
@@ -230,7 +246,7 @@ class TestTriPolar(tests.IrisTest):
 
     def test_tri_polar_method_unknown_fails(self):
         # Try to request unknown interpolation.
-        self.assertRaises(
+        pytest.raises(
             ValueError,
             traj_interpolate,
             self.cube,
@@ -306,10 +322,10 @@ class TestTriPolar(tests.IrisTest):
             0.0,
         ]
 
-        self.assertArrayAllClose(result.data, expected)
+        _shared_utils.assert_array_all_close(result.data, expected)
 
 
-class TestLazyData(tests.IrisTest):
+class TestLazyData:
     def test_hybrid_height(self):
         cube = istk.simple_4d_with_hybrid_height()
         # Put a lazy array into the cube so we can test deferred loading.
@@ -327,9 +343,5 @@ class TestLazyData(tests.IrisTest):
 
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.
-        self.assertTrue(cube.has_lazy_data())
-        self.assertCML([cube, xsec], ("trajectory", "hybrid_height.cml"))
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert cube.has_lazy_data()
+        _shared_utils.assert_CML([cube, xsec], ("trajectory", "hybrid_height.cml"))

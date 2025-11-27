@@ -8,7 +8,6 @@ import cartopy.io.shapereader as shpreader
 import numpy as np
 from pyproj import CRS
 import pytest
-from pytest import approx
 from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 
 import iris
@@ -67,7 +66,7 @@ def test_global_proj_china(
         invert=invert,
     )
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == expected_sum
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == expected_sum
 
 
 def test_global_proj_russia(shp_reader, wgs84_crs):
@@ -105,7 +104,7 @@ def test_rotated_pole_proj_uk(shp_reader, wgs84_crs):
     ][0]
     masked_test = mask_cube_from_shape(test_rotated, ne_uk, shape_crs=wgs84_crs)
     assert masked_test.ndim == 2
-    assert approx(np.sum(masked_test.data), rel=0.001) == 102.77
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 102.77
 
 
 def test_transverse_mercator_proj_uk(shp_reader, wgs84_crs):
@@ -119,7 +118,7 @@ def test_transverse_mercator_proj_uk(shp_reader, wgs84_crs):
     ][0]
     masked_test = mask_cube_from_shape(test_transverse, ne_uk, shape_crs=wgs84_crs)
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == 90740.25
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 90740.25
 
 
 def test_rotated_pole_proj_germany_weighted_area(shp_reader, wgs84_crs):
@@ -137,7 +136,7 @@ def test_rotated_pole_proj_germany_weighted_area(shp_reader, wgs84_crs):
         test_rotated, ne_germany, shape_crs=wgs84_crs, minimum_weight=0.9
     )
     assert masked_test.ndim == 2
-    assert approx(np.sum(masked_test.data), rel=0.001) == 125.60199
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 125.60199
 
 
 def test_4d_global_proj_brazil(shp_reader, wgs84_crs):
@@ -155,7 +154,7 @@ def test_4d_global_proj_brazil(shp_reader, wgs84_crs):
         test_4d_brazil, ne_brazil, shape_crs=wgs84_crs, all_touched=True
     )
     assert masked_test.ndim == 4
-    assert approx(np.sum(masked_test.data), rel=0.001) == 18616921.2
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 18616921.2
 
 
 @pytest.mark.parametrize(
@@ -210,7 +209,7 @@ def test_global_proj_uk_shapes(shape, expected_value, wgs84_crs):
         shape_crs=wgs84_crs,
     )
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == expected_value
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == expected_value
 
 
 def test_mask_cube_from_shapefile_depreciation(shp_reader):
