@@ -65,7 +65,7 @@ jobs:
     if: needs.download.outputs.reports_exist == 1
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download artifact
         uses: actions/download-artifact@v6
