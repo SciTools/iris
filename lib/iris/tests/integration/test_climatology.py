@@ -47,10 +47,10 @@ class TestClimatology:
         return cube
 
     @pytest.fixture(autouse=True, scope="class")
-    def _setup(self, request, tmp_path):
+    def _setup(self, request, tmp_path_factory):
         # Create a temp directory for temp files.
         cls = request.cls
-        cls.temp_dir = tmp_path
+        cls.temp_dir = tmp_path_factory.mktemp("temp")
         cls.path_ref_cdl = cls.temp_dir / "standard.cdl"
         cls.path_ref_nc = cls.temp_dir / "standard.nc"
         # Create reference CDL and netcdf files (with ncgen).
