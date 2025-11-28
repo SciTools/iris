@@ -88,7 +88,6 @@ jobs:
         channels: conda-forge
         activate-environment: ${{ env.ENV_NAME }}
         auto-update-conda: false
-        use-only-tar-bz2: true
         # This aligns the top-level env with the env that Nox will create
         #  below - meaning optimal use of package caching.
         python-version: ${{ matrix.python-version }}
