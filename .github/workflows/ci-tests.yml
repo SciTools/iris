@@ -87,6 +87,9 @@ jobs:
           channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
+          # This aligns the top-level env with the env that Nox will create
+          #  below - meaning optimal use of package caching.
+          python-version: ${{ matrix.python-version }}
 
       - name: "install cartopy + nox + pip"
         run: conda install --quiet --name ${{ env.ENV_NAME }} cartopy nox pip
