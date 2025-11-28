@@ -94,7 +94,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: "install nox + pip"
-      run: conda install --quiet --name ${{ env.ENV_NAME }} nox pip
+      # Nox minimum pin is just to help avoid a solver bug.
+      run: conda install --quiet --name ${{ env.ENV_NAME }} "nox>=2025" pip
 
     - name: "nox install and test wheel"
       env:
