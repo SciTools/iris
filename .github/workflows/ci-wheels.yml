@@ -85,7 +85,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v3
       with:
         miniforge-version: latest
-        channels: conda-forge,defaults
+        channels: conda-forge
         activate-environment: ${{ env.ENV_NAME }}
         auto-update-conda: false
         use-only-tar-bz2: true
