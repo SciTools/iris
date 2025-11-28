@@ -83,6 +83,7 @@ jobs:
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v3
         with:
+          miniforge-version: latest
           channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
