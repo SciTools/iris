@@ -1,22 +1,42 @@
 name: "conda-pkg-cache"
-description: "cache the conda environment packages"
+description: "standardise conda package cache to ~/conda_pkgs_dir and cache across workflow runs"
 
 inputs:
-  cache_build:
-    description: "conda environment cache build number"
+  python_version:
+    description: "conda package cache python version"
     required: false
-    default: "0"
-  cache_period:
-    description: "conda environment cache timestamp"
-    required: true
-  env_name:
-    description: "environment name"
-    required: true
+    default: "3.13"
 
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - id: set-cache-period
+      shell: bash
+      env:
+        # Maximum cache period (in weeks) before forcing a cache refresh..
+        CACHE_WEEKS: 2
+      run: echo "CACHE_PERIOD=$(date +%Y).$(expr $(date +%U) / ${CACHE_WEEKS})" >> $GITHUB_OUTPUT
+
+    - id: define-cache-key
+      shell: bash
+      env:
+        # Lets us manually bump the cache to rebuild.
+        CACHE_BUILD: "0"
+      run: |
+        OS="${{ runner.os }}"
+        PERIOD="${{ steps.set-cache-period.outputs.CACHE_PERIOD }}"
+        BUILD="${{ env.CACHE_BUILD }}"
+        PY="${{ inputs.python_version }}"
+        REQ="${{ hashFiles('requirements/locks/**') }}"
+        CACHE_KEY="conda_pkgs_dir-${OS}-p${PERIOD}-b${BUILD}-py${PY}-${REQ}"
+        echo "CACHE_KEY=$CACHE_KEY" >> $GITHUB_ENV
+
+    - id: set-pkg-dir
+      shell: bash
+      run: conda config --add pkgs_dirs ~/conda_pkgs_dir
+
+    - id: conda-pkg-cache
+      uses: actions/cache@v4
       with:
         path: ~/conda_pkgs_dir
-        key: ${{ runner.os }}-conda-pkgs-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
+        key: ${{ env.CACHE_KEY }}
