@@ -4,15 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`."""
 
-from pathlib import Path
-import shutil
-import tempfile
 import warnings
+
+import pytest
 
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _load_cube
+from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisLoadWarning
 
@@ -55,15 +55,10 @@ class Mixin__nc_load_actions:
     # "global" test setting : whether to output various debug info
     debug_info = False
 
-    @classmethod
-    def setUpClass(cls):
+    @pytest.fixture(autouse=True, scope="class")
+    def setup_mixin(self, request, tmp_path_factory):
         # Create a temp directory for temp files.
-        cls.temp_dirpath = Path(tempfile.mkdtemp())
-
-    @classmethod
-    def tearDownClass(cls):
-        # Destroy a temp directory for temp files.
-        shutil.rmtree(cls.temp_dirpath)
+        request.cls.temp_dirpath = tmp_path_factory.mktemp("temp")
 
     def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path, mocker=None):
         """Load the 'phenom' data variable in a CDL testcase, as a cube.
@@ -135,9 +130,9 @@ class Mixin__nc_load_actions:
             print("------\n")
 
         if warning_regex is None:
-            context = self.assertNoWarningsRegexp()
+            context = _shared_utils.assert_no_warnings_regexp()
         else:
-            context = self.assertWarnsRegex(IrisLoadWarning, warning_regex)
+            context = pytest.warns(IrisLoadWarning, match=warning_regex)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 
