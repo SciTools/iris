@@ -9,21 +9,11 @@ Test rules activation relating to hybrid vertical coordinates.
 
 """
 
-import iris.tests as tests  # isort: skip
-
 import iris.fileformats._nc_load_rules.helpers as hh
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
-class Test__formulae_tests(Mixin__nc_load_actions, tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
+class Test__formulae_tests(Mixin__nc_load_actions):
     def _make_testcase_cdl(
         self, formula_root_name=None, term_names=None, extra_formula_type=None
     ):
@@ -111,7 +101,7 @@ variables:
             # replace with our 'default', which is hybrid-height.
             # N.B. 'None' is different: it means expect *no* factory.
             factory_type = "atmosphere_hybrid_height_coordinate"
-        self.assertEqual(cube._formula_type_name, factory_type)
+        assert cube._formula_type_name == factory_type
 
         if formula_terms == "_auto":
             # Set default terms-expected, according to the expected factory
@@ -130,12 +120,12 @@ variables:
 
         # N.B. the terms dictionary can be missing, if there were none
         actual_terms = cube._formula_terms_byname or {}
-        self.assertEqual(sorted(formula_terms), sorted(actual_terms.keys()))
+        assert sorted(formula_terms) == sorted(actual_terms.keys())
 
         # Check that there is an aux-coord of the expected name for each term
         for var_name in actual_terms.values():
             coords = cube.coords(var_name=var_name, dim_coords=False)
-            self.assertEqual(len(coords), 1)
+            assert len(coords) == 1
 
     #
     # Actual testcase routines
@@ -272,7 +262,3 @@ variables:
         term_names = hh.CF_COORD_VERTICAL[hybrid_type]
         result = self.run_testcase(formula_root_name=hybrid_type, term_names=term_names)
         self.check_result(result, factory_type=hybrid_type, formula_terms=term_names)
-
-
-if __name__ == "__main__":
-    tests.main()
