@@ -35,11 +35,8 @@ For this, we just use 'tests.stock.netcdf.ncgen_from_cdl'.
 class Mixin__nc_load_actions:
     """Class to make testcases for rules or actions code, and check results.
 
-    Defines standard setUpClass/tearDownClass methods, to create a temporary
+    Defines standard setup method, to create a temporary
     directory for intermediate files.
-    NOTE: owing to peculiarities of unittest, these must be explicitly called
-    from a setUpClass/tearDownClass within the 'final' inheritor, i.e. the
-    actual Test_XXX class which also inherits unittest.TestCase.
 
     Testcases are manufactured by the '_make_testcase_cdl' method.
     The 'run_testcase' method takes the '_make_testcase_cdl' kwargs and makes
