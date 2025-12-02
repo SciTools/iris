@@ -16,7 +16,7 @@ from iris.fileformats.netcdf.saver import Saver
 
 class TestDataless:
     @pytest.fixture(autouse=True)
-    def setup(self, tmp_path_factory):
+    def _setup(self, tmp_path_factory):
         ny, nx = 3, 4
         self.testcube = Cube(
             shape=(ny, nx),
