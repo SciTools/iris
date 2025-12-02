@@ -7,7 +7,6 @@
 from itertools import repeat
 import os.path
 from pathlib import Path
-import shutil
 import warnings
 
 import dask
@@ -125,26 +124,21 @@ class TestCellMethod_unknown:
         cube = Cube([1, 2], long_name="odd_phenomenon")
         cube.add_cell_method(CellMethod(method="oddity", coords=("x",)))
         temp_dirpath = tmp_path_factory.mktemp("test")
-        try:
-            temp_filepath = os.path.join(temp_dirpath, "tmp.nc")
-            iris.save(cube, temp_filepath)
-            with warnings.catch_warnings(record=True) as warning_records:
-                iris.load(temp_filepath)
-            # Filter to get the warning we are interested in.
-            warning_messages = [record.message for record in warning_records]
-            warning_messages = [
-                warn
-                for warn in warning_messages
-                if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
-            ]
-            assert len(warning_messages) == 1
-            message = warning_messages[0].args[0]
-            msg = (
-                "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
-            )
-            assert msg in message
-        finally:
-            shutil.rmtree(temp_dirpath)
+        temp_filepath = os.path.join(temp_dirpath, "tmp.nc")
+        iris.save(cube, temp_filepath)
+        with warnings.catch_warnings(record=True) as warning_records:
+            iris.load(temp_filepath)
+        # Filter to get the warning we are interested in.
+        warning_messages = [record.message for record in warning_records]
+        warning_messages = [
+            warn
+            for warn in warning_messages
+            if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
+        ]
+        assert len(warning_messages) == 1
+        message = warning_messages[0].args[0]
+        msg = "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
+        assert msg in message
 
 
 def _get_scale_factor_add_offset(cube, datatype):
