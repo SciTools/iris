@@ -137,8 +137,11 @@ NCDUMP_PATHSTR = str(env_bin_path("ncdump"))
 
 def ncdump(nc_path: str, *args):
     """Call ncdump to print a dump of a file."""
-    call_args = [NCDUMP_PATHSTR, nc_path] + list(*args)
-    subprocess.run(call_args, check=True)
+    call_args = [NCDUMP_PATHSTR, nc_path] + list(args)
+    bytes = subprocess.check_output(call_args)
+    text = bytes.decode("utf-8")
+    print(text)
+    return text
 
 
 def show_result(filepath):
