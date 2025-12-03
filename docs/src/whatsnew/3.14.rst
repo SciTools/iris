@@ -60,6 +60,9 @@ v3.14.1 (Date TBD)
    #. Fixed compatibility with NumPy v2 for :meth:`~iris.coords.Coord.guess_bounds`
       :ref:`See the full entry for more<3_14_1_guess_bounds>`.
 
+   #. Tentative compatibility with Python 3.14, pending full CI support later.
+      :ref:`See Dependencies for more<3_14_dependencies>`.
+
 ✨ Features
 ===========
 
@@ -166,6 +169,8 @@ v3.14.1 (Date TBD)
    exceed the optimum chunksize set in dask. (:pull:`6730`)
 
 
+.. _3_14_dependencies:
+
 🔗 Dependencies
 ===============
 
@@ -174,9 +179,15 @@ v3.14.1 (Date TBD)
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 #. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
-   netCDF4<1.7.3.  All of these introduce problems that won't necessarily be fixed soon,
-   so we anticipate that these pins will be wanted for the v3.14 release.
+   netCDF4<1.7.3.  Edit 2025-12-03: the Python pin has now been removed in
+   :pull:`6817`.
    (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
+
+#. `@trexfeathers`_ provided tentative compatibility with Python 3.14 by fixing
+   :class:`~iris.coords.DimCoord` ``deepcopy`` behaviour. Note that CI coverage
+   for Python 3.14 is not yet possible due to problems in some fringe
+   dependencies, but the relevant tests have been shown to pass in :pull:`6816`.
+   (:issue:`6775`, :pull:`6817`)
 
 
 📚 Documentation
