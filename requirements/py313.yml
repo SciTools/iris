@@ -14,10 +14,10 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2025.1.0,<2025.10.0  # https://github.com/SciTools/iris/issues/6776
+  - dask-core >=2025.1.0,!=2025.10.0
   - libnetcdf !=4.9.1
   - matplotlib-base >=3.5, !=3.9.1
-  - netcdf4<1.7.3  # https://github.com/SciTools/iris/issues/6777
+  - netcdf4
   - numpy >=1.24, !=1.24.3
   - python-xxhash
   - pyproj
@@ -44,7 +44,7 @@ dependencies:
   - imagehash >=4.0
   - pre-commit
   - psutil
-  - pytest
+  - pytest<9
   - pytest-cov
   - pytest-mock
   - pytest-xdist

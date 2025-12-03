@@ -63,6 +63,11 @@ v3.14.1 (Date TBD)
    #. Tentative compatibility with Python 3.14, pending full CI support later.
       :ref:`See Dependencies for more<3_14_dependencies>`.
 
+   #. Removed netCDF4<1.7.3 temporary pin.
+
+   #. Enabled Dask versions beyond `2025.10` (`2025.10.0` contained a known bug
+      and is therefore disabled).
+
 ✨ Features
 ===========
 
@@ -180,7 +185,8 @@ v3.14.1 (Date TBD)
 
 #. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
    netCDF4<1.7.3.  Edit 2025-12-03: the Python pin has now been removed in
-   :pull:`6817`.
+   :pull:`6817`, :pull:`6826` has removed the netCDF4 pin and
+   replaced the Dask pin with a negation (``!=2025.10.0``).
    (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
 
 #. `@trexfeathers`_ provided tentative compatibility with Python 3.14 by fixing
@@ -188,6 +194,14 @@ v3.14.1 (Date TBD)
    for Python 3.14 is not yet possible due to problems in some fringe
    dependencies, but the relevant tests have been shown to pass in :pull:`6816`.
    (:issue:`6775`, :pull:`6817`)
+
+#. `@trexfeathers`_ fixed an incompatibility with the netCDF4 package (relating
+   to dataset iterability). (:issue:`6777`, :pull:`6826`)
+
+#. `@trexfeathers`_ replaced the Dask version pin with a negation
+   (``!=2025.10.0``), as the relevant bug has been fixed in subsequent Dask
+   releases. (:issue:`6776`, :pull:`6826`)
+
 
 
 📚 Documentation
