@@ -2798,12 +2798,8 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
-        """coord.__deepcopy__() -> Deep copy of coordinate.
-
-        Used if copy.deepcopy is called on a coordinate.
-
-        """
+    def __deepcopy__(self, memo):
+        """Return a deep copy of the DimCoord, with read-only points and bounds."""
         # Inspired by matplotlib#30198.
         # Replicates the default copy behaviour, which can then be modified below.
         cls = self.__class__
