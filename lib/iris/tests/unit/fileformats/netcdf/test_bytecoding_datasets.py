@@ -72,7 +72,7 @@ def check_raw_content(path, varname, expected_byte_array):
     )
 
 
-def _make_bytearray_inner(data, encoding):
+def _make_bytearray_inner(data, bytewidth, encoding):
     # Convert to a (list of [lists of..]) strings or bytes to a
     #  (list of [lists of..]) length-1 bytes with an extra dimension.
     if isinstance(data, str):
@@ -81,61 +81,25 @@ def _make_bytearray_inner(data, encoding):
     if isinstance(data, bytes):
         # iterate over bytes to get a sequence of length-1 bytes (what np.array wants)
         result = [data[i : i + 1] for i in range(len(data))]
+        # pad or truncate everything to the required bytewidth
+        result = (result + [b"\0"] * bytewidth)[:bytewidth]
     else:
         # If not string/bytes, expect the input to be a list.
         # N.B. the recursion is inefficient, but we don't care about that here
-        result = [_make_bytearray_inner(part, encoding) for part in data]
+        result = [_make_bytearray_inner(part, bytewidth, encoding) for part in data]
     return result
 
 
-def make_bytearray(data, encoding="ascii"):
+def make_bytearray(data, bytewidth, encoding="ascii"):
     """Convert bytes or lists of bytes into a numpy byte array.
 
     This is largely to avoid using "encode_stringarray_as_bytearray", since we don't
     want to depend on that when we should be testing it.
     So, it mostly replicates the function of that, but it does also support bytes in the
-    input, and it automatically finds + applies the maximum bytes-lengths in the input.
+    input.
     """
     # First, Convert to a (list of [lists of]..) length-1 bytes objects
-    data = _make_bytearray_inner(data, encoding)
-
-    # Numbers of bytes in the inner dimension are the lengths of bytes/strings input,
-    #  so they aren't all the same.
-    # To enable array conversion, we fix that by expanding all to the max length
-
-    def get_maxlen(data):
-        # Find the maximum number of bytes in the inner dimension.
-        if not isinstance(data, list):
-            # Inner bytes object
-            assert isinstance(data, bytes)
-            longest = len(data)
-        else:
-            # We have a list: either a list of bytes, or a list of lists.
-            if len(data) == 0 or not isinstance(data[0], list):
-                # inner-most list, should contain bytes if anything
-                assert len(data) == 0 or isinstance(data[0], bytes)
-                # return n-bytes
-                longest = len(data)
-            else:
-                # list of lists: return max length of sub-lists
-                longest = max(get_maxlen(part) for part in data)
-        return longest
-
-    maxlen = get_maxlen(data)
-
-    def extend_all_to_maxlen(data, length, filler=b"\0"):
-        # Extend each "innermost" list (of single bytes) to the required length
-        if isinstance(data, list):
-            if len(data) == 0 or not isinstance(data[0], list):
-                # Pad all the inner-most lists to the required number of elements
-                n_extra = length - len(data)
-                if n_extra > 0:
-                    data = data + [filler] * n_extra
-            else:
-                data = [extend_all_to_maxlen(part, length, filler) for part in data]
-        return data
-
-    data = extend_all_to_maxlen(data, maxlen)
+    data = _make_bytearray_inner(data, bytewidth, encoding)
     # We should now be able to create an array of single bytes.
     result = np.array(data)
     assert result.dtype == "<S1"
@@ -171,7 +135,7 @@ class TestWriteStrings:
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
-        expected_bytes = make_bytearray(writedata, write_encoding)
+        expected_bytes = make_bytearray(writedata, strlen, write_encoding)
         check_raw_content(path, "vxs", expected_bytes)
 
         # Check also that the "_Encoding" property is as expected
@@ -183,7 +147,8 @@ class TestWriteStrings:
         # Like 'test_write_strings', but the variable has *only* the string dimension.
         path = tempdir / "test_writestrings_scalar.nc"
 
-        ds_encoded = make_encoded_dataset(path, strlen=5)
+        strlen = 5
+        ds_encoded = make_encoded_dataset(path, strlen=strlen)
         v = ds_encoded.createVariable("v0_scalar", "S1", ("strlen",))
 
         # Checks that we *can* write a string
@@ -191,14 +156,15 @@ class TestWriteStrings:
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
-        expected_bytes = make_bytearray(b"stuff")
+        expected_bytes = make_bytearray(b"stuff", strlen)
         check_raw_content(path, "v0_scalar", expected_bytes)
 
     def test_multidim(self, tempdir):
         # Like 'test_write_strings', but the variable has additional dimensions.
         path = tempdir / "test_writestrings_multidim.nc"
 
-        ds_encoded = make_encoded_dataset(path, strlen=5)
+        strlen = 5
+        ds_encoded = make_encoded_dataset(path, strlen=strlen)
         ds_encoded.createDimension("y", 2)
         v = ds_encoded.createVariable(
             "vyxn",
@@ -219,7 +185,7 @@ class TestWriteStrings:
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
-        expected_bytes = make_bytearray(test_data)
+        expected_bytes = make_bytearray(test_data, strlen)
         check_raw_content(path, "vyxn", expected_bytes)
 
     def test_write_encoding_failure(self, tempdir):
@@ -236,16 +202,18 @@ class TestWriteStrings:
     def test_overlength(self, tempdir):
         # Check expected behaviour with over-length data
         path = tempdir / "test_writestrings_overlength.nc"
-        ds = make_encoded_dataset(path, strlen=5, encoding="ascii")
+        strlen = 5
+        ds = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
         v = ds.variables["vxs"]
         v[:] = ["1", "123456789", "two"]
-        expected_bytes = make_bytearray(["1", "12345", "two"])
+        expected_bytes = make_bytearray(["1", "12345", "two"], strlen)
         check_raw_content(path, "vxs", expected_bytes)
 
     def test_overlength_splitcoding(self, tempdir):
         # Check expected behaviour when non-ascii multibyte coding gets truncated
         path = tempdir / "test_writestrings_overlength_splitcoding.nc"
-        ds = make_encoded_dataset(path, strlen=5, encoding="utf-8")
+        strlen = 5
+        ds = make_encoded_dataset(path, strlen=strlen, encoding="utf-8")
         v = ds.variables["vxs"]
         v[:] = ["1", "1234ü", "two"]
         # This creates a problem: it won't read back
@@ -263,7 +231,7 @@ class TestWriteStrings:
             b"1234\xc3",  # NOTE: truncated encoding
             b"two",
         ]
-        expected_bytearray = make_bytearray(expected_bytes)
+        expected_bytearray = make_bytearray(expected_bytes, strlen)
         check_raw_content(path, "vxs", expected_bytearray)
 
 
@@ -272,9 +240,9 @@ class TestWriteChars:
     def test_write_chars(self, tempdir, write_form):
         encoding = "utf-8"
         write_strings = samples_3_nonascii
-        write_bytes = make_bytearray(write_strings, encoding=encoding)
+        strlen = strings_maxbytes(write_strings, encoding)
+        write_bytes = make_bytearray(write_strings, strlen, encoding=encoding)
         # NOTE: 'flexi' form util decides the width needs to be 7 !!
-        strlen = write_bytes.shape[-1]
         path = tempdir / f"test_writechars_{write_form}.nc"
         ds = make_encoded_dataset(path, encoding=encoding, strlen=strlen)
         v = ds.variables["vxs"]
