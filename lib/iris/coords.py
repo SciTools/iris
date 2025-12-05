@@ -2402,8 +2402,12 @@ class Coord(_DimensionalMetadata):
                 points = np.empty(self.shape[0] + 2)
                 points[1:-1] = self.points
                 direction = 1 if self.points[-1] > self.points[0] else -1
-                points[0] = self.points[-1] - (self.units.modulus * direction)
-                points[-1] = self.points[0] + (self.units.modulus * direction)
+                modulus_type = np.promote_types(
+                    self.points.dtype, type(self.units.modulus)
+                )
+                (modulus,) = np.array([self.units.modulus], dtype=modulus_type)
+                points[0] = self.points[-1] - (modulus * direction)
+                points[-1] = self.points[0] + (modulus * direction)
                 diffs = np.diff(points)
             else:
                 diffs = np.diff(self.points)
@@ -2794,13 +2798,15 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
-        """coord.__deepcopy__() -> Deep copy of coordinate.
+    def __deepcopy__(self, memo):
+        """Return a deep copy of the DimCoord, with read-only points and bounds."""
+        # Inspired by matplotlib#30198.
+        # Replicates the default copy behaviour, which can then be modified below.
+        cls = self.__class__
+        memo[id(self)] = new_coord = cls.__new__(cls)
+        for key, val in self.__dict__.items():
+            setattr(new_coord, key, copy.deepcopy(val, memo))
 
-        Used if copy.deepcopy is called on a coordinate.
-
-        """
-        new_coord = copy.deepcopy(super(), memo)
         # Ensure points and bounds arrays are read-only.
         new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
