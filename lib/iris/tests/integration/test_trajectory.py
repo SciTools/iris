@@ -32,7 +32,7 @@ class TestColpex:
         cube.remove_coord("surface_altitude")
         self.cube = cube
 
-    def test_trajectory_extraction(self):
+    def test_trajectory_extraction(self, request):
         # Pull out a single point - no interpolation required
         single_point = traj_interpolate(
             self.cube,
@@ -43,7 +43,7 @@ class TestColpex:
             single_point[..., 0].data, expected, rtol=2.0e-7
         )
         _shared_utils.assert_CML(
-            single_point, ("trajectory", "single_point.cml"), checksum=False
+            request, single_point, ("trajectory", "single_point.cml"), checksum=False
         )
 
     def test_trajectory_extraction_calc(self):
@@ -71,7 +71,7 @@ class TestColpex:
             sample_points.append((name, values))
         return sample_points
 
-    def test_trajectory_extraction_axis_aligned(self):
+    def test_trajectory_extraction_axis_aligned(self, request):
         # Extract a simple, axis-aligned trajectory that is similar to an
         # indexing operation.
         # (It's not exactly the same because the source cube doesn't have
@@ -84,10 +84,10 @@ class TestColpex:
         sample_points = self._traj_to_sample_points(trajectory)
         trajectory_cube = traj_interpolate(self.cube, sample_points)
         _shared_utils.assert_CML(
-            trajectory_cube, ("trajectory", "constant_latitude.cml")
+            request, trajectory_cube, ("trajectory", "constant_latitude.cml")
         )
 
-    def test_trajectory_extraction_zigzag(self):
+    def test_trajectory_extraction_zigzag(self, request):
         # Extract a zig-zag trajectory
         waypoints = [
             {"grid_latitude": -0.1188, "grid_longitude": 359.5886},
@@ -124,7 +124,7 @@ class TestColpex:
         )
 
         _shared_utils.assert_CML(
-            trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False
+            request, trajectory_cube, ("trajectory", "zigzag.cml"), checksum=False
         )
         _shared_utils.assert_array_all_close(
             trajectory_cube.data, expected, rtol=2.0e-7
@@ -226,11 +226,11 @@ class TestTriPolar:
             ("latitude", latitudes),
         ]
 
-    def test_tri_polar(self):
+    def test_tri_polar(self, request):
         # extract
         sampled_cube = traj_interpolate(self.cube, self.sample_points, method="nearest")
         _shared_utils.assert_CML(
-            sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml")
+            request, sampled_cube, ("trajectory", "tri_polar_latitude_slice.cml")
         )
 
     def test_tri_polar_method_linear_fails(self):
@@ -326,7 +326,7 @@ class TestTriPolar:
 
 
 class TestLazyData:
-    def test_hybrid_height(self):
+    def test_hybrid_height(self, request):
         cube = istk.simple_4d_with_hybrid_height()
         # Put a lazy array into the cube so we can test deferred loading.
         cube.data = as_lazy_data(cube.data)
@@ -344,4 +344,6 @@ class TestLazyData:
         # Check that creating the trajectory hasn't led to the original
         # data being loaded.
         assert cube.has_lazy_data()
-        _shared_utils.assert_CML([cube, xsec], ("trajectory", "hybrid_height.cml"))
+        _shared_utils.assert_CML(
+            request, [cube, xsec], ("trajectory", "hybrid_height.cml")
+        )
