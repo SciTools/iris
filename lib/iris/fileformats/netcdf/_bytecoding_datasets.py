@@ -123,9 +123,10 @@ def flexi_encode_stringarray_as_bytearray(
 
 
 def encode_stringarray_as_bytearray(
-    data: np.ndarray, encoding: str, string_dimension_length: int
+    data: np.typing.ArrayLike, encoding: str, string_dimension_length: int
 ) -> np.ndarray:
     """Encode strings as a bytes array."""
+    data = np.asanyarray(data)
     element_shape = data.shape
     result = np.zeros(element_shape + (string_dimension_length,), dtype="S1")
     right_pad = b"\0" * string_dimension_length
@@ -179,7 +180,7 @@ class EncodedVariable(VariableWrapper):
                 data = decode_bytesarray_to_stringarray(data, encoding, strlen)
             except UnicodeDecodeError as err:
                 msg = (
-                    f"Character data in variable {self.name!r} could not be decoded"
+                    f"Character data in variable {self.name!r} could not be decoded "
                     f"with the {encoding!r} encoding.  This can be fixed by setting the "
                     "variable '_Encoding' attribute to suit the content."
                 )
@@ -188,6 +189,7 @@ class EncodedVariable(VariableWrapper):
         return data
 
     def __setitem__(self, keys, data):
+        data = np.asanyarray(data)
         if self._is_chardata():
             # N.B. we never need to UNset this, as we totally control it
             self._contained_instance.set_auto_chartostring(False)
