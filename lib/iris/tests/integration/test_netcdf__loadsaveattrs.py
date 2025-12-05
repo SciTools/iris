@@ -166,7 +166,7 @@ class MixinAttrsTesting:
         """Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
 
-        Idea borrowed from :meth:`iris.tests.IrisTest.result_path`.
+        Idea borrowed from :meth:`iris.tests._shared_utils.IrisTest.result_path`.
 
         Returns
         -------

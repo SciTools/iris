@@ -74,11 +74,11 @@ class TestLBC:
 @_shared_utils.skip_data
 class TestSkipField:
     def test_missing_lbrel(self, mocker):
-        infile = _shared_utils.get_data_path(("FF", "lbrel_missing"))
-        with mocker.patch("warnings.warn") as warn_fn:
-            fields = iris.load(infile)
-        assert "Input field skipped as PPField creation failed : ", (
+        warn_msg = (
+            "Input field skipped as PPField creation failed : .*"
             "error = 'Unsupported header release number: -32768'"
-            in warn_fn.call_args[0][0]
         )
+        infile = _shared_utils.get_data_path(("FF", "lbrel_missing"))
+        with pytest.warns(match=warn_msg):
+            fields = iris.load(infile)
         assert len(fields) == 2

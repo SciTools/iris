@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving PP files."""
 
-import os
 import re
 
 from cf_units import Unit
@@ -777,7 +776,7 @@ class TestCallbackLoad:
 
 @_shared_utils.skip_data
 class TestZonalMeanBounds:
-    def test_mulitple_longitude(self):
+    def test_mulitple_longitude(self, tmp_path):
         # test that bounds are set for a zonal mean file with many longitude
         # values
         orig_file = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
@@ -786,7 +785,7 @@ class TestZonalMeanBounds:
         f.lbproc = 192  # time and zonal mean
 
         # Write out pp file
-        temp_filename = iris.util.create_temp_filename(".pp")
+        temp_filename = tmp_path / "test.pp"
         with open(temp_filename, "wb") as temp_fh:
             f.save(temp_fh)
 
@@ -794,8 +793,6 @@ class TestZonalMeanBounds:
         cube = iris.load_cube(temp_filename)
 
         assert cube.coord("longitude").has_bounds()
-
-        os.remove(temp_filename)
 
     def test_singular_longitude(self):
         # test that bounds are set for a zonal mean file with a single
