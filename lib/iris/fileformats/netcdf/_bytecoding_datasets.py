@@ -241,23 +241,20 @@ class EncodedVariable(VariableWrapper):
     def _get_string_width(self):
         """Return the string-length defined for this variable."""
         if not hasattr(self, "_strlen"):
-            if hasattr(self, "iris_string_width"):
-                strlen = self.get_ncattr("iris_string_width")
-            else:
-                # Work out the actual byte width from the parent dataset dimensions.
-                strlen = self._get_byte_width()
-                # Convert the string dimension length (i.e. bytes) to a sufficiently-long
-                #  string width, depending on the encoding used.
-                encoding = self._get_encoding() or DEFAULT_READ_ENCODING
-                # regularise the name for comparison with recognised ones
-                encoding = codecs.lookup(encoding).name
-                if "utf-16" in encoding:
-                    # Each char needs at least 2 bytes -- including a terminator char
-                    strlen = (strlen // 2) - 1
-                elif "utf-32" in encoding:
-                    # Each char needs exactly 4 bytes -- including a terminator char
-                    strlen = (strlen // 4) - 1
-                # "ELSE": assume there can be (at most) as many chars as bytes
+            # Work out the actual byte width from the parent dataset dimensions.
+            strlen = self._get_byte_width()
+            # Convert the string dimension length (i.e. bytes) to a sufficiently-long
+            #  string width, depending on the encoding used.
+            encoding = self._get_encoding() or DEFAULT_READ_ENCODING
+            # regularise the name for comparison with recognised ones
+            encoding = codecs.lookup(encoding).name
+            if "utf-16" in encoding:
+                # Each char needs at least 2 bytes -- including a terminator char
+                strlen = (strlen // 2) - 1
+            elif "utf-32" in encoding:
+                # Each char needs exactly 4 bytes -- including a terminator char
+                strlen = (strlen // 4) - 1
+            # "ELSE": assume there can be (at most) as many chars as bytes
 
             # Cache this length control on the variable -- but not as a netcdf attribute
             self.__dict__["_strlen"] = strlen
