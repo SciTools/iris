@@ -69,8 +69,12 @@ def _generate_cubes(uris, callback, constraints):
     import iris.io
 
     """Return a generator of cubes given the URIs and a callback."""
-    if isinstance(uris, str) or not isinstance(uris, Iterable):
-        # Make a string, or other single item, into an iterable.
+    if (
+        isinstance(uris, str)
+        or hasattr(uris, "fromcdl")
+        or not isinstance(uris, Iterable)
+    ):
+        # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
     # Group collections of uris by their iris handler
