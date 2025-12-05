@@ -7,18 +7,16 @@ using :func:`iris.util.unify_time_units`.
 
 """
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cf_units
 import dask.array as da
 import numpy as np
+import pytest
 
 from iris._concatenate import _DerivedCoordAndDims, concatenate
 import iris.aux_factory
 import iris.coords
 import iris.cube
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.util import unify_time_units
 
@@ -52,7 +50,7 @@ class Test_DerivedCoordAndDims:
         )
 
 
-class Test_concatenate__epoch(tests.IrisTest):
+class Test_concatenate__epoch:
     def simple_1d_time_cubes(self, reftimes, coords_points):
         cubes = []
         data_points = [273, 275, 278, 277, 274]
@@ -81,11 +79,11 @@ class Test_concatenate__epoch(tests.IrisTest):
         cubes = self.simple_1d_time_cubes(reftimes, coords_points)
         unify_time_units(cubes)
         result = concatenate(cubes)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (10,))
+        assert len(result) == 1
+        assert result[0].shape == (10,)
 
 
-class Test_cubes_with_aux_coord(tests.IrisTest):
+class Test_cubes_with_aux_coord:
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
@@ -109,7 +107,7 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         cube_b.coord("longitude").points = [120, 150]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_diff_aux_coord_anonymous_dim(self):
         cube_a = self.create_cube()
@@ -118,7 +116,7 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         cube_b.coord("time").points = [12, 18]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_ignore_diff_aux_coord(self):
         cube_a = self.create_cube()
@@ -127,11 +125,11 @@ class Test_cubes_with_aux_coord(tests.IrisTest):
         cube_b.coord("longitude").points = [120, 150]
 
         result = concatenate([cube_a, cube_b], check_aux_coords=False)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
 
-class Test_cubes_with_cell_measure(tests.IrisTest):
+class Test_cubes_with_cell_measure:
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
@@ -155,7 +153,7 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         cube_b.cell_measure("volume").data = [120, 150]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_ignore_diff_cell_measure(self):
         cube_a = self.create_cube()
@@ -164,8 +162,8 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         cube_b.cell_measure("volume").data = [120, 150]
 
         result = concatenate([cube_a, cube_b], check_cell_measures=False)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
     def test_lazy_cell_measure(self):
         cube_a = self.create_cube()
@@ -178,7 +176,7 @@ class Test_cubes_with_cell_measure(tests.IrisTest):
         assert result[0].cell_measure("volume").has_lazy_data()
 
 
-class Test_cubes_with_ancillary_variables(tests.IrisTest):
+class Test_cubes_with_ancillary_variables:
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
 
@@ -202,7 +200,7 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         cube_b.ancillary_variable("quality").data = [120, 150]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_ignore_diff_ancillary_variables(self):
         cube_a = self.create_cube()
@@ -211,8 +209,8 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         cube_b.ancillary_variable("quality").data = [120, 150]
 
         result = concatenate([cube_a, cube_b], check_ancils=False)
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
     def test_lazy_ancillary_variables(self):
         cube_a = self.create_cube()
@@ -225,7 +223,7 @@ class Test_cubes_with_ancillary_variables(tests.IrisTest):
         assert result[0].ancillary_variable("quality").has_lazy_data()
 
 
-class Test_cubes_with_derived_coord(tests.IrisTest):
+class Test_cubes_with_derived_coord:
     def create_cube(self):
         data = np.arange(4).reshape(2, 2)
         aux_factories = []
@@ -271,27 +269,27 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         cube_b.coord("time").points = [12, 18]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
-        np.testing.assert_allclose(
+        _shared_utils.assert_array_all_close(
             result[0].coord("air_pressure").points, [100.0, -880.0]
         )
-        np.testing.assert_allclose(
+        _shared_utils.assert_array_all_close(
             result[0].coord("altitude").points,
             [[10.0, 20.0], [10.0, 40.0], [10.0, 20.0], [10.0, 40.0]],
         )
 
         # Make sure indexing the resulting cube works correctly
         # (see https://github.com/SciTools/iris/issues/5339)
-        self.assertEqual(result[0][0].shape, (2,))
+        assert result[0][0].shape == (2,)
 
         # Make sure ALL aux factory dependencies of the resulting cube were
         # properly updated (i.e., they are different from the original cubes).
         for aux_factory in result[0].aux_factories:
             for coord in aux_factory.dependencies.values():
-                self.assertNotEqual(id(coord), id(cube_a.coord(coord.name())))
-                self.assertNotEqual(id(coord), id(cube_b.coord(coord.name())))
+                assert id(coord) != id(cube_a.coord(coord.name()))
+                assert id(coord) != id(cube_b.coord(coord.name()))
 
     def test_equal_derived_coords_with_bounds(self):
         cube_a = self.create_cube()
@@ -300,10 +298,10 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         cube_b.coord("time").points = [12, 18]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
-        np.testing.assert_allclose(
+        _shared_utils.assert_array_all_close(
             result[0].coord("air_pressure").bounds,
             [[100.0, -395.0], [-390.0, -1860.0]],
         )
@@ -316,10 +314,10 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         cube_b.coord("orog").points = [[0, 0], [0, 0]]
 
         result = concatenate([cube_a, cube_b])
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
-        np.testing.assert_allclose(
+        _shared_utils.assert_array_all_close(
             result[0].coord("altitude").points,
             [[10.0, 20.0], [10.0, 40.0], [10.0, 10.0], [10.0, 10.0]],
         )
@@ -332,7 +330,7 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
         cube_b.coord("ps").points = [10.0, 20.0]
 
         result = concatenate([cube_a, cube_b], check_aux_coords=False)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_ignore_diff_air_pressure(self):
         cube_a = self.create_cube()
@@ -345,16 +343,17 @@ class Test_cubes_with_derived_coord(tests.IrisTest):
             check_aux_coords=False,
             check_derived_coords=False,
         )
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
 
-        np.testing.assert_allclose(
+        _shared_utils.assert_array_all_close(
             result[0].coord("air_pressure").points, [100.0, -880.0]
         )
 
 
-class Test_anonymous_dims(tests.IrisTest):
-    def setUp(self):
+class Test_anonymous_dims:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         data = np.arange(12).reshape(2, 3, 2)
         self.cube = iris.cube.Cube(data, standard_name="air_temperature", units="K")
 
@@ -387,7 +386,7 @@ class Test_anonymous_dims(tests.IrisTest):
         cube2 = cube1.copy()
         cube2.coord("time").points = [12, 18]
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_differing_2d_longitudes(self):
         cube1 = self.cube
@@ -399,7 +398,7 @@ class Test_anonymous_dims(tests.IrisTest):
         cube2.coord("longitude").points = [[-30, -15], [0, 15], [30, 45]]
 
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_matching_non_monotonic_latitudes(self):
         cube1 = self.cube
@@ -410,7 +409,7 @@ class Test_anonymous_dims(tests.IrisTest):
         cube2.coord("time").points = [12, 18]
 
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_differing_non_monotonic_latitudes(self):
         cube1 = self.cube
@@ -422,7 +421,7 @@ class Test_anonymous_dims(tests.IrisTest):
         cube2.coord("latitude").points = [30, 0, 15]
 
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_concatenate_along_anon_dim(self):
         cube1 = self.cube
@@ -433,13 +432,14 @@ class Test_anonymous_dims(tests.IrisTest):
         cube2.coord("latitude").points = [30, 0, 15]
 
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
 
-class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
+class Test_anonymous_dims_alternate_mapping:
     # Ensure that anonymous concatenation is not sensitive to dimension mapping
     # of the anonymous dimension.
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.simple_3d()
         coord = self.cube.coord("wibble")
         self.cube.remove_coord(coord)
@@ -454,7 +454,7 @@ class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
         cube1 = self.cube[..., :2]
         cube2 = self.cube[..., 2:]
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_concatenate_anom_2nd_dim(self):
         # Check that concatenation along a non anonymous dimension is
@@ -467,7 +467,7 @@ class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
         cube1.transpose((2, 0, 1))
         cube2.transpose((2, 0, 1))
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_concatenate_anom_3rd_dim(self):
         # Check that concatenation along a non anonymous dimension is
@@ -480,8 +480,4 @@ class Test_anonymous_dims_alternate_mapping(tests.IrisTest):
         cube1.transpose((1, 2, 0))
         cube2.transpose((1, 2, 0))
         result = concatenate([cube1, cube2])
-        self.assertEqual(len(result), 1)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert len(result) == 1

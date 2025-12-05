@@ -1,6 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: "style: pre-commit fixes"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autoupdate_schedule: "monthly"
+
 files: |
     (?x)(
         noxfile\.py|
@@ -29,7 +35,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.6"
+    rev: "v0.14.7"
     hooks:
     -   id: ruff
         types: [file, python]
@@ -63,7 +69,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.18.2'
+    rev: 'v1.19.0'
     hooks:
     -   id: mypy
         additional_dependencies:

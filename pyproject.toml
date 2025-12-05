@@ -135,6 +135,7 @@ version_scheme = "release-branch-semver"
 addopts = "-ra --durations=25"
 required_plugins = "pytest-mock"
 testpaths = "lib/iris"
+log_level = "INFO"
 
 [tool.coverage.run]
 branch = true

@@ -11,7 +11,6 @@ This document explains the changes made to Iris for this release
    :color: primary
    :icon: info
    :animate: fade-in
-   :open:
 
    The highlights for this minor release of Iris include:
 
@@ -46,6 +45,27 @@ This document explains the changes made to Iris for this release
    And finally, get in touch with us on :issue:`GitHub<new/choose>` if you have
    any issues or feature requests for improving Iris. Enjoy!
 
+v3.14.1 (05 Dec 2025)
+=====================
+
+.. dropdown:: v3.14.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+   #. Fixed compatibility with NumPy v2 for :meth:`~iris.coords.Coord.guess_bounds`
+      :ref:`See the full entry for more<3_14_1_guess_bounds>`.
+
+   #. Tentative compatibility with Python 3.14, pending full CI support later.
+      :ref:`See Dependencies for more<3_14_dependencies>`.
+
+   #. Removed netCDF4<1.7.3 temporary pin.
+
+   #. Enabled Dask versions beyond `2025.10` (`2025.10.0` contained a known bug
+      and is therefore disabled).
 
 ✨ Features
 ===========
@@ -112,6 +132,12 @@ This document explains the changes made to Iris for this release
    error, caused by bad synchronisation between Python-layer and HDF-layer
    file locking on certain filesystems. (:pull:`6760`).
 
+.. _3_14_1_guess_bounds:
+
+#. `@rcomer`_ ensured that :meth:`~iris.coords.Coord.guess_bounds` calculates at
+   double precision for circular coordinates so the bounds span the full circle
+   (:issue:`6738`, :pull:`6793`)
+
 
 💣 Incompatible Changes
 =======================
@@ -147,6 +173,8 @@ This document explains the changes made to Iris for this release
    exceed the optimum chunksize set in dask. (:pull:`6730`)
 
 
+.. _3_14_dependencies:
+
 🔗 Dependencies
 ===============
 
@@ -155,9 +183,24 @@ This document explains the changes made to Iris for this release
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 #. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
-   netCDF4<1.7.3.  All of these introduce problems that won't necessarily be fixed soon,
-   so we anticipate that these pins will be wanted for the v3.14 release.
+   netCDF4<1.7.3.  Edit 2025-12-03: the Python pin has now been removed in
+   :pull:`6817`, :pull:`6826` has removed the netCDF4 pin and
+   replaced the Dask pin with a negation (``!=2025.10.0``).
    (:issue:`6775`, :issue:`6776`, :issue:`6777`, :pull:`6773`)
+
+#. `@trexfeathers`_ provided tentative compatibility with Python 3.14 by fixing
+   :class:`~iris.coords.DimCoord` ``deepcopy`` behaviour. Note that CI coverage
+   for Python 3.14 is not yet possible due to problems in some fringe
+   dependencies, but the relevant tests have been shown to pass in :pull:`6816`.
+   (:issue:`6775`, :pull:`6817`)
+
+#. `@trexfeathers`_ fixed an incompatibility with the netCDF4 package (relating
+   to dataset iterability). (:issue:`6777`, :pull:`6826`)
+
+#. `@trexfeathers`_ replaced the Dask version pin with a negation
+   (``!=2025.10.0``), as the relevant bug has been fixed in subsequent Dask
+   releases. (:issue:`6776`, :pull:`6826`)
+
 
 
 📚 Documentation
