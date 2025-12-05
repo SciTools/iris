@@ -44,7 +44,7 @@ dependencies:
   - imagehash >=4.0
   - pre-commit
   - psutil
-  - pytest<9
+  - pytest
   - pytest-cov
   - pytest-mock
   - pytest-xdist
