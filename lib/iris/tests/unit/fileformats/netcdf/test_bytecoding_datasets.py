@@ -9,7 +9,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from iris.fileformats.netcdf._bytecoding_datasets import EncodedDataset
+from iris.fileformats.netcdf._bytecoding_datasets import (
+    DECODE_TO_STRINGS_ON_READ,
+    EncodedDataset,
+)
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
 
 encoding_options = [None, "ascii", "utf-8", "utf-32"]
@@ -62,14 +65,17 @@ def fetch_undecoded_var(path, varname):
     return v
 
 
+def check_array_matching(arr1, arr2):
+    """Check for arrays matching shape, dtype and content."""
+    assert (
+        arr1.shape == arr2.shape and arr1.dtype == arr2.dtype and np.all(arr1 == arr2)
+    )
+
+
 def check_raw_content(path, varname, expected_byte_array):
     v = fetch_undecoded_var(path, varname)
     bytes_result = v[:]
-    assert (
-        bytes_result.shape == expected_byte_array.shape
-        and bytes_result.dtype == expected_byte_array.dtype
-        and np.all(bytes_result == expected_byte_array)
-    )
+    check_array_matching(bytes_result, expected_byte_array)
 
 
 def _make_bytearray_inner(data, bytewidth, encoding):
@@ -102,7 +108,7 @@ def make_bytearray(data, bytewidth, encoding="ascii"):
     data = _make_bytearray_inner(data, bytewidth, encoding)
     # We should now be able to create an array of single bytes.
     result = np.array(data)
-    assert result.dtype == "<S1"
+    assert result.dtype == "S1"
     return result
 
 
@@ -113,7 +119,7 @@ class TestWriteStrings:
     which is separately tested -- see 'TestReadStrings'.
     """
 
-    def test_write_strings(self, encoding, tempdir):
+    def test_encodings(self, encoding, tempdir):
         # Create a dataset with the variable
         path = tempdir / f"test_writestrings_encoding_{encoding!s}.nc"
 
@@ -258,8 +264,143 @@ class TestWriteChars:
         check_raw_content(path, "vxs", write_bytes)
 
 
-class TestReadStrings:
-    """Test how character data is read and converted to strings."""
+class TestRead:
+    """Test how character data is read and converted to strings.
 
-    def test_encodings(self, encoding):
-        pass
+    N.B. many testcases here parallel the 'TestWriteStrings' : we are creating test
+    datafiles with 'make_dataset' and assigning raw bytes, as-per 'TestWriteChars'.
+
+    We are mostly checking here that reading back produces string arrays as expected.
+    However, it is simple + convenient to also check the 'DECODE_TO_STRINGS_ON_READ'
+    function here, i.e. "raw" bytes reads.  So that is also done in this class.
+    """
+
+    @pytest.fixture(params=["strings", "bytes"])
+    def readmode(self, request):
+        return request.param
+
+    def test_encodings(self, encoding, tempdir, readmode):
+        # Create a dataset with the variable
+        path = tempdir / f"test_read_encodings_{encoding!s}_{readmode}.nc"
+
+        if encoding in [None, "ascii"]:
+            write_strings = samples_3_ascii
+            write_encoding = "ascii"
+        else:
+            write_strings = samples_3_nonascii
+            write_encoding = encoding
+
+        write_strings = write_strings.copy()  # just for safety?
+        strlen = strings_maxbytes(write_strings, write_encoding)
+        write_bytes = make_bytearray(write_strings, strlen, encoding=write_encoding)
+
+        ds_encoded = make_encoded_dataset(path, strlen, encoding)
+        v = ds_encoded.variables["vxs"]
+        v[:] = write_bytes
+
+        if readmode == "strings":
+            # Test "normal" read --> string array
+            result = v[:]
+            expected = write_strings
+            if encoding == "utf-8":
+                # In this case, with the given non-ascii sample data, the
+                #  "default minimum string length" is overestimated.
+                assert strlen == 7 and result.dtype == "U7"
+                # correct the result dtype to pass the write_strings comparison below
+                truncated_result = result.astype("U4")
+                # Also check that content is the same (i.e. not actually truncated)
+                assert np.all(truncated_result == result)
+                result = truncated_result
+        else:
+            # Test "raw" read --> byte array
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                result = v[:]
+            expected = write_bytes
+
+        check_array_matching(result, expected)
+
+    def test_scalar(self, tempdir, readmode):
+        # Like 'test_write_strings', but the variable has *only* the string dimension.
+        path = tempdir / f"test_read_scalar_{readmode}.nc"
+
+        strlen = 5
+        ds_encoded = make_encoded_dataset(path, strlen=strlen)
+        v = ds_encoded.createVariable("v0_scalar", "S1", ("strlen",))
+
+        data_string = "stuff"
+        data_bytes = make_bytearray(data_string, 5)
+
+        # Checks that we *can* write a string
+        v[:] = data_bytes
+
+        if readmode == "strings":
+            # Test "normal" read --> string array
+            result = v[:]
+            expected = np.array(data_string)
+        else:
+            # Test "raw" read --> byte array
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                result = v[:]
+            expected = data_bytes
+
+        check_array_matching(result, expected)
+
+    def test_multidim(self, tempdir, readmode):
+        # Like 'test_write_strings', but the variable has additional dimensions.
+        path = tempdir / f"test_read_multidim_{readmode}.nc"
+
+        strlen = 5
+        ds_encoded = make_encoded_dataset(path, strlen=strlen)
+        ds_encoded.createDimension("y", 2)
+        v = ds_encoded.createVariable(
+            "vyxn",
+            "S1",
+            (
+                "y",
+                "x",
+                "strlen",
+            ),
+        )
+
+        # Check that we *can* write a multidimensional string array
+        test_strings = [
+            ["one", "n", ""],
+            ["two", "xxxxx", "four"],
+        ]
+        test_bytes = make_bytearray(test_strings, strlen)
+        v[:] = test_bytes
+
+        if readmode == "strings":
+            # Test "normal" read --> string array
+            result = v[:]
+            expected = np.array(test_strings)
+        else:
+            # Test "raw" read --> byte array
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                result = v[:]
+            expected = test_bytes
+
+        check_array_matching(result, expected)
+
+    def test_read_encoding_failure(self, tempdir, readmode):
+        path = tempdir / f"test_read_encoding_failure_{readmode}.nc"
+        strlen = 10
+        ds = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
+        v = ds.variables["vxs"]
+        test_utf8_bytes = make_bytearray(
+            samples_3_nonascii, bytewidth=strlen, encoding="utf-8"
+        )
+        v[:] = test_utf8_bytes
+
+        if readmode == "strings":
+            msg = (
+                "Character data in variable 'vxs' could not be decoded "
+                "with the 'ascii' encoding."
+            )
+            with pytest.raises(ValueError, match=msg):
+                v[:]
+        else:
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                result = v[:]  # this ought to be ok!
+
+            assert np.all(result == test_utf8_bytes)
