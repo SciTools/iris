@@ -40,7 +40,7 @@ def tiny_chunks():
         assert np.prod(cube_lazy_data.chunksize) < cube_lazy_data.size
 
     with dask.config.set({"array.chunk-size": "1KiB"}):
-        yield _check_tiny_loaded_chunks
+        return _check_tiny_loaded_chunks
 
 
 @pytest.fixture
@@ -52,7 +52,7 @@ def save_common(tmp_path):
         iris.save(cube, save_path)
         assert save_path.exists()
 
-    yield _func
+    return _func
 
 
 @pytest.fixture
@@ -60,7 +60,7 @@ def get_cubes_from_netcdf():
     load_dir_path = Path(_shared_utils.get_data_path(["NetCDF", "global", "xyt"]))
     loaded = iris.load(load_dir_path.glob("*"), "tcco2")
     smaller = CubeList([c[0] for c in loaded])
-    yield smaller
+    return smaller
 
 
 def test_realise_data(tiny_chunks, get_cubes_from_netcdf):
