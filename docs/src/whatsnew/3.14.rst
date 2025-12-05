@@ -11,7 +11,6 @@ This document explains the changes made to Iris for this release
    :color: primary
    :icon: info
    :animate: fade-in
-   :open:
 
    The highlights for this minor release of Iris include:
 
@@ -47,7 +46,7 @@ This document explains the changes made to Iris for this release
    any issues or feature requests for improving Iris. Enjoy!
 
 v3.14.1 (05 Dec 2025)
-==================
+=====================
 
 .. dropdown:: v3.14.1 Patches
    :color: primary
