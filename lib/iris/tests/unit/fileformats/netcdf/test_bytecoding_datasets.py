@@ -9,11 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from iris.fileformats.netcdf._bytecoding_datasets import (
-    EncodedDataset,
-    encode_stringarray_as_bytearray,
-    flexi_encode_stringarray_as_bytearray,
-)
+from iris.fileformats.netcdf._bytecoding_datasets import EncodedDataset
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
 
 encoding_options = [None, "ascii", "utf-8", "utf-32"]
@@ -66,8 +62,92 @@ def fetch_undecoded_var(path, varname):
     return v
 
 
+def check_raw_content(path, varname, expected_byte_array):
+    v = fetch_undecoded_var(path, varname)
+    bytes_result = v[:]
+    assert (
+        bytes_result.shape == expected_byte_array.shape
+        and bytes_result.dtype == expected_byte_array.dtype
+        and np.all(bytes_result == expected_byte_array)
+    )
+
+
+def _make_bytearray_inner(data, encoding):
+    # Convert to a (list of [lists of..]) strings or bytes to a
+    #  (list of [lists of..]) length-1 bytes with an extra dimension.
+    if isinstance(data, str):
+        # Convert input strings to bytes
+        data = data.encode(encoding)
+    if isinstance(data, bytes):
+        # iterate over bytes to get a sequence of length-1 bytes (what np.array wants)
+        result = [data[i : i + 1] for i in range(len(data))]
+    else:
+        # If not string/bytes, expect the input to be a list.
+        # N.B. the recursion is inefficient, but we don't care about that here
+        result = [_make_bytearray_inner(part, encoding) for part in data]
+    return result
+
+
+def make_bytearray(data, encoding="ascii"):
+    """Convert bytes or lists of bytes into a numpy byte array.
+
+    This is largely to avoid using "encode_stringarray_as_bytearray", since we don't
+    want to depend on that when we should be testing it.
+    So, it mostly replicates the function of that, but it does also support bytes in the
+    input, and it automatically finds + applies the maximum bytes-lengths in the input.
+    """
+    # First, Convert to a (list of [lists of]..) length-1 bytes objects
+    data = _make_bytearray_inner(data, encoding)
+
+    # Numbers of bytes in the inner dimension are the lengths of bytes/strings input,
+    #  so they aren't all the same.
+    # To enable array conversion, we fix that by expanding all to the max length
+
+    def get_maxlen(data):
+        # Find the maximum number of bytes in the inner dimension.
+        if not isinstance(data, list):
+            # Inner bytes object
+            assert isinstance(data, bytes)
+            longest = len(data)
+        else:
+            # We have a list: either a list of bytes, or a list of lists.
+            if len(data) == 0 or not isinstance(data[0], list):
+                # inner-most list, should contain bytes if anything
+                assert len(data) == 0 or isinstance(data[0], bytes)
+                # return n-bytes
+                longest = len(data)
+            else:
+                # list of lists: return max length of sub-lists
+                longest = max(get_maxlen(part) for part in data)
+        return longest
+
+    maxlen = get_maxlen(data)
+
+    def extend_all_to_maxlen(data, length, filler=b"\0"):
+        # Extend each "innermost" list (of single bytes) to the required length
+        if isinstance(data, list):
+            if len(data) == 0 or not isinstance(data[0], list):
+                # Pad all the inner-most lists to the required number of elements
+                n_extra = length - len(data)
+                if n_extra > 0:
+                    data = data + [filler] * n_extra
+            else:
+                data = [extend_all_to_maxlen(part, length, filler) for part in data]
+        return data
+
+    data = extend_all_to_maxlen(data, maxlen)
+    # We should now be able to create an array of single bytes.
+    result = np.array(data)
+    assert result.dtype == "<S1"
+    return result
+
+
 class TestWriteStrings:
-    """Test how string data is saved to a file."""
+    """Test how string data is saved to a file.
+
+    Mostly, we read back data as a "normal" dataset to avoid relying on the read code,
+    which is separately tested -- see 'TestReadStrings'.
+    """
 
     def test_write_strings(self, encoding, tempdir):
         # Create a dataset with the variable
@@ -91,18 +171,11 @@ class TestWriteStrings:
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
+        expected_bytes = make_bytearray(writedata, write_encoding)
+        check_raw_content(path, "vxs", expected_bytes)
+
+        # Check also that the "_Encoding" property is as expected
         v = fetch_undecoded_var(path, "vxs")
-
-        # Check that the raw result is as expected
-        bytes_result = v[:]
-        expected = encode_stringarray_as_bytearray(writedata, write_encoding, strlen)
-        assert (
-            bytes_result.shape == expected.shape
-            and bytes_result.dtype == expected.dtype
-            and np.all(bytes_result == expected)
-        )
-
-        # Check that the "_Encoding" property is also as expected
         result_attr = v.getncattr("_Encoding") if "_Encoding" in v.ncattrs() else None
         assert result_attr == encoding
 
@@ -118,15 +191,8 @@ class TestWriteStrings:
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
-        v = fetch_undecoded_var(path, "v0_scalar")
-        result = v[:]
-
-        # Check that the raw result is as expected
-        assert (
-            result.shape == (5,)
-            and result.dtype == "<S1"
-            and np.all(result == [b"s", b"t", b"u", b"f", b"f"])
-        )
+        expected_bytes = make_bytearray(b"stuff")
+        check_raw_content(path, "v0_scalar", expected_bytes)
 
     def test_multidim(self, tempdir):
         # Like 'test_write_strings', but the variable has additional dimensions.
@@ -145,34 +211,16 @@ class TestWriteStrings:
         )
 
         # Check that we *can* write a multidimensional string array
-        test_data = np.array(
-            [
-                ["one", "n", ""],
-                ["two", "xxxxx", "four"],
-            ],
-            dtype="U5",
-        )
+        test_data = [
+            ["one", "n", ""],
+            ["two", "xxxxx", "four"],
+        ]
         v[:] = test_data
 
         # Close, re-open as an "ordinary" dataset, and check the raw content.
         ds_encoded.close()
-        v = fetch_undecoded_var(path, "vyxn")
-        result = v[:]
-
-        # Check that the raw result is as expected
-        expected_bytes = encode_stringarray_as_bytearray(
-            test_data, encoding="ascii", string_dimension_length=5
-        )
-        assert (
-            result.shape
-            == (
-                2,
-                3,
-                5,
-            )
-            and result.dtype == "<S1"
-            and np.all(result == expected_bytes)
-        )
+        expected_bytes = make_bytearray(test_data)
+        check_raw_content(path, "vyxn", expected_bytes)
 
     def test_write_encoding_failure(self, tempdir):
         path = tempdir / "test_writestrings_encoding_failure.nc"
@@ -185,8 +233,38 @@ class TestWriteStrings:
         with pytest.raises(ValueError, match=msg):
             v[:] = samples_3_nonascii
 
-    def test_overlength_warning(self):
-        pass
+    def test_overlength(self, tempdir):
+        # Check expected behaviour with over-length data
+        path = tempdir / "test_writestrings_overlength.nc"
+        ds = make_encoded_dataset(path, strlen=5, encoding="ascii")
+        v = ds.variables["vxs"]
+        v[:] = ["1", "123456789", "two"]
+        expected_bytes = make_bytearray(["1", "12345", "two"])
+        check_raw_content(path, "vxs", expected_bytes)
+
+    def test_overlength_splitcoding(self, tempdir):
+        # Check expected behaviour when non-ascii multibyte coding gets truncated
+        path = tempdir / "test_writestrings_overlength_splitcoding.nc"
+        ds = make_encoded_dataset(path, strlen=5, encoding="utf-8")
+        v = ds.variables["vxs"]
+        v[:] = ["1", "1234ü", "two"]
+        # This creates a problem: it won't read back
+        msg = (
+            "Character data in variable 'vxs' could not be decoded "
+            "with the 'utf-8' encoding."
+        )
+        with pytest.raises(ValueError, match=msg):
+            v[:]
+
+        # Check also that we *can* read the raw content.
+        ds.close()
+        expected_bytes = [
+            b"1",
+            b"1234\xc3",  # NOTE: truncated encoding
+            b"two",
+        ]
+        expected_bytearray = make_bytearray(expected_bytes)
+        check_raw_content(path, "vxs", expected_bytearray)
 
 
 class TestWriteChars:
@@ -194,9 +272,7 @@ class TestWriteChars:
     def test_write_chars(self, tempdir, write_form):
         encoding = "utf-8"
         write_strings = samples_3_nonascii
-        write_bytes = flexi_encode_stringarray_as_bytearray(
-            write_strings, encoding=encoding
-        )
+        write_bytes = make_bytearray(write_strings, encoding=encoding)
         # NOTE: 'flexi' form util decides the width needs to be 7 !!
         strlen = write_bytes.shape[-1]
         path = tempdir / f"test_writechars_{write_form}.nc"
@@ -210,12 +286,8 @@ class TestWriteChars:
             v[:] = write_bytes
 
         # .. the result should be the same
-        result = v[:]
-        assert (
-            result.shape == write_strings.shape
-            and result.dtype == f"<U{strlen}"  # NOTE: we fixed the string width
-            and np.all(result == write_strings)
-        )
+        ds.close()
+        check_raw_content(path, "vxs", write_bytes)
 
 
 class TestReadStrings:

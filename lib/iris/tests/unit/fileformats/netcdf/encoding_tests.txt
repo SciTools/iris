@@ -146,12 +146,17 @@ Then, as regards the _Encoding ..
 
 TO TEST...
 ==========
-create a dataset + write char data
-  - X assign different encodings: makes no difference
+NOTE on length control:
+    - not an API thing, it's implicit from when you create a variable
+    - this also applies to how it loads back
+        - BUT here there may be scope for a control attribute :
 
-create a dataset + write STRING data
-  - X encoding=(ascii, utf-8, utf-32, None)
-  - X withnonascii=(T, F)
++++ create a dataset + write char data
++++   - X assign different encodings: makes no difference
+
++++ create a dataset + write STRING data
++++   - X encoding=(ascii, utf-8, utf-32, None)
++++   - X withnonascii=(T, F)
   - X length=(long, short, none)
 
 read string data
