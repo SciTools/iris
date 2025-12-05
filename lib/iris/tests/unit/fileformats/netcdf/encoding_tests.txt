@@ -146,25 +146,21 @@ Then, as regards the _Encoding ..
 
 TO TEST...
 ==========
-NOTE on length control:
-    - not an API thing, it's implicit from when you create a variable
-    - this also applies to how it loads back
-        - BUT here there may be scope for a control attribute :
-
 +++ create a dataset + write char data
 +++   - X assign different encodings: makes no difference
 
 +++ create a dataset + write STRING data
 +++   - X encoding=(ascii, utf-8, utf-32, None)
 +++   - X withnonascii=(T, F)
-  - X length=(long, short, none)
+XXXX  - X length=(long, short, none)
+        ***deferred*** to layer above only
 
-read string data
-    - X encoding=(ascii, utf-8, utf-32, None)
-    - X withnonascii=(T, F)
++++ read string data
++++     - X encoding=(ascii, utf-8, utf-32, None)
++++     - X withnonascii=(T, F)
 
-read char data (with control)
-  - X different encodings: make no difference
++++ read char data (with control)
++++   - X different encodings: make no difference
 
 ==rethought==
 write strings
@@ -184,4 +180,12 @@ write char data
 
 read char data
     - X encodings: don't matter
+
+---
+NOTEs on length control:
+not an API thing, it's implicit from when you create a variable
+this also applies to how it loads back
+BUT here there may be scope for a control attribute :
+  "iris_string_dim" - controls width on creation + reading back
+
 
