@@ -311,14 +311,39 @@ class DatasetWrapper(GroupWrapper):
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
+    __slots__ = (
+        "shape",
+        "dtype",
+        "path",
+        "variable_name",
+        "fill_value",
+        "is_bytes",
+        "encoding",
+        "string_length",
+    )
 
-    def __init__(self, shape, dtype, path, variable_name, fill_value):
+    def __init__(
+        self,
+        shape,
+        dtype,
+        path,
+        variable_name,
+        fill_value,
+        encoding: str | None = None,
+        string_length: int = 0,
+    ):
         self.shape = shape
         self.dtype = dtype
         self.path = path
         self.variable_name = variable_name
         self.fill_value = fill_value
+        self.is_bytes = dtype.kind == "S" and dtype.itemsize == 1
+        if self.is_bytes:
+            # We will be returning a different shape : the last dim is the byte-length
+            self.shape = self.shape[:-1]
+            self.dtype = np.dtype(f"U{string_length}")
+        self.encoding = encoding
+        self.string_length = string_length
 
     @property
     def ndim(self):
@@ -337,11 +362,26 @@ class NetCDFDataProxy:
             dataset = netCDF4.Dataset(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
+                # ALWAYS disable byte encoding/decoding
+                #  To avoid current known problems
+                #  See https://github.com/Unidata/netcdf4-python/issues/1440
+                variable.set_auto_chartostring(False)
+
                 # Get the NetCDF variable data and slice.
-                var = variable[keys]
+                data = variable[keys]
+
+                # If bytes, decode to strings
+                if self.is_bytes:
+                    from iris.util import convert_bytesarray_to_strings
+
+                    data = convert_bytesarray_to_strings(
+                        data,
+                        encoding=self.encoding,
+                        string_length=self.string_length,
+                    )
             finally:
                 dataset.close()
-        return np.asanyarray(var)
+        return np.asanyarray(data)
 
     def __repr__(self):
         fmt = (
@@ -406,6 +446,8 @@ class NetCDFWriteProxy:
                         else:
                             raise
                 var = dataset.variables[self.varname]
+                # **Always** disable encode/decode of bytes to strings
+                var.set_auto_chartostring(False)
                 var[keys] = array_data
             finally:
                 try:
