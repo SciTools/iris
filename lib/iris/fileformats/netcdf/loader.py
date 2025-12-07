@@ -11,7 +11,6 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
-import codecs
 from collections.abc import Iterable, Iterator, Mapping
 from contextlib import contextmanager
 from copy import deepcopy
@@ -270,35 +269,9 @@ def _get_cf_var_data(cf_var):
             # Normal NCVariable type:
             total_bytes = cf_var.size * cf_var.dtype.itemsize
 
-        default_encoding = "utf-8"
-        encoding = getattr(cf_var, "_Encoding", None)
-        if encoding is None:
-            # utf-8 is a reasonable "safe" default, equivalent to 'ascii' for ascii data
-            encoding = default_encoding
-        else:
-            try:
-                # Accept + normalise naming of encodings
-                encoding = codecs.lookup(encoding).name
-                # NOTE: if encoding does not suit data, errors can occur.
-                # For example, _Encoding = "ascii", with non-ascii content.
-            except LookupError:
-                # Replace some invalid setting with "safe"(ish) fallback.
-                encoding = default_encoding
-
-        string_length = getattr(cf_var, "iris_string_length", None)
-
         if total_bytes < _LAZYVAR_MIN_BYTES:
             # Don't make a lazy array, as it will cost more memory AND more time to access.
             result = cf_var[:]
-
-            if result.dtype.kind == "S":
-                from iris.util import convert_bytesarray_to_strings
-
-                result = convert_bytesarray_to_strings(
-                    result,
-                    encoding=encoding,
-                    string_length=string_length,
-                )
 
             # Special handling of masked scalar value; this will be returned as
             # an `np.ma.masked` instance which will lose the original dtype.
@@ -322,17 +295,8 @@ def _get_cf_var_data(cf_var):
                 "_FillValue",
                 _thread_safe_nc.default_fillvals[fill_dtype],
             )
-
-            # NOTE: if the data is bytes which need to be converted to strings on read,
-            #  the data-proxy will do that (and it modifies its shape + dtype).
             proxy = NetCDFDataProxy(
-                cf_var.shape,
-                dtype,
-                cf_var.filename,
-                cf_var.cf_name,
-                fill_value,
-                encoding=encoding,
-                string_length=string_length,
+                cf_var.shape, dtype, cf_var.filename, cf_var.cf_name, fill_value
             )
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
