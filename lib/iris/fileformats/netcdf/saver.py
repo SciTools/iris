@@ -1578,8 +1578,8 @@ class Saver:
             name = element.standard_name or element.long_name
             if not name or set(name).intersection(string.whitespace):
                 # We need to invent a name, based on its associated dimensions.
-                if cube is not None and cube.elements(element):
-                    # It is a regular cube elementinate.
+                if cube is not None and cube.coords(element):
+                    # It is a regular cube coordinate.
                     # Auto-generate a name based on the dims.
                     name = ""
                     for dim in cube.coord_dims(element):
