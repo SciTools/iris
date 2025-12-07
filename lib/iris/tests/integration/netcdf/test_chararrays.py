@@ -1,10 +1,19 @@
-import netCDF4 as nc
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Integration tests for string data handling."""
+
+import subprocess
+
 import numpy as np
 import pytest
 
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.fileformats.netcdf import _thread_safe_nc
+from iris.tests import env_bin_path
 
 NX, N_STRLEN = 3, 64
 TEST_STRINGS = ["Münster", "London", "Amsterdam"]
@@ -16,6 +25,7 @@ if VARS_COORDS_SHARE_STRING_DIM:
     TEST_COORD_VALS[-1] = "Xsandwich"  # makes the max coord strlen same as data one
 
 
+# Ensure all tests run with "split attrs" turned on.
 @pytest.fixture(scope="module", autouse=True)
 def enable_split_attrs():
     with iris.FUTURE.context(save_split_attrs=True):
@@ -59,7 +69,8 @@ INCLUDE_NUMERIC_AUXCOORD = True
 
 
 def make_testfile(filepath, chararray, coordarray, encoding_str=None):
-    with nc.Dataset(filepath, "w") as ds:
+    ds = _thread_safe_nc.DatasetWrapper(filepath, "w")
+    try:
         ds.createDimension("x", NX)
         ds.createDimension("nstr", N_STRLEN)
         vx = ds.createVariable("x", int, dimensions=("x"))
@@ -100,6 +111,8 @@ def make_testfile(filepath, chararray, coordarray, encoding_str=None):
             if INCLUDE_NUMERIC_AUXCOORD:
                 coords_str += " v_num"
             v.coordinates = coords_str
+    finally:
+        ds.close()
 
 
 def make_testcube(
@@ -119,12 +132,19 @@ def make_testcube(
     return cube
 
 
-def show_result(filepath):
-    from pp_utils import ncdump
+NCDUMP_PATHSTR = str(env_bin_path("ncdump"))
 
+
+def ncdump(nc_path: str, *args):
+    """Call ncdump to print a dump of a file."""
+    call_args = [NCDUMP_PATHSTR, nc_path] + list(*args)
+    subprocess.run(call_args, check=True)
+
+
+def show_result(filepath):
     print(f"File {filepath}")
     print("NCDUMP:")
-    ncdump(filepath, "")
+    ncdump(filepath)
     # with nc.Dataset(filepath, "r") as ds:
     #     v = ds.variables["v"]
     #     print("\n----\nNetcdf data readback (basic)")
@@ -159,6 +179,13 @@ def show_result(filepath):
         print(repr(err))
 
 
+@pytest.fixture(scope="session")
+def save_dir(tmp_path_factory):
+    return tmp_path_factory.mktemp("save_files")
+
+
+# TODO: the tests don't test things properly yet, they just exercise the code and print
+#  things for manual debugging.
 tsts = (
     None,
     "ascii",
@@ -172,10 +199,10 @@ tsts = (
 
 
 @pytest.mark.parametrize("encoding", tsts)
-def test_load_encodings(encoding):
+def test_load_encodings(encoding, save_dir):
     # small change
     print(f"\n=========\nTesting encoding: {encoding}")
-    filepath = f"tmp_{str(encoding)}.nc"
+    filepath = save_dir / f"tmp_load_{str(encoding)}.nc"
     do_as = encoding
     if encoding != "utf-32":
         do_as = "utf-8"
@@ -190,12 +217,12 @@ def test_load_encodings(encoding):
 
 
 @pytest.mark.parametrize("encoding", tsts)
-def test_save_encodings(encoding):
+def test_save_encodings(encoding, save_dir):
     cube = make_testcube(
         dataarray=TEST_STRINGS, coordarray=TEST_COORD_VALS, encoding_str=encoding
     )
     print(cube)
-    filepath = f"tmp_save_{str(encoding)}.nc"
+    filepath = save_dir / f"tmp_save_{str(encoding)}.nc"
     if encoding == "ascii":
         with pytest.raises(
             UnicodeEncodeError,
@@ -205,19 +232,3 @@ def test_save_encodings(encoding):
     else:
         iris.save(cube, filepath)
         show_result(filepath)
-
-
-# @pytest.mark.parametrize("ndim", [1, 2])
-# def test_convert_bytes_to_strings(ndim: int):
-#     if ndim == 1:
-#         source = convert_strings_to_chararray(TEST_STRINGS, 16)
-#     elif ndim == 2:
-#         source = np.stack([
-#             convert_strings_to_chararray(TEST_STRINGS, 16),
-#             convert_strings_to_chararray(TEST_COORD_VALS, 16),
-#         ])
-#     else:
-#         raise ValueError(f"Unexpected param ndim={ndim}.")
-#     # convert the strings to bytes
-#     result = convert_bytesarray_to_strings(source)
-#     print(result)
