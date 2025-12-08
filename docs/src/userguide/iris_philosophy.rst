@@ -189,3 +189,20 @@ Examples of Iris Warnings
   expected.
 
 .. _ecCodes: https://github.com/ecmwf/eccodes
+
+Planning Procedures
+===================
+
+Planning procedures encompass some of the methods Iris' core developers make
+decisions about how and what changes are made to Iris, and how we go about
+prioritising these.
+
+User Experience
+---------------
+
+Often, improving and updating the existing user experience can fall behind fixing create new features,
+or quashing pesky bugs. To combat this, we plan to have regular development discussions to ensure
+UX doesn't fall behind. These pages offer some insight into what sort of things we might be discussing,
+and hopefully offers some extra transparency behind our development process.
+
+See our more detailed page here: :ref:`ux_guide`.
