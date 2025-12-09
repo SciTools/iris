@@ -73,12 +73,12 @@ jobs:
           env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
+      # Note: this cache is shared across workflows, so sets its own cache period
+      #  and build number.
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          cache_build: 6
-          cache_period: ${{ env.CACHE_PERIOD }}
-          env_name: ${{ env.ENV_NAME }}
+          python_version: ${{ matrix.python-version }}
 
       - name: "conda install"
         uses: conda-incubator/setup-miniconda@v3
@@ -87,14 +87,12 @@ jobs:
           channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
+          # This aligns the top-level env with the env that Nox will create
+          #  below - meaning optimal use of package caching.
+          python-version: ${{ matrix.python-version }}
 
-      - name: "conda environment cache"
-        uses: ./.github/workflows/composite/conda-env-cache
-        with:
-          cache_build: 6
-          cache_period: ${{ env.CACHE_PERIOD }}
-          env_name: ${{ env.ENV_NAME }}
-          install_packages: "cartopy nox pip"
+      - name: "install cartopy + nox + pip"
+        run: conda install --quiet --name ${{ env.ENV_NAME }} cartopy nox pip
 
       - name: "conda info"
         run: |
@@ -107,13 +105,6 @@ jobs:
           cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
-
-      - name: "nox cache"
-        uses: ./.github/workflows/composite/nox-cache
-        with:
-          cache_build: 6
-          env_name: ${{ env.ENV_NAME }}
-          lock_file: ${{ env.LOCK_FILE }}
 
       # TODO: drop use of site.cfg and explicit use of mplrc
       - name: "iris configure"
