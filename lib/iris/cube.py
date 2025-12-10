@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from collections.abc import (
+    Callable,
     Container,
     Iterable,
     Iterator,
@@ -2810,6 +2811,82 @@ class Cube(CFVariableMixin):
                     )
                     raise ValueError(msg)
         self._metadata_manager.cell_methods = cell_methods
+
+    def components(
+        self,
+        name_or_metadata: str
+        | CoordMetadata
+        | iris.coords._DimensionalMetadata
+        | None = None,
+    ) -> list[iris.coords._DimensionalMetadata]:
+        """Return a list of 'named' cube components.
+
+        Parameters
+        ----------
+        name_or_metadata : str | CoordMetadata | iris.coords._DimensionalMetadata | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A list of 'named' cube components matching the given criteria.
+
+        Notes
+        -----
+        :class:`coord_system`s are not considered a cube component as they have
+        no `name` attribute.
+        """
+        components: list[iris.coords._DimensionalMetadata] = []
+
+        cube_methods: list[Callable[..., list[Any]]] = [
+            self.coords,
+            self.cell_measures,
+            self.ancillary_variables,
+        ]
+        for cube_method in cube_methods:
+            components.extend(cube_method(name_or_metadata))
+
+        # TODO: Do we consider it worth adding coord_systems to this list, even though
+        # it is not a _DimensionalMetadata object?
+        # E.G:
+        #
+        # if name is None:
+        #     components.extend(self.coord_systems())
+        # else:
+        #     components.extend([cs for cs in self.coord_systems() if cs.grid_mapping_name == name])
+
+        return components
+
+    def component(
+        self, name_or_metadata: str | CoordMetadata | iris.coords._DimensionalMetadata
+    ) -> iris.coords._DimensionalMetadata:
+        """Return a 'named' cube component.
+
+        Parameters
+        ----------
+        name_or_metadata : str | CoordMetadata | iris.coords._DimensionalMetadata | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A coordinate or metadata instance equal to that of the desired
+              coordinate e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A cube component matching the given criteria.
+        """
+        return self._dimensional_metadata(name_or_metadata)
 
     def core_data(self) -> np.ndarray | da.Array:
         """Retrieve the data array of this :class:`~iris.cube.Cube`.
