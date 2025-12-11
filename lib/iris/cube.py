@@ -2822,7 +2822,7 @@ class Cube(CFVariableMixin):
         self,
         name_or_metadata: str | CoordMetadata | DimensionalCubeComponent | None = None,
     ) -> list[DimensionalCubeComponent]:
-        """Return a list of 'named' cube components.
+        """Return a list of cube dimensional components.
 
         Parameters
         ----------
@@ -2839,7 +2839,7 @@ class Cube(CFVariableMixin):
 
         Returns
         -------
-        A list of 'named' cube components matching the given criteria.
+        A list of cube components matching the given criteria.
 
         Notes
         -----
@@ -2861,7 +2861,7 @@ class Cube(CFVariableMixin):
     def component(
         self, name_or_metadata: str | CoordMetadata | DimensionalCubeComponent
     ) -> DimensionalCubeComponent:
-        """Return a 'named' cube dimensional component.
+        """Return a single cube dimensional component.
 
         Parameters
         ----------
