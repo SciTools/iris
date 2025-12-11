@@ -35,6 +35,12 @@ class AncillaryVariableNotFoundError(KeyError):
     pass
 
 
+class CubeComponentNotFoundError(KeyError):
+    """Raised when a search yields no cube components."""
+
+    pass
+
+
 class ConnectivityNotFoundError(KeyError):
     """Raised when a search yields no connectivities."""
 

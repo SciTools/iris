@@ -20,7 +20,7 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, TypeGuard
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypeGuard
 import warnings
 from xml.dom.minidom import Document
 
@@ -73,6 +73,12 @@ NP_PRINTOPTIONS_LEGACY = (
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
+
+
+# Type alias for all dimensional cube components (derived from iris.coords._DimensionalMetadata)
+DimensionalCubeComponent: TypeAlias = (
+    DimCoord | AuxCoord | CellMeasure | AncillaryVariable
+)
 
 
 class CubeList(list):
@@ -2814,16 +2820,13 @@ class Cube(CFVariableMixin):
 
     def components(
         self,
-        name_or_metadata: str
-        | CoordMetadata
-        | iris.coords._DimensionalMetadata
-        | None = None,
-    ) -> list[iris.coords._DimensionalMetadata]:
+        name_or_metadata: str | CoordMetadata | DimensionalCubeComponent | None = None,
+    ) -> list[DimensionalCubeComponent]:
         """Return a list of 'named' cube components.
 
         Parameters
         ----------
-        name_or_metadata : str | CoordMetadata | iris.coords._DimensionalMetadata | None
+        name_or_metadata : str | CoordMetadata | DimensionalCubeComponent | None
             Either:
 
             * A string specifying the :attr:`standard_name`, :attr:`long_name`,
@@ -2843,7 +2846,7 @@ class Cube(CFVariableMixin):
         :class:`coord_system`s are not considered a cube component as they have
         no `name` attribute.
         """
-        components: list[iris.coords._DimensionalMetadata] = []
+        components: list[DimensionalCubeComponent] = []
 
         cube_methods: list[Callable[..., list[Any]]] = [
             self.coords,
@@ -2853,25 +2856,16 @@ class Cube(CFVariableMixin):
         for cube_method in cube_methods:
             components.extend(cube_method(name_or_metadata))
 
-        # TODO: Do we consider it worth adding coord_systems to this list, even though
-        # it is not a _DimensionalMetadata object?
-        # E.G:
-        #
-        # if name is None:
-        #     components.extend(self.coord_systems())
-        # else:
-        #     components.extend([cs for cs in self.coord_systems() if cs.grid_mapping_name == name])
-
         return components
 
     def component(
-        self, name_or_metadata: str | CoordMetadata | iris.coords._DimensionalMetadata
-    ) -> iris.coords._DimensionalMetadata:
-        """Return a 'named' cube component.
+        self, name_or_metadata: str | CoordMetadata | DimensionalCubeComponent
+    ) -> DimensionalCubeComponent:
+        """Return a 'named' cube dimensional component.
 
         Parameters
         ----------
-        name_or_metadata : str | CoordMetadata | iris.coords._DimensionalMetadata | None
+        name_or_metadata : str | CoordMetadata | DimensionalCubeComponent | None
             Either:
 
             * A string specifying the :attr:`standard_name`, :attr:`long_name`,
@@ -2886,7 +2880,14 @@ class Cube(CFVariableMixin):
         -------
         A cube component matching the given criteria.
         """
-        return self._dimensional_metadata(name_or_metadata)
+        try:
+            component = self._dimensional_metadata(name_or_metadata)
+        except KeyError:
+            # Special handling for KeyError raised from _dimensional_metadata to give
+            # a more informative error message.
+            msg = f"Expected to find exactly 1 cube component matching {name_or_metadata!r}, but found none."
+            raise iris.exceptions.CubeComponentNotFoundError(msg)
+        return component
 
     def core_data(self) -> np.ndarray | da.Array:
         """Retrieve the data array of this :class:`~iris.cube.Cube`.
