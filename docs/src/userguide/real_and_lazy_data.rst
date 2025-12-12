@@ -1,3 +1,7 @@
+.. explanation:: Real and Lazy Data
+   :tags: data-model;topic_lazy_data
+
+   Read about how Iris defers data loading from disk.
 
 .. _real_and_lazy_data:
 

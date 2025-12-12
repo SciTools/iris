@@ -1,3 +1,8 @@
+.. tutorial:: Loading Iris Cubes
+   :tags: topic_load_save
+
+   A lesson in how Iris loading works.
+
 .. _loading_iris_cubes:
 
 ===================

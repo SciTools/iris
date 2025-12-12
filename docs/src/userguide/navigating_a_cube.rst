@@ -1,3 +1,8 @@
+.. how-to:: Navigating a Cube
+   :tags: topic_data_model
+
+   How to access the properties of a Cube.
+
 =================
 Navigating a Cube
 =================

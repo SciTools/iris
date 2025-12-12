@@ -163,6 +163,8 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_needs",
+    "user_manual_directives",
 ]
 
 if skip_api == "1":
@@ -440,4 +442,50 @@ numfig_format = {
     "figure": "Figure %s",
     "section": "Section %s",
     "table": "Table %s",
+}
+
+# -- sphinx-needs config ------------------------------------------------------
+# See https://sphinx-needs.readthedocs.io/en/latest/configuration.html
+
+needs_types = [
+    {
+        "directive": "tutorial",
+        "title": "Tutorial",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "how-to",
+        "title": "How To",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "explanation",
+        "title": "Explanation",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "reference",
+        "title": "Reference",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    }
+]
+# The layout whenever a 'need item' directive is used. I.e. at the top of each
+#  user manual page.
+needs_default_layout = "focus"
+# IDs must be used in needtables, as the only way to link to the item. Using
+#  the title makes for the most readable / least jarring links.
+needs_id_from_title = True
+# The `tags_links` jinja template displays a list of tags where every topic_*
+#  tag is a link to the relevant section in user_manual/index.rst.
+needs_template_folder = "_templates"
+needs_global_options = {
+    "post_template": {"default": "tags_links"},
 }
