@@ -2844,8 +2844,8 @@ class Cube(CFVariableMixin):
 
         Notes
         -----
-        :class:`coord_system`s are not considered a cube component as they have
-        no `name` attribute.
+        :class:`iris.coords.CoordSystem` is not considered a cube component as they have
+        no `name` attribute or dimensional data.
         """
         components: list[DimensionalCubeComponent] = []
 
@@ -2889,6 +2889,62 @@ class Cube(CFVariableMixin):
             msg = f"Expected to find exactly 1 cube component matching {name_or_metadata!r}, but found none."
             raise iris.exceptions.CubeComponentNotFoundError(msg)
         return component
+
+    def add_component(
+        self,
+        component: DimensionalCubeComponent,
+        data_dims: Iterable[int] | int | None = None,
+    ) -> None:
+        """Add a dimensional component to the cube.
+
+        Parameters
+        ----------
+        dim_coord :
+            The :class:`iris.coords.DimCoord` instance to add to the cube.
+        data_dims :
+            Integer giving the data dimension spanned by the coordinate.
+
+        See Also
+        --------
+        add_dim_coord : For adding dimension coordinates.
+        add_aux_coord : For adding auxiliary coordinates.
+        add_cell_measure : For adding cell measures.
+        add_ancillary_variable : For adding ancillary variables.
+
+        """
+
+        def _value_is_int_or_tuple_of_ints(
+            value: Any,
+        ) -> TypeGuard[int | tuple[int]]:
+            return isinstance(value, int) or (
+                isinstance(value, tuple)
+                and all(isinstance(item, int) for item in value)
+            )
+
+        match component:
+            case iris.coords.DimCoord():
+                if data_dims is None:
+                    # No data_dims given, so add as auxiliary coordinate:
+                    self.add_aux_coord(component, data_dims)
+                else:
+                    # Try to add as a dimension coordinate, but if fails try to add
+                    # as an auxiliary coordinate:
+                    try:
+                        if TYPE_CHECKING:
+                            # TypeGuard to narrow Iterable[int] -> tuple[int]
+                            assert _value_is_int_or_tuple_of_ints(data_dims)
+                        self.add_dim_coord(component, data_dims)
+                    except ValueError:
+                        self.add_aux_coord(component, data_dims)
+            case iris.coords.AuxCoord():
+                self.add_aux_coord(component, data_dims)
+            case iris.coords.CellMeasure():
+                self.add_cell_measure(component, data_dims)
+            case iris.coords.AncillaryVariable():
+                self.add_ancillary_variable(component, data_dims)
+            case _:
+                msg = f"Cannot add component of type {type(component)!r} to cube."  # type: ignore[unreachable]
+                raise iris.exceptions.CannotAddError(msg)
 
     def core_data(self) -> np.ndarray | da.Array:
         """Retrieve the data array of this :class:`~iris.cube.Cube`.
