@@ -2821,21 +2821,21 @@ class Cube(CFVariableMixin):
 
     def components(
         self,
-        name_or_metadata: str | CoordMetadata | DimensionalCubeComponent | None = None,
+        name_or_component: str | CoordMetadata | DimensionalCubeComponent | None = None,
     ) -> list[DimensionalCubeComponent]:
         """Return a list of cube dimensional components.
 
         Parameters
         ----------
-        name_or_metadata : str | CoordMetadata | DimensionalCubeComponent | None
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
             Either:
 
             * A string specifying the :attr:`standard_name`, :attr:`long_name`,
               or :attr:`var_name` which is compared against the
               :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-            * A coordinate or metadata instance equal to that of the desired
-              coordinate e.g., :class:`~iris.coords.DimCoord` or
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
 
         Returns
@@ -2855,26 +2855,26 @@ class Cube(CFVariableMixin):
             self.ancillary_variables,
         ]
         for cube_method in cube_methods:
-            components.extend(cube_method(name_or_metadata))
+            components.extend(cube_method(name_or_component))
 
         return components
 
     def component(
-        self, name_or_metadata: str | CoordMetadata | DimensionalCubeComponent
+        self, name_or_component: str | CoordMetadata | DimensionalCubeComponent
     ) -> DimensionalCubeComponent:
         """Return a single cube dimensional component.
 
         Parameters
         ----------
-        name_or_metadata : str | CoordMetadata | DimensionalCubeComponent | None
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
             Either:
 
             * A string specifying the :attr:`standard_name`, :attr:`long_name`,
               or :attr:`var_name` which is compared against the
               :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
-            * A coordinate or metadata instance equal to that of the desired
-              coordinate e.g., :class:`~iris.coords.DimCoord` or
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
 
         Returns
@@ -2882,11 +2882,11 @@ class Cube(CFVariableMixin):
         A cube component matching the given criteria.
         """
         try:
-            component = self._dimensional_metadata(name_or_metadata)
+            component = self._dimensional_metadata(name_or_component)
         except KeyError:
             # Special handling for KeyError raised from _dimensional_metadata to give
             # a more informative error message.
-            msg = f"Expected to find exactly 1 cube component matching {name_or_metadata!r}, but found none."
+            msg = f"Expected to find exactly 1 cube component matching {name_or_component!r}, but found none."
             raise iris.exceptions.CubeComponentNotFoundError(msg)
         return component
 
