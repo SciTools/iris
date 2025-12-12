@@ -1914,6 +1914,33 @@ class Cube(CFVariableMixin):
             if ancillary_variable_ is not ancillary_variable
         ]
 
+    def remove_component(
+        self, name_or_component: str | DimensionalCubeComponent
+    ) -> None:
+        """Remove a dimensional component from the cube.
+
+        Parameters
+        ----------
+        component :
+            The name or instance of the dimensional component to remove from the cube.
+            If a dimensional component object is passed, it must be one of:
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
+
+        """
+        component = self.component(name_or_component)
+        match component:
+            case iris.coords.DimCoord() | iris.coords.AuxCoord():
+                self.remove_coord(component)
+            case iris.coords.CellMeasure():
+                self.remove_cell_measure(component)
+            case iris.coords.AncillaryVariable():
+                self.remove_ancillary_variable(component)
+            case _:
+                msg = f"{type(component)!r} is not a dimensional component of a cube."  # type: ignore[unreachable]
+                raise TypeError(msg)
+
     def replace_coord(self, new_coord: DimCoord | AuxCoord) -> None:
         """Replace the coordinate whose metadata matches the given coordinate."""
         old_coord = self.coord(new_coord)
