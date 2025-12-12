@@ -2899,10 +2899,13 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        dim_coord :
-            The :class:`iris.coords.DimCoord` instance to add to the cube.
+        component :
+            The dimensional component to add to the cube. This must be one of
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
         data_dims :
-            Integer giving the data dimension spanned by the coordinate.
+            Integer giving the data dimension spanned by the component.
 
         See Also
         --------
