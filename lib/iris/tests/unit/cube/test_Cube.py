@@ -33,6 +33,7 @@ from iris.exceptions import (
     AncillaryVariableNotFoundError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
+    CubeComponentNotFoundError,
     UnitConversionError,
 )
 from iris.tests import _shared_utils
@@ -2762,30 +2763,58 @@ class TestSubset:
 
 
 class Test_add_metadata:
-    def test_add_dim_coord(self):
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.add_dim_coord, id="explicit"),
+            pytest.param(Cube.add_component, id="component"),
+        ],
+    )
+    def test_add_dim_coord(self, cube_method):
         cube = Cube(np.arange(3))
         x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
-        cube.add_dim_coord(x_coord, 0)
+        cube_method(cube, x_coord, 0)
         assert cube.coord("x") == x_coord
 
-    def test_add_aux_coord(self):
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.add_aux_coord, id="explicit"),
+            pytest.param(Cube.add_component, id="component"),
+        ],
+    )
+    def test_add_aux_coord(self, cube_method):
         cube = Cube(np.arange(6).reshape(2, 3))
         x_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="x")
-        cube.add_aux_coord(x_coord, [0, 1])
+        cube_method(cube, x_coord, [0, 1])
         assert cube.coord("x") == x_coord
 
-    def test_add_cell_measure(self):
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.add_cell_measure, id="explicit"),
+            pytest.param(Cube.add_component, id="component"),
+        ],
+    )
+    def test_add_cell_measure(self, cube_method):
         cube = Cube(np.arange(6).reshape(2, 3))
         a_cell_measure = CellMeasure(np.arange(6).reshape(2, 3), long_name="area")
-        cube.add_cell_measure(a_cell_measure, [0, 1])
+        cube_method(cube, a_cell_measure, [0, 1])
         assert cube.cell_measure("area") == a_cell_measure
 
-    def test_add_ancillary_variable(self):
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.add_ancillary_variable, id="explicit"),
+            pytest.param(Cube.add_component, id="component"),
+        ],
+    )
+    def test_add_ancillary_variable(self, cube_method):
         cube = Cube(np.arange(6).reshape(2, 3))
         ancillary_variable = AncillaryVariable(
             data=np.arange(6).reshape(2, 3), long_name="detection quality"
         )
-        cube.add_ancillary_variable(ancillary_variable, [0, 1])
+        cube_method(cube, ancillary_variable, [0, 1])
         assert cube.ancillary_variable("detection quality") == ancillary_variable
 
     def test_add_valid_aux_factory(self):
@@ -2833,41 +2862,98 @@ class Test_remove_metadata:
         cube.add_ancillary_variable(ancillary_variable, [0, 1])
         self.cube = cube
 
-    def test_remove_dim_coord(self):
-        self.cube.remove_coord(self.cube.coord("x"))
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_coord, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_dim_coord(self, cube_method):
+        cube_method(self.cube, self.cube.coord("x"))
         assert self.cube.coords("x") == []
 
-    def test_remove_aux_coord(self):
-        self.cube.remove_coord(self.cube.coord("z"))
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_coord, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_aux_coord(self, cube_method):
+        cube_method(self.cube, self.cube.coord("z"))
         assert self.cube.coords("z") == []
 
-    def test_remove_cell_measure(self):
-        self.cube.remove_cell_measure(self.cube.cell_measure("area"))
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_cell_measure, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_cell_measure(self, cube_method):
+        cube_method(self.cube, self.cube.cell_measure("area"))
         assert self.cube._cell_measures_and_dims == [(self.b_cell_measure, (0, 1))]
 
-    def test_remove_cell_measure_by_name(self):
-        self.cube.remove_cell_measure("area")
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_cell_measure, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_cell_measure_by_name(self, cube_method):
+        cube_method(self.cube, "area")
         assert self.cube._cell_measures_and_dims == [(self.b_cell_measure, (0, 1))]
 
-    def test_fail_remove_cell_measure_by_name(self):
-        with pytest.raises(CellMeasureNotFoundError):
-            self.cube.remove_cell_measure("notarea")
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_cell_measure, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_fail_remove_cell_measure_by_name(self, cube_method):
+        with pytest.raises((CellMeasureNotFoundError, CubeComponentNotFoundError)):
+            cube_method(self.cube, "notarea")
 
-    def test_remove_ancilliary_variable(self):
-        self.cube.remove_ancillary_variable(
-            self.cube.ancillary_variable("Quality of Detection")
-        )
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_ancillary_variable, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_ancilliary_variable(self, cube_method):
+        cube_method(self.cube, self.cube.ancillary_variable("Quality of Detection"))
         assert self.cube._ancillary_variables_and_dims == []
 
-    def test_remove_ancilliary_variable_by_name(self):
-        self.cube.remove_ancillary_variable("Quality of Detection")
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_ancillary_variable, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_remove_ancilliary_variable_by_name(self, cube_method):
+        cube_method(self.cube, "Quality of Detection")
         assert self.cube._ancillary_variables_and_dims == []
 
-    def test_fail_remove_ancilliary_variable_by_name(self):
-        with pytest.raises(AncillaryVariableNotFoundError):
-            self.cube.remove_ancillary_variable("notname")
+    @pytest.mark.parametrize(
+        "cube_method",
+        [
+            pytest.param(Cube.remove_ancillary_variable, id="explicit"),
+            pytest.param(Cube.remove_component, id="component"),
+        ],
+    )
+    def test_fail_remove_ancilliary_variable_by_name(self, cube_method):
+        with pytest.raises(
+            (AncillaryVariableNotFoundError, CubeComponentNotFoundError)
+        ):
+            cube_method(self.cube, "notname")
 
 
+@pytest.mark.parametrize("method", ["explicit", "component"])
 class TestCoords:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -2877,15 +2963,17 @@ class TestCoords:
         self.x_coord = x_coord
         self.cube = cube
 
-    def test_bad_coord(self):
+    def test_bad_coord(self, method):
         bad_coord = self.x_coord.copy()
         bad_coord.attributes = {"bad": "attribute"}
-        re = (
-            "Expected to find exactly 1 coordinate matching the given "
-            "'x' coordinate's metadata, but found none."
-        )
-        with pytest.raises(CoordinateNotFoundError, match=re):
-            _ = self.cube.coord(bad_coord)
+        re = r"Expected to find exactly 1 (coordinate|cube component) matching"
+        with pytest.raises(
+            (CoordinateNotFoundError, CubeComponentNotFoundError), match=re
+        ):
+            if method == "explicit":
+                _ = self.cube.coord(bad_coord)
+            else:
+                _ = self.cube.component(bad_coord)
 
 
 class Test_coord_division_units:
@@ -2947,6 +3035,7 @@ class Test__getitem_AncillaryVariables:
         assert result.shape == result.ancillary_variables()[0].data.shape
 
 
+@pytest.mark.parametrize("method", ["explicit", "component"])
 class TestAncillaryVariables:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -2959,49 +3048,87 @@ class TestAncillaryVariables:
         cube.add_ancillary_variable(self.ancill_var, [0, 1])
         self.cube = cube
 
-    def test_get_ancillary_variable(self):
-        ancill_var = self.cube.ancillary_variable("number_of_observations")
+    def test_get_ancillary_variable(self, method):
+        if method == "explicit":
+            ancill_var = self.cube.ancillary_variable("number_of_observations")
+        else:
+            ancill_var = self.cube.component("number_of_observations")
         assert ancill_var == self.ancill_var
 
-    def test_get_ancillary_variables(self):
-        ancill_vars = self.cube.ancillary_variables("number_of_observations")
+    def test_get_ancillary_variables(self, method):
+        if method == "explicit":
+            ancill_vars = self.cube.ancillary_variables("number_of_observations")
+        else:
+            ancill_vars = self.cube.components("number_of_observations")
         assert len(ancill_vars) == 1
         assert ancill_vars[0] == self.ancill_var
 
-    def test_get_ancillary_variable_obj(self):
-        ancill_vars = self.cube.ancillary_variables(self.ancill_var)
+    def test_get_ancillary_variable_obj(self, method):
+        if method == "explicit":
+            ancill_vars = self.cube.ancillary_variables(self.ancill_var)
+        else:
+            ancill_vars = self.cube.components(self.ancill_var)
         assert len(ancill_vars) == 1
         assert ancill_vars[0] == self.ancill_var
 
-    def test_fail_get_ancillary_variables(self):
-        with pytest.raises(AncillaryVariableNotFoundError):
-            self.cube.ancillary_variable("other_ancill_var")
+    def test_fail_get_ancillary_variables(self, method):
+        with pytest.raises(
+            (AncillaryVariableNotFoundError, CubeComponentNotFoundError)
+        ):
+            if method == "explicit":
+                self.cube.ancillary_variable("other_ancill_var")
+            else:
+                self.cube.component("other_ancill_var")
 
-    def test_fail_get_ancillary_variables_obj(self):
+    def test_fail_get_ancillary_variables_obj(self, method):
         ancillary_variable = self.ancill_var.copy()
         ancillary_variable.long_name = "Number of observations at site"
-        with pytest.raises(AncillaryVariableNotFoundError):
-            self.cube.ancillary_variable(ancillary_variable)
+        with pytest.raises(
+            (AncillaryVariableNotFoundError, CubeComponentNotFoundError)
+        ):
+            if method == "explicit":
+                self.cube.ancillary_variable(ancillary_variable)
+            else:
+                self.cube.component(ancillary_variable)
 
-    def test_ancillary_variable_dims(self):
-        ancill_var_dims = self.cube.ancillary_variable_dims(self.ancill_var)
+    def test_ancillary_variable_dims(self, method):
+        if method == "explicit":
+            ancill_var_dims = self.cube.ancillary_variable_dims(self.ancill_var)
+        else:
+            ancill_var_dims = self.cube.component_dims(self.ancill_var)
         assert ancill_var_dims == (0, 1)
 
-    def test_fail_ancill_variable_dims(self):
+    def test_fail_ancill_variable_dims(self, method):
         ancillary_variable = self.ancill_var.copy()
         ancillary_variable.long_name = "Number of observations at site"
-        with pytest.raises(AncillaryVariableNotFoundError):
-            self.cube.ancillary_variable_dims(ancillary_variable)
+        with pytest.raises(
+            (AncillaryVariableNotFoundError, CubeComponentNotFoundError)
+        ):
+            if method == "explicit":
+                self.cube.ancillary_variable_dims(ancillary_variable)
+            else:
+                self.cube.component_dims(ancillary_variable)
 
-    def test_ancillary_variable_dims_by_name(self):
-        ancill_var_dims = self.cube.ancillary_variable_dims("number_of_observations")
+    def test_ancillary_variable_dims_by_name(self, method):
+        if method == "explicit":
+            ancill_var_dims = self.cube.ancillary_variable_dims(
+                "number_of_observations"
+            )
+        else:
+            ancill_var_dims = self.cube.component_dims("number_of_observations")
         assert ancill_var_dims == (0, 1)
 
-    def test_fail_ancillary_variable_dims_by_name(self):
-        with pytest.raises(AncillaryVariableNotFoundError):
-            self.cube.ancillary_variable_dims("notname")
+    def test_fail_ancillary_variable_dims_by_name(self, method):
+        with pytest.raises(
+            (AncillaryVariableNotFoundError, CubeComponentNotFoundError)
+        ):
+            if method == "explicit":
+                self.cube.ancillary_variable_dims("notname")
+            else:
+                self.cube.component_dims("notname")
 
 
+@pytest.mark.parametrize("method", ["explicit", "component"])
 class TestCellMeasures:
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -3016,47 +3143,78 @@ class TestCellMeasures:
         cube.add_cell_measure(self.a_cell_measure, [0, 1])
         self.cube = cube
 
-    def test_get_cell_measure(self):
-        cm = self.cube.cell_measure("area")
+    def test_get_cell_measure(self, method):
+        if method == "explicit":
+            cm = self.cube.cell_measure("area")
+        else:
+            cm = self.cube.component("area")
         assert cm == self.a_cell_measure
 
-    def test_get_cell_measures(self):
-        cms = self.cube.cell_measures()
+    def test_get_cell_measures(self, method):
+        if method == "explicit":
+            cms = self.cube.cell_measures()
+        else:
+            cms = [
+                component
+                for component in self.cube.components()
+                if isinstance(component, CellMeasure)
+            ]
         assert len(cms) == 1
         assert cms[0] == self.a_cell_measure
 
-    def test_get_cell_measures_obj(self):
-        cms = self.cube.cell_measures(self.a_cell_measure)
+    def test_get_cell_measures_obj(self, method):
+        if method == "explicit":
+            cms = self.cube.cell_measures(self.a_cell_measure)
+        else:
+            cms = self.cube.components(self.a_cell_measure)
         assert len(cms) == 1
         assert cms[0] == self.a_cell_measure
 
-    def test_fail_get_cell_measure(self):
-        with pytest.raises(CellMeasureNotFoundError):
-            _ = self.cube.cell_measure("notarea")
+    def test_fail_get_cell_measure(self, method):
+        with pytest.raises((CellMeasureNotFoundError, CubeComponentNotFoundError)):
+            if method == "explicit":
+                _ = self.cube.cell_measure("notarea")
+            else:
+                _ = self.cube.component("notarea")
 
-    def test_fail_get_cell_measures_obj(self):
+    def test_fail_get_cell_measures_obj(self, method):
         a_cell_measure = self.a_cell_measure.copy()
         a_cell_measure.units = "km2"
-        with pytest.raises(CellMeasureNotFoundError):
-            _ = self.cube.cell_measure(a_cell_measure)
+        with pytest.raises((CellMeasureNotFoundError, CubeComponentNotFoundError)):
+            if method == "explicit":
+                _ = self.cube.cell_measure(a_cell_measure)
+            else:
+                _ = self.cube.component(a_cell_measure)
 
-    def test_cell_measure_dims(self):
-        cm_dims = self.cube.cell_measure_dims(self.a_cell_measure)
+    def test_cell_measure_dims(self, method):
+        if method == "explicit":
+            cm_dims = self.cube.cell_measure_dims(self.a_cell_measure)
+        else:
+            cm_dims = self.cube.component_dims(self.a_cell_measure)
         assert cm_dims == (0, 1)
 
-    def test_fail_cell_measure_dims(self):
+    def test_fail_cell_measure_dims(self, method):
         a_cell_measure = self.a_cell_measure.copy()
         a_cell_measure.units = "km2"
-        with pytest.raises(CellMeasureNotFoundError):
-            _ = self.cube.cell_measure_dims(a_cell_measure)
+        with pytest.raises((CellMeasureNotFoundError, CubeComponentNotFoundError)):
+            if method == "explicit":
+                _ = self.cube.cell_measure_dims(a_cell_measure)
+            else:
+                _ = self.cube.component_dims(a_cell_measure)
 
-    def test_cell_measure_dims_by_name(self):
-        cm_dims = self.cube.cell_measure_dims("area")
+    def test_cell_measure_dims_by_name(self, method):
+        if method == "explicit":
+            cm_dims = self.cube.cell_measure_dims("area")
+        else:
+            cm_dims = self.cube.component_dims("area")
         assert cm_dims == (0, 1)
 
-    def test_fail_cell_measure_dims_by_name(self):
-        with pytest.raises(CellMeasureNotFoundError):
-            self.cube.cell_measure_dims("notname")
+    def test_fail_cell_measure_dims_by_name(self, method):
+        with pytest.raises((CellMeasureNotFoundError, CubeComponentNotFoundError)):
+            if method == "explicit":
+                _ = self.cube.cell_measure_dims("notname")
+            else:
+                _ = self.cube.component_dims("notname")
 
 
 class Test_transpose:
