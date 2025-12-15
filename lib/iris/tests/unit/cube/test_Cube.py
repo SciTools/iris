@@ -41,6 +41,11 @@ from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube, sample_meshcoor
 from iris.warnings import IrisUserWarning, IrisVagueMetadataWarning
 
 
+@pytest.fixture(params=[True, False], ids=["dataless", "with_data"])
+def dataless(request):
+    yield request.param
+
+
 class Test___init___data:
     def test_ndarray(self):
         # np.ndarray should be allowed through
@@ -190,7 +195,6 @@ class Test_data_dtype_fillvalue:
         assert subcube.data.fill_value == fill_value
 
 
-@pytest.mark.parametrize("dataless", [True, False])
 class Test_extract:
     def _create_cube(self, dataless, data, shape, long_name="a1"):
         # moderates behaviour when testing dataless or with-data cubes
@@ -1029,7 +1033,6 @@ class Test_rolling_window:
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
-    @pytest.mark.parametrize("dataless", [True, False])
     def test_string_coord(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1085,7 +1088,6 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
-    @pytest.mark.parametrize("dataless", [True, False])
     def test_ancillary_variables_and_cell_measures_kept(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1093,7 +1095,6 @@ class Test_rolling_window:
         assert res_cube.ancillary_variables() == [self.ancillary_variable]
         assert res_cube.cell_measures() == [self.cell_measure]
 
-    @pytest.mark.parametrize("dataless", [True, False])
     def test_ancillary_variables_and_cell_measures_removed(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1113,7 +1114,6 @@ class Test_rolling_window:
         _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg m2"
 
-    @pytest.mark.parametrize("dataless", [True, False])
     def test_weights_str(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1123,7 +1123,6 @@ class Test_rolling_window:
             _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
-    @pytest.mark.parametrize("dataless", [True, False])
     def test_weights_dim_coord(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1443,7 +1442,6 @@ class Test_intersection__Metadata:
 
 
 # Explicitly check the handling of `circular` on the result.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__Circular:
     def test_regional(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
@@ -1467,7 +1465,6 @@ class Test_intersection__Circular:
 
 
 # Check the various error conditions.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__Invalid:
     def test_reversed_min_max(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
@@ -1545,7 +1542,6 @@ class Test_intersection__Lazy:
         assert result.data[0, 0, -1] == 10
 
 
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection_Points:
     def test_ignore_bounds(self, dataless):
         cube = create_cube(0, 30, bounds=True, dataless=dataless)
@@ -1563,7 +1559,6 @@ class Test_intersection_Points:
 
 # Check what happens with a regional, points-only circular intersection
 # coordinate.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__RegionalSrcModulus:
     def test_request_subset(self, dataless):
         cube = create_cube(40, 60, dataless=dataless)
@@ -1684,7 +1679,6 @@ class Test_intersection__RegionalSrcModulus:
 
 # Check what happens with a global, points-only circular intersection
 # coordinate.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__GlobalSrcModulus:
     def test_global_wrapped_extreme_increasing_base_period(self, dataless):
         # Ensure that we can correctly handle points defined at (base + period)
@@ -1924,7 +1918,6 @@ class Test_intersection__GlobalSrcModulus:
 
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
 class Test_intersection__ModulusBounds:
     def test_global_wrapped_extreme_increasing_base_period(self, dataless):
         # Ensure that we can correctly handle bounds defined at (base + period)
@@ -2308,7 +2301,8 @@ def unrolled_cube(dataless=False):
 
 # Check what happens with a "unrolled" scatter-point data with a circular
 # intersection coordinate.
-@pytest.mark.parametrize("dataless", [True, False], ids=["dataless", "with data"])
+
+
 class Test_intersection__ScatterModulus:
     def test_subset(self, dataless):
         cube = unrolled_cube(dataless)
