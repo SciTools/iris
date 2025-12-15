@@ -44,21 +44,44 @@ class Test_append:
 
 
 class Test_concatenate_cube:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
+    @pytest.fixture(autouse=True, params=[True, False], ids=["dataless", "with_data"])
+    def _setup(self, request):
         self.units = Unit("days since 1970-01-01 00:00:00", calendar="standard")
-        self.cube1 = Cube([1, 2, 3], "air_temperature", units="K")
+        if request.param:
+            self.cube1 = Cube(shape=(3,), standard_name="air_temperature", units="K")
+        else:
+            self.cube1 = Cube(
+                data=[1, 2, 3], standard_name="air_temperature", units="K"
+            )
         self.cube1.add_dim_coord(DimCoord([0, 1, 2], "time", units=self.units), 0)
 
-    def test_pass(self):
-        self.cube2 = Cube([1, 2, 3], "air_temperature", units="K")
-        self.cube2.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
-        result = CubeList([self.cube1, self.cube2]).concatenate_cube()
+    @pytest.mark.parametrize(
+        "dataless_c2", [True, False], ids=["and-dataless", "and-with_data"]
+    )
+    def test_pass(self, dataless_c2):
+        if dataless_c2:
+            data = None
+            shape = (3,)
+        else:
+            data = [1, 2, 3]
+            shape = None
+        cube2 = Cube(data=data, shape=shape, standard_name="air_temperature", units="K")
+        cube2.add_dim_coord(DimCoord([3, 4, 5], "time", units=self.units), 0)
+        result = CubeList([self.cube1, cube2]).concatenate_cube()
         assert isinstance(result, Cube)
 
-    def test_fail(self):
+    @pytest.mark.parametrize(
+        "dataless_c2", [True, False], ids=["and-dataless", "and-with_data"]
+    )
+    def test_fail(self, dataless_c2):
         units = Unit("days since 1970-01-02 00:00:00", calendar="standard")
-        cube2 = Cube([1, 2, 3], "air_temperature", units="K")
+        if dataless_c2:
+            data = None
+            shape = (3,)
+        else:
+            data = [1, 2, 3]
+            shape = None
+        cube2 = Cube(data=data, shape=shape, standard_name="air_temperature", units="K")
         cube2.add_dim_coord(DimCoord([0, 1, 2], "time", units=units), 0)
         with pytest.raises(iris.exceptions.ConcatenateError):
             CubeList([self.cube1, cube2]).concatenate_cube()
