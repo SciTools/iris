@@ -1921,7 +1921,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        component :
+        name_or_component :
             The name or instance of the dimensional component to remove from the cube.
             If a dimensional component object is passed, it must be one of:
             :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
@@ -2868,11 +2868,6 @@ class Cube(CFVariableMixin):
         Returns
         -------
         A list of cube components matching the given criteria.
-
-        Notes
-        -----
-        :class:`iris.coords.CoordSystem` is not considered a cube component as they have
-        no `name` attribute or dimensional data.
         """
         components: list[DimensionalCubeComponent] = []
 
@@ -2991,8 +2986,8 @@ class Cube(CFVariableMixin):
               :meth:`~iris.common.mixin.CFVariableMixin.name`.
 
             * An instance of one of the following: :class:`~iris.coords.DimCoord`,
-            :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` or
-            :class:`~iris.coords.AncillaryVariable`.
+              :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` or
+              :class:`~iris.coords.AncillaryVariable`.
 
         Returns
         -------
