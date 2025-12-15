@@ -17,26 +17,26 @@ class CoordinateCollapseError(IrisError):
     pass
 
 
-class CoordinateNotFoundError(KeyError):
+class CubeComponentNotFoundError(KeyError):
+    """Raised when a search yields no cube components."""
+
+    pass
+
+
+class CoordinateNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no coordinates."""
 
     pass
 
 
-class CellMeasureNotFoundError(KeyError):
+class CellMeasureNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no cell measures."""
 
     pass
 
 
-class AncillaryVariableNotFoundError(KeyError):
+class AncillaryVariableNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no ancillary variables."""
-
-    pass
-
-
-class CubeComponentNotFoundError(KeyError):
-    """Raised when a search yields no cube components."""
 
     pass
 
