@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from collections import namedtuple
 from itertools import permutations
 from unittest import mock
@@ -2557,7 +2553,7 @@ class Test_mesh:
         assert result is self.mesh
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.mesh
         assert result is None
@@ -2570,7 +2566,7 @@ class Test_location:
         _add_test_meshcube(self)
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.location
         assert result is None
@@ -2581,7 +2577,7 @@ class Test_location:
         assert result == self.meshco_x.location
 
     def test_alternate_location(self):
-        # Replace standard setUp cube with an edge-based version.
+        # Replace standard _setup cube with an edge-based version.
         _add_test_meshcube(self, location="edge")
         cube = self.cube
         result = cube.location
@@ -2595,7 +2591,7 @@ class Test_mesh_dim:
         _add_test_meshcube(self)
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.mesh_dim()
         assert result is None
@@ -2606,7 +2602,7 @@ class Test_mesh_dim:
         assert result == 1
 
     def test_alternate(self):
-        # Replace standard setUp cube with an edge-based version.
+        # Replace standard _setup cube with an edge-based version.
         _add_test_meshcube(self, location="edge")
         cube = self.cube
         # Transpose the cube : the mesh dim is then 0
@@ -2761,7 +2757,7 @@ class Test__add_aux_coord__mesh:
         # Re-make the test objects based on that.
         _add_test_meshcube(self, mesh=mesh)
         cube = self.cube
-        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in setUp()
+        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in _setup()
         # Create a new meshco_y, same mesh but based on edges.
         meshco_y = sample_meshcoord(axis="y", mesh=self.mesh, location="edge")
         msg = "does not match existing cube location"
@@ -2774,7 +2770,7 @@ class Test__add_aux_coord__mesh:
         _add_test_meshcube(self, n_z=n_faces)
         cube = self.cube
         meshco_y = self.meshco_y
-        cube.remove_coord(meshco_y)  # Remove y-coord, as in setUp()
+        cube.remove_coord(meshco_y)  # Remove y-coord, as in _setup()
 
         # Attempt to re-attach the 'y' meshcoord, to a different cube dimension.
         msg = "does not match existing cube mesh dimension"
@@ -3798,7 +3794,3 @@ class Test_is_dataless:
     def test_without_data(self):
         cube = Cube(data=None, shape=self.shape)
         assert cube.is_dataless()
-
-
-if __name__ == "__main__":
-    tests.main()
