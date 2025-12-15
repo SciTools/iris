@@ -15,7 +15,6 @@ from typing import List, Tuple
 import pytest
 
 import iris
-from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
@@ -44,6 +43,9 @@ def test_netcdf4_import():
     # Please avoid including these phrases in any comments/strings throughout
     #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
     #  below search to remain quick and simple.
+    from iris.fileformats.netcdf import _thread_safe_nc
+    from iris.tests.unit.fileformats.netcdf._thread_safe_nc import test_NetCDFWriteProxy
+
     import_strings = ("import netCDF4", "from netCDF4")
 
     files_including_import = []
@@ -55,6 +57,7 @@ def test_netcdf4_import():
 
     expected = [
         Path(_thread_safe_nc.__file__),
+        Path(test_NetCDFWriteProxy.__file__),
         Path(system_test.__file__),
         Path(__file__),
     ]

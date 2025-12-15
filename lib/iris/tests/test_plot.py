@@ -463,7 +463,6 @@ class TestAttributePositive(_shared_utils.GraphicsTest):
         self.check_graphic()
 
 
-@_shared_utils.skip_data
 @pytest.fixture(scope="module")
 def load_4d_testcube():
     """Load the realistic_4d() cube with specific modifications.
@@ -471,7 +470,9 @@ def load_4d_testcube():
     Scoped to only load once - used many times so this is much faster.
     """
     # Load example 4d data (TZYX).
-    test_cube = iris.tests.stock.realistic_4d()
+    # skip_data() uses PyTest to raise a Skip Exception if test data is unavailable.
+    realistic_4d = _shared_utils.skip_data(iris.tests.stock.realistic_4d)
+    test_cube = realistic_4d()
     # Replace forecast_period coord with a multi-valued version.
     time_coord = test_cube.coord("time")
     n_times = len(time_coord.points)
@@ -496,7 +497,6 @@ def load_4d_testcube():
     return test_cube
 
 
-@_shared_utils.skip_data
 @pytest.fixture(scope="module")
 def load_wind_no_bounds():
     """Load a cube representing wind data but with no coordinate bounds.
@@ -505,7 +505,9 @@ def load_wind_no_bounds():
     """
     # Load the COLPEX data => TZYX
     path = _shared_utils.get_data_path(("PP", "COLPEX", "small_eastward_wind.pp"))
-    wind = iris.load_cube(path, "x_wind")
+    # skip_data() uses PyTest to raise a Skip Exception if test data is unavailable.
+    load_cube = _shared_utils.skip_data(iris.load_cube)
+    wind = load_cube(path, "x_wind")
 
     # Remove bounds from all coords that have them.
     wind.coord("grid_latitude").bounds = None

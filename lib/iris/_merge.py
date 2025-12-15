@@ -12,6 +12,7 @@ Typically the cube merge process is handled by
 from collections import OrderedDict, namedtuple
 from copy import deepcopy
 
+import dask.array as da
 import numpy as np
 
 from iris._lazy_data import (
@@ -430,7 +431,13 @@ class _CubeSignature(
         if self.data_shape != other.data_shape:
             msg = "cube.shape differs: {} != {}"
             msgs.append(msg.format(self.data_shape, other.data_shape))
-        if self.data_type != other.data_type:
+        if (
+            self.data_type is not None
+            and other.data_type is not None
+            and self.data_type != other.data_type
+        ):
+            # N.B. allow "None" to match any other dtype: this means that dataless
+            # cubes can merge with 'dataful' ones.
             msg = "cube data dtype differs: {} != {}"
             msgs.append(msg.format(self.data_type, other.data_type))
         # Both cell_measures_and_dims and ancillary_variables_and_dims are
@@ -1109,8 +1116,6 @@ class ProtoCube:
         source-cube.
 
         """
-        if cube.is_dataless():
-            raise iris.exceptions.DatalessError("merge")
         # Default hint ordering for candidate dimension coordinates.
         self._hints = [
             "time",
@@ -1240,7 +1245,10 @@ class ProtoCube:
             # their data loaded then at the end we convert the stack back
             # into a plain numpy array.
             stack = np.empty(self._stack_shape, "object")
-            all_have_data = True
+            all_have_real_data = True
+            some_are_dataless = False
+            part_shape: tuple = None
+            part_dtype: np.dtype = None
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known
                 # good source-cube
@@ -1249,18 +1257,45 @@ class ProtoCube:
                 data = self._skeletons[group[offset]].data
                 # Ensure the data is represented as a dask array and
                 # slot that array into the stack.
-                if is_lazy_data(data):
-                    all_have_data = False
+                if data is None:
+                    some_are_dataless = True
                 else:
-                    data = as_lazy_data(data)
+                    # We have (at least one) array content : Record the shape+dtype
+                    part_shape = data.shape
+                    part_dtype = data.dtype
+                    # ensure lazy (we make the result real, later, if all were real)
+                    if is_lazy_data(data):
+                        all_have_real_data = False
+                    else:
+                        data = as_lazy_data(data)
                 stack[nd_index] = data
 
-            merged_data = multidim_lazy_stack(stack)
-            if all_have_data:
-                # All inputs were concrete, so turn the result back into a
-                # normal array.
-                merged_data = as_concrete_data(merged_data)
-            merged_cube = self._get_cube(merged_data)
+            if part_shape is None:
+                # NO parts had data : the result will also be dataless
+                merged_data = None
+                merged_shape = self._shape
+            else:
+                # At least some inputs had data : the result will have a data array.
+                if some_are_dataless:
+                    # Some parts were dataless: fill these with a lazy all-missing array.
+                    missing_part = da.ma.masked_array(
+                        data=da.zeros(part_shape, dtype=part_dtype),
+                        mask=da.ones(part_shape, dtype=bool),
+                        dtype=part_dtype,
+                    )
+                    for inds in np.ndindex(stack.shape):
+                        if stack[inds] is None:
+                            stack[inds] = missing_part
+
+                # Make a single lazy merged result array
+                merged_data = multidim_lazy_stack(stack)
+                merged_shape = None
+                if all_have_real_data:
+                    # All inputs were concrete, so turn the result back into a
+                    # normal array.
+                    merged_data = as_concrete_data(merged_data)
+
+            merged_cube = self._get_cube(merged_data, shape=merged_shape)
             merged_cubes.append(merged_cube)
 
         return merged_cubes
@@ -1291,8 +1326,6 @@ class ProtoCube:
             this :class:`ProtoCube`.
 
         """
-        if cube.is_dataless():
-            raise iris.exceptions.DatalessError("merge")
         cube_signature = self._cube_signature
         other = self._build_signature(cube)
         match = cube_signature.match(other, error_on_mismatch)
@@ -1545,12 +1578,18 @@ class ProtoCube:
         # deferred loading, this does NOT change the shape.
         self._shape.extend(signature.data_shape)
 
-    def _get_cube(self, data):
+    def _get_cube(self, data, shape=None):
         """Generate fully constructed cube.
 
         Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.
 
+        Parameters
+        ----------
+        data : array_like
+            Cube data content.  If None, `shape` must be set and the result is dataless.
+        shape : tuple, optional
+            Cube data shape, only used if data is None.
         """
         signature = self._cube_signature
         dim_coords_and_dims = [
@@ -1573,6 +1612,7 @@ class ProtoCube:
             aux_coords_and_dims=aux_coords_and_dims,
             cell_measures_and_dims=cms_and_dims,
             ancillary_variables_and_dims=avs_and_dims,
+            shape=shape,
             **kwargs,
         )
 

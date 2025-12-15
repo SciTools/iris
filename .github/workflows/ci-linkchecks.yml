@@ -5,31 +5,47 @@ on:
   schedule:
     - cron: "00 06 * * *"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   linkChecker:
     runs-on: ubuntu-latest
     permissions:
       issues: write # required for peter-evans/create-issue-from-file
+
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Link Checker
         id: lychee
-        uses: lycheeverse/lychee-action@885c65f3dc543b57c898c8099f4e08c8afd178a2
+        uses: lycheeverse/lychee-action@a8c4c7cb88f0c7386610c35eb25108e448569cb0
         with:
           token: ${{secrets.GITHUB_TOKEN}}
           fail: false
-          args: "--verbose --max-concurrency 1 './docs/**/*.rst' './docs/**/*.inc' './lib/**/*.py'"
+          args: |
+            --verbose
+            --max-concurrency 1
+            './docs/**/*.rst'
+            './docs/**/*.inc'
+            './lib/**/*.py'
 
       - name: Create Issue From File
-        if: steps.lychee.outputs.exit_code != 0
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
         uses: peter-evans/create-issue-from-file@fca9117c27cdc29c6c4db3b86c48e4115a786710
         with:
           title: Link Checker Report
           content-filepath: ./lychee/out.md
-          labels: "Bot, Type: Documentation, Type: Bug"
+          labels: |
+            Bot
+            Type: Documentation
+            Type: Bug
 
       - name: Fail Workflow On Link Errors
-        if: steps.lychee.outputs.exit_code != 0
+        if: ${{ fromJSON(steps.lychee.outputs.exit_code) != 0 }}
         run:
-          exit {{ steps.lychee.outputs.exit_code }}
+          exit ${{ fromJSON(steps.lychee.outputs.exit_code) }}

@@ -4,16 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from itertools import repeat
 import os.path
 from pathlib import Path
-import shutil
-import tempfile
-from unittest import mock
 import warnings
 
 import dask
@@ -32,6 +25,7 @@ from iris.fileformats.netcdf import Saver
 # netCDF4" check in "iris.tests.test_coding_standards.test_netcdf4_import()".
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.loading import LOAD_PROBLEMS
+from iris.tests import _shared_utils
 import iris.warnings
 
 nc = threadsafe_nc.netCDF4
@@ -39,49 +33,50 @@ nc = threadsafe_nc.netCDF4
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
-class TestLazySave(tests.IrisTest):
-    @tests.skip_data
-    def test_lazy_preserved_save(self):
-        fpath = tests.get_data_path(
+class TestLazySave:
+    @_shared_utils.skip_data
+    def test_lazy_preserved_save(self, mocker, tmp_path):
+        fpath = _shared_utils.get_data_path(
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
         # While loading, "turn off" loading small variables as real data.
-        with mock.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0):
-            acube = iris.load_cube(fpath, "air_temperature")
-        self.assertTrue(acube.has_lazy_data())
+        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        acube = iris.load_cube(fpath, "air_temperature")
+        assert acube.has_lazy_data()
         # Also check a coord with lazy points + bounds.
-        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
-        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(acube)
+        assert acube.coord("forecast_period").has_lazy_points()
+        assert acube.coord("forecast_period").has_lazy_bounds()
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(acube)
         # Check that cube data is not realised, also coord points + bounds.
-        self.assertTrue(acube.has_lazy_data())
-        self.assertTrue(acube.coord("forecast_period").has_lazy_points())
-        self.assertTrue(acube.coord("forecast_period").has_lazy_bounds())
+        assert acube.has_lazy_data()
+        assert acube.coord("forecast_period").has_lazy_points()
+        assert acube.coord("forecast_period").has_lazy_bounds()
 
 
-@tests.skip_data
-class TestCellMeasures(tests.IrisTest):
-    def setUp(self):
-        self.fname = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
+@_shared_utils.skip_data
+class TestCellMeasures:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.fname = _shared_utils.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
 
     def test_load_raw(self):
         (cube,) = iris.load_raw(self.fname)
-        self.assertEqual(len(cube.cell_measures()), 1)
-        self.assertEqual(cube.cell_measures()[0].measure, "area")
+        assert len(cube.cell_measures()) == 1
+        assert cube.cell_measures()[0].measure == "area"
 
     def test_load(self):
         cube = iris.load_cube(self.fname)
-        self.assertEqual(len(cube.cell_measures()), 1)
-        self.assertEqual(cube.cell_measures()[0].measure, "area")
+        assert len(cube.cell_measures()) == 1
+        assert cube.cell_measures()[0].measure == "area"
 
     def test_merge_cell_measure_aware(self):
         (cube1,) = iris.load_raw(self.fname)
         (cube2,) = iris.load_raw(self.fname)
         cube2._cell_measures_and_dims[0][0].var_name = "not_areat"
         cubes = CubeList([cube1, cube2]).merge()
-        self.assertEqual(len(cubes), 2)
+        assert len(cubes) == 2
 
     def test_concatenate_cell_measure_aware(self):
         (cube1,) = iris.load_raw(self.fname)
@@ -92,8 +87,8 @@ class TestCellMeasures(tests.IrisTest):
         cube2._cell_measures_and_dims[0][0].var_name = "not_areat"
         cube2.coord("time").points = cube2.coord("time").points + 1
         cubes = CubeList([cube1, cube2]).concatenate()
-        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
-        self.assertEqual(len(cubes), 2)
+        assert cubes[0]._cell_measures_and_dims == cm_and_dims
+        assert len(cubes) == 2
 
     def test_concatenate_cell_measure_match(self):
         (cube1,) = iris.load_raw(self.fname)
@@ -103,55 +98,47 @@ class TestCellMeasures(tests.IrisTest):
         cube2 = cube2[:, :, 0, 0]
         cube2.coord("time").points = cube2.coord("time").points + 1
         cubes = CubeList([cube1, cube2]).concatenate()
-        self.assertEqual(cubes[0]._cell_measures_and_dims, cm_and_dims)
-        self.assertEqual(len(cubes), 1)
+        assert cubes[0]._cell_measures_and_dims == cm_and_dims
+        assert len(cubes) == 1
 
-    def test_round_trip(self):
+    def test_round_trip(self, tmp_path):
         (cube,) = iris.load(self.fname)
-        with self.temp_filename(suffix=".nc") as filename:
-            iris.save(cube, filename, unlimited_dimensions=[])
-            (round_cube,) = iris.load_raw(filename)
-            self.assertEqual(len(round_cube.cell_measures()), 1)
-            self.assertEqual(round_cube.cell_measures()[0].measure, "area")
+        filename = tmp_path / "tmp.nc"
+        iris.save(cube, filename, unlimited_dimensions=[])
+        (round_cube,) = iris.load_raw(filename)
+        assert len(round_cube.cell_measures()) == 1
+        assert round_cube.cell_measures()[0].measure == "area"
 
     def test_print(self):
         cube = iris.load_cube(self.fname)
         printed = cube.__str__()
-        self.assertIn(
-            (
-                "Cell measures:\n"
-                "        cell_area                             -         -    "
-                "    x         x"
-            ),
-            printed,
-        )
+        assert (
+            "Cell measures:\n"
+            "        cell_area                             -         -    "
+            "    x         x"
+        ) in printed
 
 
-class TestCellMethod_unknown(tests.IrisTest):
-    def test_unknown_method(self):
+class TestCellMethod_unknown:
+    def test_unknown_method(self, tmp_path_factory):
         cube = Cube([1, 2], long_name="odd_phenomenon")
         cube.add_cell_method(CellMethod(method="oddity", coords=("x",)))
-        temp_dirpath = tempfile.mkdtemp()
-        try:
-            temp_filepath = os.path.join(temp_dirpath, "tmp.nc")
-            iris.save(cube, temp_filepath)
-            with warnings.catch_warnings(record=True) as warning_records:
-                iris.load(temp_filepath)
-            # Filter to get the warning we are interested in.
-            warning_messages = [record.message for record in warning_records]
-            warning_messages = [
-                warn
-                for warn in warning_messages
-                if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
-            ]
-            self.assertEqual(len(warning_messages), 1)
-            message = warning_messages[0].args[0]
-            msg = (
-                "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
-            )
-            self.assertIn(msg, message)
-        finally:
-            shutil.rmtree(temp_dirpath)
+        temp_dirpath = tmp_path_factory.mktemp("test")
+        temp_filepath = os.path.join(temp_dirpath, "tmp.nc")
+        iris.save(cube, temp_filepath)
+        with warnings.catch_warnings(record=True) as warning_records:
+            iris.load(temp_filepath)
+        # Filter to get the warning we are interested in.
+        warning_messages = [record.message for record in warning_records]
+        warning_messages = [
+            warn
+            for warn in warning_messages
+            if isinstance(warn, iris.warnings.IrisUnknownCellMethodWarning)
+        ]
+        assert len(warning_messages) == 1
+        message = warning_messages[0].args[0]
+        msg = "NetCDF variable 'odd_phenomenon' contains unknown cell method 'oddity'"
+        assert msg in message
 
 
 def _get_scale_factor_add_offset(cube, datatype):
@@ -181,11 +168,11 @@ def _get_scale_factor_add_offset(cube, datatype):
     return (scale_factor, add_offset)
 
 
-@tests.skip_data
-class TestPackedData(tests.IrisTest):
-    def _single_test(self, datatype, CDLfilename, manual=False):
+@_shared_utils.skip_data
+class TestPackedData:
+    def _single_test(self, datatype, CDLfilename, request, tmp_path, manual=False):
         # Read PP input file.
-        file_in = tests.get_data_path(
+        file_in = _shared_utils.get_data_path(
             (
                 "PP",
                 "cf_processing",
@@ -201,43 +188,48 @@ class TestPackedData(tests.IrisTest):
         else:
             packspec = datatype
         # Write Cube to netCDF file.
-        with self.temp_filename(suffix=".nc") as file_out:
-            iris.save(cube, file_out, packing=packspec)
-            decimal = int(-np.log10(scale_factor))
-            packedcube = iris.load_cube(file_out)
-            # Check that packed cube is accurate to expected precision
-            self.assertArrayAlmostEqual(cube.data, packedcube.data, decimal=decimal)
-            # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out,
-                (
-                    "integration",
-                    "netcdf",
-                    "general",
-                    "TestPackedData",
-                    CDLfilename,
-                ),
-            )
+        file_out = tmp_path / "tmp.nc"
+        iris.save(cube, file_out, packing=packspec)
+        decimal = int(-np.log10(scale_factor))
+        packedcube = iris.load_cube(file_out)
+        # Check that packed cube is accurate to expected precision
+        _shared_utils.assert_array_almost_equal(
+            cube.data, packedcube.data, decimal=decimal
+        )
+        # Check the netCDF file against CDL expected output.
+        _shared_utils.assert_CDL(
+            request,
+            file_out,
+            (
+                "integration",
+                "netcdf",
+                "general",
+                "TestPackedData",
+                CDLfilename,
+            ),
+        )
 
-    def test_single_packed_signed(self):
+    def test_single_packed_signed(self, request, tmp_path):
         """Test saving a single CF-netCDF file with packing."""
-        self._single_test("i2", "single_packed_signed.cdl")
+        self._single_test("i2", "single_packed_signed.cdl", request, tmp_path)
 
-    def test_single_packed_unsigned(self):
+    def test_single_packed_unsigned(self, request, tmp_path):
         """Test saving a single CF-netCDF file with packing into unsigned."""
-        self._single_test("u1", "single_packed_unsigned.cdl")
+        self._single_test("u1", "single_packed_unsigned.cdl", request, tmp_path)
 
-    def test_single_packed_manual_scale(self):
+    def test_single_packed_manual_scale(self, request, tmp_path):
         """Test saving a single CF-netCDF file.
 
         File with packing with scale factor and add_offset set manually.
         """
-        self._single_test("i2", "single_packed_manual.cdl", manual=True)
+        self._single_test(
+            "i2", "single_packed_manual.cdl", request, tmp_path, manual=True
+        )
 
-    def _multi_test(self, CDLfilename, multi_dtype=False):
+    def _multi_test(self, CDLfilename, request, tmp_path, multi_dtype=False):
         """Test saving multiple packed cubes with pack_dtype list."""
         # Read PP input file.
-        file_in = tests.get_data_path(
+        file_in = _shared_utils.get_data_path(
             ("PP", "cf_processing", "abcza_pa19591997_daily_29.b.pp")
         )
         cubes = iris.load(file_in)
@@ -256,67 +248,77 @@ class TestPackedData(tests.IrisTest):
             dtypes = repeat(packspec)
 
         # Write Cube to netCDF file.
-        with self.temp_filename(suffix=".nc") as file_out:
-            iris.save(cubes, file_out, packing=packspec)
-            # Check the netCDF file against CDL expected output.
-            self.assertCDL(
-                file_out,
-                (
-                    "integration",
-                    "netcdf",
-                    "general",
-                    "TestPackedData",
-                    CDLfilename,
-                ),
-            )
-            packedcubes = iris.load(file_out)
-            packedcubes.sort(key=lambda cube: cube.cell_methods[0].method)
-            for cube, packedcube, dtype in zip(cubes, packedcubes, dtypes):
-                if dtype:
-                    sf, ao = _get_scale_factor_add_offset(cube, dtype)
-                    decimal = int(-np.log10(sf))
-                    # Check that packed cube is accurate to expected precision
-                    self.assertArrayAlmostEqual(
-                        cube.data, packedcube.data, decimal=decimal
-                    )
-                else:
-                    self.assertArrayEqual(cube.data, packedcube.data)
+        file_out = tmp_path / "tmp.nc"
+        iris.save(cubes, file_out, packing=packspec)
+        # Check the netCDF file against CDL expected output.
+        _shared_utils.assert_CDL(
+            request,
+            file_out,
+            (
+                "integration",
+                "netcdf",
+                "general",
+                "TestPackedData",
+                CDLfilename,
+            ),
+        )
+        packedcubes = iris.load(file_out)
+        packedcubes.sort(key=lambda cube: cube.cell_methods[0].method)
+        for cube, packedcube, dtype in zip(cubes, packedcubes, dtypes):
+            if dtype:
+                sf, ao = _get_scale_factor_add_offset(cube, dtype)
+                decimal = int(-np.log10(sf))
+                # Check that packed cube is accurate to expected precision
+                _shared_utils.assert_array_almost_equal(
+                    cube.data, packedcube.data, decimal=decimal
+                )
+            else:
+                _shared_utils.assert_array_equal(cube.data, packedcube.data)
 
-    def test_multi_packed_single_dtype(self):
+    def test_multi_packed_single_dtype(self, request, tmp_path):
         """Test saving multiple packed cubes with the same pack_dtype."""
         # Read PP input file.
-        self._multi_test("multi_packed_single_dtype.cdl")
+        self._multi_test("multi_packed_single_dtype.cdl", request, tmp_path)
 
-    def test_multi_packed_multi_dtype(self):
+    def test_multi_packed_multi_dtype(self, request, tmp_path):
         """Test saving multiple packed cubes with pack_dtype list."""
         # Read PP input file.
-        self._multi_test("multi_packed_multi_dtype.cdl", multi_dtype=True)
+        self._multi_test(
+            "multi_packed_multi_dtype.cdl", request, tmp_path, multi_dtype=True
+        )
 
 
-class TestScalarCube(tests.IrisTest):
-    def test_scalar_cube_save_load(self):
+class TestScalarCube:
+    def test_scalar_cube_save_load(self, tmp_path):
         cube = iris.cube.Cube(1, long_name="scalar_cube")
-        with self.temp_filename(suffix=".nc") as fout:
-            iris.save(cube, fout)
-            scalar_cube = iris.load_cube(fout)
-            self.assertEqual(scalar_cube.name(), "scalar_cube")
+        fout = tmp_path / "scalar_cube.nc"
+        iris.save(cube, fout)
+        scalar_cube = iris.load_cube(fout)
+        assert scalar_cube.name() == "scalar_cube"
 
 
-@tests.skip_data
-class TestConstrainedLoad(tests.IrisTest):
-    filename = tests.get_data_path(
+@_shared_utils.skip_data
+class TestConstrainedLoad:
+    filename = _shared_utils.get_data_path(
         ("NetCDF", "label_and_climate", "A1B-99999a-river-sep-2070-2099.nc")
     )
 
     def test_netcdf_with_NameConstraint(self):
         constr = iris.NameConstraint(var_name="cdf_temp_dmax_tmean_abs")
         cubes = iris.load(self.filename, constr)
-        self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].var_name, "cdf_temp_dmax_tmean_abs")
+        assert len(cubes) == 1
+        assert cubes[0].var_name == "cdf_temp_dmax_tmean_abs"
+
+    def test_netcdf_with_2_NameConstraints(self):
+        var_names = ["cdf_temp_dmax_tmean_abs", "temp_dmax_tmean_abs"]
+        constrs = [iris.NameConstraint(var_name=var_name) for var_name in var_names]
+        cubes = iris.load(self.filename, constrs)
+        assert len(cubes) == 2
+        assert sorted([cube.var_name for cube in cubes]) == var_names
 
     def test_netcdf_with_no_constraint(self):
         cubes = iris.load(self.filename)
-        self.assertEqual(len(cubes), 3)
+        assert len(cubes) == 3
 
 
 class TestSkippedCoord:
@@ -360,7 +362,8 @@ data:
     def test_lat_not_loaded(self):
         with pytest.warns(match="Not all file objects were parsed correctly"):
             cube = iris.load_cube(self.nc_path)
-        with pytest.raises(iris.exceptions.CoordinateNotFoundError):
+        msg = "Expected to find exactly 1"
+        with pytest.raises(iris.exceptions.CoordinateNotFoundError, match=msg):
             _ = cube.coord("lat")
         problems = LOAD_PROBLEMS.problems
         assert isinstance(problems[-2].loaded, iris.coords.DimCoord)
@@ -368,11 +371,12 @@ data:
         assert problems[-1].loaded.name() == "latitude"
 
 
-@tests.skip_data
-class TestDatasetAndPathLoads(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.filepath = tests.get_data_path(
+@_shared_utils.skip_data
+class TestDatasetAndPathLoads:
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup_class(self, request):
+        cls = request.cls
+        cls.filepath = _shared_utils.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         cls.phenom_id = "Carbon Dioxide"
@@ -383,27 +387,28 @@ class TestDatasetAndPathLoads(tests.IrisTest):
         ds = nc.Dataset(self.filepath)
         result = iris.load_cube(ds, self.phenom_id)
         # It should still be open (!)
-        self.assertTrue(ds.isopen())
+        assert ds.isopen()
         ds.close()
 
         # Check that result is just the same as a 'direct' load.
-        self.assertEqual(self.expected, result)
+        assert self.expected == result
 
     def test_path_string_load_same(self):
         # Check that loading from a Path is the same as passing a filepath string.
         # Apart from general utility, checks that we won't mistake a Path for a Dataset.
         path = Path(self.filepath)
         result = iris.load_cube(path, self.phenom_id)
-        self.assertEqual(result, self.expected)
+        assert self.expected == result
 
 
-@tests.skip_data
-class TestDatasetAndPathSaves(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
+@_shared_utils.skip_data
+class TestDatasetAndPathSaves:
+    @pytest.fixture(scope="class", autouse=True)
+    def _setup_class(self, request, tmp_path_factory):
+        cls = request.cls
         # Create a temp directory for transient test files.
-        cls.temp_dir = tempfile.mkdtemp()
-        cls.testpath = tests.get_data_path(
+        cls.temp_dir = tmp_path_factory.mktemp("test")
+        cls.testpath = _shared_utils.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         # Load some test data for save testing.
@@ -412,12 +417,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         testdata = sorted(testdata, key=lambda cube: cube.name())
         cls.testdata = testdata
 
-    @classmethod
-    def tearDownClass(cls):
-        # Destroy the temp directory.
-        shutil.rmtree(cls.temp_dir)
-
-    def test_basic_save(self):
+    def test_basic_save(self, request):
         # test saving to a Dataset, in place of a filepath spec.
         # NOTE that this requires 'compute=False', as delayed saves can only operate on
         # a closed file.
@@ -426,7 +426,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         filepath_direct = f"{self.temp_dir}/tmp_direct.nc"
         iris.save(self.testdata, filepath_direct)
         # Check against test-specific CDL result file.
-        self.assertCDL(filepath_direct)
+        _shared_utils.assert_CDL(request, filepath_direct)
 
         # Save same data indirectly via a netcdf dataset.
         filepath_indirect = f"{self.temp_dir}/tmp_indirect.nc"
@@ -437,19 +437,17 @@ class TestDatasetAndPathSaves(tests.IrisTest):
 
         # Do some very basic sanity checks on the resulting Dataset.
         # It should still be open (!)
-        self.assertTrue(nc_dataset.isopen())
-        self.assertEqual(
-            ["time", "levelist", "latitude", "longitude"],
-            list(nc_dataset.dimensions),
+        assert nc_dataset.isopen()
+        assert ["time", "levelist", "latitude", "longitude"] == list(
+            nc_dataset.dimensions
         )
-        self.assertEqual(
-            ["co2", "time", "levelist", "latitude", "longitude", "lnsp"],
-            list(nc_dataset.variables),
+        assert ["co2", "time", "levelist", "latitude", "longitude", "lnsp"] == list(
+            nc_dataset.variables,
         )
         nc_dataset.close()
 
         # Check the saved file against the same CDL as the 'normal' save.
-        self.assertCDL(filepath_indirect)
+        _shared_utils.assert_CDL(request, filepath_indirect)
 
         # Confirm that cube content is however not yet written.
         ds = nc.Dataset(filepath_indirect)
@@ -477,7 +475,7 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         with pytest.raises(ValueError, match=msg):
             iris.save(self.testdata, nc_dataset, saver="nc")
 
-    def test_path_string_save_same(self):
+    def test_path_string_save_same(self, request):
         # Ensure that save to a Path is the same as passing a filepath string.
         # Apart from general utility, checks that we won't mistake a Path for a Dataset.
         tempfile_fromstr = f"{self.temp_dir}/tmp_fromstr.nc"
@@ -485,18 +483,18 @@ class TestDatasetAndPathSaves(tests.IrisTest):
         tempfile_frompath = f"{self.temp_dir}/tmp_frompath.nc"
         path = Path(tempfile_frompath)
         iris.save(self.testdata, path)
-        self.assertCDL(tempfile_fromstr)
-        self.assertCDL(tempfile_frompath)
+        _shared_utils.assert_CDL(request, tempfile_fromstr)
+        _shared_utils.assert_CDL(request, tempfile_frompath)
 
 
-@tests.skip_data
-class TestWarningRepeats(tests.IrisTest):
+@_shared_utils.skip_data
+class TestWarningRepeats:
     def test_warning_repeats(self):
         """Confirm Iris load does not break Python duplicate warning handling."""
         # units.nc is designed for testing Iris' 'ignoring invalid units'
         #  warning; it contains two variables with invalid units, producing two
         #  unique warnings (due to two different messages).
-        file_path = tests.get_data_path(("NetCDF", "testing", "units.nc"))
+        file_path = _shared_utils.get_data_path(("NetCDF", "testing", "units.nc"))
 
         def _raise_warning() -> None:
             # Contain in function so warning always has identical line number.
@@ -523,7 +521,3 @@ class TestWarningRepeats(tests.IrisTest):
                 _ = iris.load(file_path)
                 _raise_warning()
             assert len(record) == 3
-
-
-if __name__ == "__main__":
-    tests.main()
