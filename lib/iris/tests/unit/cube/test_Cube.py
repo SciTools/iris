@@ -3144,12 +3144,18 @@ class TestComponents:
         assert self.cube.components(bad_obj) == []
 
     def test_fail_get_component_by_unknown_name(self):
-        with pytest.raises(CubeComponentNotFoundError):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
             _ = self.cube.component("bad_name")
 
     def test_fail_get_component_by_unknown_object(self):
         bad_obj = DimCoord(points=np.array([0, 1]), long_name="bad_coord")
-        with pytest.raises(CubeComponentNotFoundError):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
             _ = self.cube.component(bad_obj)
 
     def test_add_component_dim_x_coord(self):
@@ -3228,7 +3234,10 @@ class TestComponents:
         assert component_name not in self.cube.components()
 
     def test_fail_remove_component_unknown_name(self):
-        with pytest.raises(CubeComponentNotFoundError):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
             self.cube.remove_component("bad_name")
 
     def test_fail_remove_component_unknown_object(self):
