@@ -30,7 +30,7 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@ukmo-ccbunney` added new *cube component* convenience methods that allow
+#. `@ukmo-ccbunney`_ added new *cube component* convenience methods that allow
    for manipulation of any named dimensional component that can be attached to a
    cube (i.e. coordinates, cell measures and ancillary variables) via a common
    interface. The following methods are provided:
