@@ -3214,7 +3214,7 @@ class TestComponents:
         cell_measure = self.bare_cube.cell_measure("area")
         assert cell_measure == component
 
-    def test_add_component_fails_same_name(self, component_name):
+    def test_fail_add_component_same_name(self, component_name):
         component = self.components[component_name]
         with pytest.raises(CannotAddError, match=r"Duplicate .* not permitted"):
             self.cube.add_component(component, 0)
