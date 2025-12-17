@@ -3108,7 +3108,7 @@ class TestComponents:
 
     @pytest.fixture(params=["x", "y", "area", "number_of_observations"])
     def component_name(self, request):
-        yield request.param
+        return request.param
 
     def test_components(self):
         components = self.cube.components()
