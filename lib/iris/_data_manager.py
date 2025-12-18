@@ -6,6 +6,7 @@
 
 import copy
 
+import dask.array as da
 import numpy as np
 import numpy.ma as ma
 
@@ -317,6 +318,15 @@ class DataManager:
 
         """
         return self.core_data() is None
+
+    def from_dataless(self):
+        """Convert a dataless cube into a cube with a fully masked data array."""
+        if self.is_dataless():
+            new_data = da.ma.masked_array(
+                data=da.zeros(self._shape),
+                mask=da.ones(self._shape),
+            )
+            self.data = new_data
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.

@@ -2923,6 +2923,9 @@ class Cube(CFVariableMixin):
         """
         return self._data_manager.is_dataless()
 
+    def from_dataless(self):
+        return self._data_manager.from_dataless()
+
     @property
     def dim_coords(self) -> tuple[DimCoord, ...]:
         """Return a tuple of all the dimension coordinates, ordered by dimension.
