@@ -44,6 +44,9 @@ This document explains the changes made to Iris for this release
 
    (:issue:`5819`, :pull:`6854`)
 
+#. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.rolling_window` and
+   :func:`~iris.cube.Cube.intersection` to work with dataless cubes. (:pull:`6757`)
+
 
 🐛 Bugs Fixed
 =============
