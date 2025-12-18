@@ -1104,7 +1104,7 @@ class _ProtoCube:
             # Concatenate the new data payload.
             data = self._build_data()
             if data is None:
-                shape = [len(coord_dim[0].points) for coord_dim in dim_coords_and_dims]
+                shape = [coord.shape[0] for coord, _dim in dim_coords_and_dims]
             else:
                 shape = None
 
@@ -1564,7 +1564,7 @@ class _ProtoCube:
             for skeleton in skeletons:
                 if skeleton.data is None:
                     skeleton_data = da.ma.masked_array(
-                        data=da.zeros(skeleton.shape),
+                        data=da.zeros(skeleton.shape, dtype=np.int8)
                         mask=da.ones(skeleton.shape),
                     )
                 else:
