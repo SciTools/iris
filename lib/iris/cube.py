@@ -2924,6 +2924,7 @@ class Cube(CFVariableMixin):
         return self._data_manager.is_dataless()
 
     def from_dataless(self):
+        """Convert a dataless cube into a cube with a fully masked data array."""
         return self._data_manager.from_dataless()
 
     @property

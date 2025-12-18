@@ -327,6 +327,9 @@ class DataManager:
                 mask=da.ones(self._shape),
             )
             self.data = new_data
+        else:
+            msg = "Cube already has data."
+            raise ValueError(msg)
 
     def copy(self, data=None):
         """Return a deep copy of this :class:`~iris._data_manager.DataManager` instance.
