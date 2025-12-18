@@ -370,7 +370,9 @@ def _co_realise_lazy_arrays(arrays):
         if real_out is not None:
             real_out = np.asanyarray(real_out)
         else:
-            raise iris.exceptions.DatalessError("realising")
+            raise iris.exceptions.DatalessError(
+                "Data is None, and therefore cannot be realised."
+            )
         if isinstance(real_out, ma.core.MaskedConstant):
             # Convert any masked constants into NumPy masked arrays.
             # NOTE: in this case, also apply the original lazy-array dtype, as

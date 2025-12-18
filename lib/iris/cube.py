@@ -5164,7 +5164,7 @@ x            -               -
 
         """
         if self.is_dataless():
-            raise iris.exceptions.DatalessError("interpolate")
+            raise iris.exceptions.DatalessError("Cannot interpolate a dataless cube.")
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
         return interp(points, collapse_scalar=collapse_scalar)
@@ -5211,7 +5211,7 @@ x            -               -
 
         """
         if self.is_dataless():
-            raise iris.exceptions.DatalessError("regrid")
+            raise iris.exceptions.DatalessError("Cannot regrid a dataless cube.")
         regridder = scheme.regridder(self, grid)
         return regridder(self)
 

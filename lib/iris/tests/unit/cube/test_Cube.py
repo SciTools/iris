@@ -3598,7 +3598,7 @@ class TestAttributesProperty:
         assert cube.attributes == {}
 
 
-class Test_dataless:
+class TestDataless:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.data = np.array(0)
