@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.cube.Cube` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from collections import namedtuple
 from itertools import permutations
 from unittest import mock
@@ -31,14 +27,21 @@ from iris.cube import Cube, CubeAttrsDict
 import iris.exceptions
 from iris.exceptions import (
     AncillaryVariableNotFoundError,
+    CannotAddError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
+    CubeComponentNotFoundError,
     UnitConversionError,
 )
 from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube, sample_meshcoord
 from iris.warnings import IrisUserWarning, IrisVagueMetadataWarning
+
+
+@pytest.fixture(params=[True, False], ids=["dataless", "with_data"])
+def dataless(request):
+    return request.param
 
 
 class Test___init___data:
@@ -190,7 +193,6 @@ class Test_data_dtype_fillvalue:
         assert subcube.data.fill_value == fill_value
 
 
-@pytest.mark.parametrize("dataless", [True, False])
 class Test_extract:
     def _create_cube(self, dataless, data, shape, long_name="a1"):
         # moderates behaviour when testing dataless or with-data cubes
@@ -1029,7 +1031,9 @@ class Test_rolling_window:
         self.mock_agg.aggregate = mock.Mock(return_value=np.empty([4]))
         self.mock_agg.post_process = mock.Mock(side_effect=lambda x, y, z: x)
 
-    def test_string_coord(self):
+    def test_string_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
         # Rolling window on a cube that contains a string coordinate.
         res_cube = self.cube.rolling_window("val", self.mock_agg, 3)
         val_coord = DimCoord(
@@ -1082,12 +1086,16 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
-    def test_ancillary_variables_and_cell_measures_kept(self):
+    def test_ancillary_variables_and_cell_measures_kept(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.multi_dim_cube.rolling_window("val", self.mock_agg, 3)
         assert res_cube.ancillary_variables() == [self.ancillary_variable]
         assert res_cube.cell_measures() == [self.cell_measure]
 
-    def test_ancillary_variables_and_cell_measures_removed(self):
+    def test_ancillary_variables_and_cell_measures_removed(self, dataless):
+        if dataless:
+            self.cube.data = None
         res_cube = self.multi_dim_cube.rolling_window("extra", self.mock_agg, 3)
         assert res_cube.ancillary_variables() == []
         assert res_cube.cell_measures() == []
@@ -1104,16 +1112,22 @@ class Test_rolling_window:
         _shared_utils.assert_array_equal(res_cube.data, [10, 13])
         assert res_cube.units == "kg m2"
 
-    def test_weights_str(self):
+    def test_weights_str(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = "val"
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [55])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
-    def test_weights_dim_coord(self):
+    def test_weights_dim_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
         weights = self.cube.coord("val")
         res_cube = self.cube.rolling_window("val", SUM, 6, weights=weights)
-        _shared_utils.assert_array_equal(res_cube.data, [55])
+        if not dataless:
+            _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
 
@@ -1210,12 +1224,12 @@ class Test_slices_dim_order:
 
 @_shared_utils.skip_data
 class Test_slices_over:
-    @pytest.fixture(autouse=True, params=[True, False], ids=["dataless", "with data"])
+    @pytest.fixture(autouse=True, params=[False, True], ids=["with data", "dataless"])
     def _setup(self, request):
-        cube = stock.realistic_4d()
-        if request.param:
-            cube.data = None
-        self.cube = cube[:, :7, :10, :10]
+        dataless = request.param
+        self.cube = stock.realistic_4d()[:, :7, :10, :10]
+        if dataless:
+            self.cube.data = None
         # Define expected iterators for 1D and 2D test cases.
         self.exp_iter_1d = range(len(self.cube.coord("model_level_number").points))
         self.exp_iter_2d = np.ndindex(6, 7, 1, 1)
@@ -1344,11 +1358,16 @@ class Test_slices_over:
         assert next(res) == self.cube
 
 
-def create_cube(lon_min, lon_max, bounds=False):
+def create_cube(lon_min, lon_max, bounds=False, dataless=False):
     n_lons = max(lon_min, lon_max) - min(lon_max, lon_min)
     data = np.arange(4 * 3 * n_lons, dtype="f4").reshape(4, 3, -1)
-    data = as_lazy_data(data)
-    cube = Cube(data, standard_name="x_wind", units="ms-1")
+    if dataless:
+        shape = data.shape
+        data = None
+    else:
+        shape = None
+        data = as_lazy_data(data)
+    cube = Cube(data=data, standard_name="x_wind", units="ms-1", shape=shape)
     cube.add_dim_coord(
         iris.coords.DimCoord([0, 20, 40, 80], long_name="level_height", units="m"),
         0,
@@ -1422,57 +1441,57 @@ class Test_intersection__Metadata:
 
 # Explicitly check the handling of `circular` on the result.
 class Test_intersection__Circular:
-    def test_regional(self):
-        cube = create_cube(0, 360)
+    def test_regional(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(170, 190))
         assert not result.coord("longitude").circular
 
-    def test_regional_wrapped(self):
-        cube = create_cube(-180, 180)
+    def test_regional_wrapped(self, dataless):
+        cube = create_cube(-180, 180, dataless=dataless)
         result = cube.intersection(longitude=(170, 190))
         assert not result.coord("longitude").circular
 
-    def test_global(self):
-        cube = create_cube(-180, 180)
+    def test_global(self, dataless):
+        cube = create_cube(-180, 180, dataless=dataless)
         result = cube.intersection(longitude=(-180, 180))
         assert result.coord("longitude").circular
 
-    def test_global_wrapped(self):
-        cube = create_cube(-180, 180)
+    def test_global_wrapped(self, dataless):
+        cube = create_cube(-180, 180, dataless=dataless)
         result = cube.intersection(longitude=(10, 370))
         assert result.coord("longitude").circular
 
 
 # Check the various error conditions.
 class Test_intersection__Invalid:
-    def test_reversed_min_max(self):
-        cube = create_cube(0, 360)
+    def test_reversed_min_max(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         with pytest.raises(ValueError):
             cube.intersection(longitude=(30, 10))
 
-    def test_dest_too_large(self):
-        cube = create_cube(0, 360)
+    def test_dest_too_large(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         with pytest.raises(ValueError):
             cube.intersection(longitude=(30, 500))
 
-    def test_src_too_large(self):
-        cube = create_cube(0, 400)
+    def test_src_too_large(self, dataless):
+        cube = create_cube(0, 400, dataless=dataless)
         with pytest.raises(ValueError):
             cube.intersection(longitude=(10, 30))
 
-    def test_missing_coord(self):
-        cube = create_cube(0, 360)
+    def test_missing_coord(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             cube.intersection(parrots=(10, 30))
 
-    def test_multi_dim_coord(self):
-        cube = create_cube(0, 360)
+    def test_multi_dim_coord(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         with pytest.raises(iris.exceptions.CoordinateMultiDimError):
             cube.intersection(surface_altitude=(10, 30))
 
-    def test_null_region(self):
+    def test_null_region(self, dataless):
         # 10 <= v < 10
-        cube = create_cube(0, 360)
+        cube = create_cube(0, 360, dataless=dataless)
         with pytest.raises(IndexError):
             cube.intersection(longitude=(10, 10, False, False))
 
@@ -1522,8 +1541,8 @@ class Test_intersection__Lazy:
 
 
 class Test_intersection_Points:
-    def test_ignore_bounds(self):
-        cube = create_cube(0, 30, bounds=True)
+    def test_ignore_bounds(self, dataless):
+        cube = create_cube(0, 30, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(9.5, 12.5), ignore_bounds=True)
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(10, 13)
@@ -1539,72 +1558,96 @@ class Test_intersection_Points:
 # Check what happens with a regional, points-only circular intersection
 # coordinate.
 class Test_intersection__RegionalSrcModulus:
-    def test_request_subset(self):
-        cube = create_cube(40, 60)
+    def test_request_subset(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(45, 50))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(45, 51)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(5, 11))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(5, 11))
 
-    def test_request_left(self):
-        cube = create_cube(40, 60)
+    def test_request_left(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(35, 45))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(40, 46)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 6))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 6))
 
-    def test_request_right(self):
-        cube = create_cube(40, 60)
+    def test_request_right(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(55, 65))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(55, 60)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(15, 20))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(15, 20))
 
-    def test_request_superset(self):
-        cube = create_cube(40, 60)
+    def test_request_superset(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(35, 65))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(40, 60)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 20))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 20))
 
-    def test_request_subset_modulus(self):
-        cube = create_cube(40, 60)
+    def test_request_subset_modulus(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(45 + 360, 50 + 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(45 + 360, 51 + 360)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(5, 11))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(5, 11))
 
-    def test_request_left_modulus(self):
-        cube = create_cube(40, 60)
+    def test_request_left_modulus(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(35 + 360, 45 + 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(40 + 360, 46 + 360)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 6))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 6))
 
-    def test_request_right_modulus(self):
-        cube = create_cube(40, 60)
+    def test_request_right_modulus(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(55 + 360, 65 + 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(55 + 360, 60 + 360)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(15, 20))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(15, 20))
 
-    def test_request_superset_modulus(self):
-        cube = create_cube(40, 60)
+    def test_request_superset_modulus(self, dataless):
+        cube = create_cube(40, 60, dataless=dataless)
         result = cube.intersection(longitude=(35 + 360, 65 + 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, np.arange(40 + 360, 60 + 360)
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 20))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.arange(0, 20))
 
-    def test_tolerance_f4(self):
-        cube = create_cube(0, 5)
+    def test_tolerance_f4(self, dataless):
+        cube = create_cube(0, 5, dataless=dataless)
         cube.coord("longitude").points = np.array(
             [0.0, 3.74999905, 7.49999809, 11.24999714, 14.99999619], dtype="f4"
         )
@@ -1612,10 +1655,13 @@ class Test_intersection__RegionalSrcModulus:
         _shared_utils.assert_array_almost_equal(
             result.coord("longitude").points, np.array([0.0, 3.74999905])
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.array([0, 1]))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.array([0, 1]))
 
-    def test_tolerance_f8(self):
-        cube = create_cube(0, 5)
+    def test_tolerance_f8(self, dataless):
+        cube = create_cube(0, 5, dataless=dataless)
         cube.coord("longitude").points = np.array(
             [0.0, 3.74999905, 7.49999809, 11.24999714, 14.99999619], dtype="f8"
         )
@@ -1623,173 +1669,230 @@ class Test_intersection__RegionalSrcModulus:
         _shared_utils.assert_array_almost_equal(
             result.coord("longitude").points, np.array([0.0, 3.74999905])
         )
-        _shared_utils.assert_array_equal(result.data[0, 0], np.array([0, 1]))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data[0, 0], np.array([0, 1]))
 
 
 # Check what happens with a global, points-only circular intersection
 # coordinate.
 class Test_intersection__GlobalSrcModulus:
-    def test_global_wrapped_extreme_increasing_base_period(self):
+    def test_global_wrapped_extreme_increasing_base_period(self, dataless):
         # Ensure that we can correctly handle points defined at (base + period)
-        cube = create_cube(-180.0, 180.0)
+        cube = create_cube(-180.0, 180.0, dataless=dataless)
         lons = cube.coord("longitude")
         # Redefine longitude so that points at (base + period)
         lons.points = np.linspace(-180.0, 180, lons.points.size)
         result = cube.intersection(longitude=(lons.points.min(), lons.points.max()))
-        _shared_utils.assert_array_equal(result.data, cube.data)
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, cube.data)
 
-    def test_global_wrapped_extreme_decreasing_base_period(self):
+    def test_global_wrapped_extreme_decreasing_base_period(self, dataless):
         # Ensure that we can correctly handle points defined at (base + period)
-        cube = create_cube(180.0, -180.0)
+        cube = create_cube(180.0, -180.0, dataless=dataless)
         lons = cube.coord("longitude")
         # Redefine longitude so that points at (base + period)
         lons.points = np.linspace(180.0, -180.0, lons.points.size)
         result = cube.intersection(longitude=(lons.points.min(), lons.points.max()))
-        _shared_utils.assert_array_equal(result.data, cube.data)
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, cube.data)
 
-    def test_global(self):
-        cube = create_cube(0, 360)
+    def test_global(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(0, 360))
         assert result.coord("longitude").points[0] == 0
         assert result.coord("longitude").points[-1] == 359
-        assert result.data[0, 0, 0] == 0
-        assert result.data[0, 0, -1] == 359
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 0
+            assert result.data[0, 0, -1] == 359
 
-    def test_global_wrapped(self):
-        cube = create_cube(0, 360)
+    def test_global_wrapped(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(-180, 180))
         assert result.coord("longitude").points[0] == -180
         assert result.coord("longitude").points[-1] == 179
-        assert result.data[0, 0, 0] == 180
-        assert result.data[0, 0, -1] == 179
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 180
+            assert result.data[0, 0, -1] == 179
 
-    def test_aux_coord(self):
-        cube = create_cube(0, 360)
+    def test_aux_coord(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         cube.replace_coord(iris.coords.AuxCoord.from_coord(cube.coord("longitude")))
         result = cube.intersection(longitude=(0, 360))
         assert result.coord("longitude").points[0] == 0
         assert result.coord("longitude").points[-1] == 359
-        assert result.data[0, 0, 0] == 0
-        assert result.data[0, 0, -1] == 359
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 0
+            assert result.data[0, 0, -1] == 359
 
-    def test_aux_coord_wrapped(self):
-        cube = create_cube(0, 360)
+    def test_aux_coord_wrapped(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         cube.replace_coord(iris.coords.AuxCoord.from_coord(cube.coord("longitude")))
         result = cube.intersection(longitude=(-180, 180))
         assert result.coord("longitude").points[0] == 0
         assert result.coord("longitude").points[-1] == -1
-        assert result.data[0, 0, 0] == 0
-        assert result.data[0, 0, -1] == 359
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 0
+            assert result.data[0, 0, -1] == 359
 
-    def test_aux_coord_non_contiguous_wrapped(self):
-        cube = create_cube(0, 360)
+    def test_aux_coord_non_contiguous_wrapped(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         coord = iris.coords.AuxCoord.from_coord(cube.coord("longitude"))
         coord.points = (coord.points * 1.5) % 360
         cube.replace_coord(coord)
         result = cube.intersection(longitude=(-90, 90))
         assert result.coord("longitude").points[0] == 0
         assert result.coord("longitude").points[-1] == 90
-        assert result.data[0, 0, 0] == 0
-        assert result.data[0, 0, -1] == 300
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 0
+            assert result.data[0, 0, -1] == 300
 
-    def test_decrementing(self):
-        cube = create_cube(360, 0)
+    def test_decrementing(self, dataless):
+        cube = create_cube(360, 0, dataless=dataless)
         result = cube.intersection(longitude=(40, 60))
         assert result.coord("longitude").points[0] == 60
         assert result.coord("longitude").points[-1] == 40
-        assert result.data[0, 0, 0] == 300
-        assert result.data[0, 0, -1] == 320
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 300
+            assert result.data[0, 0, -1] == 320
 
-    def test_decrementing_wrapped(self):
-        cube = create_cube(360, 0)
+    def test_decrementing_wrapped(self, dataless):
+        cube = create_cube(360, 0, dataless=dataless)
         result = cube.intersection(longitude=(-10, 10))
         assert result.coord("longitude").points[0] == 10
         assert result.coord("longitude").points[-1] == -10
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_no_wrap_after_modulus(self):
-        cube = create_cube(0, 360)
+    def test_no_wrap_after_modulus(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(170 + 360, 190 + 360))
         assert result.coord("longitude").points[0] == 170 + 360
         assert result.coord("longitude").points[-1] == 190 + 360
-        assert result.data[0, 0, 0] == 170
-        assert result.data[0, 0, -1] == 190
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 170
+            assert result.data[0, 0, -1] == 190
 
-    def test_wrap_after_modulus(self):
-        cube = create_cube(-180, 180)
+    def test_wrap_after_modulus(self, dataless):
+        cube = create_cube(-180, 180, dataless=dataless)
         result = cube.intersection(longitude=(170 + 360, 190 + 360))
         assert result.coord("longitude").points[0] == 170 + 360
         assert result.coord("longitude").points[-1] == 190 + 360
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_select_by_coord(self):
-        cube = create_cube(0, 360)
+    def test_select_by_coord(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         coord = iris.coords.DimCoord(0, "longitude", units="degrees")
         result = cube.intersection(iris.coords.CoordExtent(coord, 10, 30))
         assert result.coord("longitude").points[0] == 10
         assert result.coord("longitude").points[-1] == 30
-        assert result.data[0, 0, 0] == 10
-        assert result.data[0, 0, -1] == 30
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 10
+            assert result.data[0, 0, -1] == 30
 
-    def test_inclusive_exclusive(self):
-        cube = create_cube(0, 360)
+    def test_inclusive_exclusive(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(170, 190, True, False))
         assert result.coord("longitude").points[0] == 170
         assert result.coord("longitude").points[-1] == 189
-        assert result.data[0, 0, 0] == 170
-        assert result.data[0, 0, -1] == 189
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 170
+            assert result.data[0, 0, -1] == 189
 
-    def test_exclusive_inclusive(self):
-        cube = create_cube(0, 360)
+    def test_exclusive_inclusive(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(170, 190, False))
         assert result.coord("longitude").points[0] == 171
         assert result.coord("longitude").points[-1] == 190
-        assert result.data[0, 0, 0] == 171
-        assert result.data[0, 0, -1] == 190
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 171
+            assert result.data[0, 0, -1] == 190
 
-    def test_exclusive_exclusive(self):
-        cube = create_cube(0, 360)
+    def test_exclusive_exclusive(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(170, 190, False, False))
         assert result.coord("longitude").points[0] == 171
         assert result.coord("longitude").points[-1] == 189
-        assert result.data[0, 0, 0] == 171
-        assert result.data[0, 0, -1] == 189
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 171
+            assert result.data[0, 0, -1] == 189
 
-    def test_single_point(self):
+    def test_single_point(self, dataless):
         # 10 <= v <= 10
-        cube = create_cube(0, 360)
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(10, 10))
         assert result.coord("longitude").points[0] == 10
         assert result.coord("longitude").points[-1] == 10
-        assert result.data[0, 0, 0] == 10
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 10
+            assert result.data[0, 0, -1] == 10
 
-    def test_two_points(self):
+    def test_two_points(self, dataless):
         # -1.5 <= v <= 0.5
-        cube = create_cube(0, 360)
+        cube = create_cube(0, 360, dataless=dataless)
         result = cube.intersection(longitude=(-1.5, 0.5))
         assert result.coord("longitude").points[0] == -1
         assert result.coord("longitude").points[-1] == 0
-        assert result.data[0, 0, 0] == 359
-        assert result.data[0, 0, -1] == 0
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 359
+            assert result.data[0, 0, -1] == 0
 
-    def test_wrap_radians(self):
-        cube = create_cube(0, 360)
+    def test_wrap_radians(self, dataless):
+        cube = create_cube(0, 360, dataless=dataless)
         cube.coord("longitude").convert_units("radians")
         result = cube.intersection(longitude=(-1, 0.5))
         _shared_utils.assert_array_all_close(
             result.coord("longitude").points, np.arange(-57, 29) * np.pi / 180
         )
-        assert result.data[0, 0, 0] == 303
-        assert result.data[0, 0, -1] == 28
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 303
+            assert result.data[0, 0, -1] == 28
 
-    def test_tolerance_bug(self):
+    def test_tolerance_bug(self, dataless):
         # Floating point changes introduced by wrapping mean
         # the resulting coordinate values are not equal to their
         # equivalents. This led to a bug that this test checks.
-        cube = create_cube(0, 400)
+        cube = create_cube(0, 400, dataless=dataless)
         cube.coord("longitude").points = np.linspace(-179.55, 179.55, 400)
         result = cube.intersection(longitude=(125, 145))
         _shared_utils.assert_array_almost_equal(
@@ -1797,8 +1900,8 @@ class Test_intersection__GlobalSrcModulus:
             cube.coord("longitude").points[339:361],
         )
 
-    def test_tolerance_bug_wrapped(self):
-        cube = create_cube(0, 400)
+    def test_tolerance_bug_wrapped(self, dataless):
+        cube = create_cube(0, 400, dataless=dataless)
         cube.coord("longitude").points = np.linspace(-179.55, 179.55, 400)
         result = cube.intersection(longitude=(-190, -170))
         # Expected result is the last 11 and first 11 points.
@@ -1814,22 +1917,28 @@ class Test_intersection__GlobalSrcModulus:
 # Check what happens with a global, points-and-bounds circular
 # intersection coordinate.
 class Test_intersection__ModulusBounds:
-    def test_global_wrapped_extreme_increasing_base_period(self):
+    def test_global_wrapped_extreme_increasing_base_period(self, dataless):
         # Ensure that we can correctly handle bounds defined at (base + period)
-        cube = create_cube(-180.0, 180.0, bounds=True)
+        cube = create_cube(-180.0, 180.0, bounds=True, dataless=dataless)
         lons = cube.coord("longitude")
         result = cube.intersection(longitude=(lons.bounds.min(), lons.bounds.max()))
-        _shared_utils.assert_array_equal(result.data, cube.data)
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, cube.data)
 
-    def test_global_wrapped_extreme_decreasing_base_period(self):
+    def test_global_wrapped_extreme_decreasing_base_period(self, dataless):
         # Ensure that we can correctly handle bounds defined at (base + period)
-        cube = create_cube(180.0, -180.0, bounds=True)
+        cube = create_cube(180.0, -180.0, bounds=True, dataless=dataless)
         lons = cube.coord("longitude")
         result = cube.intersection(longitude=(lons.bounds.min(), lons.bounds.max()))
-        _shared_utils.assert_array_equal(result.data, cube.data)
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, cube.data)
 
-    def test_misaligned_points_inside(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_misaligned_points_inside(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(169.75, 190.25))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [169.5, 170.5]
@@ -1837,11 +1946,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [189.5, 190.5]
         )
-        assert result.data[0, 0, 0] == 170
-        assert result.data[0, 0, -1] == 190
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 170
+            assert result.data[0, 0, -1] == 190
 
-    def test_misaligned_points_outside(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_misaligned_points_outside(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(170.25, 189.75))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [169.5, 170.5]
@@ -1849,11 +1961,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [189.5, 190.5]
         )
-        assert result.data[0, 0, 0] == 170
-        assert result.data[0, 0, -1] == 190
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 170
+            assert result.data[0, 0, -1] == 190
 
-    def test_misaligned_bounds(self):
-        cube = create_cube(-180, 180, bounds=True)
+    def test_misaligned_bounds(self, dataless):
+        cube = create_cube(-180, 180, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0, 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-0.5, 0.5]
@@ -1861,11 +1976,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [358.5, 359.5]
         )
-        assert result.data[0, 0, 0] == 180
-        assert result.data[0, 0, -1] == 179
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 180
+            assert result.data[0, 0, -1] == 179
 
-    def test_misaligned_bounds_decreasing(self):
-        cube = create_cube(180, -180, bounds=True)
+    def test_misaligned_bounds_decreasing(self, dataless):
+        cube = create_cube(180, -180, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0, 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [359.5, 358.5]
@@ -1874,11 +1992,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [0.5, -0.5]
         )
-        assert result.data[0, 0, 0] == 181
-        assert result.data[0, 0, -1] == 180
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 181
+            assert result.data[0, 0, -1] == 180
 
-    def test_aligned_inclusive(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_aligned_inclusive(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(170.5, 189.5))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [169.5, 170.5]
@@ -1886,11 +2007,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [189.5, 190.5]
         )
-        assert result.data[0, 0, 0] == 170
-        assert result.data[0, 0, -1] == 190
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 170
+            assert result.data[0, 0, -1] == 190
 
-    def test_aligned_exclusive(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_aligned_exclusive(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(170.5, 189.5, False, False))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [170.5, 171.5]
@@ -1898,21 +2022,27 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [188.5, 189.5]
         )
-        assert result.data[0, 0, 0] == 171
-        assert result.data[0, 0, -1] == 189
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 171
+            assert result.data[0, 0, -1] == 189
 
-    def test_aligned_bounds_at_modulus(self):
-        cube = create_cube(-179.5, 180.5, bounds=True)
+    def test_aligned_bounds_at_modulus(self, dataless):
+        cube = create_cube(-179.5, 180.5, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0, 360))
         _shared_utils.assert_array_equal(result.coord("longitude").bounds[0], [0, 1])
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [359, 360]
         )
-        assert result.data[0, 0, 0] == 180
-        assert result.data[0, 0, -1] == 179
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 180
+            assert result.data[0, 0, -1] == 179
 
-    def test_negative_aligned_bounds_at_modulus(self):
-        cube = create_cube(0.5, 360.5, bounds=True)
+    def test_negative_aligned_bounds_at_modulus(self, dataless):
+        cube = create_cube(0.5, 360.5, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-180, 180))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-180, -179]
@@ -1920,11 +2050,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [179, 180]
         )
-        assert result.data[0, 0, 0] == 180
-        assert result.data[0, 0, -1] == 179
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 180
+            assert result.data[0, 0, -1] == 179
 
-    def test_negative_misaligned_points_inside(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_negative_misaligned_points_inside(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-10.25, 10.25))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-10.5, -9.5]
@@ -1932,11 +2065,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [9.5, 10.5]
         )
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_negative_misaligned_points_outside(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_negative_misaligned_points_outside(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-9.75, 9.75))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-10.5, -9.5]
@@ -1944,11 +2080,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [9.5, 10.5]
         )
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_negative_aligned_inclusive(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_negative_aligned_inclusive(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-10.5, 10.5))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-11.5, -10.5]
@@ -1956,11 +2095,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [10.5, 11.5]
         )
-        assert result.data[0, 0, 0] == 349
-        assert result.data[0, 0, -1] == 11
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 349
+            assert result.data[0, 0, -1] == 11
 
-    def test_negative_aligned_exclusive(self):
-        cube = create_cube(0, 360, bounds=True)
+    def test_negative_aligned_exclusive(self, dataless):
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-10.5, 10.5, False, False))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [-10.5, -9.5]
@@ -1968,11 +2110,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [9.5, 10.5]
         )
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_decrementing(self):
-        cube = create_cube(360, 0, bounds=True)
+    def test_decrementing(self, dataless):
+        cube = create_cube(360, 0, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(40, 60))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [60.5, 59.5]
@@ -1980,11 +2125,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [40.5, 39.5]
         )
-        assert result.data[0, 0, 0] == 300
-        assert result.data[0, 0, -1] == 320
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 300
+            assert result.data[0, 0, -1] == 320
 
-    def test_decrementing_wrapped(self):
-        cube = create_cube(360, 0, bounds=True)
+    def test_decrementing_wrapped(self, dataless):
+        cube = create_cube(360, 0, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(-10, 10))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [10.5, 9.5]
@@ -1992,13 +2140,16 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [-9.5, -10.5]
         )
-        assert result.data[0, 0, 0] == 350
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 350
+            assert result.data[0, 0, -1] == 10
 
-    def test_numerical_tolerance(self):
+    def test_numerical_tolerance(self, dataless):
         # test the tolerance on the coordinate value is not causing a
         # modulus wrapping
-        cube = create_cube(28.5, 68.5, bounds=True)
+        cube = create_cube(28.5, 68.5, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(27.74, 68.61))
         result_lons = result.coord("longitude")
         _shared_utils.assert_array_almost_equal(result_lons.points[0], 28.5)
@@ -2011,10 +2162,10 @@ class Test_intersection__ModulusBounds:
             result_lons.bounds[-1], np.array([67.0, 68.0], dtype=dtype)
         )
 
-    def test_numerical_tolerance_wrapped(self):
+    def test_numerical_tolerance_wrapped(self, dataless):
         # test the tolerance on the coordinate value causes modulus wrapping
         # where appropriate
-        cube = create_cube(0.5, 3600.5, bounds=True)
+        cube = create_cube(0.5, 3600.5, bounds=True, dataless=dataless)
         lons = cube.coord("longitude")
         lons.points = lons.points / 10
         lons.bounds = lons.bounds / 10
@@ -2030,9 +2181,9 @@ class Test_intersection__ModulusBounds:
             result_lons.bounds[-1], np.array([60.0, 60.1], dtype=dtype)
         )
 
-    def test_ignore_bounds_wrapped(self):
+    def test_ignore_bounds_wrapped(self, dataless):
         # Test `ignore_bounds` fully ignores bounds when wrapping
-        cube = create_cube(0, 360, bounds=True)
+        cube = create_cube(0, 360, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(10.25, 370.25), ignore_bounds=True)
         # Expect points 11..370 not bounds [9.5, 10.5] .. [368.5, 369.5]
         _shared_utils.assert_array_equal(
@@ -2041,12 +2192,15 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [369.5, 370.5]
         )
-        assert result.data[0, 0, 0] == 11
-        assert result.data[0, 0, -1] == 10
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 11
+            assert result.data[0, 0, -1] == 10
 
-    def test_within_cell(self):
+    def test_within_cell(self, dataless):
         # Test cell is included when it entirely contains the requested range
-        cube = create_cube(0, 10, bounds=True)
+        cube = create_cube(0, 10, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0.7, 0.8))
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [0.5, 1.5]
@@ -2054,11 +2208,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [0.5, 1.5]
         )
-        assert result.data[0, 0, 0] == 1
-        assert result.data[0, 0, -1] == 1
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 1
+            assert result.data[0, 0, -1] == 1
 
-    def test_threshold_half(self):
-        cube = create_cube(0, 10, bounds=True)
+    def test_threshold_half(self, dataless):
+        cube = create_cube(0, 10, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(1, 6.999), threshold=0.5)
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [0.5, 1.5]
@@ -2066,11 +2223,14 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [5.5, 6.5]
         )
-        assert result.data[0, 0, 0] == 1
-        assert result.data[0, 0, -1] == 6
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 1
+            assert result.data[0, 0, -1] == 6
 
-    def test_threshold_full(self):
-        cube = create_cube(0, 10, bounds=True)
+    def test_threshold_full(self, dataless):
+        cube = create_cube(0, 10, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0.5, 7.499), threshold=1)
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [0.5, 1.5]
@@ -2078,13 +2238,16 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [5.5, 6.5]
         )
-        assert result.data[0, 0, 0] == 1
-        assert result.data[0, 0, -1] == 6
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 1
+            assert result.data[0, 0, -1] == 6
 
-    def test_threshold_wrapped(self):
+    def test_threshold_wrapped(self, dataless):
         # Test that a cell is wrapped to `maximum` if required to exceed
         # the threshold
-        cube = create_cube(-180, 180, bounds=True)
+        cube = create_cube(-180, 180, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0.4, 360.4), threshold=0.2)
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [0.5, 1.5]
@@ -2092,13 +2255,16 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [359.5, 360.5]
         )
-        assert result.data[0, 0, 0] == 181
-        assert result.data[0, 0, -1] == 180
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 181
+            assert result.data[0, 0, -1] == 180
 
-    def test_threshold_wrapped_gap(self):
+    def test_threshold_wrapped_gap(self, dataless):
         # Test that a cell is wrapped to `maximum` if required to exceed
         # the threshold (even with a gap in the range)
-        cube = create_cube(-180, 180, bounds=True)
+        cube = create_cube(-180, 180, bounds=True, dataless=dataless)
         result = cube.intersection(longitude=(0.4, 360.35), threshold=0.2)
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[0], [0.5, 1.5]
@@ -2106,13 +2272,21 @@ class Test_intersection__ModulusBounds:
         _shared_utils.assert_array_equal(
             result.coord("longitude").bounds[-1], [359.5, 360.5]
         )
-        assert result.data[0, 0, 0] == 181
-        assert result.data[0, 0, -1] == 180
+        if dataless:
+            assert result.data is None
+        else:
+            assert result.data[0, 0, 0] == 181
+            assert result.data[0, 0, -1] == 180
 
 
-def unrolled_cube():
-    data = np.arange(5, dtype="f4")
-    cube = Cube(data)
+def unrolled_cube(dataless=False):
+    if dataless:
+        data = None
+        shape = (5,)
+    else:
+        data = np.arange(5, dtype="f4")
+        shape = None
+    cube = Cube(data=data, shape=shape)
     cube.add_aux_coord(
         iris.coords.AuxCoord([5.0, 10.0, 8.0, 5.0, 3.0], "longitude", units="degrees"),
         0,
@@ -2125,28 +2299,39 @@ def unrolled_cube():
 
 # Check what happens with a "unrolled" scatter-point data with a circular
 # intersection coordinate.
+
+
 class Test_intersection__ScatterModulus:
-    def test_subset(self):
-        cube = unrolled_cube()
+    def test_subset(self, dataless):
+        cube = unrolled_cube(dataless)
         result = cube.intersection(longitude=(5, 8))
         _shared_utils.assert_array_equal(result.coord("longitude").points, [5, 8, 5])
-        _shared_utils.assert_array_equal(result.data, [0, 2, 3])
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, [0, 2, 3])
 
-    def test_subset_wrapped(self):
-        cube = unrolled_cube()
+    def test_subset_wrapped(self, dataless):
+        cube = unrolled_cube(dataless)
         result = cube.intersection(longitude=(5 + 360, 8 + 360))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, [365, 368, 365]
         )
-        _shared_utils.assert_array_equal(result.data, [0, 2, 3])
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, [0, 2, 3])
 
-    def test_superset(self):
-        cube = unrolled_cube()
+    def test_superset(self, dataless):
+        cube = unrolled_cube(dataless)
         result = cube.intersection(longitude=(0, 15))
         _shared_utils.assert_array_equal(
             result.coord("longitude").points, [5, 10, 8, 5, 3]
         )
-        _shared_utils.assert_array_equal(result.data, np.arange(5))
+        if dataless:
+            assert result.data is None
+        else:
+            _shared_utils.assert_array_equal(result.data, np.arange(5))
 
 
 # Test the API of the cube interpolation method.
@@ -2370,7 +2555,7 @@ class Test_mesh:
         assert result is self.mesh
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.mesh
         assert result is None
@@ -2383,7 +2568,7 @@ class Test_location:
         _add_test_meshcube(self)
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.location
         assert result is None
@@ -2394,7 +2579,7 @@ class Test_location:
         assert result == self.meshco_x.location
 
     def test_alternate_location(self):
-        # Replace standard setUp cube with an edge-based version.
+        # Replace standard _setup cube with an edge-based version.
         _add_test_meshcube(self, location="edge")
         cube = self.cube
         result = cube.location
@@ -2408,7 +2593,7 @@ class Test_mesh_dim:
         _add_test_meshcube(self)
 
     def test_no_mesh(self):
-        # Replace standard setUp cube with a no-mesh version.
+        # Replace standard _setup cube with a no-mesh version.
         _add_test_meshcube(self, nomesh=True)
         result = self.cube.mesh_dim()
         assert result is None
@@ -2419,7 +2604,7 @@ class Test_mesh_dim:
         assert result == 1
 
     def test_alternate(self):
-        # Replace standard setUp cube with an edge-based version.
+        # Replace standard _setup cube with an edge-based version.
         _add_test_meshcube(self, location="edge")
         cube = self.cube
         # Transpose the cube : the mesh dim is then 0
@@ -2574,7 +2759,7 @@ class Test__add_aux_coord__mesh:
         # Re-make the test objects based on that.
         _add_test_meshcube(self, mesh=mesh)
         cube = self.cube
-        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in setUp()
+        cube.remove_coord(self.meshco_y)  # Remove y-coord, as in _setup()
         # Create a new meshco_y, same mesh but based on edges.
         meshco_y = sample_meshcoord(axis="y", mesh=self.mesh, location="edge")
         msg = "does not match existing cube location"
@@ -2587,7 +2772,7 @@ class Test__add_aux_coord__mesh:
         _add_test_meshcube(self, n_z=n_faces)
         cube = self.cube
         meshco_y = self.meshco_y
-        cube.remove_coord(meshco_y)  # Remove y-coord, as in setUp()
+        cube.remove_coord(meshco_y)  # Remove y-coord, as in _setup()
 
         # Attempt to re-attach the 'y' meshcoord, to a different cube dimension.
         msg = "does not match existing cube mesh dimension"
@@ -3057,6 +3242,196 @@ class TestCellMeasures:
     def test_fail_cell_measure_dims_by_name(self):
         with pytest.raises(CellMeasureNotFoundError):
             self.cube.cell_measure_dims("notname")
+
+
+class TestComponents:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # A bare cube with just data and nothing else:
+        self.bare_cube = Cube(np.arange(6).reshape(3, 2))
+
+        # A cube with data and coords, cell measure and ancillary variable:
+        self.cube = Cube(np.arange(6).reshape(3, 2))
+
+        self.x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        self.cube.add_dim_coord(self.x_coord, 0)
+        self.y_coord = DimCoord(points=np.array([2, 3]), long_name="y")
+        self.cube.add_dim_coord(self.y_coord, 1)
+
+        self.forecast_period = AuxCoord([6], standard_name="forecast_period")
+        self.cube.add_aux_coord(self.forecast_period, None)
+
+        self.a_cell_measure = CellMeasure(
+            np.arange(6).reshape(3, 2), long_name="area", units="m2"
+        )
+        self.cube.add_cell_measure(self.a_cell_measure, [0, 1])
+
+        self.ancill_var = AncillaryVariable(
+            np.arange(6).reshape(3, 2),
+            standard_name="number_of_observations",
+            units="1",
+        )
+        self.cube.add_ancillary_variable(self.ancill_var, [0, 1])
+
+        self.components = {
+            "x": self.x_coord,
+            "y": self.y_coord,
+            "area": self.a_cell_measure,
+            "number_of_observations": self.ancill_var,
+            "forecast_period": self.forecast_period,
+        }
+
+        self.expected_dims = {
+            "x": (0,),
+            "y": (1,),
+            "area": (0, 1),
+            "number_of_observations": (0, 1),
+            "forecast_period": (),
+        }
+
+    @pytest.fixture(params=["x", "y", "area", "number_of_observations"])
+    def component_name(self, request):
+        return request.param
+
+    def test_components(self):
+        components = self.cube.components()
+        assert len(components) == len(self.components)
+        for component in self.components.values():
+            assert component in components
+
+    def test_get_components_by_name(self, component_name):
+        components = self.cube.components(component_name)
+        assert len(components) == 1
+        assert components[0] == self.components[component_name]
+
+    def test_get_components_by_object(self, component_name):
+        component_obj = self.components[component_name]
+        components = self.cube.components(component_obj)
+        assert len(components) == 1
+        assert components[0] == component_obj
+
+    def test_get_component_by_name(self, component_name):
+        component = self.cube.component(component_name)
+        assert component == self.components[component_name]
+
+    def test_get_component_by_object(self, component_name):
+        component_obj = self.components[component_name]
+        component = self.cube.component(component_obj)
+        assert component == component_obj
+
+    def test_get_components_by_unknown_name(self):
+        assert self.cube.components("bad_name") == []
+
+    def test_get_components_by_unknown_object(self):
+        bad_obj = DimCoord(points=np.array([0, 1]), long_name="bad_coord")
+        assert self.cube.components(bad_obj) == []
+
+    def test_fail_get_component_by_unknown_name(self):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            _ = self.cube.component("bad_name")
+
+    def test_fail_get_component_by_unknown_object(self):
+        bad_obj = DimCoord(points=np.array([0, 1]), long_name="bad_coord")
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            _ = self.cube.component(bad_obj)
+
+    def test_add_component_dim_x_coord(self):
+        cube = Cube(np.arange(6).reshape(3, 2))
+        component = self.components["x"]
+        cube.add_component(component, 0)
+        coord = cube.coord("x")
+        assert coord == component
+        assert cube._dim_coords_and_dims == [(component, 0)]
+
+    def test_add_component_dim_y_coord(self):
+        component = self.components["y"]
+        self.bare_cube.add_component(component, 1)
+        coord = self.bare_cube.coord("y")
+        assert coord == component
+        assert self.bare_cube._dim_coords_and_dims == [(component, 1)]
+
+    def test_add_component_dim_coord_as_aux(self):
+        # Try and add a dim coord to a dimension that already
+        # has a dim coord. Should add as aux coord instead.
+        component = self.components["x"].copy()
+        component.long_name = "latitude"
+        self.cube.add_component(component, 0)
+        coord = self.cube.coord("latitude")
+        assert coord == component
+        assert coord not in self.cube.coords(dim_coords=True)
+
+    def test_add_scalar_coord(self):
+        scalar = AuxCoord(42, long_name="scalar_coord", units="1")
+        self.bare_cube.add_component(scalar)
+        coord = self.bare_cube.coord("scalar_coord")
+        assert coord == scalar
+        assert coord.cube_dims(self.bare_cube) == ()
+
+    def test_fail_add_coord_bad_dims(self):
+        coord = self.components["x"]
+        with pytest.raises(CannotAddError, match="Unequal lengths"):
+            self.bare_cube.add_component(coord, 1)
+
+    def test_add_aux_coord(self):
+        latitudes = AuxCoord([10, 20], long_name="latitude")
+        self.cube.add_component(latitudes, 1)
+        coord = self.cube.coord("latitude")
+        assert coord == latitudes
+        assert coord not in self.cube.coords(dim_coords=True)
+
+    def test_add_ancillary_variable(self):
+        component = self.components["number_of_observations"]
+        self.bare_cube.add_component(component, (0, 1))
+        ancill_var = self.bare_cube.ancillary_variable("number_of_observations")
+        assert ancill_var == component
+
+    def test_add_cell_measure(self):
+        component = self.components["area"]
+        self.bare_cube.add_component(component, (0, 1))
+        cell_measure = self.bare_cube.cell_measure("area")
+        assert cell_measure == component
+
+    def test_fail_add_component_same_name(self, component_name):
+        component = self.components[component_name]
+        with pytest.raises(CannotAddError, match=r"Duplicate .* not permitted"):
+            self.cube.add_component(component, 0)
+
+    def test_fail_add_unknown_component(self):
+        bad_component = int(1)
+        with pytest.raises(CannotAddError, match="Cannot add component of type"):
+            self.cube.add_component(bad_component)
+
+    def test_remove_component_by_name(self, component_name):
+        self.cube.remove_component(component_name)
+        assert component_name not in [comp.name() for comp in self.cube.components()]
+
+    def test_remove_component_by_object(self, component_name):
+        component = self.components[component_name]
+        self.cube.remove_component(component)
+        assert component_name not in self.cube.components()
+
+    def test_fail_remove_component_unknown_name(self):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            self.cube.remove_component("bad_name")
+
+    def test_fail_remove_component_unknown_object(self):
+        coord = self.components["x"].copy()
+        coord.long_name = "bad_coord"
+        with pytest.raises(CubeComponentNotFoundError):
+            self.cube.remove_component(coord)
+
+    def test_get_component_dims(self, component_name):
+        dims = self.cube.component_dims(component_name)
+        assert dims == self.expected_dims[component_name]
 
 
 class Test_transpose:
@@ -3625,7 +4000,3 @@ class TestDataless:
         )
         cube.from_dataless()
         _shared_utils.assert_array_equal(cube.core_data(), masked_data)
-
-
-if __name__ == "__main__":
-    tests.main()
