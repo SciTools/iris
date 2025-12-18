@@ -27,8 +27,10 @@ from iris.cube import Cube, CubeAttrsDict
 import iris.exceptions
 from iris.exceptions import (
     AncillaryVariableNotFoundError,
+    CannotAddError,
     CellMeasureNotFoundError,
     CoordinateNotFoundError,
+    CubeComponentNotFoundError,
     UnitConversionError,
 )
 from iris.tests import _shared_utils
@@ -3240,6 +3242,196 @@ class TestCellMeasures:
     def test_fail_cell_measure_dims_by_name(self):
         with pytest.raises(CellMeasureNotFoundError):
             self.cube.cell_measure_dims("notname")
+
+
+class TestComponents:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # A bare cube with just data and nothing else:
+        self.bare_cube = Cube(np.arange(6).reshape(3, 2))
+
+        # A cube with data and coords, cell measure and ancillary variable:
+        self.cube = Cube(np.arange(6).reshape(3, 2))
+
+        self.x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        self.cube.add_dim_coord(self.x_coord, 0)
+        self.y_coord = DimCoord(points=np.array([2, 3]), long_name="y")
+        self.cube.add_dim_coord(self.y_coord, 1)
+
+        self.forecast_period = AuxCoord([6], standard_name="forecast_period")
+        self.cube.add_aux_coord(self.forecast_period, None)
+
+        self.a_cell_measure = CellMeasure(
+            np.arange(6).reshape(3, 2), long_name="area", units="m2"
+        )
+        self.cube.add_cell_measure(self.a_cell_measure, [0, 1])
+
+        self.ancill_var = AncillaryVariable(
+            np.arange(6).reshape(3, 2),
+            standard_name="number_of_observations",
+            units="1",
+        )
+        self.cube.add_ancillary_variable(self.ancill_var, [0, 1])
+
+        self.components = {
+            "x": self.x_coord,
+            "y": self.y_coord,
+            "area": self.a_cell_measure,
+            "number_of_observations": self.ancill_var,
+            "forecast_period": self.forecast_period,
+        }
+
+        self.expected_dims = {
+            "x": (0,),
+            "y": (1,),
+            "area": (0, 1),
+            "number_of_observations": (0, 1),
+            "forecast_period": (),
+        }
+
+    @pytest.fixture(params=["x", "y", "area", "number_of_observations"])
+    def component_name(self, request):
+        return request.param
+
+    def test_components(self):
+        components = self.cube.components()
+        assert len(components) == len(self.components)
+        for component in self.components.values():
+            assert component in components
+
+    def test_get_components_by_name(self, component_name):
+        components = self.cube.components(component_name)
+        assert len(components) == 1
+        assert components[0] == self.components[component_name]
+
+    def test_get_components_by_object(self, component_name):
+        component_obj = self.components[component_name]
+        components = self.cube.components(component_obj)
+        assert len(components) == 1
+        assert components[0] == component_obj
+
+    def test_get_component_by_name(self, component_name):
+        component = self.cube.component(component_name)
+        assert component == self.components[component_name]
+
+    def test_get_component_by_object(self, component_name):
+        component_obj = self.components[component_name]
+        component = self.cube.component(component_obj)
+        assert component == component_obj
+
+    def test_get_components_by_unknown_name(self):
+        assert self.cube.components("bad_name") == []
+
+    def test_get_components_by_unknown_object(self):
+        bad_obj = DimCoord(points=np.array([0, 1]), long_name="bad_coord")
+        assert self.cube.components(bad_obj) == []
+
+    def test_fail_get_component_by_unknown_name(self):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            _ = self.cube.component("bad_name")
+
+    def test_fail_get_component_by_unknown_object(self):
+        bad_obj = DimCoord(points=np.array([0, 1]), long_name="bad_coord")
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            _ = self.cube.component(bad_obj)
+
+    def test_add_component_dim_x_coord(self):
+        cube = Cube(np.arange(6).reshape(3, 2))
+        component = self.components["x"]
+        cube.add_component(component, 0)
+        coord = cube.coord("x")
+        assert coord == component
+        assert cube._dim_coords_and_dims == [(component, 0)]
+
+    def test_add_component_dim_y_coord(self):
+        component = self.components["y"]
+        self.bare_cube.add_component(component, 1)
+        coord = self.bare_cube.coord("y")
+        assert coord == component
+        assert self.bare_cube._dim_coords_and_dims == [(component, 1)]
+
+    def test_add_component_dim_coord_as_aux(self):
+        # Try and add a dim coord to a dimension that already
+        # has a dim coord. Should add as aux coord instead.
+        component = self.components["x"].copy()
+        component.long_name = "latitude"
+        self.cube.add_component(component, 0)
+        coord = self.cube.coord("latitude")
+        assert coord == component
+        assert coord not in self.cube.coords(dim_coords=True)
+
+    def test_add_scalar_coord(self):
+        scalar = AuxCoord(42, long_name="scalar_coord", units="1")
+        self.bare_cube.add_component(scalar)
+        coord = self.bare_cube.coord("scalar_coord")
+        assert coord == scalar
+        assert coord.cube_dims(self.bare_cube) == ()
+
+    def test_fail_add_coord_bad_dims(self):
+        coord = self.components["x"]
+        with pytest.raises(CannotAddError, match="Unequal lengths"):
+            self.bare_cube.add_component(coord, 1)
+
+    def test_add_aux_coord(self):
+        latitudes = AuxCoord([10, 20], long_name="latitude")
+        self.cube.add_component(latitudes, 1)
+        coord = self.cube.coord("latitude")
+        assert coord == latitudes
+        assert coord not in self.cube.coords(dim_coords=True)
+
+    def test_add_ancillary_variable(self):
+        component = self.components["number_of_observations"]
+        self.bare_cube.add_component(component, (0, 1))
+        ancill_var = self.bare_cube.ancillary_variable("number_of_observations")
+        assert ancill_var == component
+
+    def test_add_cell_measure(self):
+        component = self.components["area"]
+        self.bare_cube.add_component(component, (0, 1))
+        cell_measure = self.bare_cube.cell_measure("area")
+        assert cell_measure == component
+
+    def test_fail_add_component_same_name(self, component_name):
+        component = self.components[component_name]
+        with pytest.raises(CannotAddError, match=r"Duplicate .* not permitted"):
+            self.cube.add_component(component, 0)
+
+    def test_fail_add_unknown_component(self):
+        bad_component = int(1)
+        with pytest.raises(CannotAddError, match="Cannot add component of type"):
+            self.cube.add_component(bad_component)
+
+    def test_remove_component_by_name(self, component_name):
+        self.cube.remove_component(component_name)
+        assert component_name not in [comp.name() for comp in self.cube.components()]
+
+    def test_remove_component_by_object(self, component_name):
+        component = self.components[component_name]
+        self.cube.remove_component(component)
+        assert component_name not in self.cube.components()
+
+    def test_fail_remove_component_unknown_name(self):
+        with pytest.raises(
+            CubeComponentNotFoundError,
+            match="Expected to find exactly 1 cube component",
+        ):
+            self.cube.remove_component("bad_name")
+
+    def test_fail_remove_component_unknown_object(self):
+        coord = self.components["x"].copy()
+        coord.long_name = "bad_coord"
+        with pytest.raises(CubeComponentNotFoundError):
+            self.cube.remove_component(coord)
+
+    def test_get_component_dims(self, component_name):
+        dims = self.cube.component_dims(component_name)
+        assert dims == self.expected_dims[component_name]
 
 
 class Test_transpose:

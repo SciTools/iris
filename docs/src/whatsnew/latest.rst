@@ -30,7 +30,19 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@ukmo-ccbunney`_ added new *cube component* convenience methods that allow
+   for manipulation of any named dimensional component that can be attached to a
+   cube (i.e. coordinates, cell measures and ancillary variables) via a common
+   interface. The following methods are provided:
+
+   * :func:`~iris.cube.Cube.component` and :func:`~iris.cube.Cube.components`:
+     get one or more components from a cube
+   * :func:`~iris.cube.Cube.add_component`: add a component to a cube
+   * :func:`~iris.cube.Cube.remove_component`: remove a component from a cube
+   * :func:`~iris.cube.Cube.component_dims`: return the cube dimension(s)
+     spanned by a component.
+
+   (:issue:`5819`, :pull:`6854`)
 
 #. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.rolling_window` and
    :func:`~iris.cube.Cube.intersection` to work with dataless cubes. (:pull:`6757`)
