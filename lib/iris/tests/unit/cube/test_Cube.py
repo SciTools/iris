@@ -39,7 +39,7 @@ from iris.warnings import IrisUserWarning, IrisVagueMetadataWarning
 
 @pytest.fixture(params=[True, False], ids=["dataless", "with_data"])
 def dataless(request):
-    yield request.param
+    return request.param
 
 
 class Test___init___data:
