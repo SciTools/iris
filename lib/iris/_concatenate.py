@@ -1564,7 +1564,7 @@ class _ProtoCube:
             for skeleton in skeletons:
                 if skeleton.data is None:
                     skeleton_data = da.ma.masked_array(
-                        data=da.zeros(skeleton.shape, dtype=np.int8)
+                        data=da.zeros(skeleton.shape, dtype=np.int8),
                         mask=da.ones(skeleton.shape),
                     )
                 else:
