@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 from collections.abc import (
+    Callable,
     Container,
     Iterable,
     Iterator,
@@ -19,7 +20,7 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, TypeGuard
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypeGuard
 import warnings
 from xml.dom.minidom import Document
 
@@ -72,6 +73,12 @@ NP_PRINTOPTIONS_LEGACY = (
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
+
+
+# Type alias for all dimensional cube components (derived from iris.coords._DimensionalMetadata)
+DimensionalCubeComponent: TypeAlias = (
+    DimCoord | AuxCoord | CellMeasure | AncillaryVariable
+)
 
 
 class CubeList(list):
@@ -1380,6 +1387,7 @@ class Cube(CFVariableMixin):
         Return a single _DimensionalMetadata instance that matches the given
         name_or_dimensional_metadata. If one is not found, raise an error.
 
+        TODO: Deprecate in favour of `cube.component`?
         """
         found_item = None
         for cube_method in [
@@ -1905,6 +1913,33 @@ class Cube(CFVariableMixin):
             for ancillary_variable_, dim in self._ancillary_variables_and_dims
             if ancillary_variable_ is not ancillary_variable
         ]
+
+    def remove_component(
+        self, name_or_component: str | DimensionalCubeComponent
+    ) -> None:
+        """Remove a dimensional component from the cube.
+
+        Parameters
+        ----------
+        name_or_component :
+            The name or instance of the dimensional component to remove from the cube.
+            If a dimensional component object is passed, it must be one of:
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
+
+        """
+        component = self.component(name_or_component)
+        match component:
+            case iris.coords.DimCoord() | iris.coords.AuxCoord():
+                self.remove_coord(component)
+            case iris.coords.CellMeasure():
+                self.remove_cell_measure(component)
+            case iris.coords.AncillaryVariable():
+                self.remove_ancillary_variable(component)
+            case _:
+                msg = f"{type(component)!r} is not a dimensional component of a cube."  # type: ignore[unreachable]
+                raise TypeError(msg)
 
     def replace_coord(self, new_coord: DimCoord | AuxCoord) -> None:
         """Replace the coordinate whose metadata matches the given coordinate."""
@@ -2810,6 +2845,177 @@ class Cube(CFVariableMixin):
                     )
                     raise ValueError(msg)
         self._metadata_manager.cell_methods = cell_methods
+
+    def components(
+        self,
+        name_or_component: str | CoordMetadata | DimensionalCubeComponent | None = None,
+    ) -> list[DimensionalCubeComponent]:
+        """Return a list of cube dimensional components.
+
+        Parameters
+        ----------
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A list of cube components matching the given criteria.
+        """
+        components: list[DimensionalCubeComponent] = []
+
+        cube_methods: list[Callable[..., list[Any]]] = [
+            self.coords,
+            self.cell_measures,
+            self.ancillary_variables,
+        ]
+        for cube_method in cube_methods:
+            components.extend(cube_method(name_or_component))
+
+        return components
+
+    def component(
+        self, name_or_component: str | CoordMetadata | DimensionalCubeComponent
+    ) -> DimensionalCubeComponent:
+        """Return a single cube dimensional component.
+
+        Parameters
+        ----------
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A cube component matching the given criteria.
+        """
+        try:
+            component = self._dimensional_metadata(name_or_component)
+        except KeyError:
+            # Special handling for KeyError raised from _dimensional_metadata to give
+            # a more informative error message.
+            msg = f"Expected to find exactly 1 cube component matching {name_or_component!r}, but found none."
+            raise iris.exceptions.CubeComponentNotFoundError(msg)
+        return component
+
+    def add_component(
+        self,
+        component: DimensionalCubeComponent,
+        data_dims: Iterable[int] | int | None = None,
+    ) -> None:
+        """Add a dimensional component to the cube.
+
+        Parameters
+        ----------
+        component :
+            The dimensional component to add to the cube. This must be one of
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
+        data_dims :
+            Integer giving the data dimension spanned by the component.
+
+        See Also
+        --------
+        add_dim_coord : For adding dimension coordinates.
+        add_aux_coord : For adding auxiliary coordinates.
+        add_cell_measure : For adding cell measures.
+        add_ancillary_variable : For adding ancillary variables.
+
+        """
+
+        def _value_is_int_or_tuple_of_ints(
+            value: Any,
+        ) -> TypeGuard[int | tuple[int]]:
+            return isinstance(value, int) or (
+                isinstance(value, tuple)
+                and all(isinstance(item, int) for item in value)
+            )
+
+        match component:
+            case iris.coords.DimCoord():
+                if data_dims is None:
+                    # No data_dims given, so add as auxiliary coordinate:
+                    self.add_aux_coord(component, data_dims)
+                else:
+                    # Try to add as a dimension coordinate, but if fails try to add
+                    # as an auxiliary coordinate:
+                    try:
+                        if TYPE_CHECKING:
+                            # TypeGuard to narrow Iterable[int] -> tuple[int]
+                            assert _value_is_int_or_tuple_of_ints(data_dims)
+                        self.add_dim_coord(component, data_dims)
+                    except ValueError:
+                        self.add_aux_coord(component, data_dims)
+            case iris.coords.AuxCoord():
+                self.add_aux_coord(component, data_dims)
+            case iris.coords.CellMeasure():
+                self.add_cell_measure(component, data_dims)
+            case iris.coords.AncillaryVariable():
+                self.add_ancillary_variable(component, data_dims)
+            case _:
+                msg = f"Cannot add component of type {type(component)!r} to cube."  # type: ignore[unreachable]
+                raise iris.exceptions.CannotAddError(msg)
+
+    def component_dims(
+        self, component: str | DimensionalCubeComponent
+    ) -> tuple[int, ...]:
+        """Return the data dimensions spanned by the given cube component.
+
+        Parameters
+        ----------
+        component :
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * An instance of one of the following: :class:`~iris.coords.DimCoord`,
+              :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` or
+              :class:`~iris.coords.AncillaryVariable`.
+
+        Returns
+        -------
+        tuple
+            A tuple of integers giving the data dimensions spanned by the
+            component.
+
+        See Also
+        --------
+        :func:`iris.cube.Cube.coord_dims` : For getting the data dimensions spanned by a coordinate.
+
+        :func:`iris.cube.Cube.cell_measure_dims` : For getting the data dimensions spanned by a cell measure.
+
+        :func:`iris.cube.Cube.ancillary_variable_dims` : For getting the data dimensions spanned by an ancillary variable.
+        """
+        component = self.component(name_or_component=component)
+        match component:
+            case iris.coords.DimCoord() | iris.coords.AuxCoord():
+                return self.coord_dims(component)
+            case iris.coords.CellMeasure():
+                return self.cell_measure_dims(component)
+            case iris.coords.AncillaryVariable():
+                return self.ancillary_variable_dims(component)
+            case _:
+                msg = (  # type: ignore[unreachable]
+                    f"Cannot get dimensions for component of type {type(component)!r}."
+                )
+                raise TypeError(msg)
 
     def core_data(self) -> np.ndarray | da.Array:
         """Retrieve the data array of this :class:`~iris.cube.Cube`.
