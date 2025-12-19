@@ -1,3 +1,8 @@
+.. explanation:: Iris Data Structures
+   :tags: topic_data_model
+
+   Read about the core Iris data model.
+
 .. _iris_data_structures:
 
 ====================

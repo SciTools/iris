@@ -194,7 +194,7 @@ Documentation
 =============
 
 * A chapter on :doc:`saving iris cubes </userguide/saving_iris_cubes>` has been
-  added to the :doc:`user guide </userguide/index>`.
+  added to the :doc:`User Guide </user_maual/section_indexes/userguide>`.
 
 * Added script and documentation for building a what's new page from
   developer-submitted contributions.  See

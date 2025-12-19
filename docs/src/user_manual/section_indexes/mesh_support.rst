@@ -35,10 +35,10 @@ Iris' mesh support is experimental
 
 Read on to find out more...
 
-* :doc:`data_model` - learn why the mesh experience is so different.
-* :doc:`partner_packages` - meet some optional dependencies that provide powerful mesh operations.
-* :doc:`operations` - experience how your workflows will look when written for mesh data.
-* :doc:`other_meshes` - check out some examples of converting various mesh formats into Iris' mesh format.
+* :doc:`../../further_topics/ugrid/data_model` - learn why the mesh experience is so different.
+* :doc:`../../further_topics/ugrid/partner_packages` - meet some optional dependencies that provide powerful mesh operations.
+* :doc:`../../further_topics/ugrid/operations` - experience how your workflows will look when written for mesh data.
+* :doc:`../../further_topics/ugrid/other_meshes` - check out some examples of converting various mesh formats into Iris' mesh format.
 
 ..
     Need an actual TOC to get Sphinx working properly, but have hidden it in
@@ -48,9 +48,9 @@ Read on to find out more...
    :hidden:
    :maxdepth: 1
 
-   data_model
-   partner_packages
-   operations
-   other_meshes
+   ../../further_topics/ugrid/data_model
+   ../../further_topics/ugrid/partner_packages
+   ../../further_topics/ugrid/operations
+   ../../further_topics/ugrid/other_meshes
 
 __ CF-UGRID_
