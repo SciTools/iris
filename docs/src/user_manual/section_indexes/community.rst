@@ -1,4 +1,4 @@
-.. include:: ../common_links.inc
+.. include:: ../../common_links.inc
 
 .. todo:
     consider scientific-python.org
@@ -6,6 +6,8 @@
 
 Iris in the Community
 =====================
+
+.. todo:: https://github.com/SciTools/iris/issues/6867 - this section belongs in 'Get Involved'
 
 Iris aims to be a valuable member of the open source scientific Python
 community.
@@ -39,15 +41,15 @@ smoother interoperability:
 .. not using toctree due to combination of child pages and cross-references.
 
 * The :mod:`iris.pandas` module
-* :doc:`iris_xarray`
-* :doc:`phrasebook`
+* :doc:`../../community/iris_xarray`
+* :doc:`../../community/phrasebook`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   iris_xarray
-   phrasebook
+   ../../community/iris_xarray
+   ../../community/phrasebook
 
 Plugins
 -------
@@ -57,4 +59,4 @@ Iris can be extended with **plugins**!  See below for further information:
 .. toctree::
    :maxdepth: 2
 
-   plugins
+   ../../community/plugins

@@ -7,7 +7,7 @@
 .. note ::
 
     The Iris documentation has further usage information, including
-    a :ref:`user guide <user_guide_index>` which should be the first port of
+    a :ref:`user manual <user_guide_index>` which should be the first port of
     call for new users.
 
 The functions in this module provide the main way to load and/or save

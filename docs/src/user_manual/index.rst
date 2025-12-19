@@ -1,3 +1,10 @@
+.. comment:
+   now that User Manual is the official top-level, and the User Guide is a
+   sub-section, the original labels have been relocated here.
+
+.. _user_guide_index:
+.. _user_guide_introduction:
+.. _user_manual_index:
 
 User Manual
 ===========
@@ -14,9 +21,28 @@ navigate by section.
    topic-based filtering, and allow all pages to be found through the same
    route.
 
+.. comment:
+   The tree structure for user_manual is specified here. As mentioned in the
+   text, we prefer readers to use the tabbed sections below, so the toctree is
+   hidden - not rendered in the text, only in the sidebar. This toctree is
+   expected to be exclusively section_indexes/* pages; with those pages
+   providing the remaining sub-structure.
+
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   section_indexes/userguide
+   section_indexes/dask_best_practices
+   section_indexes/mesh_support
+   section_indexes/metadata_arithmetic
+   section_indexes/community
+   section_indexes/general
+
 .. _topic_all:
 
-all
+All
 ---
 
 .. diataxis-page-list:: topic_all
@@ -50,8 +76,8 @@ topic: ``lazy_data``
 ^^^^^^^^^^^^^^^^^^^^
 
 Pages about Iris' implementation of parallel and out-of-core data handling, via
-Dask. See :glossary:`real_and_lazy_data`.
+Dask. See :term:`Lazy Data`.
 
 .. diataxis-page-list:: topic_lazy_data
 
-.. Diataxis: https://diataxis.fr/
+.. _Diataxis: https://diataxis.fr/

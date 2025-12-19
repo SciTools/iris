@@ -45,13 +45,13 @@ For more information see :ref:`why_iris`.
         plotting and more.
 
         +++
-        .. button-ref:: user_guide_index
+        .. button-ref:: user_manual_index
             :ref-type: ref
             :color: primary
             :outline:
             :expand:
 
-                User Guide
+                User Manual
 
     .. grid-item-card::
         :text-align: center
@@ -159,12 +159,12 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: User Guide
+   :caption: User Manual
    :maxdepth: 1
-   :name: userguide_index
+   :name: user_manual
    :hidden:
 
-   userguide/index
+   user_manual/index
 
 
 .. toctree::
@@ -174,15 +174,6 @@ The legacy support resources:
    :hidden:
 
    developers_guide/contributing_getting_involved
-
-
-.. toctree::
-   :caption: Community
-   :maxdepth: 1
-   :name: community_index
-   :hidden:
-
-   Community <community/index>
 
 
 .. toctree::

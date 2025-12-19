@@ -130,7 +130,7 @@ v3.7.1 (04 Mar 2024)
 
    .. _dask_guide:
 
-#. `@HGWright`_ added a :doc:`/further_topics/dask_best_practices/index`
+#. `@HGWright`_ added a :doc:`/user_manual/section_indexes/dask_best_practices`
    section into the user guide, containing advice and use cases to help users
    get the best out of Dask with Iris.  (:pull:`5190`)
 

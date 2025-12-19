@@ -1119,7 +1119,7 @@ class Cube(CFVariableMixin):
                 source                      'Data from Met Office Unified Model'
 
 
-    See the :doc:`user guide</userguide/index>` for more information.
+    See the :doc:`user manual</user_manual/index>` for more information.
 
     """
 

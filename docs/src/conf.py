@@ -447,6 +447,7 @@ numfig_format = {
 # -- sphinx-needs config ------------------------------------------------------
 # See https://sphinx-needs.readthedocs.io/en/latest/configuration.html
 
+# TODO: namespace these types as Diataxis for max clarity?
 needs_types = [
     {
         "directive": "tutorial",
@@ -475,7 +476,7 @@ needs_types = [
         "prefix": "",
         "color": "",
         "style": "node",
-    }
+    },
 ]
 # The layout whenever a 'need item' directive is used. I.e. at the top of each
 #  user manual page.

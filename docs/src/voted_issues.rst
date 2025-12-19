@@ -5,6 +5,8 @@
 Voted Issues
 ============
 
+.. todo:: https://github.com/SciTools/iris/issues/6867 - this page belongs in 'Get Involved'.
+
 You can help us to prioritise development of new features by leaving a 👍
 reaction on the header (not subsequent comments) of any issue.
 
