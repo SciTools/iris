@@ -98,15 +98,21 @@ class TestCells:
     def test_coord_equality(self):
         self.d = iris.coords.Cell(1.9, None)
         assert self.d == 1.9
-        assert self.d != [1.5, 1.9]
+        assert not self.d == [1.5, 1.9]
+        assert not self.d != 1.9
         assert self.d >= 1.9
         assert self.d <= 1.9
+        assert not self.d > 1.9
+        assert not self.d < 1.9
         assert self.d not in [1.5, 3.5]
         assert self.d in [1.5, 1.9]
 
         assert self.d != 1
-        assert self.d < 2
+        assert not self.d == 1
+        assert not self.d >= 2
+        assert not self.d <= 1
         assert self.d > 1
+        assert self.d < 2
 
         # Ensure the Cell's operators return NotImplemented.
         class Terry:
