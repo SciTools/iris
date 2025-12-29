@@ -90,6 +90,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@hdyson`_ updated ``_ff_replacement.py`` to clarify
    that Iris supports Ancillaries. (:pull:`6792`)
 
+#. `@trexfeathers`_ adapted ``test_OceanSigmaZFactory`` for NumPy 2.4 - only
+   0-dimensional arrays can now be converted to scalars. (:pull:`6876`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

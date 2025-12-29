@@ -179,7 +179,7 @@ class Test_make_coord:
 
     @staticmethod
     def derive(sigma, eta, depth, depth_c, nsigma, zlev, coord=True):
-        nsigma_slice = slice(0, int(nsigma))
+        nsigma_slice = slice(0, nsigma.squeeze())
         temp = eta + sigma * (np.minimum(depth_c, depth) + eta)
         shape = temp.shape
         result = np.ones(shape, dtype=temp.dtype) * zlev
