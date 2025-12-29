@@ -97,7 +97,7 @@ class TestCells:
 
     def test_coord_equality(self):
         # NOTE: These comparisons intentionally use explicit operators to ensure each
-        # rich comparison method (__eq__, __ne__, __lt__, __le__, __gt__, __ge__) is 
+        # rich comparison method (__eq__, __ne__, __lt__, __le__, __gt__, __ge__) is
         # exercised.
         self.d = iris.coords.Cell(1.9, None)
         assert self.d == 1.9
