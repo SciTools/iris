@@ -34,7 +34,7 @@ reasons:
 
 Below you can learn more about the partner packages and how they are useful.
 Specifics of what operations would require their installation can be found in:
-:doc:`operations`.
+:doc:`../how_to/mesh_operations`.
 
 .. important:: **Experimental**
 

@@ -54,7 +54,7 @@ def run_callback(callback, cube, field, filename):
     the caller of this function should handle this case.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -452,7 +452,7 @@ def save(source, target, saver=None, **kwargs):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube, CubeList

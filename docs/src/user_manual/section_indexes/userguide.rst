@@ -25,12 +25,12 @@ they may serve as a useful reference for future exploration.
 .. toctree::
    :maxdepth: 2
 
-   ../../userguide/iris_cubes
+   ../explanation/iris_cubes
    ../../userguide/loading_iris_cubes
    ../../userguide/saving_iris_cubes
-   ../../userguide/navigating_a_cube
+   ../how_to/navigating_a_cube
    ../../userguide/subsetting_a_cube
-   ../../userguide/real_and_lazy_data
+   ../explanation/real_and_lazy_data
    ../../userguide/plotting_a_cube
    ../../userguide/interpolation_and_regridding
    ../../userguide/merge_and_concat

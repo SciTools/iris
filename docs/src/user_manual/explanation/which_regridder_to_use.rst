@@ -1,4 +1,4 @@
-.. include:: ../common_links.inc
+.. include:: ../../common_links.inc
 
 .. _which_regridder_to_use:
 
@@ -38,7 +38,7 @@ the following form:
 | System**        | ``src``/``tgt`` cube coordinates.                         |
 +-----------------+-----------------------------------------------------------+
 | **Lazy          | If the result is calculated lazily. See                   |
-| Regridding**    | :doc:`real and lazy data </userguide/real_and_lazy_data>`.|
+| Regridding**    | :doc:`real and lazy data <real_and_lazy_data>`.           |
 +-----------------+-----------------------------------------------------------+
 | **Weights       | See `regridder performance`_.                             |
 | Caching**       |                                                           |

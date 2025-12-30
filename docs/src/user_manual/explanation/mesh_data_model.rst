@@ -269,7 +269,7 @@ using packages such as Dask.
 
 Spatial operations on mesh data are more complex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Detail: :doc:`operations`
+Detail: :doc:`../how_to/mesh_operations`
 
 Indexing a mesh data array cannot be used for:
 

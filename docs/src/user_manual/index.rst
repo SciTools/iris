@@ -56,7 +56,7 @@ topic: ``data_model``
 ^^^^^^^^^^^^^^^^^^^^^
 
 Pages about the :class:`~iris.cube.Cube` class and its associated components
-such as :class:`~iris.coords.Coord` and :class:`~iris.mesh.Mesh`.
+such as :class:`~iris.coords.Coord` and :class:`~iris.mesh.MeshXY`.
 
 .. diataxis-page-list:: topic_data_model
 

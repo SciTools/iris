@@ -7,6 +7,6 @@ combining :class:`~iris.cube.Cube` instances via arithmetic operations.
 .. toctree::
    :maxdepth: 1
 
-   ../../further_topics/metadata
-   ../../further_topics/lenient_metadata
-   ../../further_topics/lenient_maths
+   ../explanation/metadata
+   ../explanation/lenient_metadata
+   ../explanation/lenient_maths

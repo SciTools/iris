@@ -110,7 +110,7 @@ Suppose we have some gridded data which has 24 air temperature readings
 (in Kelvin) which is located at 4 different longitudes, 2 different latitudes
 and 3 different heights. Our data array can be represented pictorially:
 
-.. image:: multi_array.svg
+.. image:: images/multi_array.svg
 
 Where dimensions 0, 1, and 2 have lengths 3, 2 and 4 respectively.
 
@@ -140,7 +140,7 @@ The Iris cube to represent this data would consist of:
 Pictorially the cube has taken on more information than a simple array:
 
 
-.. image:: multi_array_to_cube.svg
+.. image:: images/multi_array_to_cube.svg
 
 
 Additionally further information may be optionally attached to the cube.

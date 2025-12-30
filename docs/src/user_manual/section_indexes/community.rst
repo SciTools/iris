@@ -41,14 +41,14 @@ smoother interoperability:
 .. not using toctree due to combination of child pages and cross-references.
 
 * The :mod:`iris.pandas` module
-* :doc:`../../community/iris_xarray`
+* :doc:`../../user_manual/explanation/iris_xarray`
 * :doc:`../../community/phrasebook`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   ../../community/iris_xarray
+   ../../user_manual/explanation/iris_xarray
    ../../community/phrasebook
 
 Plugins
@@ -59,4 +59,4 @@ Iris can be extended with **plugins**!  See below for further information:
 .. toctree::
    :maxdepth: 2
 
-   ../../community/plugins
+   ../how_to/plugins

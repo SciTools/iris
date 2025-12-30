@@ -107,7 +107,7 @@ def abs(cube, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -156,7 +156,7 @@ def intersection_of_cubes(cube, other_cube):
           cube1, cube2 = (intersections[0], intersections[1])
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -237,7 +237,7 @@ def add(cube, other, dim=None, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -289,7 +289,7 @@ def subtract(cube, other, dim=None, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -396,7 +396,7 @@ def multiply(cube, other, dim=None, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     _assert_is_cube(cube)
 
@@ -480,7 +480,7 @@ def divide(cube, other, dim=None, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -545,7 +545,7 @@ def exponentiate(cube, exponent, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -593,7 +593,7 @@ def exp(cube, in_place=False):
     Taking an exponential will return a cube with dimensionless units.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -621,7 +621,7 @@ def log(cube, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -653,7 +653,7 @@ def log2(cube, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -681,7 +681,7 @@ def log10(cube, in_place=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     _assert_is_cube(cube)
@@ -736,7 +736,7 @@ def apply_ufunc(ufunc, cube, other=None, new_unit=None, new_name=None, in_place=
 
         This function maintains laziness when called; it does not realise data. This is dependent on `ufunc` argument
         being a numpy operation that is compatible with lazy operation.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if not isinstance(ufunc, np.ufunc):

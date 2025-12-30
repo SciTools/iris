@@ -71,7 +71,7 @@ and :attr:`Cube.units <iris.cube.Cube.units>` respectively::
     
 Interrogating these with the standard :func:`type` function will tell you that ``standard_name`` and ``long_name`` 
 are either a string or ``None``, and ``units`` is an instance of :class:`iris.unit.Unit`. A more in depth discussion on
-the cube units and their functional effects can be found at the end of :doc:`cube_maths`.
+the cube units and their functional effects can be found at the end of :doc:`../../userguide/cube_maths`.
 
 You can access a string representing the "name" of a cube with the :meth:`Cube.name() <iris.cube.Cube.name>` method::
 
@@ -99,7 +99,7 @@ Each cube also has a :mod:`numpy` array which represents the phenomenon of the c
        print(cube.ndim)
 
     For more on the benefits, handling and uses of lazy data, see
-    :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`
+    :doc:`Real and Lazy Data </user_manual/explanation/real_and_lazy_data>`
 
 
 You can change the units of a cube using the :meth:`~iris.cube.Cube.convert_units` method. For example::

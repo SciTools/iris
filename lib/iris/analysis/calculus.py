@@ -150,7 +150,7 @@ def cube_delta(cube, coord):
 
     .. note::
             This function maintains laziness when called; it does not realise data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # handle the case where a user passes a coordinate name
@@ -261,7 +261,7 @@ def differentiate(cube, coord_to_differentiate):
 
     .. note::
             This function maintains laziness when called; it does not realise data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # Get the delta cube in the required differential direction.
@@ -549,7 +549,7 @@ def curl(i_cube, j_cube, k_cube=None):
     .. note::
 
             This function does not maintain laziness when called; it realises data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # Get the vector quantity names.
@@ -773,7 +773,7 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 
     """

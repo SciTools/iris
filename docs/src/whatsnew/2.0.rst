@@ -26,7 +26,7 @@ Features
   In particular, Dask's *threaded*, *multiprocessing* or *distributed*
   `schedulers`_ can be used in order to best utilise available compute and
   memory resource. For further details, see :doc:`Real and Lazy Data
-  </userguide/real_and_lazy_data>`.
+  </user_manual/explanation/real_and_lazy_data>`.
 
 * Changes to the :class:`iris.cube.Cube`:
 
@@ -290,7 +290,7 @@ Documentation
 =============
 
 * A new UserGuide chapter on :doc:`Real and Lazy Data
-  </userguide/real_and_lazy_data>` has been added, and referenced from key
+  </user_manual/explanation/real_and_lazy_data>` has been added, and referenced from key
   points in the :doc:`User Guide </user_manual/section_indexes/userguide>` .
 
 

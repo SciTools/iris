@@ -119,7 +119,7 @@ Notice that the result of printing a **cube** is a little more verbose than
 it was when printing a **list of cubes**. In addition to the very short summary
 which is provided when printing a list of cubes, information is provided
 on the coordinates which constitute the cube in question.
-This was the output discussed at the end of the :doc:`iris_cubes` section.
+This was the output discussed at the end of the :doc:`../user_manual/explanation/iris_cubes` section.
 
 .. note::
 
@@ -161,7 +161,7 @@ essential descriptive information or metadata :  the bulk of the actual data
 content will only be loaded later, as it is needed.
 This is referred to as 'lazy' data.  It allows loading to be much quicker, and to occupy less memory.
 
-For more on the benefits, handling and uses of lazy data, see :doc:`Real and Lazy Data </userguide/real_and_lazy_data>`.
+For more on the benefits, handling and uses of lazy data, see :doc:`Real and Lazy Data </user_manual/explanation/real_and_lazy_data>`.
 
 
 .. _constrained-loading:

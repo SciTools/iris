@@ -10,14 +10,14 @@ filters, as seen in the :doc:`../index` top page.
 
     ../../userguide/citation
     ../../further_topics/controlling_merge
-    ../../further_topics/dataless_cubes
-    ../../further_topics/filtering_warnings
+    ../explanation/dataless_cubes
+    ../how_to/filtering_warnings
     ../../userguide/glossary
-    ../../userguide/iris_philosophy
-    ../../further_topics/missing_data_handling
-    ../../further_topics/netcdf_io
-    ../../further_topics/um_files_loading
+    ../explanation/iris_philosophy
+    ../explanation/missing_data_handling
+    ../explanation/netcdf_io
+    ../explanation/um_files_loading
     ../../further_topics/ux_guide
-    ../../further_topics/which_regridder_to_use
+    ../explanation/which_regridder_to_use
 
 .. _Diataxis: https://diataxis.fr/

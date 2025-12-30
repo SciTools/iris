@@ -18,7 +18,7 @@
 Real and Lazy Data
 ==================
 
-We have seen in the :doc:`iris_cubes` section of the user guide that
+We have seen in the :doc:`../explanation/iris_cubes` section of the user guide that
 Iris cubes contain data and metadata about a phenomenon. The data element of a cube
 is always an array, but the array may be either "real" or "lazy".
 

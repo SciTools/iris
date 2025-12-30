@@ -4,8 +4,6 @@
 Iris' Philosophy
 ****************
 
-.. todo:: https://github.com/SciTools/iris/issues/6511; this page belongs in 'Explanation'
-
 .. _code-maintenance:
 
 Code Maintenance

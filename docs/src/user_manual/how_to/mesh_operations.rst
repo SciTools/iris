@@ -4,7 +4,7 @@ Working with Mesh Data
 **********************
 
 .. note:: Several of the operations below rely on the optional dependencies
-          mentioned in :doc:`partner_packages`.
+          mentioned in :doc:`../../user_manual/explanation/mesh_partners`.
 
 Operations Summary
 ------------------
@@ -529,7 +529,7 @@ Region Extraction
 
 .. rubric:: |tagline: region extraction|
 
-As described in :doc:`data_model`, indexing for a range along a
+As described in :doc:`../../user_manual/explanation/mesh_data_model`, indexing for a range along a
 :class:`~iris.cube.Cube`\'s :meth:`~iris.cube.Cube.mesh_dim` will not provide
 a contiguous region, since **position on the unstructured dimension is
 unrelated to spatial position**. This means that subsetted
@@ -818,7 +818,7 @@ user.
     Keep an eye on memory demand when comparing large
     :class:`~iris.mesh.MeshXY`\es, but note that
     :class:`~iris.mesh.MeshXY`\ equality is enabled for lazy
-    processing (:doc:`/userguide/real_and_lazy_data`), so if the
+    processing (:doc:`/user_manual/explanation/real_and_lazy_data`), so if the
     :class:`~iris.mesh.MeshXY`\es being compared are lazy the
     process will use less memory than their total size.
 

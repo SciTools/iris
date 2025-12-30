@@ -145,7 +145,7 @@ This document explains the changes made to Iris for this release
    to other projects. (:pull:`5025`)
 
 #. The **Iris community**, with help from the **Xarray community**, produced
-   the :doc:`/community/iris_xarray` page, highlighting the similarities and
+   the :doc:`../user_manual/explanation/iris_xarray` page, highlighting the similarities and
    differences between the two packages. (:pull:`5025`)
 
 #. `@bjlittle`_ added a new section to the `README.md`_ to show our support

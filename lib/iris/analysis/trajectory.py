@@ -207,7 +207,7 @@ def interpolate(cube, sample_points, method=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 

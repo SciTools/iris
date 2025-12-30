@@ -5,7 +5,7 @@ Cube Maths
 ==========
 
 
-The section :doc:`navigating_a_cube` highlighted that
+The section :doc:`../user_manual/how_to/navigating_a_cube` highlighted that
 every cube has a data attribute;
 this attribute can then be manipulated directly::
 
