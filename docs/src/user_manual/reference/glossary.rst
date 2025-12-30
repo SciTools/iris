@@ -1,4 +1,4 @@
-.. include:: ../common_links.inc
+.. include:: ../../common_links.inc
 
 .. _glossary:
 
@@ -40,7 +40,7 @@ Glossary
                 representing the cube as a whole.
 
         | **Related:** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Cube
@@ -55,7 +55,7 @@ Glossary
         - :term:`Coordinate Factories <Coordinate Factory>`
 
         | **Related:** :term:`NumPy`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Cell Method
@@ -64,7 +64,7 @@ Glossary
         MEAN or SUM operation.
 
         | **Related:** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Coordinate Factory
@@ -75,7 +75,7 @@ Glossary
         "height above ground level" coordinate.
 
         | **Related:** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
 
@@ -85,7 +85,7 @@ Glossary
         so that not all data is in RAM at once.
 
         | **Related:** :term:`Lazy Data` **|** :term:`NumPy`
-        | **More information:** :doc:`../user_manual/explanation/real_and_lazy_data`
+        | **More information:** :doc:`../explanation/real_and_lazy_data`
         |
 
    Fields File (FF) Format
@@ -111,7 +111,7 @@ Glossary
         thanks to parallel processing.
 
         | **Related:** :term:`Dask` **|** :term:`Real Data`
-        | **More information:** :doc:`../user_manual/explanation/real_and_lazy_data`
+        | **More information:** :doc:`../explanation/real_and_lazy_data`
         |
 
    Long Name
@@ -119,7 +119,7 @@ Glossary
         the same restraints as :term:`standard name`.
 
         | **Related:** :term:`Standard Name` **|** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Matplotlib
@@ -137,7 +137,7 @@ Glossary
         e.g. :term:`units <Unit>` or :term:`Cell Methods <Cell Method>`
 
         | **Related:** :term:`Phenomenon` **|** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/metadata`
+        | **More information:** :doc:`../explanation/metadata`
         |
 
    NetCDF Format
@@ -167,7 +167,7 @@ Glossary
 
         | **Related:** :term:`Metadata`
          **|** :term:`Standard Name` **|** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Post Processing (PP) Format
@@ -183,7 +183,7 @@ Glossary
         on the hard drive.
 
         | **Related:** :term:`Lazy Data` **|** :term:`NumPy`
-        | **More information:** :doc:`../user_manual/explanation/real_and_lazy_data`
+        | **More information:** :doc:`../explanation/real_and_lazy_data`
         |
 
    Standard Name
@@ -191,14 +191,14 @@ Glossary
         defined at `CF Standard Names <https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html>`_.
 
         | **Related:** :term:`Long Name` **|** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Unit
         The unit with which the :term:`phenomenon` is measured e.g. m / sec.
 
         | **Related:** :term:`Cube`
-        | **More information:** :doc:`../user_manual/explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/iris_cubes`
         |
 
    Xarray

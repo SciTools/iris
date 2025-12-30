@@ -312,7 +312,7 @@ Documentation
 =============
 
 * New sections on :ref:`cube broadcasting <cube-maths_anomaly>` and
-  :doc:`regridding and interpolation </userguide/interpolation_and_regridding>`
+  :doc:`regridding and interpolation </user_manual/tutorial/interpolation_and_regridding>`
   have been added to the :doc:`User Guide </user_manual/section_indexes/userguide>`.
 
 * An example demonstrating custom log-scale colouring has been added.

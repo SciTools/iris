@@ -1,4 +1,4 @@
-.. include:: ../common_links.inc
+.. include:: ../../common_links.inc
 
 .. _phrasebook:
 

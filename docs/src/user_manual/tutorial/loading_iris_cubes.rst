@@ -119,7 +119,7 @@ Notice that the result of printing a **cube** is a little more verbose than
 it was when printing a **list of cubes**. In addition to the very short summary
 which is provided when printing a list of cubes, information is provided
 on the coordinates which constitute the cube in question.
-This was the output discussed at the end of the :doc:`../user_manual/explanation/iris_cubes` section.
+This was the output discussed at the end of the :doc:`../explanation/iris_cubes` section.
 
 .. note::
 

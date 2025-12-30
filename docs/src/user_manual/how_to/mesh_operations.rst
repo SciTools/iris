@@ -829,7 +829,7 @@ Combining Cubes
 .. rubric:: |tagline: combining cubes|
 
 Merging or concatenating :class:`~iris.cube.Cube`\s (described in
-:doc:`/userguide/merge_and_concat`) with two different
+:doc:`../tutorial/merge_and_concat`) with two different
 :class:`~iris.mesh.MeshXY`\es is not possible - a
 :class:`~iris.cube.Cube` must be associated with just a single
 :class:`~iris.mesh.MeshXY`, and merge/concatenate are not yet
@@ -855,7 +855,7 @@ Arithmetic
 
 .. rubric:: |tagline: arithmetic|
 
-Cube Arithmetic (described in :doc:`/userguide/cube_maths`)
+Cube Arithmetic (described in :doc:`../tutorial/cube_maths`)
 has been extended to handle :class:`~iris.cube.Cube`\s that include
 :class:`~iris.mesh.MeshCoord`\s, and hence have a ``cube.mesh``.
 

@@ -32,8 +32,8 @@ The following are the regridding schemes that are currently available in Iris:
 The linear and nearest-neighbour interpolation schemes, and the linear, nearest-neighbour,
 and area-weighted regridding schemes support lazy regridding, i.e. if the source cube has lazy data,
 the resulting cube will also have lazy data.
-See :doc:`../user_manual/explanation/real_and_lazy_data` for an introduction to lazy data.
-See :doc:`../user_manual/explanation/which_regridder_to_use` for a more in depth overview of the different regridders.
+See :doc:`../explanation/real_and_lazy_data` for an introduction to lazy data.
+See :doc:`../explanation/which_regridder_to_use` for a more in depth overview of the different regridders.
 
 
 .. _interpolation:
@@ -161,7 +161,7 @@ these sample points:
 Let's look at the original data, the interpolation line and
 the new data in a plot. This will help us to see what is going on:
 
-.. plot:: userguide/regridding_plots/interpolate_column.py
+.. plot:: user_manual/tutorial/regridding_plots/interpolate_column.py
 
 The red diamonds on the extremes of the altitude values show that we have
 extrapolated data beyond the range of the original data. In some cases this is
@@ -222,7 +222,7 @@ Let's load two cubes that have different grids and coordinate systems:
 
 We can visually confirm that they are on different grids by plotting the two cubes:
 
-.. plot:: userguide/regridding_plots/regridding_plot.py
+.. plot:: user_manual/tutorial/regridding_plots/regridding_plot.py
 
 Let's regrid the ``global_air_temp`` cube onto a rotated pole grid
 using a linear regridding scheme. To achieve this we pass the ``rotated_psl``
@@ -231,7 +231,7 @@ cube onto:
 
     >>> rotated_air_temp = global_air_temp.regrid(rotated_psl, iris.analysis.Linear())
 
-.. plot:: userguide/regridding_plots/regridded_to_rotated.py
+.. plot:: user_manual/tutorial/regridding_plots/regridded_to_rotated.py
 
 We could regrid the pressure values onto the global grid, but this will involve
 some form of extrapolation. As with interpolation, we can control the extrapolation
@@ -260,7 +260,7 @@ pole grid:
     >>> scheme = iris.analysis.Linear(extrapolation_mode='mask')
     >>> global_psl = rotated_psl.regrid(global_air_temp, scheme)
 
-.. plot:: userguide/regridding_plots/regridded_to_global.py
+.. plot:: user_manual/tutorial/regridding_plots/regridded_to_global.py
 
 Notice that although we can still see the approximate shape of the rotated pole grid, the
 cells have now become rectangular in a plate carrée (equirectangular) projection.
@@ -341,7 +341,7 @@ some data will be disregarded if it lies close to masked data.
 To visualise the above regrid, let's plot the original data, along with 3 distinct
 ``mdtol`` values to compare the result:
 
-.. plot:: userguide/regridding_plots/regridded_to_global_area_weighted.py
+.. plot:: user_manual/tutorial/regridding_plots/regridded_to_global_area_weighted.py
 
 
 .. _caching_a_regridder:

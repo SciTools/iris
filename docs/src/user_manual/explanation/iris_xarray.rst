@@ -7,7 +7,7 @@ Iris ❤️ :term:`Xarray`
 There is a lot of overlap between Iris and :term:`Xarray`, but some important
 differences too. Below is a summary of the most important differences, so that
 you can be prepared, and to help you choose the best package for your use case.
-See :doc:`../../community/phrasebook` for a broad comparison of terminology.
+See :doc:`../reference/phrasebook` for a broad comparison of terminology.
 
 Overall Experience
 ------------------

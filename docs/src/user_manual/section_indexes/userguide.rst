@@ -26,14 +26,14 @@ they may serve as a useful reference for future exploration.
    :maxdepth: 2
 
    ../explanation/iris_cubes
-   ../../userguide/loading_iris_cubes
-   ../../userguide/saving_iris_cubes
+   ../tutorial/loading_iris_cubes
+   ../tutorial/saving_iris_cubes
    ../how_to/navigating_a_cube
-   ../../userguide/subsetting_a_cube
+   ../tutorial/subsetting_a_cube
    ../explanation/real_and_lazy_data
-   ../../userguide/plotting_a_cube
-   ../../userguide/interpolation_and_regridding
-   ../../userguide/merge_and_concat
-   ../../userguide/cube_statistics
-   ../../userguide/cube_maths
+   ../tutorial/plotting_a_cube
+   ../tutorial/interpolation_and_regridding
+   ../tutorial/merge_and_concat
+   ../tutorial/cube_statistics
+   ../tutorial/cube_maths
 

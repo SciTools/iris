@@ -160,7 +160,7 @@ The syntax is very similar to that which you would provide to Matplotlib's
 equivalent :py:func:`matplotlib.pyplot.plot` and indeed all of the 
 keyword arguments are equivalent:
 
-.. plot:: userguide/plotting_examples/1d_simple.py
+.. plot:: user_manual/tutorial/plotting_examples/1d_simple.py
    :include-source:
 
 For more information on how this example reduced the 2D cube to 1 dimension see 
@@ -179,7 +179,7 @@ to a plot.
 For example, the previous plot can be improved quickly by replacing
 **iris.plot** with **iris.quickplot**:
 
-.. plot:: userguide/plotting_examples/1d_quickplot_simple.py
+.. plot:: user_manual/tutorial/plotting_examples/1d_quickplot_simple.py
    :include-source:
 
 
@@ -238,7 +238,7 @@ Cube Contour
 A simple contour plot of a cube can be created with either the 
 :func:`iris.plot.contour` or :func:`iris.quickplot.contour` functions:
 
-.. plot:: userguide/plotting_examples/cube_contour.py
+.. plot:: user_manual/tutorial/plotting_examples/cube_contour.py
    :include-source:
 
 
@@ -247,7 +247,7 @@ Cube Filled Contour
 Similarly a filled contour plot of a cube can be created with the 
 :func:`iris.plot.contourf` or :func:`iris.quickplot.contourf` functions:
 
-.. plot:: userguide/plotting_examples/cube_contourf.py
+.. plot:: user_manual/tutorial/plotting_examples/cube_contourf.py
    :include-source:
 
 
@@ -265,7 +265,7 @@ or :func:`iris.quickplot.pcolormesh`.
     and :func:`iris.quickplot.pcolormesh` will attempt to guess suitable values
     based on their points (see also :func:`iris.coords.Coord.guess_bounds()`).
 
-.. plot:: userguide/plotting_examples/cube_blockplot.py
+.. plot:: user_manual/tutorial/plotting_examples/cube_blockplot.py
    :include-source:
 
 .. _brewer-info:
@@ -303,7 +303,7 @@ Available Brewer Schemes
 The following subset of Brewer palettes found at 
 `colorbrewer2.org <https://colorbrewer2.org>`_ are available within Iris.
 
-.. plot:: userguide/plotting_examples/brewer.py
+.. plot:: user_manual/tutorial/plotting_examples/brewer.py
 
 
 Plotting With Brewer
@@ -313,7 +313,7 @@ To plot a cube using a Brewer colour palette, simply select one of the Iris
 registered Brewer colour palettes and plot the cube as normal. The Brewer palettes
 become available once :mod:`iris.plot` or :mod:`iris.quickplot` are imported.
 
-.. plot:: userguide/plotting_examples/cube_brewer_contourf.py
+.. plot:: user_manual/tutorial/plotting_examples/cube_brewer_contourf.py
    :include-source:
 
 
@@ -327,5 +327,5 @@ Citations can be easily added to a plot using the
 The recommended text for the Cynthia Brewer citation is provided by 
 :data:`iris.plot.BREWER_CITE`.
 
-.. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py
+.. plot:: user_manual/tutorial/plotting_examples/cube_brewer_cite_contourf.py
    :include-source:

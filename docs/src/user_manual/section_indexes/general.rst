@@ -8,16 +8,16 @@ filters, as seen in the :doc:`../index` top page.
 .. toctree::
     :maxdepth: 1
 
-    ../../userguide/citation
-    ../../further_topics/controlling_merge
+    ../reference/citation
+    ../tutorial/controlling_merge
     ../explanation/dataless_cubes
     ../how_to/filtering_warnings
-    ../../userguide/glossary
+    ../reference/glossary
     ../explanation/iris_philosophy
     ../explanation/missing_data_handling
     ../explanation/netcdf_io
     ../explanation/um_files_loading
-    ../../further_topics/ux_guide
+    ../explanation/ux_guide
     ../explanation/which_regridder_to_use
 
 .. _Diataxis: https://diataxis.fr/

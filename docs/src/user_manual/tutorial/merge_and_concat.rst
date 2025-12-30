@@ -16,7 +16,7 @@ issues from occurring.
 Both ``merge`` and ``concatenate`` take multiple cubes as input and
 result in fewer cubes as output. The following diagram illustrates the two processes:
 
-.. image:: merge_and_concat.svg
+.. image:: images/merge_and_concat.svg
    :alt: Pictographic of merge and concatenation.
    :align: center
 
@@ -128,7 +128,7 @@ make a new ``z`` dimension coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: merge.svg
+.. image:: images/merge.svg
    :alt: Pictographic of merge.
    :align: center
 
@@ -294,7 +294,7 @@ cubes to form a new cube with an extended ``t`` coordinate:
 
 The following diagram illustrates what has taken place in this example:
 
-.. image:: concat.svg
+.. image:: images/concat.svg
    :alt: Pictographic of concatenate.
    :align: center
 

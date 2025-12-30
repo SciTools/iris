@@ -102,7 +102,7 @@ this with::
 
     dask.config.set(num_workers=N)
 
-For an example, see :doc:`../../further_topics/dask_best_practices/dask_bags_and_greed`.
+For an example, see :doc:`../tutorial/dask_bags_and_greed`.
 
 Alternatively, when there is only one CPU allocated, it may actually be more
 efficient to use a "synchronous" scheduler instead, with::
@@ -194,7 +194,7 @@ If the file(s) being loaded contain multiple fields, this can lead to an
 excessive amount of chunks which will result in poor performance.
 
 When the default chunking is not appropriate, it is possible to rechunk.
-:doc:`../../further_topics/dask_best_practices/dask_pp_to_netcdf` provides a detailed demonstration of how Dask can optimise
+:doc:`../tutorial/dask_pp_to_netcdf` provides a detailed demonstration of how Dask can optimise
 that process.
 
 
@@ -208,14 +208,14 @@ If you feel you have an example of a Dask best practice that you think may be he
 please share them with us by raising a new `discussion on the Iris repository <https://github.com/SciTools/iris
 /discussions/>`_.
 
-* :doc:`../../further_topics/dask_best_practices/dask_pp_to_netcdf`
-* :doc:`../../further_topics/dask_best_practices/dask_parallel_loop`
-* :doc:`../../further_topics/dask_best_practices/dask_bags_and_greed`
+* :doc:`../tutorial/dask_pp_to_netcdf`
+* :doc:`../tutorial/dask_parallel_loop`
+* :doc:`../tutorial/dask_bags_and_greed`
 
 .. toctree::
    :hidden:
    :maxdepth: 1
 
-   ../../further_topics/dask_best_practices/dask_pp_to_netcdf
-   ../../further_topics/dask_best_practices/dask_parallel_loop
-   ../../further_topics/dask_best_practices/dask_bags_and_greed
+   ../tutorial/dask_pp_to_netcdf
+   ../tutorial/dask_parallel_loop
+   ../tutorial/dask_bags_and_greed

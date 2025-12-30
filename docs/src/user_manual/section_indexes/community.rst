@@ -41,15 +41,15 @@ smoother interoperability:
 .. not using toctree due to combination of child pages and cross-references.
 
 * The :mod:`iris.pandas` module
-* :doc:`../../user_manual/explanation/iris_xarray`
-* :doc:`../../community/phrasebook`
+* :doc:`../explanation/iris_xarray`
+* :doc:`../reference/phrasebook`
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
-   ../../user_manual/explanation/iris_xarray
-   ../../community/phrasebook
+   ../explanation/iris_xarray
+   ../reference/phrasebook
 
 Plugins
 -------

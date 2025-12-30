@@ -1,4 +1,4 @@
-.. include:: ../common_links.inc
+.. include:: ../../common_links.inc
 
 .. _subsetting_a_cube:
 
@@ -437,7 +437,7 @@ function and this returns a copy of the cube with a :py:class:`numpy.masked_arra
 as the data payload, where the data outside the shape is hidden by the masked
 array.
 
-.. plot:: userguide/plotting_examples/masking_brazil_plot.py
+.. plot:: user_manual/tutorial/plotting_examples/masking_brazil_plot.py
    :include-source:
 
 We can see that the dimensions of the cube haven't changed - the plot still has
@@ -460,7 +460,7 @@ data in a stereographic projection (with projected coordinates with units of
 metres), and mask it to only show data over the United Kingdom, based on a
 shapefile of the UK boundary defined in WGS84 lat-lon coordinates.
 
-.. plot:: userguide/plotting_examples/masking_stereographic_plot.py
+.. plot:: user_manual/tutorial/plotting_examples/masking_stereographic_plot.py
    :include-source:
 
 
