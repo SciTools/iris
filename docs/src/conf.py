@@ -490,3 +490,10 @@ needs_template_folder = "_templates"
 needs_global_options = {
     "post_template": {"default": "tags_links"},
 }
+
+from sphinx_needs.data import NeedsCoreFields
+
+# Known bug in sphinx-needs pre v6.0.
+#  https://github.com/useblocks/sphinx-needs/issues/1420
+if "allow_default" not in NeedsCoreFields["post_template"]:
+    NeedsCoreFields["post_template"]["allow_default"] = "str"

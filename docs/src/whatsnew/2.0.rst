@@ -291,7 +291,7 @@ Documentation
 
 * A new UserGuide chapter on :doc:`Real and Lazy Data
   </userguide/real_and_lazy_data>` has been added, and referenced from key
-  points in the :doc:`User Guide </user_maual/section_indexes/userguide>` .
+  points in the :doc:`User Guide </user_manual/section_indexes/userguide>` .
 
 
 .. _Biggus: https://biggus.readthedocs.io/en/latest/
