@@ -224,7 +224,7 @@ Documentation
   been added to the :doc:`User Guide </user_manual/section_indexes/userguide>`.
 
 * A section on installing Iris using `conda <https://docs.conda.io/projects/conda/en/latest/index.html>`_ has
-  been added to the :doc:`install guide </installing>`.
+  been added to the :doc:`install guide </user_manual/how_to/installing>`.
 
 * Updates to the chapter on
   :doc:`regridding and interpolation </user_manual/tutorial/interpolation_and_regridding>`

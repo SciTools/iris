@@ -25,7 +25,7 @@ navigate by section.
    The tree structure for user_manual is specified here. As mentioned in the
    text, we prefer readers to use the tabbed sections below, so the toctree is
    hidden - not rendered in the text, only in the sidebar. This toctree is
-   expected to be exclusively section_indexes/* pages; with those pages
+   expected to be section_indexes/* pages; with those pages
    providing the remaining sub-structure.
 
 
@@ -33,7 +33,9 @@ navigate by section.
    :maxdepth: 1
    :hidden:
 
+   section_indexes/get_started
    section_indexes/userguide
+   /generated/gallery/index
    section_indexes/dask_best_practices
    section_indexes/mesh_support
    section_indexes/metadata_arithmetic

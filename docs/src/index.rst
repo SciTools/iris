@@ -151,11 +151,11 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: Getting Started
+   :caption: Get Started
    :maxdepth: 1
    :hidden:
 
-   getting_started
+   user_manual/section_indexes/get_started
 
 
 .. toctree::
