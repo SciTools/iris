@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Calculus operations on :class:`iris.cube.Cube` instances.
 
+.. reference:: API reference: iris.analysis.calculus
+   :tags: topic_statistics
+
 See also: :mod:`NumPy <numpy>`.
 
 """

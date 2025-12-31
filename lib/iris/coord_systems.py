@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of coordinate systems."""
+"""Definitions of coordinate systems.
+
+.. reference:: API reference: iris.coord_systems
+   :tags: topic_data_model
+"""
 
 from abc import ABCMeta, abstractmethod
 from functools import cached_property

@@ -5,6 +5,9 @@
 
 r"""Allow the construction of :class:`~iris.mesh.MeshXY`.
 
+.. reference:: API reference: iris.fileformats.netcdf.ugrid_load
+   :tags: topic_load_save;topic_mesh
+
 Extension functions for Iris NetCDF loading, to construct
 :class:`~iris.mesh.MeshXY` from UGRID data in files.
 

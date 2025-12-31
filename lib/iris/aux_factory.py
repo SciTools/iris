@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of derived coordinates."""
+"""Definitions of derived coordinates.
+
+.. reference:: API reference: iris.aux_factory
+   :tags: topic_data_model
+"""
 
 from abc import ABCMeta, abstractmethod
 import warnings

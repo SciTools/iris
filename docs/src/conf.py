@@ -481,9 +481,9 @@ needs_types = [
 # The layout whenever a 'need item' directive is used. I.e. at the top of each
 #  user manual page.
 needs_default_layout = "focus"
-# IDs must be used in needtables, as the only way to link to the item. Using
-#  the title makes for the most readable / least jarring links.
-needs_id_from_title = True
+# # IDs must be used in needtables, as the only way to link to the item. Using
+# #  the title makes for the most readable / least jarring links.
+# needs_id_from_title = True
 # The `tags_links` jinja template displays a list of tags where every topic_*
 #  tag is a link to the relevant section in user_manual/index.rst.
 needs_template_folder = "_templates"

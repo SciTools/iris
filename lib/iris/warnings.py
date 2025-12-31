@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Warnings specific to the :mod:`iris` package.
 
+.. reference:: API reference: iris.warnings
+   :tags: topic_troubleshooting
+
 PLEASE NAMESPACE ALL WARNING CLASSES (i.e. prefix with Iris...).
 """
 

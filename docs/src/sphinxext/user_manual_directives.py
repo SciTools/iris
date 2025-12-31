@@ -32,15 +32,15 @@ class Diataxis(enum.StrEnum):
 
     ALL = "all"
     TUTORIAL = "tutorial"
+    EXPLANATION = "explanation"
     HOW_TO = "how-to"
     REFERENCE = "reference"
-    EXPLANATION = "explanation"
 
 
 DIATAXIS_CAPTIONS = {
     Diataxis.TUTORIAL: "Guided lessons for understanding a topic. (Supports **study**, via **action**)",
-    Diataxis.HOW_TO: "Step by step instructions for achieving a specific goal. (Supports **work**, via **action**)",
     Diataxis.EXPLANATION: "In-depth discussion for understanding concepts. (Supports **study**, via **theory**)",
+    Diataxis.HOW_TO: "Step by step instructions for achieving a specific goal. (Supports **work**, via **action**)",
     Diataxis.REFERENCE: "Concise information to look up when needed. (Supports **work**, via **theory**)",
 }
 
@@ -58,6 +58,7 @@ class DiataxisDirective(Directive):
             ':columns: id as "Link";title;content as " "',
             ":colwidths: 10;30;60",
             ":style: table",
+            ":sort: type",
             ":filter_warning: No pages for this filter.",
         ]
         # TODO: should the table somehow include what section the page belongs
@@ -81,8 +82,6 @@ class DiataxisDirective(Directive):
         # TODO: should there be a caption for ALL as well? Even if that's just
         #  for visual consistency.
         caption = DIATAXIS_CAPTIONS.get(diataxis, "")
-        if diataxis is not Diataxis.ALL:
-            tab_item_title += "s"
         content = [
             f":sync: {diataxis}",
             "",

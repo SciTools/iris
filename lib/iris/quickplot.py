@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """High-level plotting extensions to :mod:`iris.plot`.
 
+.. reference:: API reference: iris.quickplot
+   :tags: topic_plotting
+
 These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 

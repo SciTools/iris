@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Rules for converting NIMROD fields into cubes."""
+"""Rules for converting NIMROD fields into cubes.
+
+.. reference:: API reference: iris.fileformats.nimrod_load_rules
+   :tags: topic_load_save
+"""
 
 import re
 import string

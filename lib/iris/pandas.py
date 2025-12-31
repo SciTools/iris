@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide conversion to and from Pandas data structures.
 
+.. reference:: API reference: iris.pandas
+   :tags: topic_interoperability
+
 See also: https://pandas.pydata.org/
 
 """

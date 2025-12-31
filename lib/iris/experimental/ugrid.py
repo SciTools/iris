@@ -5,6 +5,9 @@
 
 """Legacy import location for mesh support.
 
+.. reference:: API reference: iris.experimental.ugrid
+   :tags: topic_experimental;topic_mesh
+
 See :mod:`iris.mesh` for the new, correct import location.
 
 Notes

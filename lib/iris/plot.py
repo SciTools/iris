@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot` interface.
 
+.. reference:: API reference: iris.plot
+   :tags: topic_plotting
+
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """

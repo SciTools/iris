@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide capability to load netCDF files and interpret them.
 
+.. reference:: API reference: iris.fileformats.cf
+   :tags: topic_load_save
+
 Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 

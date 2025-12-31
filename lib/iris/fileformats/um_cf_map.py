@@ -5,6 +5,8 @@
 """
 Provides UM/CF phenomenon translations.
 
+.. reference:: API reference: iris.fileformats.um_cf_map
+   :tags: topic_load_save
 """
 
 from collections import namedtuple

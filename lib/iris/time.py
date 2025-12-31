@@ -3,7 +3,11 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Time handling."""
+"""Time handling.
+
+.. reference:: API reference: iris.time
+   :tags: topic_data_model
+"""
 
 import functools
 

@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of coordinates and other dimensional metadata."""
+"""Definitions of coordinates and other dimensional metadata.
+
+.. reference:: API reference: iris.coords
+   :tags: topic_data_model
+"""
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple

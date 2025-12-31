@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Routines for putting data on new strata (aka. isosurfaces), often in the Z direction."""
+"""Routines for putting data on new strata (aka. isosurfaces), often in the Z direction.
+
+.. reference:: API reference: iris.experimental.stratify
+   :tags: topic_experimental;topic_interoperability
+"""
 
 from functools import partial
 

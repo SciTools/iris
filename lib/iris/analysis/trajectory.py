@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory."""
+"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.
+
+.. reference:: API reference: iris.analysis.trajectory
+   :tags: topic_statistics
+"""
 
 import math
 

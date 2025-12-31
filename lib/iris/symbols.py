@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Contains symbol definitions for use with :func:`iris.plot.symbols`."""
+"""Contains symbol definitions for use with :func:`iris.plot.symbols`.
+
+.. reference:: API reference: iris.symbols
+   :tags: topic_plotting
+"""
 
 import itertools
 import math

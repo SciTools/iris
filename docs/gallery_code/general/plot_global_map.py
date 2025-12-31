@@ -2,6 +2,11 @@
 Quickplot of a 2D Cube on a Map
 ===============================
 
+.. how-to:: Quickplot of a 2D Cube on a Map
+   :tags: topic_plotting
+
+   Code demonstrating basic ``iris.quickplot`` use.
+
 This example demonstrates a contour plot of global air temperature. The plot
 title and the labels for the axes are automatically derived from the metadata.
 

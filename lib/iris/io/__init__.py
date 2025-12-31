@@ -3,7 +3,11 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Provides an interface to manage URI scheme support in iris."""
+"""Provides an interface to manage URI scheme support in iris.
+
+.. reference:: API reference: iris.io
+   :tags: topic_load_save
+"""
 
 import collections
 from collections import OrderedDict

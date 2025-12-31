@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iris general file loading mechanism."""
+"""Iris general file loading mechanism.
+
+.. reference:: API reference: iris.loading
+   :tags: topic_load_save
+"""
 
 from contextlib import contextmanager
 from dataclasses import dataclass

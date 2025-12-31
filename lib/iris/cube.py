@@ -3,7 +3,11 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Classes for representing multi-dimensional data with metadata."""
+"""Classes for representing multi-dimensional data with metadata.
+
+.. reference:: API reference: iris.cube
+   :tags: topic_data_model
+"""
 
 from __future__ import annotations
 

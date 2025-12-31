@@ -2,7 +2,11 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Basic mathematical and statistical operations."""
+"""Basic mathematical and statistical operations.
+
+.. reference:: API reference: iris.analysis.maths
+   :tags: topic_statistics
+"""
 
 from functools import lru_cache
 import inspect

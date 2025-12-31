@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides ABF (and ABL) file format capabilities.
 
+.. reference:: API reference: iris.fileformats.abf
+   :tags: topic_load_save
+
 ABF and ABL files are satellite file formats defined by Boston University.
 Including this module adds ABF and ABL loading to the session's capabilities.
 

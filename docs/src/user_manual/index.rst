@@ -82,4 +82,77 @@ Dask. See :term:`Lazy Data`.
 
 .. diataxis-page-list:: topic_lazy_data
 
+.. _topic_plotting:
+
+topic: ``plotting``
+^^^^^^^^^^^^^^^^^^^
+
+Pages about Iris' use of :term:`Cartopy` to plot :class:`~iris.cube.Cube` data.
+
+.. diataxis-page-list:: topic_plotting
+
+.. _topic_statistics:
+
+topic: ``statistics``
+^^^^^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_statistics
+
+.. _topic_regrid:
+
+topic: ``regrid``
+^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_regrid
+
+.. _topic_customisation:
+
+topic: ``customisation``
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_customisation
+
+.. _topic_troubleshooting:
+
+topic: ``troubleshooting``
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_troubleshooting
+
+.. _topic_experimental:
+
+topic: ``experimental``
+^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_experimental
+
+.. _topic_interoperability:
+
+topic: ``interoperability``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_interoperability
+
+.. _topic_mesh:
+
+topic: ``mesh``
+^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_mesh
+
+
 .. _Diataxis: https://diataxis.fr/

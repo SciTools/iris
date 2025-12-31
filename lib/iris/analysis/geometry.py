@@ -4,6 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Various utilities related to geometric operations.
 
+.. reference:: API reference: iris.analysis.geometry
+   :tags: topic_statistics
+
 .. note::
     This module requires :mod:`shapely`.
 
