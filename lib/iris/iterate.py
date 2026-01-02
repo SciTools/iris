@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Cube functions for iteration in step."""
+"""Cube functions for iteration in step.
+
+.. z_reference:: iris.iterate
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from collections.abc import Iterator
 import itertools
@@ -56,7 +62,7 @@ def izip(*cubes, **kwargs):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if not cubes:

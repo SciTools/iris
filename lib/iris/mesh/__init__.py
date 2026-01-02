@@ -5,6 +5,11 @@
 
 """Infra-structure for unstructured mesh support.
 
+.. z_reference:: iris.mesh
+   :tags: topic_data_model;topic_mesh
+
+   API reference
+
 Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 """
 

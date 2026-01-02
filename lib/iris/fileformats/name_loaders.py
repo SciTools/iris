@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""NAME file format loading functions."""
+"""NAME file format loading functions.
+
+.. z_reference:: iris.fileformats.name_loaders
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import collections
 import datetime

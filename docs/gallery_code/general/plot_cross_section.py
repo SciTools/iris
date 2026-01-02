@@ -2,6 +2,11 @@
 Cross Section Plots
 ===================
 
+.. how-to:: Cross Section Plots
+   :tags: topic_plotting;topic_data_model
+
+   How to visualise cross-sections of multi-dimensional Cubes.
+
 This example demonstrates contour plots of a cross-sectioned multi-dimensional
 cube which features a hybrid height vertical coordinate system.
 

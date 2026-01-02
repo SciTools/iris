@@ -2,6 +2,11 @@
 Fitting a Polynomial
 ====================
 
+.. how-to:: Fitting a Polynomial
+   :tags: topic_plotting;topic_statistics;topic_data_model
+
+   How to compute and plot a polynomial fit to 1D data in an Iris cube.
+
 This example demonstrates computing a polynomial fit to 1D data from an Iris
 cube, adding the fit to the cube's metadata, and plotting both the 1D data and
 the fit.

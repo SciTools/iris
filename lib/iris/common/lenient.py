@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides the infrastructure to support lenient client/service behaviour."""
+"""Provides the infrastructure to support lenient client/service behaviour.
+
+.. z_reference:: iris.common.lenient
+   :tags: topic_data_model;topic_statistics
+
+   API reference
+"""
 
 from collections.abc import Iterable
 from contextlib import contextmanager

@@ -2,6 +2,11 @@
 Zonal Mean Diagram of Air Temperature
 =====================================
 
+.. how-to:: Zonal Mean Diagram of Air Temperature
+   :tags: topic_plotting;topic_statistics
+
+   How to use aligned plots to visualise collapsed dimensional statistics.
+
 This example demonstrates aligning a linear plot and a cartographic plot
 using Matplotlib.
 

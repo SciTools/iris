@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`."""
+"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
+
+.. z_reference:: iris.fileformats.dot
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import os
 import subprocess

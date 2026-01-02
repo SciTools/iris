@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Experimental module for using some GeoVista operations with Iris cubes."""
+"""Experimental module for using some GeoVista operations with Iris cubes.
+
+.. z_reference:: iris.experimental.geovista
+   :tags: topic_experimental;topic_interoperability
+
+   API reference
+"""
 
 from geovista import Transform
 from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS

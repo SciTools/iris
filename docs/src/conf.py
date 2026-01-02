@@ -163,6 +163,8 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_needs",
+    "user_manual_directives",
 ]
 
 if skip_api == "1":
@@ -441,3 +443,90 @@ numfig_format = {
     "section": "Section %s",
     "table": "Table %s",
 }
+
+# -- sphinx-needs config ------------------------------------------------------
+# See https://sphinx-needs.readthedocs.io/en/latest/configuration.html
+
+# TODO: namespace these types as Diataxis for max clarity?
+needs_types = [
+    {
+        "directive": "tutorial",
+        "title": "Tutorial",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "how-to",
+        "title": "How To",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "explanation",
+        "title": "Explanation",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        # z_ prefix to force to the end of sorted lists.
+        "directive": "z_reference",
+        "title": "Reference",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+]
+# The layout whenever a 'need item' directive is used. I.e. at the top of each
+#  user manual page.
+needs_default_layout = "focus"
+# # IDs must be used in needtables, as the only way to link to the item. Using
+# #  the title makes for the most readable / least jarring links.
+# needs_id_from_title = True
+# The `tags_links` jinja template displays a list of tags where every topic_*
+#  tag is a link to the relevant section in user_manual/index.rst.
+needs_template_folder = "_templates"
+needs_global_options = {
+    "post_template": {"default": "tags_links"},
+}
+
+from sphinx_needs.data import NeedsCoreFields
+
+# Known bug in sphinx-needs pre v6.0.
+#  https://github.com/useblocks/sphinx-needs/issues/1420
+if "allow_default" not in NeedsCoreFields["post_template"]:
+    NeedsCoreFields["post_template"]["allow_default"] = "str"
+
+
+def setup(app):
+    # Monkeypatch for https://github.com/useblocks/sphinx-needs/issues/723
+    import sphinx_needs.directives.needtable as nt
+
+    orig_row_col_maker = nt.row_col_maker
+
+    def row_col_maker_link_title(
+        app,
+        fromdocname,
+        all_needs,
+        need_info,
+        need_key,
+        make_ref=False,
+        ref_lookup=False,
+        prefix="",
+    ):
+        if need_key == "title":
+            make_ref = True
+        return orig_row_col_maker(
+            app,
+            fromdocname,
+            all_needs,
+            need_info,
+            need_key,
+            make_ref,
+            ref_lookup,
+            prefix,
+        )
+
+    nt.row_col_maker = row_col_maker_link_title

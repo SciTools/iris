@@ -2,6 +2,11 @@
 Deriving Exner Pressure and Air Temperature
 ===========================================
 
+.. how-to:: Deriving Exner Pressure and Air Temperature
+   :tags: topic_plotting;topic_statistics
+
+   How to use Iris arithmetic to derive phenomena from existing cubes and plot them.
+
 This example shows some processing of cubes in order to derive further related
 cubes; in this case the derived cubes are Exner pressure and air temperature
 which are calculated by combining air pressure, air potential temperature and
