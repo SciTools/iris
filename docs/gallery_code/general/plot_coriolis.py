@@ -2,6 +2,11 @@
 Deriving the Coriolis Frequency Over the Globe
 ==============================================
 
+.. how-to:: Deriving the Coriolis Frequency Over the Globe
+   :tags: topic_plotting;topic_data_model
+
+   How to create your own Cube from computed data and visualise it.
+
 This code computes the Coriolis frequency and stores it in a cube with
 associated metadata. It then plots the Coriolis frequency on an orthographic
 projection.
