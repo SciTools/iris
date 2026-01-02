@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Exceptions specific to the Iris package.
 
-.. reference:: API reference: iris.exceptions
+.. z_reference:: iris.exceptions
    :tags: topic_troubleshooting
+
+   API reference
 """
 
 

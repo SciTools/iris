@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides the infrastructure to support lenient client/service behaviour.
 
-.. reference:: API reference: iris.common.lenient
+.. z_reference:: iris.common.lenient
    :tags: topic_data_model;topic_statistics
+
+   API reference
 """
 
 from collections.abc import Iterable

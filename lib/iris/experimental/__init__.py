@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Experimental code can be introduced to Iris through this package.
 
-.. reference:: API reference: iris.experimental
+.. z_reference:: iris.experimental
    :tags: topic_experimental
+
+   API reference
 
 Changes to experimental code may be more extensive than in the rest of the
 codebase. The code is expected to graduate, eventually, to "full status".

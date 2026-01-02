@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides UK Met Office Post Process (PP) format specific capabilities.
 
-.. reference:: API reference: iris.fileformats.pp
+.. z_reference:: iris.fileformats.pp
    :tags: topic_load_save
+
+   API reference
 """
 
 from abc import ABCMeta, abstractmethod

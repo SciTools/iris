@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Module to support the saving of Iris cubes to a NetCDF file.
 
-.. reference:: API reference: iris.fileformats.netcdf.saver
+.. z_reference:: iris.fileformats.netcdf.saver
    :tags: topic_load_save
+
+   API reference
 
 Module to support the saving of Iris cubes to a NetCDF file, also using the CF
 conventions for metadata interpretation.

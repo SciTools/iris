@@ -5,8 +5,10 @@
 
 """PP Save Rules.
 
-.. reference:: API reference: iris.fileformats.pp_save_rules
+.. z_reference:: iris.fileformats.pp_save_rules
    :tags: topic_load_save
+
+   API reference
 """
 
 import warnings

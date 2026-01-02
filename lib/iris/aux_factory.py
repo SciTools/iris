@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Definitions of derived coordinates.
 
-.. reference:: API reference: iris.aux_factory
+.. z_reference:: iris.aux_factory
    :tags: topic_data_model
+
+   API reference
 """
 
 from abc import ABCMeta, abstractmethod

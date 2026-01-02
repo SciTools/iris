@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Various utilities and numeric transformations relevant to cartography.
 
-.. reference:: API reference: iris.analysis.cartography
+.. z_reference:: iris.analysis.cartography
    :tags: topic_statistics
+
+   API reference
 """
 
 from collections import namedtuple

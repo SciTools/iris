@@ -5,8 +5,10 @@
 
 """Utility operations specific to unstructured data.
 
-.. reference:: API reference: iris.mesh.utils
+.. z_reference:: iris.mesh.utils
    :tags: topic_data_model;topic_mesh
+
+   API reference
 """
 
 from collections.abc import Sequence

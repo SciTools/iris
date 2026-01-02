@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Definitions of coordinates and other dimensional metadata.
 
-.. reference:: API reference: iris.coords
+.. z_reference:: iris.coords
    :tags: topic_data_model
+
+   API reference
 """
 
 from abc import ABCMeta, abstractmethod

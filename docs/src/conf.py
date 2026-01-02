@@ -471,7 +471,8 @@ needs_types = [
         "style": "node",
     },
     {
-        "directive": "reference",
+        # z_ prefix to force to the end of sorted lists.
+        "directive": "z_reference",
         "title": "Reference",
         "prefix": "",
         "color": "",
@@ -497,3 +498,35 @@ from sphinx_needs.data import NeedsCoreFields
 #  https://github.com/useblocks/sphinx-needs/issues/1420
 if "allow_default" not in NeedsCoreFields["post_template"]:
     NeedsCoreFields["post_template"]["allow_default"] = "str"
+
+
+def setup(app):
+    # Monkeypatch for https://github.com/useblocks/sphinx-needs/issues/723
+    import sphinx_needs.directives.needtable as nt
+
+    orig_row_col_maker = nt.row_col_maker
+
+    def row_col_maker_link_title(
+        app,
+        fromdocname,
+        all_needs,
+        need_info,
+        need_key,
+        make_ref=False,
+        ref_lookup=False,
+        prefix="",
+    ):
+        if need_key == "title":
+            make_ref = True
+        return orig_row_col_maker(
+            app,
+            fromdocname,
+            all_needs,
+            need_info,
+            need_key,
+            make_ref,
+            ref_lookup,
+            prefix,
+        )
+
+    nt.row_col_maker = row_col_maker_link_title

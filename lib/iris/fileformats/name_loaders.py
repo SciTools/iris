@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """NAME file format loading functions.
 
-.. reference:: API reference: iris.fileformats.name_loaders
+.. z_reference:: iris.fileformats.name_loaders
    :tags: topic_load_save
+
+   API reference
 """
 
 import collections

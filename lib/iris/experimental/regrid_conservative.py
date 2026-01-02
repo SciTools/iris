@@ -11,8 +11,10 @@
     `iris-esmf-regrid <https://github.com/SciTools-incubator/iris-esmf-regrid>`_
     instead.
 
-.. reference:: API reference: iris.experimental.regrid_conservative
+.. z_reference:: iris.experimental.regrid_conservative
    :tags: topic_experimental;topic_regrid
+
+   API reference
 
 """
 

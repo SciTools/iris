@@ -5,8 +5,10 @@
 
 """Provides an interface to manage URI scheme support in iris.
 
-.. reference:: API reference: iris.io
+.. z_reference:: iris.io
    :tags: topic_load_save
+
+   API reference
 """
 
 import collections

@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Color map pallettes management.
 
-.. reference:: API reference: iris.palette
+.. z_reference:: iris.palette
    :tags: topic_plotting
+
+   API reference
 
 Load, configure and register color map palettes and initialise
 color map meta-data mappings.

@@ -34,14 +34,14 @@ class Diataxis(enum.StrEnum):
     TUTORIAL = "tutorial"
     EXPLANATION = "explanation"
     HOW_TO = "how-to"
-    REFERENCE = "reference"
+    REFERENCE = "z_reference"
 
 
 DIATAXIS_CAPTIONS = {
-    Diataxis.TUTORIAL: "Guided lessons for understanding a topic. (Supports **study**, via **action**)",
-    Diataxis.EXPLANATION: "In-depth discussion for understanding concepts. (Supports **study**, via **theory**)",
-    Diataxis.HOW_TO: "Step by step instructions for achieving a specific goal. (Supports **work**, via **action**)",
-    Diataxis.REFERENCE: "Concise information to look up when needed. (Supports **work**, via **theory**)",
+    Diataxis.TUTORIAL: "Guided lessons for understanding a topic.\n\n(Supports **study**, via **action**)",
+    Diataxis.EXPLANATION: "In-depth discussion for understanding concepts.\n\n(Supports **study**, via **theory**)",
+    Diataxis.HOW_TO: "Step by step instructions for achieving a specific goal.\n\n(Supports **work**, via **action**)",
+    Diataxis.REFERENCE: "Concise information to look up when needed.\n\n(Supports **work**, via **theory**)",
 }
 
 
@@ -55,8 +55,8 @@ class DiataxisDirective(Directive):
 
     def _needtable(self, types: Diataxis, tags: str) -> str:
         options = [
-            ':columns: id as "Link";title;content as " "',
-            ":colwidths: 10;30;60",
+            ':columns: title;content as " "',
+            ":colwidths: 30;60",
             ":style: table",
             ":sort: type",
             ":filter_warning: No pages for this filter.",
@@ -78,7 +78,10 @@ class DiataxisDirective(Directive):
 
     def _tab_item(self, diataxis: Diataxis, tags: str) -> str:
         needtable = self._needtable(types=diataxis, tags=tags)
-        tab_item_title = diataxis.capitalize()
+        tab_item_title = str(diataxis)
+        if tab_item_title.startswith("z_"):
+            tab_item_title = tab_item_title[2:]
+        tab_item_title = tab_item_title.capitalize()
         # TODO: should there be a caption for ALL as well? Even if that's just
         #  for visual consistency.
         caption = DIATAXIS_CAPTIONS.get(diataxis, "")

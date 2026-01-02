@@ -5,8 +5,10 @@
 
 """Iris data model representation of CF UGrid's Mesh and its constituent parts.
 
-.. reference:: API reference: iris.mesh.components
+.. z_reference:: iris.mesh.components
    :tags: topic_data_model;topic_mesh
+
+   API reference
 
 Eventual destination: dedicated module in :mod:`iris` root.
 

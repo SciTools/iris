@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides NAME file format loading capabilities.
 
-.. reference:: API reference: iris.fileformats.name
+.. z_reference:: iris.fileformats.name
    :tags: topic_load_save
+
+   API reference
 """
 
 

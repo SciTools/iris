@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Miscellaneous utility functions.
 
-.. reference:: API reference: iris.util
+.. z_reference:: iris.util
    :tags: topic_data_model
+
+   API reference
 """
 
 from __future__ import annotations

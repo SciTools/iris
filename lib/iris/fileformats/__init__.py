@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package for converting cubes to and from specific file formats.
 
-.. reference:: API reference: iris.fileformats
+.. z_reference:: iris.fileformats
    :tags: topic_load_save
+
+   API reference
 """
 
 from iris.io.format_picker import (

@@ -5,8 +5,10 @@
 
 """Time handling.
 
-.. reference:: API reference: iris.time
+.. z_reference:: iris.time
    :tags: topic_data_model
+
+   API reference
 """
 
 import functools

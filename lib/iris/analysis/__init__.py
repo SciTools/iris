@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package providing :class:`iris.cube.Cube` analysis support.
 
-.. reference:: API reference: iris.analysis
+.. z_reference:: iris.analysis
    :tags: topic_statistics;topic_regrid
+
+   API reference
 
 This module defines a suite of :class:`~iris.analysis.Aggregator` instances,
 which are used to specify the statistical measure to calculate over a

@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.
 
-.. reference:: API reference: iris.analysis.trajectory
+.. z_reference:: iris.analysis.trajectory
    :tags: topic_statistics
+
+   API reference
 """
 
 import math

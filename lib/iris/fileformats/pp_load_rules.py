@@ -8,8 +8,10 @@
 
 """PP Load Rules.
 
-.. reference:: API reference: iris.fileformats.pp_load_rules
+.. z_reference:: iris.fileformats.pp_load_rules
    :tags: topic_load_save
+
+   API reference
 """
 
 import calendar

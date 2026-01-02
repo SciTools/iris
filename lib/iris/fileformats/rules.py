@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Generalised mechanisms for metadata translation and cube construction.
 
-.. reference:: API reference: iris.fileformats.rules
+.. z_reference:: iris.fileformats.rules
    :tags: topic_load_save
+
+   API reference
 """
 
 import collections

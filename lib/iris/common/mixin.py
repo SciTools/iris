@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides common metadata mixin behaviour.
 
-.. reference:: API reference: iris.common.mixin
+.. z_reference:: iris.common.mixin
    :tags: topic_data_model
+
+   API reference
 """
 
 from __future__ import annotations

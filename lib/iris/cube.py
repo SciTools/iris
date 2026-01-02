@@ -5,8 +5,10 @@
 
 """Classes for representing multi-dimensional data with metadata.
 
-.. reference:: API reference: iris.cube
+.. z_reference:: iris.cube
    :tags: topic_data_model
+
+   API reference
 """
 
 from __future__ import annotations

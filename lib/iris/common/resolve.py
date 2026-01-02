@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Resolve metadata common between two cubes.
 
-.. reference:: API reference: iris.common.resolve
+.. z_reference:: iris.common.resolve
    :tags: topic_data_model;topic_statistics
+
+   API reference
 
 Provides the infrastructure to support the analysis, identification and
 combination of metadata common between two :class:`~iris.cube.Cube`

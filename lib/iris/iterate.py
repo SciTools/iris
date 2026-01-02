@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Cube functions for iteration in step.
 
-.. reference:: API reference: iris.iterate
+.. z_reference:: iris.iterate
    :tags: topic_data_model
+
+   API reference
 """
 
 from collections.abc import Iterator

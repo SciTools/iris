@@ -5,8 +5,10 @@
 
 """Definitions of how Iris objects should be represented.
 
-.. reference:: API reference: iris.experimental.representation
+.. z_reference:: iris.experimental.representation
    :tags: topic_experimental;topic_data_model
+
+   API reference
 """
 
 from html import escape

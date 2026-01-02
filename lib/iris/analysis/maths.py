@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Basic mathematical and statistical operations.
 
-.. reference:: API reference: iris.analysis.maths
+.. z_reference:: iris.analysis.maths
    :tags: topic_statistics
+
+   API reference
 """
 
 from functools import lru_cache

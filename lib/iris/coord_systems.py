@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Definitions of coordinate systems.
 
-.. reference:: API reference: iris.coord_systems
+.. z_reference:: iris.coord_systems
    :tags: topic_data_model
+
+   API reference
 """
 
 from abc import ABCMeta, abstractmethod

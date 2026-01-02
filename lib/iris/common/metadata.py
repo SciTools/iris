@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides the infrastructure to support the common metadata API.
 
-.. reference:: API reference: iris.common.metadata
+.. z_reference:: iris.common.metadata
    :tags: topic_data_model
+
+   API reference
 """
 
 from __future__ import annotations

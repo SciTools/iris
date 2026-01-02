@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism.
 
-.. reference:: API reference: iris.loading
+.. z_reference:: iris.loading
    :tags: topic_load_save
+
+   API reference
 """
 
 from contextlib import contextmanager

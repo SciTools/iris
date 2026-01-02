@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Rules for converting NIMROD fields into cubes.
 
-.. reference:: API reference: iris.fileformats.nimrod_load_rules
+.. z_reference:: iris.fileformats.nimrod_load_rules
    :tags: topic_load_save
+
+   API reference
 """
 
 import re

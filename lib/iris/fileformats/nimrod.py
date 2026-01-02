@@ -4,8 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides NIMROD file format capabilities.
 
-.. reference:: API reference: iris.fileformats.nimrod
+.. z_reference:: iris.fileformats.nimrod
    :tags: topic_load_save
+
+   API reference
 """
 
 import glob
