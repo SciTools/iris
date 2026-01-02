@@ -1,3 +1,8 @@
+.. explanation:: The Mesh Data Model
+   :tags: topic_mesh;topic_data_model
+
+   Read about how Iris represents unstructured mesh data.
+
 .. include:: ../../common_links.inc
 
 .. _ugrid model:

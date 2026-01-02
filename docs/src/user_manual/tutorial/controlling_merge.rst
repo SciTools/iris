@@ -1,3 +1,8 @@
+.. tutorial:: Controlling Merge and Concatenate
+   :tags: topic_data_model;topic_customisation
+
+   A lesson in customising how Iris merges and concatenates Cubes.
+
 .. _controlling_merge:
 
 =================================

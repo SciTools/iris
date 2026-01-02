@@ -1,3 +1,8 @@
+.. explanation:: Which Regridder to Use
+   :tags: topic_regrid
+
+   Read about the different regridders available in Iris.
+
 .. include:: ../../common_links.inc
 
 .. _which_regridder_to_use:

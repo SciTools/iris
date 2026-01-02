@@ -1,3 +1,8 @@
+.. tutorial:: Plotting a Cube
+   :tags: topic_plotting
+
+   A lesson on visualising Iris Cubes using Cartopy and Matplotlib.
+
 .. _plotting_a_cube:
 
 ===============

@@ -36,6 +36,7 @@ navigate by section.
    section_indexes/get_started
    section_indexes/userguide
    /generated/gallery/index
+   Iris API </generated/api/iris>
    section_indexes/dask_best_practices
    section_indexes/mesh_support
    section_indexes/metadata_arithmetic
@@ -96,6 +97,8 @@ Pages about Iris' use of :term:`Cartopy` to plot :class:`~iris.cube.Cube` data.
 topic: ``statistics``
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. todo: not sure about this topic - very unclear scope.
+
 TODO!
 
 .. diataxis-page-list:: topic_statistics
@@ -153,6 +156,15 @@ topic: ``mesh``
 TODO!
 
 .. diataxis-page-list:: topic_mesh
+
+.. _topic_about:
+
+topic: ``about``
+^^^^^^^^^^^^^^^^
+
+TODO!
+
+.. diataxis-page-list:: topic_about
 
 
 .. _Diataxis: https://diataxis.fr/

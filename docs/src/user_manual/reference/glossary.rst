@@ -1,3 +1,8 @@
+.. z_reference:: Glossary
+   :tags: topic_data_model;topic_about;topic_load_save;topic_lazy_data;topic_plotting;topic_statistics;topic_regrid;topic_customisation;topic_troubleshooting
+
+   Information on common terms used within Iris documentation.
+
 .. include:: ../../common_links.inc
 
 .. _glossary:

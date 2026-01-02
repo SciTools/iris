@@ -1,3 +1,8 @@
+.. tutorial:: Saving Iris Cubes
+   :tags: topic_load_save
+
+   A lesson on writing Iris Cubes to file in various formats.
+
 .. _saving_iris_cubes:
 
 ==================

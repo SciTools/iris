@@ -1,3 +1,8 @@
+.. explanation:: Why Iris
+   :tags: topic_about
+
+   Read about the Iris Python package and why you might want to use it.
+
 .. _why_iris:
 
 Why Iris

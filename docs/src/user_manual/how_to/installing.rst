@@ -1,3 +1,8 @@
+.. how-to:: Installing
+   :tags: topic_about
+
+   How to install the Iris Python package.
+
 .. _installing_iris:
 
 Installing

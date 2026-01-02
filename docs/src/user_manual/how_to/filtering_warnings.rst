@@ -1,3 +1,8 @@
+.. how-to:: Filtering Warnings
+   :tags: topic_troubleshooting
+
+   How to customise Iris' warnings to only see those you need.
+
 .. _filtering-warnings:
 
 ==================

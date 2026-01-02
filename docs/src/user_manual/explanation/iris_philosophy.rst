@@ -1,3 +1,8 @@
+.. explanation:: Iris' Philosophy
+   :tags: topic_about
+
+   Read about how and why Iris is made the way it is.
+
 .. _iris-philosophy:
 
 ****************

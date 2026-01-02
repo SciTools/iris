@@ -1,3 +1,8 @@
+.. explanation:: Lenient Metadata
+   :tags: topic_data_model
+
+   Read about the options for handling metadata differences between Cubes.
+
 .. _lenient metadata:
 
 Lenient Metadata

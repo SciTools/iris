@@ -1,3 +1,8 @@
+.. explanation:: Mesh Partner Packages
+   :tags: topic_mesh;topic_interoperability
+
+   Read about Python packages you can use alongside Iris to work with mesh data.
+
 .. include:: ../../common_links.inc
 
 .. _ugrid partners:

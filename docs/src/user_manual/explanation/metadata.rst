@@ -1,4 +1,8 @@
-.. _further topics:
+.. explanation:: Metadata
+   :tags: topic_data_model
+
+   Read about metadata in the Iris data model e.g. names, units.
+
 .. _metadata:
 
 Metadata

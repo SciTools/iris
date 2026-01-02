@@ -1,3 +1,8 @@
+.. tutorial:: Cube Interpolation and Regridding
+   :tags: topic_regrid
+
+   A lesson in Iris' interpolation and regridding functionality.
+
 .. _interpolation_and_regridding:
 
 .. testsetup:: *

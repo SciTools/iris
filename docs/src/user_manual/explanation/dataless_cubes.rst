@@ -1,3 +1,8 @@
+.. explanation:: Dataless Cubes
+   :tags: topic_data_model
+
+   Read about Iris' support for Cubes with no data payload.
+
 .. _dataless-cubes:
 
 ==============

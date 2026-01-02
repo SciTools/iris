@@ -1,3 +1,8 @@
+.. tutorial:: Dask Bags and Greedy Parallelism
+   :tags: topic_lazy_data
+
+   A real-world demonstration of using Dask Bags with Iris, including hazards to watch out for.
+
 .. _examples_bags_greed:
 
 3. Dask Bags and Greedy Parallelism

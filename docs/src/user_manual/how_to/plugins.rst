@@ -1,3 +1,8 @@
+.. how-to:: Plugins
+   :tags: topic_interoperability;topic_about
+
+   How to create and use plugins to extend Iris' functionality.
+
 .. _namespace package: https://packaging.python.org/en/latest/guides/packaging-namespace-packages/
 
 .. _community_plugins:

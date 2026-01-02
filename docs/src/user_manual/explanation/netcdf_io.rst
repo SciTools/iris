@@ -1,3 +1,8 @@
+.. explanation:: NetCDF I/O Handling in Iris
+   :tags: topic_load_save
+
+   Read about how Iris loads and saves NetCDF files.
+
 .. testsetup:: chunk_control
 
     import iris

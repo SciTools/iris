@@ -1,3 +1,8 @@
+.. explanation:: Reviewing the Iris User Experience
+   :tags: topic_about
+
+   Read about how we plan to review and improve the user experience of Iris.
+
 .. _ux_guide:
 
 Reviewing the Iris User Experience

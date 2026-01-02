@@ -1,3 +1,8 @@
+.. how-to:: Converting Other Mesh Formats
+   :tags: topic_mesh;topic_interoperability
+
+   How to convert other mesh formats into Iris' Mesh Data Model.
+
 .. _other_meshes:
 
 Converting Other Mesh Formats

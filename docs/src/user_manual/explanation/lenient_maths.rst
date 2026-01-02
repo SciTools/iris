@@ -1,3 +1,8 @@
+.. explanation:: Lenient Cube Maths
+   :tags: topic_data_model;topic_statistics
+
+   Read about the options for handling metadata differences during Cube maths.
+
 .. _lenient maths:
 
 Lenient Cube Maths

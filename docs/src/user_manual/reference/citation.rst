@@ -1,3 +1,8 @@
+.. z_reference:: Citing Iris
+   :tags: topic_about
+
+   Information on the correct way to cite the Iris Python package.
+
 .. _Citing_Iris:
 
 ===========

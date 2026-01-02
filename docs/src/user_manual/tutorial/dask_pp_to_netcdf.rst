@@ -1,3 +1,9 @@
+.. tutorial:: Speeding up Converting PP Files to NetCDF
+   :tags: topic_lazy_data;topic_load_save
+
+   A real-world demonstration of tuning Dask and Iris for better performance
+   when saving data.
+
 .. _examples_pp_to_ff:
 
 1. Speed up Converting PP Files to NetCDF

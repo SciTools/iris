@@ -1,3 +1,8 @@
+.. z_reference:: Phrasebook
+   :tags: topic_interoperability
+
+   Information on terminology differences between Iris and similar packages.
+
 .. include:: ../../common_links.inc
 
 .. _phrasebook:

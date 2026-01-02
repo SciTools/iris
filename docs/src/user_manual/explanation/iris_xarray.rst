@@ -1,3 +1,8 @@
+.. explanation:: Iris ❤️ Xarray
+   :tags: topic_interoperability
+
+   Read about the similarities and differences between Iris and Xarray.
+
 .. include:: ../../common_links.inc
 
 ======================

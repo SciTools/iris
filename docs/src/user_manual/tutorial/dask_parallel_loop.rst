@@ -1,3 +1,8 @@
+.. tutorial:: Parallelising a Loop of Multiple Calls to a Third Party Library
+   :tags: topic_lazy_data
+
+   A real-world demonstration of parallelising function calls with Dask.
+
 .. _examples_parallel_loop:
 
 2. Parallelising a Loop of Multiple Calls to a Third Party Library

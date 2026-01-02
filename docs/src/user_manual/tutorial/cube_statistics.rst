@@ -1,3 +1,8 @@
+.. tutorial:: Cube Statistics
+   :tags: topic_statistics
+
+   A lesson in statistical operations on Iris Cubes.
+
 .. _cube-statistics:
 
 ===============

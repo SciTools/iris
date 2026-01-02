@@ -1,3 +1,8 @@
+.. tutorial:: Subsetting a Cube
+   :tags: topic_data_model
+
+   A lesson on subsetting Iris Cubes by extraction, masking, and iteration.
+
 .. include:: ../../common_links.inc
 
 .. _subsetting_a_cube:

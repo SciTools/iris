@@ -1,3 +1,8 @@
+.. explanation:: Iris Handling of PP and Fieldsfiles
+   :tags: topic_load_save
+
+   Read about how Iris represents Met Office UM PP and Fieldsfiles data.
+
 .. testsetup::
 
     import numpy as np
