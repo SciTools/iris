@@ -99,7 +99,8 @@ topic: ``statistics``
 
 .. todo: not sure about this topic - very unclear scope.
 
-TODO!
+Pages about statistical and mathematical operations on :class:`~iris.cube.Cube`
+data, e.g. computing means, differences, etc.
 
 .. diataxis-page-list:: topic_statistics
 
@@ -108,7 +109,8 @@ TODO!
 topic: ``regrid``
 ^^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about interpolating (1D) and regridding (2D) data from one set of
+coordinates to another. Commonly used to move between different XY grids.
 
 .. diataxis-page-list:: topic_regrid
 
@@ -117,7 +119,7 @@ TODO!
 topic: ``customisation``
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about configurable Iris behaviour.
 
 .. diataxis-page-list:: topic_customisation
 
@@ -126,7 +128,8 @@ TODO!
 topic: ``troubleshooting``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about problems/exceptions you may encounter when using Iris, and how to
+best handle them.
 
 .. diataxis-page-list:: topic_troubleshooting
 
@@ -135,7 +138,7 @@ TODO!
 topic: ``experimental``
 ^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about API that is still subject to change.
 
 .. diataxis-page-list:: topic_experimental
 
@@ -144,7 +147,7 @@ TODO!
 topic: ``interoperability``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about using Iris alongside other libraries and tools.
 
 .. diataxis-page-list:: topic_interoperability
 
@@ -153,7 +156,7 @@ TODO!
 topic: ``mesh``
 ^^^^^^^^^^^^^^^
 
-TODO!
+Pages about Iris' support for unstructured mesh data.
 
 .. diataxis-page-list:: topic_mesh
 
@@ -162,7 +165,7 @@ TODO!
 topic: ``about``
 ^^^^^^^^^^^^^^^^
 
-TODO!
+Pages about the non-code aspects of Iris: philosophy, installation, etc.
 
 .. diataxis-page-list:: topic_about
 
