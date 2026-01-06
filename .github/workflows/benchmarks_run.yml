@@ -66,7 +66,7 @@ jobs:
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
       IRIS_TEST_DATA_VERSION: "2.28"
       # Lets us manually bump the cache to rebuild
-      ENV_CACHE_BUILD: "0"
+      ENV_CACHE_BUILD: "1"
       TEST_DATA_CACHE_BUILD: "2"
 
     steps:
