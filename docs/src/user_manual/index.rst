@@ -25,7 +25,7 @@ navigate by section.
    The tree structure for user_manual is specified here. As mentioned in the
    text, we prefer readers to use the tabbed sections below, so the toctree is
    hidden - not rendered in the text, only in the sidebar. This toctree is
-   expected to be section_indexes/* pages; with those pages
+   expected to be section_indexes/* pages; with each of those pages
    providing the remaining sub-structure.
 
 

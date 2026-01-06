@@ -64,7 +64,7 @@ Issues = "https://github.com/SciTools/iris/issues"
 extend-exclude = [
     "_ff_cross_references.py",
     "um_cf_map.py",
-    "docs/src/sphinxext",
+    "docs/src/sphinxext/api_rst_formatting.py",
     "tools",
 ]
 line-length = 88
