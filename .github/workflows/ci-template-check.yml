@@ -10,7 +10,7 @@ on:
 
 jobs:
   prompt-share:
-    uses: scitools/workflows/.github/workflows/ci-template-check.yml@2025.12.4
+    uses: scitools/workflows/.github/workflows/ci-template-check.yml@2026.01.0
     secrets: inherit
     with:
       pr_number: ${{ github.event.pull_request.number }}
