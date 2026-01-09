@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Various utilities related to geometric operations.
 
+.. z_reference:: iris.analysis.geometry
+   :tags: topic_statistics
+
+   API reference
+
 .. note::
     This module requires :mod:`shapely`.
 
@@ -162,7 +167,7 @@ def geometry_area_weights(cube, geometry, normalize=False):
     .. note::
 
         This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Parameters
     ----------

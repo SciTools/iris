@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""A package for converting cubes to and from specific file formats."""
+"""A package for converting cubes to and from specific file formats.
+
+.. z_reference:: iris.fileformats
+   :tags: topic_load_save
+
+   API reference
+"""
 
 from iris.io.format_picker import (
     DataSourceObjectProtocol,

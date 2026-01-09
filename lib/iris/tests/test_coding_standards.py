@@ -245,8 +245,8 @@ class TestLicenseHeaders:
             "dist/*",
             "docs/gallery_code/*/*.py",
             "docs/src/developers_guide/documenting/*.py",
-            "docs/src/userguide/plotting_examples/*.py",
-            "docs/src/userguide/regridding_plots/*.py",
+            "docs/src/user_manual/tutorial/plotting_examples/*.py",
+            "docs/src/user_manual/tutorial/regridding_plots/*.py",
             "docs/src/_build/*",
             "lib/iris/analysis/_scipy_interpolate.py",
         )

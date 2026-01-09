@@ -2,6 +2,11 @@
 Global Average Annual Temperature Plot
 ======================================
 
+.. how-to:: Global Average Annual Temperature Plot
+   :tags: topic_plotting;topic_data_model;topic_statistics
+
+   How to spatially constrain data, compute statistics and visualise a comparison.
+
 Produces a time-series plot of North American temperature forecasts for 2
 different emission scenarios. Constraining data to a limited spatial area also
 features in this example.

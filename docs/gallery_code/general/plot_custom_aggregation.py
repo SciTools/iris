@@ -2,6 +2,11 @@
 Calculating a Custom Statistic
 ==============================
 
+.. how-to:: Calculating a Custom Statistic
+   :tags: topic_plotting;topic_statistics
+
+   How to define and use a custom aggregation operation, including visualisation.
+
 This example shows how to define and use a custom
 :class:`iris.analysis.Aggregator`, that provides a new statistical operator for
 use with cube aggregation functions such as :meth:`~iris.cube.Cube.collapsed`,
