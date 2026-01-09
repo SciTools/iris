@@ -56,7 +56,7 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
-  - pydata-sphinx-theme >=0.13.0
+  - pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051
