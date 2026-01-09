@@ -15,114 +15,74 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
-.. grid:: 3
 
-    .. grid-item-card::
-        :text-align: center
+.. grid:: 1 1 2 2
+    :gutter: 2
+
+    .. grid-item-card:: Getting Started
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: getting_started_index
+        :link-type: ref
         :img-top: _static/icon_shuttle.svg
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Information on Iris, how to install and a gallery of examples that
-        create plots.
+        Installing and gallery examples.
 
-        +++
-        .. button-ref:: getting_started_index
-            :ref-type: ref
-            :color: primary
-            :outline:
-            :expand:
-
-                Getting Started
-
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item-card:: User Guide
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: getting_started_index
+        :link-type: ref
         :img-top: _static/icon_instructions.svg
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Learn how to use Iris, including loading, navigating, saving,
-        plotting and more.
+        Learn how to use Iris.
 
-        +++
-        .. button-ref:: user_guide_index
-            :ref-type: ref
-            :color: primary
-            :outline:
-            :expand:
-
-                User Guide
-
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item-card:: Developers Guide
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: development_where_to_start
+        :link-type: ref
         :img-top: _static/icon_development.svg
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Information on how you can contribute to Iris as a developer.
+        Contribute to Iris as a developer.
 
-        +++
-        .. button-ref:: development_where_to_start
-            :ref-type: ref
-            :color: primary
-            :outline:
-            :expand:
-
-                Developers Guide
-
-
-.. grid:: 3
-
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item-card:: Iris API
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: generated/api/iris
         :img-top: _static/icon_api.svg
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Browse full Iris functionality by module.
+        Iris functionality by module.
 
-        +++
-        .. button-ref:: generated/api/iris
-            :ref-type: doc
-            :color: primary
-            :outline:
-            :expand:
-
-                Iris API
-
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item-card:: What's New
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: iris_whatsnew
+        :link-type: ref
         :img-top: _static/icon_new_product.svg
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Find out what has recently changed in Iris.
+        Recent changes in Iris.
 
-        +++
-        .. button-ref:: iris_whatsnew
-            :ref-type: ref
-            :color: primary
-            :outline:
-            :expand:
-
-                What's New
-
-    .. grid-item-card::
-        :text-align: center
+    .. grid-item-card:: Voted Issues
+        :class-title: custom-title
+        :class-body: custom-body
+        :link: voted_issues_top
+        :link-type: ref
         :img-top: _static/icon_thumb.png
-        :class-img-top: w-50 m-auto px-1 py-2 dark-light
-        :shadow: lg
+        :class-img-top: dark-light
+        :class-card: sd-rounded-3
 
-        Raise the profile of issues by voting on them.
-
-        +++
-        .. button-ref:: voted_issues_top
-            :ref-type: ref
-            :color: primary
-            :outline:
-            :expand:
-
-                Voted Issues
+        Raise the profile of issues by voting.
 
 
 Icons made by FreePik from `Flaticon <https://www.flaticon.com/>`_
