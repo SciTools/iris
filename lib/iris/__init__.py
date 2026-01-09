@@ -5,7 +5,7 @@
 """A package for handling multi-dimensional data and associated metadata.
 
 .. z_reference:: iris
-   :tags: topic_load_save;topic_data_model
+   :tags: topic_load_save;topic_data_model;topic_customisation
 
    API reference
 

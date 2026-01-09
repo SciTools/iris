@@ -413,3 +413,4 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
     warnings.filterwarnings("ignore")
     helpers.get_names = get_names_original
     std_names.STD_NAMES["air_temperature"] = air_temperature
+    iris.FUTURE.date_microseconds = False
