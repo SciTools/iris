@@ -4,23 +4,23 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Sphinx customisations for a Diataxis User Manual (see diataxis.fr)."""
 
-# TODO: include a validation routine, calling to sphinx-needs to confirm that
-#  all User Manual pages have the minimum metadata.
-#  - sphinx-need directive
-#    - :tags: including a topic_xxx tag
-#    - think sphinx-needs will already insist on a valid type?
-#    - think sphinx-needs will already insist on a title?
-#    - think sphinx-needs will already insist on a description?
-#  - as it stands this would exclude all section indexes, unless the section
-#    indexes get their own Diataxis tab.
-
 import enum
 from pathlib import Path
 import re
+import typing
 
 from docutils import nodes  # type: ignore[import-untyped]
 from docutils.parsers.rst import Directive  # type: ignore[import-untyped]
 from docutils.statemachine import StringList  # type: ignore[import-untyped]
+from sphinx.application import Sphinx
+from sphinx.builders import Builder
+from sphinx.util import logging as sphinx_logging
+from sphinx_needs.api import get_needs_view
+
+if typing.TYPE_CHECKING:
+    from sphinx_needs.api.need import NeedsInfoType
+
+logger = sphinx_logging.getLogger(__name__)
 
 
 class Diataxis(enum.StrEnum):
@@ -160,10 +160,100 @@ class DiataxisDirective(Directive):
         return node.children
 
 
-def setup(app):
+def validate_items(app: Sphinx, builder: Builder) -> None:
+    """Validate that each user manual page has a single correctly configured item."""
+    env = app.env
+    found_docs: typing.Iterable[str] = env.found_docs
+
+    # Read-only iterable of all sphinx-needs items; only valid in the write phase.
+    needs_view = get_needs_view(app)
+    # Group needs by docname
+    by_doc: dict[Path, list[NeedsInfoType]] = {}
+    for need_id in needs_view:
+        need = needs_view[need_id]
+        doc_name = need.get("docname")
+        if not doc_name:
+            # External/imported needs may have no docname; skip page accounting
+            continue
+        by_doc.setdefault(Path(doc_name), []).append(need)
+
+    def _get_expected_type(doc_path: Path) -> typing.Optional[Diataxis]:
+        """Get the expected Diataxis type for the given document path."""
+        parents_and_diataxis = [
+            (Path("generated/api"), Diataxis.REFERENCE),
+            (Path("generated/gallery"), Diataxis.HOW_TO),
+            (Path("user_manual/tutorial"), Diataxis.TUTORIAL),
+            (Path("user_manual/explanation"), Diataxis.EXPLANATION),
+            (Path("user_manual/how_to"), Diataxis.HOW_TO),
+            (Path("user_manual/reference"), Diataxis.REFERENCE),
+        ]
+        expected = None
+        for parent, diataxis in parents_and_diataxis:
+            if parent in doc_path.parents:
+                expected = diataxis
+                break
+        if Path("generated/gallery") in doc_path.parents and doc_path.name == "index":
+            expected = None
+        if doc_path.name == "sg_execution_times":
+            expected = None
+        return expected
+
+    for doc_name in found_docs:
+        doc_path = Path(doc_name)
+        expected_type = _get_expected_type(doc_path)
+        if expected_type is not None:
+            problem_prefix = "Page expected to have exactly 1 sphinx-needs item;"
+            try:
+                (page_need,) = by_doc[doc_path]
+            except KeyError:
+                problem = f"{problem_prefix} found 0."
+                logger.error(problem, location=doc_name)
+                continue
+            except ValueError:
+                count = len(by_doc[doc_path])
+                problem = f"{problem_prefix} found {count}."
+                logger.error(problem, location=doc_name)
+                continue
+
+            if (page_type := page_need["type"]) != expected_type:
+                problem = (
+                    "sphinx-needs item expected to have type "
+                    f"'{expected_type}'; found type '{page_type}'."
+                )
+                logger.error(problem, location=doc_name)
+
+            if (line_no := page_need.get("lineno")) > 25:
+                # Ensures that links to the needs directive take reader to the
+                #  start of the page.
+                problem = (
+                    "sphinx-needs item expected to be defined within "
+                    f"first 25 lines; found at line {line_no}."
+                )
+                logger.error(problem, location=doc_name)
+
+            # Title is not validated as it is always populated.
+
+            if page_need["content"] == "":
+                problem = "sphinx-needs item must have non-empty content section."
+                logger.error(problem, location=doc_name)
+
+            tags = page_need.get("tags", [])
+            if [tag for tag in tags if tag.startswith("topic_")] == []:
+                problem = (
+                    "sphinx-needs item must have at least one 'topic_xxx' tag "
+                    "in its 'tags' field."
+                )
+                logger.error(problem, location=doc_name)
+
+
+def setup(app: Sphinx):
     """Set up the Sphinx extension.
 
     This function is expected by Sphinx to register the extension.
     """
+    # Connect at write-started so needs are fully collected & resolved.
+    app.connect("write-started", validate_items)
+
     app.add_directive("diataxis-page-list", DiataxisDirective)
+
     return {"version": "0.1"}

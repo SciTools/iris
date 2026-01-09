@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package for handling multi-dimensional data and associated metadata.
 
+.. z_reference:: iris
+   :tags: topic_load_save;topic_data_model
+
+   API reference
+
 .. note ::
 
     The Iris documentation has further usage information, including
