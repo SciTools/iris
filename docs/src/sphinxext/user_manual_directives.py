@@ -59,7 +59,7 @@ class DiataxisDirective(Directive):
     def _needtable(self, types: Diataxis, tags: str) -> str:
         """Construct a single sphinx-needs needtable directive string."""
         options = [
-            ':columns: title;content as " "',
+            ':columns: title as " ";content as " "',
             ":colwidths: 30;60",
             ":style: table",
             ":sort: type",
