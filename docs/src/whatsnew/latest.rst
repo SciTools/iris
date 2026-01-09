@@ -81,7 +81,7 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-#. N/A
+#. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
 
 
 💼 Internal
