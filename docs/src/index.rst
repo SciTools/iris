@@ -15,6 +15,7 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
+
 .. grid:: 3
 
     .. grid-item-card::
@@ -126,6 +127,9 @@ For more information see :ref:`why_iris`.
 
 
 Icons made by FreePik from `Flaticon <https://www.flaticon.com/>`_
+
+
+.. include:: gallery_carousel.txt
 
 
 .. _iris_support:
