@@ -537,9 +537,6 @@ def gallery_carousel(
     with fname.open("w"):
         pass
 
-    # if _bool_eval(arg=app.builder.config.plot_gallery):
-    #     # only generate the carousel if we have a gallery
-    #     generate_carousel(app, fname)
     generate_carousel(app, fname)
 
 
