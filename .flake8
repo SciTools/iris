@@ -1,0 +1,49 @@
+[flake8]
+# References:
+#   https://flake8.readthedocs.io/en/latest/user/configuration.html
+#   https://flake8.readthedocs.io/en/latest/user/error-codes.html
+#   https://pycodestyle.readthedocs.io/en/latest/intro.html#error-codes
+
+max-line-length = 80
+max-complexity = 50
+select = C,E,F,W,B,B950
+ignore =
+    # E203: whitespace before ':'
+    E203,
+    # E226: missing whitespace around arithmetic operator
+    E226,
+    # E231: missing whitespace after ',', ';', or ':'
+    E231,
+    # E402: module level imports on one line
+    E402,
+    # E501: line too long
+    E501,
+    # E731: do not assign a lambda expression, use a def
+    E731,
+    # W503: line break before binary operator
+    W503,
+    # W504: line break after binary operator
+    W504,
+exclude =
+    #
+    # ignore the following directories
+    #
+    .eggs,
+    build,
+    docs/src/sphinxext/*,
+    tools/*,
+    benchmarks/*,
+    #
+    # ignore auto-generated files
+    #
+    _ff_cross_refrences.py,
+    std_names.py,
+    um_cf_map.py,
+    #
+    # ignore third-party files
+    #
+    gitwash_dumper.py,
+    #
+    # convenience imports
+    #
+    lib/iris/common/__init__.py
