@@ -96,6 +96,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ updated benchmarking to source Mule from its new home:
    https://github.com/MetOffice/mule . (:pull:`6879`)
 
+#. `@tkknight`_ removed flake8, we have ruff now instead.  (:pull:`6889`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
