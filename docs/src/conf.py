@@ -445,6 +445,17 @@ numfig_format = {
     "table": "Table %s",
 }
 
+# ============================================================================
+# |                        Copyright GeoVista                                |
+# | Code from this point unto the termination banner is copyright GeoVista.  |
+# | Minimal code changes made to make it generic.                            |
+# |                                                                          |
+# | License details can be found at:                                         |
+# |    https://github.com/bjlittle/geovista/blob/main/LICENSE                |
+# ============================================================================
+
+# Source: https://github.com/bjlittle/geovista/blob/main/docs/src/conf.py
+
 
 def generate_carousel(
     app: Sphinx,
@@ -538,6 +549,11 @@ def gallery_carousel(
         pass
 
     generate_carousel(app, fname)
+
+
+# ============================================================================
+# |                        END GeoVista copyright                            |
+# ============================================================================
 
 
 def setup(app: Sphinx) -> None:
