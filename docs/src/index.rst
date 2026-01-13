@@ -55,7 +55,7 @@ For more information see :ref:`why_iris`.
     .. grid-item-card:: Iris API
         :class-title: custom-title
         :class-body: custom-body
-        :link: generated/api/iris
+        :link: generated/api/iris.html
         :img-top: _static/icon_api.svg
         :class-img-top: dark-light
         :class-card: sd-rounded-3
