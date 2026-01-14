@@ -1855,7 +1855,7 @@ class Saver:
                     new_data[index_slice] = list(
                         "%- *s" % (string_dimension_depth, data[index])
                     )
-                    data = new_data
+                data = new_data
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.
