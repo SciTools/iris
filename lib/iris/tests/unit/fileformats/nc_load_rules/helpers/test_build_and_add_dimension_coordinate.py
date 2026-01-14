@@ -50,7 +50,7 @@ class RulesTestMixin:
         # Create dummy pyke engine.
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            cf_var=mock.Mock(dimensions=("foo", "bar"), dtype=np.int32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
