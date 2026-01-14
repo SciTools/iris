@@ -261,9 +261,6 @@ class Test_write(tests.IrisTest):
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims)
 
-        patch = self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -273,10 +270,16 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                createvar_spy = self.patch(
+                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    # Use 'wraps' to allow the patched methods to function as normal
+                    #  - the patch object just acts as a 'spy' on its calls.
+                    wraps=saver._dataset.createVariable,
+                )
                 saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(5, patch.call_count)
-        result = self._filter_compression_calls(patch, compression_kwargs)
+        self.assertEqual(5, createvar_spy.call_count)
+        result = self._filter_compression_calls(createvar_spy, compression_kwargs)
         self.assertEqual(3, len(result))
         self.assertEqual({cube.name(), aux_coord.name(), anc_coord.name()}, set(result))
 
@@ -294,9 +297,6 @@ class Test_write(tests.IrisTest):
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims[1])
 
-        patch = self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -306,11 +306,17 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                createvar_spy = self.patch(
+                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    # Use 'wraps' to allow the patched methods to function as normal
+                    #  - the patch object just acts as a 'spy' on its calls.
+                    wraps=saver._dataset.createVariable,
+                )
                 saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(5, patch.call_count)
+        self.assertEqual(5, createvar_spy.call_count)
         result = self._filter_compression_calls(
-            patch, compression_kwargs, mismatch=True
+            createvar_spy, compression_kwargs, mismatch=True
         )
         self.assertEqual(4, len(result))
         # the aux coord and ancil variable are not compressed due to shape, and
@@ -327,10 +333,6 @@ class Test_write(tests.IrisTest):
         aux_coord = AuxCoord(data, var_name="non_compress_aux", units="1")
         cube.add_aux_coord(aux_coord, data_dims=data_dims)
 
-        patch = self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
-        patch.return_value = mock.MagicMock(dtype=np.dtype("S1"))
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -340,11 +342,17 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                createvar_spy = self.patch(
+                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    # Use 'wraps' to allow the patched methods to function as normal
+                    #  - the patch object just acts as a 'spy' on its calls.
+                    wraps=saver._dataset.createVariable,
+                )
                 saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(4, patch.call_count)
+        self.assertEqual(4, createvar_spy.call_count)
         result = self._filter_compression_calls(
-            patch, compression_kwargs, mismatch=True
+            createvar_spy, compression_kwargs, mismatch=True
         )
         self.assertEqual(3, len(result))
         # the aux coord is not compressed due to its string dtype, and
