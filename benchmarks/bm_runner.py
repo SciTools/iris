@@ -99,7 +99,7 @@ def _prep_data_gen_env() -> None:
             return clone_dir
 
         echo("Installing Mule into data generation environment ...")
-        mule_dir = clone_resource("mule", "https://github.com/metomi/mule.git")
+        mule_dir = clone_resource("mule", "https://github.com/MetOffice/mule.git")
         _subprocess_runner(
             [
                 str(data_gen_python),

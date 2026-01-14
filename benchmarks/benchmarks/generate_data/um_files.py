@@ -22,21 +22,11 @@ def _create_um_files(
     from tempfile import NamedTemporaryFile
 
     from mule import ArrayDataProvider, Field3, FieldsFile
-    import mule.ff
     from mule.pp import fields_to_pp_file
     import numpy as np
 
     from iris import load_cube
     from iris import save as save_cube
-
-    def to_bytes_patch(self, field):
-        data = field.get_data()
-        dtype = mule.ff._DATA_DTYPES[self.WORD_SIZE][field.lbuser1]
-        data = data.astype(dtype)
-        return data.tobytes(), data.size
-
-    # TODO: remove this patch when fixed in mule, see https://github.com/MetOffice/simulation-systems/discussions/389
-    mule.ff._WriteFFOperatorUnpacked.to_bytes = to_bytes_patch
 
     template = {
         "fixed_length_header": {"dataset_type": 3, "grid_staggering": 3},

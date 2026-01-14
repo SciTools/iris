@@ -23,7 +23,7 @@ jobs:
 
     env:
       # Lets us manually bump the cache to rebuild
-      ENV_CACHE_BUILD: "0"
+      ENV_CACHE_BUILD: "1"
 
     steps:
       - name: Checkout repo
@@ -36,7 +36,7 @@ jobs:
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             .nox
