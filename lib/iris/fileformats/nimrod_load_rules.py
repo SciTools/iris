@@ -636,10 +636,8 @@ def attributes(cube, field):
         cube_source = "Nimrod pwind routine"
     for key in [
         "neighbourhood_radius",
-        "recursive_filter_iterations",
         "recursive_filter_alpha",
         "threshold_vicinity_radius",
-        "probability_period_of_event",
     ]:
         add_attr(key)
 
@@ -662,6 +660,9 @@ def attributes(cube, field):
 
 def table_1_attributes(cube, field):
     """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
 
     def add_attr(item):
         """Add an attribute to the cube."""
@@ -669,9 +670,28 @@ def table_1_attributes(cube, field):
             value = getattr(field, item)
             if is_missing(field, value):
                 return
-            if "radius" in item:
-                value = f"{value} km"
             cube.attributes[item] = value
+
+    for key in [
+        "radar_number",
+        "radar_sites",
+        "additional_radar_sites",
+        "clutter_map_number",
+        "calibration_type",
+        "bright_band_height",
+        "bright_band_intensity",
+        "bright_band_test_param_1",
+        "bright_band_test_param_2",
+        "infill_flag",
+        "stop_elevation",
+        "sensor_identifier",
+        "meteosat_identifier",
+        "software_identifier",
+        "software_major_version",
+        "software_minor_version",
+        "software_micro_version",
+    ]:
+        add_attr(key)
 
     add_attr("radar_number")
     add_attr("radar_sites")
@@ -690,6 +710,24 @@ def table_1_attributes(cube, field):
     add_attr("software_major_version")
     add_attr("software_minor_version")
     add_attr("software_micro_version")
+
+
+def table_2_attributes(cube, field):
+    """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            cube.attributes[item] = value
+
+    for key in ["recursive_filter_iterations", "probability_period_of_event"]:
+        add_attr(key)
 
 
 def known_threshold_coord(field):
@@ -962,18 +1000,26 @@ def run(field, table, handle_metadata_errors=True):
     # vertical
     vertical_coord(cube, field)
 
-    # add Table 1 specific stuff
-    if table == "Table_1":
-        table_1_attributes(cube, field)
+    match table:
+        case "Table_1":
+            table_1_attributes(cube, field)
+        case "Table_2":
+            table_2_attributes(cube, field)
+            soil_type_coord(cube, field)
+            probability_coord(cube, field, handle_metadata_errors)
 
-    # add Table 2 specific stuff
-    if table == "Table_2":
-        soil_type_coord(cube, field)
-        probability_coord(cube, field, handle_metadata_errors)
-        ensemble_member(cube, field)
+    # # add Table 1 specific stuff
+    # if table == "Table_1":
+    #     table_1_attributes(cube, field)
+    #
+    # # add Table 2 specific stuff
+    # if table == "Table_2":
+    #     soil_type_coord(cube, field)
+    #     probability_coord(cube, field, handle_metadata_errors)
 
     # add other generic stuff, if present
     time_averaging(cube, field)
     attributes(cube, field)
+    ensemble_member(cube, field)
 
     return cube
