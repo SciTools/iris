@@ -693,24 +693,6 @@ def table_1_attributes(cube, field):
     ]:
         add_attr(key)
 
-    add_attr("radar_number")
-    add_attr("radar_sites")
-    add_attr("additional_radar_sites")
-    add_attr("clutter_map_number")
-    add_attr("calibration_type")
-    add_attr("bright_band_height")
-    add_attr("bright_band_intensity")
-    add_attr("bright_band_test_param_1")
-    add_attr("bright_band_test_param_2")
-    add_attr("infill_flag")
-    add_attr("stop_elevation")
-    add_attr("sensor_identifier")
-    add_attr("meteosat_identifier")
-    add_attr("software_identifier")
-    add_attr("software_major_version")
-    add_attr("software_minor_version")
-    add_attr("software_micro_version")
-
 
 def table_2_attributes(cube, field):
     """Add attributes to the cube."""
@@ -1007,15 +989,6 @@ def run(field, table, handle_metadata_errors=True):
             table_2_attributes(cube, field)
             soil_type_coord(cube, field)
             probability_coord(cube, field, handle_metadata_errors)
-
-    # # add Table 1 specific stuff
-    # if table == "Table_1":
-    #     table_1_attributes(cube, field)
-    #
-    # # add Table 2 specific stuff
-    # if table == "Table_2":
-    #     soil_type_coord(cube, field)
-    #     probability_coord(cube, field, handle_metadata_errors)
 
     # add other generic stuff, if present
     time_averaging(cube, field)
