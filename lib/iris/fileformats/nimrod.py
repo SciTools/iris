@@ -102,27 +102,57 @@ data_header_float32s = (
 
 # data specific header (int16) elements 108-159 (Fortran bytes 411-512)
 table_1_data_header_int16s = (
-    "radar_number"
-    "radar_sites"
-    "additional_radar_sites"
-    "clutter_map_number"
-    "calibration_type"
-    "bright_band_height"
-    "bright_band_intensity"
-    "bright_band_test_param_1"
-    "bright_band_test_param_2"
-    "infill_flag"
-    "stop_elevation"
-    ""
-    "sensor_identifier"
-    "meteosat_identifier"
-    ""
-    "software_identifier"
-    "software_major_version"
-    "software_minor_version"
-    "software_micro_version"
-    ""
-    "period_seconds"
+    "radar_number",
+    "radar_sites",
+    "additional_radar_sites",
+    "clutter_map_number",
+    "calibration_type",
+    "bright_band_height",
+    "bright_band_intensity",
+    "bright_band_test_param_1",
+    "bright_band_test_param_2",
+    "infill_flag",
+    "stop_elevation",
+    "copy_vertical_coord",
+    "copy_reference_vertical_coord",
+    "copy_y_origin",
+    "copy_row_step",
+    "copy_x_origin",
+    "copy_column_step",
+    "copy_float32_mdi",
+    "copy_MKS_data_scaling",
+    "copy_data_offset",
+    "copy_x_offset",
+    "copy_y_offset",
+    "copy_true_origin_latitude",
+    "copy_true_origin_longitude",
+    "copy_tl_y",
+    "copy_tl_x",
+    "copy_tr_y",
+    "copy_tr_x",
+    "copy_br_y",
+    "copy_br_x",
+    "copy_bl_y",
+    "copy_bl_x",
+    "sensor_identifier",
+    "meteosat_identifier",
+    "availability_of_synop_meteosat",
+    "software_identifier",
+    "software_major_version",
+    "software_minor_version",
+    "software_micro_version",
+    "data_header_int16_41",
+    "data_header_int16_42",
+    "data_header_int16_43",
+    "data_header_int16_44",
+    "data_header_int16_45",
+    "data_header_int16_46",
+    "data_header_int16_47",
+    "data_header_int16_48",
+    "data_header_int16_49",
+    "data_header_int16_50",
+    "data_header_int16_51",
+    "period_seconds",
 )
 
 
@@ -241,8 +271,6 @@ class NimrodField:
         self._read_header_subset(infile, general_header_float32s, np.float32)
         # skip unnamed floats
         infile.seek(4 * (28 - len(general_header_float32s)), os.SEEK_CUR)
-        threshold_set = True if self.threshold_value != -32767 else False
-        print(threshold_set)
         # data specific header (float32) elements 60-104 (bytes 175-354)
         self._read_header_subset(infile, data_header_float32s, np.float32)
         # skip unnamed floats
@@ -254,12 +282,15 @@ class NimrodField:
         self.title = _read_chars(infile, 24)
 
         # determine which of Table 1 or Table 2 is being used
+        threshold_set = self.threshold_value != -32767
         if threshold_set:
             table = "Table_2"
             data_header_int16s = table_2_data_header_int16s
         else:
             table = "Table_1"
             data_header_int16s = table_1_data_header_int16s
+
+        self.table = table
 
         # data specific header (int16) elements 108- (bytes 411-512)
         self._read_header_subset(infile, data_header_int16s, np.int16)
@@ -273,8 +304,6 @@ class NimrodField:
                     leading_length, trailing_length
                 )
             )
-
-        return table
 
     def _read_data(self, infile):
         """Read the data array: int8, int16, int32 or float32.
