@@ -221,9 +221,6 @@ autoclass_content = "both"
 modindex_common_prefix = ["iris"]
 
 # if geovista is not installed we need to mock the imports so the autodoc build works:
-# try:
-#    import geovista  # noqa: F401
-# except ImportError:
 if importlib.util.find_spec("geovista") is None:
     autodoc_mock_imports = ["geovista", "pyvista"]
 

@@ -585,6 +585,7 @@ below:
     .. doctest:: ugrid_operations
         :skipif: gv is None
 
+        >>> from geovista.geodesic import BBox
         >>> from iris import load_cube, sample_data_path
         >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
 
