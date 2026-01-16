@@ -20,6 +20,7 @@
 """Config for sphinx."""
 
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 from inspect import getsource
 import ntpath
@@ -219,6 +220,14 @@ autopackage_name = ["iris"]
 autoclass_content = "both"
 modindex_common_prefix = ["iris"]
 
+# if geovista is not installed we need to mock the imports so the autodoc build works:
+# try:
+#    import geovista  # noqa: F401
+# except ImportError:
+if importlib.util.find_spec("geovista") is None:
+    autodoc_mock_imports = ["geovista", "pyvista"]
+
+
 # -- apidoc extension ---------------------------------------------------------
 # See https://github.com/sphinx-contrib/apidoc
 source_code_root = (Path(__file__).parents[2]).absolute()
@@ -283,7 +292,15 @@ extlinks = {
 
 # -- Doctest ("make doctest")--------------------------------------------------
 
-doctest_global_setup = "import iris"
+doctest_global_setup = """
+import iris
+
+# To handle conditional doctest skipping if geovista is not installed:
+try:
+    import geovista as gv
+except ImportError:
+    gv = None
+"""
 
 # -- Options for HTML output --------------------------------------------------
 
