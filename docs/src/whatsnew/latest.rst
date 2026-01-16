@@ -98,13 +98,19 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ removed flake8, we have ruff now instead.  (:pull:`6889`)
 
+#. `@trexfeathers`_ and `@ukmo-ccbunney`_ updated CI to support Python 3.14
+   inline with `SPEC0 Minimum Supported Dependencies`_. Note: `pyvista` (and
+   hence `geovista`) is not yet compatible with Python 3.14, so
+   `:module:~iris.experimental.geovista` is currently only available for
+   Python \<3.14.  (:pull:`6816`, :issue:`6775`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@hdyson: https://github.com/hdyson
 
-
+.. _SPEC0 Minimum Supported Dependencies: https://scientific-python.org/specs/spec-0000/
 
 .. comment
     Whatsnew resources in alphabetical order:
