@@ -212,8 +212,7 @@ class TestDtype(MockerMixin):
         self.cf_coord_var.scale_factor = 3
         self.cf_coord_var.add_offset = 5
 
-        with self.deferred_load_patch():
-            build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
         coord, _ = self.engine.cube_parts["coordinates"][0]
         assert coord.dtype.kind == "i"

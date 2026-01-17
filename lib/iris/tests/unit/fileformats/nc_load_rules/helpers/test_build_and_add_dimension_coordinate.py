@@ -17,31 +17,6 @@ from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coor
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
-_mocker = MockerMixin()
-
-
-def _make_bounds_var(bounds, dimensions, units):
-    bounds = np.array(bounds)
-    cf_data = _mocker.Mock(spec=[])
-    # we want to mock the absence of flag attributes to helpers.get_attr_units
-    # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
-    del cf_data.flag_values
-    del cf_data.flag_masks
-    del cf_data.flag_meanings
-    result = _mocker.Mock(
-        dimensions=dimensions,
-        cf_name="wibble_bnds",
-        cf_data=cf_data,
-        units=units,
-        calendar=None,
-        shape=bounds.shape,
-        size=np.prod(bounds.shape),
-        dtype=bounds.dtype,
-        __getitem__=lambda self, key: bounds[key],
-    )
-    delattr(result, "_data_array")
-    return result
-
 
 class RulesTestMixin(MockerMixin):
     @pytest.fixture(autouse=True)
@@ -80,6 +55,28 @@ class RulesTestMixin(MockerMixin):
             new=get_cf_bounds_var,
         )
 
+    def _make_bounds_var(self, bounds, dimensions, units):
+        bounds = np.array(bounds)
+        cf_data = self.mocker.Mock(spec=[])
+        # we want to mock the absence of flag attributes to helpers.get_attr_units
+        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
+        del cf_data.flag_values
+        del cf_data.flag_masks
+        del cf_data.flag_meanings
+        result = self.mocker.Mock(
+            dimensions=dimensions,
+            cf_name="wibble_bnds",
+            cf_data=cf_data,
+            units=units,
+            calendar=None,
+            shape=bounds.shape,
+            size=np.prod(bounds.shape),
+            dtype=bounds.dtype,
+            __getitem__=lambda self, key: bounds[key],
+        )
+        delattr(result, "_data_array")
+        return result
+
 
 class TestCoordConstruction(RulesTestMixin, MockerMixin):
     @pytest.fixture(autouse=True)
@@ -87,7 +84,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         bounds = np.arange(12).reshape(6, 2)
         dimensions = ("x", "nv")
         units = "days since 1970-01-01"
-        self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+        self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
         self.bounds = bounds
 
         # test_dimcoord_not_added() and test_auxcoord_not_added have been
@@ -128,12 +125,10 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
             climatological=climatology,
         )
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
     def test_dim_coord_construction(self):
         self.check_case_dim_coord_construction(climatology=False)
@@ -159,13 +154,10 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         )
 
         with warnings.catch_warnings(record=True) as w:
-            # Asserts must lie within context manager because of deferred
-            # loading.
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-                # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert warning is raised
             assert len(w) == 1
@@ -188,13 +180,10 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         )
 
         with warnings.catch_warnings(record=True) as w:
-            # Asserts must lie within context manager because of deferred
-            # loading.
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-                # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -212,13 +201,10 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         )
 
         with warnings.catch_warnings(record=True) as w:
-            # Asserts must lie within context manager because of deferred
-            # loading.
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-                # Test that expected coord is built and added to cube.
-                self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+            # Test that expected coord is built and added to cube.
+            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
             # Assert no warning is raised
             assert len(w) == 0
@@ -238,14 +224,12 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
             coord_system=coord_system,
         )
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(
-                self.engine, self.cf_coord_var, coord_system=coord_system
-            )
+        build_and_add_dimension_coordinate(
+            self.engine, self.cf_coord_var, coord_system=coord_system
+        )
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
     def test_bad_coord_system(self, mocker):
         self._set_cf_coord_var(np.arange(6))
@@ -262,19 +246,16 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
             else:
                 self._metadata_manager.coord_system = value
 
-        with mocker.patch.object(
+        _ = mocker.patch.object(
             DimCoord,
             "coord_system",
             new=property(DimCoord.coord_system.fget, mock_setter),
-        ):
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(
-                    self.engine, self.cf_coord_var, coord_system=coord_system
-                )
-                load_problem = LOAD_PROBLEMS.problems[-1]
-                assert "test_bad_coord_system" in "".join(
-                    load_problem.stack_trace.format()
-                )
+        )
+        build_and_add_dimension_coordinate(
+            self.engine, self.cf_coord_var, coord_system=coord_system
+        )
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert "test_bad_coord_system" in "".join(load_problem.stack_trace.format())
 
     def test_aux_coord_construction(self):
         # Use non monotonically increasing coordinates to force aux coord
@@ -289,17 +270,15 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
             bounds=self.bounds,
         )
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
-            load_problem = LOAD_PROBLEMS.problems[-1]
-            assert "creating 'wibble' auxiliary coordinate instead" in "".join(
-                load_problem.stack_trace.format()
-            )
-            assert load_problem.handled
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_aux_coord.assert_called_with(expected_coord, [0])
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert "creating 'wibble' auxiliary coordinate instead" in "".join(
+            load_problem.stack_trace.format()
+        )
+        assert load_problem.handled
 
     def test_dimcoord_not_added(self):
         # Confirm that the coord will be skipped if a CannotAddError is raised
@@ -312,8 +291,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
 
             self._set_cf_coord_var(np.arange(6))
 
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
@@ -331,8 +309,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
 
             self._set_cf_coord_var(np.array([1, 3, 2, 4, 6, 5]))
 
-            with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-                build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.stack_trace.exc_type is CannotAddError
@@ -386,7 +363,7 @@ class TestBoundsVertexDim(RulesTestMixin):
         bounds = np.arange(12).reshape(2, 6) * 1000
         dimensions = ("nv", "foo")
         units = "m"
-        self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+        self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
 
         # Expected bounds on the resulting coordinate should be rolled so that
         # the vertex dimension is at the end.
@@ -399,22 +376,20 @@ class TestBoundsVertexDim(RulesTestMixin):
             bounds=expected_bounds,
         )
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
-            # Test that engine.cube_parts container is correctly populated.
-            expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            assert self.engine.cube_parts["coordinates"] == expected_list
+        # Test that engine.cube_parts container is correctly populated.
+        expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
+        assert self.engine.cube_parts["coordinates"] == expected_list
 
     def test_fastest_varying_vertex_dim__normalise_bounds(self):
         bounds = np.arange(12).reshape(6, 2) * 1000
         dimensions = ("foo", "nv")
         units = "m"
-        self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+        self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
 
         expected_coord = DimCoord(
             self.cf_coord_var[:],
@@ -424,16 +399,14 @@ class TestBoundsVertexDim(RulesTestMixin):
             bounds=bounds / 1000,
         )
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+        build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
-            # Test that engine.cube_parts container is correctly populated.
-            expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            assert self.engine.cube_parts["coordinates"] == expected_list
+        # Test that engine.cube_parts container is correctly populated.
+        expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
+        assert self.engine.cube_parts["coordinates"] == expected_list
 
     def test_fastest_with_different_dim_names__normalise_bounds(self):
         # Despite the dimension names 'x' differing from the coord's
@@ -442,7 +415,7 @@ class TestBoundsVertexDim(RulesTestMixin):
         bounds = np.arange(12).reshape(6, 2) * 1000
         dimensions = ("x", "nv")
         units = "m"
-        self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+        self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
 
         expected_coord = DimCoord(
             self.cf_coord_var[:],
@@ -451,17 +424,14 @@ class TestBoundsVertexDim(RulesTestMixin):
             units=self.cf_coord_var.units,
             bounds=bounds / 1000,
         )
+        build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
 
-        # Asserts must lie within context manager because of deferred loading.
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(self.engine, self.cf_coord_var)
+        # Test that expected coord is built and added to cube.
+        self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
 
-            # Test that expected coord is built and added to cube.
-            self.engine.cube.add_dim_coord.assert_called_with(expected_coord, 0)
-
-            # Test that engine.cube_parts container is correctly populated.
-            expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
-            assert self.engine.cube_parts["coordinates"] == expected_list
+        # Test that engine.cube_parts container is correctly populated.
+        expected_list = [(expected_coord, self.cf_coord_var.cf_name)]
+        assert self.engine.cube_parts["coordinates"] == expected_list
 
 
 class TestCircular(RulesTestMixin):
@@ -486,7 +456,7 @@ class TestCircular(RulesTestMixin):
         if bounds:
             bounds = np.array(bounds).reshape(self.cf_coord_var.shape + (2,))
             dimensions = ("x", "nv")
-            self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+            self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
 
     def _check_circular(self, circular, *args, **kwargs):
         if "coord_name" in kwargs:
@@ -494,12 +464,11 @@ class TestCircular(RulesTestMixin):
         else:
             coord_name = "longitude"
         self._make_vars(*args, **kwargs)
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(
-                self.engine, self.cf_coord_var, coord_name=coord_name
-            )
-            assert self.engine.cube.add_dim_coord.call_count == 1
-            coord, dims = self.engine.cube.add_dim_coord.call_args[0]
+        build_and_add_dimension_coordinate(
+            self.engine, self.cf_coord_var, coord_name=coord_name
+        )
+        assert self.engine.cube.add_dim_coord.call_count == 1
+        coord, dims = self.engine.cube.add_dim_coord.call_args[0]
         assert coord.circular == circular
 
     def check_circular(self, *args, **kwargs):
@@ -580,15 +549,14 @@ class TestCircularScalar(RulesTestMixin):
 
         bounds = np.array(bounds)
         dimensions = ("bnds",)
-        self.cf_bounds_var = _make_bounds_var(bounds, dimensions, units)
+        self.cf_bounds_var = self._make_bounds_var(bounds, dimensions, units)
 
     def _assert_circular(self, value):
-        with self.deferred_load_patch, self.get_cf_bounds_var_patch:
-            build_and_add_dimension_coordinate(
-                self.engine, self.cf_coord_var, coord_name="longitude"
-            )
-            assert self.engine.cube.add_aux_coord.call_count == 1
-            coord, dims = self.engine.cube.add_aux_coord.call_args[0]
+        build_and_add_dimension_coordinate(
+            self.engine, self.cf_coord_var, coord_name="longitude"
+        )
+        assert self.engine.cube.add_aux_coord.call_count == 1
+        coord, dims = self.engine.cube.add_aux_coord.call_args[0]
         assert coord.circular == value
 
     def test_two_bounds_noncircular(self):
