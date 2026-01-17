@@ -14,6 +14,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
+import codecs
 import collections
 from itertools import repeat, zip_longest
 import os
@@ -48,7 +49,8 @@ import iris.coords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.exceptions
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
+from iris.fileformats.netcdf import _dask_locks
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 import iris.io
 import iris.util
@@ -300,7 +302,7 @@ class VariableEmulator(typing.Protocol):
     shape: tuple[int, ...]
 
 
-CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
+CFVariable = typing.Union[bytecoding_datasets.VariableWrapper, VariableEmulator]
 
 
 class Saver:
@@ -403,7 +405,7 @@ class Saver:
             # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
             # Except if it already is one, since they forbid "re-wrapping".
             if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
-                self._dataset = _thread_safe_nc.DatasetWrapper.from_existing(
+                self._dataset = bytecoding_datasets.DatasetWrapper.from_existing(
                     self._dataset
                 )
 
@@ -414,7 +416,7 @@ class Saver:
             # Given a filepath string/path : create a dataset from that
             try:
                 self.filepath = os.path.abspath(filename)
-                self._dataset = _thread_safe_nc.DatasetWrapper(
+                self._dataset = bytecoding_datasets.EncodedDataset(
                     self.filepath, mode="w", format=netcdf_format
                 )
             except RuntimeError:
@@ -1818,7 +1820,15 @@ class Saver:
             # Typically CF label variables, but also possibly ancil-vars ?
             string_dimension_depth = data.dtype.itemsize
             if data.dtype.kind == "U":
-                string_dimension_depth //= 4
+                encoding = element.attributes.get("_Encoding", "ascii")
+                # TODO: this can fail -- use a sensible warning + default?
+                encoding = codecs.lookup(encoding).name
+                if encoding == "utf-32":
+                    # UTF-32 is a special case -- always 4 exactly bytes per char, plus 4
+                    string_dimension_depth += 4
+                else:
+                    # generally, 4 bytes per char in numpy --> make bytewidth = string-width
+                    string_dimension_depth //= 4
             string_dimension_name = "string%d" % string_dimension_depth
 
             # Determine whether to create the string length dimension.
@@ -1837,25 +1847,25 @@ class Saver:
             # Create the label coordinate variable.
             cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
 
-            # Convert data from an array of strings into a character array
-            # with an extra string-length dimension.
-            if len(element_dims) == 1:
-                # Scalar variable (only has string dimension).
-                data_first = data[0]
-                if is_lazy_data(data_first):
-                    data_first = dask.compute(data_first)
-                data = list("%- *s" % (string_dimension_depth, data_first))
-            else:
-                # NOTE: at present, can't do this lazily??
-                orig_shape = data.shape
-                new_shape = orig_shape + (string_dimension_depth,)
-                new_data = np.zeros(new_shape, cf_var.dtype)
-                for index in np.ndindex(orig_shape):
-                    index_slice = tuple(list(index) + [slice(None, None)])
-                    new_data[index_slice] = list(
-                        "%- *s" % (string_dimension_depth, data[index])
-                    )
-                data = new_data
+            # # Convert data from an array of strings into a character array
+            # # with an extra string-length dimension.
+            # if len(element_dims) == 1:
+            #     # Scalar variable (only has string dimension).
+            #     data_first = data[0]
+            #     if is_lazy_data(data_first):
+            #         data_first = dask.compute(data_first)
+            #     data = list("%- *s" % (string_dimension_depth, data_first))
+            # else:
+            #     # NOTE: at present, can't do this lazily??
+            #     orig_shape = data.shape
+            #     new_shape = orig_shape + (string_dimension_depth,)
+            #     new_data = np.zeros(new_shape, cf_var.dtype)
+            #     for index in np.ndindex(orig_shape):
+            #         index_slice = tuple(list(index) + [slice(None, None)])
+            #         new_data[index_slice] = list(
+            #             "%- *s" % (string_dimension_depth, data[index])
+            #         )
+            #     data = new_data
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.
@@ -1899,6 +1909,10 @@ class Saver:
                 element, cf_var, cf_name, compression_kwargs=compression_kwargs
             )
 
+        # Add names + units
+        # NOTE: *must* now do first, as we may need '_Encoding' set to write it !
+        self._set_cf_var_attributes(cf_var, element)
+
         # Add the data to the CF-netCDF variable.
         if not is_dataless:
             if packing_controls:
@@ -1906,9 +1920,6 @@ class Saver:
                 for key, value in packing_controls["attributes"]:
                     _setncattr(cf_var, key, value)
             self._lazy_stream_data(data=data, cf_var=cf_var)
-
-        # Add names + units
-        self._set_cf_var_attributes(cf_var, element)
 
         return cf_name
 
@@ -2529,7 +2540,7 @@ class Saver:
                 ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
-                    write_wrapper = _thread_safe_nc.NetCDFWriteProxy(
+                    write_wrapper = bytecoding_datasets.EncodedNetCDFWriteProxy(
                         self.filepath, cf_var, self.file_write_lock
                     )
                     # Add to the list of delayed writes, used in delayed_completion().

@@ -47,7 +47,12 @@ import warnings
 
 import numpy as np
 
-from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper, VariableWrapper
+from iris.fileformats.netcdf._thread_safe_nc import (
+    DatasetWrapper,
+    NetCDFDataProxy,
+    NetCDFWriteProxy,
+    VariableWrapper,
+)
 import iris.warnings
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
@@ -133,7 +138,19 @@ def encode_stringarray_as_bytearray(
     result = np.zeros(element_shape + (string_dimension_length,), dtype="S1")
     right_pad = b"\0" * string_dimension_length
     for index in np.ndindex(element_shape):
-        bytes = data[index].encode(encoding=encoding)
+        string = data[index]
+        bytes = string.encode(encoding=encoding)
+        n_bytes = len(bytes)
+        # TODO: may want to issue warning or error if we overflow the length?
+        if n_bytes > string_dimension_length:
+            from iris.exceptions import TranslationError
+
+            msg = (
+                f"Non-ascii string {string!r} written to netcdf exceeds string "
+                f"dimension : {n_bytes} > {string_dimension_length}."
+            )
+            raise TranslationError(msg)
+
         # It's all a bit nasty ...
         bytes = (bytes + right_pad)[:string_dimension_length]
         result[index] = [bytes[i : i + 1] for i in range(string_dimension_length)]
@@ -283,3 +300,11 @@ class EncodedDataset(DatasetWrapper):
     def set_auto_chartostring(self, onoff: bool):
         msg = "auto_chartostring is not supported by Iris 'EncodedDataset' type."
         raise TypeError(msg)
+
+
+class EncodedNetCDFDataProxy(NetCDFDataProxy):
+    DATASET_CLASS = EncodedDataset
+
+
+class EncodedNetCDFWriteProxy(NetCDFWriteProxy):
+    DATASET_CLASS = EncodedDataset

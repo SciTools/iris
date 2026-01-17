@@ -26,7 +26,7 @@ import numpy.ma as ma
 
 import iris.exceptions
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets
 from iris.mesh.components import Connectivity
 import iris.util
 import iris.warnings
@@ -1373,7 +1373,9 @@ class CFReader:
         if isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
             self._filename = os.path.expanduser(file_source)
-            self._dataset = _thread_safe_nc.DatasetWrapper(self._filename, mode="r")
+            self._dataset = _bytecoding_datasets.EncodedDataset(
+                self._filename, mode="r"
+            )
             self._own_file = True
         else:
             # We have been passed an open dataset.

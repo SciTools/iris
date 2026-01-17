@@ -36,7 +36,7 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -50,7 +50,7 @@ from . import logger
 
 # An expected part of the public loader API, but includes thread safety
 #  concerns so is housed in _thread_safe_nc.
-NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
+NetCDFDataProxy = _bytecoding_datasets.EncodedNetCDFDataProxy
 
 
 class _WarnComboIgnoringBoundsLoad(

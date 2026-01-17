@@ -315,6 +315,7 @@ class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
     __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
+    DATASET_CLASS = netCDF4.Dataset
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
@@ -337,7 +338,7 @@ class NetCDFDataProxy:
         # netCDF4 library, presumably because __getitem__ gets called so many
         # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
         with _GLOBAL_NETCDF4_LOCK:
-            dataset = netCDF4.Dataset(self.path)
+            dataset = self.DATASET_CLASS(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
                 # Get the NetCDF variable data and slice.
@@ -374,6 +375,8 @@ class NetCDFWriteProxy:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
+    DATASET_CLASS = netCDF4.Dataset
+
     def __init__(self, filepath, cf_var, file_write_lock):
         self.path = filepath
         self.varname = cf_var.name
@@ -401,7 +404,7 @@ class NetCDFWriteProxy:
                 #  investigation needed.
                 for attempt in range(5):
                     try:
-                        dataset = netCDF4.Dataset(self.path, "r+")
+                        dataset = self.DATASET_CLASS(self.path, "r+")
                         break
                     except OSError:
                         if attempt < 4:
