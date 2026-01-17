@@ -12,7 +12,9 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets
+
+# from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import env_bin_path
 
 NX, N_STRLEN = 3, 64
@@ -22,7 +24,8 @@ TEST_COORD_VALS = ["bun", "éclair", "sandwich"]
 # VARS_COORDS_SHARE_STRING_DIM = True
 VARS_COORDS_SHARE_STRING_DIM = False
 if VARS_COORDS_SHARE_STRING_DIM:
-    TEST_COORD_VALS[-1] = "Xsandwich"  # makes the max coord strlen same as data one
+    # Fix length so that the max coord strlen will be same as data one
+    TEST_COORD_VALS[-1] = "Xsandwich"
 
 
 # Ensure all tests run with "split attrs" turned on.
@@ -68,8 +71,12 @@ INCLUDE_NUMERIC_AUXCOORD = True
 # INCLUDE_NUMERIC_AUXCOORD = False
 
 
+# DATASET_CLASS = _thread_safe_nc.DatasetWrapper
+DATASET_CLASS = _bytecoding_datasets.EncodedDataset
+
+
 def make_testfile(filepath, chararray, coordarray, encoding_str=None):
-    ds = _thread_safe_nc.DatasetWrapper(filepath, "w")
+    ds = DATASET_CLASS(filepath, "w")
     try:
         ds.createDimension("x", NX)
         ds.createDimension("nstr", N_STRLEN)
@@ -137,8 +144,11 @@ NCDUMP_PATHSTR = str(env_bin_path("ncdump"))
 
 def ncdump(nc_path: str, *args):
     """Call ncdump to print a dump of a file."""
-    call_args = [NCDUMP_PATHSTR, nc_path] + list(*args)
-    subprocess.run(call_args, check=True)
+    call_args = [NCDUMP_PATHSTR, nc_path] + list(args)
+    bytes = subprocess.check_output(call_args)
+    text = bytes.decode("utf-8")
+    print(text)
+    return text
 
 
 def show_result(filepath):

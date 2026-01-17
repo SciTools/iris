@@ -36,7 +36,7 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -50,7 +50,7 @@ from . import logger
 
 # An expected part of the public loader API, but includes thread safety
 #  concerns so is housed in _thread_safe_nc.
-NetCDFDataProxy = _thread_safe_nc.NetCDFDataProxy
+NetCDFDataProxy = _bytecoding_datasets.EncodedNetCDFDataProxy
 
 
 class _WarnComboIgnoringBoundsLoad(
@@ -601,24 +601,26 @@ def _translate_constraints_to_var_callback(constraints):
 
     Notes
     -----
-    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+    For now, ONLY handles NameConstraints with no 'STASH' component.
 
     """
     import iris._constraints
 
     constraints = iris._constraints.list_of_constraints(constraints)
-    result = None
-    if len(constraints) == 1:
-        (constraint,) = constraints
-        if (
-            isinstance(constraint, iris._constraints.NameConstraint)
-            and constraint.STASH == "none"
-        ):
-            # As long as it doesn't use a STASH match, then we can treat it as
-            # a testing against name properties of cf_var.
-            # That's just like testing against name properties of a cube, except that they may not all exist.
-            def inner(cf_datavar):
-                match = True
+    if len(constraints) == 0 or not all(
+        isinstance(constraint, iris._constraints.NameConstraint)
+        and constraint.STASH == "none"
+        for constraint in constraints
+    ):
+        # We can define a var-filtering function to speedup the load, *ONLY* when we
+        #  have some constraints, and all are simple NameConstraints with no STASH.
+        result = None
+    else:
+
+        def inner(cf_datavar):
+            match_any_constraint = False
+            for constraint in constraints:
+                match_this_constraint = True
                 for name in constraint._names:
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
@@ -629,11 +631,14 @@ def _translate_constraints_to_var_callback(constraints):
                             continue
                         actual = getattr(cf_datavar, attr_name, "")
                         if actual != expected:
-                            match = False
+                            match_this_constraint = False
                             break
-                return match
+                if match_this_constraint:
+                    match_any_constraint = True
+                    break
+            return match_any_constraint
 
-            result = inner
+        result = inner
     return result
 
 

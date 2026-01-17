@@ -6,116 +6,123 @@
 
 import numpy as np
 import pytest
-import shapely
+from shapely.geometry import box
 
-from iris.coord_systems import RotatedGeogCS
+from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
-import iris.cube
-from iris.util import mask_cube_from_shapefile
-from iris.warnings import IrisUserWarning
+from iris.cube import Cube
+from iris.util import array_equal, mask_cube_from_shapefile
 
 
-class TestBasicCubeMasking:
-    """Unit tests for mask_cube_from_shapefile function."""
+@pytest.fixture
+def square_polygon():
+    # Create a roughly 3x3 square polygon
+    return box(2.4, 2.4, 6.4, 6.4)
 
-    @pytest.fixture(autouse=True)
-    def _setup(self):
-        basic_data = np.array([[1, 2, 3], [4, 8, 12]])
-        self.basic_cube = iris.cube.Cube(basic_data)
-        coord = DimCoord(
-            np.array([0, 1.0]),
-            standard_name="projection_y_coordinate",
-            bounds=[[0, 0.5], [0.5, 1]],
-            units="1",
+
+@pytest.fixture
+def mock_cube():
+    """Create a mock 9x9 Iris cube for testing."""
+    x_points = np.linspace(1, 9, 9) - 0.5  # Specify cube cell midpoints
+    y_points = np.linspace(1, 9, 9) - 0.5
+    x_coord = DimCoord(
+        x_points,
+        standard_name="longitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+    )
+    y_coord = DimCoord(
+        y_points,
+        standard_name="latitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+    )
+    data = np.ones((len(y_points), len(x_points)))
+    cube = Cube(data, dim_coords_and_dims=[(y_coord, 0), (x_coord, 1)])
+    return cube
+
+
+def test_mask_cube_from_shapefile_inplace(
+    mock_cube,
+):
+    shape = box(0, 0, 10, 10)
+    masked_cube = mask_cube_from_shapefile(mock_cube, shape, in_place=True)
+    assert masked_cube is None
+
+
+def test_mask_cube_from_shapefile_not_inplace(mock_cube):
+    shape = box(0, 0, 10, 10)
+    masked_cube = mask_cube_from_shapefile(mock_cube, shape, in_place=False)
+    assert masked_cube is not None
+
+
+@pytest.mark.parametrize(
+    "minimum_weight, expected_output",
+    [
+        (
+            0.0,
+            np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+            ),
+        ),
+        (
+            0.5,
+            np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+            ),
+        ),
+        (
+            1.0,
+            np.array(
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                ],
+            ),
+        ),
+    ],
+)
+def test_basic_mask_cube_from_shape(
+    mock_cube, square_polygon, minimum_weight, expected_output
+):
+    """Test the create_shape_mask function with different minimum weights."""
+    expected_cube = mock_cube.copy(
+        data=np.ma.array(
+            expected_output, dtype=float, mask=np.logical_not(expected_output)
         )
-        self.basic_cube.add_dim_coord(coord, 0)
-        coord = DimCoord(
-            np.array([0, 1.0, 1.5]),
-            standard_name="projection_x_coordinate",
-            bounds=[[0, 0.5], [0.5, 1], [1, 1.5]],
-            units="1",
-        )
-        self.basic_cube.add_dim_coord(coord, 1)
+    )
+    # Create a mask using the square polygon
+    mask = mask_cube_from_shapefile(
+        cube=mock_cube,
+        shape=square_polygon,
+        minimum_weight=minimum_weight,
+    )
 
-    def test_basic_cube_intersect(self):
-        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
-        masked_cube = mask_cube_from_shapefile(self.basic_cube, shape)
-        assert np.sum(masked_cube.data) == 8, (
-            f"basic cube masking failed test - expected 8 got {np.sum(masked_cube.data)}"
-        )
-
-    def test_basic_cube_intersect_in_place(self):
-        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
-        cube = self.basic_cube.copy()
-        mask_cube_from_shapefile(cube, shape, in_place=True)
-        assert np.sum(cube.data) == 8, (
-            f"basic cube masking failed test - expected 8 got {np.sum(cube.data)}"
-        )
-
-    def test_basic_cube_intersect_low_weight(self):
-        shape = shapely.geometry.box(0.1, 0.6, 1, 1)
-        masked_cube = mask_cube_from_shapefile(
-            self.basic_cube, shape, minimum_weight=0.2
-        )
-        assert np.sum(masked_cube.data) == 12, (
-            f"basic cube masking weighting failed test - expected 12 got {np.sum(masked_cube.data)}"
-        )
-
-    def test_basic_cube_intersect_high_weight(self):
-        shape = shapely.geometry.box(0.1, 0.6, 1, 1)
-        masked_cube = mask_cube_from_shapefile(
-            self.basic_cube, shape, minimum_weight=0.7
-        )
-        assert np.sum(masked_cube.data) == 8, (
-            f"basic cube masking weighting failed test- expected 8 got {np.sum(masked_cube.data)}"
-        )
-
-    def test_cube_list_error(self):
-        cubelist = iris.cube.CubeList([self.basic_cube])
-        shape = shapely.geometry.box(1, 1, 2, 2)
-        with pytest.raises(TypeError, match="CubeList object rather than Cube"):
-            mask_cube_from_shapefile(cubelist, shape)
-
-    def test_non_cube_error(self):
-        fake = None
-        shape = shapely.geometry.box(1, 1, 2, 2)
-        with pytest.raises(TypeError, match="Received non-Cube object"):
-            mask_cube_from_shapefile(fake, shape)
-
-    def test_line_shape_warning(self):
-        shape = shapely.geometry.LineString([(0, 0.75), (2, 0.75)])
-        with pytest.warns(IrisUserWarning, match="invalid type"):
-            masked_cube = mask_cube_from_shapefile(
-                self.basic_cube, shape, minimum_weight=0.1
-            )
-        assert np.sum(masked_cube.data) == 24, (
-            f"basic cube masking against line failed test - expected 24 got {np.sum(masked_cube.data)}"
-        )
-
-    def test_cube_coord_mismatch_warning(self):
-        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
-        cube = self.basic_cube
-        cube.coord("projection_x_coordinate").points = [180, 360, 540]
-        cube.coord("projection_x_coordinate").coord_system = RotatedGeogCS(30, 30)
-        with pytest.warns(IrisUserWarning, match="masking"):
-            mask_cube_from_shapefile(
-                cube,
-                shape,
-            )
-
-    def test_missing_xy_coord(self):
-        shape = shapely.geometry.box(0.6, 0.6, 0.9, 0.9)
-        cube = self.basic_cube
-        cube.remove_coord("projection_x_coordinate")
-        with pytest.raises(ValueError, match="1d xy coordinates"):
-            mask_cube_from_shapefile(cube, shape)
-
-    def test_shape_not_shape(self):
-        shape = [5, 6, 7, 8]  # random array
-        with pytest.raises(TypeError, match="valid Shapely"):
-            mask_cube_from_shapefile(self.basic_cube, shape)
-
-    def test_shape_invalid(self):
-        shape = shapely.box(0, 1, 1, 1)
-        with pytest.raises(TypeError, match="valid Shapely"):
-            mask_cube_from_shapefile(self.basic_cube, shape)
+    assert array_equal(mask.data, expected_cube.data)

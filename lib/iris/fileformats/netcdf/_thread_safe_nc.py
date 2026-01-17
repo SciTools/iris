@@ -10,6 +10,7 @@ Intention is that no other Iris module should import the netCDF4 module.
 
 from abc import ABC
 from threading import Lock
+from time import sleep
 import typing
 
 import netCDF4
@@ -158,6 +159,9 @@ class GroupWrapper(_ThreadSafeWrapper):
     CONTAINED_CLASS = netCDF4.Group
     # Note: will also accept a whole Dataset object, but that is OK.
     _DUCKTYPE_CHECK_PROPERTIES = ["createVariable"]
+    # Class to use when creating variable wrappers (default=VariableWrapper).
+    # - needed to support _byte_encoded_data.EncodedDataset.
+    VAR_WRAPPER_CLS = VariableWrapper
 
     # All Group API that returns Dimension(s) is wrapped to instead return
     #  DimensionWrapper(s).
@@ -202,7 +206,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = self._contained_instance.variables
-        return {k: VariableWrapper.from_existing(v) for k, v in variables_.items()}
+        return {k: self.VAR_WRAPPER_CLS.from_existing(v) for k, v in variables_.items()}
 
     def createVariable(self, *args, **kwargs) -> VariableWrapper:
         """Call createVariable() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
@@ -215,7 +219,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_variable = self._contained_instance.createVariable(*args, **kwargs)
-        return VariableWrapper.from_existing(new_variable)
+        return self.VAR_WRAPPER_CLS.from_existing(new_variable)
 
     def get_variables_by_attributes(
         self, *args, **kwargs
@@ -233,7 +237,7 @@ class GroupWrapper(_ThreadSafeWrapper):
             variables_ = list(
                 self._contained_instance.get_variables_by_attributes(*args, **kwargs)
             )
-        return [VariableWrapper.from_existing(v) for v in variables_]
+        return [self.VAR_WRAPPER_CLS.from_existing(v) for v in variables_]
 
     # All Group API that returns Group(s) is wrapped to instead return
     #  GroupWrapper(s).
@@ -251,7 +255,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             groups_ = self._contained_instance.groups
-        return {k: GroupWrapper.from_existing(v) for k, v in groups_.items()}
+        return {k: self.__class__.from_existing(v) for k, v in groups_.items()}
 
     @property
     def parent(self):
@@ -267,7 +271,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             parent_ = self._contained_instance.parent
-        return GroupWrapper.from_existing(parent_)
+        return self.__class__.from_existing(parent_)
 
     def createGroup(self, *args, **kwargs):
         """Call createGroup() from netCDF4.Group/Dataset.
@@ -280,7 +284,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_group = self._contained_instance.createGroup(*args, **kwargs)
-        return GroupWrapper.from_existing(new_group)
+        return self.__class__.from_existing(new_group)
 
 
 class DatasetWrapper(GroupWrapper):
@@ -311,6 +315,7 @@ class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
     __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
+    DATASET_CLASS = netCDF4.Dataset
 
     def __init__(self, shape, dtype, path, variable_name, fill_value):
         self.shape = shape
@@ -333,7 +338,7 @@ class NetCDFDataProxy:
         # netCDF4 library, presumably because __getitem__ gets called so many
         # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
         with _GLOBAL_NETCDF4_LOCK:
-            dataset = netCDF4.Dataset(self.path)
+            dataset = self.DATASET_CLASS(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
                 # Get the NetCDF variable data and slice.
@@ -370,6 +375,8 @@ class NetCDFWriteProxy:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
+    DATASET_CLASS = netCDF4.Dataset
+
     def __init__(self, filepath, cf_var, file_write_lock):
         self.path = filepath
         self.varname = cf_var.name
@@ -386,7 +393,24 @@ class NetCDFWriteProxy:
         with _GLOBAL_NETCDF4_LOCK:
             dataset = None
             try:
-                dataset = netCDF4.Dataset(self.path, "r+")
+                # Even when fully serialised - no parallelism - HDF still
+                #  occasionally fails to acquire the file. This is despite all
+                #  Python locks being available at expected moments, and the
+                #  file reporting as closed. During testing, 2nd retry always
+                #  succeeded. This is likely caused by HDF-level locking
+                #  running on a different timescale to Python-level locking -
+                #  i.e. sometimes Python has released its locks but HDF still
+                #  has not. Thought to be filesystem-dependent; further
+                #  investigation needed.
+                for attempt in range(5):
+                    try:
+                        dataset = self.DATASET_CLASS(self.path, "r+")
+                        break
+                    except OSError:
+                        if attempt < 4:
+                            sleep(0.1)
+                        else:
+                            raise
                 var = dataset.variables[self.varname]
                 var[keys] = array_data
             finally:

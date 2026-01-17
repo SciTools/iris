@@ -14,10 +14,10 @@ dependencies:
   - cartopy >=0.21
   - cf-units >=3.1
   - cftime >=1.5
-  - dask-core >=2025.1.0  # github.com/SciTools/iris/issues/6264
+  - dask-core >=2025.1.0,<2025.10.0  # https://github.com/SciTools/iris/issues/6776
   - libnetcdf !=4.9.1
   - matplotlib-base >=3.5, !=3.9.1
-  - netcdf4
+  - netcdf4<1.7.3  # https://github.com/SciTools/iris/issues/6777
   - numpy >=1.24, !=1.24.3
   - python-xxhash
   - pyproj
@@ -34,6 +34,8 @@ dependencies:
   - pandas
   - pip
   - python-stratify
+  - rasterio
+  - affine
 
 # Test dependencies.
   - asv_runner

@@ -14,6 +14,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.loading import _CONCRETE_DERIVED_LOADING
 import iris.warnings
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
@@ -158,8 +159,12 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                 # match the grid of this cube.
                 src, cube = _ensure_aligned(regrid_cache, src, cube)
                 if src is not None:
+                    if _CONCRETE_DERIVED_LOADING:
+                        data = src.data
+                    else:
+                        data = src.core_data()
                     new_coord = iris.coords.AuxCoord(
-                        src.core_data(),
+                        data,
                         src.standard_name,
                         src.long_name,
                         src.var_name,

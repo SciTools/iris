@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris general file loading mechanism."""
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 import itertools
 import threading
@@ -13,6 +14,55 @@ import warnings
 
 from iris.common import CFVariableMixin
 from iris.warnings import IrisLoadWarning
+
+
+class _ConcreteDerivedLoading(threading.local):
+    """An object to control whether factory references are loaded with lazy or real data.
+
+    Use via the run-time switch :const:`~iris.loading._CONCRETE_DERIVED_LOADING`.
+    Use :meth:`context` to temporarily activate or assign the property
+    `load_real_references` to True.
+
+    Notes
+    -----
+    This is intended as a temporary fix for a problem with PP loading causing
+    performance issues during loading (see https://github.com/SciTools/iris/issues/6755)
+    This is expected to be either removed or renamed in a future version.
+    """
+
+    def __init__(self):
+        self.load_real_references = False
+
+    def __bool__(self):
+        return self.load_real_references
+
+    @contextmanager
+    def context(self, load_real=True):
+        """Control whether references are loaded lazily.
+
+        Defines a context block within which the setting is applied.
+
+        Parameters
+        ----------
+        load_real : bool, default True
+            Sets whether references are loaded as concrete data, within the context.
+
+        Example
+        -------
+        >>> with _CONCRETE_DERIVED_LOADING.context(load_real=True):
+        ...     <code>
+        """
+        try:
+            old_value = self.load_real_references
+            self.load_real_references = load_real
+            yield
+        finally:
+            self.load_real_references = old_value
+
+
+# TODO: this is a temporary fix, either remove this when a permanent fix exists
+#  or else make this public if this is deemed necessary.
+_CONCRETE_DERIVED_LOADING = _ConcreteDerivedLoading()
 
 
 def _generate_cubes(uris, callback, constraints):

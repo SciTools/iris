@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 import iris
 import iris.quickplot as qplt
-from iris.util import mask_cube_from_shapefile
+from iris.util import mask_cube_from_shape
 
 country_shp_reader = shpreader.Reader(
     shpreader.natural_earth(
@@ -19,7 +19,7 @@ brazil_shp = [
 ][0]
 
 cube = iris.load_cube(iris.sample_data_path("air_temp.pp"))
-brazil_cube = mask_cube_from_shapefile(cube, brazil_shp)
+brazil_cube = mask_cube_from_shape(cube=cube, shape=brazil_shp)
 
 qplt.pcolormesh(brazil_cube)
 plt.show()
