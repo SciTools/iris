@@ -183,6 +183,7 @@ def tests(session: nox.sessions.Session):
     session.env.update(ENV)
     run_args = [
         "pytest",
+        "-v",
         "-n",
         "auto",
         "lib/iris/tests",
