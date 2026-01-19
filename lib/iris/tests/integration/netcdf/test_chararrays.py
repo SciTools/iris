@@ -218,6 +218,7 @@ def test_load_encodings(encoding, save_dir):
     # small change
     print(f"\n=========\nTesting encoding: {encoding}")
     filepath = save_dir / f"tmp_load_{str(encoding)}.nc"
+    # Actual content is always either utf-8 or utf-32
     do_as = encoding
     if encoding != "utf-32":
         do_as = "utf-8"
@@ -228,7 +229,14 @@ def test_load_encodings(encoding, save_dir):
         TEST_COORD_VALS, N_STRLEN, encoding=do_as
     )
     make_testfile(filepath, TEST_CHARARRAY, TEST_COORDARRAY, encoding_str=encoding)
-    show_result(filepath)
+    if encoding == "ascii":
+        # If explicitly labelled as ascii, 'utf-8' data will fail to load back ...
+        msg = r"Character data .* could not be decoded with the 'ascii' encoding\."
+        with pytest.raises(ValueError, match=msg):
+            show_result(filepath)
+    else:
+        # ... otherwise, utf-8 data loads even without a label, as 'utf-8' default used
+        show_result(filepath)
 
 
 @pytest.mark.parametrize("encoding", test_encodings)
@@ -243,10 +251,14 @@ def test_save_encodings(encoding, save_dir):
     )
     print(cube)
     filepath = save_dir / f"tmp_save_{str(encoding)}.nc"
-    if encoding == "ascii":
+    if encoding in ("ascii", None):
+        msg = (
+            "String data written to netcdf character variable 'v' "
+            "could not be represented in encoding 'ascii'"
+        )
         with pytest.raises(
-            UnicodeEncodeError,
-            match="'ascii' codec can't encode character.*not in range",
+            ValueError,
+            match=msg,
         ):
             iris.save(cube, filepath)
     else:

@@ -1713,6 +1713,12 @@ class Saver:
         if element.units.calendar:
             _setncattr(cf_var, "calendar", str(element.units.calendar))
 
+        # Most attributes are dealt with later.
+        # But _Encoding need to be defined before we can write to a character variable
+        if element.dtype.kind in "SU" and "_Encoding" in element.attributes:
+            encoding = element.attributes.pop("_Encoding")
+            _setncattr(cf_var, "_Encoding", encoding)
+
         if not isinstance(element, Cube):
             # Add any other custom coordinate attributes.
             # N.B. not Cube, which has specific handling in  _create_cf_data_variable
