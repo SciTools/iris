@@ -14,6 +14,7 @@ from iris.fileformats.netcdf._bytecoding_datasets import (
     EncodedDataset,
 )
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
+from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
 encoding_options = [None, "ascii", "utf-8", "utf-32"]
 
@@ -194,16 +195,28 @@ class TestWriteStrings:
         expected_bytes = make_bytearray(test_data, strlen)
         check_raw_content(path, "vyxn", expected_bytes)
 
-    def test_write_encoding_failure(self, tempdir):
-        path = tempdir / "test_writestrings_encoding_failure.nc"
-        ds = make_encoded_dataset(path, strlen=5, encoding="ascii")
+    @pytest.mark.parametrize("encoding", [None, "ascii"])
+    def test_write_encoding_failure(self, tempdir, encoding):
+        path = tempdir / f"test_writestrings_encoding_{encoding}_fail.nc"
+        ds = make_encoded_dataset(path, strlen=5, encoding=encoding)
         v = ds.variables["vxs"]
+        encoding_name = encoding
+        if encoding_name == None:
+            encoding_name = "ascii"
         msg = (
             "String data written to netcdf character variable 'vxs'.*"
-            " could not be represented in encoding 'ascii'. "
+            f" could not be represented in encoding '{encoding_name}'. "
         )
         with pytest.raises(ValueError, match=msg):
             v[:] = samples_3_nonascii
+
+    def test_write_badencoding_ignore(self, tempdir):
+        path = tempdir / "test_writestrings_badencoding_ignore.nc"
+        ds = make_encoded_dataset(path, strlen=5, encoding="unknown")
+        v = ds.variables["vxs"]
+        msg = r"Ignoring unknown encoding for variable 'vxs': _Encoding = 'unknown'\."
+        with pytest.warns(IrisCfSaveWarning, match=msg):
+            v[:] = samples_3_ascii  # will work OK
 
     def test_overlength(self, tempdir):
         # Check expected behaviour with over-length data
@@ -404,3 +417,18 @@ class TestRead:
                 result = v[:]  # this ought to be ok!
 
             assert np.all(result == test_utf8_bytes)
+
+    def test_read_badencoding_ignore(self, tempdir):
+        path = tempdir / f"test_read_badencoding_ignore.nc"
+        strlen = 10
+        ds = make_encoded_dataset(path, strlen=strlen, encoding="unknown")
+        v = ds.variables["vxs"]
+        test_utf8_bytes = make_bytearray(
+            samples_3_nonascii, bytewidth=strlen, encoding="utf-8"
+        )
+        v[:] = test_utf8_bytes
+
+        msg = r"Ignoring unknown encoding for variable 'vxs': _Encoding = 'unknown'\."
+        with pytest.warns(IrisCfLoadWarning, match=msg):
+            # raises warning but succeeds, due to default read encoding of 'utf-8'
+            v[:]

@@ -48,6 +48,8 @@ import warnings
 import numpy as np
 
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper, VariableWrapper
+import iris.warnings
+from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
 
 def decode_bytesarray_to_stringarray(
@@ -197,7 +199,9 @@ class EncodedVariable(VariableWrapper):
             # N.B. typically, write encoding default is "ascii" --> fails bad content
             if data.dtype.kind == "U":
                 try:
-                    encoding = self._get_encoding() or DEFAULT_WRITE_ENCODING
+                    encoding = (
+                        self._get_encoding(writing=True) or DEFAULT_WRITE_ENCODING
+                    )
                     strlen = self._get_byte_width()
                     data = encode_stringarray_as_bytearray(data, encoding, strlen)
                 except UnicodeEncodeError as err:
@@ -214,7 +218,7 @@ class EncodedVariable(VariableWrapper):
     def _is_chardata(self):
         return np.issubdtype(self.dtype, np.bytes_)
 
-    def _get_encoding(self) -> str | None:
+    def _get_encoding(self, writing=False) -> str | None:
         """Get the byte encoding defined for this variable (or None)."""
         result = getattr(self, "_Encoding", None)
         if result is not None:
@@ -225,9 +229,14 @@ class EncodedVariable(VariableWrapper):
                 # For example, _Encoding = "ascii", with non-ascii content.
             except LookupError:
                 # Unrecognised encoding name : handle this as just a warning
-                msg = f"Unknown encoding for variable {self.name!r}: {result!r}"
-                warnings.warn(msg, UserWarning)
-
+                msg = (
+                    f"Ignoring unknown encoding for variable {self.name!r}: "
+                    f"_Encoding = {result!r}."
+                )
+                warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
+                warnings.warn(msg, warntype)
+                # Proceed as if there is no specified encoding
+                result = None
         return result
 
     def _get_byte_width(self) -> int | None:
