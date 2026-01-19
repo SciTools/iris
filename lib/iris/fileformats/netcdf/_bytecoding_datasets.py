@@ -251,7 +251,7 @@ class EncodedVariable(VariableWrapper):
                     f"_Encoding = {result!r}."
                 )
                 warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
-                warnings.warn(msg, warntype)
+                warnings.warn(msg, category=warntype)
                 # Proceed as if there is no specified encoding
                 result = None
         return result
