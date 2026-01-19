@@ -189,7 +189,7 @@ def save_dir(tmp_path_factory):
 
 # TODO: the tests don't test things properly yet, they just exercise the code and print
 #  things for manual debugging.
-tsts = (
+test_encodings = (
     None,
     "ascii",
     "utf-8",
@@ -201,8 +201,13 @@ tsts = (
 # tsts = ("utf-8", "ascii", "utf-8")
 
 
-@pytest.mark.parametrize("encoding", tsts)
+@pytest.mark.parametrize("encoding", test_encodings)
 def test_load_encodings(encoding, save_dir):
+    """Load exercise.
+
+    Make a testfile with utf-8 content, variously labelled.
+    Load with Iris + show result (error or cubes).
+    """
     # small change
     print(f"\n=========\nTesting encoding: {encoding}")
     filepath = save_dir / f"tmp_load_{str(encoding)}.nc"
@@ -219,8 +224,13 @@ def test_load_encodings(encoding, save_dir):
     show_result(filepath)
 
 
-@pytest.mark.parametrize("encoding", tsts)
+@pytest.mark.parametrize("encoding", test_encodings)
 def test_save_encodings(encoding, save_dir):
+    """Save exercise.
+
+    Make test-cube with non-ascii content, and various '_Encoding' labels.
+    Save with Iris + show result (error or ncdump).
+    """
     cube = make_testcube(
         dataarray=TEST_STRINGS, coordarray=TEST_COORD_VALS, encoding_str=encoding
     )
