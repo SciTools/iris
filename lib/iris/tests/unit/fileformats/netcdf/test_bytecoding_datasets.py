@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+from iris.exceptions import TranslationError
 from iris.fileformats.netcdf._bytecoding_datasets import (
     DECODE_TO_STRINGS_ON_READ,
     EncodedDataset,
@@ -224,9 +225,9 @@ class TestWriteStrings:
         strlen = 5
         ds = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
         v = ds.variables["vxs"]
-        v[:] = ["1", "123456789", "two"]
-        expected_bytes = make_bytearray(["1", "12345", "two"], strlen)
-        check_raw_content(path, "vxs", expected_bytes)
+        msg = r"String .* written to netcdf exceeds string dimension .* : [0-9]* > 5\."
+        with pytest.raises(TranslationError, match=msg):
+            v[:] = ["1", "123456789", "two"]
 
     def test_overlength_splitcoding(self, tempdir):
         # Check expected behaviour when non-ascii multibyte coding gets truncated
@@ -234,7 +235,18 @@ class TestWriteStrings:
         strlen = 5
         ds = make_encoded_dataset(path, strlen=strlen, encoding="utf-8")
         v = ds.variables["vxs"]
-        v[:] = ["1", "1234ü", "two"]
+        # Note: we must do the assignment as a single byte array, to avoid hitting the
+        #  safety check for this exact problem : see previous check.
+        byte_arrays = [
+            string.encode("utf-8")[:strlen] for string in ("1", "1234ü", "two")
+        ]
+        nd_bytes_array = np.array(
+            [
+                [bytes[i : i + 1] if i < len(bytes) else b"\0" for i in range(strlen)]
+                for bytes in byte_arrays
+            ]
+        )
+        v[:] = nd_bytes_array
         # This creates a problem: it won't read back
         msg = (
             "Character data in variable 'vxs' could not be decoded "

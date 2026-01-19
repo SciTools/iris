@@ -146,8 +146,8 @@ def encode_stringarray_as_bytearray(
             from iris.exceptions import TranslationError
 
             msg = (
-                f"Non-ascii string {string!r} written to netcdf exceeds string "
-                f"dimension : {n_bytes} > {string_dimension_length}."
+                f"String {string!r} written to netcdf exceeds string dimension after "
+                f"encoding : {n_bytes} > {string_dimension_length}."
             )
             raise TranslationError(msg)
 
