@@ -946,7 +946,7 @@ def time_averaging(cube, field):
         cube.attributes["processing"] = averaging_attributes
 
 
-def run(field, table, handle_metadata_errors=True):
+def run(field, handle_metadata_errors=True):
     """Convert a NIMROD field to an Iris cube.
 
     Parameters
@@ -982,17 +982,17 @@ def run(field, table, handle_metadata_errors=True):
     # vertical
     vertical_coord(cube, field)
 
-    match table:
+    match field.table:
         case "Table_1":
             table_1_attributes(cube, field)
         case "Table_2":
-            table_2_attributes(cube, field)
             soil_type_coord(cube, field)
             probability_coord(cube, field, handle_metadata_errors)
+            table_2_attributes(cube, field)
 
     # add other generic stuff, if present
+    ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)
-    ensemble_member(cube, field)
 
     return cube

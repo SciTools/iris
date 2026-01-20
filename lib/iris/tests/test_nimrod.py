@@ -90,7 +90,6 @@ class TestLoad:
             ) as infile:
                 iris.fileformats.nimrod_load_rules.run(
                     iris.fileformats.nimrod.NimrodField(infile),
-                    "Table_2",
                     handle_metadata_errors=False,
                 )
 
