@@ -19,6 +19,8 @@
 
 """Config for sphinx."""
 
+import ast
+import contextlib
 import datetime
 from importlib.metadata import version as get_version
 from inspect import getsource
@@ -457,6 +459,15 @@ numfig_format = {
 # Source: https://github.com/bjlittle/geovista/blob/main/docs/src/conf.py
 
 
+def _bool_eval(*, arg: str | bool) -> bool:
+    """Sanitise to a boolean only configuration."""
+    if isinstance(arg, str):
+        with contextlib.suppress(TypeError):
+            arg = ast.literal_eval(arg.capitalize())
+
+    return bool(arg)
+
+
 def generate_carousel(
     app: Sphinx,
     fname: Path,
@@ -548,7 +559,9 @@ def gallery_carousel(
     with fname.open("w"):
         pass
 
-    generate_carousel(app, fname)
+    if _bool_eval(arg=app.builder.config.plot_gallery):
+        # only generate the carousel if we have a gallery
+        generate_carousel(app, fname)
 
 
 # ============================================================================
