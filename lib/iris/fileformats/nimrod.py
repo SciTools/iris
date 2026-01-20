@@ -271,6 +271,7 @@ class NimrodField:
         self._read_header_subset(infile, general_header_float32s, np.float32)
         # skip unnamed floats
         infile.seek(4 * (28 - len(general_header_float32s)), os.SEEK_CUR)
+
         # data specific header (float32) elements 60-104 (bytes 175-354)
         self._read_header_subset(infile, data_header_float32s, np.float32)
         # skip unnamed floats
@@ -282,7 +283,9 @@ class NimrodField:
         self.title = _read_chars(infile, 24)
 
         # determine which of Table 1 or Table 2 is being used
-        threshold_set = self.threshold_value != -32767
+        threshold_set = (
+            self.threshold_value is not None
+        )  # == -32767.0 or self.threshold_value >= 0
         if threshold_set:
             table = "Table_2"
             data_header_int16s = table_2_data_header_int16s
@@ -355,7 +358,7 @@ class NimrodField:
         self.data = self.data.reshape(self.num_rows, self.num_cols)
 
 
-def load_cubes(filenames, table, callback=None):
+def load_cubes(filenames, callback=None):
     """Load cubes from a list of NIMROD filenames.
 
     Parameters
@@ -383,7 +386,7 @@ def load_cubes(filenames, table, callback=None):
                         # End of file. Move on to the next file.
                         break
 
-                    cube = iris.fileformats.nimrod_load_rules.run(field, table)
+                    cube = iris.fileformats.nimrod_load_rules.run(field)
 
                     # Were we given a callback?
                     if callback is not None:
