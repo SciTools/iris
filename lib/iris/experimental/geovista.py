@@ -64,64 +64,79 @@ def cube_to_polydata(cube, **kwargs):
         cube_w_time = load_cube(sample_data_path("A1B_north_america.nc"))
         cube_mesh = load_cube(sample_data_path("mesh_C4_synthetic_float.nc"))
 
-    >>> from iris.experimental.geovista import cube_to_polydata
+    .. doctest::
+        :skipif: gv is None
+
+        >>> from iris.experimental.geovista import cube_to_polydata
 
     Converting a standard 2-dimensional :class:`~iris.cube.Cube` with
     1-dimensional coordinates:
 
-    >>> print(cube.summary(shorten=True))
-    air_temperature / (K)               (latitude: 73; longitude: 96)
-    >>> print(cube_to_polydata(cube))
-    PolyData (...
-      N Cells:    7008
-      N Points:   7178
-      N Strips:   0
-      X Bounds:   -9.992e-01, 9.992e-01
-      Y Bounds:   -9.992e-01, 9.992e-01
-      Z Bounds:   -1.000e+00, 1.000e+00
-      N Arrays:   4
+    .. doctest::
+        :skipif: gv is None
+
+        >>> print(cube.summary(shorten=True))
+        air_temperature / (K)               (latitude: 73; longitude: 96)
+        >>> print(cube_to_polydata(cube))
+        PolyData (...
+        N Cells:    7008
+        N Points:   7178
+        N Strips:   0
+        X Bounds:   -9.992e-01, 9.992e-01
+        Y Bounds:   -9.992e-01, 9.992e-01
+        Z Bounds:   -1.000e+00, 1.000e+00
+        N Arrays:   4
 
     Configure the conversion by passing additional keyword arguments:
 
-    >>> print(cube_to_polydata(cube, radius=2))
-    PolyData (...
-      N Cells:    7008
-      N Points:   7178
-      N Strips:   0
-      X Bounds:   -1.998e+00, 1.998e+00
-      Y Bounds:   -1.998e+00, 1.998e+00
-      Z Bounds:   -2.000e+00, 2.000e+00
-      N Arrays:   4
+    .. doctest::
+        :skipif: gv is None
+
+        >>> print(cube_to_polydata(cube, radius=2))
+        PolyData (...
+        N Cells:    7008
+        N Points:   7178
+        N Strips:   0
+        X Bounds:   -1.998e+00, 1.998e+00
+        Y Bounds:   -1.998e+00, 1.998e+00
+        Z Bounds:   -2.000e+00, 2.000e+00
+        N Arrays:   4
 
     Converting a :class:`~iris.cube.Cube` that has a
     :attr:`~iris.cube.Cube.mesh` describing its horizontal space:
 
-    >>> print(cube_mesh.summary(shorten=True))
-    synthetic / (1)                     (-- : 96)
-    >>> print(cube_to_polydata(cube_mesh))
-    PolyData (...
-      N Cells:    96
-      N Points:   98
-      N Strips:   0
-      X Bounds:   -1.000e+00, 1.000e+00
-      Y Bounds:   -1.000e+00, 1.000e+00
-      Z Bounds:   -1.000e+00, 1.000e+00
-      N Arrays:   4
+    .. doctest::
+        :skipif: gv is None
+
+        >>> print(cube_mesh.summary(shorten=True))
+        synthetic / (1)                     (-- : 96)
+        >>> print(cube_to_polydata(cube_mesh))
+        PolyData (...
+        N Cells:    96
+        N Points:   98
+        N Strips:   0
+        X Bounds:   -1.000e+00, 1.000e+00
+        Y Bounds:   -1.000e+00, 1.000e+00
+        Z Bounds:   -1.000e+00, 1.000e+00
+        N Arrays:   4
 
     Remember to reduce the dimensionality of your :class:`~iris.cube.Cube` to
     just be the horizontal space:
 
-    >>> print(cube_w_time.summary(shorten=True))
-    air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
-    >>> print(cube_to_polydata(cube_w_time[0, :, :]))
-    PolyData (...
-      N Cells:    1813
-      N Points:   1900
-      N Strips:   0
-      X Bounds:   -6.961e-01, 6.961e-01
-      Y Bounds:   -9.686e-01, -3.411e-01
-      Z Bounds:   2.483e-01, 8.714e-01
-      N Arrays:   4
+    .. doctest::
+        :skipif: gv is None
+
+        >>> print(cube_w_time.summary(shorten=True))
+        air_temperature / (K)               (time: 240; latitude: 37; longitude: 49)
+        >>> print(cube_to_polydata(cube_w_time[0, :, :]))
+        PolyData (...
+        N Cells:    1813
+        N Points:   1900
+        N Strips:   0
+        X Bounds:   -6.961e-01, 6.961e-01
+        Y Bounds:   -9.686e-01, -3.411e-01
+        Z Bounds:   2.483e-01, 8.714e-01
+        N Arrays:   4
 
     """
     if cube.mesh:
@@ -202,83 +217,6 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
     ValueError
         If `polydata` and the :attr:`~iris.cube.Cube.mesh` on `cube` do not
         have the same shape.
-
-    Examples
-    --------
-    .. testsetup::
-
-        from iris import load_cube, sample_data_path
-        from iris.coords import AuxCoord
-        from iris.cube import CubeList
-
-        file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-        cube_w_mesh = load_cube(file_path)
-
-        level_cubes = CubeList()
-        for height_level in range(72):
-            height_coord = AuxCoord([height_level], standard_name="height")
-            level_cube = cube_w_mesh.copy()
-            level_cube.add_aux_coord(height_coord)
-            level_cubes.append(level_cube)
-
-        cube_w_mesh = level_cubes.merge_cube()
-        other_cube_w_mesh = cube_w_mesh[:20, :]
-
-    The parameters of :func:`extract_unstructured_region` have been designed with
-    flexibility and reuse in mind. This is demonstrated below.
-
-    >>> from geovista.geodesic import BBox
-    >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
-    >>> print(cube_w_mesh.shape)
-    (72, 96)
-    >>> # The mesh dimension represents the horizontal space of the cube.
-    >>> print(cube_w_mesh.shape[cube_w_mesh.mesh_dim()])
-    96
-    >>> cube_polydata = cube_to_polydata(cube_w_mesh[0, :])
-    >>> extracted_cube = extract_unstructured_region(
-    ...     cube=cube_w_mesh,
-    ...     polydata=cube_polydata,
-    ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
-    ... )
-    >>> print(extracted_cube.shape)
-    (72, 11)
-
-    Now reuse the same `cube` and `polydata` to extract a different region:
-
-    >>> new_region = BBox(lons=[0, 35, 35, 0], lats=[-25, -25, 45, 45])
-    >>> extracted_cube = extract_unstructured_region(
-    ...     cube=cube_w_mesh,
-    ...     polydata=cube_polydata,
-    ...     region=new_region,
-    ... )
-    >>> print(extracted_cube.shape)
-    (72, 6)
-
-    Now apply the same region extraction to a different `cube` that has the
-    same horizontal shape:
-
-    >>> print(other_cube_w_mesh.shape)
-    (20, 96)
-    >>> extracted_cube = extract_unstructured_region(
-    ...     cube=other_cube_w_mesh,
-    ...     polydata=cube_polydata,
-    ...     region=new_region,
-    ... )
-    >>> print(extracted_cube.shape)
-    (20, 6)
-
-    Arbitrary keywords can be passed down to
-    :meth:`geovista.geodesic.BBox.enclosed` (``outside`` in this example):
-
-    >>> extracted_cube = extract_unstructured_region(
-    ...     cube=other_cube_w_mesh,
-    ...     polydata=cube_polydata,
-    ...     region=new_region,
-    ...     outside=True,
-    ... )
-    >>> print(extracted_cube.shape)
-    (20, 90)
-
     """
     if cube.mesh:
         # Find what dimension the mesh is in on the cube
@@ -333,3 +271,111 @@ def extract_unstructured_region(cube, polydata, region, **kwargs):
         raise ValueError("Cube must have a mesh")
 
     return region_cube
+
+
+# dynamic doc string for above:
+import platform  # noqa: I001
+
+if platform.python_version_tuple() >= ("3", "14", "0"):
+    extract_unstructured_region.__doc__ = (
+        (extract_unstructured_region.__doc__ or "")
+        + """
+Notes
+-----
+This functionality is not available in Python 3.14
+    """
+    )
+else:
+    extract_unstructured_region.__doc__ = (
+        (extract_unstructured_region.__doc__ or "")
+        + """
+Examples
+--------
+.. testsetup::
+
+    from iris import load_cube, sample_data_path
+    from iris.coords import AuxCoord
+    from iris.cube import CubeList
+
+    file_path = sample_data_path("mesh_C4_synthetic_float.nc")
+    cube_w_mesh = load_cube(file_path)
+
+    level_cubes = CubeList()
+    for height_level in range(72):
+        height_coord = AuxCoord([height_level], standard_name="height")
+        level_cube = cube_w_mesh.copy()
+        level_cube.add_aux_coord(height_coord)
+        level_cubes.append(level_cube)
+
+    cube_w_mesh = level_cubes.merge_cube()
+    other_cube_w_mesh = cube_w_mesh[:20, :]
+
+The parameters of :func:`extract_unstructured_region` have been designed with
+flexibility and reuse in mind. This is demonstrated below.
+
+.. doctest::
+    :skipif: gv is None
+
+    >>> from geovista.geodesic import BBox
+    >>> from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
+    >>> print(cube_w_mesh.shape)
+    (72, 96)
+    >>> # The mesh dimension represents the horizontal space of the cube.
+    >>> print(cube_w_mesh.shape[cube_w_mesh.mesh_dim()])
+    96
+    >>> cube_polydata = cube_to_polydata(cube_w_mesh[0, :])
+    >>> extracted_cube = extract_unstructured_region(
+    ...     cube=cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=BBox(lons=[0, 70, 70, 0], lats=[-25, -25, 45, 45]),
+    ... )
+    >>> print(extracted_cube.shape)
+    (72, 11)
+
+Now reuse the same `cube` and `polydata` to extract a different region:
+
+.. doctest::
+    :skipif: gv is None
+
+    >>> new_region = BBox(lons=[0, 35, 35, 0], lats=[-25, -25, 45, 45])
+    >>> extracted_cube = extract_unstructured_region(
+    ...     cube=cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ... )
+    >>> print(extracted_cube.shape)
+    (72, 6)
+
+Now apply the same region extraction to a different `cube` that has the
+same horizontal shape:
+
+.. doctest::
+    :skipif: gv is None
+
+    >>> print(other_cube_w_mesh.shape)
+    (20, 96)
+    >>> extracted_cube = extract_unstructured_region(
+    ...     cube=other_cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ... )
+    >>> print(extracted_cube.shape)
+    (20, 6)
+
+Arbitrary keywords can be passed down to
+:meth:`geovista.geodesic.BBox.enclosed` (``outside`` in this example):
+
+.. doctest::
+    :skipif: gv is None
+
+    >>> extracted_cube = extract_unstructured_region(
+    ...     cube=other_cube_w_mesh,
+    ...     polydata=cube_polydata,
+    ...     region=new_region,
+    ...     outside=True,
+    ... )
+    >>> print(extracted_cube.shape)
+    (20, 90)
+
+    """
+    )
