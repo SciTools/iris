@@ -42,6 +42,7 @@ See:
 
 import codecs
 import contextlib
+import dataclasses
 import threading
 import warnings
 
@@ -80,55 +81,6 @@ def decode_bytesarray_to_stringarray(
     return result
 
 
-#
-# TODO: remove?
-# this older version is "overly flexible", less efficient and not needed here.
-#
-def flexi_encode_stringarray_as_bytearray(
-    data: np.ndarray, encoding=None, string_dimension_length: int | None = None
-) -> np.ndarray:
-    """Encode strings as bytearray.
-
-    Note: if 'string_dimension_length' is not given (None), it is set to the longest
-    encoded bytes element, **OR** the dtype size, if that is greater.
-    If 'string_dimension_length' is specified, the last array
-    dimension is set to this and content strings are truncated or extended as required.
-    """
-    if np.ma.isMaskedArray(data):
-        # netCDF4-python sees zeros as "missing" -- we don't need or want that
-        data = data.data
-    element_shape = data.shape
-    # Encode all the strings + see which is longest
-    max_length = 1  # this is a MINIMUM - i.e. not zero!
-    data_elements = np.zeros(element_shape, dtype=object)
-    for index in np.ndindex(element_shape):
-        data_element = data[index].encode(encoding=encoding)
-        element_length = len(data_element)
-        data_elements[index] = data_element
-        if element_length > max_length:
-            max_length = element_length
-
-    if string_dimension_length is None:
-        # If the string length was not specified, it is the maximum encoded length
-        # (n-bytes), **or** the dtype string-length, if greater.
-        string_dimension_length = max_length
-        array_string_length = int(str(data.dtype)[2:])  # Yuck. No better public way?
-        if array_string_length > string_dimension_length:
-            string_dimension_length = array_string_length
-
-    # We maybe *already* encoded all the strings above, but stored them in an
-    #  object-array as we didn't yet know the fixed byte-length to convert to.
-    # Now convert to a fixed-width byte array with an extra string-length dimension
-    result = np.zeros(element_shape + (string_dimension_length,), dtype="S1")
-    right_pad = b"\0" * string_dimension_length
-    for index in np.ndindex(element_shape):
-        bytes = data_elements[index]
-        bytes = (bytes + right_pad)[:string_dimension_length]
-        result[index] = [bytes[i : i + 1] for i in range(string_dimension_length)]
-
-    return result
-
-
 def encode_stringarray_as_bytearray(
     data: np.typing.ArrayLike, encoding: str, string_dimension_length: int
 ) -> np.ndarray:
@@ -158,6 +110,114 @@ def encode_stringarray_as_bytearray(
     return result
 
 
+@dataclasses.dataclass
+class VariableEncoder:
+    """A record of encoding details which can apply them to variable data."""
+
+    varname: str  # just for the error messages
+    dtype: np.dtype
+    is_chardata: bool  # just a shortcut for the dtype test
+    read_encoding: str  # *always* a valid encoding from the codecs package
+    write_encoding: str  # *always* a valid encoding from the codecs package
+    n_chars_dim: int  # length of associated character dimension
+    string_width: int  # string lengths when viewing as strings (i.e. "Uxx")
+
+    def __init__(self, cf_var):
+        """Get all the info from an netCDF4 variable (or similar wrapper object).
+
+        Most importantly, we do *not* store 'cf_var' : instead we extract the
+        necessary information and store it in this object.
+        So, this object has static state + is serialisable.
+        """
+        self.varname = cf_var.name
+        self.dtype = cf_var.dtype
+        self.is_chardata = np.issubdtype(self.dtype, np.bytes_)
+        self.read_encoding = self._get_encoding(cf_var, writing=False)
+        self.write_encoding = self._get_encoding(cf_var, writing=True)
+        self.n_chars_dim = cf_var.group().dimensions[cf_var.dimensions[-1]].size
+        self.string_width = self._get_string_width(cf_var)
+
+    @staticmethod
+    def _get_encoding(cf_var, writing=False) -> str:
+        """Get the byte encoding defined for this variable (or None)."""
+        result = getattr(cf_var, "_Encoding", None)
+        if result is not None:
+            try:
+                # Accept + normalise naming of encodings
+                result = codecs.lookup(result).name
+                # NOTE: if encoding does not suit data, errors can occur.
+                # For example, _Encoding = "ascii", with non-ascii content.
+            except LookupError:
+                # Unrecognised encoding name : handle this as just a warning
+                msg = (
+                    f"Ignoring unknown encoding for variable {cf_var.name!r}: "
+                    f"_Encoding = {result!r}."
+                )
+                warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
+                warnings.warn(msg, category=warntype)
+                # Proceed as if there is no specified encoding
+                result = None
+
+        if result is None:
+            if writing:
+                result = DEFAULT_WRITE_ENCODING
+            else:
+                result = DEFAULT_READ_ENCODING
+        return result
+
+    def _get_string_width(self, cf_var) -> int:
+        """Return the string-length defined for this variable."""
+        # Work out the actual byte width from the parent dataset dimensions.
+        strlen = self.n_chars_dim
+        # Convert the string dimension length (i.e. bytes) to a sufficiently-long
+        #  string width, depending on the (read) encoding used.
+        encoding = self.read_encoding
+        if "utf-16" in encoding:
+            # Each char needs at least 2 bytes -- including a terminator char
+            strlen = (strlen // 2) - 1
+        elif "utf-32" in encoding:
+            # Each char needs exactly 4 bytes -- including a terminator char
+            strlen = (strlen // 4) - 1
+        # "ELSE": assume there can be (at most) as many chars as bytes
+        return strlen
+
+    def decode_bytes_to_stringarray(self, data: np.ndarray) -> np.ndarray:
+        if self.is_chardata and DECODE_TO_STRINGS_ON_READ:
+            # N.B. read encoding default is UTF-8 --> a "usually safe" choice
+            encoding = self.read_encoding
+            strlen = self.string_width
+            try:
+                data = decode_bytesarray_to_stringarray(data, encoding, strlen)
+            except UnicodeDecodeError as err:
+                msg = (
+                    f"Character data in variable {self.varname!r} could not be decoded "
+                    f"with the {encoding!r} encoding.  This can be fixed by setting the "
+                    "variable '_Encoding' attribute to suit the content."
+                )
+                raise ValueError(msg) from err
+
+        return data
+
+    def encode_strings_as_bytearray(self, data: np.ndarray) -> np.ndarray:
+        if data.dtype.kind == "U":
+            # N.B. it is also possible to pass a byte array (dtype "S1"),
+            #  to be written directly, without processing.
+            try:
+                # N.B. write encoding *default* is "ascii" --> fails bad content
+                encoding = self.write_encoding
+                strlen = self.n_chars_dim
+                data = encode_stringarray_as_bytearray(data, encoding, strlen)
+            except UnicodeEncodeError as err:
+                msg = (
+                    f"String data written to netcdf character variable {self.varname!r} "
+                    f"could not be represented in encoding {self.write_encoding!r}.  "
+                    "This can be fixed by setting a suitable variable '_Encoding' "
+                    'attribute, e.g. <variable>._Encoding="UTF-8".'
+                )
+                raise ValueError(msg) from err
+        return data
+
+
 class NetcdfStringDecodeSetting(threading.local):
     def __init__(self, perform_encoding: bool = True):
         self.set(perform_encoding)
@@ -184,108 +244,23 @@ DEFAULT_WRITE_ENCODING = "ascii"
 class EncodedVariable(VariableWrapper):
     """A variable wrapper that translates variable data according to byte encodings."""
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def __getitem__(self, keys):
-        if self._is_chardata():
-            # N.B. we never need to UNset this, as we totally control it
-            self._contained_instance.set_auto_chartostring(False)
-
+        self._contained_instance.set_auto_chartostring(False)
         data = super().__getitem__(keys)
-
-        if DECODE_TO_STRINGS_ON_READ and self._is_chardata():
-            encoding = self._get_encoding() or DEFAULT_READ_ENCODING
-            # N.B. typically, read encoding default is UTF-8 --> a "usually safe" choice
-            strlen = self._get_string_width()
-            try:
-                data = decode_bytesarray_to_stringarray(data, encoding, strlen)
-            except UnicodeDecodeError as err:
-                msg = (
-                    f"Character data in variable {self.name!r} could not be decoded "
-                    f"with the {encoding!r} encoding.  This can be fixed by setting the "
-                    "variable '_Encoding' attribute to suit the content."
-                )
-                raise ValueError(msg) from err
-
+        # Create a coding spec : redo every time in case "_Encoding" has changed
+        encoding_spec = VariableEncoder(self._contained_instance)
+        data = encoding_spec.decode_bytes_to_stringarray(data)
         return data
 
     def __setitem__(self, keys, data):
         data = np.asanyarray(data)
-        if self._is_chardata():
-            # N.B. we never need to UNset this, as we totally control it
-            self._contained_instance.set_auto_chartostring(False)
-
-            # N.B. typically, write encoding default is "ascii" --> fails bad content
-            if data.dtype.kind == "U":
-                try:
-                    encoding = (
-                        self._get_encoding(writing=True) or DEFAULT_WRITE_ENCODING
-                    )
-                    strlen = self._get_byte_width()
-                    data = encode_stringarray_as_bytearray(data, encoding, strlen)
-                except UnicodeEncodeError as err:
-                    msg = (
-                        f"String data written to netcdf character variable {self.name!r} "
-                        f"could not be represented in encoding {encoding!r}.  This can be "
-                        "fixed by setting a suitable variable '_Encoding' attribute, "
-                        'e.g. <variable>._Encoding="UTF-8".'
-                    )
-                    raise ValueError(msg) from err
-
+        # Create a coding spec : redo every time in case "_Encoding" has changed
+        encoding_spec = VariableEncoder(self._contained_instance)
+        data = encoding_spec.encode_strings_as_bytearray(data)
         super().__setitem__(keys, data)
-
-    def _is_chardata(self):
-        return np.issubdtype(self.dtype, np.bytes_)
-
-    def _get_encoding(self, writing=False) -> str | None:
-        """Get the byte encoding defined for this variable (or None)."""
-        result = getattr(self, "_Encoding", None)
-        if result is not None:
-            try:
-                # Accept + normalise naming of encodings
-                result = codecs.lookup(result).name
-                # NOTE: if encoding does not suit data, errors can occur.
-                # For example, _Encoding = "ascii", with non-ascii content.
-            except LookupError:
-                # Unrecognised encoding name : handle this as just a warning
-                msg = (
-                    f"Ignoring unknown encoding for variable {self.name!r}: "
-                    f"_Encoding = {result!r}."
-                )
-                warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
-                warnings.warn(msg, category=warntype)
-                # Proceed as if there is no specified encoding
-                result = None
-        return result
-
-    def _get_byte_width(self) -> int | None:
-        if not hasattr(self, "_bytewidth"):
-            n_bytes = self.group().dimensions[self.dimensions[-1]].size
-            # Cache this length control on the variable -- but not as a netcdf attribute
-            self.__dict__["_bytewidth"] = n_bytes
-
-        return self.__dict__["_bytewidth"]
-
-    def _get_string_width(self):
-        """Return the string-length defined for this variable."""
-        if not hasattr(self, "_strlen"):
-            # Work out the actual byte width from the parent dataset dimensions.
-            strlen = self._get_byte_width()
-            # Convert the string dimension length (i.e. bytes) to a sufficiently-long
-            #  string width, depending on the encoding used.
-            encoding = self._get_encoding() or DEFAULT_READ_ENCODING
-            # regularise the name for comparison with recognised ones
-            encoding = codecs.lookup(encoding).name
-            if "utf-16" in encoding:
-                # Each char needs at least 2 bytes -- including a terminator char
-                strlen = (strlen // 2) - 1
-            elif "utf-32" in encoding:
-                # Each char needs exactly 4 bytes -- including a terminator char
-                strlen = (strlen // 4) - 1
-            # "ELSE": assume there can be (at most) as many chars as bytes
-
-            # Cache this length control on the variable -- but not as a netcdf attribute
-            self.__dict__["_strlen"] = strlen
-
-        return self._strlen
 
     def set_auto_chartostring(self, onoff: bool):
         msg = "auto_chartostring is not supported by Iris 'EncodedVariable' type."
@@ -297,14 +272,37 @@ class EncodedDataset(DatasetWrapper):
 
     VAR_WRAPPER_CLS = EncodedVariable
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def set_auto_chartostring(self, onoff: bool):
         msg = "auto_chartostring is not supported by Iris 'EncodedDataset' type."
         raise TypeError(msg)
 
 
 class EncodedNetCDFDataProxy(NetCDFDataProxy):
-    DATASET_CLASS = EncodedDataset
+    __slots__ = NetCDFDataProxy.__slots__ + ("encoding_details",)
+
+    def __init__(self, cf_var, *args, **kwargs):
+        # When creating, also capture + record the encoding to be performed.
+        kwargs["use_byte_data"] = True
+        super().__init__(cf_var, *args, **kwargs)
+        self.encoding_details = VariableEncoder(cf_var)
+
+    def __getitem__(self, keys):
+        data = super().__getitem__(keys)
+        # Apply the optional bytes-to-strings conversion
+        data = self.encoding_details.decode_bytes_to_stringarray(data)
+        return data
 
 
 class EncodedNetCDFWriteProxy(NetCDFWriteProxy):
-    DATASET_CLASS = EncodedDataset
+    def __init__(self, filepath, cf_var, file_write_lock):
+        super.__init__(filepath, cf_var, file_write_lock)
+        self.encoding_details = VariableEncoder(cf_var)
+
+    def __setitem__(self, key, data):
+        data = np.asanyarray(data)
+        # Apply the optional strings-to-bytes conversion
+        data = self.encoding_details.encode_strings_as_bytearray(data)
+        super.__setitem__(key, data)

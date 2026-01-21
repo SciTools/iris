@@ -314,15 +314,22 @@ class DatasetWrapper(GroupWrapper):
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
-    DATASET_CLASS = netCDF4.Dataset
+    __slots__ = (
+        "shape",
+        "dtype",
+        "path",
+        "variable_name",
+        "fill_value",
+        "use_byte_data",
+    )
 
-    def __init__(self, shape, dtype, path, variable_name, fill_value):
-        self.shape = shape
+    def __init__(self, cf_var, dtype, path, fill_value, *, use_byte_data=False):
+        self.shape = cf_var.shape
+        self.variable_name = cf_var.name
         self.dtype = dtype
         self.path = path
-        self.variable_name = variable_name
         self.fill_value = fill_value
+        self.use_byte_data = use_byte_data
 
     @property
     def ndim(self):
@@ -338,9 +345,11 @@ class NetCDFDataProxy:
         # netCDF4 library, presumably because __getitem__ gets called so many
         # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
         with _GLOBAL_NETCDF4_LOCK:
-            dataset = self.DATASET_CLASS(self.path)
+            dataset = netCDF4.Dataset(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
+                if self.use_byte_data:
+                    variable.set_auto_mask(False)
                 # Get the NetCDF variable data and slice.
                 var = variable[keys]
             finally:
@@ -375,8 +384,6 @@ class NetCDFWriteProxy:
     TODO: could be improved with a caching scheme, but this just about works.
     """
 
-    DATASET_CLASS = netCDF4.Dataset
-
     def __init__(self, filepath, cf_var, file_write_lock):
         self.path = filepath
         self.varname = cf_var.name
@@ -404,7 +411,7 @@ class NetCDFWriteProxy:
                 #  investigation needed.
                 for attempt in range(5):
                     try:
-                        dataset = self.DATASET_CLASS(self.path, "r+")
+                        dataset = netCDF4.Dataset(self.path, "r+")
                         break
                     except OSError:
                         if attempt < 4:
