@@ -26,7 +26,7 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
-#  - geovista  # Temporarily removed until pyvista is py3.14 compatible.
+#  - geovista  # Temporarily removed until pyvista is py3.14 compatible; see #6902
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack
