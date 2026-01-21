@@ -811,39 +811,40 @@ class CFLabelVariable(CFVariable):
                 % self.cf_name
             )
 
-        label_data = self[:]
-
-        if ma.isMaskedArray(label_data):
-            label_data = label_data.filled(b"\0")
-
-        # Determine whether we have a string-valued scalar label
-        # i.e. a character variable that only has one dimension (the length of the string).
-        if self.ndim == 1:
-            label_string = b"".join(label_data).strip()
-            label_string = label_string.decode("utf8")
-            data = np.array([label_string])
-        else:
-            # Determine the index of the string dimension.
-            str_dim = self.dimensions.index(str_dim_name)
-
-            # Calculate new label data shape (without string dimension) and create payload array.
-            new_shape = tuple(
-                dim_len for i, dim_len in enumerate(self.shape) if i != str_dim
-            )
-            string_basetype = "|U%d"
-            string_dtype = string_basetype % self.shape[str_dim]
-            data = np.empty(new_shape, dtype=string_dtype)
-
-            for index in np.ndindex(new_shape):
-                # Create the slice for the label data.
-                if str_dim == 0:
-                    label_index = (slice(None, None),) + index
-                else:
-                    label_index = index + (slice(None, None),)
-
-                label_string = b"".join(label_data[label_index]).strip()
-                label_string = label_string.decode("utf8")
-                data[index] = label_string
+        data = self[:]
+        # label_data = self[:]
+        #
+        # if ma.isMaskedArray(label_data):
+        #     label_data = label_data.filled(b"\0")
+        #
+        # # Determine whether we have a string-valued scalar label
+        # # i.e. a character variable that only has one dimension (the length of the string).
+        # if self.ndim == 1:
+        #     label_string = b"".join(label_data).strip()
+        #     label_string = label_string.decode("utf8")
+        #     data = np.array([label_string])
+        # else:
+        #     # Determine the index of the string dimension.
+        #     str_dim = self.dimensions.index(str_dim_name)
+        #
+        #     # Calculate new label data shape (without string dimension) and create payload array.
+        #     new_shape = tuple(
+        #         dim_len for i, dim_len in enumerate(self.shape) if i != str_dim
+        #     )
+        #     string_basetype = "|U%d"
+        #     string_dtype = string_basetype % self.shape[str_dim]
+        #     data = np.empty(new_shape, dtype=string_dtype)
+        #
+        #     for index in np.ndindex(new_shape):
+        #         # Create the slice for the label data.
+        #         if str_dim == 0:
+        #             label_index = (slice(None, None),) + index
+        #         else:
+        #             label_index = index + (slice(None, None),)
+        #
+        #         label_string = b"".join(label_data[label_index]).strip()
+        #         label_string = label_string.decode("utf8")
+        #         data[index] = label_string
 
         return data
 
