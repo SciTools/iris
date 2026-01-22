@@ -4,11 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.netcdf.loader.ChunkControl`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-from unittest.mock import ANY, patch
-
 import dask
 import numpy as np
 import pytest
@@ -187,7 +182,7 @@ def test_no_chunks_from_file(tmp_filepath, save_cubelist_with_sigma):
             CubeList(loader.load_cubes(tmp_filepath))
 
 
-def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
+def test_as_dask(tmp_filepath, save_cubelist_with_sigma, mocker):
     """Test as dask.
 
     No return values, as we can't be sure
@@ -195,15 +190,15 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
     from our own chunking behaviour.
     """
     message = "Mock called, rest of test unneeded"
-    with patch("iris.fileformats.netcdf.loader.as_lazy_data") as as_lazy_data:
-        as_lazy_data.side_effect = RuntimeError(message)
-        with CHUNK_CONTROL.as_dask():
-            try:
-                CubeList(loader.load_cubes(tmp_filepath))
-            except RuntimeError as e:
-                if str(e) != message:
-                    raise e
-        as_lazy_data.assert_called_with(ANY, meta=ANY, chunks="auto")
+    as_lazy_data = mocker.patch("iris.fileformats.netcdf.loader.as_lazy_data")
+    as_lazy_data.side_effect = RuntimeError(message)
+    with CHUNK_CONTROL.as_dask():
+        try:
+            CubeList(loader.load_cubes(tmp_filepath))
+        except RuntimeError as e:
+            if str(e) != message:
+                raise e
+    as_lazy_data.assert_called_with(mocker.ANY, meta=mocker.ANY, chunks="auto")
 
 
 def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
@@ -221,7 +216,3 @@ def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
-
-
-if __name__ == "__main__":
-    tests.main()
