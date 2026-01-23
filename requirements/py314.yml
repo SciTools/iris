@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.11
+  - python =3.14
 
 # Setup dependencies.
   - setuptools >=77.0.3
@@ -26,7 +26,7 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
-  - geovista
+#  - geovista  # Temporarily removed until pyvista is py3.14 compatible; see #6902
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack
