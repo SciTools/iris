@@ -182,7 +182,7 @@ class VariableEncoder:
         return strlen
 
     def decode_bytes_to_stringarray(self, data: np.ndarray) -> np.ndarray:
-        if self.is_chardata and DECODE_TO_STRINGS_ON_READ:
+        if self.is_chardata:
             # N.B. read encoding default is UTF-8 --> a "usually safe" choice
             encoding = self.read_encoding
             strlen = self.string_width
@@ -247,6 +247,38 @@ class EncodedVariable(VariableWrapper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    # Override specific properties of the contained instance, making changes in the case
+    # that the variable contains char data, which is presented instead as strings
+    # with one less dimension.
+
+    @property
+    def shape(self):
+        shape = self._contained_instance.shape
+        is_chardata = np.issubdtype(self._contained_instance.dtype, np.bytes_)
+        if is_chardata:
+            # Translated char data appears without the final dimension
+            shape = shape[:-1]  # remove final dimension
+        return shape
+
+    @property
+    def dimensions(self):
+        dimensions = self._contained_instance.dimensions
+        is_chardata = np.issubdtype(self._contained_instance.dtype, np.bytes_)
+        if is_chardata:
+            # Translated char data appears without the final dimension
+            dimensions = dimensions[:-1]  # remove final dimension
+        return dimensions
+
+    @property
+    def dtype(self):
+        dtype = self._contained_instance.dtype
+        is_chardata = np.issubdtype(self._contained_instance.dtype, np.bytes_)
+        if is_chardata:
+            # Create a coding spec : redo every time in case "_Encoding" has changed
+            encoding_spec = VariableEncoder(self._contained_instance)
+            dtype = np.dtype(f"U{encoding_spec.string_width}")
+        return dtype
+
     def __getitem__(self, keys):
         self._contained_instance.set_auto_chartostring(False)
         data = super().__getitem__(keys)
@@ -287,7 +319,13 @@ class EncodedNetCDFDataProxy(NetCDFDataProxy):
         # When creating, also capture + record the encoding to be performed.
         kwargs["use_byte_data"] = True
         super().__init__(cf_var, *args, **kwargs)
-        self.encoding_details = VariableEncoder(cf_var)
+        if not isinstance(cf_var, EncodedVariable):
+            msg = (
+                f"Unexpected variable type : {type(cf_var)} of variable '{cf_var.name}'"
+                ": expected EncodedVariable."
+            )
+            raise TypeError(msg)
+        self.encoding_details = VariableEncoder(cf_var._contained_instance)
 
     def __getitem__(self, keys):
         data = super().__getitem__(keys)

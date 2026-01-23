@@ -1644,11 +1644,11 @@ def _add_auxiliary_coordinate(
     # Determine the name of the dimension/s shared between the CF-netCDF data variable
     # and the coordinate being built.
     coord_dims = cf_coord_var.dimensions
-    if cf._is_str_dtype(cf_coord_var):
-        coord_dims = coord_dims[:-1]
+    # if cf._is_str_dtype(cf_coord_var):
+    #     coord_dims = coord_dims[:-1]
     datavar_dims = engine.cf_var.dimensions
-    if cf._is_str_dtype(engine.cf_var):
-        datavar_dims = datavar_dims[:-1]
+    # if cf._is_str_dtype(engine.cf_var):
+    #     datavar_dims = datavar_dims[:-1]
     common_dims = [dim for dim in coord_dims if dim in datavar_dims]
     data_dims = None
     if common_dims:

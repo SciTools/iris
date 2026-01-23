@@ -349,7 +349,7 @@ class NetCDFDataProxy:
             try:
                 variable = dataset.variables[self.variable_name]
                 if self.use_byte_data:
-                    variable.set_auto_mask(False)
+                    variable.set_auto_chartostring(False)
                 # Get the NetCDF variable data and slice.
                 var = variable[keys]
             finally:

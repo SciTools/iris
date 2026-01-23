@@ -8,6 +8,7 @@ This covers both the loading and saving of variables which are the content of
 data-variables, auxiliary coordinates, ancillary variables and -possibly?- cell measures.
 """
 
+from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
@@ -16,9 +17,12 @@ import pytest
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
 
+iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+
 N_XDIM = 3
 N_CHARS_DIM = 64
-COORD_ON_SEPARATE_DIM = True
+# COORD_ON_SEPARATE_DIM = True
+COORD_ON_SEPARATE_DIM = False
 PERSIST_TESTFILES = "~/chararray_testfiles"
 
 
@@ -72,6 +76,14 @@ def convert_bytearray_to_strings(
     return result
 
 
+@dataclass
+class SamplefileDetails:
+    filepath: Path
+    datavar_data: np.ndarray
+    stringcoord_data: np.ndarray
+    numericcoord_data: np.ndarray
+
+
 def make_testfile(testfile_path: Path, encoding_str: str):
     """Create a test netcdf file.
 
@@ -84,6 +96,7 @@ def make_testfile(testfile_path: Path, encoding_str: str):
 
     data_is_ascii = encoding in (None, "ascii")
 
+    numeric_values = np.arange(3.0)
     if data_is_ascii:
         coordvar_strings = ["mOnster", "London", "Amsterdam"]
         datavar_strings = ["bun", "Eclair", "sandwich"]
@@ -125,7 +138,7 @@ def make_testfile(testfile_path: Path, encoding_str: str):
             float,
             dimensions=("x",),
         )
-        v_numeric[:] = np.arange(N_XDIM)
+        v_numeric[:] = numeric_values
 
         v_datavar = ds.createVariable(
             "v",
@@ -144,12 +157,21 @@ def make_testfile(testfile_path: Path, encoding_str: str):
     finally:
         ds.close()
 
-    return testfile_path, coordvar_strings, datavar_strings
+    return SamplefileDetails(
+        filepath=testfile_path,
+        datavar_data=datavar_strings,
+        stringcoord_data=coordvar_strings,
+        numericcoord_data=numeric_values,
+    )
 
 
 @pytest.fixture(params=TEST_ENCODINGS)
 def encoding(request):
     return request.param
+
+
+def load_problems_list():
+    return [str(prob) for prob in iris.loading.LOAD_PROBLEMS.problems]
 
 
 class TestReadEncodings:
@@ -168,18 +190,19 @@ class TestReadEncodings:
         testdata = make_testfile(testfile_path=tempfile_path, encoding_str=encoding)
         from iris.tests.integration.netcdf.test_chararrays import ncdump
 
+        # TODO: temporary for debug -- TO REMOVE
         ncdump(tempfile_path)
         yield testdata
 
-    def assert_no_load_problems(self):
-        if len(iris.loading.LOAD_PROBLEMS.problems):
-            probs = "\n".join(str(prob) for prob in iris.loading.LOAD_PROBLEMS.problems)
-            assert probs == ""
-
-    def test_valid_encodings(self, encoding, testdata):
-        testfile_path, coordvar_strings, datavar_strings = testdata
+    def test_valid_encodings(self, encoding, testdata: SamplefileDetails):
+        testfile_path, datavar_strings, coordvar_strings, numeric_data = (
+            testdata.filepath,
+            testdata.datavar_data,
+            testdata.stringcoord_data,
+            testdata.numericcoord_data,
+        )
         cube = iris.load_cube(testfile_path)
-        self.assert_no_load_problems()
+        assert load_problems_list() == []
         assert cube.shape == (N_XDIM,)
 
         if encoding != "utf-32":
@@ -187,7 +210,12 @@ class TestReadEncodings:
         else:
             expected_string_width = (N_CHARS_DIM // 4) - 1
         assert cube.dtype == f"<U{expected_string_width}"
-        assert np.all(cube.data == datavar_strings)
+        cube_data = cube.data
+        assert np.all(cube_data == datavar_strings)
         coord_var = cube.coord("v_co")
         assert coord_var.dtype == f"<U{expected_string_width}"
         assert np.all(coord_var.points == coordvar_strings)
+        # Also check the numeric one.
+        coord_var_2 = cube.coord("v_numeric")
+        assert coord_var_2.dtype == np.float64
+        assert np.all(coord_var_2.points == numeric_data)

@@ -50,6 +50,10 @@ from . import logger
 
 # An expected part of the public loader API, but includes thread safety
 #  concerns so is housed in _thread_safe_nc.
+# NOTE: this is the *default*, as required for public legacy api
+#  - in practice, when creating our proxies we dynamically choose between this and
+#    :class:`_thread_safe_nc.DatasetWrapper`, depending on
+#    :data:`_bytecoding_datasets.DECODE_TO_STRINGS_ON_READ`
 NetCDFDataProxy = _bytecoding_datasets.EncodedNetCDFDataProxy
 
 
@@ -279,7 +283,7 @@ def _get_cf_var_data(cf_var):
             # correct dtype. Note: this is not an issue for masked arrays,
             # only masked scalar values.
             if result is np.ma.masked:
-                result = np.ma.masked_all(1, dtype=cf_var.datatype)
+                result = np.ma.masked_all(1, dtype=cf_var.dtype)
         else:
             # Get lazy chunked data out of a cf variable.
             # Creates Dask wrappers around data arrays for any cube components which
@@ -289,15 +293,27 @@ def _get_cf_var_data(cf_var):
             # Make a data-proxy that mimics array access and can fetch from the file.
             # Note: Special handling needed for "variable length string" types which
             # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
-            fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
-            fill_value = getattr(
-                cf_var.cf_data,
-                "_FillValue",
-                _thread_safe_nc.default_fillvals[fill_dtype],
-            )
-            proxy = NetCDFDataProxy(
-                cf_var.shape, dtype, cf_var.filename, cf_var.cf_name, fill_value
-            )
+            if cf_var.dtype.kind == "U":
+                # Special handling for "string variables".
+                fill_value = ""
+            else:
+                fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
+                fill_value = getattr(
+                    cf_var.cf_data,
+                    "_FillValue",
+                    _thread_safe_nc.default_fillvals[fill_dtype],
+                )
+
+            # Switch type of proxy, based on type of variable.
+            # It is done this way, instead of using an instance variable, because the
+            #  limited nature of the wrappers makes a stateful choice awkward,
+            #  e.g. especially, "variable.group()" is *not* the parent DatasetWrapper.
+            if isinstance(cf_var.cf_data, _bytecoding_datasets.EncodedVariable):
+                proxy_class = _bytecoding_datasets.EncodedNetCDFDataProxy
+            else:
+                proxy_class = _thread_safe_nc.NetCDFDataProxy
+
+            proxy = proxy_class(cf_var.cf_data, dtype, cf_var.filename, fill_value)
             # Get the chunking specified for the variable : this is either a shape, or
             # maybe the string "contiguous".
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
