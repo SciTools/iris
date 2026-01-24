@@ -51,3 +51,7 @@ ul.squarelist {
     text-align: left;
     margin-left: max(45px, 15%);
 }
+
+.center {
+    text-align: center;
+}

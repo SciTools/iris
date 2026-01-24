@@ -15,6 +15,11 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
+<<<<<<< HEAD
+=======
+
+.. grid:: 3
+>>>>>>> upstream/main
 
 .. grid:: 1 1 2 2
     :gutter: 2
@@ -86,6 +91,9 @@ For more information see :ref:`why_iris`.
 
 
 Icons made by FreePik from `Flaticon <https://www.flaticon.com/>`_
+
+
+.. include:: gallery_carousel.txt
 
 
 .. _iris_support:
