@@ -15,11 +15,6 @@ representations become unwieldy and inefficient.
 
 For more information see :ref:`why_iris`.
 
-<<<<<<< HEAD
-=======
-
-.. grid:: 3
->>>>>>> upstream/main
 
 .. grid:: 1 1 2 2
     :gutter: 2

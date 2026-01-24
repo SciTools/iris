@@ -81,12 +81,10 @@ This document explains the changes made to Iris for this release
 📚 Documentation
 ================
 
-<<<<<<< HEAD
 #. `@tkknight`_ reduced the space used on the documentation homepage by the quick
    link cards to allow for easier reading.  (:pull:`6886`)
-=======
+
 #. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
->>>>>>> upstream/main
 
 
 💼 Internal
