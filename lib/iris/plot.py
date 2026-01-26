@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot` interface.
 
+.. z_reference:: iris.plot
+   :tags: topic_plotting
+
+   API reference
+
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
@@ -1092,7 +1097,7 @@ def contour(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_points("contour", None, cube, *args, **kwargs)
@@ -1119,7 +1124,7 @@ def contourf(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -1193,7 +1198,7 @@ def default_projection(cube):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # XXX logic seems flawed, but it is what map_setup did...
@@ -1216,7 +1221,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     extents = cartography._xy_range(cube, mode)
@@ -1258,7 +1263,7 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
@@ -1296,7 +1301,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     style_args = {"facecolor": facecolor}
 
@@ -1341,7 +1346,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_bounds(
@@ -1385,7 +1390,7 @@ def pcolor(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     kwargs.setdefault("antialiased", True)
@@ -1421,7 +1426,7 @@ def pcolormesh(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_bounds("pcolormesh", cube, *args, **kwargs)
@@ -1449,7 +1454,7 @@ def points(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
 
@@ -1539,7 +1544,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
         :class:`cartopy.crs.CRS`.
 
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     #
@@ -1589,7 +1594,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
         :class:`cartopy.crs.CRS`.
 
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     #
@@ -1616,7 +1621,7 @@ def plot(*args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1673,7 +1678,7 @@ def scatter(x, y, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1707,7 +1712,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1741,7 +1746,7 @@ def hist(x, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if isinstance(x, iris.cube.Cube):
@@ -1783,7 +1788,7 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if axes is None:
@@ -1902,7 +1907,7 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     kwargs.setdefault("interval", 100)

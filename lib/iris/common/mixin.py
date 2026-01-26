@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides common metadata mixin behaviour."""
+"""Provides common metadata mixin behaviour.
+
+.. z_reference:: iris.common.mixin
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from __future__ import annotations
 
