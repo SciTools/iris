@@ -26,3 +26,32 @@ ul.squarelist {
   text-indent: 1em;
   padding-left: 5em;
 }
+
+/* custom css for the cards on the homepage */
+.sd-card-img-top {
+    width: 15% !important;
+    position: absolute !important;
+    padding-left: 10px;
+    min-width: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sd-card-img {
+    height: auto;
+}
+
+.custom-title {
+    font-weight: bold;
+    color: #1B8FB7 !important;
+    text-align: left;
+}
+
+.custom-body {
+    text-align: left;
+    margin-left: max(45px, 15%);
+}
+
+.center {
+    text-align: center;
+}

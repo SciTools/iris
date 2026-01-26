@@ -19,7 +19,10 @@
 
 """Config for sphinx."""
 
+import ast
+import contextlib
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 from inspect import getsource
 import ntpath
@@ -29,6 +32,7 @@ import re
 from subprocess import run
 import sys
 from tempfile import gettempdir
+import textwrap
 from urllib.parse import quote
 import warnings
 
@@ -222,6 +226,11 @@ autopackage_name = ["iris"]
 autoclass_content = "both"
 modindex_common_prefix = ["iris"]
 
+# if geovista is not installed we need to mock the imports so the autodoc build works:
+if importlib.util.find_spec("geovista") is None:
+    autodoc_mock_imports = ["geovista", "pyvista"]
+
+
 # -- apidoc extension ---------------------------------------------------------
 # See https://github.com/sphinx-contrib/apidoc
 source_code_root = (Path(__file__).parents[2]).absolute()
@@ -286,7 +295,15 @@ extlinks = {
 
 # -- Doctest ("make doctest")--------------------------------------------------
 
-doctest_global_setup = "import iris"
+doctest_global_setup = """
+import iris
+
+# To handle conditional doctest skipping if geovista is not installed:
+try:
+    import geovista as gv
+except ImportError:
+    gv = None
+"""
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -415,12 +432,14 @@ reset_modules_dir.mkdir(exist_ok=True)
 )
 sys.path.insert(0, str(reset_modules_dir))
 
+GALLERY_CODE: str = "../gallery_code"
+GALLERY_DIRS: str = "generated/gallery"
 
 sphinx_gallery_conf = {
     # path to your example scripts
-    "examples_dirs": ["../gallery_code"],
+    "examples_dirs": GALLERY_CODE,
     # path to where to save gallery generated output
-    "gallery_dirs": ["generated/gallery"],
+    "gallery_dirs": GALLERY_DIRS,
     # filename pattern for the files in the gallery
     "filename_pattern": "/plot_",
     # filename pattern to ignore in the gallery
@@ -444,6 +463,128 @@ numfig_format = {
     "section": "Section %s",
     "table": "Table %s",
 }
+
+# ============================================================================
+# |                        Copyright GeoVista                                |
+# | Code from this point unto the termination banner is copyright GeoVista.  |
+# | Minimal code changes made to make it generic.                            |
+# |                                                                          |
+# | License details can be found at:                                         |
+# |    https://github.com/bjlittle/geovista/blob/main/LICENSE                |
+# ============================================================================
+
+# Source: https://github.com/bjlittle/geovista/blob/main/docs/src/conf.py
+
+
+def _bool_eval(*, arg: str | bool) -> bool:
+    """Sanitise to a boolean only configuration."""
+    if isinstance(arg, str):
+        with contextlib.suppress(TypeError):
+            arg = ast.literal_eval(arg.capitalize())
+
+    return bool(arg)
+
+
+def generate_carousel(
+    app: Sphinx,
+    fname: Path,
+    ncards: int | None = None,
+    margin: int | None = None,
+    width: int | None = None,
+) -> None:
+    """Generate and write the gallery carousel RST file."""
+    if ncards is None:
+        ncards = 3
+
+    if margin is None:
+        margin = 4
+
+    if width is None:
+        width = "25%"
+
+    base = Path(app.srcdir, *GALLERY_DIRS.split("/"))
+    cards_by_link = {}
+
+    card = r""".. card::
+    :img-background: {image}
+    :link: {link}
+    :link-type: ref
+    :width: {width}
+    :margin: {margin}
+    :class-card: align-self-center
+"""
+
+    # TODO @bjlittle: use Path.walk when python >=3.12
+    for root, _, files in os.walk(str(base)):
+        root = Path(root)  # noqa: PLW2901
+        if root.name == "images":
+            root_relative = root.relative_to(app.srcdir)
+            link_relative = root.parent.relative_to(app.srcdir)
+
+            for file in files:
+                path = Path(file)
+                if path.suffix == ".png":
+                    # generate the card "img-background" filename
+                    image = root_relative / path
+
+                    # generate the card "link" reference
+                    # remove numeric gallery image index e.g., "001"
+                    parts = path.stem.split("_")[:-1]
+                    link = parts[:2] + list(link_relative.parts) + parts[2:]
+                    link = f"{'_'.join(link)}.py"
+
+                    # needed in case a gallery filename has mixed case
+                    link = link.lower()
+
+                    kwargs = {
+                        "image": image,
+                        "link": link,
+                        "width": width,
+                        "margin": margin,
+                    }
+
+                    cards_by_link[link] = card.format(**kwargs)
+
+    # sort the cards by their link
+    cards = [cards_by_link[link] for link in sorted(cards_by_link.keys())]
+    cards = textwrap.indent("\n".join(cards), prefix=" " * 4)
+
+    # now, create the card carousel
+    carousel = f""".. card-carousel:: {ncards}
+
+{cards}
+
+.. rst-class:: center
+
+    :fa:`images` Gallery Carousel
+
+"""
+
+    # finally, write the rst for the gallery carousel
+    Path(app.srcdir, fname).write_text(carousel)
+
+
+def gallery_carousel(
+    app: Sphinx,
+    env: BuildEnvironment,  # noqa: ARG001
+    docnames: list[str],  # noqa: ARG001
+) -> None:
+    """Create the gallery carousel."""
+    # create empty or truncate existing file
+    fname = Path(app.srcdir, "gallery_carousel.txt")
+
+    with fname.open("w"):
+        pass
+
+    if _bool_eval(arg=app.builder.config.plot_gallery):
+        # only generate the carousel if we have a gallery
+        generate_carousel(app, fname)
+
+
+# ============================================================================
+# |                        END GeoVista copyright                            |
+# ============================================================================
+
 
 # -- sphinx-reredirects config ------------------------------------------------
 
@@ -549,7 +690,11 @@ if "allow_default" not in NeedsCoreFields["post_template"]:
     NeedsCoreFields["post_template"]["allow_default"] = "str"
 
 
-def setup(app):
+# ------------------------------------------------------------------------------
+
+
+def setup(app: Sphinx) -> None:
+    """Configure sphinx application."""
     # Monkeypatch for https://github.com/useblocks/sphinx-needs/issues/723
     import sphinx_needs.directives.needtable as nt
 
@@ -579,3 +724,9 @@ def setup(app):
         )
 
     nt.row_col_maker = row_col_maker_link_title
+
+    # we require the output of this extension
+    app.setup_extension("sphinx_gallery.gen_gallery")
+
+    # register callback to generate gallery carousel
+    app.connect("env-before-read-docs", gallery_carousel)
