@@ -4,15 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-from types import ModuleType
-
-import iris.tests as tests  # isort:skip
-
 import collections
 from contextlib import contextmanager
-from unittest import mock
+from types import ModuleType
 
 import numpy as np
 from numpy import ma
@@ -36,11 +30,13 @@ from iris.coord_systems import (
 from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.tests import _shared_utils
 from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
+from iris.tests.unit.fileformats import MockerMixin
 
 
-class Test_write(tests.IrisTest):
+class Test_write:
     # -------------------------------------------------------------------------
     # It is not considered necessary to have integration tests for saving
     # EVERY coordinate system. A subset are tested below.
@@ -119,64 +115,64 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 1)
         return cube
 
-    def test_transverse_mercator(self):
+    def test_transverse_mercator(self, request, tmp_path):
         # Create a Cube with a transverse Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._transverse_mercator_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_transverse_mercator_no_ellipsoid(self):
+    def test_transverse_mercator_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a transverse Mercator coordinate system.
         cube = self._transverse_mercator_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_mercator(self):
+    def test_mercator(self, request, tmp_path):
         # Create a Cube with a Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._mercator_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic(self):
+    def test_stereographic(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._stereo_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_mercator_no_ellipsoid(self):
+    def test_mercator_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a Mercator coordinate system.
         cube = self._mercator_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic_no_ellipsoid(self):
+    def test_stereographic_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         cube = self._stereo_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic_scale_factor(self):
+    def test_stereographic_scale_factor(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         cube = self._stereo_cube(scale_factor=1.3)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
     @staticmethod
     def _filter_compression_calls(patch, compression_kwargs, mismatch=False):
@@ -199,27 +195,27 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 0)
         return cube
 
-    def test_little_endian(self):
+    def test_little_endian(self, request, tmp_path):
         # Create a Cube with little-endian data.
         cube = self._simple_cube("<f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            result_path = self.result_path("endian", "cdl")
-            self.assertCDL(nc_path, result_path, flags="")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        result_path = _shared_utils.result_path(request, "endian", "cdl")
+        _shared_utils.assert_CDL(request, nc_path, result_path, flags="")
 
-    def test_big_endian(self):
+    def test_big_endian(self, request, tmp_path):
         # Create a Cube with big-endian data.
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            result_path = self.result_path("endian", "cdl")
-            self.assertCDL(nc_path, result_path, flags="")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        result_path = _shared_utils.result_path(request, "endian", "cdl")
+        _shared_utils.assert_CDL(request, nc_path, result_path, flags="")
 
-    def test_zlib(self):
+    def test_zlib(self, mocker):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
+        api = mocker.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         # Mock the apparent dtype of mocked variables, to avoid an error.
@@ -231,7 +227,7 @@ class Test_write(tests.IrisTest):
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
         dataset = api.DatasetWrapper.return_value
-        create_var_call = mock.call(
+        create_var_call = mocker.call(
             "air_pressure_anomaly",
             np.dtype("float32"),
             ["dim0", "dim1"],
@@ -245,9 +241,9 @@ class Test_write(tests.IrisTest):
             complevel=4,
             chunksizes=None,
         )
-        self.assertIn(create_var_call, dataset.createVariable.call_args_list)
+        assert create_var_call in dataset.createVariable.call_args_list
 
-    def test_compression(self):
+    def test_compression(self, mocker, tmp_path):
         cube = self._simple_cube(">f4")
         data_dims, shape = range(cube.ndim), cube.shape
 
@@ -261,7 +257,7 @@ class Test_write(tests.IrisTest):
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims)
 
-        patch = self.patch(
+        patch = mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
         )
         compression_kwargs = {
@@ -271,16 +267,16 @@ class Test_write(tests.IrisTest):
             "zlib": True,
         }
 
-        with self.temp_filename(suffix=".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4", compute=False) as saver:
-                saver.write(cube, **compression_kwargs)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(5, patch.call_count)
+        assert 5 == patch.call_count
         result = self._filter_compression_calls(patch, compression_kwargs)
-        self.assertEqual(3, len(result))
-        self.assertEqual({cube.name(), aux_coord.name(), anc_coord.name()}, set(result))
+        assert 3 == len(result)
+        assert {cube.name(), aux_coord.name(), anc_coord.name()} == set(result)
 
-    def test_non_compression__shape(self):
+    def test_non_compression__shape(self, mocker, tmp_path):
         cube = self._simple_cube(">f4")
         data_dims, shape = (0, 1), cube.shape
 
@@ -294,7 +290,7 @@ class Test_write(tests.IrisTest):
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims[1])
 
-        patch = self.patch(
+        patch = mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
         )
         compression_kwargs = {
@@ -304,21 +300,21 @@ class Test_write(tests.IrisTest):
             "zlib": True,
         }
 
-        with self.temp_filename(suffix=".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4", compute=False) as saver:
-                saver.write(cube, **compression_kwargs)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(5, patch.call_count)
+        assert 5 == patch.call_count
         result = self._filter_compression_calls(
             patch, compression_kwargs, mismatch=True
         )
-        self.assertEqual(4, len(result))
+        assert 4 == len(result)
         # the aux coord and ancil variable are not compressed due to shape, and
         # the dim coord and its associated bounds are also not compressed
         expected = {aux_coord.name(), anc_coord.name(), "dim0", "dim0_bnds"}
-        self.assertEqual(expected, set(result))
+        assert expected == set(result)
 
-    def test_non_compression__dtype(self):
+    def test_non_compression__dtype(self, mocker, tmp_path):
         cube = self._simple_cube(">f4")
         data_dims, shape = (0, 1), cube.shape
 
@@ -327,10 +323,10 @@ class Test_write(tests.IrisTest):
         aux_coord = AuxCoord(data, var_name="non_compress_aux", units="1")
         cube.add_aux_coord(aux_coord, data_dims=data_dims)
 
-        patch = self.patch(
+        patch = mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
         )
-        patch.return_value = mock.MagicMock(dtype=np.dtype("S1"))
+        patch.return_value = mocker.MagicMock(dtype=np.dtype("S1"))
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -338,21 +334,21 @@ class Test_write(tests.IrisTest):
             "zlib": True,
         }
 
-        with self.temp_filename(suffix=".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4", compute=False) as saver:
-                saver.write(cube, **compression_kwargs)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
 
-        self.assertEqual(4, patch.call_count)
+        assert 4 == patch.call_count
         result = self._filter_compression_calls(
             patch, compression_kwargs, mismatch=True
         )
-        self.assertEqual(3, len(result))
+        assert 3 == len(result)
         # the aux coord is not compressed due to its string dtype, and
         # the dim coord and its associated bounds are also not compressed
         expected = {aux_coord.name(), "dim0", "dim0_bnds"}
-        self.assertEqual(expected, set(result))
+        assert expected == set(result)
 
-    def test_least_significant_digit(self):
+    def test_least_significant_digit(self, tmp_path):
         cube = Cube(
             self.array_lib.array([1.23, 4.56, 7.89]),
             standard_name="surface_temperature",
@@ -360,102 +356,102 @@ class Test_write(tests.IrisTest):
             var_name="temp",
             units="K",
         )
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, least_significant_digit=1)
-            cube_saved = iris.load_cube(nc_path)
-            self.assertEqual(cube_saved.attributes["least_significant_digit"], 1)
-            self.assertFalse(np.all(cube.data == cube_saved.data))
-            self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, least_significant_digit=1)
+        cube_saved = iris.load_cube(nc_path)
+        assert cube_saved.attributes["least_significant_digit"] == 1
+        assert not np.all(cube.data == cube_saved.data)
+        _shared_utils.assert_array_all_close(cube.data, cube_saved.data, 0.1)
 
-    def test_default_unlimited_dimensions(self):
+    def test_default_unlimited_dimensions(self, tmp_path):
         # Default is no unlimited dimensions.
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertFalse(ds.dimensions["dim0"].isunlimited())
-            self.assertFalse(ds.dimensions["dim1"].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        assert not ds.dimensions["dim0"].isunlimited()
+        assert not ds.dimensions["dim1"].isunlimited()
+        ds.close()
 
-    def test_no_unlimited_dimensions(self):
+    def test_no_unlimited_dimensions(self, tmp_path):
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=None)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in ds.dimensions.values():
-                self.assertFalse(dim.isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=None)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in ds.dimensions.values():
+            assert not dim.isunlimited()
+        ds.close()
 
-    def test_invalid_unlimited_dimensions(self):
+    def test_invalid_unlimited_dimensions(self, tmp_path):
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                # should not raise an exception
-                saver.write(cube, unlimited_dimensions=["not_found"])
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            # should not raise an exception
+            saver.write(cube, unlimited_dimensions=["not_found"])
 
-    def test_custom_unlimited_dimensions(self):
+    def test_custom_unlimited_dimensions(self, tmp_path):
         cube = self._transverse_mercator_cube()
         unlimited_dimensions = [
             "projection_y_coordinate",
             "projection_x_coordinate",
         ]
         # test coordinates by name
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=unlimited_dimensions)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in unlimited_dimensions:
-                self.assertTrue(ds.dimensions[dim].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=unlimited_dimensions)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in unlimited_dimensions:
+            assert ds.dimensions[dim].isunlimited()
+        ds.close()
         # test coordinate arguments
-        with self.temp_filename(".nc") as nc_path:
-            coords = [cube.coord(dim) for dim in unlimited_dimensions]
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=coords)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in unlimited_dimensions:
-                self.assertTrue(ds.dimensions[dim].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp2.nc"
+        coords = [cube.coord(dim) for dim in unlimited_dimensions]
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=coords)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in unlimited_dimensions:
+            assert ds.dimensions[dim].isunlimited()
+        ds.close()
 
-    def test_reserved_attributes(self):
+    def test_reserved_attributes(self, tmp_path):
         cube = self._simple_cube(">f4")
         cube.attributes["dimensions"] = "something something_else"
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            res = ds.getncattr("dimensions")
-            ds.close()
-            self.assertEqual(res, "something something_else")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        res = ds.getncattr("dimensions")
+        ds.close()
+        assert res == "something something_else"
 
-    def test_with_climatology(self):
+    def test_with_climatology(self, request, tmp_path):
         cube = stock.climatology_3d()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_dimensional_to_scalar(self):
+    def test_dimensional_to_scalar(self, tmp_path):
         # Bounds for 1 point are still in a 2D array.
         scalar_bounds = self.array_lib.arange(2).reshape(1, 2)
         scalar_point = scalar_bounds.mean()
         scalar_data = self.array_lib.zeros(1)
         scalar_coord = AuxCoord(points=scalar_point, bounds=scalar_bounds)
         cube = Cube(scalar_data, aux_coords_and_dims=[(scalar_coord, 0)])[0]
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            # Confirm that the only dimension is the one denoting the number
-            #  of bounds - have successfully saved the 2D bounds array into 1D.
-            self.assertEqual(["bnds"], list(ds.dimensions.keys()))
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        # Confirm that the only dimension is the one denoting the number
+        #  of bounds - have successfully saved the 2D bounds array into 1D.
+        assert ["bnds"] == list(ds.dimensions.keys())
+        ds.close()
 
 
-class Test__create_cf_bounds(tests.IrisTest):
+class Test__create_cf_bounds(MockerMixin):
     # Method is substituted in test_Saver__lazy.
     @staticmethod
     def climatology_3d():
@@ -478,34 +474,34 @@ class Test__create_cf_bounds(tests.IrisTest):
         boundsvar_name = "time_" + varname_extra
 
         # Set up arguments for testing _create_cf_bounds.
-        saver = mock.MagicMock(spec=Saver)
+        saver = self.mocker.MagicMock(spec=Saver)
         # NOTE: 'saver' must have spec=Saver to fake isinstance(save, Saver),
         # so it can pass as 'self' in the call to _create_cf_cbounds.
         # Mock a '_dataset' property; not automatic because 'spec=Saver'.
-        saver._dataset = mock.MagicMock()
+        saver._dataset = self.mocker.MagicMock()
         # Mock the '_ensure_valid_dtype' method to return an object with a
         # suitable 'shape' and 'dtype'.
-        saver._ensure_valid_dtype.return_value = mock.Mock(
+        saver._ensure_valid_dtype.return_value = self.mocker.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = mock.MagicMock(spec=_thread_safe_nc.VariableWrapper)
+        var = self.mocker.MagicMock(spec=_thread_safe_nc.VariableWrapper)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
 
         # Test the call of _setncattr in _create_cf_bounds.
-        setncattr_call = mock.call(
+        setncattr_call = self.mocker.call(
             property_name, boundsvar_name.encode(encoding="ascii")
         )
-        self.assertEqual(setncattr_call, var.setncattr.call_args)
+        assert setncattr_call == var.setncattr.call_args
 
         # Test the call of createVariable in _create_cf_bounds.
         dataset = saver._dataset
         expected_dimensions = var.dimensions + ("bnds",)
-        create_var_call = mock.call(
+        create_var_call = self.mocker.call(
             boundsvar_name, coord.bounds.dtype, expected_dimensions
         )
-        self.assertEqual(create_var_call, dataset.createVariable.call_args)
+        assert create_var_call == dataset.createVariable.call_args
 
     def test_set_bounds_default(self):
         self._check_bounds_setting(climatological=False)
@@ -514,95 +510,95 @@ class Test__create_cf_bounds(tests.IrisTest):
         self._check_bounds_setting(climatological=True)
 
 
-class Test_write__valid_x_cube_attributes(tests.IrisTest):
+class Test_write__valid_x_cube_attributes:
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def test_valid_range_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_range_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.attributes["valid_range"] = vrange
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_range, vrange)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_range, vrange)
+        ds.close()
 
-    def test_valid_min_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_min_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.attributes["valid_min"] = 1
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_min, 1)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_min, 1)
+        ds.close()
 
-    def test_valid_max_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_max_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.attributes["valid_max"] = 2
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_max, 2)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_max, 2)
+        ds.close()
 
 
-class Test_write__valid_x_coord_attributes(tests.IrisTest):
+class Test_write__valid_x_coord_attributes:
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def test_valid_range_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_range_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.coord(axis="x").attributes["valid_range"] = vrange
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_range, vrange)
+        ds.close()
 
-    def test_valid_min_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_min_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.coord(axis="x").attributes["valid_min"] = 1
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_min, 1)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_min, 1)
+        ds.close()
 
-    def test_valid_max_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_max_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.coord(axis="x").attributes["valid_max"] = 2
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_max, 2)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_max, 2)
+        ds.close()
 
 
-class Test_write_fill_value(tests.IrisTest):
+class Test_write_fill_value:
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
@@ -622,11 +618,13 @@ class Test_write_fill_value(tests.IrisTest):
             dim_coords_and_dims=[(lat, 0), (lon, 1)],
         )
 
-    @contextmanager
-    def _netCDF_var(self, cube, **kwargs):
-        # Get the netCDF4 Variable for a cube from a temp file
-        standard_name = cube.standard_name
-        with self.temp_filename(".nc") as nc_path:
+    @pytest.fixture
+    def _netCDF_var(self, tmp_path):
+        @contextmanager
+        def netCDF_var(cube, **kwargs):
+            # Get the netCDF4 Variable for a cube from a temp file
+            standard_name = cube.standard_name
+            nc_path = tmp_path / "temp.nc"
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, **kwargs)
             ds = _thread_safe_nc.DatasetWrapper(nc_path)
@@ -637,88 +635,87 @@ class Test_write_fill_value(tests.IrisTest):
             ]
             yield var
 
-    def test_fill_value(self):
+        return netCDF_var
+
+    def test_fill_value(self, _netCDF_var):
         # Test that a passed fill value is saved as a _FillValue attribute.
         cube = self._make_cube(">f4")
         fill_value = 12345.0
-        with self._netCDF_var(cube, fill_value=fill_value) as var:
-            self.assertEqual(fill_value, var._FillValue)
+        with _netCDF_var(cube, fill_value=fill_value) as var:
+            assert fill_value == var._FillValue
 
-    def test_default_fill_value(self):
+    def test_default_fill_value(self, _netCDF_var):
         # Test that if no fill value is passed then there is no _FillValue.
         # attribute.
         cube = self._make_cube(">f4")
-        with self._netCDF_var(cube) as var:
-            self.assertNotIn("_FillValue", var.ncattrs())
+        with _netCDF_var(cube) as var:
+            assert "_FillValue" not in var.ncattrs()
 
-    def test_mask_fill_value(self):
+    def test_mask_fill_value(self, _netCDF_var):
         # Test that masked data saves correctly when given a fill value.
         index = (1, 1)
         fill_value = 12345.0
         cube = self._make_cube(">f4", masked_index=index)
-        with self._netCDF_var(cube, fill_value=fill_value) as var:
-            self.assertEqual(fill_value, var._FillValue)
-            self.assertTrue(var[index].mask)
+        with _netCDF_var(cube, fill_value=fill_value) as var:
+            assert fill_value == var._FillValue
+            assert var[index].mask
 
-    def test_mask_default_fill_value(self):
+    def test_mask_default_fill_value(self, _netCDF_var):
         # Test that masked data saves correctly using the default fill value.
         index = (1, 1)
         cube = self._make_cube(">f4", masked_index=index)
-        with self._netCDF_var(cube) as var:
-            self.assertNotIn("_FillValue", var.ncattrs())
-            self.assertTrue(var[index].mask)
+        with _netCDF_var(cube) as var:
+            assert "_FillValue" not in var.ncattrs()
+            assert var[index].mask
 
 
-class Test_cf_valid_var_name(tests.IrisTest):
+class Test_cf_valid_var_name:
     def test_no_replacement(self):
-        self.assertEqual(Saver.cf_valid_var_name("valid_Nam3"), "valid_Nam3")
+        assert Saver.cf_valid_var_name("valid_Nam3") == "valid_Nam3"
 
     def test_special_chars(self):
-        self.assertEqual(Saver.cf_valid_var_name("inv?alid"), "inv_alid")
+        assert Saver.cf_valid_var_name("inv?alid") == "inv_alid"
 
     def test_leading_underscore(self):
-        self.assertEqual(Saver.cf_valid_var_name("_invalid"), "var__invalid")
+        assert Saver.cf_valid_var_name("_invalid") == "var__invalid"
 
     def test_leading_number(self):
-        self.assertEqual(Saver.cf_valid_var_name("2invalid"), "var_2invalid")
+        assert Saver.cf_valid_var_name("2invalid") == "var_2invalid"
 
     def test_leading_invalid(self):
-        self.assertEqual(Saver.cf_valid_var_name("?invalid"), "var__invalid")
+        assert Saver.cf_valid_var_name("?invalid") == "var__invalid"
 
     def test_no_hyphen(self):
         # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
-        self.assertEqual(Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf")
+        assert Saver.cf_valid_var_name("valid-netcdf") == "valid_netcdf"
 
 
 class _Common__check_attribute_compliance:
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def setUp(self):
-        self.container = mock.Mock(name="container", attributes={})
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.container = mocker.Mock(name="container", attributes={})
         self.data_dtype = np.dtype("int32")
 
         # We need to create mock datasets which look like they are closed.
-        dataset_class = mock.Mock(
-            return_value=mock.Mock(
+        dataset_class = mocker.Mock(
+            return_value=mocker.Mock(
                 # Mock dataset : the isopen() call should return 0.
-                isopen=mock.Mock(return_value=0)
+                isopen=mocker.Mock(return_value=0)
             )
         )
-        patch = mock.patch(
+        _ = mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             dataset_class,
         )
-        _ = patch.start()
-        self.addCleanup(patch.stop)
 
     def set_attribute(self, value):
         self.container.attributes[self.attribute] = value
 
-    def assertAttribute(self, value):
-        self.assertEqual(
-            np.asarray(self.container.attributes[self.attribute]).dtype, value
-        )
+    def assert_attribute(self, value):
+        assert np.asarray(self.container.attributes[self.attribute]).dtype == value
 
     def check_attribute_compliance_call(self, value, file_type="NETCDF4"):
         self.set_attribute(value)
@@ -728,9 +725,7 @@ class _Common__check_attribute_compliance:
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
-class Test_check_attribute_compliance__valid_range(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_range(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_range"
@@ -738,18 +733,18 @@ class Test_check_attribute_compliance__valid_range(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array([1, 2], dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array([1, 2], dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array([1.5, 2.5], dtype="float64")
         msg = '"valid_range" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -757,18 +752,16 @@ class Test_check_attribute_compliance__valid_range(
         self.data_dtype = np.dtype("int8")
         value = [1, 2]
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
 
     def test_uncastable_dtype(self):
         self.data_dtype = np.dtype("int64")
         value = [0, np.iinfo(self.data_dtype).max]
-        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+        with pytest.raises(ValueError, match="cannot be safely cast"):
             self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
-class Test_check_attribute_compliance__valid_min(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_min(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_min"
@@ -776,18 +769,18 @@ class Test_check_attribute_compliance__valid_min(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(1, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(1, dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array(1.5, dtype="float64")
         msg = '"valid_min" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -795,18 +788,16 @@ class Test_check_attribute_compliance__valid_min(
         self.data_dtype = np.dtype("int8")
         value = 1
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
 
     def test_uncastable_dtype(self):
         self.data_dtype = np.dtype("int64")
         value = np.iinfo(self.data_dtype).min
-        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+        with pytest.raises(ValueError, match="cannot be safely cast"):
             self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
-class Test_check_attribute_compliance__valid_max(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_max(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_max"
@@ -814,18 +805,18 @@ class Test_check_attribute_compliance__valid_max(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(2, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(2, dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array(2.5, dtype="float64")
         msg = '"valid_max" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -833,17 +824,17 @@ class Test_check_attribute_compliance__valid_max(
         self.data_dtype = np.dtype("int8")
         value = 2
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
 
     def test_uncastable_dtype(self):
         self.data_dtype = np.dtype("int64")
         value = np.iinfo(self.data_dtype).max
-        with self.assertRaisesRegex(ValueError, "cannot be safely cast"):
+        with pytest.raises(ValueError, match="cannot be safely cast"):
             self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
 class Test_check_attribute_compliance__exception_handling(
-    _Common__check_attribute_compliance, tests.IrisTest
+    _Common__check_attribute_compliance
 ):
     def test_valid_range_and_valid_min_valid_max_provided(self):
         # Conflicting attributes should raise a suitable exception.
@@ -852,17 +843,17 @@ class Test_check_attribute_compliance__exception_handling(
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
         with Saver("nonexistent test file", "NETCDF4") as saver:
-            with self.assertRaisesRegex(ValueError, msg):
+            with pytest.raises(ValueError, match=msg):
                 saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
-class Test__cf_coord_identity(tests.IrisTest):
+class Test__cf_coord_identity:
     def check_call(self, coord_name, coord_system, units, expected_units):
         coord = iris.coords.DimCoord(
             [30, 45], coord_name, units=units, coord_system=coord_system
         )
         result = Saver._cf_coord_standardised_units(coord)
-        self.assertEqual(result, expected_units)
+        assert result == expected_units
 
     def test_geogcs_latitude(self):
         crs = iris.coord_systems.GeogCS(60, 30)
@@ -1006,7 +997,7 @@ class Test_write_extended_grid_mapping:
         assert_CDL(request, nc_path)
 
 
-class Test_create_cf_grid_mapping:
+class Test_create_cf_grid_mapping(MockerMixin):
     """Tests correct generation of CF grid_mapping variable attributes.
 
     Note: The first 3 tests are run with the "extended grid" mapping
@@ -1033,15 +1024,15 @@ class Test_create_cf_grid_mapping:
         """
         cube = self._cube_with_cs(coord_system)
 
-        class NCMock(mock.Mock):
+        class NCMock(self.mocker.Mock):
             def setncattr(self, name, attr):
                 setattr(self, name, attr)
 
         # Calls the actual NetCDF saver with appropriate mocking, returning
         # the grid variable that gets created.
         grid_variable = NCMock(name="NetCDFVariable")
-        create_var_fn = mock.Mock(side_effect=[grid_variable])
-        dataset = mock.Mock(variables=[], createVariable=create_var_fn)
+        create_var_fn = self.mocker.Mock(side_effect=[grid_variable])
+        dataset = self.mocker.Mock(variables=[], createVariable=create_var_fn)
         variable = NCMock()
 
         saver = Saver(dataset, "NETCDF4", compute=False)
@@ -1443,7 +1434,3 @@ class Test_create_cf_grid_mapping:
 def extended_grid_mapping(request):
     """Fixture for enabling/disabling extended grid mapping."""
     return request.param
-
-
-if __name__ == "__main__":
-    tests.main()

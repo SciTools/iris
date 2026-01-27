@@ -4,27 +4,29 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Mirror of :mod:`iris.tests.unit.fileformats.netcdf.test_Saver`, but with lazy arrays."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
 from types import ModuleType
 
-import iris.tests as tests  # isort:skip
-
 from dask import array as da
+import pytest
+from pytest_mock import mocker
 
 from iris.coords import AuxCoord
 from iris.fileformats.netcdf import Saver
-from iris.tests import stock
+from iris.tests import _shared_utils, stock
 from iris.tests.unit.fileformats.netcdf.saver import test_Saver
 
 
-class LazyMixin(tests.IrisTest):
+class LazyMixin:
     array_lib: ModuleType = da
 
-    def result_path(self, basename=None, ext=""):
-        # Precisely mirroring the tests in test_Saver, so use those CDL's.
-        original = super().result_path(basename, ext)
-        return original.replace("Saver__lazy", "Saver")
+    @pytest.fixture
+    def result_path(self, request):
+        def _result_path(basename=None, ext=""):
+            # Precisely mirroring the tests in test_Saver, so use those CDL's.
+            original = _shared_utils.result_path(request, basename, ext)
+            return original.replace("Saver__lazy", "Saver")
+
+        return _result_path
 
 
 class Test_write(LazyMixin, test_Saver.Test_write):
@@ -81,39 +83,40 @@ class Test_check_attribute_compliance__exception_handling(
     pass
 
 
-class TestStreamed(tests.IrisTest):
-    def setUp(self):
+class TestStreamed:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cube = stock.simple_2d()
-        self.store_watch = self.patch("dask.array.store")
+        self.store_watch = mocker.patch("dask.array.store")
 
-    def save_common(self, cube_to_save):
-        with self.temp_filename(".nc") as nc_path:
+    @pytest.fixture
+    def save_common(self, tmp_path):
+        def _save_common(cube_to_save):
+            nc_path = tmp_path / "temp.nc"
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube_to_save)
 
-    def test_realised_not_streamed(self):
-        self.save_common(self.cube)
-        self.assertFalse(self.store_watch.called)
+        return _save_common
 
-    def test_lazy_streamed_data(self):
+    def test_realised_not_streamed(self, save_common):
+        save_common(self.cube)
+        assert not self.store_watch.called
+
+    def test_lazy_streamed_data(self, save_common):
         self.cube.data = self.cube.lazy_data()
-        self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
+        save_common(self.cube)
+        assert self.store_watch.called
 
-    def test_lazy_streamed_coord(self):
+    def test_lazy_streamed_coord(self, save_common):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(aux_coord.lazy_points(), aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
-        self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
+        save_common(self.cube)
+        assert self.store_watch.called
 
-    def test_lazy_streamed_bounds(self):
+    def test_lazy_streamed_bounds(self, save_common):
         aux_coord = AuxCoord.from_coord(self.cube.coords()[0])
         lazy_coord = aux_coord.copy(aux_coord.points, aux_coord.lazy_bounds())
         self.cube.replace_coord(lazy_coord)
-        self.save_common(self.cube)
-        self.assertTrue(self.store_watch.called)
-
-
-if __name__ == "__main__":
-    tests.main()
+        save_common(self.cube)
+        assert self.store_watch.called
