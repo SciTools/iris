@@ -304,6 +304,14 @@ class TestRead:
     def readmode(self, request):
         return request.param
 
+    def undecoded_testvar(self, ds_encoded, varname: str):
+        path = ds_encoded.filepath()
+        ds_encoded.close()
+        ds = DatasetWrapper(path)
+        v = ds.variables[varname]
+        v.set_auto_chartostring(False)
+        return v
+
     def test_encodings(self, encoding, tempdir, readmode):
         # Create a dataset with the variable
         path = tempdir / f"test_read_encodings_{encoding!s}_{readmode}.nc"
@@ -337,9 +345,9 @@ class TestRead:
                 assert np.all(truncated_result == result)
                 result = truncated_result
         else:
-            # Test "raw" read --> byte array
-            with DECODE_TO_STRINGS_ON_READ.context(False):
-                result = v[:]
+            # Close and re-open as "regular" dataset -- just to check the raw content
+            v = self.undecoded_testvar(ds_encoded, "vxs")
+            result = v[:]
             expected = write_bytes
 
         check_array_matching(result, expected)
@@ -364,8 +372,8 @@ class TestRead:
             expected = np.array(data_string)
         else:
             # Test "raw" read --> byte array
-            with DECODE_TO_STRINGS_ON_READ.context(False):
-                result = v[:]
+            v = self.undecoded_testvar(ds_encoded, "v0_scalar")
+            result = v[:]
             expected = data_bytes
 
         check_array_matching(result, expected)
@@ -401,8 +409,8 @@ class TestRead:
             expected = np.array(test_strings)
         else:
             # Test "raw" read --> byte array
-            with DECODE_TO_STRINGS_ON_READ.context(False):
-                result = v[:]
+            v = self.undecoded_testvar(ds_encoded, "vyxn")
+            result = v[:]
             expected = test_bytes
 
         check_array_matching(result, expected)
@@ -410,8 +418,8 @@ class TestRead:
     def test_read_encoding_failure(self, tempdir, readmode):
         path = tempdir / f"test_read_encoding_failure_{readmode}.nc"
         strlen = 10
-        ds = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
-        v = ds.variables["vxs"]
+        ds_encoded = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
+        v = ds_encoded.variables["vxs"]
         test_utf8_bytes = make_bytearray(
             samples_3_nonascii, bytewidth=strlen, encoding="utf-8"
         )
@@ -425,8 +433,8 @@ class TestRead:
             with pytest.raises(ValueError, match=msg):
                 v[:]
         else:
-            with DECODE_TO_STRINGS_ON_READ.context(False):
-                result = v[:]  # this ought to be ok!
+            v = self.undecoded_testvar(ds_encoded, "vxs")
+            result = v[:]  # this ought to be ok!
 
             assert np.all(result == test_utf8_bytes)
 
