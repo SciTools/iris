@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_global_attributes`."""
 
-from unittest import mock
-
 import numpy as np
 import pytest
 
@@ -15,13 +13,13 @@ from iris.loading import LOAD_PROBLEMS
 
 
 @pytest.fixture
-def mock_engine():
+def mock_engine(mocker):
     global_attributes = {
         "Conventions": "CF-1.5",
         "comment": "Mocked test object",
     }
-    cf_group = mock.Mock(global_attributes=global_attributes)
-    cf_var = mock.MagicMock(
+    cf_group = mocker.Mock(global_attributes=global_attributes)
+    cf_var = mocker.MagicMock(
         cf_name="wibble",
         standard_name=None,
         long_name=None,
@@ -30,7 +28,7 @@ def mock_engine():
         cell_methods=None,
         cf_group=cf_group,
     )
-    engine = mock.Mock(cube=Cube([23]), cf_var=cf_var, filename="foo.nc")
+    engine = mocker.Mock(cube=Cube([23]), cf_var=cf_var, filename="foo.nc")
     yield engine
 
 

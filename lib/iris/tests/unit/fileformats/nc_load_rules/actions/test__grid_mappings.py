@@ -9,12 +9,11 @@ Here, *specifically* testcases relating to grid-mappings and dim-coords.
 
 """
 
-import iris.coord_systems
-
-import iris.tests as tests  # isort: skip
+import re
 
 import pytest
 
+import iris.coord_systems
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
 from iris.loading import LOAD_PROBLEMS
@@ -267,8 +266,8 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
 
         Various options control the expected things which are tested.
         """
-        self.assertEqual(cube.standard_name, "air_temperature")
-        self.assertEqual(cube.var_name, "phenom")
+        assert cube.standard_name == "air_temperature"
+        assert cube.var_name == "phenom"
 
         x_coords = cube.coords(dimensions=(1,))
         y_coords = cube.coords(dimensions=(0,))
@@ -283,40 +282,40 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         else:
             expected_dim_coords += x_coords
 
-        self.assertEqual(set(expected_dim_coords), set(cube.coords(dim_coords=True)))
+        assert set(expected_dim_coords) == set(cube.coords(dim_coords=True))
         if cube_no_xycoords:
-            self.assertEqual(expected_dim_coords, [])
+            assert expected_dim_coords == []
             x_coord = None
             y_coord = None
         else:
-            self.assertEqual(len(x_coords), 1)
+            assert len(x_coords) == 1
             (x_coord,) = x_coords
-            self.assertEqual(len(y_coords), 1)
+            assert len(y_coords) == 1
             (y_coord,) = y_coords
 
-        self.assertEqual(set(expected_aux_coords), set(cube.coords(dim_coords=False)))
+        assert set(expected_aux_coords) == set(cube.coords(dim_coords=False))
 
         if x_coord:
             if xco_stdname is None:
                 # no check
                 pass
             elif xco_stdname is True:
-                self.assertIsNotNone(x_coord.standard_name)
+                assert x_coord.standard_name is not None
             elif xco_stdname is False:
-                self.assertIsNone(x_coord.standard_name)
+                assert x_coord.standard_name is None
             else:
-                self.assertEqual(x_coord.standard_name, xco_stdname)
+                assert x_coord.standard_name == xco_stdname
 
         if y_coord:
             if yco_stdname is None:
                 # no check
                 pass
             if yco_stdname is True:
-                self.assertIsNotNone(y_coord.standard_name)
+                assert y_coord.standard_name is not None
             elif yco_stdname is False:
-                self.assertIsNone(y_coord.standard_name)
+                assert y_coord.standard_name is None
             else:
-                self.assertEqual(y_coord.standard_name, yco_stdname)
+                assert y_coord.standard_name == yco_stdname
 
         cube_cs = cube.coord_system()
         if cube_no_xycoords:
@@ -326,36 +325,29 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             yco_cs = y_coord.coord_system
             xco_cs = x_coord.coord_system
         if cube_no_cs:
-            self.assertIsNone(cube_cs)
-            self.assertIsNone(yco_cs)
-            self.assertIsNone(xco_cs)
+            assert cube_cs is None
+            assert yco_cs is None
+            assert xco_cs is None
         else:
-            self.assertIsNotNone(cube_cs)
+            assert cube_cs is not None
             if cube_cstype is not None:
-                self.assertIsInstance(cube_cs, cube_cstype)
+                assert isinstance(cube_cs, cube_cstype)
             if xco_no_cs:
-                self.assertIsNone(xco_cs)
+                assert xco_cs is None
             else:
-                self.assertEqual(xco_cs, cube_cs)
+                assert xco_cs == cube_cs
             if yco_no_cs:
-                self.assertIsNone(yco_cs)
+                assert yco_cs is None
             else:
-                self.assertEqual(yco_cs, cube_cs)
+                assert yco_cs == cube_cs
 
         if load_problems_regex is not None:
             load_problem = LOAD_PROBLEMS.problems[-1]
-            self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
+            assert re.search(load_problems_regex, str(load_problem.stack_trace))
 
 
-class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
+class Test__grid_mapping(Mixin__grid_mapping):
     # Various testcases for translation of grid-mappings
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_basic_latlon(self):
         # A basic reference example with a lat-long grid.
@@ -801,15 +793,8 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         self.check_result(result, xco_no_cs=True)
 
 
-class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
+class Test__aux_latlons(Mixin__grid_mapping):
     # Testcases for translating auxiliary latitude+longitude variables
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_aux_lon(self):
         # Change the name of xdim, and put xco on the coords list.
@@ -933,15 +918,7 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         self.check_result(result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=False)
 
 
-class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
+class Test__nondimcoords(Mixin__grid_mapping):
     def test_nondim_lats(self):
         # Fix a coord's values so it cannot be a dim-coord.
         #
@@ -1235,7 +1212,3 @@ class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
 
         # Loading multiple coord systems or using extended grid mapping implies ordered axes:
         assert cube.extended_grid_mapping is False
-
-
-if __name__ == "__main__":
-    tests.main()

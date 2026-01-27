@@ -9,9 +9,8 @@ Tests for rules activation relating to 'time' and 'time_period' coords.
 
 """
 
+import re
 from typing import ClassVar
-
-import iris.tests as tests  # isort: skip
 
 from iris.coords import AuxCoord, DimCoord
 from iris.loading import LOAD_PROBLEMS
@@ -187,39 +186,39 @@ netcdf test {{
         period_auxcos = cube.coords(period_name, dim_coords=False)
 
         if time_is == "dim":
-            self.assertEqual(len(time_dimcos), 1)
-            self.assertEqual(len(time_auxcos), 0)
+            assert len(time_dimcos) == 1
+            assert len(time_auxcos) == 0
         elif time_is == "aux":
-            self.assertEqual(len(time_dimcos), 0)
-            self.assertEqual(len(time_auxcos), 1)
+            assert len(time_dimcos) == 0
+            assert len(time_auxcos) == 1
         else:
-            self.assertEqual(len(time_dimcos), 0)
-            self.assertEqual(len(time_auxcos), 0)
+            assert len(time_dimcos) == 0
+            assert len(time_auxcos) == 0
 
         if period_is == "dim":
-            self.assertEqual(len(period_dimcos), 1)
-            self.assertEqual(len(period_auxcos), 0)
+            assert len(period_dimcos) == 1
+            assert len(period_auxcos) == 0
         elif period_is == "aux":
-            self.assertEqual(len(period_dimcos), 0)
-            self.assertEqual(len(period_auxcos), 1)
+            assert len(period_dimcos) == 0
+            assert len(period_auxcos) == 1
         else:
-            self.assertEqual(len(period_dimcos), 0)
-            self.assertEqual(len(period_auxcos), 0)
+            assert len(period_dimcos) == 0
+            assert len(period_auxcos) == 0
 
         # Also check expected built Coord types.
         if time_is == "dim":
-            self.assertIsInstance(time_dimcos[0], DimCoord)
+            assert isinstance(time_dimcos[0], DimCoord)
         elif time_is == "aux":
-            self.assertIsInstance(time_auxcos[0], AuxCoord)
+            assert isinstance(time_auxcos[0], AuxCoord)
 
         if period_is == "dim":
-            self.assertIsInstance(period_dimcos[0], DimCoord)
+            assert isinstance(period_dimcos[0], DimCoord)
         elif period_is == "aux":
-            self.assertIsInstance(period_auxcos[0], AuxCoord)
+            assert isinstance(period_auxcos[0], AuxCoord)
 
         if load_problems_regex is not None:
             load_problem = LOAD_PROBLEMS.problems[-1]
-            self.assertRegex(str(load_problem.stack_trace), load_problems_regex)
+            assert re.search(load_problems_regex, str(load_problem.stack_trace))
 
 
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
@@ -396,43 +395,20 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         self.check_result(result, "aux")
 
 
-class Test__time(Mixin__singlecoord__tests, tests.IrisTest):
+class Test__time(Mixin__singlecoord__tests):
     # Run 'time' coord tests
     which = "time"
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Test__period(Mixin__singlecoord__tests, tests.IrisTest):
+class Test__period(Mixin__singlecoord__tests):
     # Run 'time_period' coord tests
     which = "period"
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Test__dualcoord(Mixin__timecoords__common, tests.IrisTest):
+class Test__dualcoord(Mixin__timecoords__common):
     # Coordinate tests for a combination of 'time' and 'time_period'.
     # Not strictly necessary, as handling is independent, but a handy check
     # on typical usage.
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_time_and_period(self):
         # Test case with both 'time' and 'period', with separate dims.
@@ -461,7 +437,3 @@ class Test__dualcoord(Mixin__timecoords__common, tests.IrisTest):
             ),
         )
         self.check_result(result, time_is="dim", period_is="aux")
-
-
-if __name__ == "__main__":
-    tests.main()
