@@ -8,14 +8,17 @@ This covers both the loading and saving of variables which are the content of
 data-variables, auxiliary coordinates, ancillary variables and -possibly?- cell measures.
 """
 
-from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
+from numpy.typing import ArrayLike
 import pytest
 
 import iris
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
 from iris.fileformats.netcdf import _thread_safe_nc
 
 
@@ -49,8 +52,8 @@ TEST_ENCODINGS = [
 # Independently defined here, to avoid relying on any code we are testing.
 #
 def convert_strings_to_chararray(
-    string_array_1d: np.ndarray, maxlen: int, encoding: str | None = None
-):
+    string_array_1d: ArrayLike, maxlen: int, encoding: str | None = None
+) -> np.ndarray:
     # Note: this is limited to 1-D arrays of strings.
     # Could generalise that if needed, but for now this makes it simpler.
     if encoding is None:
@@ -63,12 +66,13 @@ def convert_strings_to_chararray(
 
 
 def convert_bytearray_to_strings(
-    byte_array, encoding="utf-8", string_length: int | None = None
-):
+    byte_array: ArrayLike, encoding: str = "utf-8", string_length: int | None = None
+) -> np.ndarray:
     """Convert bytes to strings.
 
     N.B. for now at least, we assume the string dim is **always the last one**.
     """
+    byte_array = np.asanyarray(byte_array)
     bytes_shape = byte_array.shape
     var_shape = bytes_shape[:-1]
     if string_length is None:
@@ -88,9 +92,9 @@ class SamplefileDetails:
     """Convenience container for information about a sample file."""
 
     filepath: Path
-    datavar_data: np.ndarray
-    stringcoord_data: np.ndarray
-    numericcoord_data: np.ndarray
+    datavar_data: ArrayLike
+    stringcoord_data: ArrayLike
+    numericcoord_data: ArrayLike
 
 
 def make_testfile(
@@ -200,7 +204,7 @@ class TestReadEncodings:
         encoding,
         tmp_path,
         use_separate_dims,
-    ):
+    ) -> Iterable[SamplefileDetails]:
         """Create a suitable valid testfile, and return expected string content."""
         if PERSIST_TESTFILES:
             tmp_path = Path(PERSIST_TESTFILES).expanduser()
@@ -218,7 +222,7 @@ class TestReadEncodings:
         from iris.tests.integration.netcdf.test_chararrays import ncdump
 
         # TODO: temporary for debug -- TO REMOVE
-        ncdump(tempfile_path)
+        ncdump(str(tempfile_path))
         yield testdata
 
     def test_valid_encodings(self, encoding, testdata: SamplefileDetails):
@@ -246,3 +250,144 @@ class TestReadEncodings:
         coord_var_2 = cube.coord("v_numeric")
         assert coord_var_2.dtype == np.float64
         assert np.all(coord_var_2.points == numeric_data)
+
+
+@pytest.fixture(params=["stringdata", "bytedata"])
+def as_bytes(request):
+    yield request.param == "bytedata"
+
+
+@dataclass
+class SampleCubeDetails:
+    cube: Cube
+    datavar_data: np.ndarray
+    stringcoord_data: np.ndarray
+    save_path: str | Path | None = None
+
+
+def make_testcube(
+    encoding_str: str | None = None,
+    byte_data: bool = False,
+) -> SampleCubeDetails:
+    data_is_ascii = encoding_str in (NO_ENCODING_STR, "ascii")
+
+    numeric_values = np.arange(3.0)
+    if data_is_ascii:
+        coordvar_strings = ["mOnster", "London", "Amsterdam"]
+        datavar_strings = ["bun", "Eclair", "sandwich"]
+    else:
+        coordvar_strings = ["Münster", "London", "Amsterdam"]
+        datavar_strings = ["bun", "éclair", "sandwich"]
+
+    if not byte_data:
+        charlen = N_CHARS_DIM
+        if encoding_str == "utf-32":
+            charlen = charlen // 4 - 1
+        strings_dtype = np.dtype(f"U{charlen}")
+        coordvar_array = np.array(coordvar_strings, dtype=strings_dtype)
+        datavar_array = np.array(datavar_strings, dtype=strings_dtype)
+    else:
+        write_encoding = encoding_str
+        if write_encoding == NO_ENCODING_STR:
+            write_encoding = "ascii"
+        coordvar_array = convert_strings_to_chararray(
+            coordvar_strings, maxlen=N_CHARS_DIM, encoding=write_encoding
+        )
+        datavar_array = convert_strings_to_chararray(
+            datavar_strings, maxlen=N_CHARS_DIM, encoding=write_encoding
+        )
+
+    cube = Cube(datavar_array, var_name="v")
+    cube.add_dim_coord(DimCoord(np.arange(N_XDIM), var_name="x"), 0)
+    if encoding_str != NO_ENCODING_STR:
+        cube.attributes["_Encoding"] = encoding_str
+    co_x = AuxCoord(coordvar_array, var_name="v_co")
+    if encoding_str != NO_ENCODING_STR:
+        co_x.attributes["_Encoding"] = encoding_str
+    co_dims = (0, 1) if byte_data else (0,)
+    cube.add_aux_coord(co_x, co_dims)
+
+    result = SampleCubeDetails(
+        cube=cube,
+        datavar_data=datavar_array,
+        stringcoord_data=coordvar_array,
+    )
+    return result
+
+
+class TestWriteEncodings:
+    """Test saving of testfiles with encoded string data.
+
+    To avoid circularity, we generate and save *cube* data.
+    """
+
+    @pytest.fixture(params=["dataAsStrings", "dataAsBytes"])
+    def write_bytes(self, request):
+        yield request.param == "dataAsBytes"
+
+    @pytest.fixture()
+    def testpath(self, encoding, write_bytes, tmp_path):
+        """Create a suitable test cube, with either string or byte content."""
+        if PERSIST_TESTFILES:
+            tmp_path = Path(PERSIST_TESTFILES).expanduser()
+        if encoding == "<noencoding>":
+            filetag = "noencoding"
+        else:
+            filetag = encoding
+        datatag = "writebytes" if write_bytes else "writestrings"
+        tempfile_path = tmp_path / f"sample_write_{filetag}_{datatag}.nc"
+        yield tempfile_path
+
+    @pytest.fixture()
+    def testdata(self, testpath, encoding, write_bytes):
+        """Create a suitable test cube + save to a file.
+
+        Apply the given encoding to both coord and cube data.
+        Form the data as bytes, or as strings, depending on 'write_bytes'.'
+        """
+        cube_info = make_testcube(encoding_str=encoding, byte_data=write_bytes)
+        cube_info.save_path = testpath
+        cube = cube_info.cube
+        iris.save(cube, testpath)
+        yield cube_info
+
+    def test_valid_encodings(self, encoding, testdata, write_bytes):
+        cube_info = testdata
+        cube, path = cube_info.cube, cube_info.save_path
+        # TODO: not testing the "byte read/write" yet
+        # Make a quick check for cube equality : but the presentation depends on the read mode
+        # with DECODE_TO_STRINGS_ON_READ.context(not write_bytes):
+        # read_cube = iris.load_cube(path)
+        # assert read_cube == cube
+
+        # N.B. file content should not depend on whether bytes or strings were written
+        vararray, coordarray = cube_info.datavar_data, cube_info.stringcoord_data
+        ds = _thread_safe_nc.DatasetWrapper(path)
+        ds.set_auto_chartostring(False)
+        v_main = ds.variables["v"]
+        v_co = ds.variables["v_co"]
+        assert v_main.shape == (N_XDIM, N_CHARS_DIM)
+        assert v_co.shape == (N_XDIM, N_CHARS_DIM)
+        assert v_main.dtype == "<S1"
+        assert v_co.dtype == "<S1"
+        if encoding == NO_ENCODING_STR:
+            assert not "_Encoding" in v_main.ncattrs()
+            assert not "_Encoding" in v_co.ncattrs()
+        else:
+            assert v_main.getncattr("_Encoding") == encoding
+            assert v_co.getncattr("_Encoding") == encoding
+        data_main = v_main[:]
+        data_co = v_co[:]
+        if not write_bytes:
+            # convert to strings, to compare with originals
+            # ("ELSE": varrray/coordarray are bytes anyway)
+            if encoding == NO_ENCODING_STR:
+                encoding = "ascii"
+            data_main = convert_bytearray_to_strings(
+                data_main, encoding, string_length=N_CHARS_DIM
+            )
+            data_co = convert_bytearray_to_strings(
+                data_co, encoding, string_length=N_CHARS_DIM
+            )
+        assert np.all(data_main == vararray)
+        assert np.all(data_co == coordarray)
