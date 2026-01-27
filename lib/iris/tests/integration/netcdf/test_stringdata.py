@@ -8,6 +8,7 @@ This covers both the loading and saving of variables which are the content of
 data-variables, auxiliary coordinates, ancillary variables and -possibly?- cell measures.
 """
 
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -17,12 +18,18 @@ import pytest
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
 
-iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+
+@pytest.fixture(scope="module")
+def all_lazy_auxcoords():
+    """Ensure that *all* aux-coords are loaded lazily, even really small ones."""
+    old_minlazybytes = iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES
+    iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+    yield
+    iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = old_minlazybytes
+
 
 N_XDIM = 3
 N_CHARS_DIM = 64
-# COORD_ON_SEPARATE_DIM = True
-COORD_ON_SEPARATE_DIM = False
 PERSIST_TESTFILES = "~/chararray_testfiles"
 
 
@@ -78,16 +85,22 @@ def convert_bytearray_to_strings(
 
 @dataclass
 class SamplefileDetails:
+    """Convenience container for information about a sample file."""
+
     filepath: Path
     datavar_data: np.ndarray
     stringcoord_data: np.ndarray
     numericcoord_data: np.ndarray
 
 
-def make_testfile(testfile_path: Path, encoding_str: str):
+def make_testfile(
+    testfile_path: Path,
+    encoding_str: str,
+    coords_on_separate_dim: bool,
+) -> SamplefileDetails:
     """Create a test netcdf file.
 
-    Also returns content strings (unicode or ascii versions).
+    Also returns content information for checking loaded results.
     """
     if encoding_str == NO_ENCODING_STR:
         encoding = None
@@ -115,7 +128,7 @@ def make_testfile(testfile_path: Path, encoding_str: str):
     try:
         ds.createDimension("x", N_XDIM)
         ds.createDimension("nstr", N_CHARS_DIM)
-        if COORD_ON_SEPARATE_DIM:
+        if coords_on_separate_dim:
             ds.createDimension("nstr2", N_CHARS_DIM)
         v_xdim = ds.createVariable("x", int, dimensions=("x"))
         v_xdim[:] = np.arange(N_XDIM)
@@ -125,7 +138,7 @@ def make_testfile(testfile_path: Path, encoding_str: str):
             "S1",
             dimensions=(
                 "x",
-                "nstr2" if COORD_ON_SEPARATE_DIM else "nstr",
+                "nstr2" if coords_on_separate_dim else "nstr",
             ),
         )
         v_co[:] = coordvar_bytearray
@@ -177,8 +190,17 @@ def load_problems_list():
 class TestReadEncodings:
     """Test loading of testfiles with encoded string data."""
 
+    @pytest.fixture(params=["coordsSameDim", "coordsOwnDim"])
+    def use_separate_dims(self, request):
+        yield request.param == "coordsOwnDim"
+
     @pytest.fixture()
-    def testdata(self, encoding, tmp_path):
+    def testdata(
+        self,
+        encoding,
+        tmp_path,
+        use_separate_dims,
+    ):
         """Create a suitable valid testfile, and return expected string content."""
         if PERSIST_TESTFILES:
             tmp_path = Path(PERSIST_TESTFILES).expanduser()
@@ -186,8 +208,13 @@ class TestReadEncodings:
             filetag = "noencoding"
         else:
             filetag = encoding
-        tempfile_path = tmp_path / f"sample_read_{filetag}.nc"
-        testdata = make_testfile(testfile_path=tempfile_path, encoding_str=encoding)
+        dimtag = "diffdims" if use_separate_dims else "samedims"
+        tempfile_path = tmp_path / f"sample_read_{filetag}_{dimtag}.nc"
+        testdata = make_testfile(
+            testfile_path=tempfile_path,
+            encoding_str=encoding,
+            coords_on_separate_dim=use_separate_dims,
+        )
         from iris.tests.integration.netcdf.test_chararrays import ncdump
 
         # TODO: temporary for debug -- TO REMOVE
