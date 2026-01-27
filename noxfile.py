@@ -186,6 +186,7 @@ def tests(session: nox.sessions.Session):
         "-n",
         "auto",
         "lib/iris/tests",
+        "tools",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
