@@ -16,6 +16,8 @@ import typing
 import netCDF4
 import numpy as np
 
+from iris.exceptions import NcParallelError
+
 _GLOBAL_NETCDF4_LOCK = Lock()
 
 # Doesn't need thread protection, but this allows all netCDF4 refs to be
@@ -330,17 +332,24 @@ class NetCDFDataProxy:
         return np.ma.array(np.empty((0,) * self.ndim, dtype=self.dtype), mask=True)
 
     def __getitem__(self, keys):
-        # Using a DatasetWrapper causes problems with invalid ID's and the
-        # netCDF4 library, presumably because __getitem__ gets called so many
-        # times by Dask. Use _GLOBAL_NETCDF4_LOCK directly instead.
-        with _GLOBAL_NETCDF4_LOCK:
-            dataset = netCDF4.Dataset(self.path)
-            try:
-                variable = dataset.variables[self.variable_name]
-                # Get the NetCDF variable data and slice.
-                var = variable[keys]
-            finally:
-                dataset.close()
+        try:
+            dataset = DatasetWrapper(self.path)
+        except RuntimeError:
+            # Capturing the "not a valid ID" error that is [rarely] raised by
+            #  NetCDF during rapid parallel access.
+            message = (
+                f"Failure during parallel reading of file {self.path!r}. "
+                "Known issue that is very rare on modern filesystems. "
+                "Please retry the operation. If the problem persists, "
+                "please contact the Iris developers."
+            )
+            raise NcParallelError(message)
+        try:
+            variable = dataset.variables[self.variable_name]
+            # Get the NetCDF variable data and slice.
+            var = variable[keys]
+        finally:
+            dataset.close()
         return np.asanyarray(var)
 
     def __repr__(self):
@@ -381,39 +390,45 @@ class NetCDFWriteProxy:
         # First acquire a file-specific lock for all workers writing to this file.
         self.lock.acquire()
         # Open the file for writing + write to the specific file variable.
-        # Exactly as above, in NetCDFDataProxy : a DatasetWrapper causes problems with
-        # invalid ID's and the netCDF4 library, for so-far unknown reasons.
-        # Instead, use _GLOBAL_NETCDF4_LOCK, and netCDF4 _directly_.
-        with _GLOBAL_NETCDF4_LOCK:
-            dataset = None
-            try:
-                # Even when fully serialised - no parallelism - HDF still
-                #  occasionally fails to acquire the file. This is despite all
-                #  Python locks being available at expected moments, and the
-                #  file reporting as closed. During testing, 2nd retry always
-                #  succeeded. This is likely caused by HDF-level locking
-                #  running on a different timescale to Python-level locking -
-                #  i.e. sometimes Python has released its locks but HDF still
-                #  has not. Thought to be filesystem-dependent; further
-                #  investigation needed.
-                for attempt in range(5):
-                    try:
-                        dataset = netCDF4.Dataset(self.path, "r+")
-                        break
-                    except OSError:
-                        if attempt < 4:
-                            sleep(0.1)
-                        else:
-                            raise
-                var = dataset.variables[self.varname]
-                var[keys] = array_data
-            finally:
+        dataset = None
+        try:
+            for attempt in range(5):
                 try:
-                    if dataset:
-                        dataset.close()
-                finally:
-                    # *ALWAYS* let go !
-                    self.lock.release()
+                    dataset = DatasetWrapper(self.path, "r+")
+                    break
+                except RuntimeError:
+                    # Capturing the "not a valid ID" error that is [rarely]
+                    #  raised by NetCDF during rapid parallel access.
+                    message = (
+                        f"Failure during parallel writing of file {self.path!r}. "
+                        "Known issue that is very rare on modern filesystems. "
+                        "Please retry the operation. If the problem persists, "
+                        "please contact the Iris developers."
+                    )
+                    raise NcParallelError(message)
+                except OSError:
+                    # Even when fully serialised - no parallelism - HDF still
+                    #  occasionally fails to acquire the file. This is despite all
+                    #  Python locks being available at expected moments, and the
+                    #  file reporting as closed. During testing, 2nd retry always
+                    #  succeeded. This is likely caused by HDF-level locking
+                    #  running on a different timescale to Python-level locking -
+                    #  i.e. sometimes Python has released its locks but HDF still
+                    #  has not. Thought to be filesystem-dependent; further
+                    #  investigation needed.
+                    if attempt < 4:
+                        sleep(0.1)
+                    else:
+                        raise
+            var = dataset.variables[self.varname]
+            var[keys] = array_data
+        finally:
+            try:
+                if dataset:
+                    dataset.close()
+            finally:
+                # *ALWAYS* let go !
+                self.lock.release()
 
     def __repr__(self):
         return f"<{self.__class__.__name__} path={self.path!r} var={self.varname!r}>"
