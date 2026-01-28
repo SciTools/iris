@@ -33,8 +33,9 @@ def all_lazy_auxcoords():
 
 N_XDIM = 3
 N_CHARS_DIM = 64
-PERSIST_TESTFILES = "~/chararray_testfiles"
-
+# TODO: remove (debug)
+# PERSIST_TESTFILES: str | None = "~/chararray_testfiles"
+PERSIST_TESTFILES: str | None = None
 
 NO_ENCODING_STR = "<noencoding>"
 TEST_ENCODINGS = [
@@ -199,38 +200,51 @@ class TestReadEncodings:
         yield request.param == "coordsOwnDim"
 
     @pytest.fixture()
-    def testdata(
+    def readtest_path(
         self,
         encoding,
         tmp_path,
         use_separate_dims,
     ) -> Iterable[SamplefileDetails]:
         """Create a suitable valid testfile, and return expected string content."""
-        if PERSIST_TESTFILES:
-            tmp_path = Path(PERSIST_TESTFILES).expanduser()
+        match PERSIST_TESTFILES:
+            case str():
+                tmp_path = Path(PERSIST_TESTFILES).expanduser()
+            case _:
+                pass
         if encoding == "<noencoding>":
             filetag = "noencoding"
         else:
             filetag = encoding
         dimtag = "diffdims" if use_separate_dims else "samedims"
         tempfile_path = tmp_path / f"sample_read_{filetag}_{dimtag}.nc"
+        yield tempfile_path
+
+    @pytest.fixture()
+    def readtest_data(
+        self,
+        encoding,
+        readtest_path,
+        use_separate_dims,
+    ) -> Iterable[SamplefileDetails]:
+        """Create a suitable valid testfile, and return expected string content."""
         testdata = make_testfile(
-            testfile_path=tempfile_path,
+            testfile_path=readtest_path,
             encoding_str=encoding,
             coords_on_separate_dim=use_separate_dims,
         )
-        from iris.tests.integration.netcdf.test_chararrays import ncdump
 
-        # TODO: temporary for debug -- TO REMOVE
-        ncdump(str(tempfile_path))
+        # # TODO: temporary for debug -- TO REMOVE
+        # from iris.tests.integration.netcdf.test_chararrays import ncdump
+        # ncdump(str(tempfile_path))
         yield testdata
 
-    def test_valid_encodings(self, encoding, testdata: SamplefileDetails):
+    def test_valid_encodings(self, encoding, readtest_data: SamplefileDetails):
         testfile_path, datavar_strings, coordvar_strings, numeric_data = (
-            testdata.filepath,
-            testdata.datavar_data,
-            testdata.stringcoord_data,
-            testdata.numericcoord_data,
+            readtest_data.filepath,
+            readtest_data.datavar_data,
+            readtest_data.stringcoord_data,
+            readtest_data.numericcoord_data,
         )
         cube = iris.load_cube(testfile_path)
         assert load_problems_list() == []
@@ -326,7 +340,7 @@ class TestWriteEncodings:
         yield request.param == "dataAsBytes"
 
     @pytest.fixture()
-    def testpath(self, encoding, write_bytes, tmp_path):
+    def writetest_path(self, encoding, write_bytes, tmp_path):
         """Create a suitable test cube, with either string or byte content."""
         if PERSIST_TESTFILES:
             tmp_path = Path(PERSIST_TESTFILES).expanduser()
@@ -339,20 +353,20 @@ class TestWriteEncodings:
         yield tempfile_path
 
     @pytest.fixture()
-    def testdata(self, testpath, encoding, write_bytes):
+    def writetest_data(self, writetest_path, encoding, write_bytes):
         """Create a suitable test cube + save to a file.
 
         Apply the given encoding to both coord and cube data.
         Form the data as bytes, or as strings, depending on 'write_bytes'.'
         """
         cube_info = make_testcube(encoding_str=encoding, byte_data=write_bytes)
-        cube_info.save_path = testpath
+        cube_info.save_path = writetest_path
         cube = cube_info.cube
-        iris.save(cube, testpath)
+        iris.save(cube, writetest_path)
         yield cube_info
 
-    def test_valid_encodings(self, encoding, testdata, write_bytes):
-        cube_info = testdata
+    def test_valid_encodings(self, encoding, writetest_data, write_bytes):
+        cube_info = writetest_data
         cube, path = cube_info.cube, cube_info.save_path
         # TODO: not testing the "byte read/write" yet
         # Make a quick check for cube equality : but the presentation depends on the read mode
