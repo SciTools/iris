@@ -132,10 +132,11 @@ class VariableEncoder:
         self.varname = cf_var.name
         self.dtype = cf_var.dtype
         self.is_chardata = np.issubdtype(self.dtype, np.bytes_)
-        self.read_encoding = self._get_encoding(cf_var, writing=False)
-        self.write_encoding = self._get_encoding(cf_var, writing=True)
-        self.n_chars_dim = cf_var.group().dimensions[cf_var.dimensions[-1]].size
-        self.string_width = self._get_string_width(cf_var)
+        if self.is_chardata:
+            self.read_encoding = self._get_encoding(cf_var, writing=False)
+            self.write_encoding = self._get_encoding(cf_var, writing=True)
+            self.n_chars_dim = cf_var.group().dimensions[cf_var.dimensions[-1]].size
+            self.string_width = self._get_string_width(cf_var)
 
     @staticmethod
     def _get_encoding(cf_var, writing=False) -> str:
@@ -199,7 +200,7 @@ class VariableEncoder:
         return data
 
     def encode_strings_as_bytearray(self, data: np.ndarray) -> np.ndarray:
-        if data.dtype.kind == "U":
+        if self.is_chardata and data.dtype.kind == "U":
             # N.B. it is also possible to pass a byte array (dtype "S1"),
             #  to be written directly, without processing.
             try:
