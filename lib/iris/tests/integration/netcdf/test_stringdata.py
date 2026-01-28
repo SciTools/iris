@@ -195,6 +195,11 @@ def load_problems_list():
 class TestReadEncodings:
     """Test loading of testfiles with encoded string data."""
 
+    @pytest.fixture(autouse=True)
+    def _clear_load_problems(self):
+        iris.loading.LOAD_PROBLEMS.reset()
+        yield
+
     @pytest.fixture(params=["coordsSameDim", "coordsOwnDim"])
     def use_separate_dims(self, request):
         yield request.param == "coordsOwnDim"
