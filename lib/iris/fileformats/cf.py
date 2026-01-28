@@ -26,7 +26,7 @@ import numpy.ma as ma
 
 import iris.exceptions
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
 from iris.mesh.components import Connectivity
 import iris.util
 import iris.warnings
@@ -67,7 +67,9 @@ reference_terms = dict(
 
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):
-    return np.issubdtype(var.dtype, np.bytes_)
+    # N.B. use 'datatype' not 'dtype', to "look inside" variable wrappers which
+    #  represent 'S1' type data as 'U<xx>'.
+    return isinstance(var.datatype, np.dtype) and np.issubdtype(var.datatype, np.bytes_)
 
 
 ################################################################################
@@ -788,50 +790,63 @@ class CFLabelVariable(CFVariable):
                 % type(cf_data_var)
             )
 
-        # Determine the name of the label string (or length) dimension by
-        # finding the dimension name that doesn't exist within the data dimensions.
-        str_dim_name = list(set(self.dimensions) - set(cf_data_var.dimensions))
+        # # Determine the name of the label string (or length) dimension by
+        # # finding the dimension name that doesn't exist within the data dimensions.
+        # str_dim_names = list(set(self.dimensions) - set(cf_data_var.dimensions))
+        # n_nondata_dims = len(str_dim_names)
+        #
+        # if n_nondata_dims == 0:
+        #     # *All* dims are shared with the data-variable.
+        #     # This is only ok if the data-var is *also* a string type.
+        #     dim_ok = _is_str_dtype(cf_data_var)
+        #     # In this case, we must just *assume* that the last dimension is "the"
+        #     #  string dimension
+        #     str_dim_name = self.dimensions[-1]
+        # else:
+        #     # If there is exactly one non-data dim, that is the one we want
+        #     dim_ok = len(str_dim_names) == 1
+        #     (str_dim_name,) = str_dim_names
+        #
+        # if not dim_ok:
+        #     raise ValueError(
+        #         "Invalid string dimensions for CF-netCDF label variable %r"
+        #         % self.cf_name
+        #     )
 
-        if len(str_dim_name) != 1:
-            raise ValueError(
-                "Invalid string dimensions for CF-netCDF label variable %r"
-                % self.cf_name
-            )
-
-        str_dim_name = str_dim_name[0]
-        label_data = self[:]
-
-        if ma.isMaskedArray(label_data):
-            label_data = label_data.filled()
-
-        # Determine whether we have a string-valued scalar label
-        # i.e. a character variable that only has one dimension (the length of the string).
-        if self.ndim == 1:
-            label_string = b"".join(label_data).strip()
-            label_string = label_string.decode("utf8")
-            data = np.array([label_string])
-        else:
-            # Determine the index of the string dimension.
-            str_dim = self.dimensions.index(str_dim_name)
-
-            # Calculate new label data shape (without string dimension) and create payload array.
-            new_shape = tuple(
-                dim_len for i, dim_len in enumerate(self.shape) if i != str_dim
-            )
-            string_basetype = "|U%d"
-            string_dtype = string_basetype % self.shape[str_dim]
-            data = np.empty(new_shape, dtype=string_dtype)
-
-            for index in np.ndindex(new_shape):
-                # Create the slice for the label data.
-                if str_dim == 0:
-                    label_index = (slice(None, None),) + index
-                else:
-                    label_index = index + (slice(None, None),)
-
-                label_string = b"".join(label_data[label_index]).strip()
-                label_string = label_string.decode("utf8")
-                data[index] = label_string
+        data = self[:]
+        # label_data = self[:]
+        #
+        # if ma.isMaskedArray(label_data):
+        #     label_data = label_data.filled(b"\0")
+        #
+        # # Determine whether we have a string-valued scalar label
+        # # i.e. a character variable that only has one dimension (the length of the string).
+        # if self.ndim == 1:
+        #     label_string = b"".join(label_data).strip()
+        #     label_string = label_string.decode("utf8")
+        #     data = np.array([label_string])
+        # else:
+        #     # Determine the index of the string dimension.
+        #     str_dim = self.dimensions.index(str_dim_name)
+        #
+        #     # Calculate new label data shape (without string dimension) and create payload array.
+        #     new_shape = tuple(
+        #         dim_len for i, dim_len in enumerate(self.shape) if i != str_dim
+        #     )
+        #     string_basetype = "|U%d"
+        #     string_dtype = string_basetype % self.shape[str_dim]
+        #     data = np.empty(new_shape, dtype=string_dtype)
+        #
+        #     for index in np.ndindex(new_shape):
+        #         # Create the slice for the label data.
+        #         if str_dim == 0:
+        #             label_index = (slice(None, None),) + index
+        #         else:
+        #             label_index = index + (slice(None, None),)
+        #
+        #         label_string = b"".join(label_data[label_index]).strip()
+        #         label_string = label_string.decode("utf8")
+        #         data[index] = label_string
 
         return data
 
@@ -1361,7 +1376,11 @@ class CFReader:
         if isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
             self._filename = os.path.expanduser(file_source)
-            self._dataset = _thread_safe_nc.DatasetWrapper(self._filename, mode="r")
+            if _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ:
+                ds_type = _bytecoding_datasets.EncodedDataset
+            else:
+                ds_type = _thread_safe_nc.DatasetWrapper
+            self._dataset = ds_type(self._filename, mode="r")
             self._own_file = True
         else:
             # We have been passed an open dataset.

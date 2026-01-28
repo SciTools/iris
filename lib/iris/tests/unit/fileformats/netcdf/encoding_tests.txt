@@ -1,0 +1,191 @@
+===========
+Outstanding Qs
+* What would we like to do with all this IN IRIS??
+    - generally present as string arrays (Uxx)
+    - existing scheme of naming dims for length + re-using is quite cunning!
+    - choice of seeing actual character arrays as alternative to string conversions?
+
+* string length handling for load/save/roundtrip
+  - on SAVE, we need some control so we can create files which are compatible,
+    irrespective of the data (which currently we are not doing)
+    - ALSO this is wanted to ensure that multiple vars (e.g. string cubes or string coords)
+      will share the string dim -- instead of creating arbitrary different ones
+    - presumably, if encoding blows the max-len, we must get a warning/error
+
+  - on LOAD, we may want to *capture* the actual original string dim length, so it can be
+    re-created on save (by some scheme, as per previous) -- i.e. enable roundtripping.
+    I don't really want to preserve the name of the string dim, but this could be a
+    slightly tender point.  To consider also : the impact of this on the non-equivalence
+    of loaded cubes, if we use actual *attributes* to carry this info (see below).
+    - **if not** : just load data + convert to string arrays as seems best
+        - this will also lead to incompatible cubes.
+
+  - on SAVE, in the absence of strlen-controls, what is a reasonable default choice?
+     - take longest encoded
+     - set nbytes = NEXPAND(encoding) * nchars
+        - sensible values would depend on the encoding...
+            : ascii -> 1
+            : utf-8 -> 1 or 4 ???
+            : utf-16 -> 2 or 4 ???
+            : utf-32 -> 4
+
+  - on LOAD, in absence of strlen controls, how do we choose the result DTYPE (i.e. character length)?
+    - again, may depend on the encoding:
+        : ascii = "U<strlen>"
+        : UTF-8 = "U<strlen>"
+        : UTF-16 = "U<strlen/2>"
+        : UTF-32 = "U<strlen/4>"
+            - N.B. these are ll at least "safe" - i.e. won't lose characters
+
+
+separately from these, there is the question of how the controls affect "normal"
+cube operations.
+    - the easiest approach is to define a "special" attribute,
+      which can be set on any cube/component
+    - using the dtype-length of the data would be *possible*, in conjunction with the
+      above-proposed "default rules" for choosing strlen from the dtype.
+      But this might not round-trip in all cases.
+
+within the actual data arrays
+    - we can't really expect any different to what numpy does
+        - that is, the dtype-length of any element <= that of the array  (and not ==)
+          this may be tricky, but we can't easily prevent it.
+                >>> a = np.array(['', 'a', 'bb'])
+                >>> a
+                array(['', 'a', 'bb'], dtype='<U2')
+                >>> a[0].dtype
+                dtype('<U')
+                >>> a[1].dtype
+                dtype('<U1')
+                >>> a[2].dtype
+                dtype('<U2')
+                >>> a.dtype
+                dtype('<U2')
+                >>>
+    - likewise, we can't assign without possible truncation.
+      If you **want** to expand the supported width, can use ".astype()" first ?
+
+
+========================
+=========================
+
+forms in files:
+    * char chardata(dim1, dim2, strlen_xx);    # char data
+    * string data(dim1, dim2);
+
+netcdf types:
+(netcdf docs terms)
+    NC_BYTE 8-bit signed integer
+    NC_UBYTE 8-bit unsigned integer
+    NC_CHAR 8-bit character
+    NC_STRING variable length character string
+
+***NOTE*** there is no NC_UCHAR or "unsigned char" type
+
+
+relevant numpy base types (scalar dtypes):
+    * "S" bytes             : np.bytes_ == np.int8
+    * "B" unsigned bytes    : np.ubyte == np.uint8
+    * 'i' ints              : np.int_
+    * 'u' unsigned ints     : np.int_
+    * "U" unicode string    : np.str_
+
+forms in numpy:
+    * np.ndarray(dtype="S1")  # char data
+    * np.ndarray(dtype="Snn")  # char data
+    * np.ndarray(dtype="Unn")  # strings
+    * np.ndarray(dtype="")
+
+possibilities in createVariable:
+"""
+    The datatype can be a numpy datatype object, or a string that describes a numpy dtype object ...
+    datatype can also be a CompoundType instance (for a structured, or compound array), a VLType instance (for a variable-length array),
+**  or the python str builtin (for a variable-length string array).
+**  Numpy string and unicode datatypes with length greater than one are aliases for str.
+"""
+
+test types:
+    "i1" : np.int8
+    "u1" : np.uint8
+    "S1" : np.byte_
+    "U1" : np.str_
+    "S<n>" :
+    "U<n>" : with/without non-ascii content
+
+save all these to files...
+outputs from "test_nc_dtypes.py" test run:
+  SPEC:i1 SAVED-AS:int8     byte    RELOAD-AS:int8
+  SPEC:u1 SAVED-AS:uint8    ubyte   RELOAD-AS:uint8
+  SPEC:S1 SAVED-AS:|S1      char    RELOAD-AS:<U3
+         **OR*** |S1, if set_auto_chartostring(False)
+         - in which case, dimensions also different : (3,) --> ()
+  SPEC:U1 SAVED-AS:<U1      string  RELOAD-AS:object
+  SPEC:S SAVED-AS:|S5       string  RELOAD-AS:object
+  SPEC:U SAVED-AS:<U6       string  RELOAD-AS:object
+
+
+
+What is relevant/possible :
+* IN netcdf files
+    - variables of type "char"
+
+... investigate the uchar thing...
+  - confirmed there is no such thing
+  - (see commented-out portions of  "test_nc_dtypes.py" -- around "test_uchar")
+
+
+* IN netcdf4-python
+    - reading: variables of type "char" can pre presented as EITHER "S1" OR object (=strings)
+    - writing: likewise, but the format switch is "automatic" ??
+        - i.e. you can pass EITHER "arr(dims + strlen):S1" OR "arr(dims):Unn"
+
+Then, as regards the _Encoding ..
+    - Reading: converts if required, use _Encoding or "UTF-8" (== safe)
+    - Writing: converts if required, use  _Encoding or "ascii" (== fail if unsuited)
+
+
+TO TEST...
+==========
++++ create a dataset + write char data
++++   - X assign different encodings: makes no difference
+
++++ create a dataset + write STRING data
++++   - X encoding=(ascii, utf-8, utf-32, None)
++++   - X withnonascii=(T, F)
+XXXX  - X length=(long, short, none)
+        ***deferred*** to layer above only
+
++++ read string data
++++     - X encoding=(ascii, utf-8, utf-32, None)
++++     - X withnonascii=(T, F)
+
++++ read char data (with control)
++++   - X different encodings: make no difference
+
+==rethought==
+write strings
+    - scalar
+    - 1D
+    - multidm
+    - X encodings
+    - check encoding failures + defaults
+    - check length controls + truncations
+
+read strings
+    - X encodings
+    - decoding failures + defaults
+
+write char data
+    - X encodings: don't matter
+
+read char data
+    - X encodings: don't matter
+
+---
+NOTEs on length control:
+not an API thing, it's implicit from when you create a variable
+this also applies to how it loads back
+BUT here there may be scope for a control attribute :
+  "iris_string_dim" - controls width on creation + reading back
+
+

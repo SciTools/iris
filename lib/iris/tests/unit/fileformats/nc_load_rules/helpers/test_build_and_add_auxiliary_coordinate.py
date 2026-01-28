@@ -44,7 +44,9 @@ class TestBoundsVertexDim(tests.IrisTest):
 
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
+            cf_var=mock.Mock(
+                dimensions=("foo", "bar"), cf_data=cf_data, dtype=np.int32
+            ),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -174,7 +176,7 @@ class TestDtype(tests.IrisTest):
 
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            cf_var=mock.Mock(dimensions=("foo", "bar"), dtype=np.int32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -244,7 +246,7 @@ class TestCoordConstruction(tests.IrisTest):
         # Create dummy pyke engine.
         self.engine = mock.Mock(
             cube=mock.Mock(),
-            cf_var=mock.Mock(dimensions=("foo", "bar")),
+            cf_var=mock.Mock(dimensions=("foo", "bar"), dtype=np.float32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
