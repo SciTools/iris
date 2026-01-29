@@ -1,6 +1,12 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: "style: pre-commit fixes"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autoupdate_schedule: "monthly"
+
 files: |
     (?x)(
         noxfile\.py|
@@ -29,7 +35,7 @@ repos:
     -   id: no-commit-to-branch
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.5"
+    rev: "v0.14.10"
     hooks:
     -   id: ruff
         types: [file, python]
@@ -44,12 +50,6 @@ repos:
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
--   repo: https://github.com/PyCQA/flake8
-    rev: 7.3.0
-    hooks:
-    -   id: flake8
-        types: [file, python]
-
 -   repo: https://github.com/asottile/blacken-docs
     rev: 1.20.0
     hooks:
@@ -63,7 +63,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.18.2'
+    rev: 'v1.19.1'
     hooks:
     -   id: mypy
         additional_dependencies:
@@ -71,7 +71,7 @@ repos:
         exclude: 'noxfile\.py|docs/src/conf\.py'
 
 -   repo: https://github.com/numpy/numpydoc
-    rev: v1.9.0
+    rev: v1.10.0
     hooks:
       - id: numpydoc-validation
         exclude: "^lib/iris/tests/|docs/gallery_code/"

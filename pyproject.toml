@@ -21,9 +21,9 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -50,9 +50,7 @@ keywords = [
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "scitools-iris"
-# NOTE: currently pinning to avoid Python 3.14
-#  see : https://github.com/SciTools/iris/issues/6775
-requires-python = ">=3.11,<3.14"
+requires-python = ">=3.12"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"
@@ -137,6 +135,7 @@ version_scheme = "release-branch-semver"
 addopts = "-ra --durations=25"
 required_plugins = "pytest-mock"
 testpaths = "lib/iris"
+log_level = "INFO"
 
 [tool.coverage.run]
 branch = true

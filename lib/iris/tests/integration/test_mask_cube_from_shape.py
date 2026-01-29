@@ -8,13 +8,12 @@ import cartopy.io.shapereader as shpreader
 import numpy as np
 from pyproj import CRS
 import pytest
-from pytest import approx
 from shapely.geometry import LineString, MultiLineString, MultiPoint, Point
 
 import iris
 from iris._deprecation import IrisDeprecation
 from iris.coord_systems import GeogCS
-import iris.tests as tests
+from iris.tests import _shared_utils
 from iris.util import mask_cube_from_shape, mask_cube_from_shapefile
 from iris.warnings import IrisUserWarning
 
@@ -48,7 +47,9 @@ def test_global_proj_china(
     minimum_weight, all_touched, invert, expected_sum, shp_reader, wgs84_crs
 ):
     """Test masking with a shape for China with various parameter combinations."""
-    path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"]
+    )
     test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)
@@ -67,12 +68,14 @@ def test_global_proj_china(
         invert=invert,
     )
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == expected_sum
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == expected_sum
 
 
 def test_global_proj_russia(shp_reader, wgs84_crs):
     """Test masking with a shape that crosses the antimeridian."""
-    path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"]
+    )
     test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)
@@ -94,7 +97,7 @@ def test_global_proj_russia(shp_reader, wgs84_crs):
 
 def test_rotated_pole_proj_uk(shp_reader, wgs84_crs):
     """Test masking a rotated pole projection cube for the UK with lat/lon shape."""
-    path = tests.get_data_path(
+    path = _shared_utils.get_data_path(
         ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
     )
     test_rotated = iris.load_cube(path)
@@ -105,12 +108,14 @@ def test_rotated_pole_proj_uk(shp_reader, wgs84_crs):
     ][0]
     masked_test = mask_cube_from_shape(test_rotated, ne_uk, shape_crs=wgs84_crs)
     assert masked_test.ndim == 2
-    assert approx(np.sum(masked_test.data), rel=0.001) == 102.77
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 102.77
 
 
 def test_transverse_mercator_proj_uk(shp_reader, wgs84_crs):
     """Test masking a transverse mercator projection cube for the UK with lat/lon shape."""
-    path = tests.get_data_path(["NetCDF", "transverse_mercator", "tmean_1910_1910.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "transverse_mercator", "tmean_1910_1910.nc"]
+    )
     test_transverse = iris.load_cube(path)
     ne_uk = [
         country.geometry
@@ -119,12 +124,12 @@ def test_transverse_mercator_proj_uk(shp_reader, wgs84_crs):
     ][0]
     masked_test = mask_cube_from_shape(test_transverse, ne_uk, shape_crs=wgs84_crs)
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == 90740.25
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 90740.25
 
 
 def test_rotated_pole_proj_germany_weighted_area(shp_reader, wgs84_crs):
     """Test masking a rotated pole projection cube for Germany with weighted area."""
-    path = tests.get_data_path(
+    path = _shared_utils.get_data_path(
         ["NetCDF", "rotated", "xy", "rotPole_landAreaFraction.nc"]
     )
     test_rotated = iris.load_cube(path)
@@ -137,12 +142,14 @@ def test_rotated_pole_proj_germany_weighted_area(shp_reader, wgs84_crs):
         test_rotated, ne_germany, shape_crs=wgs84_crs, minimum_weight=0.9
     )
     assert masked_test.ndim == 2
-    assert approx(np.sum(masked_test.data), rel=0.001) == 125.60199
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 125.60199
 
 
 def test_4d_global_proj_brazil(shp_reader, wgs84_crs):
     """Test masking a 4D global projection cube for Brazil with lat/lon shape."""
-    path = tests.get_data_path(["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
+    )
     test_4d_brazil = iris.load_cube(path, "Carbon Dioxide")
     test_4d_brazil.coord("latitude").coord_system = GeogCS(6371229)
     test_4d_brazil.coord("longitude").coord_system = GeogCS(6371229)
@@ -155,7 +162,7 @@ def test_4d_global_proj_brazil(shp_reader, wgs84_crs):
         test_4d_brazil, ne_brazil, shape_crs=wgs84_crs, all_touched=True
     )
     assert masked_test.ndim == 4
-    assert approx(np.sum(masked_test.data), rel=0.001) == 18616921.2
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == 18616921.2
 
 
 @pytest.mark.parametrize(
@@ -200,7 +207,9 @@ def test_4d_global_proj_brazil(shp_reader, wgs84_crs):
 )
 def test_global_proj_uk_shapes(shape, expected_value, wgs84_crs):
     """Test masking with a variety of shape types."""
-    path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"]
+    )
     test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)
@@ -210,12 +219,14 @@ def test_global_proj_uk_shapes(shape, expected_value, wgs84_crs):
         shape_crs=wgs84_crs,
     )
     assert masked_test.ndim == 3
-    assert approx(np.sum(masked_test.data), rel=0.001) == expected_value
+    assert pytest.approx(np.sum(masked_test.data), rel=0.001) == expected_value
 
 
 def test_mask_cube_from_shapefile_depreciation(shp_reader):
     """Test that the mask_cube_from_shapefile function raises a deprecation warning."""
-    path = tests.get_data_path(["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"])
+    path = _shared_utils.get_data_path(
+        ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"]
+    )
     test_global = iris.load_cube(path)
     test_global.coord("latitude").coord_system = GeogCS(6371229)
     test_global.coord("longitude").coord_system = GeogCS(6371229)

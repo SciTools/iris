@@ -8,11 +8,11 @@ from geovista.geodesic import BBox
 
 from iris import load_cube
 from iris.experimental.geovista import cube_to_polydata, extract_unstructured_region
-from iris.tests import get_data_path
+from iris.tests import _shared_utils
 
 
 def test_face_region_extraction():
-    file_path = get_data_path(
+    file_path = _shared_utils.get_data_path(
         [
             "NetCDF",
             "unstructured_grid",
