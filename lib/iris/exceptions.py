@@ -170,14 +170,9 @@ class CannotAddError(ValueError):
 
 
 class DatalessError(ValueError):
-    """Raised when an method cannot be performed on a dataless :class:`~iris.cube.Cube`."""
+    """Raised when a method cannot be performed on a dataless :class:`~iris.cube.Cube`."""
 
-    def __str__(self):
-        msg = (
-            "Dataless cubes are still early in implementation, and dataless {} "
-            "operations are not currently supported."
-        )
-        return msg.format(super().__str__())
+    pass
 
 
 class CFParseError(IrisError):

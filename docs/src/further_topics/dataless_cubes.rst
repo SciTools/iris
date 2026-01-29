@@ -82,7 +82,7 @@ Dataless cubes are relatively new, and only partly integrated with Iris cube ope
 generally.
 
 The following are some of the notable features which do *not* support dataless cubes,
-at least as yet :
+at least as yet:
 
 * plotting
 
@@ -90,19 +90,9 @@ at least as yet :
 
 * statistics
 
-* concatenation
-
 * :meth:`iris.cube.CubeList.realise_data`
 
 * various :class:`~iris.cube.Cube` methods, including at least:
-
-  * :meth:`~iris.cube.Cube.convert_units`
-
-  * :meth:`~iris.cube.Cube.subset`
-
-  * :meth:`~iris.cube.Cube.intersection`
-
-  * :meth:`~iris.cube.Cube.slices`
 
   * :meth:`~iris.cube.Cube.interpolate`
 
