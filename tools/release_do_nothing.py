@@ -141,13 +141,15 @@ class IrisRelease(Progress):
         )
 
         fork_url = self._git_remote_get_url()
-        self.github_user = re.search(
+        search_result = re.search(
             r"(?<=github\.com[:/])([a-zA-Z0-9-]+)(?=/)",
             fork_url,
-        ).group(0)
-        if self.github_user is None:
+        )
+        if search_result is None:
             message = f"Error deriving GitHub username from URL: {fork_url}"
             raise RuntimeError(message)
+        else:
+            self.github_user = search_result.group(0)
 
     def _git_ls_remote_tags(self) -> str:
         # Factored out to assist with testing.
@@ -324,7 +326,7 @@ class IrisRelease(Progress):
         return(
             self.release_type is self.ReleaseTypes.PATCH and
             self.patch_min_max is not None and
-            self.version < self.patch_min_max[1]
+            self.version.series < self.patch_min_max[1].series
         )
 
     def apply_patches(self):
