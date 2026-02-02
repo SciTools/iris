@@ -917,6 +917,26 @@ def soil_type_coord(cube, field):
         )
 
 
+def radiation_type_coord(cube, field):
+    """Decode the Radiation Types codes - similar to time_averaging."""
+    radiation_codes = {
+        64: 'instantaneous ("corrected")',
+        32: "upward_radiation",
+        16: "downward_radiation",
+        8: "diffuse_radiation",
+        4: "direct_radiation",
+        2: "clear_sky_radiation",
+    }
+    num = field.radiation_code
+    radiation_types = []
+    for key in sorted(radiation_codes.keys(), reverse=True):
+        if num >= key:
+            radiation_types.append(radiation_codes[key])
+            num = num - key
+    if radiation_types:
+        cube.attributes["radiation_type"] = radiation_types
+
+
 def time_averaging(cube, field):
     """Decode the averagingtype code - similar to the PP LBPROC code."""
     time_averaging_codes = {
@@ -986,9 +1006,12 @@ def run(field, handle_metadata_errors=True):
         case "Table_1":
             table_1_attributes(cube, field)
         case "Table_2":
-            soil_type_coord(cube, field)
             probability_coord(cube, field, handle_metadata_errors)
             table_2_attributes(cube, field)
+        case "Table_3":
+            soil_type_coord(cube, field)
+        case "Table_4":
+            radiation_type_coord(cube, field)
 
     # add other generic stuff, if present
     ensemble_member(cube, field)

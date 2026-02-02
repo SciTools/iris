@@ -141,17 +141,17 @@ table_1_data_header_int16s = (
     "software_major_version",
     "software_minor_version",
     "software_micro_version",
-    "data_header_int16_41",
-    "data_header_int16_42",
-    "data_header_int16_43",
-    "data_header_int16_44",
-    "data_header_int16_45",
-    "data_header_int16_46",
-    "data_header_int16_47",
     "data_header_int16_48",
     "data_header_int16_49",
     "data_header_int16_50",
     "data_header_int16_51",
+    "data_header_int16_52",
+    "data_header_int16_53",
+    "data_header_int16_54",
+    "data_header_int16_55",
+    "data_header_int16_56",
+    "data_header_int16_57",
+    "data_header_int16_58",
     "period_seconds",
 )
 
@@ -164,7 +164,137 @@ table_2_data_header_int16s = (
     "member_count",
     "probability_period_of_event",
     "data_header_int16_05",
+    "data_header_int16_06",
+    "data_header_int16_07",
+    "data_header_int16_08",
+    "data_header_int16_09",
+    "data_header_int16_10",
+    "data_header_int16_11",
+    "data_header_int16_12",
+    "data_header_int16_13",
+    "data_header_int16_14",
+    "data_header_int16_15",
+    "data_header_int16_16",
+    "data_header_int16_17",
+    "data_header_int16_18",
+    "data_header_int16_19",
+    "data_header_int16_20",
+    "data_header_int16_21",
+    "data_header_int16_22",
+    "data_header_int16_23",
+    "data_header_int16_24",
+    "data_header_int16_25",
+    "data_header_int16_26",
+    "data_header_int16_27",
+    "data_header_int16_28",
+    "data_header_int16_29",
+    "data_header_int16_30",
+    "data_header_int16_31",
+    "data_header_int16_32",
+    "data_header_int16_33",
+    "data_header_int16_34",
+    "data_header_int16_35",
+    "data_header_int16_36",
+    "data_header_int16_37",
+    "data_header_int16_38",
+    "data_header_int16_39",
+    "data_header_int16_40",
+    "data_header_int16_41",
+    "data_header_int16_42",
+    "data_header_int16_43",
+    "data_header_int16_44",
+    "data_header_int16_45",
+    "data_header_int16_46",
+    "data_header_int16_47",
+    "data_header_int16_48",
+    "data_header_int16_49",
+    "data_header_int16_50",
+    "data_header_int16_51",
+    "data_header_int16_52",
+    "data_header_int16_53",
+    "data_header_int16_54",
+    "data_header_int16_55",
+    "data_header_int16_56",
+    "data_header_int16_57",
+    "data_header_int16_58",
+    "period_seconds",
+)
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_3_data_header_int16s = (
+    "data_header_int16_00",
+    "data_header_int16_01",
+    "data_header_int16_02",
+    "data_header_int16_03",
+    "data_header_int16_04",
+    "data_header_int16_05",
     "soil_type",
+    "data_header_int16_07",
+    "data_header_int16_08",
+    "data_header_int16_09",
+    "data_header_int16_10",
+    "data_header_int16_11",
+    "data_header_int16_12",
+    "data_header_int16_13",
+    "data_header_int16_14",
+    "data_header_int16_15",
+    "data_header_int16_16",
+    "data_header_int16_17",
+    "data_header_int16_18",
+    "data_header_int16_19",
+    "data_header_int16_20",
+    "data_header_int16_21",
+    "data_header_int16_22",
+    "data_header_int16_23",
+    "data_header_int16_24",
+    "data_header_int16_25",
+    "data_header_int16_26",
+    "data_header_int16_27",
+    "data_header_int16_28",
+    "data_header_int16_29",
+    "data_header_int16_30",
+    "data_header_int16_31",
+    "data_header_int16_32",
+    "data_header_int16_33",
+    "data_header_int16_34",
+    "data_header_int16_35",
+    "data_header_int16_36",
+    "data_header_int16_37",
+    "data_header_int16_38",
+    "data_header_int16_39",
+    "data_header_int16_40",
+    "data_header_int16_41",
+    "data_header_int16_42",
+    "data_header_int16_43",
+    "data_header_int16_44",
+    "data_header_int16_45",
+    "data_header_int16_46",
+    "data_header_int16_47",
+    "data_header_int16_48",
+    "data_header_int16_49",
+    "data_header_int16_50",
+    "data_header_int16_51",
+    "data_header_int16_52",
+    "data_header_int16_53",
+    "data_header_int16_54",
+    "data_header_int16_55",
+    "data_header_int16_56",
+    "data_header_int16_57",
+    "data_header_int16_58",
+    "data_header_int16_59",
+)
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_4_data_header_int16s = (
+    "data_header_int16_00",
+    "data_header_int16_01",
+    "data_header_int16_02",
+    "data_header_int16_03",
+    "data_header_int16_04",
+    "data_header_int16_05",
+    "data_header_int16_06",
     "radiation_code",
     "data_header_int16_08",
     "data_header_int16_09",
@@ -208,7 +338,16 @@ table_2_data_header_int16s = (
     "data_header_int16_47",
     "data_header_int16_48",
     "data_header_int16_49",
-    "period_seconds",
+    "data_header_int16_50",
+    "data_header_int16_51",
+    "data_header_int16_52",
+    "data_header_int16_53",
+    "data_header_int16_54",
+    "data_header_int16_55",
+    "data_header_int16_56",
+    "data_header_int16_57",
+    "data_header_int16_58",
+    "data_header_int16_59",
 )
 
 
@@ -282,11 +421,44 @@ class NimrodField:
         self.source = _read_chars(infile, 24)
         self.title = _read_chars(infile, 24)
 
-        # determine which of Table 1 or Table 2 is being used
+        # determine which of Table 1, 2, 3 or 4 is being used
+        Table_3_field_codes = [
+            18,
+            144,
+            190,
+            191,
+            192,
+            193,
+            194,
+            196,
+            197,
+            198,
+            199,
+            201,
+            202,
+            203,
+            204,
+            218,
+            219,
+            301,
+            302,
+            901,
+            8229,
+            8230,
+        ]
+        Table_4_field_codes = [90, 91, 92, 93, 96, 303]
+        default_float_threshold = self.float32_mdi
         threshold_set = (
-            self.threshold_value is not None
-        )  # == -32767.0 or self.threshold_value >= 0
-        if threshold_set:
+            self.threshold_value != default_float_threshold
+            or self.threshold_value_alt != default_float_threshold
+        )
+        if self.field_code in Table_3_field_codes:
+            table = "Table_3"
+            data_header_int16s = table_3_data_header_int16s
+        elif self.field_code in Table_4_field_codes:
+            table = "Table_4"
+            data_header_int16s = table_4_data_header_int16s
+        elif threshold_set:
             table = "Table_2"
             data_header_int16s = table_2_data_header_int16s
         else:
@@ -294,6 +466,7 @@ class NimrodField:
             data_header_int16s = table_1_data_header_int16s
 
         self.table = table
+        print(table)
 
         # data specific header (int16) elements 108- (bytes 411-512)
         self._read_header_subset(infile, data_header_int16s, np.int16)
