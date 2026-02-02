@@ -320,11 +320,11 @@ defined on an *OSGB Transverse Mercator grid*:
 
 .. code-block:: text
 
-    float pres(y, x) ;
-        pres:standard_name = "air_pressure" ;
-        pres:units = "Pa" ;
-        pres:coordinates = "lat lon" ;
-        pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+    float press(y, x) ;
+        press:standard_name = "air_pressure" ;
+        press:units = "Pa" ;
+        press:coordinates = "lat lon" ;
+        press:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
 
     double x(x) ;
         x:standard_name = "projection_x_coordinate" ;
@@ -363,7 +363,7 @@ and associate it with the auxiliary ``lat`` and ``lon`` coordinates:
 
 ::
 
-    pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+    press:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
 
 
 Note, the *order* of the axes in the extended grid mapping specification is
