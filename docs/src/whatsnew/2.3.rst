@@ -251,4 +251,3 @@ Documentation
   :func:`iris.util.find_discontiguities` to a non existent
   "mask_discontiguities" routine : these now refer to
   :func:`~iris.util.mask_cube`.
-

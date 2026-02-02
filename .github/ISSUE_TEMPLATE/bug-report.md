@@ -36,4 +36,3 @@ Steps to reproduce the behaviour:
 Please add additional verbose information in this section e.g., code, output, tracebacks, screenshots etc
 ```
 </details>
-

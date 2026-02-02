@@ -245,5 +245,3 @@ Deprecations
 * The *add_custom_season_** functions from :mod:`~iris.coord_categorisation`
   have been deprecated in favour of adding their functionality to the
   *add_season_** functions
-
-

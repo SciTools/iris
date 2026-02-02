@@ -11,4 +11,3 @@ Working With Iris Source Code
    set_up_fork
    configure_git
    development_workflow
-

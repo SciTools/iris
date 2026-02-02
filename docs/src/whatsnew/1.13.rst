@@ -70,4 +70,3 @@ Testing
 
 * Iris has adopted conda-forge to provide environments for continuous
   integration testing.
-

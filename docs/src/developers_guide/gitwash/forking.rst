@@ -32,5 +32,3 @@ Create Your own Forked Copy of Iris
 
    Now, after a short pause, you should find yourself at the home page for
    your own forked copy of `Iris`_.
-
-
