@@ -178,9 +178,10 @@ printing a real life cube:
      :hide:
 
      import iris
-     filename = iris.sample_data_path('uk_hires.pp')
+
+     filename = iris.sample_data_path("uk_hires.pp")
      # NOTE: Every time the output of this cube changes, the full list of deductions below should be re-assessed.
-     print(iris.load_cube(filename, 'air_potential_temperature'))
+     print(iris.load_cube(filename, "air_potential_temperature"))
 
 .. testoutput::
 

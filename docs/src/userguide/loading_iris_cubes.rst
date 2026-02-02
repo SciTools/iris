@@ -357,21 +357,25 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
     showwarning_original = warnings.showwarning
     warnings.filterwarnings("default")
     IRIS_FILE = Path(iris.__file__)
+
+
     def custom_warn(message, category, filename, lineno, file=None, line=None):
         filepath = Path(filename)
         filename = str(filepath.relative_to(IRIS_FILE.parents[1]))
         sys.stdout.write(warnings.formatwarning(message, category, filename, lineno))
+
+
     warnings.showwarning = custom_warn
 
     get_names_original = helpers.get_names
+
 
     def raise_example_error_names(cf_coord_var, coord_name, attributes):
         if cf_coord_var.cf_name == "time":
             raise ValueError("Example coordinate error")
         else:
-            return get_names_original(
-                cf_coord_var, coord_name, attributes
-            )
+            return get_names_original(cf_coord_var, coord_name, attributes)
+
 
     helpers.get_names = raise_example_error_names
     air_temperature = std_names.STD_NAMES.pop("air_temperature")
@@ -391,9 +395,7 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
     unknown / (unknown)                 (-- : 240)
         Attributes:...
             IRIS_RAW                    {'axis': 'T', ...}
-    >>> attributes = last_problem.loaded.attributes[
-    ...     iris.common.LimitedAttributeDict.IRIS_RAW
-    ... ]
+    >>> attributes = last_problem.loaded.attributes[iris.common.LimitedAttributeDict.IRIS_RAW]
     >>> pprint(attributes)
     {'axis': 'T',
      'bounds': 'time_bnds',

@@ -108,6 +108,7 @@ Common Metadata API
 .. testsetup::
 
     import iris
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
 
 As of Iris ``3.0.0``, a unified treatment of metadata has been applied
@@ -323,6 +324,7 @@ Richer Metadata Behaviour
     import iris
     import numpy as np
     from iris.common import CoordMetadata
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     longitude = cube.coord("longitude")
 
@@ -389,7 +391,7 @@ different value, then the result of the operation will be ``False``. For example
 .. doctest:: richer-metadata
 
     >>> longitude.attributes = {"grinning face": "🙂"}
-    >>> other = longitude.metadata._replace(attributes={"grinning face":  "🙃"})
+    >>> other = longitude.metadata._replace(attributes={"grinning face": "🙃"})
     >>> other
     DimCoordMetadata(standard_name='longitude', long_name=None, var_name='longitude', units=Unit('degrees'), attributes={'grinning face': '🙃'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
     >>> longitude.metadata == other
@@ -431,7 +433,9 @@ However, metadata class equality is rich enough to handle this eventuality,
 
     >>> metadata1
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': np.int32(1), 'two': array([1., 2.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
-    >>> metadata2 = cube.metadata._replace(attributes={"one": np.int32(1), "two": np.array([1000.0, 2000.0])})
+    >>> metadata2 = cube.metadata._replace(
+    ...     attributes={"one": np.int32(1), "two": np.array([1000.0, 2000.0])}
+    ... )
     >>> metadata2
     CubeMetadata(standard_name='air_temperature', long_name=None, var_name='air_temperature', units=Unit('K'), attributes={'one': np.int32(1), 'two': array([1000., 2000.])}, cell_methods=(CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),))
     >>> metadata1 == metadata2
@@ -539,7 +543,9 @@ different values,
 .. doctest:: richer-metadata
 
     >>> from cf_units import Unit
-    >>> metadata = longitude.metadata._replace(long_name="lon", var_name="lon", units=Unit("radians"))
+    >>> metadata = longitude.metadata._replace(
+    ...     long_name="lon", var_name="lon", units=Unit("radians")
+    ... )
     >>> metadata
     DimCoordMetadata(standard_name='longitude', long_name='lon', var_name='lon', units=Unit('radians'), attributes={'grinning face': '🙂'}, coord_system=GeogCS(6371229.0), climatological=False, circular=False)
 
@@ -675,6 +681,7 @@ Metadata Combination
 .. testsetup:: metadata-combine
 
    import iris
+
    cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
    longitude = cube.coord("longitude")
 
@@ -731,7 +738,7 @@ Let's reinforce this behaviour, but this time by combining metadata where the
 
 .. doctest:: metadata-combine
 
-    >>> attributes = {"Model scenario": "A1B", "Conventions": "CF-1.8", "grinning face": "🙂" }
+    >>> attributes = {"Model scenario": "A1B", "Conventions": "CF-1.8", "grinning face": "🙂"}
     >>> metadata = cube.metadata._replace(attributes=attributes)
     >>> metadata != cube.metadata
     True
@@ -809,6 +816,7 @@ Metadata Conversion
 
    import iris
    from iris.common import DimCoordMetadata
+
    cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
    longitude = cube.coord("longitude")
 
@@ -874,6 +882,7 @@ Metadata Assignment
 .. testsetup:: metadata-assign
 
    import iris
+
    cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
    longitude = cube.coord("longitude")
    original = longitude.copy()
@@ -928,7 +937,19 @@ namedtuple class,
 .. doctest:: metadata-assign
 
     >>> from collections import namedtuple
-    >>> Metadata = namedtuple("Metadata", ["standard_name", "long_name", "var_name", "units", "attributes", "coord_system", "climatological", "circular"])
+    >>> Metadata = namedtuple(
+    ...     "Metadata",
+    ...     [
+    ...         "standard_name",
+    ...         "long_name",
+    ...         "var_name",
+    ...         "units",
+    ...         "attributes",
+    ...         "coord_system",
+    ...         "climatological",
+    ...         "circular",
+    ...     ],
+    ... )
 
 Now create an instance of this custom namedtuple class, and populate it,
 

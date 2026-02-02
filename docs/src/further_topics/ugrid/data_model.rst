@@ -336,15 +336,15 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
         from iris.mesh import Connectivity, MeshXY
 
         node_x = AuxCoord(
-                     points=[0.0, 5.0, 0.0, 5.0, 8.0],
-                     standard_name="longitude",
-                     units="degrees_east",
-                 )
+            points=[0.0, 5.0, 0.0, 5.0, 8.0],
+            standard_name="longitude",
+            units="degrees_east",
+        )
         node_y = AuxCoord(
-                     points=[3.0, 3.0, 0.0, 0.0, 0.0],
-                     standard_name="latitude",
-                     units="degrees_north",
-                 )
+            points=[3.0, 3.0, 0.0, 0.0, 0.0],
+            standard_name="latitude",
+            units="degrees_north",
+        )
 
         edge_node_c = Connectivity(
             indices=[[0, 1], [0, 2], [1, 3], [1, 4], [2, 3], [3, 4]],
@@ -352,9 +352,8 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
         )
 
         face_indices = np.ma.masked_equal([[0, 1, 3, 2], [1, 4, 3, 999]], 999)
-        face_node_c = Connectivity(
-            indices=face_indices, cf_role="face_node_connectivity"
-        )
+        face_node_c = Connectivity(indices=face_indices, cf_role="face_node_connectivity")
+
 
         def centre_coords(conn):
             indexing = np.ma.filled(conn.indices, 0)
@@ -368,6 +367,7 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
             ]
             return [(x, "x"), (y, "y")]
 
+
         my_mesh = MeshXY(
             long_name="my_mesh",
             topology_dimension=2,
@@ -379,19 +379,21 @@ the :class:`~iris.cube.Cube`\'s unstructured dimension.
 
         vertical_levels = DimCoord([0, 1, 2], "height")
 
-        def location_cube(conn):
-           location = conn.location
-           mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
-           data_shape = (conn.shape[conn.location_axis], len(vertical_levels.points))
-           data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
 
-           return Cube(
-               data=data_array,
-               long_name=f"{location}_data",
-               units="K",
-               dim_coords_and_dims=[(vertical_levels, 1)],
-               aux_coords_and_dims=[(mesh_coord_x, 0), (mesh_coord_y, 0)],
-           )
+        def location_cube(conn):
+            location = conn.location
+            mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
+            data_shape = (conn.shape[conn.location_axis], len(vertical_levels.points))
+            data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
+
+            return Cube(
+                data=data_array,
+                long_name=f"{location}_data",
+                units="K",
+                dim_coords_and_dims=[(vertical_levels, 1)],
+                aux_coords_and_dims=[(mesh_coord_x, 0), (mesh_coord_y, 0)],
+            )
+
 
         edge_cube = location_cube(edge_node_c)
         face_cube = location_cube(face_node_c)
@@ -534,6 +536,7 @@ given only the ``location`` argument
 
         >>> for coord in edge_cube.coords(mesh_coords=True):
         ...     print(coord)
+        ...
         MeshCoord :  latitude / (degrees_north)
             mesh: <MeshXY: 'my_mesh'>
             location: 'edge'

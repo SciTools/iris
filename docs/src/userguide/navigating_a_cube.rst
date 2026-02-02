@@ -5,14 +5,15 @@ Navigating a Cube
 .. testsetup::
 
         import iris
-        filename = iris.sample_data_path('rotated_pole.nc')
+
+        filename = iris.sample_data_path("rotated_pole.nc")
         # pot_temp = iris.load_cube(filename, 'air_potential_temperature')
         cube = iris.load_cube(filename)
         coord_names = [coord.name() for coord in cube.coords()]
-        coord = cube.coord('grid_latitude')
+        coord = cube.coord("grid_latitude")
 
 
-After loading any cube, you will want to investigate precisely what it contains. This section is all about accessing 
+After loading any cube, you will want to investigate precisely what it contains. This section is all about accessing
 and manipulating the metadata contained within a cube.
 
 Cube String Representations
@@ -38,15 +39,15 @@ We have already seen a basic string representation of a cube when printing:
             source                      'Data from Met Office Unified Model 6.01'
 
 
-This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on 
-any Python variable to get a string representation of that variable. 
+This representation is equivalent to passing the cube to the :func:`str` function.  This function can be used on
+any Python variable to get a string representation of that variable.
 Similarly there exist other standard functions for interrogating your variable: :func:`repr`, :func:`type` for example::
 
     print(str(cube))
     print(repr(cube))
     print(type(cube))
 
-Other, more verbose, functions also exist which give information on **what** you can do with *any* given 
+Other, more verbose, functions also exist which give information on **what** you can do with *any* given
 variable. In most cases it is reasonable to ignore anything starting with a "``_``" (underscore) or a "``__``" (double underscore)::
 
     dir(cube)
@@ -55,39 +56,39 @@ variable. In most cases it is reasonable to ignore anything starting with a "``_
 Working With Cubes
 ------------------
 
-Every cube has a standard name, long name and units which are accessed with 
+Every cube has a standard name, long name and units which are accessed with
 :attr:`Cube.standard_name <iris.cube.Cube.standard_name>`,
-:attr:`Cube.long_name <iris.cube.Cube.long_name>` 
+:attr:`Cube.long_name <iris.cube.Cube.long_name>`
 and :attr:`Cube.units <iris.cube.Cube.units>` respectively::
 
     print(cube.standard_name)
     print(cube.long_name)
     print(cube.units)
-    
-Interrogating these with the standard :func:`type` function will tell you that ``standard_name`` and ``long_name`` 
+
+Interrogating these with the standard :func:`type` function will tell you that ``standard_name`` and ``long_name``
 are either a string or ``None``, and ``units`` is an instance of :class:`iris.unit.Unit`. A more in depth discussion on
 the cube units and their functional effects can be found at the end of :doc:`cube_maths`.
 
 You can access a string representing the "name" of a cube with the :meth:`Cube.name() <iris.cube.Cube.name>` method::
 
     print(cube.name())
-    
+
 The result of which is **always** a string.
 
-Each cube also has a :mod:`numpy` array which represents the phenomenon of the cube which can be accessed with the 
+Each cube also has a :mod:`numpy` array which represents the phenomenon of the cube which can be accessed with the
 :attr:`Cube.data <iris.cube.Cube.data>` attribute. As you can see the type is a :class:`numpy n-dimensional array <numpy.ndarray>`::
 
     print(type(cube.data))
 
 .. note::
 
-    When loading from most file formats in Iris, the data itself is not loaded until the **first** time that the data is requested. 
-    Hence you may have noticed that running the previous command for the first time takes a little longer than it does for 
+    When loading from most file formats in Iris, the data itself is not loaded until the **first** time that the data is requested.
+    Hence you may have noticed that running the previous command for the first time takes a little longer than it does for
     subsequent calls.
 
-    For this reason, when you have a large cube it is strongly recommended that you do not access the cube's data unless 
-    you need to. 
-    For convenience :attr:`~iris.cube.Cube.shape` and :attr:`~iris.cube.Cube.ndim` attributes exists on a cube, which 
+    For this reason, when you have a large cube it is strongly recommended that you do not access the cube's data unless
+    you need to.
+    For convenience :attr:`~iris.cube.Cube.shape` and :attr:`~iris.cube.Cube.ndim` attributes exists on a cube, which
     can tell you the shape of the cube's data without loading it::
 
        print(cube.shape)
@@ -105,7 +106,7 @@ As well as changing the value of the :attr:`~iris.cube.Cube.units` attribute thi
 :attr:`~iris.cube.Cube.data`. To replace the units without modifying the data values one can change the
 :attr:`~iris.cube.Cube.units` attribute directly.
 
-Some cubes represent a processed phenomenon which are represented with cell methods, these can be accessed on a 
+Some cubes represent a processed phenomenon which are represented with cell methods, these can be accessed on a
 cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute::
 
     print(cube.cell_methods)
@@ -118,7 +119,7 @@ cube with the :attr:`Cube.cell_methods <iris.cube.Cube.cell_methods>` attribute:
 Accessing Coordinates on the Cube
 ---------------------------------
 
-A cube's coordinates can be retrieved via :meth:`Cube.coords <iris.cube.Cube.coords>`. 
+A cube's coordinates can be retrieved via :meth:`Cube.coords <iris.cube.Cube.coords>`.
 A simple for loop over the coords can print a coordinate's :meth:`~iris.coords.Coord.name`::
 
      for coord in cube.coords():
@@ -138,14 +139,14 @@ To get an individual coordinate given its name, the :meth:`Cube.coord <iris.cube
      coord = cube.coord('grid_latitude')
      print(type(coord))
 
-Every coordinate has a :attr:`Coord.standard_name <iris.coords.Coord.standard_name>`, 
+Every coordinate has a :attr:`Coord.standard_name <iris.coords.Coord.standard_name>`,
 :attr:`Coord.long_name <iris.coords.Coord.long_name>`, and :attr:`Coord.units <iris.coords.Coord.units>` attribute::
 
      print(coord.standard_name)
      print(coord.long_name)
      print(coord.units)
 
-Additionally every coordinate can provide its :attr:`~iris.coords.Coord.points` and :attr:`~iris.coords.Coord.bounds` 
+Additionally every coordinate can provide its :attr:`~iris.coords.Coord.points` and :attr:`~iris.coords.Coord.bounds`
 numpy array. If the coordinate has no bounds ``None`` will be returned::
 
      print(type(coord.points))
@@ -155,7 +156,7 @@ numpy array. If the coordinate has no bounds ``None`` will be returned::
 Adding Metadata to a Cube
 -------------------------
 
-We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.add_dim_coord>`, 
+We can add and remove coordinates via :func:`Cube.add_dim_coord<iris.cube.Cube.add_dim_coord>`,
 :func:`Cube.add_aux_coord<iris.cube.Cube.add_aux_coord>`, and :meth:`Cube.remove_coord <iris.cube.Cube.remove_coord>`.
 
 
@@ -193,17 +194,17 @@ This is often caused by one of the following:
 
 * The file does not contain enough metadata, and therefore the cube cannot know everything about the file.
 * Some of the metadata of the file is contained in the filename, but is not part of the actual file.
-* There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case, 
+* There is not enough metadata loaded from the original file as Iris has not handled the format fully. *(in which case,
   please let us know about it)*
 
-To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword. 
+To solve this, all of :func:`iris.load`, :func:`iris.load_cube`, and :func:`iris.load_cubes` support a callback keyword.
 
-The callback is a user defined function which must have the calling sequence ``function(cube, field, filename)`` 
+The callback is a user defined function which must have the calling sequence ``function(cube, field, filename)``
 which can make any modifications to the cube in-place, or alternatively return a completely new cube instance.
 
-Suppose we wish to load a lagged ensemble dataset from the Met Office's GloSea4 model. 
-The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the 
-model mean that the run is spread over several days. 
+Suppose we wish to load a lagged ensemble dataset from the Met Office's GloSea4 model.
+The data for this example represents 13 ensemble members of 6 one month timesteps; the logistics of the
+model mean that the run is spread over several days.
 
 If we try to load the data directly for ``surface_temperature``:
 
@@ -216,7 +217,7 @@ If we try to load the data directly for ``surface_temperature``:
 
 
 
-We get multiple cubes some with more dimensions than expected, some without a ``realization`` (i.e. ensemble member) dimension. 
+We get multiple cubes some with more dimensions than expected, some without a ``realization`` (i.e. ensemble member) dimension.
 In this case, two of the PP files have been encoded without the appropriate ``realization`` number attribute, which means that
 the appropriate coordinate cannot be added to the resultant cube. Fortunately, the missing attribute has been encoded in the filename
 which, given the filename, we could extract::
@@ -234,16 +235,20 @@ by field basis *before* they are automatically merged together:
     import iris
     import iris.coords as icoords
 
+
     def lagged_ensemble_callback(cube, field, filename):
         # Add our own realization coordinate if it doesn't already exist.
-        if not cube.coords('realization'):
+        if not cube.coords("realization"):
             realization = np.int32(filename[-6:-3])
-            ensemble_coord = icoords.AuxCoord(realization, standard_name='realization', units="1")
+            ensemble_coord = icoords.AuxCoord(
+                realization, standard_name="realization", units="1"
+            )
             cube.add_aux_coord(ensemble_coord)
 
-    filename = iris.sample_data_path('GloSea4', '*.pp')
 
-    print(iris.load(filename, 'surface_temperature', callback=lagged_ensemble_callback))
+    filename = iris.sample_data_path("GloSea4", "*.pp")
+
+    print(iris.load(filename, "surface_temperature", callback=lagged_ensemble_callback))
 
 
 The result is a single cube which represents the data in a form that was expected:
