@@ -9,6 +9,7 @@ import pytest
 import iris
 from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules as nimrod_load_rules
+from iris.fileformats.nimrod_load_rules import radiation_type_attr
 from iris.tests import _shared_utils
 
 
@@ -73,7 +74,6 @@ class TestLoad:
                 _shared_utils.get_data_path(("NIMROD", "uk2km", "cutouts", datafile))
             )
             _shared_utils.assert_CML(request, cube, ("nimrod", f"{datafile}.cml"))
-            print("cml passed")
 
     @_shared_utils.skip_data
     def test_load_kwarg(self):
@@ -159,3 +159,56 @@ class TestLoad:
         nimrod_load_rules.time(cube, field)
 
         _shared_utils.assert_CML(request, cube, ("nimrod", "period_of_interest.cml"))
+
+
+class TestNimrodTables:
+    # Testing that the table-based load rules work as expected
+
+    def test_table_1(self):
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
+
+        field.table = "Table_1"
+        field.clutter_map_number = 5
+
+        nimrod_load_rules.table_1_attributes(cube, field)
+
+        assert "clutter_map_number" in cube.attributes
+
+    def test_table_2(self):
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
+
+        field.table = "Table_2"
+        field.field_code = 45
+        field.threshold_type = 2
+        field.threshold_value_alt = 2
+        field.threshold_fuzziness = 1
+        field.probability_method = 1
+        field.probability_field_of_event = 3
+
+        nimrod_load_rules.probability_coord(cube, field, handle_metadata_errors=False)
+
+        assert "Probability methods" in cube.attributes
+
+    def test_table_3(self):
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
+
+        field.table = "Table_3"
+        field.soil_type = 8
+
+        nimrod_load_rules.soil_type_coord(cube, field)
+
+        assert cube.coord("soil_type")
+
+    def test_table_4(self):
+        field = mock_nimrod_field()
+        cube = iris.cube.Cube(np.arange(100).reshape(10, 10))
+
+        field.table = "Table_4"
+        field.radiation_code = 16
+
+        nimrod_load_rules.radiation_type_attr(cube, field)
+
+        assert "radiation_type" in cube.attributes

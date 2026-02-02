@@ -466,7 +466,6 @@ class NimrodField:
             data_header_int16s = table_1_data_header_int16s
 
         self.table = table
-        print(table)
 
         # data specific header (int16) elements 108- (bytes 411-512)
         self._read_header_subset(infile, data_header_int16s, np.int16)

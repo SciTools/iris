@@ -917,7 +917,7 @@ def soil_type_coord(cube, field):
         )
 
 
-def radiation_type_coord(cube, field):
+def radiation_type_attr(cube, field):
     """Decode the Radiation Types codes - similar to time_averaging."""
     radiation_codes = {
         64: 'instantaneous ("corrected")',
