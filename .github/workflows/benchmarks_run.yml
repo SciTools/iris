@@ -135,7 +135,7 @@ jobs:
           then
             first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
           fi
-          
+
           if [ "$first_commit" != "" ]
           then
             nox -s benchmarks -- overnight $first_commit

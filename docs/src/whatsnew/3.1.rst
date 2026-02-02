@@ -280,7 +280,7 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ reworked the netcdf loading code, replacing Pyke rules with a pure Python implementation.
    (:pull:`4198`)
 
-#. `@lbdreyer`_ updated the CF standard name table to the latest version: 
+#. `@lbdreyer`_ updated the CF standard name table to the latest version:
    `v77 <https://cfconventions.org/Data/cf-standard-names/77/src/cf-standard-name-table.xml>`_.
    (:pull:`4282`)
 

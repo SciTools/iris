@@ -1,4 +1,4 @@
-Examples generated from CDL example sections in UGRID conventions v1.0 
+Examples generated from CDL example sections in UGRID conventions v1.0
   ( see webpage: https://ugrid-conventions.github.io/ugrid-conventions/ )
 
 CHANGES:

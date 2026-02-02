@@ -50,7 +50,7 @@ Bug Fixes
   numbers (e.g. seconds since 1970).
 
 * The CF conventions state that certain ``formula_terms`` terms may be omitted
-  and assumed to be zero 
+  and assumed to be zero
   (https://cfconventions.org/cf-conventions/v1.6.0/cf-conventions.html#dimensionless-v-coord)
   so Iris now allows factories to be constructed with missing terms.
 

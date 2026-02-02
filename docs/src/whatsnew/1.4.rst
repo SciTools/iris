@@ -107,7 +107,7 @@ systems.  This uses the ESMF library functions, via the ESMPy interface.
 
 For example::
 
-	from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy 
+	from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 	regridded_cube = regrid_conservative_via_esmpy(source_cube, target_grid_cube)
 
 
@@ -128,7 +128,7 @@ See :mod:`iris.pandas` for more details.
 Load Cubes From the Internet via OPeNDAP
 ----------------------------------------
 
-Cubes can now be loaded directly from the internet, via OPeNDAP_.  
+Cubes can now be loaded directly from the internet, via OPeNDAP_.
 
 For example::
 
@@ -190,13 +190,13 @@ The solution is still under discussion: See :issue:`519`.
 Simplified Resource Configuration
 ---------------------------------
 
-A new configuration variable called :data:`iris.config.TEST_DATA_DIR` 
+A new configuration variable called :data:`iris.config.TEST_DATA_DIR`
 has been added, replacing the previous combination of
 :data:`iris.config.MASTER_DATA_REPOSITORY` and
 :data:`iris.config.DATA_REPOSITORY`. This constant should be the path
 to a directory containing the test data required by the unit tests. It can
 be set by adding a ``test_data_dir`` entry to the ``Resources`` section of
-``site.cfg``. See :mod:`iris.config` for more details. 
+``site.cfg``. See :mod:`iris.config` for more details.
 
 
 .. _grib_params:
@@ -208,7 +208,7 @@ Extended GRIB Parameter Translation
  - Now translates some codes on GRIB2 output.
  - Some GRIB2 params may load with a different standard_name.
 
- 
+
 
 .. _one-d-linear:
 

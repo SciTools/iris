@@ -112,9 +112,9 @@ Features
 * Iris is now able to read seconds in datetimes provided in NAME trajectory
   files.
 
-* Optimisations to trajectory interpolations have resulted in a significant 
+* Optimisations to trajectory interpolations have resulted in a significant
   speed improvement.
-  
+
 * Many new and updated translations between CF spec and STASH codes.
 
 

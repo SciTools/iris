@@ -199,7 +199,7 @@ Incompatible Changes
 
 * When coordinates have no well defined plot axis, :mod:`iris.plot` and
   :mod:`iris.quickplot` routines now use the order of the cube's dimensions
-  to determine the coordinates to plot as the x and y axis of a plot. 
+  to determine the coordinates to plot as the x and y axis of a plot.
 
 * The cf_units dependency version has been updated to v1.2.0, which prints
   shorter unit strings. For example, the unit ``meter-second^-1`` is now

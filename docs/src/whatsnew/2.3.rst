@@ -123,7 +123,7 @@ Features
   :class:`iris.analysis.PointInCell` to make this regridding scheme public
 
 * Iris now supports standard name modifiers. See
-  `Appendix C, Standard Name Modifiers <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_ 
+  `Appendix C, Standard Name Modifiers <https://cfconventions.org/Data/cf-conventions/cf-conventions-1.7/cf-conventions.html#standard-name-modifiers>`_
   for more information.
 
 * :meth:`iris.cube.Cube.remove_cell_measure` now also allows removal of a cell
@@ -164,11 +164,11 @@ Bugs Fixed
   the `CF Vertical perspective definition <https://cfconventions.org/cf-conventions/cf-conventions.html#vertical-perspective>`_; had been
   erroneously using Geostationary.
 
-* :class:`~iris.coords.CellMethod` will now only use valid 
+* :class:`~iris.coords.CellMethod` will now only use valid
   `NetCDF name tokens`_ to reference the coordinates involved in the
   statistical operation.
 
-* The following var_name properties will now only allow valid 
+* The following var_name properties will now only allow valid
   `NetCDF name tokens`_
   to reference the said NetCDF variable name. Note that names with a leading
   underscore are not permitted.
@@ -180,7 +180,7 @@ Bugs Fixed
     * :attr:`iris.coords.Coord.var_name`
     * :attr:`iris.coords.AuxCoord.var_name`
     * :attr:`iris.cube.Cube.var_name`
-    
+
 * Rendering a cube in Jupyter will no longer crash for a cube with
   attributes containing ``\n``.
 

@@ -110,8 +110,8 @@ and so should be used where possible.
 `Mocks <https://docs.pytest.org/en/stable/how-to/monkeypatch.html>`_
 --------------------------------------------------------------------
 
-Any mocking should be done with the 
-`pytest-mock <https://pytest-mock.readthedocs.io/en/latest/index.html>`_ plugin, 
+Any mocking should be done with the
+`pytest-mock <https://pytest-mock.readthedocs.io/en/latest/index.html>`_ plugin,
 and ``monkeypatch`` where suitable.
 
 .. note::
