@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Exceptions specific to the Iris package."""
+"""Exceptions specific to the Iris package.
+
+.. z_reference:: iris.exceptions
+   :tags: topic_troubleshooting
+
+   API reference
+"""
 
 
 class IrisError(Exception):

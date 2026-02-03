@@ -6,7 +6,13 @@
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
-"""PP Load Rules."""
+"""PP Load Rules.
+
+.. z_reference:: iris.fileformats.pp_load_rules
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import calendar
 from functools import wraps

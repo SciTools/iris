@@ -2,6 +2,11 @@
 Loading a Cube From a Custom File Format
 ========================================
 
+.. how-to:: Loading a Cube From a Custom File Format
+   :tags: topic_plotting;topic_load_save
+
+   How to visualise data from a file Iris does not natively support.
+
 This example shows how a custom text file can be loaded using the standard Iris
 load mechanism.
 

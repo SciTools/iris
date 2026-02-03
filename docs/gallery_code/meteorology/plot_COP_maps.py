@@ -2,6 +2,11 @@
 Global Average Annual Temperature Maps
 ======================================
 
+.. how-to:: Global Average Annual Temperature Maps
+   :tags: topic_plotting
+
+   How to produce comparative maps of two files with a shared colour bar.
+
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
 
 The data used comes from the HadGEM2-AO model simulations for the A1B and E1

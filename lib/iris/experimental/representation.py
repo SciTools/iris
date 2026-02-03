@@ -3,7 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Definitions of how Iris objects should be represented."""
+"""Definitions of how Iris objects should be represented.
+
+.. z_reference:: iris.experimental.representation
+   :tags: topic_experimental;topic_data_model
+
+   API reference
+"""
 
 from html import escape
 

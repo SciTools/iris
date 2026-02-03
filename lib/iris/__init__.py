@@ -4,10 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package for handling multi-dimensional data and associated metadata.
 
+.. z_reference:: iris
+   :tags: topic_load_save;topic_data_model;topic_customisation
+
+   API reference
+
 .. note ::
 
     The Iris documentation has further usage information, including
-    a :ref:`user guide <user_guide_index>` which should be the first port of
+    a :ref:`user manual <user_guide_index>` which should be the first port of
     call for new users.
 
 The functions in this module provide the main way to load and/or save

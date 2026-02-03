@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide convenient file format identification.
 
+.. z_reference:: iris.io.format_picker
+   :tags: topic_load_save
+
+   API reference
+
 A module to provide convenient file format identification through a combination
 of filename extension and file based *magic* numbers.
 

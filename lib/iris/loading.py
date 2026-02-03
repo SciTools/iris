@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Iris general file loading mechanism."""
+"""Iris general file loading mechanism.
+
+.. z_reference:: iris.loading
+   :tags: topic_load_save
+
+   API reference
+"""
 
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -537,6 +543,7 @@ class LoadProblems(threading.local):
         >>> warnings.filterwarnings("ignore")
         >>> helpers.get_names = get_names_original
         >>> std_names.STD_NAMES["air_temperature"] = air_temperature
+        >>> iris.FUTURE.date_microseconds = False
 
     """
 

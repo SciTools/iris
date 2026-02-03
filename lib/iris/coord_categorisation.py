@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Cube functions for coordinate categorisation.
 
+.. z_reference:: iris.coord_categorisation
+   :tags: topic_data_model
+
+   API reference
+
 All the functions provided here add a new coordinate to a cube.
 
 * The function :func:`add_categorised_coord` performs a generic

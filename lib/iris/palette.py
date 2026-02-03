@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Color map pallettes management.
 
+.. z_reference:: iris.palette
+   :tags: topic_plotting
+
+   API reference
+
 Load, configure and register color map palettes and initialise
 color map meta-data mappings.
 """
@@ -128,7 +133,7 @@ def cmap_norm(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     args, kwargs = _default_cmap_norm((cube,), {})

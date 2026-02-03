@@ -2,6 +2,11 @@
 Colouring Anomaly Data With Logarithmic Scaling
 ===============================================
 
+.. how-to:: Colouring Anomaly Data With Logarithmic Scaling
+   :tags: topic_plotting;topic_statistics
+
+   How to visualise logarithmic values.
+
 In this example, we need to plot anomaly data where the values have a
 "logarithmic" significance  -- i.e. we want to give approximately equal ranges
 of colour between data values of, say, 1 and 10 as between 10 and 100.

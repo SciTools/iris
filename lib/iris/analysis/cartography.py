@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Various utilities and numeric transformations relevant to cartography."""
+"""Various utilities and numeric transformations relevant to cartography.
+
+.. z_reference:: iris.analysis.cartography
+   :tags: topic_statistics
+
+   API reference
+"""
 
 from collections import namedtuple
 import copy
@@ -75,7 +81,7 @@ def wrap_lons(lons, base, period):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
@@ -279,7 +285,7 @@ def get_xy_grids(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -317,7 +323,7 @@ def get_xy_contiguous_bounded_grids(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -552,7 +558,7 @@ def cosine_latitude_weights(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
     lat_coords = [coord for coord in cube.coords() if "latitude" in coord.name()]
@@ -656,7 +662,7 @@ def project(cube, target_proj, nx=None, ny=None):
     .. note::
 
         This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 
@@ -1149,7 +1155,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
     .. note::
 
             This function does not maintain laziness when called; it realises data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 

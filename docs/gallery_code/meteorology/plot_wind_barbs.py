@@ -2,6 +2,11 @@
 Plotting Wind Direction Using Barbs
 ===================================
 
+.. how-to:: Plotting Wind Direction Using Barbs
+   :tags: topic_plotting;topic_statistics
+
+   How to use Iris to derive and plot wind barbs.
+
 This example demonstrates using barbs to plot wind speed contours and wind
 direction barbs from wind vector component input data. The vector components
 are co-located in space in this case.

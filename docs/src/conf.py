@@ -167,6 +167,9 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx_needs",
+    "user_manual_directives",
+    "sphinx_reredirects",
 ]
 
 if skip_api == "1":
@@ -583,8 +586,145 @@ def gallery_carousel(
 # ============================================================================
 
 
+# -- sphinx-reredirects config ------------------------------------------------
+
+redirects = {
+    # explanation
+    "further_topics/dataless_cubes": "/user_manual/explanation/dataless_cubes.html",
+    "userguide/iris_cubes": "/user_manual/explanation/iris_cubes.html",
+    "userguide/iris_philosophy": "/user_manual/explanation/iris_philosophy.html",
+    "community/iris_xarray": "/user_manual/explanation/iris_xarray.html",
+    "further_topics/lenient_maths": "/user_manual/explanation/lenient_maths.html",
+    "further_topics/lenient_metadata": "/user_manual/explanation/lenient_metadata.html",
+    "further_topics/ugrid/data_model": "/user_manual/explanation/mesh_data_model.html",
+    "further_topics/ugrid/partner_packages": "/user_manual/explanation/mesh_partners.html",
+    "further_topics/metadata": "/user_manual/explanation/metadata.html",
+    "further_topics/missing_data_handling": "/user_manual/explanation/missing_data_handling.html",
+    "further_topics/netcdf_io": "/user_manual/explanation/netcdf_io.html",
+    "userguide/real_and_lazy_data": "/user_manual/explanation/real_and_lazy_data.html",
+    "further_topics/um_files_loading": "/user_manual/explanation/um_files_loading.html",
+    "further_topics/ux_guide": "/user_manual/explanation/ux_guide.html",
+    "further_topics/which_regridder_to_use": "/user_manual/explanation/which_regridder_to_use.html",
+    "why_iris": "/user_manual/explanation/why_iris.html",
+    # how_to
+    "further_topics/filtering_warnings": "/user_manual/how_to/filtering_warnings.html",
+    "installing": "/user_manual/how_to/installing.html",
+    "further_topics/ugrid/other_meshes": "/user_manual/how_to/mesh_conversions.html",
+    "further_topics/ugrid/operations": "/user_manual/how_to/mesh_operations.html",
+    "userguide/navigating_a_cube": "/user_manual/how_to/navigating_a_cube.html",
+    "community/plugins": "/user_manual/how_to/plugins.html",
+    # reference
+    "userguide/citation": "/user_manual/reference/citation.html",
+    "userguide/glossary": "/user_manual/reference/glossary.html",
+    "community/phrasebook": "/user_manual/reference/phrasebook.html",
+    # section indexes
+    "community/index": "/user_manual/section_indexes/community.html",
+    "further_topics/dask_best_practices/index": "/user_manual/section_indexes/dask_best_practices.html",
+    "further_topics/ugrid/index": "/user_manual/section_indexes/mesh_support.html",
+    "userguide/index": "/user_manual/section_indexes/userguide.html",
+    # tutorial
+    "further_topics/controlling_merge": "/user_manual/tutorial/controlling_merge.html",
+    "userguide/cube_maths": "/user_manual/tutorial/cube_maths.html",
+    "userguide/cube_statistics": "/user_manual/tutorial/cube_statistics.html",
+    "further_topics/dask_best_practices/dask_bags_and_greed": "/user_manual/tutorial/dask_bags_and_greed.html",
+    "further_topics/dask_best_practices/dask_parallel_loop": "/user_manual/tutorial/dask_parallel_loop.html",
+    "further_topics/dask_best_practices/dask_pp_to_netcdf": "/user_manual/tutorial/dask_pp_to_netcdf.html",
+    "userguide/interpolation_and_regridding": "/user_manual/tutorial/interpolation_and_regridding.html",
+    "userguide/loading_iris_cubes": "/user_manual/tutorial/loading_iris_cubes.html",
+    "userguide/merge_and_concat": "/user_manual/tutorial/merge_and_concat.html",
+    "userguide/plotting_a_cube": "/user_manual/tutorial/plotting_a_cube.html",
+    "userguide/saving_iris_cubes": "/user_manual/tutorial/saving_iris_cubes.html",
+    "userguide/subsetting_a_cube": "/user_manual/tutorial/subsetting_a_cube.html",
+}
+
+# -- sphinx-needs config ------------------------------------------------------
+# See https://sphinx-needs.readthedocs.io/en/latest/configuration.html
+
+# TODO: namespace these types as Diataxis for max clarity?
+needs_types = [
+    {
+        "directive": "tutorial",
+        "title": "Tutorial",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "how-to",
+        "title": "How To",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "explanation",
+        "title": "Explanation",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        # z_ prefix to force to the end of sorted lists.
+        "directive": "z_reference",
+        "title": "Reference",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+]
+# The layout whenever a 'need item' directive is used. I.e. at the top of each
+#  user manual page.
+needs_default_layout = "focus"
+# The `tags_links` jinja template displays a list of tags where every topic_*
+#  tag is a link to the relevant section in user_manual/index.rst.
+needs_template_folder = "_templates"
+needs_global_options = {
+    "post_template": {"default": "tags_links"},
+}
+
+from sphinx_needs.data import NeedsCoreFields
+
+# Known bug in sphinx-needs pre v6.0.
+#  https://github.com/useblocks/sphinx-needs/issues/1420
+if "allow_default" not in NeedsCoreFields["post_template"]:
+    NeedsCoreFields["post_template"]["allow_default"] = "str"
+
+
+# ------------------------------------------------------------------------------
+
+
 def setup(app: Sphinx) -> None:
     """Configure sphinx application."""
+    # Monkeypatch for https://github.com/useblocks/sphinx-needs/issues/723
+    import sphinx_needs.directives.needtable as nt
+
+    orig_row_col_maker = nt.row_col_maker
+
+    def row_col_maker_link_title(
+        app,
+        fromdocname,
+        all_needs,
+        need_info,
+        need_key,
+        make_ref=False,
+        ref_lookup=False,
+        prefix="",
+    ):
+        if need_key == "title":
+            make_ref = True
+        return orig_row_col_maker(
+            app,
+            fromdocname,
+            all_needs,
+            need_info,
+            need_key,
+            make_ref,
+            ref_lookup,
+            prefix,
+        )
+
+    nt.row_col_maker = row_col_maker_link_title
+
     # we require the output of this extension
     app.setup_extension("sphinx_gallery.gen_gallery")
 

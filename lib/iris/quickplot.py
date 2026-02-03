@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """High-level plotting extensions to :mod:`iris.plot`.
 
+.. z_reference:: iris.quickplot
+   :tags: topic_plotting
+
+   API reference
+
 These routines work much like their :mod:`iris.plot` counterparts, but they
 automatically add a plot title, axis titles, and a colour bar when appropriate.
 
@@ -190,7 +195,7 @@ def contour(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -228,7 +233,7 @@ def contourf(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -260,7 +265,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None, footer=None
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = iplt.outline(
@@ -285,7 +290,7 @@ def pcolor(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -310,7 +315,7 @@ def pcolormesh(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -331,7 +336,7 @@ def points(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -352,7 +357,7 @@ def plot(*args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
@@ -372,7 +377,7 @@ def scatter(x, y, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
@@ -392,7 +397,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
@@ -412,7 +417,7 @@ def hist(x, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     axes = kwargs.get("axes")
