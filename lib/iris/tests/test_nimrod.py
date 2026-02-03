@@ -51,8 +51,8 @@ class TestLoad:
             "u1096_ng_ek00_precipaccum_2km",
             "u1096_ng_ek00_preciptype_2km",
             "u1096_ng_ek00_pressure_2km",
-            # "u1096_ng_ek00_radiation_2km",
-            # "u1096_ng_ek00_radiationuv_2km",
+            "u1096_ng_ek00_radiation_2km",
+            "u1096_ng_ek00_radiationuv_2km",
             "u1096_ng_ek00_refl_2km",
             "u1096_ng_ek00_relhumidity3d0060_2km",
             "u1096_ng_ek00_relhumidity_2km",
@@ -66,9 +66,9 @@ class TestLoad:
             "u1096_ng_ek00_winduv_2km",
             "u1096_ng_ek01_cape_2km",
             "u1096_ng_umqv_fog_2km",
-            # "u1096_ng_bmr04_precip_2km",
-            # "u1096_ng_bsr05_precip_accum60_2km",
-            # "probability_fields",
+            "u1096_ng_bmr04_precip_2km",
+            "u1096_ng_bsr05_precip_accum60_2km",
+            "probability_fields",
         }:
             cube = iris.load(
                 _shared_utils.get_data_path(("NIMROD", "uk2km", "cutouts", datafile))
