@@ -31,7 +31,7 @@ dependencies:
   - iris-sample-data >=2.4.0
   - mo_pack
   - nc-time-axis >=1.4
-  - pandas
+  - pandas <3
   - pip
   - python-stratify
   - rasterio
