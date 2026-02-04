@@ -2892,8 +2892,8 @@ def make_gridcube(
 
         else:
             # points is None : interpret n? / ?lims
-            if not isinstance(num, int) or num < 1:
-                msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."  # type: ignore[unreachable]
+            if not isinstance(num, int) or num < 1:  # type: ignore[redundant-expr]
+                msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."
                 raise ValueError(msg)
 
             ok = isinstance(lims, Iterable)
