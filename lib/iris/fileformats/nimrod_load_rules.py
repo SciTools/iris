@@ -1011,7 +1011,7 @@ def run(field, handle_metadata_errors=True):
         case "Table_3":
             soil_type_coord(cube, field)
         case "Table_4":
-            radiation_type_coord(cube, field)
+            radiation_type_attr(cube, field)
 
     # add other generic stuff, if present
     ensemble_member(cube, field)
