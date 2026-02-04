@@ -98,9 +98,7 @@ subsequent example operations on this page.
         ... ]
 
         >>> face_indices = np.ma.masked_equal([[0, 1, 3, 2], [1, 4, 3, 999]], 999)
-        >>> face_node_c = Connectivity(
-        ...     indices=face_indices, cf_role="face_node_connectivity"
-        ... )
+        >>> face_node_c = Connectivity(indices=face_indices, cf_role="face_node_connectivity")
 
         >>> my_mesh = MeshXY(
         ...     long_name="my_mesh",
@@ -160,20 +158,20 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
 
         >>> my_cubelist = CubeList()
         >>> for conn in (edge_node_c, face_node_c):
-        ...    location = conn.location
-        ...    mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
-        ...    data_shape = (len(conn.indices_by_location()), len(vertical_levels.points))
-        ...    data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
+        ...     location = conn.location
+        ...     mesh_coord_x, mesh_coord_y = my_mesh.to_MeshCoords(location)
+        ...     data_shape = (len(conn.indices_by_location()), len(vertical_levels.points))
+        ...     data_array = np.arange(np.prod(data_shape)).reshape(data_shape)
+        ...     my_cubelist.append(
+        ...         Cube(
+        ...             data=data_array,
+        ...             long_name=f"{location}_data",
+        ...             units="K",
+        ...             dim_coords_and_dims=[(vertical_levels, 1)],
+        ...             aux_coords_and_dims=[(mesh_coord_x, 0), (mesh_coord_y, 0)],
+        ...         )
+        ...     )
         ...
-        ...    my_cubelist.append(
-        ...        Cube(
-        ...            data=data_array,
-        ...            long_name=f"{location}_data",
-        ...            units="K",
-        ...            dim_coords_and_dims=[(vertical_levels, 1)],
-        ...            aux_coords_and_dims=[(mesh_coord_x, 0), (mesh_coord_y, 0)],
-        ...        )
-        ...    )
 
         >>> print(my_cubelist)
         0: edge_data / (K)                     (-- : 6; height: 3)
@@ -181,6 +179,7 @@ Creating a :class:`~iris.cube.Cube` is unchanged; the
 
         >>> for cube in my_cubelist:
         ...     print(f"{cube.name()}: {cube.mesh.name()}, {cube.location}")
+        ...
         edge_data: my_mesh, edge
         face_data: my_mesh, face
 
@@ -479,6 +478,8 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
 .. dropdown:: Code
     :icon: code
 
+    .. blacken-docs:off
+
     .. code-block:: python
 
         >>> from geovista import GeoPlotter, Transform
@@ -519,6 +520,8 @@ GeoVista :external+geovista:doc:`generated/gallery/index`.
         >>> my_plotter.add_coastlines()
         >>> my_plotter.add_mesh(face_polydata)
         >>> my_plotter.show()
+
+    .. blacken-docs:on
 
     .. image:: images/plotting.png
        :alt: A GeoVista plot of low-res sample data.
@@ -654,6 +657,8 @@ with the
 .. dropdown:: Code
     :icon: code
 
+    .. blacken-docs:off
+
     .. code-block:: python
 
         >>> from esmf_regrid.experimental.unstructured_scheme import MeshToGridESMFRegridder
@@ -730,6 +735,8 @@ with the
                 title                       Created by xios
                 uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
 
+    .. blacken-docs:on
+
 .. note::
 
     **All** :class:`~iris.cube.Cube` :attr:`~iris.cube.Cube.attributes` are
@@ -748,6 +755,8 @@ previously initialised regridder:
 
 .. dropdown:: Code
     :icon: code
+
+    .. blacken-docs:off
 
     .. code-block:: python
 
@@ -796,6 +805,8 @@ previously initialised regridder:
                 timeStamp                   2020-Feb-07 16:23:14 GMT
                 title                       Created by xios
                 uuid                        489bcef5-3d1c-4529-be42-4ab5f8c8497b
+
+    .. blacken-docs:on
 
 Support also exists for saving and loading previously initialised regridders -
 :func:`esmf_regrid.experimental.io.save_regridder` and

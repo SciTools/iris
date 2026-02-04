@@ -109,7 +109,7 @@ Features
 
 * Interpreting cell methods from NAME.
 
-* GRIB2 export without forecast_period, enabling NAME to GRIB2. 
+* GRIB2 export without forecast_period, enabling NAME to GRIB2.
 
 * Loading height levels from GRIB2.
 
@@ -163,7 +163,7 @@ consuming processing, or to reap the benefit of fast-loading a pickled cube.
             cube = cPickle.load(fh)
     else:
         cube = iris.load_cube(source_file)
-	
+
 	# Perhaps perform some intensive processing ...
 
         # Create the cube cache.
@@ -211,7 +211,7 @@ masked by providing a :data:`mdtol` missing-data tolerance keyword
 to :meth:`iris.cube.Cube.collapsed`.
 
 This tolerance provides a threshold that will **completely** mask the
-collapsed result whenever the fraction of data to missing-data is 
+collapsed result whenever the fraction of data to missing-data is
 less than or equal to the provided tolerance.
 
 
@@ -330,7 +330,7 @@ Incompatible Changes
   :class:`iris.analysis.Aggregator` and
   :class:`iris.analysis.WeightedAggregator`.
 
-* The experimental ABF and ABL functionality has now been promoted to 
+* The experimental ABF and ABL functionality has now been promoted to
   core functionality in :mod:`iris.fileformats.abf`.
 
 * The following :mod:`iris.coord_categorisation` deprecated functions have been

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Perform test automation with nox.
 
 For further details, see https://nox.thea.codes/en/stable/#
@@ -11,8 +12,13 @@ from pathlib import Path
 import nox
 from nox.logger import logger
 
+nox.options.default_venv_backend = "conda"
+nox.needs_version = ">=2022.1.7"
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
+# /// script
+# dependencies = ["nox"]
+# ///
 
 #: Python versions we can run sessions under
 _PY_VERSIONS_ALL = ["3.12", "3.13", "3.14"]
@@ -289,3 +295,7 @@ def benchmarks(session: nox.sessions.Session):
     session.install("asv", "nox")
     bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
     session.run("python", bm_runner_path, *session.posargs)
+
+
+if __name__ == "__main__":
+    nox.main()

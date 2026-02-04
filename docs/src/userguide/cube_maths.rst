@@ -45,8 +45,8 @@ We can now get the first and last time slices using indexing
 
 .. testsetup::
 
-    filename = iris.sample_data_path('E1_north_america.nc')
-    air_temp = iris.load_cube(filename, 'air_temperature')
+    filename = iris.sample_data_path("E1_north_america.nc")
+    air_temp = iris.load_cube(filename, "air_temperature")
     t_first = air_temp[0, :, :]
     t_last = air_temp[-1, :, :]
 
@@ -261,4 +261,3 @@ with a unit of ``'unknown'``, but the resulting cube will always have
 a unit of ``'unknown'``. If a calculation is prevented because it would
 result in inappropriate units, it may be forced by setting the units of
 the original cubes to be ``'unknown'``.
-

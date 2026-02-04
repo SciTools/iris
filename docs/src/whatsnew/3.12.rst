@@ -227,7 +227,7 @@ v3.12.3 (22 Aug 2025)
    as per the `SPEC 0`_ schedule. (:pull:`6195`)
 
 #. `@stephenworsley`_ and `@valeriupredoi`_ removed the pin from dask since newer
-   versions of dask fix the bug casuing the pin. Introduced a minimum pin (2025.1.0)
+   versions of dask fix the bug causing the pin. Introduced a minimum pin (2025.1.0)
    to avoid this bug. (:pull:`6342`)
 
 #. `@trexfeathers`_ refactored Iris loading and saving to make it compatible

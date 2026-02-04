@@ -36,8 +36,7 @@ Conversion Checklist
    .. code-block:: python
 
       @pytest.fixture(autouse=True)
-      def _setup(self):
-         ...
+      def _setup(self): ...
 
 #. Check for references to ``super()``. Most test classes used to inherit from
    :class:`iris.tests.IrisTest`, so references to this should be removed. Any
@@ -48,19 +47,18 @@ Conversion Checklist
 
       class TestFoo:
           @pytest.fixture(autouse=True)
-          def _setup_foo(self):
-              ...
+          def _setup_foo(self): ...
+
 
       class TestBar(TestFoo):
           @pytest.fixture(autouse=True)
-          def _setup(self, _setup_foo):
-              ...
+          def _setup(self, _setup_foo): ...
 
 #. Check for references to ``@tests``. These should be changed to ``@_shared_utils``.
 #. Check for ``mock.patch("warnings.warn")``. This can be replaced with
    ``pytest.warns(match=message)``.
 #. Check for references to ``mock`` or ``self.patch``. These should be changed to use
-   the ``mocker`` fixture - see the `pytest-mock docs`_. Note that pytest-mock's 
+   the ``mocker`` fixture - see the `pytest-mock docs`_. Note that pytest-mock's
    ``patch`` does not support the context-manager syntax; in most cases this is made
    unnecessary (see `Usage as context manager`_), in advanced cases consider using
    the `monkeypatch`_ fixture to provide a context-manager.
@@ -73,8 +71,8 @@ Conversion Checklist
    fixture.
 #. Check for ``if __name__ == 'main'``. This is no longer needed with pytest.
 #. Remove the top-level import of :mod:`iris.tests` (usually ``import iris.tests as tests``).
-   Having followed the above steps, any remaining calls 
-   (e.g. :func:`iris.tests.get_data_path`) should be easily replacable with calls to
+   Having followed the above steps, any remaining calls
+   (e.g. :func:`iris.tests.get_data_path`) should be easily replaceable with calls to
    :mod:`iris.tests._shared_utils` (e.g. :func:`iris.tests._shared_utils.get_data_path`).
 #. Ensure that all test classes start with ``Test``. Tests will not run in pytest without it.
 #. Check the file against https://github.com/astral-sh/ruff , using ``pip install ruff`` ->

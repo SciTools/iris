@@ -4,10 +4,10 @@
 Plotting a Cube
 ===============
 
-Iris utilises the power of Python's 
-`Matplotlib <https://matplotlib.org/>`_ package in order to generate 
-high quality, production ready 1D and 2D plots. 
-The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has 
+Iris utilises the power of Python's
+`Matplotlib <https://matplotlib.org/>`_ package in order to generate
+high quality, production ready 1D and 2D plots.
+The functionality of the Matplotlib :py:mod:`~matplotlib.pyplot` module has
 been extended within Iris to facilitate easy visualisation of a cube's data.
 
 .. seealso::
@@ -19,39 +19,39 @@ been extended within Iris to facilitate easy visualisation of a cube's data.
 Matplotlib's Pyplot Basics
 ***************************
 
-A simple line plot can be created using the 
+A simple line plot can be created using the
 :py:func:`matplotlib.pyplot.plot` function::
 
 	import matplotlib.pyplot as plt
 	plt.plot([1, 2, 2.5])
 	plt.show()
 
-This code will automatically create a figure with appropriate axes for the plot 
-and show it on screen. 
-The call to **plt.plot([1, 2, 2.5])** will create a line plot with 
-appropriate axes for the data (x=0, y=1; x=1, y=2; x=2, y=2.5). 
-The call to **plt.show()** tells Matplotlib that you have finished with 
-this plot and that you would like to visualise it in a window. 
+This code will automatically create a figure with appropriate axes for the plot
+and show it on screen.
+The call to **plt.plot([1, 2, 2.5])** will create a line plot with
+appropriate axes for the data (x=0, y=1; x=1, y=2; x=2, y=2.5).
+The call to **plt.show()** tells Matplotlib that you have finished with
+this plot and that you would like to visualise it in a window.
 This is an example of using matplotlib in *non-interactive* mode.
 
-There are two modes of rendering within Matplotlib; **interactive** and 
+There are two modes of rendering within Matplotlib; **interactive** and
 **non-interactive**.
 
 
 Interactive Plot Rendering
 ==========================
-The previous example was *non-interactive* as the figure is only rendered 
-*after* the call to :py:func:`plt.show() <matplotlib.pyplot.show>`. 
-Rendering plots *interactively* can be achieved by changing the interactive 
+The previous example was *non-interactive* as the figure is only rendered
+*after* the call to :py:func:`plt.show() <matplotlib.pyplot.show>`.
+Rendering plots *interactively* can be achieved by changing the interactive
 mode::
 
 	import matplotlib.pyplot as plt
 	plt.interactive(True)
 	plt.plot([1, 2, 2.5])
 
-In this case the plot is rendered automatically with no need to explicitly call 
-:py:func:`matplotlib.pyplot.show` after **plt.plot**. 
-Subsequent changes to your figure will be automatically rendered in the window. 
+In this case the plot is rendered automatically with no need to explicitly call
+:py:func:`matplotlib.pyplot.show` after **plt.plot**.
+Subsequent changes to your figure will be automatically rendered in the window.
 
 The current rendering mode can be determined as follows::
 
@@ -60,8 +60,8 @@ The current rendering mode can be determined as follows::
 
 .. note::
 
-	For clarity, each example includes all of the imports required to run on its 
-	own; when combining examples such as the two above, it would not be necessary 
+	For clarity, each example includes all of the imports required to run on its
+	own; when combining examples such as the two above, it would not be necessary
 	to repeat the import statement more than once::
 
         	import matplotlib.pyplot as plt
@@ -69,19 +69,19 @@ The current rendering mode can be determined as follows::
 	        plt.plot([1, 2, 2.5])
 	        print(plt.isinteractive())
 
-Interactive mode does not clear out the figure buffer, so figures have to be 
+Interactive mode does not clear out the figure buffer, so figures have to be
 explicitly closed when they are finished with::
 
         plt.close()
 
 -- or just close the figure window.
 
-Interactive mode sometimes requires an extra draw command to update all changes, 
+Interactive mode sometimes requires an extra draw command to update all changes,
 which can be done with::
 
         plt.draw()
 
-For the remainder of this tutorial we will work in non-interactive mode, 
+For the remainder of this tutorial we will work in non-interactive mode,
 so ensure that interactive mode is turned off with::
 
         plt.interactive(False)
@@ -90,18 +90,18 @@ so ensure that interactive mode is turned off with::
  Saving a Plot
 ===============
 
-The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()** 
-in that they are both *non-interactive* visualisation modes. 
+The :py:func:`matplotlib.pyplot.savefig` function is similar to **plt.show()**
+in that they are both *non-interactive* visualisation modes.
 As you might expect, **plt.savefig** saves your figure as an image::
 
 	import matplotlib.pyplot as plt
 	plt.plot([1, 2, 2.5])
 	plt.savefig('plot123.png')
 
-The filename extension passed to the :py:func:`matplotlib.pyplot.savefig` 
-function can be used to control the output file format of the plot 
-(keywords can also be used to control this and other aspects, 
-see :py:func:`matplotlib.pyplot.savefig`). 
+The filename extension passed to the :py:func:`matplotlib.pyplot.savefig`
+function can be used to control the output file format of the plot
+(keywords can also be used to control this and other aspects,
+see :py:func:`matplotlib.pyplot.savefig`).
 
 Some of the formats which are supported by **plt.savefig**:
 
@@ -119,12 +119,12 @@ SVG     Vector  Scalable Vector Graphics, XML based
 Iris Cube Plotting
 ******************
 
-The Iris modules :py:mod:`iris.quickplot` and :py:mod:`iris.plot` extend the 
-Matplotlib pyplot interface by implementing thin *wrapper* functions. 
-These wrapper functions simply bridge the gap between an Iris cube and 
-the data expected by standard Matplotlib pyplot functions. 
-This means that *all* Matplotlib pyplot functionality, 
-including keyword options, are still available through the Iris plotting 
+The Iris modules :py:mod:`iris.quickplot` and :py:mod:`iris.plot` extend the
+Matplotlib pyplot interface by implementing thin *wrapper* functions.
+These wrapper functions simply bridge the gap between an Iris cube and
+the data expected by standard Matplotlib pyplot functions.
+This means that *all* Matplotlib pyplot functionality,
+including keyword options, are still available through the Iris plotting
 wrapper functions.
 
 As a rule of thumb:
@@ -136,14 +136,14 @@ As a rule of thumb:
 * if you wish to create a non cube visualisation, also use
   ``matplotlib.pyplot``.
 
-The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module, 
-except that ``quickplot`` will add a title, x and y labels and a colorbar 
+The ``iris.quickplot`` module is exactly the same as the ``iris.plot`` module,
+except that ``quickplot`` will add a title, x and y labels and a colorbar
 where appropriate.
 
 .. note::
 
-   In all subsequent examples the ``matplotlib.pyplot``, ``iris.plot`` and 
-   ``iris.quickplot`` modules are imported as ``plt``, ``iplt`` and ``qplt`` 
+   In all subsequent examples the ``matplotlib.pyplot``, ``iris.plot`` and
+   ``iris.quickplot`` modules are imported as ``plt``, ``iplt`` and ``qplt``
    respectively in order to make the code more readable.
    This is equivalent to::
 
@@ -152,18 +152,18 @@ where appropriate.
        import iris.quickplot as qplt
 
 
-Plotting 1-Dimensional Cubes 
+Plotting 1-Dimensional Cubes
 ============================
 
-The simplest 1D plot is achieved with the :py:func:`iris.plot.plot` function. 
-The syntax is very similar to that which you would provide to Matplotlib's 
-equivalent :py:func:`matplotlib.pyplot.plot` and indeed all of the 
+The simplest 1D plot is achieved with the :py:func:`iris.plot.plot` function.
+The syntax is very similar to that which you would provide to Matplotlib's
+equivalent :py:func:`matplotlib.pyplot.plot` and indeed all of the
 keyword arguments are equivalent:
 
 .. plot:: userguide/plotting_examples/1d_simple.py
    :include-source:
 
-For more information on how this example reduced the 2D cube to 1 dimension see 
+For more information on how this example reduced the 2D cube to 1 dimension see
 the previous section entitled :doc:`subsetting_a_cube`.
 
 .. note::
@@ -174,7 +174,7 @@ the previous section entitled :doc:`subsetting_a_cube`.
     :func:`plt.ylabel() <matplotlib.pyplot.ylabel>` functions.
 
 As well as providing simple Matplotlib wrappers, Iris also has a
-:py:mod:`iris.quickplot` module, which adds extra cube based metadata 
+:py:mod:`iris.quickplot` module, which adds extra cube based metadata
 to a plot.
 For example, the previous plot can be improved quickly by replacing
 **iris.plot** with **iris.quickplot**:
@@ -187,31 +187,31 @@ For example, the previous plot can be improved quickly by replacing
 Multi-Line Plot
 ---------------
 
-A multi-lined (or over-plotted) plot, with a legend, can be achieved easily by 
-calling :func:`iris.plot.plot` or :func:`iris.quickplot.plot` consecutively 
+A multi-lined (or over-plotted) plot, with a legend, can be achieved easily by
+calling :func:`iris.plot.plot` or :func:`iris.quickplot.plot` consecutively
 and providing the label keyword to identify it.
-Once all of the lines have been added the :func:`matplotlib.pyplot.legend` 
-function can be called to indicate that a legend is desired: 
+Once all of the lines have been added the :func:`matplotlib.pyplot.legend`
+function can be called to indicate that a legend is desired:
 
 .. plot:: ../gallery_code/general/plot_lineplot_with_legend.py
    :include-source:
 
-This example of consecutive ``qplt.plot`` calls coupled with the 
-:func:`Cube.slices() <iris.cube.Cube.slices>` method on a cube shows 
-the temperature at some latitude cross-sections. 
+This example of consecutive ``qplt.plot`` calls coupled with the
+:func:`Cube.slices() <iris.cube.Cube.slices>` method on a cube shows
+the temperature at some latitude cross-sections.
 
 .. note::
 
-    The previous example uses the ``if __name__ == "__main__"`` style to run 
+    The previous example uses the ``if __name__ == "__main__"`` style to run
     the desired code if and only if the script is run from the command line.
 
-    This is a good habit to get into when writing scripts in Python as it means 
-    that any useful functions or variables defined within the script can be 
-    imported into other scripts without running all of the code and thus 
-    creating an unwanted plot. This is discussed in more detail at 
+    This is a good habit to get into when writing scripts in Python as it means
+    that any useful functions or variables defined within the script can be
+    imported into other scripts without running all of the code and thus
+    creating an unwanted plot. This is discussed in more detail at
     `<https://effbot.org/pyfaq/tutor-what-is-if-name-main-for.htm>`_.
 
-    In order to run this example, you will need to copy the code into a file 
+    In order to run this example, you will need to copy the code into a file
     and run it using ``python my_file.py``.
 
 
@@ -224,8 +224,8 @@ Whenever a 2D plot is created using an :class:`iris.coord_systems.CoordSystem`,
 a cartopy :class:`~cartopy.mpl.geoaxes.GeoAxes` instance is created, which can be
 accessed with the :func:`matplotlib.pyplot.gca` function.
 
-Given the current map, you can draw gridlines and coastlines amongst other 
-things. 
+Given the current map, you can draw gridlines and coastlines amongst other
+things.
 
 .. seealso::
 
@@ -235,7 +235,7 @@ things.
 
 Cube Contour
 ------------
-A simple contour plot of a cube can be created with either the 
+A simple contour plot of a cube can be created with either the
 :func:`iris.plot.contour` or :func:`iris.quickplot.contour` functions:
 
 .. plot:: userguide/plotting_examples/cube_contour.py
@@ -244,7 +244,7 @@ A simple contour plot of a cube can be created with either the
 
 Cube Filled Contour
 -------------------
-Similarly a filled contour plot of a cube can be created with the 
+Similarly a filled contour plot of a cube can be created with the
 :func:`iris.plot.contourf` or :func:`iris.quickplot.contourf` functions:
 
 .. plot:: userguide/plotting_examples/cube_contourf.py
@@ -274,33 +274,33 @@ or :func:`iris.quickplot.pcolormesh`.
 Brewer Colour Palettes
 ***********************
 
-Iris includes colour specifications and designs developed by 
+Iris includes colour specifications and designs developed by
 `Cynthia Brewer  <https://colorbrewer2.org>`_
 These colour schemes are freely available under the following licence::
 
       Apache-Style Software License for ColorBrewer software and ColorBrewer Color Schemes
-  
+
       Copyright (c) 2002 Cynthia Brewer, Mark Harrower, and The Pennsylvania State University.
-  
+
       Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
       You may obtain a copy of the License at
-  
+
       https://www.apache.org/licenses/LICENSE-2.0
-  
+
       Unless required by applicable law or agreed to in writing, software distributed
       under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
       CONDITIONS OF ANY KIND, either express or implied. See the License for the
       specific language governing permissions and limitations under the License.
 
-To include a reference in a journal article or report please refer to 
+To include a reference in a journal article or report please refer to
 `section 5 <https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html>`_
 in the citation guidance provided by Cynthia Brewer.
-   
-For adding citations to Iris plots, see :ref:`brewer-cite` (below). 
+
+For adding citations to Iris plots, see :ref:`brewer-cite` (below).
 
 Available Brewer Schemes
-======================== 
-The following subset of Brewer palettes found at 
+========================
+The following subset of Brewer palettes found at
 `colorbrewer2.org <https://colorbrewer2.org>`_ are available within Iris.
 
 .. plot:: userguide/plotting_examples/brewer.py
@@ -309,7 +309,7 @@ The following subset of Brewer palettes found at
 Plotting With Brewer
 ====================
 
-To plot a cube using a Brewer colour palette, simply select one of the Iris 
+To plot a cube using a Brewer colour palette, simply select one of the Iris
 registered Brewer colour palettes and plot the cube as normal. The Brewer palettes
 become available once :mod:`iris.plot` or :mod:`iris.quickplot` are imported.
 
@@ -322,9 +322,9 @@ become available once :mod:`iris.plot` or :mod:`iris.quickplot` are imported.
 Adding a Citation
 =================
 
-Citations can be easily added to a plot using the 
+Citations can be easily added to a plot using the
 :func:`iris.plot.citation` function.
-The recommended text for the Cynthia Brewer citation is provided by 
+The recommended text for the Cynthia Brewer citation is provided by
 :data:`iris.plot.BREWER_CITE`.
 
 .. plot:: userguide/plotting_examples/cube_brewer_cite_contourf.py

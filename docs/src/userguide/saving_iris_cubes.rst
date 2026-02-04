@@ -51,7 +51,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
     >>> # Save a cube list to a PP file, appending to the contents of the file
     >>> # if it already exists
     >>> iris.save(cubes, "myfile.pp", append=True)
-    
+
     >>> # Save a cube to netCDF, defaults to NETCDF4 file format
     >>> iris.save(cubes[0], "myfile.nc")
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
@@ -60,6 +60,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
 .. testcleanup::
 
     import pathlib
+
     p = pathlib.Path("myfile.pp")
     if p.exists():
         p.unlink()
@@ -67,7 +68,7 @@ The :py:func:`iris.save` function passes all other keywords through to the saver
     if p.exists():
         p.unlink()
 
-See 
+See
 
 * :py:func:`iris.fileformats.netcdf.save`
 * :py:func:`iris.fileformats.pp.save`
@@ -121,7 +122,6 @@ Bespoke Saver
 -------------
 
 A bespoke saver may be written to support an alternative file format.  This can be provided to the :py:func:`iris.save`  function, enabling Iris to write to a different file format.
-Such a custom saver will need be written to meet the needs of the file format and to handle the metadata translation from cube metadata effectively. 
+Such a custom saver will need be written to meet the needs of the file format and to handle the metadata translation from cube metadata effectively.
 
 Implementing a bespoke saver is out of scope for the user guide.
-

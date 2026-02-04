@@ -18,4 +18,3 @@ If you're not then we've got a step-by-step guide here to walk you through it:
 
    contributing_documentation_easy
    contributing_documentation_full
-   

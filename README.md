@@ -21,8 +21,8 @@
 |                  |
 
 <p align="center">
-For documentation see the 
-<a href="https://scitools-iris.readthedocs.io/en/latest/">latest</a>  
+For documentation see the
+<a href="https://scitools-iris.readthedocs.io/en/latest/">latest</a>
 developer version or the most recent released
 <a href="https://scitools-iris.readthedocs.io/en/stable/">stable</a> version.
 </p>
@@ -46,4 +46,3 @@ developer version or the most recent released
 <a href="https://creativecommons.org/licenses/by/4.0/">
   <img src="https://i.creativecommons.org/l/by/4.0/80x15.png" alt="creative-commons-by" style="border-width:0"></a>
 </p>
-
