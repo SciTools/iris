@@ -107,7 +107,7 @@ class TestDecodeAttribute:
         result = UPF_HANDLER.decode_attribute(test_string)
         assert result == ("xxx",)
 
-    @pytest.mark.parametrize("badtype", ("int", "intarray", "floatarray"))
+    @pytest.mark.parametrize("badtype", ["int", "intarray", "floatarray"])
     def test_numeric_values(self, badtype):
         """Even array attributes get converted to a string + split."""
         if badtype == "int":

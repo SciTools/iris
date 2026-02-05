@@ -8,7 +8,6 @@ from types import ModuleType
 
 from dask import array as da
 import pytest
-from pytest_mock import mocker
 
 from iris.coords import AuxCoord
 from iris.fileformats.netcdf import Saver
@@ -19,14 +18,19 @@ from iris.tests.unit.fileformats.netcdf.saver import test_Saver
 class LazyMixin:
     array_lib: ModuleType = da
 
-    @pytest.fixture
-    def result_path(self, request):
-        def _result_path(basename=None, ext=""):
+    @pytest.fixture(autouse=True)
+    def _setup_lazy_mixin(self, monkeypatch):
+        rp = _shared_utils.result_path
+
+        def _result_path(request, basename=None, ext=""):
             # Precisely mirroring the tests in test_Saver, so use those CDL's.
-            original = _shared_utils.result_path(request, basename, ext)
+            original = rp(request, basename, ext)
             return original.replace("Saver__lazy", "Saver")
 
-        return _result_path
+        monkeypatch.setattr(
+            "iris.tests._shared_utils.result_path",  # IMPORTANT: patch where it is USED
+            _result_path,
+        )
 
 
 class Test_write(LazyMixin, test_Saver.Test_write):

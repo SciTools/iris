@@ -64,10 +64,14 @@ class UnreliableDatasetMaker:
 def test_handle_hdf_locking_error(dataset_path, monkeypatch, write_proxy):
     """Test that NetCDFWriteProxy can handle non-deterministic HDF locking errors."""
     monkeypatch.setattr(nc, "Dataset", UnreliableDatasetMaker())
-    with pytest.raises(OSError, match="Simulated non-deterministic HDF locking error"):
+
+    def _file_lock_failure():
         dataset = nc.Dataset(write_proxy.path, "r+")
         var = dataset.variables[write_proxy.varname]
         var[0] = 1.0
+
+    with pytest.raises(OSError, match="Simulated non-deterministic HDF locking error"):
+        _file_lock_failure()
 
     # Reset.
     monkeypatch.setattr(nc, "Dataset", UnreliableDatasetMaker())

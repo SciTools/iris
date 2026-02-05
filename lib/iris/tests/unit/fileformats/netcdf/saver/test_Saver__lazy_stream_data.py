@@ -35,7 +35,7 @@ class Test__lazy_stream_data:
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
         mocker.patch(target1, mock_dataset_class)
         mocker.patch(target2, mock_dataset_class)
-        yield
+        return
 
     # A fixture to parametrise tests over delayed and non-delayed Saver type.
     # NOTE: this only affects the saver context-exit, which we do not test here, so
@@ -43,13 +43,13 @@ class Test__lazy_stream_data:
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["nocompute", "compute"])
     def compute(request) -> Iterator[bool]:
-        yield request.param
+        return request.param
 
     # A fixture to parametrise tests over real and lazy-type data.
     @staticmethod
     @pytest.fixture(params=["realdata", "lazydata", "emulateddata"])
     def data_form(request) -> Iterator[bool]:
-        yield request.param
+        return request.param
 
     @staticmethod
     def saver(compute) -> Saver:

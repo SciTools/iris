@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.netcdf.loader.ChunkControl`."""
 
+import re
+
 import dask
 import numpy as np
 import pytest
@@ -15,7 +17,7 @@ from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 import iris.tests.stock as istk
 
 
-@pytest.fixture()
+@pytest.fixture
 def save_cubelist_with_sigma(tmp_filepath):
     cube = istk.simple_4d_with_hybrid_height()
     cube_varname = "my_var"
@@ -124,13 +126,15 @@ def test_control_cube_var(tmp_filepath, save_cubelist_with_sigma):
 
 
 def test_invalid_chunksize(tmp_filepath, save_cubelist_with_sigma):
-    with pytest.raises(ValueError):
+    msg = "'dimension_chunksizes' kwargs should be a dict of `str: int` pairs, not {'model_level_numer': '2'}."
+    with pytest.raises(ValueError, match=msg):
         with CHUNK_CONTROL.set(model_level_numer="2"):
             CubeList(loader.load_cubes(tmp_filepath))
 
 
 def test_invalid_var_name(tmp_filepath, save_cubelist_with_sigma):
-    with pytest.raises(ValueError):
+    msg = re.escape("'var_names' should be an iterable of strings, not [1, 2].")
+    with pytest.raises(ValueError, match=msg):
         with CHUNK_CONTROL.set([1, 2], model_level_numer="2"):
             CubeList(loader.load_cubes(tmp_filepath))
 

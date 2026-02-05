@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
 
+import re
 import warnings
 
 import numpy as np
@@ -113,9 +114,12 @@ class TestAtmosphereHybridSigmaPressureCoordinate(MockerMixin):
 
     def test_formula_terms_p0_non_scalar(self):
         coord_p0 = DimCoord(np.arange(5))
+        msg = re.escape(
+            "Expecting None to be a scalar reference pressure coordinate, got shape (5,)"
+        )
         self.cube_parts["coordinates"].append((coord_p0, "p0"))
         self.requires["formula_terms"] = dict(p0="p0")
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             _load_aux_factory(self.engine, self.cube)
 
     def test_formula_terms_p0_bounded(self):

@@ -218,8 +218,9 @@ class Test_fill_value:
         # is passed as the fill_value argument, an error is raised
         cubes = self._make_cubes()
         fill_values = [1.0, 2.0, 3.0, 4.0]
+        msg = "If fill_value is a list, it must have the same number of elements as the cube argument."
         with mocker.patch("iris.fileformats.netcdf.saver.Saver"):
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=msg):
                 save(cubes, "dummy.nc", fill_value=fill_values)
 
 
@@ -384,7 +385,7 @@ class Test_compute_usage:
         # Patch the Saver() creation to return our mock Saver object.
         mocker.patch("iris.fileformats.netcdf.saver.Saver", mock_saver_class_create)
         # Return mocks for both constructor call, and Saver object.
-        yield mock_new_saver_call, mock_saver
+        return mock_new_saver_call, mock_saver
 
     # A fixture to provide some mock args for 'Saver' creation.
     @staticmethod
