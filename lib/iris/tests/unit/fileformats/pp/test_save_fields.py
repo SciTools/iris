@@ -27,15 +27,15 @@ class TestSaveFields:
     def test_save(self, mocker):
         open_func = "builtins.open"
         m = mocker.mock_open()
-        with mocker.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], "foo.pp")
+        mocker.patch(open_func, m, create=True)
+        pp.save_fields([self.pp_field], "foo.pp")
         assert mocker.call("foo.pp", "wb") in m.mock_calls
         assert mocker.call().write("saved") in m.mock_calls
 
     def test_save_append(self, mocker):
         open_func = "builtins.open"
         m = mocker.mock_open()
-        with mocker.patch(open_func, m, create=True):
-            pp.save_fields([self.pp_field], "foo.pp", append=True)
+        mocker.patch(open_func, m, create=True)
+        pp.save_fields([self.pp_field], "foo.pp", append=True)
         assert mocker.call("foo.pp", "ab") in m.mock_calls
         assert mocker.call().write("saved") in m.mock_calls

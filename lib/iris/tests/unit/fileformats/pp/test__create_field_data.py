@@ -18,11 +18,9 @@ class Test__create_field_data:
         field = mocker.Mock(core_data=core_data)
         data_shape = mocker.Mock()
         land_mask = mocker.Mock()
-        with mocker.patch(
-            "iris.fileformats.pp._data_bytes_to_shaped_array"
-        ) as convert_bytes:
-            convert_bytes.return_value = mocker.sentinel.array
-            pp._create_field_data(field, data_shape, land_mask)
+        convert_bytes = mocker.patch("iris.fileformats.pp._data_bytes_to_shaped_array")
+        convert_bytes.return_value = mocker.sentinel.array
+        pp._create_field_data(field, data_shape, land_mask)
 
         assert field.data is mocker.sentinel.array
         convert_bytes.assert_called_once_with(
@@ -57,9 +55,9 @@ class Test__create_field_data:
         # We can't directly inspect the concrete data source underlying
         # the dask array, so instead we patch the proxy creation and check it's
         # being created and invoked correctly.
-        with mocker.patch("iris.fileformats.pp.PPDataProxy") as PPDataProxy:
-            PPDataProxy.return_value = proxy
-            pp._create_field_data(field, data_shape, land_mask_field=None)
+        PPDataProxy = mocker.patch("iris.fileformats.pp.PPDataProxy")
+        PPDataProxy.return_value = proxy
+        pp._create_field_data(field, data_shape, land_mask_field=None)
         # The data should be assigned via field.data. As this is a mock object
         # we can check the attribute directly.
         assert field.data.shape == data_shape
