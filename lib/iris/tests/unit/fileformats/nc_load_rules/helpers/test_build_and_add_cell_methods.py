@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_cell_methods`."""
 
-from unittest import mock
-
 import pytest
 
 from iris.coords import CellMethod
@@ -16,8 +14,8 @@ from iris.loading import LOAD_PROBLEMS
 
 
 @pytest.fixture
-def mock_cf_data_var():
-    return mock.Mock(
+def mock_cf_data_var(mocker):
+    return mocker.Mock(
         spec=CFDataVariable,
         cell_methods="time: mean",
         cf_name="wibble",
@@ -26,9 +24,9 @@ def mock_cf_data_var():
 
 
 @pytest.fixture
-def mock_engine(mock_cf_data_var):
-    return mock.Mock(
-        cube=mock.Mock(),
+def mock_engine(mock_cf_data_var, mocker):
+    return mocker.Mock(
+        cube=mocker.Mock(),
         cf_var=mock_cf_data_var,
         filename=mock_cf_data_var.filename,
     )
@@ -55,10 +53,10 @@ def test_not_built(monkeypatch, mock_engine, mock_cf_data_var):
     assert mock_engine.cube.cell_methods == cm_original
 
 
-def test_not_added(monkeypatch, mock_engine, mock_cf_data_var):
+def test_not_added(monkeypatch, mock_engine, mock_cf_data_var, mocker):
     cm_original = mock_engine.cube.cell_methods
 
-    class NoCellMethods(mock.Mock):
+    class NoCellMethods(mocker.Mock):
         def __setattr__(self, key, value):
             if key == "cell_methods":
                 raise RuntimeError("Not added")

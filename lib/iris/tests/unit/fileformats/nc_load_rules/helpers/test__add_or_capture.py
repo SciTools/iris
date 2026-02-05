@@ -4,9 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers._add_or_capture`."""
 
-from unittest.mock import MagicMock
-
 import pytest
+from pytest_mock import MockType
 
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
@@ -15,9 +14,9 @@ from iris.loading import LOAD_PROBLEMS, LoadProblems
 
 
 class Mixin:
-    build_func: MagicMock
-    add_method: MagicMock
-    cf_var: MagicMock
+    build_func: MockType
+    add_method: MockType
+    cf_var: MockType
 
     filename: str = "test__add_or_capture.nc"
     attr_key: str = "attr_key"
