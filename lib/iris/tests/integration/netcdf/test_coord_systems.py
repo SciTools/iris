@@ -171,10 +171,10 @@ data:
 
 @pytest.fixture(autouse=True, scope="module")
 def _setup(tmp_path_factory):
-    old_tmp_dir = getattr(tlc, "TMP_DIR", None)
-    tlc.TMP_DIR = tmp_path_factory.mktemp("temp")
-    yield
-    tlc.TMP_DIR = old_tmp_dir
+    if not hasattr(tlc, "TMP_DIR"):
+        tlc.TMP_DIR = tmp_path_factory.mktemp("temp")
+        yield
+        delattr(tlc, "TMP_DIR")
 
 
 @_shared_utils.skip_data
