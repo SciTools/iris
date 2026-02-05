@@ -10,9 +10,10 @@ rotated and non-rotated.
 
 """
 
+import re
 from typing import Literal
 
-import iris.tests as tests  # isort: skip
+import pytest
 
 from iris.common import LimitedAttributeDict
 from iris.coord_systems import GeogCS, RotatedGeogCS
@@ -27,8 +28,8 @@ class Mixin_latlon_dimcoords(Mixin__nc_load_actions):
     # Set by inheritor classes, which are actual TestCases.
     lat_1_or_lon_0: Literal[0, 1]
 
-    def setUp(self):
-        super().setUp()
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Generate some useful settings : just to generalise operation over
         # both latitude and longitude.
         islat = self.lat_1_or_lon_0
@@ -133,9 +134,9 @@ netcdf test {{
         # affect the results here, in some cases.
         coords = cube.coords()
         # There should be one and only one coord.
-        self.assertEqual(1, len(coords))
+        assert 1 == len(coords)
         # It should also be a dim-coord
-        self.assertEqual(1, len(cube.coords(dim_coords=True)))
+        assert 1 == len(cube.coords(dim_coords=True))
         (coord,) = coords
         if self.debug_info:
             print()
@@ -146,24 +147,24 @@ netcdf test {{
             getattr(coord, name)
             for name in ("standard_name", "long_name", "units", "coord_system")
         ]
-        self.assertEqual(standard_name, coord_stdname, context_message)
-        self.assertEqual(long_name, coord_longname, context_message)
-        self.assertEqual(units, coord_units, context_message)
+        assert standard_name == coord_stdname, context_message
+        assert long_name == coord_longname, context_message
+        assert units == coord_units, context_message
         assert crs in (None, "latlon", "rotated")
         if crs is None:
-            self.assertEqual(None, coord_crs, context_message)
+            assert None is coord_crs, context_message
         elif crs == "latlon":
-            self.assertIsInstance(coord_crs, GeogCS, context_message)
+            assert isinstance(coord_crs, GeogCS), context_message
         elif crs == "rotated":
-            self.assertIsInstance(coord_crs, RotatedGeogCS, context_message)
+            assert isinstance(coord_crs, RotatedGeogCS), context_message
 
     def check_load_problem(self, setup_kwargs, expected_msg):
         # Check that the expected load problem is stored.
         _ = self.run_testcase(**setup_kwargs)
         load_problem = LOAD_PROBLEMS.problems[-1]
         attributes = load_problem.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
-        self.assertEqual(attributes["standard_name"], setup_kwargs["standard_name"])
-        self.assertRegex("".join(load_problem.stack_trace.format()), expected_msg)
+        assert attributes["standard_name"] == setup_kwargs["standard_name"]
+        assert re.search(expected_msg, "".join(load_problem.stack_trace.format()))
 
     #
     # Testcase routines
@@ -330,35 +331,9 @@ netcdf test {{
         )
 
 
-class Test__longitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+class Test__longitude_coords(Mixin_latlon_dimcoords):
     lat_1_or_lon_0 = 0
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-    def setUp(self):
-        super().setUp()
-
-
-class Test__latitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+class Test__latitude_coords(Mixin_latlon_dimcoords):
     lat_1_or_lon_0 = 1
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-    def setUp(self):
-        super().setUp()
-
-
-if __name__ == "__main__":
-    tests.main()

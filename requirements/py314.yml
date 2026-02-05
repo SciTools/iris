@@ -4,7 +4,7 @@ channels:
   - conda-forge
 
 dependencies:
-  - python =3.11
+  - python =3.14
 
 # Setup dependencies.
   - setuptools >=77.0.3
@@ -26,12 +26,12 @@ dependencies:
 
 # Optional dependencies.
   - esmpy >=7.0
-  - geovista
+#  - geovista  # Temporarily removed until pyvista is py3.14 compatible; see #6902
   - graphviz
   - iris-sample-data >=2.4.0
   - mo_pack
   - nc-time-axis >=1.4
-  - pandas
+  - pandas <3
   - pip
   - python-stratify
   - rasterio
@@ -56,7 +56,8 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
-  - pydata-sphinx-theme >=0.13.0
+  # Pinned reason: https://github.com/SciTools/iris/issues/6885
+  - pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051
