@@ -63,7 +63,7 @@ class TestBuildProblems(Mixin):
     @pytest.fixture
     def patch_build_raw_cube(self, mocker):
         patch = mocker.patch.object(helpers, "build_raw_cube", return_value="RAW_CUBE")
-        yield patch
+        return patch
 
     @pytest.fixture
     def cause_build_raw_cube_error(self, patch_build_raw_cube):

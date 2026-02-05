@@ -31,7 +31,7 @@ def mock_engine():
         cf_group=cf_group,
     )
     engine = mock.Mock(cube=Cube([23]), cf_var=cf_var, filename="foo.nc")
-    yield engine
+    return engine
 
 
 class TestCubeName:

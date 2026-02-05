@@ -17,7 +17,7 @@ from iris.loading import LOAD_PROBLEMS
 
 @pytest.fixture
 def mock_cf_data_var():
-    yield mock.Mock(
+    return mock.Mock(
         spec=CFDataVariable,
         cell_methods="time: mean",
         cf_name="wibble",
@@ -27,7 +27,7 @@ def mock_cf_data_var():
 
 @pytest.fixture
 def mock_engine(mock_cf_data_var):
-    yield mock.Mock(
+    return mock.Mock(
         cube=mock.Mock(),
         cf_var=mock_cf_data_var,
         filename=mock_cf_data_var.filename,
