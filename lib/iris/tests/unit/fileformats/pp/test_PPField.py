@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.PPField` class."""
 
-from bokeh.io.util import temp_filename
 import numpy as np
 import pytest
 
