@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_units`."""
 
-from unittest import mock
-
 from cf_units import Unit
 import pytest
 
@@ -16,21 +14,21 @@ from iris.loading import LOAD_PROBLEMS
 
 
 @pytest.fixture
-def mock_cf_data_var():
-    yield mock.Mock(
+def mock_cf_data_var(mocker):
+    return mocker.Mock(
         spec=CFDataVariable,
         units="kelvin",
         cf_name="wibble",
         filename="DUMMY",
         dtype=float,
-        cf_data=mock.Mock(spec=[]),
+        cf_data=mocker.Mock(spec=[]),
     )
 
 
 @pytest.fixture
-def mock_engine(mock_cf_data_var):
-    yield mock.Mock(
-        cube=mock.Mock(attributes={}),
+def mock_engine(mock_cf_data_var, mocker):
+    return mocker.Mock(
+        cube=mocker.Mock(attributes={}),
         cf_var=mock_cf_data_var,
         filename=mock_cf_data_var.filename,
     )
@@ -65,10 +63,10 @@ def test_not_built(monkeypatch, mock_engine):
     assert mock_engine.cube.units == units_original
 
 
-def test_not_added(monkeypatch, mock_engine, mock_cf_data_var):
+def test_not_added(monkeypatch, mock_engine, mock_cf_data_var, mocker):
     units_original = mock_engine.cube.units
 
-    class NoUnits(mock.Mock):
+    class NoUnits(mocker.Mock):
         def __setattr__(self, key, value):
             if key == "units":
                 raise RuntimeError("Not added")

@@ -6,3 +6,14 @@
 :mod:`iris.fileformats.netcdf._nc_load_rules.helpers` .
 
 """
+
+import pytest
+from pytest_mock import MockerFixture
+
+
+class MockerMixin:
+    mocker: MockerFixture
+
+    @pytest.fixture(autouse=True)
+    def _mocker_mixin_setup(self, mocker):
+        self.mocker = mocker
