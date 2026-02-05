@@ -255,7 +255,8 @@ class TestsMesh:
         cls.nc_path = cdl_to_nc(cls.ref_cdl)
         cls.mesh_cubes = list(load_cubes(cls.nc_path))
 
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Interim measure to allow pytest-style patching in the absence of
         #  full-scale pytest conversion.
         self.monkeypatch = pytest.MonkeyPatch()
