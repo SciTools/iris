@@ -4,11 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for regridding."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 import iris
 from iris.analysis import UnstructuredNearest
@@ -16,13 +13,15 @@ from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 from iris.tests.stock import global_pp, simple_3d
 
 
-@tests.skip_data
-class TestOSGBToLatLon(tests.IrisTest):
-    def setUp(self):
-        path = tests.get_data_path(
+@_shared_utils.skip_data
+class TestOSGBToLatLon:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        path = _shared_utils.get_data_path(
             (
                 "NIMROD",
                 "uk2km",
@@ -58,16 +57,21 @@ class TestOSGBToLatLon(tests.IrisTest):
 
     def test_linear(self):
         res = self._regrid("linear")
-        self.assertArrayShapeStats(res, (73, 96), 17799.296120, 11207.701323)
+        _shared_utils.assert_array_shape_stats(
+            res, (73, 96), 17799.296120, 11207.701323
+        )
 
     def test_nearest(self):
         res = self._regrid("nearest")
-        self.assertArrayShapeStats(res, (73, 96), 17808.068828, 11225.314310)
+        _shared_utils.assert_array_shape_stats(
+            res, (73, 96), 17808.068828, 11225.314310
+        )
 
 
-@tests.skip_data
-class TestGlobalSubsample(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestGlobalSubsample:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.src = global_pp()
         _ = self.src.data
         # Cast up to float64, to work around numpy<=1.8 bug with means of
@@ -87,17 +91,18 @@ class TestGlobalSubsample(tests.IrisTest):
 
     def test_linear(self):
         res = self._regrid("linear")
-        self.assertArrayShapeStats(res, (36, 32), 280.35907, 15.997223)
+        _shared_utils.assert_array_shape_stats(res, (36, 32), 280.35907, 15.997223)
 
     def test_nearest(self):
         res = self._regrid("nearest")
-        self.assertArrayShapeStats(res, (36, 32), 280.33726, 16.064001)
+        _shared_utils.assert_array_shape_stats(res, (36, 32), 280.33726, 16.064001)
 
 
-@tests.skip_data
-class TestUnstructured(tests.IrisTest):
-    def setUp(self):
-        path = tests.get_data_path(
+@_shared_utils.skip_data
+class TestUnstructured:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        path = _shared_utils.get_data_path(
             ("NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc")
         )
         self.src = iris.load_cube(path, "Potential Temperature")
@@ -105,11 +110,12 @@ class TestUnstructured(tests.IrisTest):
 
     def test_nearest(self):
         res = self.src.regrid(self.grid, UnstructuredNearest())
-        self.assertArrayShapeStats(res, (1, 6, 3, 4), 315.890808, 11.000724)
+        _shared_utils.assert_array_shape_stats(res, (1, 6, 3, 4), 315.890808, 11.000724)
 
 
-class TestZonalMean_global(tests.IrisTest):
-    def setUp(self):
+class TestZonalMean_global:
+    @pytest.fixture(autouse=True)
+    def _setup_zonal_mean(self):
         self.src = iris.cube.Cube(
             np.random.default_rng().integers(0, 10, size=(140, 1))
         )
@@ -154,7 +160,7 @@ class TestZonalMean_global(tests.IrisTest):
 
         # Ensure data remains unchanged.
         # (the same along each column)
-        self.assertTrue(
+        assert (
             np.array(
                 [
                     (res.data[:, 0] - res.data[:, i]).max()
@@ -163,13 +169,14 @@ class TestZonalMean_global(tests.IrisTest):
             ).max()
             < 1e-10
         )
-        self.assertArrayAlmostEqual(res.data[:, 0], self.src.data.reshape(-1))
+        _shared_utils.assert_array_almost_equal(
+            res.data[:, 0], self.src.data.reshape(-1)
+        )
 
 
-class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
-    def setUp(self):
-        super().setUp()
-
+class TestZonalMean_regional(TestZonalMean_global):
+    @pytest.fixture(autouse=True)
+    def _setup(self, _setup_zonal_mean):
         # Define a target grid and a target result (what we expect the
         # regridder to return).
         sx_coord = self.src.coord(axis="x")
@@ -211,14 +218,14 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         # high resolution target.
         regridder = iris.analysis.Linear()
         res = self.src.regrid(self.grid, regridder)
-        self.assertArrayAlmostEqual(res.data, self.tar.data)
+        _shared_utils.assert_array_almost_equal(res.data, self.tar.data)
 
     def test_linear_rotated_regional_no_extrapolation(self):
         # Capture the case where our source remains circular but we don't use
         # extrapolation.
         regridder = iris.analysis.Linear(extrapolation_mode="nan")
         res = self.src.regrid(self.grid, regridder)
-        self.assertArrayAlmostEqual(res.data, self.tar.data)
+        _shared_utils.assert_array_almost_equal(res.data, self.tar.data)
 
     def test_linear_rotated_regional_not_circular(self):
         # Capture the case where our source is not circular but we utilise
@@ -226,7 +233,7 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         regridder = iris.analysis.Linear()
         self.src.coord(axis="x").circular = False
         res = self.src.regrid(self.grid, regridder)
-        self.assertArrayAlmostEqual(res.data, self.tar.data)
+        _shared_utils.assert_array_almost_equal(res.data, self.tar.data)
 
     def test_linear_rotated_regional_no_extrapolation_not_circular(self):
         # Confirm how zonal mean actually works in so far as, that
@@ -237,8 +244,4 @@ class TestZonalMean_regional(TestZonalMean_global, tests.IrisTest):
         regridder = iris.analysis.Linear(extrapolation_mode="nan")
         self.src.coord(axis="x").circular = False
         res = self.src.regrid(self.grid, regridder)
-        self.assertTrue(np.isnan(res.data).all())
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert np.isnan(res.data).all()

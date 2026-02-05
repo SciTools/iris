@@ -80,6 +80,7 @@ except ImportError:
 
 #: Basepath for test results.
 _RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+MIN_PICKLE_PROTOCOL = 4
 
 
 def _assert_masked_array(assertion, a, b, strict, **kwargs):

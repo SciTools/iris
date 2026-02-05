@@ -35,18 +35,18 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.13"]
+        python-version: ["3.14"]
         session: ["doctest", "gallery"]
         include:
           - os: "ubuntu-latest"
-            python-version: "3.13"
+            python-version: "3.14"
             session: "tests"
             coverage: "--coverage"
           - os: "ubuntu-latest"
-            python-version: "3.12"
+            python-version: "3.13"
             session: "tests"
           - os: "ubuntu-latest"
-            python-version: "3.11"
+            python-version: "3.12"
             session: "tests"
 
     env:
@@ -56,7 +56,7 @@ jobs:
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: "environment configure"
         env:

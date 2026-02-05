@@ -166,7 +166,7 @@ class MixinAttrsTesting:
         """Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
 
-        Idea borrowed from :meth:`iris.tests.IrisTest.result_path`.
+        Idea borrowed from :meth:`iris.tests._shared_utils.IrisTest.result_path`.
 
         Returns
         -------
@@ -557,7 +557,8 @@ def decode_matrix_input(input_spec):
     # N.B. in this form "values" are all one-character strings.
     def decode_specstring(spec: str) -> List[Union[str, None]]:
         # Decode an input spec-string to input/output attribute values
-        assert spec[0] == "G" and spec[2] == "L"
+        assert spec[0] == "G"
+        assert spec[2] == "L"
         allvals = spec[1] + spec[3:]
         result = [None if valchar == "-" else valchar for valchar in allvals]
         return result
@@ -579,7 +580,8 @@ def encode_matrix_result(results) -> List[str]:
     # Re-code a set of output results, [*[global-value, *local-values]] as a list of
     # strings, like ["GaL-b"] or ["GaLabc", "GbLabc"].
     # N.B. again assuming that all values are just one-character strings, or None.
-    assert isinstance(results, Sequence) and len(results) >= 1
+    assert isinstance(results, Sequence)
+    assert len(results) >= 1
     if not isinstance(results[0], list):
         results = [results]
     assert all(
