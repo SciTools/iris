@@ -21,7 +21,7 @@ import iris.tests.stock as stock
 
 
 @pytest.mark.parametrize(
-    "unit,modulus",
+    ("unit", "modulus"),
     [
         (cf_units.Unit("radians"), 2 * np.pi),
         (cf_units.Unit("degrees"), 360.0),
@@ -431,7 +431,7 @@ def single_mean_time_cube(single_time_cube):
     return single_time_cube
 
 
-@pytest.fixture()
+@pytest.fixture
 def global_cube():
     x_coord = DimCoord(
         np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True

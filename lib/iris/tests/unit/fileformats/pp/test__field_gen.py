@@ -14,7 +14,7 @@ import iris.fileformats.pp as pp
 
 
 class Test:
-    @pytest.fixture()
+    @pytest.fixture
     def mock_for_field_gen(self, mocker):
         @contextlib.contextmanager
         def _mock_for_field_gen(fields):
@@ -103,4 +103,4 @@ class Test:
         ) as warn:
             with pytest.raises(StopIteration):
                 next(generator)
-            assert len(warn) == 1
+        assert len(warn) == 1

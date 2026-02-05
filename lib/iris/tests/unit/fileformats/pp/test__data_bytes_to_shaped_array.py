@@ -171,7 +171,7 @@ class Test__data_bytes_to_shaped_array__land_packed(MockerMixin):
     def test_bad_lbpack(self):
         # Check basic land unpacking.
         field_data = self.sea_masked_data
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="Unsupported mask compression."):
             self.check_read_data(field_data, 320, self.land_mask)
 
     def check_read_data(self, field_data, lbpack, mask):

@@ -99,8 +99,8 @@ class Test_save:
         field.bmdi = np.float32(-123.4)
         field.data = np.ma.masked_array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
+        temp_filename = tmp_path / "temp.pp"
         with pytest.warns(IrisMaskValueMatchWarning, match=msg):
-            temp_filename = tmp_path / "temp.pp"
             with open(temp_filename, "wb") as pp_file:
                 field.save(pp_file)
 
@@ -111,8 +111,8 @@ class Test_save:
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
+        temp_filename = tmp_path / "temp.pp"
         with pytest.warns(IrisMaskValueMatchWarning, match=msg):
-            temp_filename = tmp_path / "temp.pp"
             with open(temp_filename, "wb") as pp_file:
                 field.save(pp_file)
 
