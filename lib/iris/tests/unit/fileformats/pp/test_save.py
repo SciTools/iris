@@ -21,7 +21,7 @@ import iris.tests.stock as stock
 
 
 @pytest.mark.parametrize(
-    "unit,modulus",
+    ("unit", "modulus"),
     [
         (cf_units.Unit("radians"), 2 * np.pi),
         (cf_units.Unit("degrees"), 360.0),
@@ -75,6 +75,7 @@ def test_bad_stash_string(mocker):
 def _pp_save_ppfield_values(cube):
     """Emulate saving a cube as PP, and capture the resulting PP field values."""
     # Create a test object to stand in for a real PPField.
+    # todo: Still uses unittest.mock, it causes a lot of issues making this a fixture
     pp_field = mock.MagicMock(spec=pp.PPField3)
     # Add minimal content required by the pp.save operation.
     pp_field.HEADER_DEFN = pp.PPField3.HEADER_DEFN
@@ -88,7 +89,8 @@ def _pp_save_ppfield_values(cube):
 
 
 class TestVertical:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.lat_lon_cube()
 
     def test_pseudo_level(self):
@@ -124,7 +126,8 @@ class TestVertical:
 
 
 class TestLbfcProduction:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.lat_lon_cube()
 
     def check_cube_stash_yields_lbfc(self, stash, lbfc_expected):
@@ -168,7 +171,8 @@ class TestLbfcProduction:
 
 
 class TestLbsrceProduction:
-    def setup_method(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = stock.lat_lon_cube()
 
     def check_cube_um_source_yields_lbsrce(
@@ -212,7 +216,7 @@ class Test_Save__LbprocProduction:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
         self.cube = stock.realistic_3d()
-        self.pp_field = mock.MagicMock(spec=pp.PPField3)
+        self.pp_field = mocker.MagicMock(spec=pp.PPField3)
         self.pp_field.HEADER_DEFN = pp.PPField3.HEADER_DEFN
         mocker.patch("iris.fileformats.pp.PPField3", return_value=self.pp_field)
 
@@ -427,7 +431,7 @@ def single_mean_time_cube(single_time_cube):
     return single_time_cube
 
 
-@pytest.fixture()
+@pytest.fixture
 def global_cube():
     x_coord = DimCoord(
         np.arange(0, 360, 10), standard_name="longitude", units="degrees", circular=True

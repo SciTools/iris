@@ -4,16 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.pp.PPField` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import numpy as np
+import pytest
 
 import iris.fileformats.pp as pp
 from iris.fileformats.pp import PPField, SplittableInt
+from iris.tests import _shared_utils
+from iris.tests.unit.fileformats import MockerMixin
 from iris.warnings import IrisDefaultingWarning, IrisMaskValueMatchWarning
 
 # The PPField class is abstract, so to test we define a minimal,
@@ -75,51 +72,51 @@ class DummyPPField(PPField):
         return None
 
 
-class Test_save(tests.IrisTest):
-    def test_float64(self):
+class Test_save:
+    def test_float64(self, tmp_path):
         # Tests down-casting of >f8 data to >f4.
 
         def field_checksum(data):
             field = DummyPPField()._ready_for_save()
             field.data = data
-            with self.temp_filename(".pp") as temp_filename:
-                with open(temp_filename, "wb") as pp_file:
-                    field.save(pp_file)
-                checksum = self.file_checksum(temp_filename)
+            temp_filename = tmp_path / "temp.pp"
+            with open(temp_filename, "wb") as pp_file:
+                field.save(pp_file)
+            checksum = _shared_utils.file_checksum(temp_filename)
             return checksum
 
         data_64 = np.linspace(0, 1, num=10, endpoint=False).reshape(2, 5)
         checksum_32 = field_checksum(data_64.astype(">f4"))
         msg = "Downcasting array precision from float64 to float32 for save."
-        with self.assertWarnsRegex(IrisDefaultingWarning, msg):
+        with pytest.warns(IrisDefaultingWarning, match=msg):
             checksum_64 = field_checksum(data_64.astype(">f8"))
-        self.assertEqual(checksum_32, checksum_64)
+        assert checksum_32 == checksum_64
 
-    def test_masked_mdi_value_warning(self):
+    def test_masked_mdi_value_warning(self, tmp_path):
         # Check that an unmasked MDI value raises a warning.
         field = DummyPPField()._ready_for_save()
         # Make float32 data, as float64 default produces an extra warning.
         field.bmdi = np.float32(-123.4)
         field.data = np.ma.masked_array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):
-            with self.temp_filename(".pp") as temp_filename:
-                with open(temp_filename, "wb") as pp_file:
-                    field.save(pp_file)
+        temp_filename = tmp_path / "temp.pp"
+        with pytest.warns(IrisMaskValueMatchWarning, match=msg):
+            with open(temp_filename, "wb") as pp_file:
+                field.save(pp_file)
 
-    def test_unmasked_mdi_value_warning(self):
+    def test_unmasked_mdi_value_warning(self, tmp_path):
         # Check that MDI in *unmasked* data raises a warning.
         field = DummyPPField()._ready_for_save()
         field.bmdi = -123.4
         # Make float32 data, as float64 default produces an extra warning.
         field.data = np.array([1.0, field.bmdi, 3.0], dtype=np.float32)
         msg = "PPField data contains unmasked points"
-        with self.assertWarnsRegex(IrisMaskValueMatchWarning, msg):
-            with self.temp_filename(".pp") as temp_filename:
-                with open(temp_filename, "wb") as pp_file:
-                    field.save(pp_file)
+        temp_filename = tmp_path / "temp.pp"
+        with pytest.warns(IrisMaskValueMatchWarning, match=msg):
+            with open(temp_filename, "wb") as pp_file:
+                field.save(pp_file)
 
-    def test_mdi_masked_value_nowarning(self):
+    def test_mdi_masked_value_nowarning(self, tmp_path):
         # Check that a *masked* MDI value does not raise a warning.
         field = DummyPPField()._ready_for_save()
         field.bmdi = -123.4
@@ -129,49 +126,48 @@ class Test_save(tests.IrisTest):
         )
         # Set underlying data value at masked point to BMDI value.
         field.data.data[1] = field.bmdi
-        self.assertArrayAllClose(field.data.data[1], field.bmdi)
-        with self.assertNoWarningsRegexp(r"\(mask\|fill\)"):
-            with self.temp_filename(".pp") as temp_filename:
-                with open(temp_filename, "wb") as pp_file:
-                    field.save(pp_file)
+        _shared_utils.assert_array_all_close(field.data.data[1], field.bmdi)
+        with _shared_utils.assert_no_warnings_regexp(r"\(mask\|fill\)"):
+            temp_filename = tmp_path / "temp.pp"
+            with open(temp_filename, "wb") as pp_file:
+                field.save(pp_file)
 
 
-class Test_calendar(tests.IrisTest):
+class Test_calendar:
     def test_greg(self):
         field = DummyPPField()
         field.lbtim = SplittableInt(1, {"ia": 2, "ib": 1, "ic": 0})
-        self.assertEqual(field.calendar, "standard")
+        assert field.calendar == "standard"
 
     def test_360(self):
         field = DummyPPField()
         field.lbtim = SplittableInt(2, {"ia": 2, "ib": 1, "ic": 0})
-        self.assertEqual(field.calendar, "360_day")
+        assert field.calendar == "360_day"
 
     def test_365(self):
         field = DummyPPField()
         field.lbtim = SplittableInt(4, {"ia": 2, "ib": 1, "ic": 0})
-        self.assertEqual(field.calendar, "365_day")
+        assert field.calendar == "365_day"
 
 
-class Test_coord_system(tests.IrisTest):
+class Test_coord_system(MockerMixin):
     def _check_cs(self, bplat, bplon, rotated):
         field = DummyPPField()
         field.bplat = bplat
         field.bplon = bplon
-        with mock.patch("iris.fileformats.pp.iris.coord_systems") as mock_cs_mod:
-            result = field.coord_system()
+        mock_cs_mod = self.mocker.patch("iris.fileformats.pp.iris.coord_systems")
+        result = field.coord_system()
         if not rotated:
             # It should return a standard unrotated CS.
-            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
-            self.assertEqual(result, mock_cs_mod.GeogCS())
+            assert mock_cs_mod.GeogCS.call_count == 1
+            assert result == mock_cs_mod.GeogCS()
         else:
             # It should return a rotated CS with the correct makeup.
-            self.assertTrue(mock_cs_mod.GeogCS.call_count == 1)
-            self.assertTrue(mock_cs_mod.RotatedGeogCS.call_count == 1)
-            self.assertEqual(result, mock_cs_mod.RotatedGeogCS())
-            self.assertEqual(
-                mock_cs_mod.RotatedGeogCS.call_args_list[0],
-                mock.call(bplat, bplon, ellipsoid=mock_cs_mod.GeogCS()),
+            assert mock_cs_mod.GeogCS.call_count == 1
+            assert mock_cs_mod.RotatedGeogCS.call_count == 1
+            assert result == mock_cs_mod.RotatedGeogCS()
+            assert mock_cs_mod.RotatedGeogCS.call_args_list[0] == self.mocker.call(
+                bplat, bplon, ellipsoid=mock_cs_mod.GeogCS()
             )
 
     def test_normal_unrotated(self):
@@ -191,41 +187,43 @@ class Test_coord_system(tests.IrisTest):
         self._check_cs(bplat=90, bplon=123.45, rotated=True)
 
 
-class Test__init__(tests.IrisTest):
-    def setUp(self):
+class Test__init__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
         header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
 
     def test_no_headers(self):
         field = DummyPPField()
-        self.assertIsNone(field._raw_header)
-        self.assertIsNone(field.raw_lbtim)
-        self.assertIsNone(field.raw_lbpack)
+        assert field._raw_header is None
+        assert field.raw_lbtim is None
+        assert field.raw_lbpack is None
 
     def test_lbtim_lookup(self):
-        self.assertEqual(DummyPPField.HEADER_DICT["lbtim"], (12,))
+        assert DummyPPField.HEADER_DICT["lbtim"] == (12,)
 
     def test_lbpack_lookup(self):
-        self.assertEqual(DummyPPField.HEADER_DICT["lbpack"], (20,))
+        assert DummyPPField.HEADER_DICT["lbpack"] == (20,)
 
     def test_raw_lbtim(self):
         raw_lbtim = 4321
         (loc,) = DummyPPField.HEADER_DICT["lbtim"]
         self.header[loc] = raw_lbtim
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.raw_lbtim, raw_lbtim)
+        assert field.raw_lbtim == raw_lbtim
 
     def test_raw_lbpack(self):
         raw_lbpack = 4321
         (loc,) = DummyPPField.HEADER_DICT["lbpack"]
         self.header[loc] = raw_lbpack
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.raw_lbpack, raw_lbpack)
+        assert field.raw_lbpack == raw_lbpack
 
 
-class Test__getattr__(tests.IrisTest):
-    def setUp(self):
+class Test__getattr__:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         header_longs = np.zeros(pp.NUM_LONG_HEADERS, dtype=np.int_)
         header_floats = np.zeros(pp.NUM_FLOAT_HEADERS, dtype=np.float64)
         self.header = list(header_longs) + list(header_floats)
@@ -235,21 +233,21 @@ class Test__getattr__(tests.IrisTest):
         (loc,) = DummyPPField.HEADER_DICT["lbrow"]
         self.header[loc] = lbrow
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.lbrow, lbrow)
+        assert field.lbrow == lbrow
 
     def test_attr_multi_long(self):
         lbuser = (100, 101, 102, 103, 104, 105, 106)
         loc = DummyPPField.HEADER_DICT["lbuser"]
         self.header[loc[0] : loc[-1] + 1] = lbuser
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.lbuser, lbuser)
+        assert field.lbuser == lbuser
 
     def test_attr_singular_float(self):
         bdatum = 1234
         (loc,) = DummyPPField.HEADER_DICT["bdatum"]
         self.header[loc] = bdatum
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.bdatum, bdatum)
+        assert field.bdatum == bdatum
 
     def test_attr_multi_float(self):
         brsvd = (100, 101, 102, 103)
@@ -258,7 +256,7 @@ class Test__getattr__(tests.IrisTest):
         stop = loc[-1] + 1
         self.header[start:stop] = brsvd
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.brsvd, brsvd)
+        assert field.brsvd == brsvd
 
     def test_attr_lbtim(self):
         raw_lbtim = 4321
@@ -266,11 +264,11 @@ class Test__getattr__(tests.IrisTest):
         self.header[loc] = raw_lbtim
         field = DummyPPField(header=self.header)
         result = field.lbtim
-        self.assertEqual(result, raw_lbtim)
-        self.assertIsInstance(result, SplittableInt)
+        assert result == raw_lbtim
+        assert isinstance(result, SplittableInt)
         result = field._lbtim
-        self.assertEqual(result, raw_lbtim)
-        self.assertIsInstance(result, SplittableInt)
+        assert result == raw_lbtim
+        assert isinstance(result, SplittableInt)
 
     def test_attr_lbpack(self):
         raw_lbpack = 4321
@@ -278,55 +276,57 @@ class Test__getattr__(tests.IrisTest):
         self.header[loc] = raw_lbpack
         field = DummyPPField(header=self.header)
         result = field.lbpack
-        self.assertEqual(result, raw_lbpack)
-        self.assertIsInstance(result, SplittableInt)
+        assert result == raw_lbpack
+        assert isinstance(result, SplittableInt)
         result = field._lbpack
-        self.assertEqual(result, raw_lbpack)
-        self.assertIsInstance(result, SplittableInt)
+        assert result == raw_lbpack
+        assert isinstance(result, SplittableInt)
 
     def test_attr_raw_lbtim_assign(self):
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.raw_lbpack, 0)
-        self.assertEqual(field.lbtim, 0)
+        assert field.raw_lbpack == 0
+        assert field.lbtim == 0
         raw_lbtim = 4321
         field.lbtim = raw_lbtim
-        self.assertEqual(field.raw_lbtim, raw_lbtim)
-        self.assertNotIsInstance(field.raw_lbtim, SplittableInt)
+        assert field.raw_lbtim == raw_lbtim
+        assert not isinstance(field.raw_lbtim, SplittableInt)
 
     def test_attr_raw_lbpack_assign(self):
         field = DummyPPField(header=self.header)
-        self.assertEqual(field.raw_lbpack, 0)
-        self.assertEqual(field.lbpack, 0)
+        assert field.raw_lbpack == 0
+        assert field.lbpack == 0
         raw_lbpack = 4321
         field.lbpack = raw_lbpack
-        self.assertEqual(field.raw_lbpack, raw_lbpack)
-        self.assertNotIsInstance(field.raw_lbpack, SplittableInt)
+        assert field.raw_lbpack == raw_lbpack
+        assert not isinstance(field.raw_lbpack, SplittableInt)
 
     def test_attr_unknown(self):
-        with self.assertRaises(AttributeError):
+        with pytest.raises(
+            AttributeError, match="'DummyPPField' object has no attribute 'x'"
+        ):
             DummyPPField().x
 
 
-class Test_lbtim(tests.IrisTest):
+class Test_lbtim:
     def test_get_splittable(self):
         headers = [0] * 64
         headers[12] = 12345
         field = DummyPPField(headers)
-        self.assertIsInstance(field.lbtim, SplittableInt)
-        self.assertEqual(field.lbtim.ia, 123)
-        self.assertEqual(field.lbtim.ib, 4)
-        self.assertEqual(field.lbtim.ic, 5)
+        assert isinstance(field.lbtim, SplittableInt)
+        assert field.lbtim.ia == 123
+        assert field.lbtim.ib == 4
+        assert field.lbtim.ic == 5
 
     def test_set_int(self):
         headers = [0] * 64
         headers[12] = 12345
         field = DummyPPField(headers)
         field.lbtim = 34567
-        self.assertIsInstance(field.lbtim, SplittableInt)
-        self.assertEqual(field.lbtim.ia, 345)
-        self.assertEqual(field.lbtim.ib, 6)
-        self.assertEqual(field.lbtim.ic, 7)
-        self.assertEqual(field.raw_lbtim, 34567)
+        assert isinstance(field.lbtim, SplittableInt)
+        assert field.lbtim.ia == 345
+        assert field.lbtim.ib == 6
+        assert field.lbtim.ic == 7
+        assert field.raw_lbtim == 34567
 
     def test_set_splittable(self):
         # Check that assigning a SplittableInt to lbtim uses the integer
@@ -337,14 +337,12 @@ class Test_lbtim(tests.IrisTest):
         field = DummyPPField(headers)
         si = SplittableInt(34567, {"foo": 0})
         field.lbtim = si
-        self.assertIsInstance(field.lbtim, SplittableInt)
-        with self.assertRaises(AttributeError):
+        assert isinstance(field.lbtim, SplittableInt)
+        with pytest.raises(
+            AttributeError, match="'SplittableInt' object has no attribute 'foo'"
+        ):
             field.lbtim.foo
-        self.assertEqual(field.lbtim.ia, 345)
-        self.assertEqual(field.lbtim.ib, 6)
-        self.assertEqual(field.lbtim.ic, 7)
-        self.assertEqual(field.raw_lbtim, 34567)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert field.lbtim.ia == 345
+        assert field.lbtim.ib == 6
+        assert field.lbtim.ic == 7
+        assert field.raw_lbtim == 34567
