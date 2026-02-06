@@ -6,6 +6,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
+      <attribute name="radiation_type" value="['downward_radiation', 'diffuse_radiation', 'direct_radiation']"/>
       <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
@@ -45,6 +46,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
+      <attribute name="radiation_type" value="['downward_radiation', 'direct_radiation']"/>
       <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
@@ -84,6 +86,7 @@
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
+      <attribute name="radiation_type" value="['downward_radiation', 'diffuse_radiation', 'direct_radiation', 'clear_sky_radiation']"/>
       <attribute name="source" value="ek"/>
       <attribute name="title" value="Unknown"/>
     </attributes>
