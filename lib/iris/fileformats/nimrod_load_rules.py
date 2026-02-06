@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
+from enum import Enum
 import re
 import string
 import warnings
@@ -29,6 +30,14 @@ NIMROD_DEFAULT = -32767.0
 TIME_UNIT = cf_units.Unit(
     "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_STANDARD
 )
+
+
+class Table(Enum):
+    # The NIMROD documentation defines four tables of fields, with different header contents and load rules.
+    table_1 = "Table_1"
+    table_2 = "Table_2"
+    table_3 = "Table_3"
+    table_4 = "Table_4"
 
 
 class TranslationWarning(IrisNimrodTranslationWarning):
@@ -1003,14 +1012,14 @@ def run(field, handle_metadata_errors=True):
     vertical_coord(cube, field)
 
     match field.table:
-        case "Table_1":
+        case Table.table_1:
             table_1_attributes(cube, field)
-        case "Table_2":
+        case Table.table_2:
             probability_coord(cube, field, handle_metadata_errors)
             table_2_attributes(cube, field)
-        case "Table_3":
+        case Table.table_3:
             soil_type_coord(cube, field)
-        case "Table_4":
+        case Table.table_4:
             radiation_type_attr(cube, field)
 
     # add other generic stuff, if present
