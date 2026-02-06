@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides NIMROD file format capabilities."""
 
+from enum import Enum
 import glob
 import os
 import struct
@@ -202,6 +203,13 @@ def _read_chars(infile, num):
     return result
 
 
+class Table(Enum):
+    table_1 = "Table_1"
+    table_2 = "Table_2"
+    table_3 = "Table_3"
+    table_4 = "Table_4"
+
+
 class NimrodField:
     """A data field from a NIMROD file.
 
@@ -296,16 +304,16 @@ class NimrodField:
             or self.threshold_value_alt != default_float_threshold
         )
         if self.field_code in Table_3_field_codes:
-            table = "Table_3"
+            table = Table.table_3.value
             data_header_int16s = table_3_data_header_int16s
         elif self.field_code in Table_4_field_codes:
-            table = "Table_4"
+            table = Table.table_4.value
             data_header_int16s = table_4_data_header_int16s
         elif threshold_set:
-            table = "Table_2"
+            table = Table.table_2.value
             data_header_int16s = table_2_data_header_int16s
         else:
-            table = "Table_1"
+            table = Table.table_1.value
             data_header_int16s = table_1_data_header_int16s
 
         self.table = table
