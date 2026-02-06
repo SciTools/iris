@@ -8,6 +8,7 @@ import warnings
 
 import numpy as np
 import pytest
+from pytest import MonkeyPatch
 
 import iris
 from iris.coords import DimCoord
@@ -168,14 +169,16 @@ data:
     """
 
 
+@pytest.fixture(autouse=True, scope="module")
+def _setup(tmp_path_factory):
+    if not hasattr(tlc, "TMP_DIR"):
+        tlc.TMP_DIR = tmp_path_factory.mktemp("temp")
+        yield
+        delattr(tlc, "TMP_DIR")
+
+
 @_shared_utils.skip_data
 class TestCoordSystem:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
-        tlc.setUpModule()
-        yield
-        tlc.tearDownModule()
-
     def test_load_laea_grid(self, request):
         cube = iris.load_cube(
             _shared_utils.get_data_path(

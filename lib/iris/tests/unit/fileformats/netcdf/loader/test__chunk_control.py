@@ -4,10 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.netcdf.loader.ChunkControl`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-from unittest.mock import ANY, patch
+import re
 
 import dask
 import numpy as np
@@ -20,7 +17,7 @@ from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 import iris.tests.stock as istk
 
 
-@pytest.fixture()
+@pytest.fixture
 def save_cubelist_with_sigma(tmp_filepath):
     cube = istk.simple_4d_with_hybrid_height()
     cube_varname = "my_var"
@@ -129,13 +126,15 @@ def test_control_cube_var(tmp_filepath, save_cubelist_with_sigma):
 
 
 def test_invalid_chunksize(tmp_filepath, save_cubelist_with_sigma):
-    with pytest.raises(ValueError):
+    msg = "'dimension_chunksizes' kwargs should be a dict of `str: int` pairs, not {'model_level_numer': '2'}."
+    with pytest.raises(ValueError, match=msg):
         with CHUNK_CONTROL.set(model_level_numer="2"):
             CubeList(loader.load_cubes(tmp_filepath))
 
 
 def test_invalid_var_name(tmp_filepath, save_cubelist_with_sigma):
-    with pytest.raises(ValueError):
+    msg = re.escape("'var_names' should be an iterable of strings, not [1, 2].")
+    with pytest.raises(ValueError, match=msg):
         with CHUNK_CONTROL.set([1, 2], model_level_numer="2"):
             CubeList(loader.load_cubes(tmp_filepath))
 
@@ -187,7 +186,7 @@ def test_no_chunks_from_file(tmp_filepath, save_cubelist_with_sigma):
             CubeList(loader.load_cubes(tmp_filepath))
 
 
-def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
+def test_as_dask(tmp_filepath, save_cubelist_with_sigma, mocker):
     """Test as dask.
 
     No return values, as we can't be sure
@@ -195,15 +194,15 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma):
     from our own chunking behaviour.
     """
     message = "Mock called, rest of test unneeded"
-    with patch("iris.fileformats.netcdf.loader.as_lazy_data") as as_lazy_data:
-        as_lazy_data.side_effect = RuntimeError(message)
-        with CHUNK_CONTROL.as_dask():
-            try:
-                CubeList(loader.load_cubes(tmp_filepath))
-            except RuntimeError as e:
-                if str(e) != message:
-                    raise e
-        as_lazy_data.assert_called_with(ANY, meta=ANY, chunks="auto")
+    as_lazy_data = mocker.patch("iris.fileformats.netcdf.loader.as_lazy_data")
+    as_lazy_data.side_effect = RuntimeError(message)
+    with CHUNK_CONTROL.as_dask():
+        try:
+            CubeList(loader.load_cubes(tmp_filepath))
+        except RuntimeError as e:
+            if str(e) != message:
+                raise e
+    as_lazy_data.assert_called_with(mocker.ANY, meta=mocker.ANY, chunks="auto")
 
 
 def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
@@ -221,7 +220,3 @@ def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
-
-
-if __name__ == "__main__":
-    tests.main()
