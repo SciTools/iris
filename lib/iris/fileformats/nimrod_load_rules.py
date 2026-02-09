@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Rules for converting NIMROD fields into cubes."""
 
+from enum import Enum
 import re
 import string
 import warnings
@@ -29,6 +30,14 @@ NIMROD_DEFAULT = -32767.0
 TIME_UNIT = cf_units.Unit(
     "seconds since 1970-01-01 00:00:00", calendar=cf_units.CALENDAR_STANDARD
 )
+
+
+class Table(Enum):
+    # The NIMROD documentation defines four tables of fields, with different header contents and load rules.
+    table_1 = "Table_1"
+    table_2 = "Table_2"
+    table_3 = "Table_3"
+    table_4 = "Table_4"
 
 
 class TranslationWarning(IrisNimrodTranslationWarning):
@@ -636,10 +645,8 @@ def attributes(cube, field):
         cube_source = "Nimrod pwind routine"
     for key in [
         "neighbourhood_radius",
-        "recursive_filter_iterations",
         "recursive_filter_alpha",
         "threshold_vicinity_radius",
-        "probability_period_of_event",
     ]:
         add_attr(key)
 
@@ -658,6 +665,60 @@ def attributes(cube, field):
     cube.attributes["source"] = cube_source
     cube.attributes["title"] = "Unknown"
     cube.attributes["institution"] = "Met Office"
+
+
+def table_1_attributes(cube, field):
+    """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            cube.attributes[item] = value
+
+    for key in [
+        "radar_number",
+        "radar_sites",
+        "additional_radar_sites",
+        "clutter_map_number",
+        "calibration_type",
+        "bright_band_height",
+        "bright_band_intensity",
+        "bright_band_test_param_1",
+        "bright_band_test_param_2",
+        "infill_flag",
+        "stop_elevation",
+        "sensor_identifier",
+        "meteosat_identifier",
+        "software_identifier",
+        "software_major_version",
+        "software_minor_version",
+        "software_micro_version",
+    ]:
+        add_attr(key)
+
+
+def table_2_attributes(cube, field):
+    """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            cube.attributes[item] = value
+
+    for key in ["recursive_filter_iterations", "probability_period_of_event"]:
+        add_attr(key)
 
 
 def known_threshold_coord(field):
@@ -865,6 +926,26 @@ def soil_type_coord(cube, field):
         )
 
 
+def radiation_type_attr(cube, field):
+    """Decode the Radiation Types codes - similar to time_averaging."""
+    radiation_codes = {
+        64: 'instantaneous ("corrected")',
+        32: "upward_radiation",
+        16: "downward_radiation",
+        8: "diffuse_radiation",
+        4: "direct_radiation",
+        2: "clear_sky_radiation",
+    }
+    num = field.radiation_code
+    radiation_types = []
+    for key in sorted(radiation_codes.keys(), reverse=True):
+        if num >= key:
+            radiation_types.append(radiation_codes[key])
+            num = num - key
+    if radiation_types:
+        cube.attributes["radiation_type"] = radiation_types
+
+
 def time_averaging(cube, field):
     """Decode the averagingtype code - similar to the PP LBPROC code."""
     time_averaging_codes = {
@@ -930,9 +1011,18 @@ def run(field, handle_metadata_errors=True):
     # vertical
     vertical_coord(cube, field)
 
-    # add other stuff, if present
-    soil_type_coord(cube, field)
-    probability_coord(cube, field, handle_metadata_errors)
+    match field.table:
+        case Table.table_1:
+            table_1_attributes(cube, field)
+        case Table.table_2:
+            probability_coord(cube, field, handle_metadata_errors)
+            table_2_attributes(cube, field)
+        case Table.table_3:
+            soil_type_coord(cube, field)
+        case Table.table_4:
+            radiation_type_attr(cube, field)
+
+    # add other generic stuff, if present
     ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)
