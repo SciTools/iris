@@ -24,7 +24,7 @@ class SaveTestCommon:
         tmp_dir = tmp_path_factory.mktemp("tmp_nc")
         # We can reuse the same path all over, as it is recreated for each test.
         self.tmp_ncpath = tmp_dir / "tmp.nc"
-        yield
+        return
 
     def _check_save_inner(self, iris_name, nc_name, value):
         cube = Cube([1], var_name="x", attributes={iris_name: value})

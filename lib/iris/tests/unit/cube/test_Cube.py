@@ -3712,7 +3712,7 @@ class Test__eq__meta:
         assert cube1 == cube2
 
 
-@pytest.fixture()
+@pytest.fixture
 def simplecube():
     return stock.simple_2d_w_cell_measure_ancil_var()
 
@@ -3790,14 +3790,14 @@ class TestReprs:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture()
+    @pytest.fixture
     def patched_cubeprinter(self, mocker):
         target = "iris._representation.cube_printout.CubePrinter"
         instance_mock = mock.MagicMock(
             to_string=mock.MagicMock(return_value="")  # NB this must return a string
         )
         class_mock = mocker.patch(target, return_value=instance_mock)
-        yield class_mock, instance_mock
+        return class_mock, instance_mock
 
     @staticmethod
     def _check_expected_effects(simplecube, patched_cubeprinter, oneline, padding):
@@ -3847,14 +3847,14 @@ class TestHtmlRepr:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture()
+    @pytest.fixture
     def patched_cubehtml(self, mocker):
         target = "iris.experimental.representation.CubeRepresentation"
         instance_mock = mock.MagicMock(
             repr_html=mock.MagicMock(return_value="")  # NB this must return a string
         )
         class_mock = mocker.patch(target, return_value=instance_mock)
-        yield class_mock, instance_mock
+        return class_mock, instance_mock
 
     @staticmethod
     def test__repr_html__effects(simplecube, patched_cubehtml):

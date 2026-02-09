@@ -140,7 +140,7 @@ class Test__nd_bounds:
 
 @skip_data
 class Test_lazy_aux_coords:
-    @pytest.fixture()
+    @pytest.fixture
     def sample_cube(self, mocker):
         path = get_data_path(["NetCDF", "testing", "small_theta_colpex.nc"])
         # While loading, "turn off" loading small variables as real data.

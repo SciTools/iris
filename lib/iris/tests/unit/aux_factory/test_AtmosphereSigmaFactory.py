@@ -116,7 +116,7 @@ class Test___init__:
 
 
 class Test_dependencies:
-    @pytest.fixture()
+    @pytest.fixture
     def sample_kwargs(self, mocker):
         pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=())
         sigma = mocker.Mock(units=Unit("1"), nbounds=0)
