@@ -168,7 +168,7 @@ def test_valid_geometry(test_input, request, wgs84_crs):
 # N.B. error message comparison is done with regex so
 # any parentheses in the error message must be escaped (\)
 @pytest.mark.parametrize(
-    "test_input, errortype, err_message",
+    ("test_input", "errortype", "err_message"),
     [
         (
             "invalid_geometry_poles",
