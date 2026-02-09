@@ -297,7 +297,7 @@ class NimrodField:
             self.threshold_value != default_float_threshold
             or self.threshold_value_alt != default_float_threshold
         )
-        # The ENUM class is in iris.fileformats.nimrod_load_rules
+        # The `Table` enum is defined in iris.fileformats.nimrod_load_rules
         if self.field_code in Table_3_field_codes:
             table = Table.table_3
             data_header_int16s = table_3_data_header_int16s
