@@ -7,33 +7,29 @@
 
 """
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.fileformats.um._optimal_array_structuring import optimal_array_structure
+from iris.tests import _shared_utils
 
 
 class Test__optimal_dimensioning_structure:
     pass
 
 
-class Test_optimal_array_structure(tests.IrisTest):
+class Test_optimal_array_structure:
     def _check_arrays_and_dims(self, result, spec):
-        self.assertEqual(set(result.keys()), set(spec.keys()))
+        assert set(result.keys()) == set(spec.keys())
         for keyname in spec.keys():
             result_array, result_dims = result[keyname]
             spec_array, spec_dims = spec[keyname]
-            self.assertEqual(
-                result_dims,
-                spec_dims,
+            assert result_dims == spec_dims, (
                 'element dims differ for "{}": result={!r}, expected {!r}'.format(
                     keyname, result_dims, spec_dims
-                ),
+                )
             )
-            self.assertArrayEqual(
+            _shared_utils.assert_array_equal(
                 result_array,
                 spec_array,
                 'element arrays differ for "{}": result={!r}, expected {!r}'.format(
@@ -42,22 +38,22 @@ class Test_optimal_array_structure(tests.IrisTest):
             )
 
     def test_none(self):
-        with self.assertRaises(IndexError):
+        with pytest.raises(IndexError, match="index 0 is out of bounds"):
             _ = optimal_array_structure([], [])
 
     def test_one(self):
         # A single value does not make a dimension (no length-1 dims).
         elements = [("a", np.array([1]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, ())
-        self.assertEqual(primaries, set())
-        self.assertEqual(elems_and_dims, {})
+        assert shape == ()
+        assert primaries == set()
+        assert elems_and_dims == {}
 
     def test_1d(self):
         elements = [("a", np.array([1, 2, 4]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (3,))
-        self.assertEqual(primaries, set("a"))
+        assert shape == (3,)
+        assert primaries == set("a")
         self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 4]), (0,))})
 
     def test_1d_actuals(self):
@@ -67,14 +63,14 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(
             elements, actual_values
         )
-        self.assertEqual(shape, (3,))
-        self.assertEqual(primaries, set("a"))
+        assert shape == (3,)
+        assert primaries == set("a")
         self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([7, 3, 9]), (0,))})
 
     def test_actuals_mismatch_fail(self):
         elements = [("a", np.array([1, 2, 4]))]
         actual_values = [("b", np.array([7, 3, 9]))]
-        with self.assertRaisesRegex(ValueError, "Names.* do not match.*"):
+        with pytest.raises(ValueError, match="Names.* do not match.*"):
             shape, primaries, elems_and_dims = optimal_array_structure(
                 elements, actual_values
             )
@@ -85,8 +81,8 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("b", np.array([7, 8, 9, 7, 8, 9])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (2, 3))
-        self.assertEqual(primaries, set(["a", "b"]))
+        assert shape == (2, 3)
+        assert primaries == set(["a", "b"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {"a": (np.array([2, 3]), (0,)), "b": (np.array([7, 8, 9]), (1,))},
@@ -105,8 +101,8 @@ class Test_optimal_array_structure(tests.IrisTest):
         shape, primaries, elems_and_dims = optimal_array_structure(
             elements, elements_values
         )
-        self.assertEqual(shape, (2, 3))
-        self.assertEqual(primaries, set(["a", "b"]))
+        assert shape == (2, 3)
+        assert primaries == set(["a", "b"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {"a": (np.array([6, 8]), (0,)), "b": (np.array([3, 4, 5]), (1,))},
@@ -119,8 +115,8 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("b", np.array([7, 8, 9, 7, 8])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (5,))
-        self.assertEqual(primaries, set())
+        assert shape == (5,)
+        assert primaries == set()
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -133,16 +129,16 @@ class Test_optimal_array_structure(tests.IrisTest):
         # A all-same vector does not appear in the output.
         elements = [("a", np.array([1, 2, 3])), ("b", np.array([4, 4, 4]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (3,))
-        self.assertEqual(primaries, set(["a"]))
+        assert shape == (3,)
+        assert primaries == set(["a"])
         self._check_arrays_and_dims(elems_and_dims, {"a": (np.array([1, 2, 3]), (0,))})
 
     def test_1d_duplicates(self):
         # When two have the same structure, the first is 'the dimension'.
         elements = [("a", np.array([1, 3, 4])), ("b", np.array([6, 7, 9]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (3,))
-        self.assertEqual(primaries, set("a"))
+        assert shape == (3,)
+        assert primaries == set("a")
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -155,9 +151,9 @@ class Test_optimal_array_structure(tests.IrisTest):
         # Same as previous but reverse passed order of elements 'a' and 'b'.
         elements = [("b", np.array([6, 7, 9])), ("a", np.array([1, 3, 4]))]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (3,))
+        assert shape == (3,)
         # The only difference is the one chosen as 'principal'
-        self.assertEqual(primaries, set("b"))
+        assert primaries == set("b")
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -173,8 +169,8 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("period", np.array([9, 8, 7])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (3,))
-        self.assertEqual(primaries, set(["t1"]))
+        assert shape == (3,)
+        assert primaries == set(["t1"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -191,8 +187,8 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("ft", np.array([15, 16, 15, 16])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (2, 2))
-        self.assertEqual(primaries, set(["t1", "ft"]))
+        assert shape == (2, 2)
+        assert primaries == set(["t1", "ft"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -209,10 +205,10 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("t2", np.array([15, 16, 25, 26])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (4,))
+        assert shape == (4,)
         # The potential 2d nature can not be recognised.
         # 't1' is auxiliary, as it has duplicate values over the dimension.
-        self.assertEqual(primaries, set(["t2"]))
+        assert primaries == set(["t2"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -232,8 +228,8 @@ class Test_optimal_array_structure(tests.IrisTest):
             ("d", np.array([10, 10, 10, 10, 10, 10])),
         ]
         shape, primaries, elems_and_dims = optimal_array_structure(elements)
-        self.assertEqual(shape, (2, 3))
-        self.assertEqual(primaries, set(["a", "b"]))
+        assert shape == (2, 3)
+        assert primaries == set(["a", "b"])
         self._check_arrays_and_dims(
             elems_and_dims,
             {
@@ -242,7 +238,3 @@ class Test_optimal_array_structure(tests.IrisTest):
                 "b": (np.array([0, 1, 2]), (1,)),
             },
         )
-
-
-if __name__ == "__main__":
-    tests.main()
