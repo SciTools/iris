@@ -125,7 +125,7 @@ class TestArrayStructure_from_array:
         assert ArrayStructure.from_array([1, 2, 3]) == ArrayStructure(1, [1, 2, 3])
 
     def test_multi_dim_array(self):
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="The given array must be 1D."):
             ArrayStructure.from_array(np.arange(12).reshape(3, 4))
 
     def test_eq_incompatible_shapes(self):
