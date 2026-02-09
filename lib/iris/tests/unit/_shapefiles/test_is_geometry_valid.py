@@ -195,10 +195,10 @@ def test_invalid_geometry(test_input, errortype, err_message, request, wgs84_crs
 
 @pytest.mark.parametrize(
     "test_input",
-    (
+    [
         "basic_wide_polygon_geometry",
         "bering_sea_geometry",
-    ),
+    ],
 )
 def test_warning_geometry(test_input, request, wgs84_crs):
     # Assert that all invalid geometries raise the expected error

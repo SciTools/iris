@@ -2886,7 +2886,7 @@ class Test_dtype:
 
 class TestSubset:
     @pytest.mark.parametrize(
-        ("data", "shape"), [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_scalar_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="apricot", units="1")
@@ -2896,7 +2896,7 @@ class TestSubset:
 
     @pytest.mark.parametrize(
         ("data", "shape"),
-        [[np.zeros(4), None], [None, (4,)]],
+        [(np.zeros(4), None), (None, (4,))],
         ids=["with_data", "dataless"],
     )
     def test_dimensional_coordinate(self, data, shape):
@@ -2909,7 +2909,7 @@ class TestSubset:
         assert cube == result
 
     @pytest.mark.parametrize(
-        ("data", "shape"), [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_missing_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2918,7 +2918,7 @@ class TestSubset:
         pytest.raises(CoordinateNotFoundError, cube.subset, bad_coord)
 
     @pytest.mark.parametrize(
-        ("data", "shape"), [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_different_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2928,7 +2928,7 @@ class TestSubset:
         assert result is None
 
     @pytest.mark.parametrize(
-        ("data", "shape"), [[[0, 1], None], [None, (2,)]], ids=["with_data", "dataless"]
+        ("data", "shape"), [([0, 1], None), (None, (2,))], ids=["with_data", "dataless"]
     )
     def test_different_coordinate_vector(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2938,7 +2938,7 @@ class TestSubset:
         assert result is None
 
     @pytest.mark.parametrize(
-        ("data", "shape"), [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_not_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="peach", units="1")
