@@ -88,6 +88,9 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
 
+#. :user:`bjlittle` added the ``:user:`` `extlinks`_ ``github`` user convenience.
+   (:pull:`6931`)
+
 
 💼 Internal
 ===========
