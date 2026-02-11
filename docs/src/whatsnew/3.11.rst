@@ -124,7 +124,7 @@ v3.11.1 (19 Dec 2024)
    :mod:`~iris.coord_categorisation` faster. Anyone using
    :func:`~iris.coord_categorisation.add_categorised_coord`
    with cftime :class:`~cftime.datetime` objects can benefit from the same
-   improvement by adding a type hint to their category funcion. (:pull:`5999`)
+   improvement by adding a type hint to their category function. (:pull:`5999`)
 
 #. `@bouweandela`_ made :meth:`iris.cube.CubeList.concatenate` faster if more
    than two cubes are concatenated with equality checks on the values of

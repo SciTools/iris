@@ -121,8 +121,8 @@ See the `pre-commit.ci dashboard`_ for details of recent past and active Iris jo
 ruff
 ----
 As of **Iris 3.8** `ruff`_ has been adopted to ensure our codebase is using best
-practice.  `ruff`_ is configured in the `Iris`_ GitHub repository using  
-`.pre-commit-config.yaml`_.  
+practice.  `ruff`_ is configured in the `Iris`_ GitHub repository using
+`.pre-commit-config.yaml`_.
 
 You can install and run `ruff`_ in your development **iris-dev** conda environment
 via::

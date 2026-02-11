@@ -887,7 +887,7 @@ class ChunkControl(threading.local):
                     raise ValueError(msg)
                 dim_chunks = self.var_dim_chunksizes.setdefault(var_name, {})
                 for dim_name, chunksize in dimension_chunksizes.items():
-                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):
+                    if not (isinstance(dim_name, str) and isinstance(chunksize, int)):  # type: ignore[redundant-expr]
                         msg = (
                             "'dimension_chunksizes' kwargs should be a dict "
                             f"of `str: int` pairs, not {dimension_chunksizes!r}."

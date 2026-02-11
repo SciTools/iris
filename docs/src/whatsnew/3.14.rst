@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
      :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
      :func:`~iris.cube.Cube.slices`.
 
-   * Added the utility :func:`~iris.util.mask_cube_from_shape`, superceding
+   * Added the utility :func:`~iris.util.mask_cube_from_shape`, superseding
      :func:`~iris.util.mask_cube_from_shapefile` and adding the ability to handle
      shapefiles that use different coordinate systems to the cube they are being
      applied to, adding the ability to handle additional Point and Line shape types
@@ -76,10 +76,10 @@ v3.14.1 (05 Dec 2025)
 
 #. `@hsteptoe`_ and `@trexfeathers`_ (reviewer) added :func:`iris.util.mask_cube_from_shape`
    to handle additional Point and Line shape types.  This change also facilitates the use of
-   shapefiles that use a different projection system to the cube that they are being applied to, 
-   and makes performance improvements to the mask weighting calculations. 
+   shapefiles that use a different projection system to the cube that they are being applied to,
+   and makes performance improvements to the mask weighting calculations.
    (:issue:`6126`, :pull:`6129`).
-   
+
 #. `@bjlittle`_ extended ``zlib`` compression of :class:`~iris.cube.Cube` data
    payload when saving to NetCDF to also include any attached `CF-UGRID`_
    :class:`~iris.mesh.components.MeshXY`. Additionally,
@@ -144,9 +144,9 @@ v3.14.1 (05 Dec 2025)
 
 #. Existing users of :func:`iris.util.mask_cube_from_shapefile` will need to
    install the additional dependencies `rasterio`_ and `affine`_ to continue
-   using this function. These dependencies are necessary to support bug fixes 
-   implemented in (:issue:`6126`, :pull:`6129`).  Note that this function will 
-   be deprecated in a future version of Iris in favour of the new 
+   using this function. These dependencies are necessary to support bug fixes
+   implemented in (:issue:`6126`, :pull:`6129`).  Note that this function will
+   be deprecated in a future version of Iris in favour of the new
    :func:`iris.util.mask_cube_from_shape`, which offers richer shape handling.
 
 
@@ -159,7 +159,7 @@ v3.14.1 (05 Dec 2025)
    of parallel operation; so a dataset containing ~100 chunks could be around
    0.5 seconds slower to load or save. This regression will NOT be fixed within
    Iris - doing so would introduce unacceptable complexity and potential
-   concurrency problems. The regession has been reported to the NetCDF team; it
+   concurrency problems. The regression has been reported to the NetCDF team; it
    is hoped that a future ``libnetcdf`` release will recover the original
    performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 
@@ -179,7 +179,7 @@ v3.14.1 (05 Dec 2025)
 ===============
 
 #. `@hsteptoe`_ added `rasterio`_ and `affine`_ as optional dependencies that facilitate
-   :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that 
+   :func:`iris.util.mask_cube_from_shape`. These packages support new functionality that
    handles additional shapefile types and projections. (:issue:`6126`, :pull:`6129`)
 
 #. `@pp-mo`_ added a temporary dependency pins for Python<3.14, dask<2025.10.0 and
@@ -209,9 +209,9 @@ v3.14.1 (05 Dec 2025)
 #. `@rcomer`_ updated all Cartopy references to point to the new location at
    https://cartopy.readthedocs.io (:pull:`6636`)
 
-#. `@hsteptoe`_ added additional worked examples to :ref:`cube_masking` in the user guide, 
+#. `@hsteptoe`_ added additional worked examples to :ref:`cube_masking` in the user guide,
    and :func:`iris.util.mask_cube_from_shape` documentation, to demonstrate how to use the
-   function with different types of shapefiles. 
+   function with different types of shapefiles.
    (:pull:`6129`)
 
 

@@ -110,8 +110,8 @@ and so should be used where possible.
 `Mocks <https://docs.pytest.org/en/stable/how-to/monkeypatch.html>`_
 --------------------------------------------------------------------
 
-Any mocking should be done with the 
-`pytest-mock <https://pytest-mock.readthedocs.io/en/latest/index.html>`_ plugin, 
+Any mocking should be done with the
+`pytest-mock <https://pytest-mock.readthedocs.io/en/latest/index.html>`_ plugin,
 and ``monkeypatch`` where suitable.
 
 .. note::
@@ -147,23 +147,19 @@ Within that file the tests might look something like:
 .. code-block:: python
 
     # A single test for the Cube.xml() method.
-    def test_xml_some_general_stuff(self):
-        ...
+    def test_xml_some_general_stuff(self): ...
 
 
     # A single test for the Cube.xml() method, focussing on the behaviour of
     # the checksums.
-    def test_xml_checksum_ignores_masked_values(self):
-        ...
+    def test_xml_checksum_ignores_masked_values(self): ...
 
 
     # Tests for the Cube.add_dim_coord() method.
     class Test_add_dim_coord:
-        def test_normal_usage(self):
-            ...
+        def test_normal_usage(self): ...
 
-        def test_coord_already_present(self):
-            ...
+        def test_coord_already_present(self): ...
 
 When testing functions, within the test module there may be test classes, for
 example:
@@ -187,16 +183,13 @@ Within that file the tests might look something like:
 
     # Tests focussing on the handling of different data types.
     class TestDtypeAndValues:
-        def test_int16(self):
-            ...
+        def test_int16(self): ...
 
-        def test_int16_big_endian(self):
-            ...
+        def test_int16_big_endian(self): ...
 
 
     # Tests focussing on the handling of different projections.
-    def test_no_ellipsoid(self):
-        ...
+    def test_no_ellipsoid(self): ...
 
 There is no fixed naming scheme for integration tests.
 
@@ -213,15 +206,15 @@ module, please include the module in each call, i.e.
 
     from iris.tests import _shared_utils
 
-    _shared_utils.assert_...()
+    _shared_utils.assert_CDL()
 
 as opposed to:
 
 .. code-block:: python
 
-    from iris.tests._shared_utils import assert_...
+    from iris.tests._shared_utils import assert_string
 
-    assert_...()
+    assert_string()
 
 .. note::
 

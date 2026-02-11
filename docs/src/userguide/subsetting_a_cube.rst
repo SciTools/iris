@@ -235,15 +235,18 @@ day of every week for many years:
     import datetime
     import numpy as np
     from iris.time import PartialDateTime
-    long_ts = iris.cube.Cube(np.arange(150), long_name='data', units='1')
-    _mondays = iris.coords.DimCoord(7 * np.arange(150), standard_name='time', units='days since 2007-04-09')
+
+    long_ts = iris.cube.Cube(np.arange(150), long_name="data", units="1")
+    _mondays = iris.coords.DimCoord(
+        7 * np.arange(150), standard_name="time", units="days since 2007-04-09"
+    )
     long_ts.add_dim_coord(_mondays, 0)
 
 
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
-    >>> print(long_ts.coord('time'))
+    >>> print(long_ts.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-04-09 00:00:00, 2007-04-16 00:00:00, ...,
@@ -259,12 +262,11 @@ we constrain that coord using :class:`iris.cube.Cube.extract`
 .. doctest:: timeseries_range
     :options: +NORMALIZE_WHITESPACE, +ELLIPSIS
 
-    >>> d1 = datetime.datetime.strptime('20070715T0000Z', '%Y%m%dT%H%MZ')
-    >>> d2 = datetime.datetime.strptime('20070825T0000Z', '%Y%m%dT%H%MZ')
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: d1 <= cell.point < d2)
+    >>> d1 = datetime.datetime.strptime("20070715T0000Z", "%Y%m%dT%H%MZ")
+    >>> d2 = datetime.datetime.strptime("20070825T0000Z", "%Y%m%dT%H%MZ")
+    >>> st_swithuns_daterange_07 = iris.Constraint(time=lambda cell: d1 <= cell.point < d2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
+    >>> print(within_st_swithuns_07.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
@@ -281,10 +283,9 @@ objects.
 
     >>> pdt1 = PartialDateTime(year=2007, month=7, day=15)
     >>> pdt2 = PartialDateTime(year=2007, month=8, day=25)
-    >>> st_swithuns_daterange_07 = iris.Constraint(
-    ...     time=lambda cell: pdt1 <= cell.point < pdt2)
+    >>> st_swithuns_daterange_07 = iris.Constraint(time=lambda cell: pdt1 <= cell.point < pdt2)
     >>> within_st_swithuns_07 = long_ts.extract(st_swithuns_daterange_07)
-    >>> print(within_st_swithuns_07.coord('time'))
+    >>> print(within_st_swithuns_07.coord("time"))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
@@ -301,11 +302,13 @@ PartialDateTime this becomes simple:
 .. doctest:: timeseries_range
 
     >>> st_swithuns_daterange = iris.Constraint(
-    ...     time=lambda cell: PartialDateTime(month=7, day=15) <= cell.point < PartialDateTime(month=8, day=25))
+    ...     time=lambda cell: PartialDateTime(month=7, day=15)
+    ...     <= cell.point
+    ...     < PartialDateTime(month=8, day=25)
+    ... )
     >>> within_st_swithuns = long_ts.extract(st_swithuns_daterange)
-    ...
     >>> # Note: using summary(max_values) to show more of the points
-    >>> print(within_st_swithuns.coord('time').summary(max_values=100))
+    >>> print(within_st_swithuns.coord("time").summary(max_values=100))
     DimCoord :  time / (days since 2007-04-09, standard calendar)
         points: [
             2007-07-16 00:00:00, 2007-07-23 00:00:00, 2007-07-30 00:00:00,
@@ -337,7 +340,7 @@ after 1st January 2008.
 Cube Masking
 --------------
 
-Masking a cube allows you to hide unwanted data points without changing the 
+Masking a cube allows you to hide unwanted data points without changing the
 shape or size of the cube.  This can be achieved by two methods:
 
 1. Masking a cube using a boolean mask array via :func:`iris.util.mask_cube`.
@@ -395,7 +398,7 @@ Often we want to perform some kind of analysis over a complex geographical featu
 - extract data along the trajectory of a storm track
 - extract data at specific points of interest such as cities or weather stations
 
-These geographical features can often be described by `ESRI Shapefiles`_. 
+These geographical features can often be described by `ESRI Shapefiles`_.
 Shapefiles are a file format first developed for GIS software in the 1990s, and
 `Natural Earth`_ maintain a large freely usable database of shapefiles of many
 geographical and political divisions, accessible via `cartopy`_. Users may also
@@ -412,8 +415,8 @@ the function, any data outside the bounds of the shape geometry is masked.
     should have a coordinate reference system (CRS) defined. Note that the CRS of
     the masking geometry must be provided explicitly to :func:`iris.util.mask_cube_from_shape`
     (via the ``shape_crs`` keyword argument), whereas the :class:`iris.cube.Cube`
-    CRS is read from the cube itself. 
-    
+    CRS is read from the cube itself.
+
     The cube **must** have a :attr:`iris.coords.Coord.coord_system` defined
     otherwise an error will be raised.
 
@@ -422,8 +425,8 @@ the function, any data outside the bounds of the shape geometry is masked.
     inherent understanding of the spherical geometry underpinning geographic
     coordinate systems. For this reason, **shapefiles or shape vectors that
     cross the antimeridian or poles are not supported by this function** to
-    avoid unexpected masking behaviour.  
-    
+    avoid unexpected masking behaviour.
+
     For shapes that do cross these boundaries, this function expects the user
     to undertake fixes upstream of Iris, using tools like `GDAL`_ or
     `antimeridian`_ to ensure correct geometry wrapping.
@@ -445,18 +448,18 @@ a global extent. But only the data over Brazil is plotted - the rest has been
 masked out.
 
 .. important::
-    Because we do not explicitly pass a CRS for the shape geometry to 
+    Because we do not explicitly pass a CRS for the shape geometry to
     :func:`iris.util.mask_cube_from_shape`, the function assumes the geometry
     has the same CRS as the cube.
 
 However, a :class:`iris.cube.Cube` and `Shapely`_ geometry do not need to have
-the same CRS, as long as both have a CRS defined.  Where the CRS of the 
+the same CRS, as long as both have a CRS defined.  Where the CRS of the
 :class:`iris.cube.Cube` and geometry differ, :func:`iris.util.mask_cube_from_shape`
 will reproject the geometry (via `GDAL`_) onto the cube's CRS prior to masking.
 The masked cube will be returned in the same CRS as the input cube.
 
 In the following example, we load a cube containing satellite derived temperature
-data in a stereographic projection (with projected coordinates with units of 
+data in a stereographic projection (with projected coordinates with units of
 metres), and mask it to only show data over the United Kingdom, based on a
 shapefile of the UK boundary defined in WGS84 lat-lon coordinates.
 
@@ -584,5 +587,3 @@ Similarly, Iris cubes have indexing capability::
 .. _GDAL: https://gdal.org/en/stable/programs/ogr2ogr.html
 .. _Natural Earth: https://www.naturalearthdata.com/
 .. _shapely.Geometry: https://shapely.readthedocs.io/en/stable/geometry.html
-
-

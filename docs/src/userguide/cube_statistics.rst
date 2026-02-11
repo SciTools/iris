@@ -17,12 +17,14 @@ Collapsing Entire Data Dimensions
 .. testsetup:: collapsing
 
     import iris
-    filename = iris.sample_data_path('uk_hires.pp')
-    cube = iris.load_cube(filename, 'air_potential_temperature')
+
+    filename = iris.sample_data_path("uk_hires.pp")
+    cube = iris.load_cube(filename, "air_potential_temperature")
 
     import iris.analysis.cartography
-    cube.coord('grid_latitude').guess_bounds()
-    cube.coord('grid_longitude').guess_bounds()
+
+    cube.coord("grid_latitude").guess_bounds()
+    cube.coord("grid_longitude").guess_bounds()
     grid_areas = iris.analysis.cartography.area_weights(cube)
 
 
@@ -127,7 +129,9 @@ These areas can now be passed to the ``collapsed`` method as weights:
 
 .. doctest:: collapsing
 
-    >>> new_cube = cube.collapsed(['grid_longitude', 'grid_latitude'], iris.analysis.MEAN, weights=grid_areas)
+    >>> new_cube = cube.collapsed(
+    ...     ["grid_longitude", "grid_latitude"], iris.analysis.MEAN, weights=grid_areas
+    ... )
     >>> print(new_cube)
     air_potential_temperature / (K)     (time: 3; model_level_number: 7)
         Dimension coordinates:
@@ -166,15 +170,13 @@ the units of the resulting cube are multiplied by an area unit:
     >>> from iris.coords import CellMeasure
     >>> cell_areas = CellMeasure(
     ...     grid_areas,
-    ...     standard_name='cell_area',
-    ...     units='m2',
-    ...     measure='area',
+    ...     standard_name="cell_area",
+    ...     units="m2",
+    ...     measure="area",
     ... )
     >>> cube.add_cell_measure(cell_areas, (0, 1, 2, 3))
     >>> area_weighted_sum = cube.collapsed(
-    ...     ['grid_longitude', 'grid_latitude'],
-    ...     iris.analysis.SUM,
-    ...     weights='cell_area'
+    ...     ["grid_longitude", "grid_latitude"], iris.analysis.SUM, weights="cell_area"
     ... )
     >>> print(area_weighted_sum)
     air_potential_temperature / (m2.K)  (time: 3; model_level_number: 7)
@@ -247,16 +249,17 @@ to represent the climatological seasons and the season year respectively::
     import datetime
     import iris
 
-    filename = iris.sample_data_path('ostia_monthly.nc')
-    cube = iris.load_cube(filename, 'surface_temperature')
+    filename = iris.sample_data_path("ostia_monthly.nc")
+    cube = iris.load_cube(filename, "surface_temperature")
 
     import iris.coord_categorisation
-    iris.coord_categorisation.add_season(cube, 'time', name='clim_season')
-    iris.coord_categorisation.add_season_year(cube, 'time', name='season_year')
+
+    iris.coord_categorisation.add_season(cube, "time", name="clim_season")
+    iris.coord_categorisation.add_season_year(cube, "time", name="season_year")
 
     annual_seasonal_mean = cube.aggregated_by(
-         ['clim_season', 'season_year'],
-         iris.analysis.MEAN)
+        ["clim_season", "season_year"], iris.analysis.MEAN
+    )
 
 
 Printing this cube now shows that two extra coordinates exist on the cube:
@@ -287,8 +290,8 @@ These two coordinates can now be used to aggregate by season and climate-year:
 .. doctest:: aggregation
 
     >>> annual_seasonal_mean = cube.aggregated_by(
-    ...     ['clim_season', 'season_year'],
-    ...     iris.analysis.MEAN)
+    ...     ["clim_season", "season_year"], iris.analysis.MEAN
+    ... )
     >>> print(repr(annual_seasonal_mean))
     <iris 'Cube' of surface_temperature / (K) (time: 19; latitude: 18; longitude: 432)>
 
@@ -306,9 +309,11 @@ so adjacent ones are often in the same season:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> for season, year in zip(cube.coord('clim_season')[:10].points,
-    ...                         cube.coord('season_year')[:10].points):
-    ...     print(season + ' ' + str(year))
+    >>> for season, year in zip(
+    ...     cube.coord("clim_season")[:10].points, cube.coord("season_year")[:10].points
+    ... ):
+    ...     print(season + " " + str(year))
+    ...
     mam 2006
     mam 2006
     jja 2006
@@ -327,9 +332,11 @@ All the points now have distinct season+year values:
     :options: +NORMALIZE_WHITESPACE
 
     >>> for season, year in zip(
-    ...         annual_seasonal_mean.coord('clim_season')[:10].points,
-    ...         annual_seasonal_mean.coord('season_year')[:10].points):
-    ...     print(season + ' ' + str(year))
+    ...     annual_seasonal_mean.coord("clim_season")[:10].points,
+    ...     annual_seasonal_mean.coord("season_year")[:10].points,
+    ... ):
+    ...     print(season + " " + str(year))
+    ...
     mam 2006
     jja 2006
     son 2006
@@ -348,7 +355,7 @@ do not cover a three month period (note: judged here as > 3*28 days):
 
 .. doctest:: aggregation
 
-    >>> tdelta_3mth = datetime.timedelta(hours=3*28*24.0)
+    >>> tdelta_3mth = datetime.timedelta(hours=3 * 28 * 24.0)
     >>> spans_three_months = lambda t: (t.bound[1] - t.bound[0]) > tdelta_3mth
     >>> three_months_bound = iris.Constraint(time=spans_three_months)
     >>> full_season_means = annual_seasonal_mean.extract(three_months_bound)
@@ -361,9 +368,12 @@ from jja-2006 to jja-2010:
 .. doctest:: aggregation
     :options: +NORMALIZE_WHITESPACE
 
-    >>> for season, year in zip(full_season_means.coord('clim_season').points,
-    ...                         full_season_means.coord('season_year').points):
-    ...     print(season + ' ' + str(year))
+    >>> for season, year in zip(
+    ...     full_season_means.coord("clim_season").points,
+    ...     full_season_means.coord("season_year").points,
+    ... ):
+    ...     print(season + " " + str(year))
+    ...
     jja 2006
     son 2006
     djf 2007
@@ -404,7 +414,9 @@ The following example shows a weighted sum (notice the change of the units):
     ...     units="hours",
     ... )
     >>> cube.add_ancillary_variable(time_weights, 0)
-    >>> seasonal_sum = cube.aggregated_by("clim_season", iris.analysis.SUM, weights="Time Weights")
+    >>> seasonal_sum = cube.aggregated_by(
+    ...     "clim_season", iris.analysis.SUM, weights="Time Weights"
+    ... )
     >>> print(seasonal_sum)
     surface_temperature / (3600 s.K)    (-- : 4; latitude: 18; longitude: 432)
         Dimension coordinates:

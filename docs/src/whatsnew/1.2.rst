@@ -30,7 +30,7 @@ Features
   method for cubes, :meth:`iris.cube.Cube.is_compatible()`, has also been
   added.
 
-* Printing a :class:`~iris.cube.Cube` is now more user friendly with regards 
+* Printing a :class:`~iris.cube.Cube` is now more user friendly with regards
   to dates and time. All *time* and *forecast_reference_time* scalar coordinates
   now display human readable date/time information.
 
