@@ -11,6 +11,7 @@ from cf_units import Unit
 import numpy as np
 import pytest
 
+from iris.analysis._grid_angles import _2D_geuss_bounds
 from iris.analysis.cartography import gridcell_angles
 from iris.coords import AuxCoord
 from iris.cube import Cube
@@ -301,3 +302,17 @@ class TestGridcellAngles:
     def test_fail_bad_method(self):
         with pytest.raises(ValueError, match="unrecognised cell_angle_boundpoints"):
             self._check_multiple_orientations_and_latitudes(method="something_unknown")
+
+
+def test_2D_guess_bounds():
+    cube = _2d_multicells_testcube()
+    assert not cube.coord("latitude").is_contiguous()
+    assert not cube.coord("longitude").is_contiguous()
+
+    _2D_geuss_bounds(cube)
+    assert cube.coord("latitude").is_contiguous()
+    assert cube.coord("longitude").is_contiguous()
+
+    _2D_geuss_bounds(cube, rotate=False)
+    assert cube.coord("latitude").is_contiguous()
+    assert cube.coord("longitude").is_contiguous()

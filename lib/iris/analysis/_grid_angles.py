@@ -453,3 +453,130 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
     v_out.data = np.ma.masked_array(vv, mask=mask)
 
     return u_out, v_out
+
+
+def _vectorised_matmul(mats, vecs):
+    return np.einsum("ijk,ji->ki", mats, vecs)
+
+
+def _generate_180_mats_from_uvecs(uvecs):
+    mats = np.einsum("ji,ki->ijk", uvecs, uvecs) * 2
+    np.einsum("ijj->ij", mats)[:] -= 1
+    return mats
+
+def _generate_reflection_mats_from_uvecs(xyz_array):
+    vecs_0 = xyz_array[:,:,0]
+    vecs_1 = xyz_array[:,-1,:]
+    vecs_2 = xyz_array[:,:,-1]
+    vecs_3 = xyz_array[:,0,:]
+
+    def make_reflection_mat(vecs):
+        normals = np.cross(vecs[:,1:], vecs[:,:-1], axis=0)
+        normals = normals / np.linalg.norm(normals, axis=0)[np.newaxis, :]
+        # mats = mats = np.einsum("ji,ki->ijk", normals, normals) * -2
+        # np.einsum("ijj->ij", mats)[:] += 1
+        mats = -_generate_180_mats_from_uvecs(normals)
+        return mats
+
+    mats_0 = make_reflection_mat(vecs_0)
+    mats_1 = make_reflection_mat(vecs_1)
+    mats_2 = make_reflection_mat(vecs_2)
+    mats_3 = make_reflection_mat(vecs_3)
+
+    corner_mat_0 = np.matmul(mats_0[0], mats_3[0])
+    corner_mat_1 = np.matmul(mats_0[-1], mats_1[0])
+    corner_mat_2 = np.matmul(mats_2[-1], mats_1[-1])
+    corner_mat_3 = np.matmul(mats_2[0], mats_3[-1])
+
+    mats = np.concatenate((
+        corner_mat_0[np.newaxis],
+        mats_0,
+        corner_mat_1[np.newaxis],
+        mats_1,
+        corner_mat_2[np.newaxis],
+        mats_2[::-1],
+        corner_mat_3[np.newaxis],
+        mats_3[::-1],
+    ))
+    return mats
+
+
+def _2D_guess_bounds_first_pass(array):
+    # average and normalise, boundary buffer represents edges and corners
+    result_array = np.zeros((array.shape[0], array.shape[1] + 1, array.shape[2] + 1))
+    pads = ((0, 1), (1, 0))
+    for pad_i in pads:
+        for pad_j in pads:
+            result_array += np.pad(array, ((0, 0), pad_i, pad_j))
+
+    # normalise
+    result_array /= np.linalg.norm(result_array, ord=2, axis=0)[np.newaxis, ...]
+    return result_array
+
+
+def _2D_gb_buffer_outer(array_shape):
+    # return appropriate numpy slice for outer halo
+    _, x, y = array_shape
+    x_i = list(range(x)) + ([x - 1] * (y - 2)) + list(range(x))[::-1] + ([0] * (y - 2))
+    y_i = (
+        ([0] * (x - 1)) + list(range(y)) + ([y - 1] * (x - 2)) + list(range(1, y))[::-1]
+    )
+    return np.s_[:, x_i, y_i]
+
+
+def _2D_gb_buffer_inner(array_shape):
+    # return appropriate numpy slice for inner halo
+    _, x, y = array_shape
+    x_i = (
+        [1]
+        + list(range(1, x - 1))
+        + ([x - 2] * y)
+        + list(range(1, x - 1))[::-1]
+        + ([1] * (y - 1))
+    )
+    y_i = (
+        ([1] * x) + list(range(1, y - 1)) + ([y - 1] * x) + list(range(1, y - 1))[::-1]
+    )
+    return np.s_[:, x_i, y_i]
+
+
+def _2D_geuss_bounds(cube, rotate=True):
+    lons = cube.coord(axis="X")
+    lats = cube.coord(axis="Y")
+
+    # TODO: check units and coordsystem and dims and such
+
+    lon_array = lons.points
+    lat_array = lats.points
+    xyz_array = _3d_xyz_from_latlon(lon_array, lat_array)
+
+    result_xyz = _2D_guess_bounds_first_pass(xyz_array)
+    outer_inds = _2D_gb_buffer_outer(result_xyz.shape)
+    inner_inds = _2D_gb_buffer_inner(result_xyz.shape)
+    if rotate:
+        mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+    else:
+        mats = _generate_reflection_mats_from_uvecs(xyz_array)
+    result_xyz[outer_inds] = _vectorised_matmul(mats, result_xyz[inner_inds])
+
+    result_lon_bounds, result_lat_bounds = _latlon_from_xyz(result_xyz)
+
+    # add these bounds cf style
+    lons.bounds = np.stack(
+        [
+            result_lon_bounds[:-1, :-1],
+            result_lon_bounds[:-1, 1:],
+            result_lon_bounds[1:, 1:],
+            result_lon_bounds[1:, :-1],
+        ],
+        axis=2,
+    )
+    lats.bounds = np.stack(
+        [
+            result_lat_bounds[:-1, :-1],
+            result_lat_bounds[:-1, 1:],
+            result_lat_bounds[1:, 1:],
+            result_lat_bounds[1:, :-1],
+        ],
+        axis=2,
+    )
