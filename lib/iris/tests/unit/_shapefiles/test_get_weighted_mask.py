@@ -43,7 +43,7 @@ def mock_cube():
 
 
 @pytest.mark.parametrize(
-    "minimum_weight, expected_mask",
+    ("minimum_weight", "expected_mask"),
     [
         (
             0.0,

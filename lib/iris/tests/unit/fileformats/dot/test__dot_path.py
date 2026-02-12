@@ -27,7 +27,8 @@ class Test:
     def test_valid_absolute_path(self, mocker):
         # Override the configuration value for System.dot_path
         real_path = os.path.abspath(__file__)
-        assert os.path.exists(real_path) and os.path.isabs(real_path)
+        assert os.path.exists(real_path)
+        assert os.path.isabs(real_path)
         mocker.patch("iris.config.get_option", return_value=real_path)
         result = _dot_path()
         assert result == real_path
