@@ -7,6 +7,8 @@
 
 """
 
+import re
+
 from cf_units import Unit
 import numpy as np
 import pytest
@@ -28,11 +30,13 @@ class Test___init__:
         )
 
     def test_insufficient_coordinates_no_args(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct atmosphere sigma coordinate factory due to insufficient source coordinates"
+        with pytest.raises(ValueError, match=msg):
             AtmosphereSigmaFactory()
 
     def test_insufficient_coordinates_no_ptop(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct atmosphere sigma coordinate factory due to insufficient source coordinates"
+        with pytest.raises(ValueError, match=msg):
             AtmosphereSigmaFactory(
                 pressure_at_top=None,
                 sigma=self.sigma,
@@ -40,7 +44,8 @@ class Test___init__:
             )
 
     def test_insufficient_coordinates_no_sigma(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct atmosphere sigma coordinate factory due to insufficient source coordinates"
+        with pytest.raises(ValueError, match=msg):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
                 sigma=None,
@@ -48,7 +53,8 @@ class Test___init__:
             )
 
     def test_insufficient_coordinates_no_ps(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct atmosphere sigma coordinate factory due to insufficient source coordinates"
+        with pytest.raises(ValueError, match=msg):
             AtmosphereSigmaFactory(
                 pressure_at_top=self.pressure_at_top,
                 sigma=self.sigma,
@@ -62,8 +68,11 @@ class Test___init__:
 
     def test_ptop_invalid_shapes(self):
         for shape in [(2,), (1, 1)]:
+            msg = re.escape(
+                f"Expected scalar 'pressure_at_top' coordinate, got shape {shape}"
+            )
             self.pressure_at_top.shape = shape
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=msg):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_sigma_bounds(self):
@@ -73,8 +82,9 @@ class Test___init__:
 
     def test_sigma_invalid_bounds(self):
         for n_bounds in [-1, 1, 3]:
+            msg = f"Invalid 'sigma' coordinate: must have either 0 or 2 bounds, got {n_bounds}"
             self.sigma.nbounds = n_bounds
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=msg):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_sigma_units(self):
@@ -85,7 +95,8 @@ class Test___init__:
     def test_sigma_invalid_units(self):
         for units in ["Pa", "m"]:
             self.sigma.units = Unit(units)
-            with pytest.raises(ValueError):
+            msg = f"Invalid units: 'sigma' must be dimensionless, got '{units}'"
+            with pytest.raises(ValueError, match=msg):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_ptop_ps_units(self):
@@ -96,9 +107,10 @@ class Test___init__:
 
     def test_ptop_ps_invalid_units(self):
         for units in [("Pa", "1"), ("1", "Pa"), ("bar", "Pa"), ("Pa", "hPa")]:
+            msg = f"Incompatible units: 'pressure_at_top' and 'surface_air_pressure' must have the same units, got '{units[0]}' and '{units[1]}'"
             self.pressure_at_top.units = Unit(units[0])
             self.surface_air_pressure.units = Unit(units[1])
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=msg):
                 AtmosphereSigmaFactory(**self.kwargs)
 
     def test_ptop_units(self):
@@ -109,9 +121,10 @@ class Test___init__:
 
     def test_ptop_invalid_units(self):
         for units in ["1", "m", "kg", None]:
+            msg = "Invalid units: 'pressure_at_top' and 'surface_air_pressure' must have units of pressure"
             self.pressure_at_top.units = Unit(units)
             self.surface_air_pressure.units = Unit(units)
-            with pytest.raises(ValueError):
+            with pytest.raises(ValueError, match=msg):
                 AtmosphereSigmaFactory(**self.kwargs)
 
 
@@ -247,7 +260,10 @@ class Test_update:
 
     def test_pressure_at_top_wrong_shape(self, mocker):
         new_pressure_at_top = mocker.Mock(units=Unit("Pa"), nbounds=0, shape=(2,))
-        with pytest.raises(ValueError):
+        msg = re.escape(
+            "Failed to update dependencies. Expected scalar 'pressure_at_top' coordinate, got shape (2,)"
+        )
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.pressure_at_top, new_pressure_at_top)
 
     def test_sigma(self, mocker):
@@ -257,12 +273,14 @@ class Test_update:
 
     def test_sigma_too_many_bounds(self, mocker):
         new_sigma = mocker.Mock(units=Unit("1"), nbounds=4)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid 'sigma' coordinate: must have either 0 or 2 bounds, got 4"
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.sigma, new_sigma)
 
     def test_sigma_incompatible_units(self, mocker):
         new_sigma = mocker.Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid units: 'sigma' must be dimensionless, got 'Pa'"
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.sigma, new_sigma)
 
     def test_surface_air_pressure(self, mocker):
@@ -272,5 +290,6 @@ class Test_update:
 
     def test_surface_air_pressure_incompatible_units(self, mocker):
         new_surface_air_pressure = mocker.Mock(units=Unit("mbar"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: 'pressure_at_top' and 'surface_air_pressure' must have the same units, got 'Pa' and 'mbar'"
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.surface_air_pressure, new_surface_air_pressure)

@@ -1466,17 +1466,20 @@ class Test_intersection__Circular:
 class Test_intersection__Invalid:
     def test_reversed_min_max(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "minimum greater than maximum"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(30, 10))
 
     def test_dest_too_large(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "requested range greater than coordinate's unit's modulus"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(30, 500))
 
     def test_src_too_large(self, dataless):
         cube = create_cube(0, 400, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "coordinate's range greater than coordinate's unit's modulus"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(10, 30))
 
     def test_missing_coord(self, dataless):

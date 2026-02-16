@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.promote_aux_coord_to_dim_coord`."""
 
-import unittest
+import re
 
 import pytest
 
@@ -67,7 +67,10 @@ class Test:
         cube_a = stock.simple_2d_w_multidim_and_scalars()
         coord = cube_a.coord("dim1").copy()
         coord.rename("new")
-        with pytest.raises(ValueError):
+        msg = re.escape(
+            "Attempting to promote an AuxCoord (new) which does not exist in the cube."
+        )
+        with pytest.raises(ValueError, match=msg):
             promote_aux_coord_to_dim_coord(cube_a, coord)
 
     def test_argument_is_wrong_type(self):
@@ -77,19 +80,25 @@ class Test:
 
     def test_trying_to_promote_a_multidim_coord(self):
         cube_a = stock.simple_2d_w_multidim_coords()
-        with pytest.raises(ValueError):
+        msg = re.escape(
+            "Attempting to promote an AuxCoord (bar) which is associated with 2 dimensions."
+        )
+        with pytest.raises(ValueError, match=msg):
             promote_aux_coord_to_dim_coord(cube_a, "bar")
 
     def test_trying_to_promote_a_scalar_coord(self):
         cube_a = stock.simple_2d_w_multidim_and_scalars()
-        with pytest.raises(ValueError):
+        msg = re.escape(
+            "Attempting to promote an AuxCoord (an_other) which is associated with 0 dimensions."
+        )
+        with pytest.raises(ValueError, match=msg):
             promote_aux_coord_to_dim_coord(cube_a, "an_other")
 
     def test_trying_to_promote_a_nonmonotonic_coord(self):
         cube_a = stock.hybrid_height()
-        with pytest.raises(ValueError):
+        msg = re.escape(
+            "Attempt to promote an AuxCoord (surface_altitude) fails when attempting to create a DimCoord "
+            "from the AuxCoord because: The 'surface_altitude' DimCoord points array must be strictly monotonic."
+        )
+        with pytest.raises(ValueError, match=msg):
             promote_aux_coord_to_dim_coord(cube_a, "surface_altitude")
-
-
-if __name__ == "__main__":
-    unittest.main()
