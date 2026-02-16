@@ -48,6 +48,8 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window` and :func:`~iris.cube.Cube.intersection`
    to work with dataless cubes. (:pull:`6860`, :pull:`6757`)
 
+#. `@HGWright`_ added to the Nimrod loader to expand the types of Nimrod files it can load. This includes selecting which Nimrod table to use the data entry headers from. (:issue:`4505`, :pull:`6763`)
+
 🐛 Bugs Fixed
 =============
 
@@ -85,6 +87,9 @@ This document explains the changes made to Iris for this release
    link cards to allow for easier reading.  (:pull:`6886`)
 
 #. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
+
+#. :user:`bjlittle` added the ``:user:`` `extlinks`_ ``github`` user convenience.
+   (:pull:`6931`)
 
 
 💼 Internal

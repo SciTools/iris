@@ -82,6 +82,18 @@ The required content, in order, is as follows:
 
     .. _@tkknight: https://github.com/tkknight
 
+  .. hint::
+
+    Alternatively adopt the ``:user:`` `extlinks`_ convenience instead.
+
+    For example to reference the ``github`` user ``tkknight`` simply use
+    :literal:`:user:\`tkknight\``.
+
+    This will be rendered as :user:`tkknight`.
+
+    In addition, there is now no need to add a full reference to the user within
+    the documentation.
+
 * A succinct summary of the new/changed behaviour.
 
 * Context to the change. Possible examples include: what this fixes, why
@@ -143,3 +155,4 @@ users.  To achieve this several categories may be used.
 **💼 Internal**
   Changes to any internal or development related topics, such as testing,
   environment dependencies etc.
+

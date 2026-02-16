@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides NIMROD file format capabilities."""
 
+from enum import Enum
 import glob
 import os
 import struct
@@ -14,6 +15,7 @@ import numpy as np
 import iris
 from iris.exceptions import TranslationError
 import iris.fileformats.nimrod_load_rules
+from iris.fileformats.nimrod_load_rules import Table
 
 # general header (int16) elements 1-31 (Fortran bytes 1-62)
 general_header_int16s = (
@@ -101,59 +103,97 @@ data_header_float32s = (
 
 
 # data specific header (int16) elements 108-159 (Fortran bytes 411-512)
-data_header_int16s = (
-    "threshold_type",
-    "probability_method",
-    "recursive_filter_iterations",
-    "member_count",
-    "probability_period_of_event",
+table_1_data_header_int16s = (
+    (
+        "radar_number",
+        "radar_sites",
+        "additional_radar_sites",
+        "clutter_map_number",
+        "calibration_type",
+        "bright_band_height",
+        "bright_band_intensity",
+        "bright_band_test_param_1",
+        "bright_band_test_param_2",
+        "infill_flag",
+        "stop_elevation",
+        "copy_vertical_coord",
+        "copy_reference_vertical_coord",
+        "copy_y_origin",
+        "copy_row_step",
+        "copy_x_origin",
+        "copy_column_step",
+        "copy_float32_mdi",
+        "copy_MKS_data_scaling",
+        "copy_data_offset",
+        "copy_x_offset",
+        "copy_y_offset",
+        "copy_true_origin_latitude",
+        "copy_true_origin_longitude",
+        "copy_tl_y",
+        "copy_tl_x",
+        "copy_tr_y",
+        "copy_tr_x",
+        "copy_br_y",
+        "copy_br_x",
+        "copy_bl_y",
+        "copy_bl_x",
+        "sensor_identifier",
+        "meteosat_identifier",
+        "availability_of_synop_meteosat",
+        "software_identifier",
+        "software_major_version",
+        "software_minor_version",
+        "software_micro_version",
+    )
+    + tuple(f"data_header_int16_{i}" for i in range(48, 59))
+    + ("period_seconds",)
+)
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_2_data_header_int16s = (
+    (
+        "threshold_type",
+        "probability_method",
+        "recursive_filter_iterations",
+        "member_count",
+        "probability_period_of_event",
+    )
+    + tuple(f"data_header_int16_{i}" for i in range(5, 59))
+    + ("period_seconds",)
+)
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_3_data_header_int16s = (
+    "data_header_int16_00",
+    "data_header_int16_01",
+    "data_header_int16_02",
+    "data_header_int16_03",
+    "data_header_int16_04",
     "data_header_int16_05",
     "soil_type",
+    "data_header_int16_07",
+    "data_header_int16_08",
+    "data_header_int16_09",
+    "data_header_int16_10",
+) + tuple(f"data_header_int16_{i}" for i in range(11, 60))
+
+
+# data specific header (int16) elements 108-159 (Fortran bytes 411-512)
+table_4_data_header_int16s = (
+    "data_header_int16_00",
+    "data_header_int16_01",
+    "data_header_int16_02",
+    "data_header_int16_03",
+    "data_header_int16_04",
+    "data_header_int16_05",
+    "data_header_int16_06",
     "radiation_code",
     "data_header_int16_08",
     "data_header_int16_09",
     "data_header_int16_10",
-    "data_header_int16_11",
-    "data_header_int16_12",
-    "data_header_int16_13",
-    "data_header_int16_14",
-    "data_header_int16_15",
-    "data_header_int16_16",
-    "data_header_int16_17",
-    "data_header_int16_18",
-    "data_header_int16_19",
-    "data_header_int16_20",
-    "data_header_int16_21",
-    "data_header_int16_22",
-    "data_header_int16_23",
-    "data_header_int16_24",
-    "data_header_int16_25",
-    "data_header_int16_26",
-    "data_header_int16_27",
-    "data_header_int16_28",
-    "data_header_int16_29",
-    "data_header_int16_30",
-    "data_header_int16_31",
-    "data_header_int16_32",
-    "data_header_int16_33",
-    "data_header_int16_34",
-    "data_header_int16_35",
-    "data_header_int16_36",
-    "data_header_int16_37",
-    "data_header_int16_38",
-    "data_header_int16_39",
-    "data_header_int16_40",
-    "data_header_int16_41",
-    "data_header_int16_42",
-    "data_header_int16_43",
-    "data_header_int16_44",
-    "data_header_int16_45",
-    "data_header_int16_46",
-    "data_header_int16_47",
-    "data_header_int16_48",
-    "data_header_int16_49",
-    "period_seconds",
-)
+) + tuple(f"data_header_int16_{i}" for i in range(11, 60))
 
 
 def _read_chars(infile, num):
@@ -225,6 +265,53 @@ class NimrodField:
         self.units = _read_chars(infile, 8)
         self.source = _read_chars(infile, 24)
         self.title = _read_chars(infile, 24)
+
+        # determine which of Table 1, 2, 3 or 4 is being used
+        Table_3_field_codes = [
+            18,
+            144,
+            190,
+            191,
+            192,
+            193,
+            194,
+            196,
+            197,
+            198,
+            199,
+            201,
+            202,
+            203,
+            204,
+            218,
+            219,
+            301,
+            302,
+            901,
+            8229,
+            8230,
+        ]
+        Table_4_field_codes = [90, 91, 92, 93, 96, 303]
+        default_float_threshold = self.float32_mdi
+        threshold_set = (
+            self.threshold_value != default_float_threshold
+            or self.threshold_value_alt != default_float_threshold
+        )
+        # The `Table` enum is defined in iris.fileformats.nimrod_load_rules
+        if self.field_code in Table_3_field_codes:
+            table = Table.table_3
+            data_header_int16s = table_3_data_header_int16s
+        elif self.field_code in Table_4_field_codes:
+            table = Table.table_4
+            data_header_int16s = table_4_data_header_int16s
+        elif threshold_set:
+            table = Table.table_2
+            data_header_int16s = table_2_data_header_int16s
+        else:
+            table = Table.table_1
+            data_header_int16s = table_1_data_header_int16s
+
+        self.table = table
 
         # data specific header (int16) elements 108- (bytes 411-512)
         self._read_header_subset(infile, data_header_int16s, np.int16)
