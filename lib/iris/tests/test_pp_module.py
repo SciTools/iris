@@ -124,7 +124,8 @@ class TestPPHeaderDerived:
         assert self.pp.lbuser[3] == self.pp.stash.lbuser3()
         assert self.pp.lbuser[6] == self.pp.stash.lbuser6()
 
-        with pytest.raises(ValueError):
+        msg = r"Cannot set stash to \(4, 15, 5\)"
+        with pytest.raises(ValueError, match=msg):
             self.pp.stash = (4, 15, 5)
 
     def test_lbproc_bad_access(self):

@@ -34,9 +34,10 @@ class Test___init__:
         )
 
     def test_insufficient_coordinates(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct Ocean s-coordinate, generic form 2 factory due to insufficient source coordinates."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(
                 s=None,
                 c=self.c,
@@ -44,7 +45,7 @@ class Test___init__:
                 depth=self.depth,
                 depth_c=self.depth_c,
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(
                 s=self.s,
                 c=None,
@@ -52,7 +53,7 @@ class Test___init__:
                 depth=self.depth,
                 depth_c=self.depth_c,
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(
                 s=self.s,
                 c=self.c,
@@ -60,7 +61,7 @@ class Test___init__:
                 depth=self.depth,
                 depth_c=self.depth_c,
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(
                 s=self.s,
                 c=self.c,
@@ -68,7 +69,7 @@ class Test___init__:
                 depth=None,
                 depth_c=self.depth_c,
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(
                 s=self.s,
                 c=self.c,
@@ -79,42 +80,50 @@ class Test___init__:
 
     def test_s_too_many_bounds(self):
         self.s.nbounds = 4
-        with pytest.raises(ValueError):
+        msg = "Invalid s coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_c_too_many_bounds(self):
         self.c.nbounds = 4
-        with pytest.raises(ValueError):
+        msg = "Invalid c coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_depth_c_non_scalar(self):
         self.depth_c.shape = (2,)
-        with pytest.raises(ValueError):
+        msg = r"Expected scalar depth_c coordinate .*: got shape \(2,\)."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_s_incompatible_units(self):
         self.s.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Invalid units: s coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_c_incompatible_units(self):
         self.c.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Invalid units: c coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_eta_incompatible_units(self):
         self.eta.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_depth_c_incompatible_units(self):
         self.depth_c.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: depth_c coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_depth_incompatible_units(self):
         self.depth.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: eta coordinate .*and depth coordinate .*must have the same units."
+        with pytest.raises(ValueError, match=msg):
             OceanSg2Factory(**self.kwargs)
 
     def test_promote_c_and_s_units_unknown_to_dimensionless(self):
@@ -235,22 +244,26 @@ class Test_update:
 
     def test_s_too_many_bounds(self):
         new_s = Mock(units=Unit("1"), nbounds=4)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid s coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.s, new_s)
 
     def test_c_too_many_bounds(self):
         new_c = Mock(units=Unit("1"), nbounds=4)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid c coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.c, new_c)
 
     def test_s_incompatible_units(self):
         new_s = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid units: s coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.s, new_s)
 
     def test_c_incompatible_units(self):
         new_c = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid units: c coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.c, new_c)
 
     def test_eta(self):
@@ -260,7 +273,8 @@ class Test_update:
 
     def test_eta_incompatible_units(self):
         new_eta = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.eta, new_eta)
 
     def test_depth(self):
@@ -270,7 +284,8 @@ class Test_update:
 
     def test_depth_incompatible_units(self):
         new_depth = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.depth, new_depth)
 
     def test_depth_c(self):
@@ -280,10 +295,12 @@ class Test_update:
 
     def test_depth_c_non_scalar(self):
         new_depth_c = Mock(units=Unit("m"), nbounds=0, shape=(10,))
-        with pytest.raises(ValueError):
+        msg = r"Failed to update dependencies. Expected scalar depth_c coordinate .*: got shape \(10,\)."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.depth_c, new_depth_c)
 
     def test_depth_c_incompatible_units(self):
         new_depth_c = Mock(units=Unit("Pa"), nbounds=0, shape=(1,))
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: depth_c coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.depth_c, new_depth_c)

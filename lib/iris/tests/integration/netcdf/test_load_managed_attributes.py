@@ -32,7 +32,7 @@ class LoadTestCommon:
         tmp_dir = tmp_path_factory.mktemp("tmp_nc")
         # We can reuse the same path all over, as it is recreated for each test.
         self.tmp_ncpath = tmp_dir / "tmp.nc"
-        yield
+        return
 
     def _check_load_inner(self, iris_name, nc_name, value):
         # quickly create a valid netcdf file with a simple cube in it.

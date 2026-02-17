@@ -112,6 +112,11 @@ known-first-party = ["iris"]
     "D401",  # 1 First line of docstring should be in imperative mood
 ]
 
+# Deprecated unittest tests
+
+"lib/iris/tests/__init__.py" = ["PT"]
+"lib/iris/tests/unit/tests/test_IrisTest.py" = ["PT"]
+
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 

@@ -224,7 +224,7 @@ class TestCreateShapeMaskErrors:
             )
 
     @pytest.mark.parametrize(
-        "minimum_weight, error_type",
+        ("minimum_weight", "error_type"),
         [(-1, ValueError), (2, ValueError)],
     )
     def test_invalid_minimum_weight(
@@ -242,7 +242,7 @@ class TestCreateShapeMaskErrors:
             )
 
     @pytest.mark.parametrize(
-        "minimum_weight, error_type",
+        ("minimum_weight", "error_type"),
         [(-1, ValueError), (2, ValueError)],
     )
     def test_invalid_minimum_weight_with_all_touched(

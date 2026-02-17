@@ -14,7 +14,7 @@ from iris.util import array_equal
 
 
 @pytest.mark.parametrize(
-    "a,b,eq",
+    ("a", "b", "eq"),
     [
         (np.arange(2), da.arange(2), True),
         (np.arange(2), np.arange(2).reshape((1, 2)), False),
@@ -78,7 +78,7 @@ def test_compute_hashes(a, b, eq):
 
 
 @pytest.mark.parametrize(
-    "a,b",
+    ("a", "b"),
     [
         (a, b)
         for (a, b, withnans, eq) in TEST_CASES

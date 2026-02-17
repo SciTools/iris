@@ -137,7 +137,7 @@ class TestMakeGridcube:
     @pytest.fixture(params=["int", "float", "i2", "i4", "i8", "f2", "f4", "f8"])
     def arg_dtype(self, request):
         """Check all valid numeric argument types."""
-        yield request.param
+        return request.param
 
     @staticmethod
     def f4_promoted_dtype(typename):

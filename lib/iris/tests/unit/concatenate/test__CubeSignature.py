@@ -28,7 +28,7 @@ class SampleData:
 
 
 class Test__coordinate_dim_metadata_equality:
-    @pytest.fixture()
+    @pytest.fixture
     def sample_data(self) -> SampleData:
         # Return a standard set of test items, wrapped in a data object
 

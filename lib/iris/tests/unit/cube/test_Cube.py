@@ -1466,17 +1466,20 @@ class Test_intersection__Circular:
 class Test_intersection__Invalid:
     def test_reversed_min_max(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "minimum greater than maximum"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(30, 10))
 
     def test_dest_too_large(self, dataless):
         cube = create_cube(0, 360, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "requested range greater than coordinate's unit's modulus"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(30, 500))
 
     def test_src_too_large(self, dataless):
         cube = create_cube(0, 400, dataless=dataless)
-        with pytest.raises(ValueError):
+        msg = "coordinate's range greater than coordinate's unit's modulus"
+        with pytest.raises(ValueError, match=msg):
             cube.intersection(longitude=(10, 30))
 
     def test_missing_coord(self, dataless):
@@ -2886,7 +2889,7 @@ class Test_dtype:
 
 class TestSubset:
     @pytest.mark.parametrize(
-        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_scalar_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="apricot", units="1")
@@ -2895,8 +2898,8 @@ class TestSubset:
         assert cube == result
 
     @pytest.mark.parametrize(
-        ["data", "shape"],
-        [[np.zeros(4), None], [None, (4,)]],
+        ("data", "shape"),
+        [(np.zeros(4), None), (None, (4,))],
         ids=["with_data", "dataless"],
     )
     def test_dimensional_coordinate(self, data, shape):
@@ -2909,7 +2912,7 @@ class TestSubset:
         assert cube == result
 
     @pytest.mark.parametrize(
-        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_missing_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2918,7 +2921,7 @@ class TestSubset:
         pytest.raises(CoordinateNotFoundError, cube.subset, bad_coord)
 
     @pytest.mark.parametrize(
-        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_different_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2928,7 +2931,7 @@ class TestSubset:
         assert result is None
 
     @pytest.mark.parametrize(
-        ["data", "shape"], [[[0, 1], None], [None, (2,)]], ids=["with_data", "dataless"]
+        ("data", "shape"), [([0, 1], None), (None, (2,))], ids=["with_data", "dataless"]
     )
     def test_different_coordinate_vector(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="raspberry", units="1")
@@ -2938,7 +2941,7 @@ class TestSubset:
         assert result is None
 
     @pytest.mark.parametrize(
-        ["data", "shape"], [[0, None], [None, ()]], ids=["with_data", "dataless"]
+        ("data", "shape"), [(0, None), (None, ())], ids=["with_data", "dataless"]
     )
     def test_not_coordinate(self, data, shape):
         cube = Cube(data=data, shape=shape, long_name="peach", units="1")
@@ -3712,7 +3715,7 @@ class Test__eq__meta:
         assert cube1 == cube2
 
 
-@pytest.fixture()
+@pytest.fixture
 def simplecube():
     return stock.simple_2d_w_cell_measure_ancil_var()
 
@@ -3790,14 +3793,14 @@ class TestReprs:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture()
+    @pytest.fixture
     def patched_cubeprinter(self, mocker):
         target = "iris._representation.cube_printout.CubePrinter"
         instance_mock = mock.MagicMock(
             to_string=mock.MagicMock(return_value="")  # NB this must return a string
         )
         class_mock = mocker.patch(target, return_value=instance_mock)
-        yield class_mock, instance_mock
+        return class_mock, instance_mock
 
     @staticmethod
     def _check_expected_effects(simplecube, patched_cubeprinter, oneline, padding):
@@ -3847,14 +3850,14 @@ class TestHtmlRepr:
     """
 
     # Note: logically this could be a staticmethod, but that seems to upset Pytest
-    @pytest.fixture()
+    @pytest.fixture
     def patched_cubehtml(self, mocker):
         target = "iris.experimental.representation.CubeRepresentation"
         instance_mock = mock.MagicMock(
             repr_html=mock.MagicMock(return_value="")  # NB this must return a string
         )
         class_mock = mocker.patch(target, return_value=instance_mock)
-        yield class_mock, instance_mock
+        return class_mock, instance_mock
 
     @staticmethod
     def test__repr_html__effects(simplecube, patched_cubehtml):

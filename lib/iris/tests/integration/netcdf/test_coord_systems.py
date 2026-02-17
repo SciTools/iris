@@ -8,7 +8,6 @@ import warnings
 
 import numpy as np
 import pytest
-from pytest import MonkeyPatch
 
 import iris
 from iris.coords import DimCoord
