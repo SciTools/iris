@@ -48,6 +48,7 @@ class Test___init__:
                 nsigma=self.nsigma,
                 zlev=None,
             )
+        msg = "Unable to construct ocean sigma over z coordinate factory due to insufficient source coordinates."
         with pytest.raises(ValueError, match=msg):
             OceanSigmaZFactory(
                 sigma=None,
@@ -75,6 +76,7 @@ class Test___init__:
                 nsigma=self.nsigma,
                 zlev=self.zlev,
             )
+        msg = "Missing nsigma coordinate."
         with pytest.raises(ValueError, match=msg):
             OceanSigmaZFactory(
                 sigma=self.sigma,
