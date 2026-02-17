@@ -25,7 +25,7 @@ except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
-from iris._deprecation import warn_deprecated
+from iris._deprecation import explicit_checker, warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 from iris.util import new_axis
@@ -119,10 +119,12 @@ def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
     return result
 
 
+@explicit_checker
 def as_cube(
-    pandas_array,
-    copy=True,
-    calendars=None,
+    pandas_array: pd.Series | pd.DataFrame,
+    copy: bool = True,
+    calendars: dict = None,
+    xparams: set[str] = None,
 ):
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
@@ -133,6 +135,14 @@ def as_cube(
     copy : bool, default=True
         Whether to copy `pandas_array`, or to create array views where
         possible. Provided in case of memory limit concerns.
+
+        .. deprecated:: 3.15.0
+            The 'copy' parameter is deprecated and will be removed in a
+            future release. This function will always make a copy of the
+            data array, to ensure that the returned Cube is independent
+            of the input pandas data and to be consistent with pandas v3
+            behaviour.
+
     calendars : dict, optional
         A dict mapping a dimension to a calendar. Required to convert datetime
         indices/columns.
@@ -163,6 +173,24 @@ def as_cube(
     )
     warn_deprecated(message)
 
+    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
+    # and this kwarg will be depreciated in future.
+    if copy is False:
+        msg = (
+            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
+            "will be removed in a future release."
+        )
+        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+        copy = True
+    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
+    if "copy" in xparams:
+        msg = (
+            "The 'copy' parameter is deprecated and will be removed in a future release. "
+            "The function will always make a copy of the data array, to ensure that the "
+            "returned Cubes are independent of the input pandas data."
+        )
+        warn_deprecated(msg)
+
     calendars = calendars or {}
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
@@ -188,14 +216,16 @@ def as_cube(
     return cube
 
 
+@explicit_checker
 def as_cubes(
-    pandas_structure,
-    copy=True,
-    calendars=None,
-    aux_coord_cols=None,
-    cell_measure_cols=None,
-    ancillary_variable_cols=None,
-):
+    pandas_structure: pd.DataFrame | pd.Series,
+    copy: bool = True,
+    calendars: dict = None,
+    aux_coord_cols: str = None,
+    cell_measure_cols: str = None,
+    ancillary_variable_cols: str = None,
+    xparams: set[str] = None,
+) -> CubeList:
     r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
     The index of `pandas_structure` will be used for generating the
@@ -212,6 +242,14 @@ def as_cubes(
         `pandas_structure` column, or a view of the same array. Arrays other than
         the data (coords etc.) are always copies. This option is provided to
         help with memory size concerns.
+
+        .. deprecated:: 3.15.0
+            The 'copy' parameter is deprecated and will be removed in a
+            future release. This function will always make a copy of the
+            data array, to ensure that the returned Cube is independent
+            of the input pandas data and to be consistent with pandas v3
+            behaviour.
+
     calendars : dict, optional
         Calendar conversions for individual date-time coordinate
         columns/index-levels e.g. ``{"my_column": cf_units.CALENDAR_360_DAY}``.
@@ -353,6 +391,24 @@ def as_cubes(
             longitude                            -             x
 
     """
+    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
+    # and this kwarg will be depreciated in future.
+    if copy is False:
+        msg = (
+            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
+            "will be removed in a future release."
+        )
+        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+        copy = True
+    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
+    if "copy" in xparams:
+        msg = (
+            "The 'copy' parameter is deprecated and will be removed in a future release. "
+            "The function will always make a copy of the data array, to ensure that the "
+            "returned Cubes are independent of the input pandas data."
+        )
+        warn_deprecated(msg)
+
     if pandas_structure.empty:
         return CubeList()
 
@@ -565,7 +621,8 @@ def _make_cell_measures_list(cube):
     return list(chain.from_iterable([outlist]))
 
 
-def as_series(cube, copy=True):
+@explicit_checker
+def as_series(cube: Cube, copy: bool = True, xparams: set[str] = None) -> pd.Series:
     """Convert a 1D cube to a Pandas Series.
 
     Parameters
@@ -575,6 +632,13 @@ def as_series(cube, copy=True):
     copy : bool, default=True
         Whether to make a copy of the data.
         Defaults to True. Must be True for masked data.
+
+        .. deprecated:: 3.15.0
+            The 'copy' parameter is deprecated and will be removed in a
+            future release. This function will always make a copy of the
+            data array, to ensure that the returned Cube is independent
+            of the input pandas data and to be consistent with pandas v3
+            behaviour.
 
     Notes
     -----
@@ -597,6 +661,24 @@ def as_series(cube, copy=True):
     )
     warn_deprecated(message)
 
+    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
+    # and this kwarg will be depreciated in future.
+    if copy is False:
+        msg = (
+            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
+            "will be removed in a future release."
+        )
+        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+        copy = True
+    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
+    if "copy" in xparams:
+        msg = (
+            "The 'copy' parameter is deprecated and will be removed in a future release. "
+            "The function will always make a copy of the data array, to ensure that the "
+            "returned Cubes are independent of the input pandas data."
+        )
+        warn_deprecated(msg)
+
     data = cube.data
     if ma.isMaskedArray(data):
         if not copy:
@@ -613,13 +695,15 @@ def as_series(cube, copy=True):
     return series
 
 
+@explicit_checker
 def as_data_frame(
-    cube,
-    copy=True,
-    add_aux_coords=False,
-    add_cell_measures=False,
-    add_ancillary_variables=False,
-):
+    cube: Cube,
+    copy: bool = True,
+    add_aux_coords: bool = False,
+    add_cell_measures: bool = False,
+    add_ancillary_variables: bool = False,
+    xparams: set[str] = None,
+) -> pd.DataFrame:
     r"""Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
     :attr:`~iris.cube.Cube.dim_coords` and :attr:`~iris.cube.Cube.data` are
@@ -635,6 +719,14 @@ def as_data_frame(
         Whether the :class:`pandas.DataFrame` is a copy of the the Cube
         :attr:`~iris.cube.Cube.data`. This option is provided to help with memory
         size concerns.
+
+        .. deprecated:: 3.15.0
+            The 'copy' parameter is deprecated and will be removed in a
+            future release. This function will always make a copy of the
+            data array, to ensure that the returned Cube is independent
+            of the input pandas data and to be consistent with pandas v3
+            behaviour.
+
     add_aux_coords : bool, default=False
         If True, add all :attr:`~iris.cube.Cube.aux_coords` (including scalar
         coordinates) to the returned :class:`pandas.DataFrame`.
@@ -671,6 +763,12 @@ def as_data_frame(
 
     #. Where the :class:`~iris.cube.Cube` contains masked values, these become
        :data:`numpy.nan` in the returned :class:`~pandas.DataFrame`.
+
+    #. If `copy` parameter is explicitly set to True or False, a DeprecationWarning
+       is raised, as this parameter will be removed in a future release.
+       This function will always make a copy of the data array, to ensure that the
+       returned Cube is independent of the input pandas data and to be consistent
+       with pandas v3 behaviour.
 
     Notes
     -----
@@ -827,6 +925,24 @@ def as_data_frame(
                     sort=False,
                 )
         return data_frame
+
+    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
+    # and this kwarg will be depreciated in future.
+    if copy is False:
+        msg = (
+            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
+            "will be removed in a future release."
+        )
+        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
+        copy = True
+    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
+    if "copy" in xparams:
+        msg = (
+            "The 'copy' parameter is deprecated and will be removed in a future release. "
+            "The function will always make a copy of the data array, to ensure that the "
+            "returned Cubes are independent of the input pandas data."
+        )
+        warn_deprecated(msg)
 
     if getattr(cube, "ndim", None) is not None and (is_scalar := cube.ndim == 0):
         # promote the scalar cube to a 1D cube, and convert in the same way as a 1D cube
