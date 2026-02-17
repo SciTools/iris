@@ -222,8 +222,18 @@ def assert_cml(cubes, reference_filename=None, checksum=True):
 
 
 class IrisTest(unittest.TestCase):
-    """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
+    """A subclass of unittest.TestCase which provides Iris specific testing functionality.
 
+    .. deprecated:: v3.15.0 in favour of the private module `_shared_utils`, which contains
+    the majority of these methods converted to snake_case.
+
+    """
+
+    iris._deprecation.warn_deprecated(
+        "IrisTest class is now deprecated. "
+        "The majority of these methods can be found (converted "
+        "to snake_case) in `_shared_utils`."
+    )
     _assertion_counts: collections.defaultdict[str, int] = collections.defaultdict(int)
 
     def _assert_str_same(
