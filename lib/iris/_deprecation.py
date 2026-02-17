@@ -46,7 +46,7 @@ def explicit_checker(f):
     >>> @explicit_checker
     ... def my_function(a, b=1):
     ...     print(f"a={a}, b={b}")
-    ...     if "b" in kwargs["explicit_params"]:
+    ...     if "b" in kwargs["xparams"]:
     ...         warnings.warn("Parameter 'b' is deprecated.", IrisDeprecation)
     >>> my_function(1)  # No warning, 'b' is not explicitly set
     >>> my_function(1, b=3)  # Warning, 'b' is explicitly set
@@ -56,7 +56,7 @@ def explicit_checker(f):
 
     @wraps(f)
     def wrapper(*a, **kw):
-        kw["explicit_params"] = set(list(varnames[: len(a)]) + list(kw.keys()))
+        kw["xparams"] = set(list(varnames[: len(a)]) + list(kw.keys()))
         return f(*a, **kw)
 
     return wrapper

@@ -125,7 +125,7 @@ def as_cube(
     copy: bool = True,
     calendars: dict = None,
     xparams: set[str] = None,
-):
+) -> Cube:
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
     Parameters
@@ -224,7 +224,6 @@ def as_cubes(
     aux_coord_cols: str = None,
     cell_measure_cols: str = None,
     ancillary_variable_cols: str = None,
-    xparams: set[str] = None,
 ) -> CubeList:
     r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
@@ -401,7 +400,7 @@ def as_cubes(
         warnings.warn(msg, category=iris.warnings.IrisUserWarning)
         copy = True
     # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:
+    if "copy" in xparams:  # type: ignore
         msg = (
             "The 'copy' parameter is deprecated and will be removed in a future release. "
             "The function will always make a copy of the data array, to ensure that the "
@@ -542,8 +541,8 @@ def as_cubes(
     return cubes
 
 
-def _as_pandas_coord(coord):
-    """Convert an Iris Coord into a Pandas index or columns array."""
+def _as_pandas_coord(coord: iris.coords.Coord) -> np.ndarray:
+    """Convert an Iris Coord into a numpy array."""
     index = coord.points
     if coord.units.is_time_reference():
         index = coord.units.num2date(index)
@@ -567,7 +566,7 @@ def _assert_shared(np_obj, pandas_obj):
         raise AssertionError(msg)
 
 
-def _make_dim_coord_list(cube):
+def _make_dim_coord_list(cube: Cube) -> list:
     """Get Dimension coordinates."""
     outlist = []
     for dimn in range(cube.ndim):
@@ -579,7 +578,7 @@ def _make_dim_coord_list(cube):
     return list(zip(*outlist))
 
 
-def _make_aux_coord_list(cube):
+def _make_aux_coord_list(cube: Cube) -> list:
     """Get Auxiliary coordinates."""
     outlist = []
     for aux_coord in cube.coords(dim_coords=False):
@@ -593,7 +592,7 @@ def _make_aux_coord_list(cube):
     return list(chain.from_iterable([outlist]))
 
 
-def _make_ancillary_variables_list(cube):
+def _make_ancillary_variables_list(cube: Cube) -> list:
     """Get Ancillary variables."""
     outlist = []
     for ancil_var in cube.ancillary_variables():
@@ -607,7 +606,7 @@ def _make_ancillary_variables_list(cube):
     return list(chain.from_iterable([outlist]))
 
 
-def _make_cell_measures_list(cube):
+def _make_cell_measures_list(cube: Cube) -> list:
     """Get cell measures."""
     outlist = []
     for cell_measure in cube.cell_measures():
@@ -622,7 +621,7 @@ def _make_cell_measures_list(cube):
 
 
 @explicit_checker
-def as_series(cube: Cube, copy: bool = True, xparams: set[str] = None) -> pd.Series:
+def as_series(cube: Cube, copy: bool = True) -> pd.Series:
     """Convert a 1D cube to a Pandas Series.
 
     Parameters
@@ -671,7 +670,7 @@ def as_series(cube: Cube, copy: bool = True, xparams: set[str] = None) -> pd.Ser
         warnings.warn(msg, category=iris.warnings.IrisUserWarning)
         copy = True
     # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:
+    if "copy" in xparams:  # type: ignore
         msg = (
             "The 'copy' parameter is deprecated and will be removed in a future release. "
             "The function will always make a copy of the data array, to ensure that the "
@@ -702,7 +701,6 @@ def as_data_frame(
     add_aux_coords: bool = False,
     add_cell_measures: bool = False,
     add_ancillary_variables: bool = False,
-    xparams: set[str] = None,
 ) -> pd.DataFrame:
     r"""Convert a :class:`~iris.cube.Cube` to a :class:`pandas.DataFrame`.
 
@@ -936,7 +934,7 @@ def as_data_frame(
         warnings.warn(msg, category=iris.warnings.IrisUserWarning)
         copy = True
     # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:
+    if "copy" in xparams: # type: ignore
         msg = (
             "The 'copy' parameter is deprecated and will be removed in a future release. "
             "The function will always make a copy of the data array, to ensure that the "
