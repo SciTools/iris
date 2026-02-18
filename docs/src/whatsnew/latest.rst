@@ -91,7 +91,7 @@ This document explains the changes made to Iris for this release
 #. :user:`bjlittle` added the ``:user:`` `extlinks`_ ``github`` user convenience.
    (:pull:`6931`)
 
-#. `@ppmo`_ added a page on how to access datafiles in S3 buckets.
+#. `@pp-mo`_ added a page on how to access datafiles in S3 buckets.
    (:issue:`6374`, :pull:`6951`)
 
 
