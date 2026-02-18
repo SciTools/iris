@@ -19,7 +19,7 @@ import iris.warnings
 
 
 class TestEpoch:
-    @pytest.fixture()
+    @pytest.fixture
     def simple_1d_time_cubes(self):
         reftimes = [
             "hours since 1970-01-01 00:00:00",
@@ -51,12 +51,12 @@ class TestEpoch:
 
 
 class _MessagesMixin:
-    @pytest.fixture()
+    @pytest.fixture
     def placeholder(self):
         # Shim to allow sample_cubes to have identical signature in both parent and subclasses
         return []
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_cubes(self, placeholder):
         # Construct and return a pair of identical cubes
         data = np.arange(24, dtype=np.float32).reshape(2, 3, 4)
@@ -238,7 +238,7 @@ class TestMessages(_MessagesMixin):
 class TestNonMetadataMessages(_MessagesMixin):
     parent_cubes = _MessagesMixin.sample_cubes
 
-    @pytest.fixture()
+    @pytest.fixture
     def sample_cubes(self, parent_cubes):
         coord = parent_cubes[1].coord("time")
         parent_cubes[1].replace_coord(coord.copy(points=coord.points + 2))
@@ -390,7 +390,7 @@ class TestOrder:
 
 
 class TestConcatenate__dask:
-    @pytest.fixture()
+    @pytest.fixture
     def sample_lazy_cubes(self):
         # Make a pair of concatenatable cubes, with dim points [1, 2] and [3, 4, 5]
         def build_lazy_cube(points):

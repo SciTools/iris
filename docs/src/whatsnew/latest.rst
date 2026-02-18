@@ -48,6 +48,8 @@ This document explains the changes made to Iris for this release
    :func:`~iris.cube.Cube.rolling_window` and :func:`~iris.cube.Cube.intersection`
    to work with dataless cubes. (:pull:`6860`, :pull:`6757`)
 
+#. `@HGWright`_ added to the Nimrod loader to expand the types of Nimrod files it can load. This includes selecting which Nimrod table to use the data entry headers from. (:issue:`4505`, :pull:`6763`)
+
 🐛 Bugs Fixed
 =============
 
@@ -88,6 +90,9 @@ This document explains the changes made to Iris for this release
 
 #. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
 
+#. :user:`bjlittle` added the ``:user:`` `extlinks`_ ``github`` user convenience.
+   (:pull:`6931`)
+
 
 💼 Internal
 ===========
@@ -112,7 +117,7 @@ This document explains the changes made to Iris for this release
 #. `@ESadek-MO`_, `@trexfeathers`_, `@bjlittle`_, `@HGWright`_, `@pp-mo`_,
    `@stephenworsley`_ and `@ukmo-ccbunney`_ converted the entirity of the tests
    from unittest to pytest. Iris is now also ruff-PT compliant, save for PT019.
-   (:issue:`6212`, :pull:`6939)
+   (:issue:`6212`, :pull:`6939`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

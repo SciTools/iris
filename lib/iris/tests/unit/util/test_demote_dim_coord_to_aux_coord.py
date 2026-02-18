@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.demote_dim_coord_to_aux_coord`."""
 
-import unittest
-
 import pytest
 
 import iris
@@ -65,7 +63,3 @@ class Test:
         cube_b = cube_a.copy()
         demote_dim_coord_to_aux_coord(cube_b, "an_other")
         assert cube_a == cube_b
-
-
-if __name__ == "__main__":
-    unittest.main()

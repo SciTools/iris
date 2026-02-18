@@ -1019,7 +1019,8 @@ class TestAggregators:
             self.request, bar_result, ("analysis", "max_run_bar_2d.cml"), checksum=False
         )
 
-        with pytest.raises(ValueError):
+        msg = "Not possible to calculate runs over more than one dimension"
+        with pytest.raises(ValueError, match=msg):
             _ = cube.collapsed(
                 ("foo", "bar"),
                 iris.analysis.MAX_RUN,
@@ -1363,12 +1364,14 @@ class TestAreaWeightGeneration:
 
     def test_area_weights_no_lon_bounds(self):
         self.cube.coord("grid_longitude").bounds = None
-        with pytest.raises(ValueError):
+        msg = "Coordinates 'grid_latitude' and 'grid_longitude' must have bounds to determine the area weights."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.cartography.area_weights(self.cube)
 
     def test_area_weights_no_lat_bounds(self):
         self.cube.coord("grid_latitude").bounds = None
-        with pytest.raises(ValueError):
+        msg = "Coordinates 'grid_latitude' and 'grid_longitude' must have bounds to determine the area weights"
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.cartography.area_weights(self.cube)
 
 
@@ -1510,12 +1513,14 @@ class TestLatitudeWeightGeneration:
     def test_cosine_latitude_weights_no_latitude(self):
         # no coordinate identified as latitude
         self.cube_dim_lat.remove_coord("grid_latitude")
-        with pytest.raises(ValueError):
+        msg = "Cannot get latitude coordinate from cube 'precipitation_flux'."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.cartography.cosine_latitude_weights(self.cube_dim_lat)
 
     def test_cosine_latitude_weights_multiple_latitude(self):
         # two coordinates identified as latitude
-        with pytest.raises(ValueError):
+        msg = "Multiple latitude coords are currently disallowed."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.cartography.cosine_latitude_weights(self.cube)
 
 

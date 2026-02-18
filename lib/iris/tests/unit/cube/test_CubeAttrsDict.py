@@ -14,7 +14,7 @@ from iris.cube import CubeAttrsDict
 from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
 
 
-@pytest.fixture()
+@pytest.fixture
 def sample_attrs() -> CubeAttrsDict:
     return CubeAttrsDict(locals={"a": 1, "z": "this"}, globals={"b": 2, "z": "that"})
 

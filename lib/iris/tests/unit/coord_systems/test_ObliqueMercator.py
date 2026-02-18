@@ -125,11 +125,11 @@ class TestArgs:
     def make_instance(self) -> ObliqueMercator:
         return ObliqueMercator(**self.class_kwargs)
 
-    @pytest.fixture()
+    @pytest.fixture
     def instance(self):
         return self.make_instance()
 
-    @pytest.fixture()
+    @pytest.fixture
     def mock_ccrs(self, mocker):
         return mocker.patch("cartopy.crs.ObliqueMercator", autospec=True)
 
@@ -144,7 +144,7 @@ class TestArgs:
         instance.as_cartopy_projection()
         mock_ccrs.assert_called_with(**self.cartopy_kwargs_expected)
 
-    @pytest.fixture()
+    @pytest.fixture
     def label_class(self, instance):
         """Make the tested coordinate system available, even for subclasses."""
         from iris import coord_systems

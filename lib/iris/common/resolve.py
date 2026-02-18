@@ -747,7 +747,8 @@ class Resolve:
             # Build a prepared-item to make a MeshCoord.
             # This case does *NOT* use points + bounds, so alternatives to the
             # coord content should not have been specified by the caller.
-            assert points is None and bounds is None
+            assert points is None
+            assert bounds is None
             mesh = coord.mesh
             location = coord.location
             axis = coord.axis
