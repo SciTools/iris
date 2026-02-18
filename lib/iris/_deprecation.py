@@ -61,14 +61,14 @@ def explicit_copy_checker(f):
         if "copy" in explicit_params:
             if kw["copy"] is False:
                 msg = (
-                    "Pandas v3 behaviour defaults to copy=True. The 'copy'"
-                    f" parameter in {f.__name__} is deprecated and"
+                    "Pandas v3 behaviour defaults to copy=True. The `copy`"
+                    f" parameter in `{f.__name__}` is deprecated and"
                     "will be removed in a future release."
                 )
                 warnings.warn(msg, category=IrisUserWarning)
             else:
                 msg = (
-                    f"The 'copy' parameter in {f.__name__} is deprecated and"
+                    f"The `copy` parameter in `{f.__name__}` is deprecated and"
                     " will be removed in a future release. The function will"
                     " always make a copy of the data array, to ensure that the"
                     " returned Cubes are independent of the input pandas data."
