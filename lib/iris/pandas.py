@@ -9,20 +9,16 @@ See also: https://pandas.pydata.org/
 """
 
 import datetime
-from itertools import chain, combinations
 import warnings
+from itertools import chain, combinations
+from typing import TYPE_CHECKING, Optional
 
 import cf_units
-from cf_units import Unit
 import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-
-try:
-    from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
-except ImportError:
-    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
+from cf_units import Unit
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
@@ -31,8 +27,22 @@ from iris.cube import Cube, CubeList
 from iris.util import new_axis
 from iris.warnings import IrisIgnoringWarning
 
+if TYPE_CHECKING:
+    from pandas import Index as pandasIndex
+    from iris.coords import Coord
 
-def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
+try:
+    from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
+except ImportError:
+    from pandas.tseries.index import DatetimeIndex  # pandas <0.20
+
+
+def _get_dimensional_metadata(
+    name: str,
+    values: np.ndarray | DatetimeIndex | pandasIndex,
+    calendar: Optional[str] = None,
+    dm_class: Optional[AuxCoord | DimCoord] = None,
+) -> AuxCoord | DimCoord:
     """Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
     If no calendar is specified for a time series, Standard is assumed.
@@ -77,19 +87,25 @@ def _get_dimensional_metadata(name, values, calendar=None, dm_class=None):
     return instance
 
 
-def _add_iris_coord(cube, name, points, dim, calendar=None):
+def _add_iris_coord(
+    cube: Cube,
+    name: str,
+    points: np.ndarray | DatetimeIndex | pandasIndex,
+    dim: int,
+    calendar: Optional[str] = None,
+) -> None:
     """Add a Coord or other dimensional metadata to a Cube from a Pandas index or columns array."""
     # Most functionality has been abstracted to _get_dimensional_metadata,
     #  allowing reuse in as_cube() and as_cubes().
     coord = _get_dimensional_metadata(name, points, calendar)
 
-    if coord.__class__ == DimCoord:
+    if isinstance(coord, DimCoord):
         cube.add_dim_coord(coord, dim)
     else:
         cube.add_aux_coord(coord, dim)
 
 
-def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
+def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...]:
     """Find an index grouping of a :class:`pandas.Series` that has just one Series value per group.
 
     Iterates through grouping single index levels, then combinations of 2
@@ -97,7 +113,10 @@ def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
     group are found. Returns a ``tuple`` of the index levels that group to
     produce single values, as soon as one is found.
 
-    Returns ``None`` if no index level combination produces single values.
+    Raises
+    ------
+    ValueError
+        If no unique grouping can be found. This would cause problems defining iris coordinates later on.
 
     """
     unique_number = pandas_series.nunique()
@@ -116,6 +135,15 @@ def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
                 result = lc
                 # Escape as early as possible - heavy operation.
                 break
+    # Protect against the possibility of no unique grouping being found, which would cause problems
+    # defining iris coordinates later on.
+    if result is None:
+        message = (
+            "No unique index grouping could be found for this Series. "
+            "Consider resetting the index or adding a unique index level."
+        )
+        raise ValueError(message)
+
     return result
 
 
@@ -123,7 +151,7 @@ def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
 def as_cube(
     pandas_array: pd.Series | pd.DataFrame,
     copy: bool = True,
-    calendars: dict = None,
+    calendars: Optional[dict] = None,
 ) -> Cube:
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
@@ -201,10 +229,10 @@ def as_cube(
 def as_cubes(
     pandas_structure: pd.DataFrame | pd.Series,
     copy: bool = True,
-    calendars: dict = None,
-    aux_coord_cols: str = None,
-    cell_measure_cols: str = None,
-    ancillary_variable_cols: str = None,
+    calendars: Optional[dict] = None,
+    aux_coord_cols: Optional[list[str]] = None,
+    cell_measure_cols: Optional[list[str]] = None,
+    ancillary_variable_cols: Optional[list[str]] = None,
 ) -> CubeList:
     r"""Convert a Pandas Series/DataFrame into n-dimensional Iris Cubes, including dimensional metadata.
 
@@ -426,7 +454,7 @@ def as_cubes(
     # DimCoords.
     dim_coord_kwarg = []
     for ix, dim_name in enumerate(pandas_index.names):
-        if hasattr(pandas_index, "levels"):
+        if isinstance(pandas_index, pd.MultiIndex):
             coord_points = pandas_index.levels[ix]
         else:
             coord_points = pandas_index
@@ -504,7 +532,7 @@ def as_cubes(
     return cubes
 
 
-def _as_pandas_coord(coord: iris.coords.Coord) -> np.ndarray:
+def _as_pandas_coord(coord: Coord) -> np.ndarray:
     """Convert an Iris Coord into a numpy array."""
     index = coord.points
     if coord.units.is_time_reference():
@@ -535,7 +563,7 @@ def _make_dim_coord_list(cube: Cube) -> list:
     for dimn in range(cube.ndim):
         dimn_coord = cube.coords(dimensions=dimn, dim_coords=True)
         if dimn_coord:
-            outlist += [[dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]]
+            outlist += [[dimn_coord[0].name(), _as_pandas_coord(dimn_coord[0])]]  # type: ignore[AttributeAccessIssue]
         else:
             outlist += [[f"dim{dimn}", range(cube.shape[dimn])]]
     return list(zip(*outlist))
@@ -547,7 +575,7 @@ def _make_aux_coord_list(cube: Cube) -> list:
     for aux_coord in cube.coords(dim_coords=False):
         outlist += [
             [
-                aux_coord.name(),
+                aux_coord.name(),  # type: ignore[AttributeAccessIssue]
                 cube.coord_dims(aux_coord),
                 _as_pandas_coord(aux_coord),
             ]
@@ -561,7 +589,7 @@ def _make_ancillary_variables_list(cube: Cube) -> list:
     for ancil_var in cube.ancillary_variables():
         outlist += [
             [
-                ancil_var.name(),
+                ancil_var.name(),  # type: ignore[AttributeAccessIssue]
                 cube.ancillary_variable_dims(ancil_var),
                 ancil_var.data,
             ]
@@ -575,7 +603,7 @@ def _make_cell_measures_list(cube: Cube) -> list:
     for cell_measure in cube.cell_measures():
         outlist += [
             [
-                cell_measure.name(),
+                cell_measure.name(),  # type: ignore[AttributeAccessIssue]
                 cube.cell_measure_dims(cell_measure),
                 cell_measure.data,
             ]
@@ -627,7 +655,7 @@ def as_series(cube: Cube, copy: bool = True) -> pd.Series:
     if ma.isMaskedArray(data):
         if not copy:
             raise ValueError("Masked arrays must always be copied.")
-        data = data.astype("f").filled(np.nan)
+        data = data.astype("f").filled(np.nan)  # type: ignore[AttributeAccessIssue]
     elif copy:
         data = data.copy()
     index = None
@@ -842,7 +870,9 @@ def as_data_frame(
 
     """
 
-    def merge_metadata(meta_var_list):
+    def merge_metadata(
+        meta_var_list: list[tuple[str, list[int], np.ndarray]],
+    ) -> pd.DataFrame:
         """Add auxiliary cube metadata to the DataFrame."""
         nonlocal data_frame
         for meta_var_name, meta_var_index, meta_var in meta_var_list:
@@ -869,13 +899,14 @@ def as_data_frame(
                 )
         return data_frame
 
-    if getattr(cube, "ndim", None) is not None and (is_scalar := cube.ndim == 0):
+    is_scalar = (getattr(cube, "ndim", None) is not None) and (cube.ndim == 0)
+    if is_scalar:
         # promote the scalar cube to a 1D cube, and convert in the same way as a 1D cube
         cube = new_axis(cube)
 
     if iris.FUTURE.pandas_ndim:
         # Checks
-        if not isinstance(cube, iris.cube.Cube):
+        if not isinstance(cube, Cube):
             raise TypeError(
                 f"Expected input to be iris.cube.Cube instance, got: {type(cube)}"
             )
@@ -886,13 +917,13 @@ def as_data_frame(
         if ma.isMaskedArray(data):
             if not copy:
                 raise ValueError("Masked arrays must always be copied.")
-            data = data.astype("f").filled(np.nan)
+            data = data.astype("f").filled(np.nan)  # type: ignore[AttributeAccessIssue]
 
         # Extract dim coord information: separate lists for dim names and dim values
         coord_names, coords = _make_dim_coord_list(cube)
         # Make base DataFrame
         index = pd.MultiIndex.from_product(coords, names=coord_names)
-        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index)
+        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index) # type: ignore[AttributeAccessIssue]
 
         if add_aux_coords:
             data_frame = merge_metadata(_make_aux_coord_list(cube))
@@ -923,7 +954,7 @@ def as_data_frame(
         if ma.isMaskedArray(data):
             if not copy:
                 raise ValueError("Masked arrays must always be copied.")
-            data = data.astype("f").filled(np.nan)
+            data = data.astype("f").filled(np.nan) # type: ignore[AttributeAccessIssue]
         elif copy:
             data = data.copy()
 
