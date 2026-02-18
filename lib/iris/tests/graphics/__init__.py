@@ -23,6 +23,8 @@ from typing import Callable, Dict, Iterator, Union
 import filelock
 import pytest
 
+from iris._deprecation import warn_deprecated
+
 # Test for availability of matplotlib.
 # (And remove matplotlib as an iris.tests dependency.)
 try:
@@ -241,7 +243,14 @@ def check_graphic(test_id: str, results_dir: Union[str, Path]) -> None:
 
 
 class GraphicsTestMixin:
-    # TODO: deprecate this in favour of check_graphic_caller.
+    """.. deprecated:: v3.15.0 in favour of `_check_graphic_caller()`."""
+
+    warn_deprecated(
+        "GraphicsTestMixin class is now deprecated as part of the efforts "
+        "to convert from unittest to pytest."
+        "Please use `_check_graphic_caller()` instead."
+    )
+
     def setUp(self) -> None:
         # Acquire threading non re-entrant blocking lock to ensure
         # thread-safe plotting.
