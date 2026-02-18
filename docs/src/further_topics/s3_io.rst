@@ -105,7 +105,7 @@ Provide S3 access credentials in an AWS credentials file, as described in
 
 Before use (before each Python invocation)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Activate your Python environment, which should then give you access to the s3-fuse Linux
+Activate your Python environment, which then gives access to the s3-fuse Linux
 command (note: somewhat confusingly, this is called "s3fs").
 
 Map your S3 bucket "into" the chosen empty directory -- e.g.
@@ -142,7 +142,7 @@ mapped file-system path -- e.g.
 
 After use (after Python exit)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-At some point, you should 'forget' the mounted S3 filesystem by "unmounting" it -- e.g.
+At some point, you should "forget" the mounted S3 filesystem by **unmounting** it -- e.g.
 
 .. code-block:: bash
 
@@ -156,8 +156,8 @@ At some point, you should 'forget' the mounted S3 filesystem by "unmounting" it 
     The mount created will not survive a system reboot, nor does it function correctly
     if the user logs out + logs in again.
 
-    Presumably problems can occur if repeated actions can create a very large number of
-    mounts, so unmounting after use does seem advisable.
+    Presumably, problems could occur if repeated operation were to create a very large
+    number of mounts, so unmounting after use does seem advisable.
 
 
 Some Pros and Cons of this approach
@@ -171,25 +171,25 @@ PROs
     in storage.
 
 *   s3-fuse is transparent to file access within Python, including Iris load+save or
-    other Python 'open' files : the S3 data appears to be files in a
+    other files accessed via a Python 'open' : the S3 data appears to be files in a
     regular file-system.
 
 *   the file-system virtualisation approach works for all file formats, since the
     mapping occurs in the O.S. rather than in Iris, or Python.
 
-*   "mounting" avoids the need for the Python instance to dynamically connect to /
-    disconnect from the S3 bucket
+*   "mounting" avoids the need for the Python code to dynamically connect to /
+    disconnect from an S3 bucket
 
-*   the "unmount problem" (see below) is managed at the level of the O.S., where it
-    occurs, instead of trying to allow for it in Python code.  This means it can be
-    managed differently in different operating systems, if needed.
+*   the "unmount problem" (see below) is managed at the level of the operating system,
+    where it occurs, instead of trying to allow for it in Python code.  This means it
+    could be managed differently in different operating systems, if needed.
 
 CONs
 ^^^^
 
 *   this solution is specific to S3 storage
 
-*   possibly the virtualisation is not perfect, if some file-system operations do not
+*   possibly the virtualisation is not perfect :  some file-system operations might not
     behave as expected, e.g. with regard to file permissions or system information
 
 *   it requires user actions *outside* the Python code
@@ -226,6 +226,7 @@ Background Notes and Details
     For details, see : https://github.com/SciTools/iris/pull/6731
 
 *   "Unmounting" must be done via a shell ``umount`` command, and there is no easy way to
-    guarantee that this succeeds, since it can often get a "target is busy" error.
+    guarantee that this succeeds, since it can often get a "target is busy" error, which
+    can only be resolved by delay + retry.
     This "umount problem" is a known problem in Unix generally : see
     `here <https://stackoverflow.com/questions/tagged/linux%20umount>`_
