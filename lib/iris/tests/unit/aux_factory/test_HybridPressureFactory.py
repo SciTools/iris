@@ -34,13 +34,14 @@ class Test___init__:
         create_default_sample_parts(self)
 
     def test_insufficient_coords(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct hybrid pressure coordinate factory due to insufficient source coordinates."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=None, sigma=self.sigma, surface_air_pressure=None
             )
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=None,
                 sigma=None,
@@ -49,7 +50,8 @@ class Test___init__:
 
     def test_incompatible_delta_units(self):
         self.delta.units = cf_units.Unit("m")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: delta and surface_air_pressure must have the same units."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -58,7 +60,8 @@ class Test___init__:
 
     def test_incompatible_sigma_units(self):
         self.sigma.units = cf_units.Unit("Pa")
-        with pytest.raises(ValueError):
+        msg = "Invalid units: sigma must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -67,7 +70,8 @@ class Test___init__:
 
     def test_incompatible_surface_air_pressure_units(self):
         self.surface_air_pressure.units = cf_units.Unit("unknown")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: delta and surface_air_pressure must have the same units."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -77,7 +81,8 @@ class Test___init__:
     def test_different_pressure_units(self):
         self.delta.units = cf_units.Unit("hPa")
         self.surface_air_pressure.units = cf_units.Unit("Pa")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: delta and surface_air_pressure must have the same units."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -86,7 +91,8 @@ class Test___init__:
 
     def test_too_many_delta_bounds(self):
         self.delta.nbounds = 4
-        with pytest.raises(ValueError):
+        msg = "Invalid delta coordinate: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -95,7 +101,8 @@ class Test___init__:
 
     def test_too_many_sigma_bounds(self):
         self.sigma.nbounds = 4
-        with pytest.raises(ValueError):
+        msg = "Invalid sigma coordinate: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             HybridPressureFactory(
                 delta=self.delta,
                 sigma=self.sigma,
@@ -257,12 +264,14 @@ class Test_update:
 
     def test_bad_delta(self):
         new_delta_coord = Mock(units=cf_units.Unit("1"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: delta and surface_air_pressure must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_alternative_bad_delta(self):
         new_delta_coord = Mock(units=cf_units.Unit("Pa"), nbounds=4)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid delta coordinate: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.delta, new_delta_coord)
 
     def test_good_surface_air_pressure(self):
@@ -272,7 +281,8 @@ class Test_update:
 
     def test_bad_surface_air_pressure(self):
         new_surface_p_coord = Mock(units=cf_units.Unit("km"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: delta and surface_air_pressure must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.surface_air_pressure, new_surface_p_coord)
 
     def test_non_dependency(self):
@@ -292,5 +302,6 @@ class Test_update:
 
     def test_insufficient_coords(self):
         self.factory.update(self.delta, None)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Unable to construct hybrid pressure coordinate factory due to insufficient source coordinates."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.surface_air_pressure, None)

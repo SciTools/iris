@@ -23,7 +23,7 @@ def wgs84_crs():
 
 
 @pytest.mark.parametrize(
-    "input_geometry, wgs84_crs, input_cube_crs, output_expected_geometry",
+    ("input_geometry", "wgs84_crs", "input_cube_crs", "output_expected_geometry"),
     [
         (  # Basic geometry in WGS84, no transformation needed
             shapely.geometry.box(-10, 50, 2, 60),
@@ -90,7 +90,7 @@ def test_transform_geometry(
 
 # Assert that an invalid inputs raise the expected errors
 @pytest.mark.parametrize(
-    "input_geometry, input_geometry_crs, input_cube_crs, expected_error",
+    ("input_geometry", "input_geometry_crs", "input_cube_crs", "expected_error"),
     [
         (  # Basic geometry in WGS84, no transformation needed
             "bad_input_geometry",
@@ -120,7 +120,7 @@ def test_transform_geometry_invalid_input(
 
 
 @pytest.mark.parametrize(
-    "input_geometry, wgs84_crs, input_cube_crs",
+    ("input_geometry", "wgs84_crs", "input_cube_crs"),
     [
         (  # Basic geometry in WGS84, transformed to OSGB
             shapely.geometry.box(np.inf, np.inf, np.inf, np.inf),

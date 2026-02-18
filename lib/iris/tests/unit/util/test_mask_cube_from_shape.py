@@ -68,7 +68,7 @@ def test_mask_cube_from_shape_not_inplace(mock_cube, square_polygon):
 
 
 @pytest.mark.parametrize(
-    "minimum_weight, expected_output",
+    ("minimum_weight", "expected_output"),
     [
         (
             0.0,
