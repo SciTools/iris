@@ -109,6 +109,11 @@ This document explains the changes made to Iris for this release
    `:module:~iris.experimental.geovista` is currently only available for
    Python \<3.14.  (:pull:`6816`, :issue:`6775`)
 
+#. `@ESadek-MO`_, `@trexfeathers`_, `@bjlittle`_, `@HGWright`_, `@pp-mo`_,
+   `@stephenworsley`_ and `@ukmo-ccbunney`_ converted the entirity of the tests
+   from unittest to pytest. Iris is now also ruff-PT compliant, save for PT019.
+   (:issue:`6212`, :pull:`6939)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
