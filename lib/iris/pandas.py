@@ -24,7 +24,7 @@ import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
-from iris.util import new_axis
+from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ def _get_dimensional_metadata(
     name: str,
     values: np.ndarray | DatetimeIndex | pandasIndex,
     calendar: Optional[str] = None,
-    dm_class: Optional[AuxCoord | DimCoord] = None,
+    dm_class: Optional[type[AuxCoord] | type[DimCoord]] = None,
 ) -> AuxCoord | DimCoord:
     """Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
@@ -56,7 +56,9 @@ def _get_dimensional_metadata(
     # Getting everything into a single datetime format is hard!
 
     # Convert out of NumPy's own datetime format.
-    if np.issubdtype(values.dtype, np.datetime64):
+    if isinstance(values.dtype, np.dtype) and np.issubdtype(
+        values.dtype, np.datetime64
+    ):
         values = pd.to_datetime(values)
 
     # Convert pandas datetime objects to python datetime objects.
@@ -64,23 +66,22 @@ def _get_dimensional_metadata(
         values = np.array([i.to_pydatetime() for i in values])
 
     # Convert datetime objects to Iris' current datetime representation.
-    if values.dtype == object:
-        dt_types = (datetime.datetime, cftime.datetime)
-        if all([isinstance(i, dt_types) for i in values]):
-            units = Unit("hours since epoch", calendar=calendar)
-            values = units.date2num(values)
+    if (isinstance(values.dtype, object)) and (
+        all(isinstance(i, (datetime.datetime, cftime.datetime)) for i in values)
+    ):
+        units = Unit("hours since epoch", calendar=calendar)
+        values = units.date2num(values)
 
     values = np.array(values)
 
     if dm_class is None:
-        if np.issubdtype(values.dtype, np.number) and iris.util.monotonic(
-            values, strict=True
-        ):
-            dm_class = DimCoord
+        if np.issubdtype(values.dtype, np.number) and monotonic(values, strict=True):
+            instance = DimCoord(values, units=units)
         else:
-            dm_class = AuxCoord
+            instance = AuxCoord(values, units=units)
+    else:
+        instance = dm_class(values, units=units)
 
-    instance = dm_class(values, units=units)
     if name is not None:
         # Use rename() to attempt standard_name but fall back on long_name.
         instance.rename(str(name))
@@ -870,6 +871,7 @@ def as_data_frame(
     Name: surface_temperature, Length: 419904, dtype: float32
 
     """
+    data_frame: pd.DataFrame
 
     def merge_metadata(
         meta_var_list: list[tuple[str, list[int], np.ndarray]],
