@@ -936,7 +936,7 @@ get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
-    """.. deprecated:: v3.15.0 in favour of `_shared_utils.GraphicsTest."""
+    """.. deprecated:: v3.15.0 in favour of `_shared_utils.GraphicsTest`."""
 
     iris._deprecation.warn_deprecated(
         "`GraphicsTest` has been moved to `_shared_utils` as part of the efforts to convert "
