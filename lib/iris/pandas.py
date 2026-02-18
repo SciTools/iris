@@ -25,7 +25,7 @@ except ImportError:
     from pandas.tseries.index import DatetimeIndex  # pandas <0.20
 
 import iris
-from iris._deprecation import explicit_checker, warn_deprecated
+from iris._deprecation import explicit_copy_checker, warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 from iris.util import new_axis
@@ -119,12 +119,11 @@ def _series_index_unique(pandas_series: pd.Series) -> tuple[int, ...] | None:
     return result
 
 
-@explicit_checker
+@explicit_copy_checker
 def as_cube(
     pandas_array: pd.Series | pd.DataFrame,
     copy: bool = True,
     calendars: dict = None,
-    xparams: set[str] = None,
 ) -> Cube:
     """Convert a Pandas Series/DataFrame into a 1D/2D Iris Cube.
 
@@ -173,24 +172,6 @@ def as_cube(
     )
     warn_deprecated(message)
 
-    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
-    # and this kwarg will be depreciated in future.
-    if copy is False:
-        msg = (
-            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
-            "will be removed in a future release."
-        )
-        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
-        copy = True
-    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:
-        msg = (
-            "The 'copy' parameter is deprecated and will be removed in a future release. "
-            "The function will always make a copy of the data array, to ensure that the "
-            "returned Cubes are independent of the input pandas data."
-        )
-        warn_deprecated(msg)
-
     calendars = calendars or {}
     if pandas_array.ndim not in [1, 2]:
         raise ValueError(
@@ -216,7 +197,7 @@ def as_cube(
     return cube
 
 
-@explicit_checker
+@explicit_copy_checker
 def as_cubes(
     pandas_structure: pd.DataFrame | pd.Series,
     copy: bool = True,
@@ -390,24 +371,6 @@ def as_cubes(
             longitude                            -             x
 
     """
-    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
-    # and this kwarg will be depreciated in future.
-    if copy is False:
-        msg = (
-            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
-            "will be removed in a future release."
-        )
-        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
-        copy = True
-    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:  # type: ignore
-        msg = (
-            "The 'copy' parameter is deprecated and will be removed in a future release. "
-            "The function will always make a copy of the data array, to ensure that the "
-            "returned Cubes are independent of the input pandas data."
-        )
-        warn_deprecated(msg)
-
     if pandas_structure.empty:
         return CubeList()
 
@@ -620,7 +583,7 @@ def _make_cell_measures_list(cube: Cube) -> list:
     return list(chain.from_iterable([outlist]))
 
 
-@explicit_checker
+@explicit_copy_checker
 def as_series(cube: Cube, copy: bool = True) -> pd.Series:
     """Convert a 1D cube to a Pandas Series.
 
@@ -660,24 +623,6 @@ def as_series(cube: Cube, copy: bool = True) -> pd.Series:
     )
     warn_deprecated(message)
 
-    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
-    # and this kwarg will be depreciated in future.
-    if copy is False:
-        msg = (
-            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
-            "will be removed in a future release."
-        )
-        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
-        copy = True
-    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams:  # type: ignore
-        msg = (
-            "The 'copy' parameter is deprecated and will be removed in a future release. "
-            "The function will always make a copy of the data array, to ensure that the "
-            "returned Cubes are independent of the input pandas data."
-        )
-        warn_deprecated(msg)
-
     data = cube.data
     if ma.isMaskedArray(data):
         if not copy:
@@ -694,7 +639,7 @@ def as_series(cube: Cube, copy: bool = True) -> pd.Series:
     return series
 
 
-@explicit_checker
+@explicit_copy_checker
 def as_data_frame(
     cube: Cube,
     copy: bool = True,
@@ -923,24 +868,6 @@ def as_data_frame(
                     sort=False,
                 )
         return data_frame
-
-    # Raise UserWarning if copy == False as this goes against pandas v3's default behaviour
-    # and this kwarg will be depreciated in future.
-    if copy is False:
-        msg = (
-            "Pandas v3 behaviour defaults to copy=True. The 'copy' parameter is deprecated and"
-            "will be removed in a future release."
-        )
-        warnings.warn(msg, category=iris.warnings.IrisUserWarning)
-        copy = True
-    # Raise DepreciationWarning if copy parameter explicitly set (either True or False).
-    if "copy" in xparams: # type: ignore
-        msg = (
-            "The 'copy' parameter is deprecated and will be removed in a future release. "
-            "The function will always make a copy of the data array, to ensure that the "
-            "returned Cubes are independent of the input pandas data."
-        )
-        warn_deprecated(msg)
 
     if getattr(cube, "ndim", None) is not None and (is_scalar := cube.ndim == 0):
         # promote the scalar cube to a 1D cube, and convert in the same way as a 1D cube
