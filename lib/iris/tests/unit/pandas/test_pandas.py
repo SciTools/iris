@@ -11,7 +11,6 @@ import warnings
 
 import cf_units
 import cftime
-from iris.warnings import IrisUserWarning
 import matplotlib.units
 import numpy as np
 import pytest
@@ -19,6 +18,7 @@ import pytest
 import iris
 from iris._deprecation import IrisDeprecation
 from iris.tests import _shared_utils
+from iris.warnings import IrisUserWarning
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.

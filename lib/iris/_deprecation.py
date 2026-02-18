@@ -4,9 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Utilities for producing runtime deprecation messages."""
 
+from functools import wraps
 import inspect
 import warnings
-from functools import wraps
 
 from iris.warnings import IrisUserWarning
 

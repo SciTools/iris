@@ -9,16 +9,16 @@ See also: https://pandas.pydata.org/
 """
 
 import datetime
-import warnings
 from itertools import chain, combinations
 from typing import TYPE_CHECKING, Optional
+import warnings
 
 import cf_units
+from cf_units import Unit
 import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-from cf_units import Unit
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
@@ -29,6 +29,7 @@ from iris.warnings import IrisIgnoringWarning
 
 if TYPE_CHECKING:
     from pandas import Index as pandasIndex
+
     from iris.coords import Coord
 
 try:
@@ -923,7 +924,7 @@ def as_data_frame(
         coord_names, coords = _make_dim_coord_list(cube)
         # Make base DataFrame
         index = pd.MultiIndex.from_product(coords, names=coord_names)
-        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index) # type: ignore[AttributeAccessIssue]
+        data_frame = pd.DataFrame(data.ravel(), columns=[cube.name()], index=index)  # type: ignore[AttributeAccessIssue]
 
         if add_aux_coords:
             data_frame = merge_metadata(_make_aux_coord_list(cube))
@@ -954,7 +955,7 @@ def as_data_frame(
         if ma.isMaskedArray(data):
             if not copy:
                 raise ValueError("Masked arrays must always be copied.")
-            data = data.astype("f").filled(np.nan) # type: ignore[AttributeAccessIssue]
+            data = data.astype("f").filled(np.nan)  # type: ignore[AttributeAccessIssue]
         elif copy:
             data = data.copy()
 
