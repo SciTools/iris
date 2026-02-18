@@ -168,7 +168,14 @@ def assert_masked_array_equal(a, b, strict=False):
         If False (default), the data array equality considers only unmasked
         elements.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_masked_array_equal()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "assert_masked_array_equal()` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest."
+        "Please use `_shared_utils.assert_masked_array_equal()` instead."
+    )
     _assert_masked_array(np.testing.assert_array_equal, a, b, strict)
 
 
@@ -190,7 +197,14 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
         :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
         'abs(desired-actual) < 0.5 * 10**(-decimal)'
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_masked_array_almost_equal()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "assert_masked_array_almost_equal()` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest."
+        "Please use `_shared_utils.assert_masked_array_almost_equal()` instead."
+    )
     _assert_masked_array(
         np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
     )
@@ -216,7 +230,13 @@ def assert_cml(cubes, reference_filename=None, checksum=True):
         When True, causes the CML to include a checksum for each
         Cube's data. Defaults to True.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_CML()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`assert_cml` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest. Please use `_shared_utils.assert_CML()` instead."
+    )
     test = IrisTest()
     test.assertCML(cubes, reference_filename, checksum)
 
@@ -225,13 +245,13 @@ class IrisTest(unittest.TestCase):
     """A subclass of unittest.TestCase which provides Iris specific testing functionality.
 
     .. deprecated:: v3.15.0 in favour of the private module `_shared_utils`, which contains
-    the majority of these methods converted to snake_case.
+    the majority of these methods converted to pytest-compliant functions.
 
     """
 
     iris._deprecation.warn_deprecated(
-        "IrisTest class is now deprecated. "
-        "The majority of these methods can be found (converted "
+        "IrisTest class is now deprecated as part of the efforts to migrate from unittest to pytest. "
+        "The majority of these methods can be found as functions (converted "
         "to snake_case) in `_shared_utils`."
     )
     _assertion_counts: collections.defaultdict[str, int] = collections.defaultdict(int)
@@ -916,11 +936,25 @@ get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
+    """.. deprecated:: v3.15.0 in favour of `_shared_utils.GraphicsTest."""
+
+    iris._deprecation.warn_deprecated(
+        "`GraphicsTest` has been moved to `_shared_utils` as part of the efforts to convert "
+        "from unittest to pytest."
+    )
     pass
 
 
 class PPTest:
-    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
+
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.pp_cube_save_test()
+    """
+
+    iris._deprecation.warn_deprecated(
+        "PPTest class is now deprecated as part of the efforts to migrate from unittest to pytest. "
+        "`cube_save_test()` has been moved to `_shared_utils` as `pp_cube_save_test()`"
+    )
 
     @contextlib.contextmanager
     def cube_save_test(
@@ -1015,7 +1049,14 @@ def skip_data(fn):
         class MyDataTests(tests.IrisTest):
             ...
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.skip_data`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`skip_data` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
+
     no_data = (
         not iris.config.TEST_DATA_DIR
         or not os.path.isdir(iris.config.TEST_DATA_DIR)
@@ -1036,7 +1077,13 @@ def skip_gdal(fn):
         class MyGeoTiffTests(test.IrisTest):
             ...
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.skip_gdal`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`skip_gdal` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
     skip = unittest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
     return skip(fn)
 
@@ -1072,7 +1119,13 @@ def no_warnings(func):
     """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.no_warnings`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`no_warnings` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
 
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
@@ -1106,7 +1159,14 @@ def env_bin_path(exe_name: str | None = None) -> Path | None:
     For use in tests which spawn commands which should call executables within
     the Python environment, since many IDEs (Eclipse, PyCharm) don't
     automatically include this location in $PATH (as opposed to $PYTHONPATH).
+
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.env_bin_path`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`env_bin_path` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
     exe_path = Path(os.__file__)
     exe_path = (exe_path / "../../../bin").resolve()
     if exe_name is not None:

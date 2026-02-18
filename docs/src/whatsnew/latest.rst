@@ -69,7 +69,9 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. `@ESadek-MO`_ has deprecated the :class:`~iris.tests.IrisTest` class, and other unittest-based
+   testing conveniences in favour of the conveniences found in `:mod:`iris/tests/_shared_utils.py``.
+   (pull:`6950`)
 
 
 🔗 Dependencies
