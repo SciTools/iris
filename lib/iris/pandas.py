@@ -22,7 +22,10 @@ import pandas as pd
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
+from iris.coords.AncillaryVariable import AncillaryVariable  # Aids mypy type checking
+from iris.coords.AuxCoord import AuxCoord  # Aids mypy type checking
+from iris.coords.CellMeasure import CellMeasure  # Aids mypy type checking
+from iris.coords.DimCoord import DimCoord  # Aids mypy type checking
 from iris.cube import Cube, CubeList
 from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
@@ -42,7 +45,7 @@ def _get_dimensional_metadata(
     name: str,
     values: np.ndarray | DatetimeIndex | pandasIndex,
     calendar: Optional[str] = None,
-    dm_class: Optional[type[AuxCoord] | type[DimCoord]] = None,
+    dm_class: Optional[AuxCoord | DimCoord] = None,
 ) -> AuxCoord | DimCoord:
     """Create a Coord or other dimensional metadata from a Pandas index or columns array.
 
@@ -74,13 +77,13 @@ def _get_dimensional_metadata(
 
     values = np.array(values)
 
-    if dm_class is None:
+    if dm_class is not None:
+        instance = dm_class(values, units=units)
+    else:
         if np.issubdtype(values.dtype, np.number) and monotonic(values, strict=True):
             instance = DimCoord(values, units=units)
         else:
             instance = AuxCoord(values, units=units)
-    else:
-        instance = dm_class(values, units=units)
 
     if name is not None:
         # Use rename() to attempt standard_name but fall back on long_name.
@@ -444,7 +447,7 @@ def as_cubes(
         )
         raise ValueError(message)
 
-    cube_kwargs = {}
+    cube_kwargs: dict = {}
 
     def format_dimensional_metadata(dm_class_, values_, name_, dimensions_):
         # Common convenience to get the right DM in the right format for
@@ -501,7 +504,7 @@ def as_cubes(
             #  for this object. _series_index_unique should have ensured
             #  that we are indeed removing the duplicates.
             shaped = content.reshape(cube_shape)
-            indices = [0] * len(cube_shape)
+            indices: list = [0] * len(cube_shape)
             for dim in dimensions:
                 indices[dim] = slice(None)
             collapsed = shaped[tuple(indices)]
