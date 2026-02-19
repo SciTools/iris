@@ -22,10 +22,7 @@ import pandas as pd
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
-from iris.coords.AncillaryVariable import AncillaryVariable  # Aids mypy type checking
-from iris.coords.AuxCoord import AuxCoord  # Aids mypy type checking
-from iris.coords.CellMeasure import CellMeasure  # Aids mypy type checking
-from iris.coords.DimCoord import DimCoord  # Aids mypy type checking
+from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
 from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
@@ -78,7 +75,7 @@ def _get_dimensional_metadata(
     values = np.array(values)
 
     if dm_class is not None:
-        instance = dm_class(values, units=units)
+        instance = dm_class(values, units=units)  # type: ignore[operator]
     else:
         if np.issubdtype(values.dtype, np.number) and monotonic(values, strict=True):
             instance = DimCoord(values, units=units)
