@@ -836,7 +836,7 @@ class RectilinearRegridder:
         return data
 
     def _check_units(self, coord):
-        from iris.coord_systems import GeogCS, RotatedGeogCS
+        from iris.coord_systems import GeogCS, Geostationary, RotatedGeogCS
 
         if coord.coord_system is None:
             # No restriction on units.
@@ -851,6 +851,16 @@ class RectilinearRegridder:
                 msg = (
                     "Unsupported units for coordinate system. "
                     "Expected 'degrees' got {!r}.".format(coord.units)
+                )
+                raise ValueError(msg)
+        elif isinstance(
+            coord.coord_system,
+            Geostationary,
+        ):
+            if coord.units != "radians":
+                msg = (
+                    "Unsupported units for coordinate system. "
+                    "Expected 'radians' got {!r}.".format(coord.units)
                 )
                 raise ValueError(msg)
         else:

@@ -240,6 +240,7 @@ def _can_draw_map(coords):
         ["latitude", "longitude"],
         ["grid_latitude", "grid_longitude"],
         ["projection_y_coordinate", "projection_x_coordinate"],
+        ["projection_y_angular_coordinate", "projection_x_angular_coordinate"],
     ]
     return std_names in valid_std_names
 
@@ -818,6 +819,8 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         if draw_method_name == "plot" and u_object.standard_name not in (
             "projection_x_coordinate",
             "projection_y_coordinate",
+            "projection_x_angular_coordinate",
+            "projection_y_angular_coordinate",
         ):
             u = _shift_plot_sections(u_object, u, v)
 
