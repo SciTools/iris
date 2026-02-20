@@ -19,6 +19,7 @@ import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
+from pandas import Index as pandasIndex
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
@@ -28,8 +29,6 @@ from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
 
 if TYPE_CHECKING:
-    from pandas import Index as pandasIndex
-
     from iris.coords import Coord
 
 try:
