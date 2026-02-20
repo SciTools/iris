@@ -112,7 +112,7 @@ Map your S3 bucket "into" the chosen empty directory -- e.g.
 
 .. code-block:: bash
 
-    $ s3fs my-test-bucket /home/self.me/s3_root/testbucket_mountpoint``
+    $ s3fs my-test-bucket /home/self.me/s3_root/testbucket_mountpoint
 
 .. note::
 
