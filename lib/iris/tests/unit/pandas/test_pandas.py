@@ -18,6 +18,7 @@ import pytest
 import iris
 from iris._deprecation import IrisDeprecation
 from iris.tests import _shared_utils
+from iris.warnings import IrisUserWarning
 
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
@@ -122,36 +123,12 @@ class TestAsSeries:
         series[0] = 99
         assert cube.data[0] == 0
 
-    def test_copy_int32_false(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int32), long_name="foo")
-        series = iris.pandas.as_series(cube, copy=False)
-        series[0] = 99
-        assert cube.data[0] == 99
-
-    def test_copy_int64_false(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4], dtype=np.int64), long_name="foo")
-        series = iris.pandas.as_series(cube, copy=False)
-        series[0] = 99
-        assert cube.data[0] == 99
-
-    def test_copy_float_false(self):
-        cube = Cube(np.array([0, 1, 2, 3.3, 4]), long_name="foo")
-        series = iris.pandas.as_series(cube, copy=False)
-        series[0] = 99
-        assert cube.data[0] == 99
-
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
         cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
         assert cube.data[0] == 0
-
-    def test_copy_masked_false(self):
-        data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
-        cube = Cube(data, long_name="foo")
-        with pytest.raises(ValueError, match="Masked arrays must always be copied"):
-            _ = iris.pandas.as_series(cube, copy=False)
 
 
 @skip_pandas
@@ -270,32 +247,8 @@ class TestAsDataFrame:
     def test_copy_true(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube)
-        data_frame[0][0] = 99
+        data_frame.iloc[0, 0] = 99
         assert cube.data[0, 0] == 0
-
-    def test_copy_int32_false(self):
-        cube = Cube(
-            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int32),
-            long_name="foo",
-        )
-        data_frame = iris.pandas.as_data_frame(cube, copy=False)
-        data_frame[0][0] = 99
-        assert cube.data[0, 0] == 99
-
-    def test_copy_int64_false(self):
-        cube = Cube(
-            np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]], dtype=np.int64),
-            long_name="foo",
-        )
-        data_frame = iris.pandas.as_data_frame(cube, copy=False)
-        data_frame[0][0] = 99
-        assert cube.data[0, 0] == 99
-
-    def test_copy_float_false(self):
-        cube = Cube(np.array([[0, 1, 2, 3, 4.4], [5, 6, 7, 8, 9]]), long_name="foo")
-        data_frame = iris.pandas.as_data_frame(cube, copy=False)
-        data_frame[0][0] = 99
-        assert cube.data[0, 0] == 99
 
     def test_copy_masked_true(self):
         data = np.ma.MaskedArray(
@@ -304,24 +257,8 @@ class TestAsDataFrame:
         )
         cube = Cube(data, long_name="foo")
         data_frame = iris.pandas.as_data_frame(cube)
-        data_frame[0][0] = 99
+        data_frame.iloc[0, 0] = 99
         assert cube.data[0, 0] == 0
-
-    def test_copy_masked_false(self):
-        data = np.ma.MaskedArray(
-            [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]],
-            mask=[[0, 1, 0, 1, 0], [1, 0, 1, 0, 1]],
-        )
-        cube = Cube(data, long_name="foo")
-        with pytest.raises(ValueError, match="Masked arrays must always be copied"):
-            _ = iris.pandas.as_data_frame(cube, copy=False)
-
-    def test_copy_false_with_cube_view(self):
-        data = np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-        cube = Cube(data[:], long_name="foo")
-        data_frame = iris.pandas.as_data_frame(cube, copy=False)
-        data_frame[0][0] = 99
-        assert cube.data[0, 0] == 99
 
 
 @skip_pandas
@@ -450,17 +387,11 @@ class TestAsDataFrameNDim:
             data_frame.index.get_level_values("kid"), expected_kid
         )
 
-    def test_copy_false(self):
+    def test_implicit_copy_true(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        data_frame = iris.pandas.as_data_frame(cube, copy=False)
+        data_frame = iris.pandas.as_data_frame(cube)
         cube.data[2] = 99
-        assert cube.data[2] == data_frame.foo[2]
-
-    def test_copy_true(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        data_frame = iris.pandas.as_data_frame(cube, copy=True)
-        cube.data[2] = 99
-        assert cube.data[2] != data_frame.foo[2]
+        assert cube.data[2] != data_frame.loc[2, "foo"].values
 
     def test_time_standard(self):
         cube = Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="ts")
@@ -709,17 +640,11 @@ class TestSeriesAsCube:
             ),
         )
 
-    def test_copy_true(self):
+    def test_implicit_copy_true(self):
         series = pd.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
         cube = iris.pandas.as_cube(series)
         cube.data[0] = 99
         assert series[5] == 0
-
-    def test_copy_false(self):
-        series = pd.Series([0, 1, 2, 3, 4], index=[5, 6, 7, 8, 9])
-        cube = iris.pandas.as_cube(series, copy=False)
-        cube.data[0] = 99
-        assert series[5] == 99
 
 
 @skip_pandas
@@ -818,17 +743,11 @@ class TestDataFrameAsCube:
             ),
         )
 
-    def test_copy_true(self):
+    def test_implicit_copy_true(self):
         data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
         cube = iris.pandas.as_cube(data_frame)
         cube.data[0, 0] = 99
-        assert data_frame[0][0] == 0
-
-    def test_copy_false(self):
-        data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
-        cube = iris.pandas.as_cube(data_frame, copy=False)
-        cube.data[0, 0] = 99
-        assert data_frame[0][0] == 99
+        assert data_frame.iloc[0, 0] == 0
 
 
 @skip_pandas
@@ -855,6 +774,49 @@ class TestFutureAndDeprecation:
         with warnings.catch_warnings():
             warnings.simplefilter("error", FutureWarning)
             _ = iris.pandas.as_data_frame(cube)
+
+    @pytest.mark.parametrize(
+        ("test_function", "test_input"),
+        [
+            (iris.pandas.as_cube, pd.DataFrame()),
+            (iris.pandas.as_cubes, pd.DataFrame()),
+            (
+                iris.pandas.as_series,
+                Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"),
+            ),
+            (
+                iris.pandas.as_data_frame,
+                Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"),
+            ),
+        ],
+    )
+    def test_explicit_copy_true_error(self, test_function, test_input):
+        with pytest.warns(
+            IrisDeprecation,
+            match=f"The `copy` parameter in `{test_function.__name__}` is deprecated",
+        ):
+            _ = test_function(test_input, copy=True)
+
+    @pytest.mark.parametrize(
+        ("test_function", "test_input"),
+        [
+            (iris.pandas.as_cube, pd.DataFrame()),
+            (iris.pandas.as_cubes, pd.DataFrame()),
+            (
+                iris.pandas.as_series,
+                Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"),
+            ),
+            (
+                iris.pandas.as_data_frame,
+                Cube(np.array([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]), long_name="foo"),
+            ),
+        ],
+    )
+    def test_explicit_copy_false_error(self, test_function, test_input):
+        with pytest.warns(
+            IrisUserWarning, match="Pandas v3 behaviour defaults to copy=True."
+        ):
+            _ = test_function(test_input, copy=False)
 
 
 @skip_pandas
@@ -948,26 +910,24 @@ class TestPandasAsCubes:
 
     def test_non_unique_index(self):
         df = self._create_pandas(index_levels=1)
-        new_index = df.index.values
+        new_index = df.index.values.copy()
         new_index[1] = new_index[0]
-        df.set_index(new_index)
+        df.set_index(new_index, inplace=True)
 
         with pytest.raises(ValueError, match="not unique per row"):
             _ = iris.pandas.as_cubes(df)
 
     def test_non_monotonic_index(self):
         df = self._create_pandas(index_levels=1)
-        new_index = df.index.values
+        new_index = df.index.values.copy()
         new_index[:2] = new_index[1::-1]
-        df.set_index(new_index)
-
+        df.set_index(new_index, inplace=True)
         with pytest.raises(ValueError, match="not monotonic"):
             _ = iris.pandas.as_cubes(df)
 
     def test_missing_rows(self):
         df = self._create_pandas(index_levels=2)
         df = df[:-1]
-
         with pytest.raises(
             ValueError, match="Not all index values have a corresponding row"
         ):
@@ -1186,39 +1146,15 @@ class TestPandasAsCubes:
         with pytest.warns(Warning, match="is a Series; ignoring"):
             _ = iris.pandas.as_cubes(series, aux_coord_cols=["some_column"])
 
-    def test_phenom_view(self):
-        df = self._create_pandas()
-        result = iris.pandas.as_cubes(df, copy=False)
-
-        # Modify AFTER creating the Cube(s).
-        df[0][0] += 1
-
-        (result_cube,) = result
-        assert result_cube.data[0] == df[0][0]
-
     def test_phenom_copy(self):
         df = self._create_pandas()
         result = iris.pandas.as_cubes(df)
 
         # Modify AFTER creating the Cube(s).
-        df[0][0] += 1
+        df.iloc[0, 0] += 1
 
         (result_cube,) = result
-        assert result_cube.data[0] != df[0][0]
-
-    def test_coord_never_view(self):
-        # Using AuxCoord - DimCoords and Pandas indices are immutable.
-        df = self._create_pandas()
-        coord_name = "foo"
-        df[coord_name] = df.index.values
-        result = iris.pandas.as_cubes(df, copy=False, aux_coord_cols=[coord_name])
-
-        # Modify AFTER creating the Cube(s).
-        df[coord_name][0] += 1
-
-        (result_cube,) = result
-        result_coord = result_cube.coord(coord_name)
-        assert result_coord.points[0] != df[coord_name][0]
+        assert result_cube.data[0] != df.iloc[0, 0]
 
     def _test_dates_common(self, mode=None, alt_calendar=False):
         df = self._create_pandas()
