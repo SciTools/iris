@@ -28,9 +28,6 @@ from iris.cube import Cube, CubeList
 from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
 
-if TYPE_CHECKING:
-    from iris.coords import Coord
-
 try:
     from pandas.core.indexes.datetimes import DatetimeIndex  # pandas >=0.20
 except ImportError:
@@ -533,7 +530,7 @@ def as_cubes(
     return cubes
 
 
-def _as_pandas_coord(coord: Coord) -> np.ndarray:
+def _as_pandas_coord(coord: DimCoord | AuxCoord) -> np.ndarray:
     """Convert an Iris Coord into a numpy array."""
     index = coord.points
     if coord.units.is_time_reference():
