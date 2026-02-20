@@ -511,20 +511,34 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
     eq = array1.shape == array2.shape
     if eq:
         if is_lazy_data(array1) or is_lazy_data(array2):
-            # Use a separate map and reduce operation to avoid running out of memory.
-            ndim = array1.ndim
-            indices = tuple(range(ndim))
-            eq = da.blockwise(
-                _masked_array_equal,
-                indices,
-                array1,
-                indices,
-                array2,
-                indices,
-                dtype=bool,
-                meta=np.empty((0,) * ndim, dtype=bool),
-                equal_nan=withnans,
-            ).all()
+            # Compare lazy arrays by hashing, and cache the hashes...
+            def array_hash(array):
+                if hasattr(array, "_iris_array_hash"):
+                    hash = array._iris_array_hash
+                else:
+                    from iris._concatenate import _hash_array
+
+                    hash = _hash_array(array)
+                    if isinstance(array, da.Array):
+                        # Can't save hashes on a numpy array, but CAN on a Dask array
+                        array._iris_array_hash = hash
+                return hash
+
+            eq = array_hash(array1) == array_hash(array2)
+            # # Use a separate map and reduce operation to avoid running out of memory.
+            # ndim = array1.ndim
+            # indices = tuple(range(ndim))
+            # eq = da.blockwise(
+            #     _masked_array_equal,
+            #     indices,
+            #     array1,
+            #     indices,
+            #     array2,
+            #     indices,
+            #     dtype=bool,
+            #     meta=np.empty((0,) * ndim, dtype=bool),
+            #     equal_nan=withnans,
+            # ).all()
         else:
             eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
