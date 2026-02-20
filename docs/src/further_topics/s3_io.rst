@@ -132,7 +132,7 @@ Map your S3 bucket "into" the chosen empty directory -- e.g.
 Within Python code
 ^^^^^^^^^^^^^^^^^^
 Access files stored as S3 objects "under" the S3 url, appearing as files under the
-mapped file-system path -- e.g.
+You can now access objects at the remote S3 URL via the mount point on your local file system you just created with `s3fs`, e.g.
 
 .. code-block:: python
 
