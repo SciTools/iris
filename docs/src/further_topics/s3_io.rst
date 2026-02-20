@@ -8,7 +8,7 @@ At the present time, by far the most widely used platform for this is
 `Amazon S3 "buckets" <https://aws.amazon.com/s3/>`_.
 
 It is common to treat an S3 bucket like a "disk", storing files as individual S3
-objects.  S3 access urls can also contain a nested
+objects.  S3 access URLs can also contain a nested
 `'prefix string' <https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-prefixes.html>`_
 structure, which naturally mirrors sub-directories in a file-system.
 
