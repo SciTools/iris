@@ -197,6 +197,54 @@ class Constraint:
                 result = cube[slice_tuple]
         return result
 
+    def as_indexes(
+        self, cube: "iris.cube.Cube", allow_complex: bool = False
+    ) -> list[int | slice | tuple[int]]:
+        """Produce an indexing expression equivalent to this constraint.
+
+        Convert the constraint into a multidimensional index,
+        as it applies to the given cube.
+
+        Parameters
+        ----------
+        cube : Cube
+            The cube to apply the constraint to.
+
+        allow_complex : bool, optional, default: False
+            Whether to expect indexes which are not slices or single ints, indicating
+            that the selection on some dimension consists of a list of indices which are
+            not all contiguous (e.g. (0, 1, 4, 5)).
+            If True, the result may contain 'complex' indexes.
+            When False (the default), if the result contains 'complex' indices, then an
+            error will be raised.
+
+        Returns
+        -------
+        list[int | slice | tuple[int]]
+            A list of indexes, which, when applied to the cube, produces the result of
+            applying this constraint.
+
+        """
+        resultant_CIM = self._CIM_extract(cube)
+        result = resultant_CIM.as_slice()
+        if result is None:
+            # Result does nothing.  Return an [:, :, ...]
+            result = tuple([slice(None) for _ in cube.shape])
+        elif not allow_complex:
+            complex_cases = [
+                (i_ind, ind)
+                for i_ind, ind in enumerate(result)
+                if not isinstance(ind, (slice, int))
+            ]
+            if complex_cases:
+                msg = "; ".join(
+                    f"index#{i_ind} = {ind!r}" for i_ind, ind in complex_cases
+                )
+                msg = f"Not all indices are simple slices: {msg}."
+                raise ValueError(msg)
+
+        return result
+
     def _CIM_extract(self, cube):
         # Returns _ColumnIndexManager
 
@@ -434,7 +482,7 @@ class _ColumnIndexManager:
                 ", or a boolean. Got %s" % (type(value))
             )
 
-    def as_slice(self):
+    def as_slice(self) -> list[int | slice | tuple[int]]:
         """Turn a _ColumnIndexManager into a tuple.
 
         Turn a _ColumnIndexManager into a tuple which can be used in an
