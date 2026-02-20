@@ -75,8 +75,8 @@ This document explains the changes made to Iris for this release
    testing conveniences in favour of the conveniences found in :mod:`iris/tests/_shared_utils.py`.
    (:pull:`6950`)
 
-#. `@hsteptoe`_ has deprecated the use of the `copy` kwarg across `iris.pandas` to reflect changes
-   to the default behaviour of pandas v3 :ref:`New pandas v3 copy behaviour`. (:pull:`6948`)
+#. `@hsteptoe`_ has deprecated the use of the `copy` kwarg across :mod:`iris.pandas` to reflect changes
+   to the default behaviour of pandas v3 `New pandas v3 copy behaviour`_. (:pull:`6948`)
 
 
 🔗 Dependencies
@@ -123,10 +123,10 @@ This document explains the changes made to Iris for this release
    (:issue:`6212`, :pull:`6939`)
 
 #. `@hsteptoe`_ and ... (reviewer) updated chained assignment useage within the tests 
-   associated with `iris.pandas` to reflect changes in pandas v3 :ref:`New pandas v3 copy behaviour`. 
+   associated with :mod:`iris.pandas` to reflect changes in pandas v3 `New pandas v3 copy behaviour`_. 
    (:pull:`6948`, :issue:`6761`)
 
-#. `@hsteptoe`_ and ... (reviewer) added static type hinting to `iris.pandas`. (:pull:`6948`)
+#. `@hsteptoe`_ and ... (reviewer) added static type hinting to :mod:`iris.pandas`. (:pull:`6948`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
