@@ -54,7 +54,7 @@ will run the tests across two processes.  For more options, use the command
    rootdir: /path/to/git/clone/iris, configfile: pyproject.toml, testpaths: lib/iris
    plugins: xdist-2.5.0, forked-1.4.0
    gw0 I / gw1 I
-   gw0 [6361] / gw1 [6361] 
+   gw0 [6361] / gw1 [6361]
 
    ........................................................................ [  1%]
    ........................................................................ [  2%]
@@ -85,7 +85,7 @@ experimental dependency not being present.
       SKIPPED [1] lib/iris/tests/unit/fileformats/test_rules.py:157: Test(s) require external data.
       SKIPPED [1] lib/iris/tests/unit/fileformats/pp/test__interpret_field.py:97: Test(s) require external data.
       SKIPPED [1] lib/iris/tests/unit/util/test_demote_dim_coord_to_aux_coord.py:29: Test(s) require external data.
-      
+
    All Python decorators that skip tests will be defined in
    ``lib/iris/tests/_shared_utils.py`` with a function name with a prefix of
    ``skip_``.

@@ -39,7 +39,7 @@ Features
 
 * Cubes and coordinates now have a new ``names`` property that contains a tuple
   of the ``standard_name``, ``long_name``, NetCDF ``var_name``, and ``STASH``
-  attributes metadata.  
+  attributes metadata.
 
 * The :class:`~iris.NameConstraint` provides richer name constraint matching
   when loading or extracting against cubes, by supporting a constraint against

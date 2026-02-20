@@ -13,9 +13,9 @@ assignees: ''
 ## How To Reproduce
 Steps to reproduce the behaviour:
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Expected behaviour
 <!-- A clear and concise description of what you expected to happen -->
@@ -23,7 +23,7 @@ Steps to reproduce the behaviour:
 ## Screenshots
 <!-- If applicable, add screenshots to help explain your problem -->
 
-## Environment 
+## Environment
  - OS & Version: [e.g., Ubuntu 20.04 LTS]
  - Iris Version: [e.g., From the command line run `python -c "import iris; print(iris.__version__)"`]
 
@@ -36,4 +36,3 @@ Steps to reproduce the behaviour:
 Please add additional verbose information in this section e.g., code, output, tracebacks, screenshots etc
 ```
 </details>
-

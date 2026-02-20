@@ -71,7 +71,7 @@ def cf_primary_sample_path(tmp_path_factory):
             float temp(eta, lat, lon) ;
                 temp:standard_name = "air_temperature" ;
                 temp:units = "K" ;
-        
+
         data:
          eta = 1 ;
          eta_bnds = 0.5, 1.5 ;

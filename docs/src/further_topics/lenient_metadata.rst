@@ -33,6 +33,7 @@ Strict Behaviour
 .. testsetup:: strict-behaviour
 
     import iris
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     latitude = cube.coord("latitude")
 
@@ -143,6 +144,7 @@ Lenient Behaviour
 .. testsetup:: lenient-behaviour
 
     import iris
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     latitude = cube.coord("latitude")
 

@@ -14,12 +14,12 @@
     cube = iris.load(iris.sample_data_path("E1_north_america.nc"))[0]
     iris.save(cube, tmp_filepath, chunksizes=(120, 37, 49))
     old_dask = dask.config.get("array.chunk-size")
-    dask.config.set({'array.chunk-size': '500KiB'})
+    dask.config.set({"array.chunk-size": "500KiB"})
 
 
 .. testcleanup:: chunk_control
 
-    dask.config.set({'array.chunk-size': old_dask})
+    dask.config.set({"array.chunk-size": old_dask})
     shutil.rmtree(tmp_dir)
 
 .. _netcdf_io:
@@ -77,6 +77,7 @@ as the shape, i.e. no optimisation occurs on that dimension.
 
     >>> with CHUNK_CONTROL.set("air_temperature", time=180, latitude=-1, longitude=25):
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (180, 37, 25)
@@ -88,6 +89,7 @@ specify only one dimension, the rest will be optimised using Iris' default behav
 
     >>> with CHUNK_CONTROL.set(longitude=25):
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (120, 37, 25)
@@ -103,6 +105,7 @@ will default to Iris optimisation.
 
     >>> with CHUNK_CONTROL.from_file():
     ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (120, 37, 49)
@@ -116,7 +119,8 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 .. doctest:: chunk_control
 
     >>> with CHUNK_CONTROL.as_dask():
-    ...    cube = iris.load_cube(tmp_filepath)
+    ...     cube = iris.load_cube(tmp_filepath)
+    ...
     >>>
     >>> print(cube.core_data().chunksize)
     (70, 37, 49)
@@ -155,7 +159,7 @@ This allows Iris to make a more informed decision on whether to load the
 data lazily.
 
 For example, consider a netCDF file with an auxiliary coordinate
-``experiment_version`` that is stored as a variable-length string type. By 
+``experiment_version`` that is stored as a variable-length string type. By
 default, Iris will attempt to guess the total array size based on the known
 dimension sizes (``time=150`` in this example) and load the data lazily.
 However, if it is known prior to loading the file that the strings are all no
@@ -169,11 +173,12 @@ loader so it can be make a more informed decision on lazy loading:
     >>>
     >>> sample_file = iris.sample_data_path("vlstr_type.nc")
     >>> cube = iris.load_cube(sample_file)
-    >>> print(cube.coord('experiment_version').has_lazy_points())
+    >>> print(cube.coord("experiment_version").has_lazy_points())
     True
     >>> with CHUNK_CONTROL.set("expver", _vl_hint=5):
     ...     cube = iris.load_cube(sample_file)
-    >>> print(cube.coord('experiment_version').has_lazy_points())
+    ...
+    >>> print(cube.coord("experiment_version").has_lazy_points())
     False
 
 
@@ -238,9 +243,9 @@ Worked example:
     >>> from iris.coords import DimCoord
     >>> from iris.util import guess_coord_axis
     >>> my_coord = DimCoord(
-    ...    points=[1000, 1010, 1020],
-    ...    long_name="pressure_threshold",
-    ...    units="hPa",
+    ...     points=[1000, 1010, 1020],
+    ...     long_name="pressure_threshold",
+    ...     units="hPa",
     ... )
     >>> print(guess_coord_axis(my_coord))
     Z
@@ -315,11 +320,11 @@ defined on an *OSGB Transverse Mercator grid*:
 
 .. code-block:: text
 
-    float pres(y, x) ;
-        pres:standard_name = "air_pressure" ;
-        pres:units = "Pa" ;
-        pres:coordinates = "lat lon" ;
-        pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+    float press(y, x) ;
+        press:standard_name = "air_pressure" ;
+        press:units = "Pa" ;
+        press:coordinates = "lat lon" ;
+        press:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
 
     double x(x) ;
         x:standard_name = "projection_x_coordinate" ;
@@ -358,7 +363,7 @@ and associate it with the auxiliary ``lat`` and ``lon`` coordinates:
 
 ::
 
-    pres:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+    press:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
 
 
 Note, the *order* of the axes in the extended grid mapping specification is

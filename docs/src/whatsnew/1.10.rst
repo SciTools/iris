@@ -101,7 +101,7 @@ Features
   :func:`iris.load`. Structured loading is restricted to input containing
   contiguously ordered fields for each phenomenon that repeat regularly over
   the same vertical levels and times. For further details, see
-  :func:`~iris.experimental.fieldsfile.load` 
+  :func:`~iris.experimental.fieldsfile.load`
 
 * :mod:`iris.experimental.regrid_conservative` is now compatible with ESMPy v7.
 
@@ -192,12 +192,12 @@ Bugs Fixed
 * Fixed a bug with a class of pp files with lbyr == 0, where the date would
   cause errors when converting to a datetime object (e.g. when printing a cube).
 
-  When processing a pp field with lbtim = 2x, lbyr == lbyrd == 0 and 
+  When processing a pp field with lbtim = 2x, lbyr == lbyrd == 0 and
   lbmon == lbmond, 'month' and 'month_number' coordinates are created instead
   of 'time'.
 
 * Fixed a bug in :meth:`~iris.analysis.calculus.curl` where the sign of the
-  r-component for spherical coordinates was opposite to what was expected.  
+  r-component for spherical coordinates was opposite to what was expected.
 
 * A bug that prevented cube printing in some cases has been fixed.
 
@@ -208,7 +208,7 @@ Bugs Fixed
 * Concatenation no longer occurs when the auxiliary coordinates of the cubes do
   not match. This check is not applied to AuxCoords that span the dimension the
   concatenation is occurring along. This behaviour can be switched off by
-  setting the ``check_aux_coords`` kwarg in 
+  setting the ``check_aux_coords`` kwarg in
   :meth:`iris.cube.CubeList.concatenate` to False.
 
 * Fixed a bug in :meth:`iris.cube.Cube.subset` where an exception would be
@@ -218,7 +218,7 @@ Bugs Fixed
 Incompatible Changes
 ====================
 
-* The source and target for 
+* The source and target for
   :meth:`iris.experimental.regrid.PointInCell.regridder` must now have defined
   coordinate systems (i.e. not ``None``). Additionally, the source data X and Y
   coordinates must have the same cube dimensions.
@@ -239,9 +239,9 @@ Deprecations
   Please see :ref:`iris_grib package <iris_grib_added>`, above.
 
 * The use of :data:`iris.config.SAMPLE_DATA_DIR` has been deprecated and
-  replaced by the now importable 
+  replaced by the now importable
   `iris_sample_data <https://github.com/SciTools/iris-sample-data>`_ package.
- 
+
 * Deprecated the module :mod:`iris.analysis.interpolate`.
   This contains the following public items, all of which are now deprecated and
   will be removed in a future release:
@@ -261,8 +261,8 @@ Deprecations
   Please use :meth:`iris.cube.Cube.regrid` instead (see
   :meth:`~iris.cube.Cube.regridded` for details).
 
-* Deprecated :data:`iris.fileformats.grib.hindcast_workaround` and 
-  :class:`iris.fileformats.grib.GribWrapper`. The class 
+* Deprecated :data:`iris.fileformats.grib.hindcast_workaround` and
+  :class:`iris.fileformats.grib.GribWrapper`. The class
   :class:`iris.fileformats.grib.message.GribMessage` provides alternative means
   of working with GRIB message instances.
 
@@ -288,12 +288,12 @@ Deprecations
   separate `mo_pack <https://github.com/SciTools/mo_pack>`_ package instead.
   This provides the same functionality.
 
-* Deprecated logging functions (currently used only for rules logging):  
+* Deprecated logging functions (currently used only for rules logging):
   :data:`iris.config.iris.config.RULE_LOG_DIR`,
   :data:`iris.config.iris.config.RULE_LOG_IGNORE` and
   :data:`iris.fileformats.rules.log`.
 
-* Deprecated all the remaining text rules mechanisms:  
+* Deprecated all the remaining text rules mechanisms:
   :class:`iris.fileformats.rules.DebugString`,
   :class:`iris.fileformats.rules.CMAttribute`,
   :class:`iris.fileformats.rules.CMCustomAttribute`,
@@ -337,4 +337,3 @@ Documentation
 
 * A note regarding the impossibility of partially collapsing multi-dimensional
   coordinates has been added to the user guide.
-

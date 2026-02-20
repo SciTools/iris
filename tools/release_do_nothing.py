@@ -417,7 +417,7 @@ class IrisRelease(Progress):
             "Commit and push all the What's New changes.\n"
             f"git add {self.whats_news.release.absolute()};\n"
             f"git add {self.whats_news.index.absolute()};\n"
-            f'git commit -m "Whats new updates for {self.git_tag} .";\n'
+            f'git commit -m "What\'s new updates for {self.git_tag} .";\n'
             f"git push -u origin {working_branch};"
         )
         self.wait_for_done(message)
@@ -922,7 +922,7 @@ class IrisRelease(Progress):
             message = (
                 "Commit and push all the What's New changes.\n"
                 f"git add {self.whats_news.index.absolute()};\n"
-                'git commit -m "Restore latest Whats New files.";\n'
+                'git commit -m "Restore latest What\'s New files.";\n'
                 f"git push -u origin {working_branch};"
             )
             self.wait_for_done(message)

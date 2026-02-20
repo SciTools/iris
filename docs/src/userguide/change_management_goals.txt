@@ -6,4 +6,3 @@ defined change management procedures to ensure that :
     * you will be aware of future incompatibility problems in advance
 
     * you can defer making code compatibility changes for some time, until it suits you
-

@@ -82,7 +82,7 @@ v2.2.1 (28 May 2019)
 
 * Iris can now correctly unpack a column of header objects when saving a
   pandas DataFrame to a cube.
-  
+
 * fixed a bug in :meth:`iris.util.new_axis` : copying the resulting cube
   resulted in an exception, if it contained an aux-factory.
 
@@ -112,4 +112,3 @@ Documentation
 
 * A link has been added to the Developers' Guide to make it easier to find the
   Pull Request Check List.
-

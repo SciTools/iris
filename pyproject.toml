@@ -3,7 +3,6 @@
 requires = [
   "setuptools>=77.0.3",
   "setuptools_scm[toml]>=8",
-  "wheel",
 ]
 # Defined by PEP 517
 build-backend = "setuptools.build_meta"
@@ -57,6 +56,25 @@ Code = "https://github.com/SciTools/iris"
 Discussions = "https://github.com/SciTools/iris/discussions"
 Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
+
+[tool.repo-review]
+# A list of the currently failing repo-review checks.
+ignore = [
+    # PERMANENT IGNORES --------------------------------------------------------
+    # https://learn.scientific-python.org/development/guides/style/#RF003
+    "RF003",  # So that we can list non-src directories for linting.
+
+    # TEMPORARY IGNORES, for resolving over time -------------------------------
+    # https://learn.scientific-python.org/development/guides/style/#PC170
+    "PC170",  # pre-commit/pygrep-hooks for RST linting.
+    # https://learn.scientific-python.org/development/guides/style/#PC180
+    # Not possible to run on the hardware used by the majority of our developers. Might change in future!
+    "PC180", # Uses prettier.
+    # https://learn.scientific-python.org/development/guides/packaging-simple#PP006
+    "PP006",  # Uses dev dependency group
+    # https://learn.scientific-python.org/development/guides/packaging-simple/#PY005
+    "PY005",  # tests/ or src/tests/ directory.
+]
 
 [tool.ruff]
 # Exclude the following, in addition to the standard set of exclusions.
@@ -137,10 +155,18 @@ local_scheme = "dirty-tag"
 version_scheme = "release-branch-semver"
 
 [tool.pytest.ini_options]
-addopts = "-ra --durations=25"
+addopts = [
+    "-ra",
+    "--durations=25",
+    "--strict-config",
+    "--strict-markers",
+]
+filterwarnings = ["default"]
+log_level = "INFO"
+minversion = "6.0"
 required_plugins = "pytest-mock"
 testpaths = "lib/iris"
-log_level = "INFO"
+xfail_strict = "True"
 
 [tool.coverage.run]
 branch = true
@@ -173,12 +199,13 @@ ignore = [
 # See https://mypy.readthedocs.io/en/stable/config_file.html
 # TODO: remove when MyPy fixed (see https://github.com/python/mypy/issues/17166)
 disable_error_code = ["call-arg"]
-enable_error_code = ["ignore-without-code", "truthy-bool"]
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
     'noxfile\.py',
     'docs/src/conf\.py'
 ]
 ignore_missing_imports = true
+strict = false
 warn_unreachable = true
 warn_unused_configs = true
 

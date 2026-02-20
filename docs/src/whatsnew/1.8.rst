@@ -40,14 +40,14 @@ Features
     :meth:`iris.cube.Cube.slices_over`.
     This provides similar functionality to :meth:`~iris.cube.Cube.slices`
     but with almost the opposite outcome.
-    
+
     Using :meth:`~iris.cube.Cube.slices` to slice a cube on a selected
     dimension returns all possible slices of the cube with the selected
     dimension retaining its dimensionality.  Using
     :meth:`~iris.cube.Cube.slices_over` to slice a cube on a selected
     dimension returns all possible slices of the cube over the selected
-    dimension. 
-    
+    dimension.
+
     To demonstrate this::
 
         >>> cube = iris.load(iris.sample_data_path('colpex.pp'))[0]
@@ -59,7 +59,7 @@ Features
         air_potential_temperature / (K)     (time: 6)
         >>> print(my_slice_over.summary(shorten=True))
         air_potential_temperature / (K)     (model_level_number: 10; grid_latitude: 83; grid_longitude: 83)
-    
+
 
 * :func:`iris.cube.CubeList.concatenate` now works with
   `biggus <https://biggus.readthedocs.io/>`_ arrays and so
@@ -84,7 +84,7 @@ Features
 * :meth:`iris.cube.Cube.slices_over`, which returns an iterator of all
   sub-cubes along a given coordinate or dimension index.
 
-* :meth:`iris.cube.Cube.interpolate` now accepts datetime.datetime and 
+* :meth:`iris.cube.Cube.interpolate` now accepts datetime.datetime and
   netcdftime.datetime instances for date or time coordinates.
 
 * Many new and updated translations between CF spec and STASH codes or GRIB2
@@ -134,7 +134,7 @@ Features
 * The FF loader's known handled grids now includes ``Grid 21``.
 
 * A :class:`nearest neighbour <iris.analysis.Nearest>` scheme is now provided
-  for :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`. 
+  for :meth:`iris.cube.Cube.interpolate` and :meth:`iris.cube.Cube.regrid`.
 
 * :func:`iris.analysis.cartography.rotate_winds` supports transformation of
   wind vectors to a different coordinate system.
@@ -142,8 +142,8 @@ Features
 * NumPy universal functions can now be applied to cubes using
   :func:`iris.analysis.maths.apply_ufunc`.
 
-* Generic functions can be applied to :class:`~iris.cube.Cube` instances using 
-  :class:`iris.analysis.maths.IFunc`. 
+* Generic functions can be applied to :class:`~iris.cube.Cube` instances using
+  :class:`iris.analysis.maths.IFunc`.
 
 * The :class:`iris.analysis.Linear` scheme now supports regridding as well as
   interpolation. This enables :meth:`iris.cube.Cube.regrid` to perform bilinear

@@ -1,6 +1,6 @@
 # Iris custom benchmarks
 
-To be recognised by ASV, these benchmarks must be packaged and installed in 
+To be recognised by ASV, these benchmarks must be packaged and installed in
 line with the
 [ASV guidelines](https://asv.readthedocs.io/projects/asv-runner/en/latest/development/benchmark_plugins.html).
 This is achieved using the custom build in [install.py](./install.py).

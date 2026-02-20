@@ -30,7 +30,7 @@ Features
 
 * Linear regridding of a multi-layer (i.e. > 2-dimensional) cube is now much
   faster, as it calculates transform coefficients just once and reuses them for
-  additional layers. 
+  additional layers.
 
 * Ensemble statistics can now be saved to GRIB2, using Product Definition
   Template 4.11.
@@ -174,7 +174,7 @@ Incompatible Changes
 ====================
 
 * GRIB message/file reading and writing may not be available for Python 3 due
-  to GRIB API limitations. 
+  to GRIB API limitations.
 
 
 Deprecations

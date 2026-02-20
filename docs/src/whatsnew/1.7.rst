@@ -88,7 +88,7 @@ Features
     and a :class:`~iris.cube.Cube` from :func:`iris.load_cube`.
 
     Concatenate reporting is the equivalent process for concatenating a
-    :class:`~iris.cube.CubeList`. It is accessed through the method 
+    :class:`~iris.cube.CubeList`. It is accessed through the method
     :meth:`~iris.cube.CubeList.concatenate_cube`, which will return a single
     concatenated cube or produce an error message that describes why the
     concatenate process failed.
@@ -128,9 +128,9 @@ Features
 * The NetCDF saver has been extended to allow saving of cubes with hybrid
   pressure auxiliary factories.
 
-* PP/FF loading supports LBLEV of 9999. 
+* PP/FF loading supports LBLEV of 9999.
 
-* Extended GRIB1 loading to support data on hybrid pressure levels. 
+* Extended GRIB1 loading to support data on hybrid pressure levels.
 
 * :func:`iris.coord_categorisation.add_day_of_year` can be used to add
   categorised day of year coordinates based on time coordinates with
@@ -160,7 +160,7 @@ Features
   data variable associated with that coordinate.
 
 * PP loading translates cross-section height into a dimensional auxiliary
-  coordinate. 
+  coordinate.
 
 * String auxiliary coordinates can now be plotted with the Iris
   plotting wrappers.
@@ -169,7 +169,7 @@ Features
   allows for the calculation of normalized cell weights.
 
 * Many new translations between the CF spec and STASH codes or GRIB2 parameter
-  codes. 
+  codes.
 
 * PP save rules add the data's UM Version to the attributes of the saved
   file when appropriate.
@@ -178,7 +178,7 @@ Features
   :class:`iris.FUTURE` mechanism.
 
 * A speed improvement in calculation of
-  :func:`iris.analysis.geometry.geometry_area_weights`. 
+  :func:`iris.analysis.geometry.geometry_area_weights`.
 
 * The mdtol keyword was added to area-weighted regridding to allow control of
   the tolerance for missing data. For a further description of this concept, see
@@ -226,21 +226,21 @@ Bugs Fixed
   :meth:`iris.cube.CubeList.extract` that led to unexpected behaviour when
   operating on scalar cubes has been fixed.
 
-* Aggregate_by may now be passed single-value coordinates. 
+* Aggregate_by may now be passed single-value coordinates.
 
 * Making a copy of a :class:`iris.coords.DimCoord` no longer results in the
   writeable flag on the copied points and bounds arrays being set to True.
 
-* Can now save to PP a cube that has vertical levels but no orography. 
+* Can now save to PP a cube that has vertical levels but no orography.
 
 * Fix a bug causing surface altitude and surface pressure fields to not appear
   in cubes loaded with a STASH constraint.
 
 * Fixed support for :class:`iris.fileformats.pp.STASH` objects in STASH
-  constraints. 
+  constraints.
 
 * A fix to avoid a problem where cube attribute names clash with
-  NetCDF reserved attribute names. 
+  NetCDF reserved attribute names.
 
 * A fix to allow :meth:`iris.cube.CubeList.concatenate` to deal with descending
   coordinate order.
@@ -254,12 +254,12 @@ v1.7.3 (16 Dec 2014)
 ^^^^^^^^^^^^^^^^^^^^
 
 * Scalar dimension coordinates can now be concatenated with
-  :meth:`iris.cube.CubeList.concatenate`. 
+  :meth:`iris.cube.CubeList.concatenate`.
 
 * Arbitrary names can no longer be set
-  for elements of a :class:`iris.fileformats.pp.SplittableInt`. 
+  for elements of a :class:`iris.fileformats.pp.SplittableInt`.
 
-* Cubes that contain a pseudo-level coordinate can now be saved to PP. 
+* Cubes that contain a pseudo-level coordinate can now be saved to PP.
 
 * Fixed a bug in the FieldsFile loader that prevented it always loading all
   available fields.
@@ -308,7 +308,7 @@ Deprecations
 * Matplotlib is no longer a core Iris dependency.
 
 
-Documentation 
+Documentation
 =============
 
 * New sections on :ref:`cube broadcasting <cube-maths_anomaly>` and

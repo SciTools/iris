@@ -102,4 +102,3 @@ prune tools
 # files required to build iris.std_names module
 include etc/cf-standard-name-table.xml
 include tools/generate_std_names.py
-
