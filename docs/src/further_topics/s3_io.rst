@@ -15,7 +15,7 @@ structure, which naturally mirrors sub-directories in a file-system.
 While it would be possible for Iris to support S3 access directly, as it does the
 "OpenDAP" protocol for netCDF data, this approach has some serious limitations : most
 notably, each supported file format would have to be separately extended to support S3
-urls in the place of file paths for loading and saving.
+URLs in the place of file paths for loading and saving.
 
 Instead, we have found that it is most practical to perform this access using a virtual
 file system approach.  However, one drawback is that this is best controlled *outside*
