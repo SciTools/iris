@@ -61,21 +61,15 @@ Prior requirements
 
 Install "s3-fuse"
 ~~~~~~~~~~~~~~~~~
-The official
-`installation instructions <https://github.com/s3fs-fuse/s3fs-fuse/blob/master/README.md#installation>`_
-assume that you will perform a system installation with `apt`, `yum` or similar.
+The most reliable method is to install into your Linux O.S.  See
+`installation instructions <https://github.com/s3fs-fuse/s3fs-fuse/blob/master/README.md#installation>`_ .
+This presumes that you perform a system installation with ``apt``, ``yum`` or similar.
 
-However, since you may well not have adequate 'sudo' or root access permissions
-for this, it is simpler to instead install it only into your Python environment.
+If you do not have necessary 'sudo' or root access permissions, we have found that it
+is sufficient to install only **into your Python environment**, using conda.
 Though not suggested, this appears to work on Unix systems where we have tried it.
 
-So, you can use conda or pip -- e.g.
-
-.. code-block:: bash
-
-    $ pip install s3-fuse
-
-or
+For this, you can use conda -- e.g.
 
 .. code-block:: bash
 
@@ -84,6 +78,12 @@ or
 ( Or better, put it into a reusable 'spec file', with all other requirements, and then
 use ``$ conda create --file ...``
 ).
+
+.. note::
+
+    It is **not** possible to install s3fs-fuse into a Python environment with ``pip``,
+    as it is not a Python package.
+
 
 Create an empty mount directory
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,8 +94,6 @@ S3 bucket **onto** -- e.g.
 
     $ mkdir /home/self.me/s3_root/testbucket_mountpoint
 
-The file system which this belongs to is presumably irrelevant, and will not affect
-performance.
 
 Setup AWS credentials
 ~~~~~~~~~~~~~~~~~~~~~
@@ -105,8 +103,8 @@ Provide S3 access credentials in an AWS credentials file, as described in
 
 Before use (before each Python invocation)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Activate your Python environment, which then gives access to the s3-fuse Linux
-command (note: somewhat confusingly, this is called "s3fs").
+Activate your Python environment, which then gives access to the **s3-fuse** Linux
+command -- which, somewhat confusingly, is called ``s3fs``.
 
 Map your S3 bucket "into" the chosen empty directory -- e.g.
 
@@ -142,7 +140,9 @@ You can now access objects at the remote S3 URL via the mount point on your loca
 
 After use (after Python exit)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-At some point, you should "forget" the mounted S3 filesystem by **unmounting** it -- e.g.
+When you have finished accessing the S3 objects in the mounted virtual filesystem, it
+is a good idea to **unmount** it.  Before doing this, make sure that all file handles to
+the objects have been closed and there are no terminals open in that directory.
 
 .. code-block:: bash
 
@@ -150,7 +150,7 @@ At some point, you should "forget" the mounted S3 filesystem by **unmounting** i
 
 .. note::
 
-    The "umount" is a standard Unix command.  It may not always succeed, in which case
+    The ``umount`` is a standard Unix command.  It may not always succeed, in which case
     some kind of retry may be needed -- see detail notes below.
 
     The mount created will not survive a system reboot, nor does it function correctly
@@ -166,11 +166,11 @@ Some Pros and Cons of this approach
 PROs
 ^^^^
 
-*   s3fs supports random access to "parts" of a file, allowing efficient handling of
+*   **s3fs** supports random access to "parts" of a file, allowing efficient handling of
     datasets larger than memory without requiring the data to be explicitly sharded
     in storage.
 
-*   s3-fuse is transparent to file access within Python, including Iris load+save or
+*   **s3-fuse** is transparent to file access within Python, including Iris load+save or
     other files accessed via a Python 'open' : the S3 data appears to be files in a
     regular file-system.
 
@@ -178,23 +178,31 @@ PROs
     mapping occurs in the O.S. rather than in Iris, or Python.
 
 *   "mounting" avoids the need for the Python code to dynamically connect to /
-    disconnect from an S3 bucket
+    disconnect from an S3 bucket.
 
 *   the "unmount problem" (see below) is managed at the level of the operating system,
     where it occurs, instead of trying to allow for it in Python code.  This means it
     could be managed differently in different operating systems, if needed.
 
+*   it does also work with many other cloud object-storage platforms, though with extra
+    required dependencies in some cases.
+    See the s3fs-fuse `Non-Amazon S3`_ docs page for details.
+
 CONs
 ^^^^
 
-*   this solution is specific to S3 storage
+*   only works on Unix-like O.S.
 
-*   possibly the virtualisation is not perfect :  some file-system operations might not
-    behave as expected, e.g. with regard to file permissions or system information
+*   the file-system virtualisation may not be perfect :  some file-system operations
+    might not behave as expected, e.g. with regard to file permissions or system
+    information.
 
-*   it requires user actions *outside* the Python code
+*   it requires user actions *outside* the Python code.
 
-*   the user must manage the mount/umount context
+*   the user must manage the mount/umount context.
+
+*   some similar cloud object-storage platforms are *not* supported.
+    See the s3fs-fuse `Non-Amazon S3`_ docs page for details of those which are.
 
 
 Background Notes and Details
@@ -207,8 +215,9 @@ Background Notes and Details
     cannot create one from a regular Python "open" call -- still less
     when opening a file with an underlying file-format such as netCDF4 or HDF5
     (since these are usually implemented in other languages such as C).
+    Nor can you interrogate file paths or system metadata, e.g. permissions.
 
-    So, the key benefit offered by **s3-fuse** is that all the functions are mapped
+    So, the key benefit offered by **s3-fuse** is that all functions are mapped
     onto regular O.S. file-system calls -- so the file-format never needs to
     know that the data is not a "real" file.
 
@@ -220,13 +229,18 @@ Background Notes and Details
     copying the whole content.  This is obviously essential for efficient use of large
     datasets, e.g. when larger than available memory.
 
-*   It is also possible to use "s3-fuse" to establish the mounts *from within Python*.
+*   It is also possible to use **s3-fuse** to establish the mounts *from within Python*.
     However, we have considered integrating this into Iris and rejected it because of
     unavoidable problems : namely, the "umount problem" (see below).
     For details, see : https://github.com/SciTools/iris/pull/6731
 
 *   "Unmounting" must be done via a shell ``umount`` command, and there is no easy way to
-    guarantee that this succeeds, since it can often get a "target is busy" error, which
-    can only be resolved by delay + retry.
+    guarantee that this succeeds, since it can often get a "target is busy" error.
+
     This "umount problem" is a known problem in Unix generally : see
-    `here <https://stackoverflow.com/questions/tagged/linux%20umount>`_
+    `here <https://stackoverflow.com/questions/tagged/linux%20umount>`_ .
+
+    It can only be resolved by a delay + retry.
+
+
+.. _Non-Amazon S3: https://github.com/s3fs-fuse/s3fs-fuse/wiki/Non-Amazon-S3
