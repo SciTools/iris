@@ -7,6 +7,7 @@
 import enum
 from pathlib import Path
 import re
+from textwrap import indent
 import typing
 
 from docutils import nodes  # type: ignore[import-untyped]
@@ -53,8 +54,7 @@ class DiataxisDirective(Directive):
 
     @staticmethod
     def _indent(text: str) -> str:
-        indented = ["   " + line for line in text.splitlines()]
-        return "\n".join(indented)
+        return indent(text, "   ")
 
     def _needtable(self, types: Diataxis, tags: str) -> str:
         """Construct a single sphinx-needs needtable directive string."""
