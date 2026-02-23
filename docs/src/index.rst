@@ -114,14 +114,6 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: Get Started
-   :maxdepth: 1
-   :hidden:
-
-   user_manual/section_indexes/get_started
-
-
-.. toctree::
    :caption: User Manual
    :maxdepth: 1
    :name: user_manual
@@ -146,14 +138,6 @@ The legacy support resources:
    :hidden:
 
    whatsnew/index
-
-
-.. toctree::
-   :caption: Iris API
-   :maxdepth: 1
-   :hidden:
-
-   Iris API <generated/api/iris>
 
 
 .. todolist::
