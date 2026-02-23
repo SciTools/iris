@@ -4,57 +4,55 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformat.ff.Grid`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
+import pytest
 
 from iris.fileformats._ff import Grid
+from iris.tests.unit.fileformats import MockerMixin
 
 
-class Test___init__(tests.IrisTest):
-    def test_attributes(self):
+class Test___init__:
+    def test_attributes(self, mocker):
         # Ensure the constructor initialises all the grid's attributes
         # correctly, including unpacking values from the REAL constants.
         reals = (
-            mock.sentinel.ew,
-            mock.sentinel.ns,
-            mock.sentinel.first_lat,
-            mock.sentinel.first_lon,
-            mock.sentinel.pole_lat,
-            mock.sentinel.pole_lon,
+            mocker.sentinel.ew,
+            mocker.sentinel.ns,
+            mocker.sentinel.first_lat,
+            mocker.sentinel.first_lon,
+            mocker.sentinel.pole_lat,
+            mocker.sentinel.pole_lon,
         )
         grid = Grid(
-            mock.sentinel.column,
-            mock.sentinel.row,
+            mocker.sentinel.column,
+            mocker.sentinel.row,
             reals,
-            mock.sentinel.horiz_grid_type,
+            mocker.sentinel.horiz_grid_type,
         )
-        self.assertIs(grid.column_dependent_constants, mock.sentinel.column)
-        self.assertIs(grid.row_dependent_constants, mock.sentinel.row)
-        self.assertIs(grid.ew_spacing, mock.sentinel.ew)
-        self.assertIs(grid.ns_spacing, mock.sentinel.ns)
-        self.assertIs(grid.first_lat, mock.sentinel.first_lat)
-        self.assertIs(grid.first_lon, mock.sentinel.first_lon)
-        self.assertIs(grid.pole_lat, mock.sentinel.pole_lat)
-        self.assertIs(grid.pole_lon, mock.sentinel.pole_lon)
-        self.assertIs(grid.horiz_grid_type, mock.sentinel.horiz_grid_type)
+        assert grid.column_dependent_constants is mocker.sentinel.column
+        assert grid.row_dependent_constants is mocker.sentinel.row
+        assert grid.ew_spacing is mocker.sentinel.ew
+        assert grid.ns_spacing is mocker.sentinel.ns
+        assert grid.first_lat is mocker.sentinel.first_lat
+        assert grid.first_lon is mocker.sentinel.first_lon
+        assert grid.pole_lat is mocker.sentinel.pole_lat
+        assert grid.pole_lon is mocker.sentinel.pole_lon
+        assert grid.horiz_grid_type is mocker.sentinel.horiz_grid_type
 
 
-class Test_vectors(tests.IrisTest):
-    def setUp(self):
-        self.xp = mock.sentinel.xp
-        self.xu = mock.sentinel.xu
-        self.yp = mock.sentinel.yp
-        self.yv = mock.sentinel.yv
+class Test_vectors(MockerMixin):
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.xp = mocker.sentinel.xp
+        self.xu = mocker.sentinel.xu
+        self.yp = mocker.sentinel.yp
+        self.yv = mocker.sentinel.yv
 
     def _test_subgrid_vectors(self, subgrid, expected):
         grid = Grid(None, None, (None,) * 6, None)
-        grid._x_vectors = mock.Mock(return_value=(self.xp, self.xu))
-        grid._y_vectors = mock.Mock(return_value=(self.yp, self.yv))
+        grid._x_vectors = self.mocker.Mock(return_value=(self.xp, self.xu))
+        grid._y_vectors = self.mocker.Mock(return_value=(self.yp, self.yv))
         result = grid.vectors(subgrid)
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_1(self):
         # Data on atmospheric theta points.
@@ -103,7 +101,3 @@ class Test_vectors(tests.IrisTest):
     def test_29(self):
         # Orography field for atmospheric LBCs.
         self._test_subgrid_vectors(29, (self.xp, self.yp))
-
-
-if __name__ == "__main__":
-    tests.main()

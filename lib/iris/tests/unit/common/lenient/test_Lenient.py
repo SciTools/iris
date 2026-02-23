@@ -9,7 +9,7 @@ import pytest
 from iris.common.lenient import _LENIENT, _LENIENT_PROTECTED, Lenient
 
 
-@pytest.fixture()
+@pytest.fixture
 def lenient():
     # setup
     state = {key: _LENIENT.__dict__[key] for key in _LENIENT_PROTECTED}

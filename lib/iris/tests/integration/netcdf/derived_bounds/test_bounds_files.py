@@ -38,7 +38,7 @@ def derived_bounds(request):
         yield db
 
 
-@pytest.fixture()
+@pytest.fixture
 def cf_primary_sample_path(tmp_path_factory):
     cdl = """
         netcdf a_new_file {
@@ -190,9 +190,9 @@ def test_load_primary_cf_style(derived_bounds, cf_primary_sample_path):
     assert main_cube.coord_dims(co_P0) == ()
 
 
-@pytest.fixture()
+@pytest.fixture
 def tmp_ncdir(tmp_path_factory):
-    yield tmp_path_factory.mktemp("_temp_netcdf_dir")
+    return tmp_path_factory.mktemp("_temp_netcdf_dir")
 
 
 def test_save_primary_cf_style(

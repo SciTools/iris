@@ -23,7 +23,7 @@ conda:
 
 sphinx:
   configuration: docs/src/conf.py
-  fail_on_warning: false
+  fail_on_warning: true
 
 python:
   install:

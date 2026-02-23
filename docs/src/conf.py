@@ -291,6 +291,7 @@ extlinks = {
         "https://github.com/SciTools/iris/discussions/%s",
         "Discussion #%s",
     ),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 # -- Doctest ("make doctest")--------------------------------------------------

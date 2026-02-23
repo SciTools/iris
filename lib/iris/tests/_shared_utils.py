@@ -537,9 +537,8 @@ def assert_files_equal(test_filename, reference_filename):
     reference_path = get_result_path(reference_filename)
     if _check_reference_file(reference_path):
         fmt = "test file {!r} does not match reference {!r}."
-        assert filecmp.cmp(test_filename, reference_path) and fmt.format(
-            test_filename, reference_path
-        )
+        assert filecmp.cmp(test_filename, reference_path)
+        assert fmt.format(test_filename, reference_path)
     else:
         _ensure_folder(reference_path)
         shutil.copy(test_filename, reference_path)

@@ -22,17 +22,17 @@ from iris.warnings import IrisUserWarning
 # Shareable shape fixtures used in:
 # - util/test_mask_cube_from_shapefile.py
 # - _shapefiles/test_is_geometry_valid.py
-@pytest.fixture()
+@pytest.fixture
 def wgs84_crs():
     return CRS.from_epsg(4326)
 
 
-@pytest.fixture()
+@pytest.fixture
 def osgb_crs():
     return CRS.from_epsg(27700)
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_polygon_geometry():
     # Define the coordinates of a basic rectangle
     min_lon = -90
@@ -44,7 +44,7 @@ def basic_polygon_geometry():
     return box(min_lon, min_lat, max_lon, max_lat)
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_wide_polygon_geometry():
     # Define the coordinates of a basic rectangle
     min_lon = -170
@@ -56,7 +56,7 @@ def basic_wide_polygon_geometry():
     return box(min_lon, min_lat, max_lon, max_lat)
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_multipolygon_geometry():
     # Define the coordinates of a basic rectangle
     min_lon = 0
@@ -73,25 +73,25 @@ def basic_multipolygon_geometry():
     )
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_point_geometry():
     # Define the coordinates of a basic point (lon, lat)
     return Point((-3.476204, 50.727059))
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_line_geometry():
     # Define the coordinates of a basic line
     return LineString([(0, 0), (10, 10)])
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_multiline_geometry():
     # Define the coordinates of a basic line
     return MultiLineString([[(0, 0), (10, 10)], [(20, 20), (30, 30)]])
 
 
-@pytest.fixture()
+@pytest.fixture
 def basic_point_collection():
     # Define the coordinates of a basic collection of points
     # as (lon, lat) tuples, assuming a WGS84 projection.
@@ -109,37 +109,37 @@ def basic_point_collection():
     return points
 
 
-@pytest.fixture()
+@pytest.fixture
 def canada_geometry():
     # Define the coordinates of a rectangle that covers Canada
     return box(-143.5, 42.6, -37.8, 84.0)
 
 
-@pytest.fixture()
+@pytest.fixture
 def bering_sea_geometry():
     # Define the coordinates of a rectangle that covers the Bering Sea
     return box(148.42, 49.1, -138.74, 73.12)
 
 
-@pytest.fixture()
+@pytest.fixture
 def uk_geometry():
     # Define the coordinates of a rectangle that covers the UK
     return box(-10, 49, 2, 61)
 
 
-@pytest.fixture()
+@pytest.fixture
 def invalid_geometry_poles():
     # Define the coordinates of a rectangle that crosses the poles
     return box(-10, -90, 10, 90)
 
 
-@pytest.fixture()
+@pytest.fixture
 def invalid_geometry_bounds():
     # Define the coordinates of a rectangle that is outside the bounds of the coordinate system
     return box(-200, -100, 200, 100)
 
 
-@pytest.fixture()
+@pytest.fixture
 def not_a_valid_geometry():
     # Return an invalid geometry type
     # This is not a valid geometry, e.g., a string
@@ -168,7 +168,7 @@ def test_valid_geometry(test_input, request, wgs84_crs):
 # N.B. error message comparison is done with regex so
 # any parentheses in the error message must be escaped (\)
 @pytest.mark.parametrize(
-    "test_input, errortype, err_message",
+    ("test_input", "errortype", "err_message"),
     [
         (
             "invalid_geometry_poles",
@@ -195,10 +195,10 @@ def test_invalid_geometry(test_input, errortype, err_message, request, wgs84_crs
 
 @pytest.mark.parametrize(
     "test_input",
-    (
+    [
         "basic_wide_polygon_geometry",
         "bering_sea_geometry",
-    ),
+    ],
 )
 def test_warning_geometry(test_input, request, wgs84_crs):
     # Assert that all invalid geometries raise the expected error

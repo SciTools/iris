@@ -104,5 +104,5 @@ class TestDecodeAttribute:
     )
     def test_badvalue__fail(self, badval):
         # It can convert random values to strings, but they mostly won't satisfy.
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=r"Invalid.*"):
             GP_HANDLER.decode_attribute(badval)

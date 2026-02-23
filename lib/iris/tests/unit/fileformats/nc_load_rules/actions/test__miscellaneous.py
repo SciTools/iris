@@ -13,22 +13,13 @@ Tests for rules activation relating to some isolated aspects :
 
 """
 
-import iris.tests as tests  # isort: skip
-
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure
 from iris.fileformats.pp import STASH
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
-class Test__ukmo_attributes(Mixin__nc_load_actions, tests.IrisTest):
+class Test__ukmo_attributes(Mixin__nc_load_actions):
     # Tests for handling of the special UM-specific data-var attributes.
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def _make_testcase_cdl(self, **add_attrs):
         phenom_attrs_string = ""
@@ -55,16 +46,16 @@ netcdf test {{
         cube_processflags = cube.attributes.get("ukmo__process_flags")
 
         if stashcode is not None:
-            self.assertIsInstance(cube_stashattr, STASH)
-            self.assertEqual(str(stashcode), str(cube_stashattr))
+            assert isinstance(cube_stashattr, STASH)
+            assert str(stashcode) == str(cube_stashattr)
         else:
-            self.assertIsNone(cube_stashattr)
+            assert cube_stashattr is None
 
         if processflags is not None:
-            self.assertIsInstance(cube_processflags, tuple)
-            self.assertEqual(set(cube_processflags), set(processflags))
+            assert isinstance(cube_processflags, tuple)
+            assert set(cube_processflags) == set(processflags)
         else:
-            self.assertIsNone(cube_processflags)
+            assert cube_processflags is None
 
     #
     # Testcase routines
@@ -85,8 +76,8 @@ netcdf test {{
             ukmo__um_stash_source=value,
             warning_regex="Invalid content for managed attribute name 'um_stash_source'",
         )
-        self.assertNotIn("STASH", cube.attributes)
-        self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
+        assert "STASH" not in cube.attributes
+        assert cube.attributes["ukmo__um_stash_source"] == value
 
     def test_stash_invalid(self):
         value = "XXX"
@@ -94,8 +85,8 @@ netcdf test {{
             ukmo__um_stash_source="XXX",
             warning_regex="Invalid content for managed attribute name 'um_stash_source'",
         )
-        self.assertNotIn("STASH", cube.attributes)
-        self.assertEqual(cube.attributes["ukmo__um_stash_source"], value)
+        assert "STASH" not in cube.attributes
+        assert cube.attributes["ukmo__um_stash_source"] == value
 
     def test_processflags_single(self):
         cube = self.run_testcase(ukmo__process_flags="this")
@@ -113,17 +104,9 @@ netcdf test {{
         self.check_result(cube, processflags=expected_result)
 
 
-class Test__labels_cellmeasures_ancils(Mixin__nc_load_actions, tests.IrisTest):
+class Test__labels_cellmeasures_ancils(Mixin__nc_load_actions):
     # Tests for some simple rules that translate facts directly into cube data,
     # with no alternative actions, complications or failure modes to test.
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
     def _make_testcase_cdl(
         self,
         include_label=False,
@@ -185,28 +168,28 @@ class Test__labels_cellmeasures_ancils(Mixin__nc_load_actions, tests.IrisTest):
     ):
         label_coords = cube.coords(var_name="v_label")
         if expect_label:
-            self.assertEqual(len(label_coords), 1)
+            assert len(label_coords) == 1
             (coord,) = label_coords
-            self.assertIsInstance(coord, AuxCoord)
-            self.assertEqual(coord.dtype.kind, "U")
+            assert isinstance(coord, AuxCoord)
+            assert coord.dtype.kind == "U"
         else:
-            self.assertEqual(len(label_coords), 0)
+            assert len(label_coords) == 0
 
         cell_measures = cube.cell_measures()
         if expect_cellmeasure:
-            self.assertEqual(len(cell_measures), 1)
+            assert len(cell_measures) == 1
             (cellm,) = cell_measures
-            self.assertIsInstance(cellm, CellMeasure)
+            assert isinstance(cellm, CellMeasure)
         else:
-            self.assertEqual(len(cell_measures), 0)
+            assert len(cell_measures) == 0
 
         ancils = cube.ancillary_variables()
         if expect_ancil:
-            self.assertEqual(len(ancils), 1)
+            assert len(ancils) == 1
             (ancil,) = ancils
-            self.assertIsInstance(ancil, AncillaryVariable)
+            assert isinstance(ancil, AncillaryVariable)
         else:
-            self.assertEqual(len(ancils), 0)
+            assert len(ancils) == 0
 
     def test_label(self):
         cube = self.run_testcase(include_label=True)
@@ -219,7 +202,3 @@ class Test__labels_cellmeasures_ancils(Mixin__nc_load_actions, tests.IrisTest):
     def test_cellmeasure(self):
         cube = self.run_testcase(include_cellmeasure=True)
         self.check_result(cube, expect_cellmeasure=True)
-
-
-if __name__ == "__main__":
-    tests.main()

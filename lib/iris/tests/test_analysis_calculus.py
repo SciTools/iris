@@ -24,7 +24,8 @@ class TestCubeDelta:
             _ = iris.analysis.calculus.cube_delta(cube, "surface_altitude")
         with pytest.raises(iris.exceptions.CoordinateMultiDimError):
             _ = iris.analysis.calculus.cube_delta(cube, "altitude")
-        with pytest.raises(ValueError):
+        msg = "Cannot calculate delta over 'forecast_period' as it has length of 1."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.calculus.cube_delta(cube, "forecast_period")
 
     def test_delta_coord_lookup(self):
@@ -175,7 +176,8 @@ class TestDeltaAndMidpoint:
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with pytest.raises(ValueError):
+        msg = "Cannot take interval differences of a single valued coordinate."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.calculus._construct_delta_coord(lon)
 
     def test_singular_midpoint(self):
@@ -196,7 +198,8 @@ class TestDeltaAndMidpoint:
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with pytest.raises(ValueError):
+        msg = "Cannot take the midpoints of a single valued coordinate."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.calculus._construct_midpoint_coord(lon)
 
 
