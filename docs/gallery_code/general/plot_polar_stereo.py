@@ -5,7 +5,7 @@ Example of a Polar Stereographic Plot
 .. how-to:: Example of a Polar Stereographic Plot
    :tags: topic_plotting
 
-   How to visualise data defined on an alternative map projection.
+   A demonstration of plotting data defined on an alternative map projection.
 
 Demonstrates plotting data that are defined on a polar stereographic
 projection.

@@ -5,7 +5,7 @@ Test Data Showing Inset Plots
 .. how-to:: Test Data Showing Inset Plots
    :tags: topic_plotting;topic_statistics
 
-   How to create inset plots within a main plot; often used to show statistical collapses.
+   How to create inset plots within a main plot.
 
 This example demonstrates the use of a single 3D data cube with time, latitude
 and longitude dimensions to plot a temperature series for a single latitude

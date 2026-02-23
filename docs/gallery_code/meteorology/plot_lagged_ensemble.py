@@ -5,7 +5,7 @@ Seasonal Ensemble Model Plots
 .. how-to:: Seasonal Ensemble Model Plots
    :tags: topic_plotting;topic_data_model;topic_statistics
 
-   How to use Iris in a real-world complex analysis scenario.
+   How to use Iris in a complex real-world analysis scenario.
 
 This example demonstrates the loading of a lagged ensemble dataset from the
 GloSea4 model, which is then used to produce two types of plot:

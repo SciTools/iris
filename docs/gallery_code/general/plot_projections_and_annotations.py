@@ -5,7 +5,7 @@ Plotting in Different Projections
 .. how-to:: Plotting in Different Projections
    :tags: topic_plotting;topic_interoperability
 
-   How to overlay data and graphics in different map projections.
+   How to overlay data from two different map projections and add graphics.
 
 This example shows how to overlay data and graphics in different projections,
 demonstrating various features of Iris, Cartopy and matplotlib.

@@ -121,8 +121,8 @@ data, e.g. computing means, differences, etc.
 topic: ``regrid``
 ^^^^^^^^^^^^^^^^^
 
-Pages about interpolating (1D) and regridding (2D) data from one set of
-coordinates to another. Commonly used to move between different XY grids.
+Pages about regridding (2D to 2D) and interpolation (ND to 1D) of data from one
+set of coordinates to another. Commonly used to move between different XY grids.
 
 .. diataxis-page-list:: topic_regrid
 

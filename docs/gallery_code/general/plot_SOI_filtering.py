@@ -5,7 +5,7 @@ Applying a Filter to a Time-Series
 .. how-to:: Applying a Filter to a Time-Series
    :tags: topic_plotting;topic_statistics
 
-   How to use custom NumPy code for filtering an Iris Cube.
+   How to apply a low pass filter to an Iris Cube via rolling_window().
 
 This example demonstrates low pass filtering a time-series by applying a
 weighted running mean over the time dimension.

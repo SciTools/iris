@@ -5,7 +5,7 @@ Load a Time Series of Data From the NEMO Model
 .. how-to:: Load a Time Series of Data From the NEMO Model
    :tags: topic_plotting;topic_load_save;topic_data_model
 
-   How to combine and visualise multiple files.
+   How to concatenate data from multiple NEMO files.
 
 This example demonstrates how to load multiple files containing data output by
 the NEMO model and combine them into a time series in a single cube. The
