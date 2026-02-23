@@ -9,7 +9,7 @@
 User Manual
 ===========
 
-.. admonition::
+.. hint::
 
    If you are new to Iris: check out :ref:`getting_started_index` first.
 
