@@ -9,12 +9,24 @@
 User Manual
 ===========
 
+.. admonition::
+
+   If you are new to Iris: check out :ref:`getting_started_index` first.
+
 Welcome to the Iris User Manual!
 
-We encourage exploring our User Manual pages using the tabbed sections below,
-which combine the `Diataxis`_ framework and topic-based filters to find content
+This is designed as a searchable index of **all** our user documentation. You
+are encouraged to explore the content using the tabbed sections below, which
+combine the `Diataxis`_ framework and topic-based filters to find content
 best suited to your purpose today. Alternatively, you can use the sidebar to
 navigate by section.
+
+.. tip::
+
+   - :doc:`/user_manual/index`: a searchable index of **all** user
+     documentation.
+   - :doc:`User Guide </user_manual/section_indexes/userguide>`: a linear
+     narrative introduction to Iris' data model and functionality.
 
 .. todo:
    Should the sections also be offered as another Diataxis tab? This would allow
