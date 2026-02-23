@@ -1,5 +1,5 @@
 .. tutorial:: Controlling Merge and Concatenate
-   :tags: topic_data_model;topic_customisation
+   :tags: topic_slice_combine;topic_customisation;topic_load_save
 
    A lesson in fine-grain control of combining Iris Cubes.
 

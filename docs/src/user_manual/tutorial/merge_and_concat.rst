@@ -1,5 +1,5 @@
 .. tutorial:: Merge and Concatenate
-   :tags: topic_data_model
+   :tags: topic_slice_combine
 
    A lesson in the various ways to combine Cubes along different dimensional axes.
 

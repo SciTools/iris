@@ -5,7 +5,7 @@
 """Cube functions for iteration in step.
 
 .. z_reference:: iris.iterate
-   :tags: topic_data_model
+   :tags: topic_slice_combine
 
    API reference
 """

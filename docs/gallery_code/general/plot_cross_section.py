@@ -3,7 +3,7 @@ Cross Section Plots
 ===================
 
 .. how-to:: Cross Section Plots
-   :tags: topic_plotting;topic_data_model
+   :tags: topic_plotting;topic_slice_combine
 
    How to visualise cross-sections of multi-dimensional Cubes.
 

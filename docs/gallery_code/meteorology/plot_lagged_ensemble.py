@@ -3,7 +3,7 @@ Seasonal Ensemble Model Plots
 =============================
 
 .. how-to:: Seasonal Ensemble Model Plots
-   :tags: topic_plotting;topic_data_model;topic_statistics
+   :tags: topic_plotting;topic_data_model;topic_statistics;topic_slice_combine
 
    How to use Iris in a complex real-world analysis scenario.
 

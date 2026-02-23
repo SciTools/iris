@@ -5,7 +5,7 @@
 """Experimental module for using some GeoVista operations with Iris cubes.
 
 .. z_reference:: iris.experimental.geovista
-   :tags: topic_experimental;topic_interoperability
+   :tags: topic_experimental;topic_interoperability;topic_plotting
 
    API reference
 """

@@ -3,7 +3,7 @@ Global Average Annual Temperature Plot
 ======================================
 
 .. how-to:: Global Average Annual Temperature Plot
-   :tags: topic_plotting;topic_data_model;topic_statistics
+   :tags: topic_plotting;topic_slice_combine;topic_statistics
 
    How to spatially constrain data, compute statistics and visualise a comparison.
 

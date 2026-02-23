@@ -1,5 +1,5 @@
 .. tutorial:: Subsetting a Cube
-   :tags: topic_data_model
+   :tags: topic_slice_combine
 
    A lesson on subsetting Iris Cubes by extraction, masking, and iteration.
 

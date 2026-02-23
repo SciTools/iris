@@ -6,7 +6,7 @@
 """Utility operations specific to unstructured data.
 
 .. z_reference:: iris.mesh.utils
-   :tags: topic_data_model;topic_mesh
+   :tags: topic_data_model;topic_mesh;topic_slice_combine
 
    API reference
 """

@@ -3,7 +3,7 @@ Oceanographic Profiles and T-S Diagrams
 =======================================
 
 .. how-to:: Oceanographic Profiles and T-S Diagrams
-   :tags: topic_plotting;topic_data_model
+   :tags: topic_plotting;topic_slice_combine
 
    How to use Iris' scatter plots for visualising oceanographic profile data.
 

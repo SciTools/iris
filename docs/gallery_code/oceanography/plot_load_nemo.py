@@ -3,7 +3,7 @@ Load a Time Series of Data From the NEMO Model
 ==============================================
 
 .. how-to:: Load a Time Series of Data From the NEMO Model
-   :tags: topic_plotting;topic_load_save;topic_data_model
+   :tags: topic_plotting;topic_load_save;topic_data_model;topic_slice_combine
 
    How to concatenate data from multiple NEMO files.
 

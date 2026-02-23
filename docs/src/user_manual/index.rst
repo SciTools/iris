@@ -75,6 +75,19 @@ such as :class:`~iris.coords.Coord` and :class:`~iris.mesh.MeshXY`.
 
 .. diataxis-page-list:: topic_data_model
 
+
+.. _topic_slice_combine:
+
+topic: ``slice_combine``
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+Pages about subsetting and combining :class:`~iris.cube.Cube` and
+:class:`~iris.cube.CubeList` data. Examples include slicing, indexing, merging,
+concatenating.
+
+.. diataxis-page-list:: topic_slice_combine
+
+
 .. _topic_load_save:
 
 topic: ``load_save``
@@ -84,6 +97,7 @@ Pages about reading from files into the data model, and writing from the data
 model to files.
 
 .. diataxis-page-list:: topic_load_save
+
 
 .. _topic_lazy_data:
 
@@ -95,14 +109,17 @@ Dask. See :term:`Lazy Data`.
 
 .. diataxis-page-list:: topic_lazy_data
 
+
 .. _topic_plotting:
 
 topic: ``plotting``
 ^^^^^^^^^^^^^^^^^^^
 
-Pages about Iris' use of :term:`Cartopy` to plot :class:`~iris.cube.Cube` data.
+Pages about Iris' use of :term:`Cartopy` or :ref:`ugrid geovista` to plot
+:class:`~iris.cube.Cube` data.
 
 .. diataxis-page-list:: topic_plotting
+
 
 .. _topic_statistics:
 
@@ -116,6 +133,7 @@ data, e.g. computing means, differences, etc.
 
 .. diataxis-page-list:: topic_statistics
 
+
 .. _topic_regrid:
 
 topic: ``regrid``
@@ -126,6 +144,7 @@ set of coordinates to another. Commonly used to move between different XY grids.
 
 .. diataxis-page-list:: topic_regrid
 
+
 .. _topic_customisation:
 
 topic: ``customisation``
@@ -134,6 +153,7 @@ topic: ``customisation``
 Pages about configurable Iris behaviour.
 
 .. diataxis-page-list:: topic_customisation
+
 
 .. _topic_troubleshooting:
 
@@ -145,6 +165,7 @@ best handle them.
 
 .. diataxis-page-list:: topic_troubleshooting
 
+
 .. _topic_experimental:
 
 topic: ``experimental``
@@ -153,6 +174,7 @@ topic: ``experimental``
 Pages about API that is still subject to change.
 
 .. diataxis-page-list:: topic_experimental
+
 
 .. _topic_interoperability:
 
@@ -163,6 +185,7 @@ Pages about using Iris alongside other libraries and tools.
 
 .. diataxis-page-list:: topic_interoperability
 
+
 .. _topic_mesh:
 
 topic: ``mesh``
@@ -171,6 +194,7 @@ topic: ``mesh``
 Pages about Iris' support for unstructured mesh data.
 
 .. diataxis-page-list:: topic_mesh
+
 
 .. _topic_about:
 

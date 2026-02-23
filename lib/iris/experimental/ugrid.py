@@ -6,7 +6,7 @@
 """Legacy import location for mesh support.
 
 .. z_reference:: iris.experimental.ugrid
-   :tags: topic_experimental;topic_mesh
+   :tags: topic_experimental;topic_mesh;topic_data_model
 
    API reference
 

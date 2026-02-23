@@ -5,7 +5,7 @@
 """Miscellaneous utility functions.
 
 .. z_reference:: iris.util
-   :tags: topic_data_model
+   :tags: topic_data_model;topic_slice_combine
 
    API reference
 """
