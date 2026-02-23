@@ -62,11 +62,11 @@ def _get_dimensional_metadata(
         values = np.array([i.to_pydatetime() for i in values])
 
     # Convert datetime objects to Iris' current datetime representation.
-    if (isinstance(values.dtype, object)) and (
-        all(isinstance(i, (datetime.datetime, cftime.datetime)) for i in values)
-    ):
-        units = Unit("hours since epoch", calendar=calendar)
-        values = units.date2num(values)
+    if values.dtype == object:
+        dt_types = (datetime.datetime, cftime.datetime)
+        if all([isinstance(i, dt_types) for i in values]):
+            units = Unit("hours since epoch", calendar=calendar)
+            values = units.date2num(values)
 
     values = np.array(values)
 
