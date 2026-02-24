@@ -17,6 +17,7 @@ Extra information on specific technical issues.
    missing_data_handling
    dataless_cubes
    netcdf_io
+   s3_io
    dask_best_practices/index
    ugrid/index
    which_regridder_to_use
