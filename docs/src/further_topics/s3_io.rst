@@ -108,7 +108,7 @@ which should explain what you need here.
 Before use (before each Python invocation)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Activate your Python environment, which then gives access to the **s3-fuse** Linux
-command -- which, somewhat confusingly, is called ``s3fs``.
+command "s3fs".
 
 Map your S3 bucket "into" the chosen empty directory -- e.g.
 
@@ -130,11 +130,16 @@ Map your S3 bucket "into" the chosen empty directory -- e.g.
     If you reboot, the mount will disappear.  If you logout and login again, there can
     be problems : ideally you should avoid this by always "unmounting" (see below).
 
+.. note::
+
+    The command for mounting an s3-fuse filesystem is ``s3fs`` - this should not be
+    confused with the similarly named s3fs python package.
+
 
 Within Python code
 ^^^^^^^^^^^^^^^^^^
-Access files stored as S3 objects "under" the S3 url, appearing as files under the
-You can now access objects at the remote S3 URL via the mount point on your local file system you just created with `s3fs`, e.g.
+You can now access objects at the remote S3 URL via the mount point on your local file
+system you just created with `s3fs`, e.g.
 
 .. code-block:: python
 
@@ -196,6 +201,11 @@ CONs
 ^^^^
 
 *   only works on Unix-like O.S.
+
+*   requires the "fuse" kernel module to be supported in your O.S.
+    This is usually installed by default, but may not always be.
+    See `'fuse' kernel module <https://www.kernel.org/doc/html/next/filesystems/fuse.html>`_
+    for more detail.
 
 *   the file-system virtualisation may not be perfect :  some file-system operations
     might not behave as expected, e.g. with regard to file permissions or system
