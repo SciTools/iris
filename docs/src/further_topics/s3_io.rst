@@ -154,7 +154,7 @@ the objects have been closed and there are no terminals open in that directory.
 
 .. note::
 
-    The ``umount`` is a standard Unix command.  It may not always succeed, in which case
+    The ``umount`` command is a standard Unix command.  It may not always succeed, in which case
     some kind of retry may be needed -- see detail notes below.
 
     The mount created will not survive a system reboot, nor does it function correctly
