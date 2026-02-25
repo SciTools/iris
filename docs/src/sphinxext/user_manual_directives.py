@@ -27,13 +27,11 @@ logger = sphinx_logging.getLogger(__name__)
 class Diataxis(enum.StrEnum):
     """The Diataxis-inspired sphinx-needs directives configured in conf.py."""
 
-    # TODO: should user manual section indexes also get their own Diataxis tab?
-    #  This would allow topic-based filtering, and allow all pages to be found
-    #  through the same route.
     ALL = "all"
     TUTORIAL = "tutorial"
     EXPLANATION = "explanation"
     HOW_TO = "how-to"
+    # z_ prefix to force to the end of sorted lists.
     REFERENCE = "z_reference"
 
 
@@ -65,12 +63,8 @@ class DiataxisDirective(Directive):
             ":sort: type",
             ":filter_warning: No pages for this filter.",
         ]
-        # TODO: should the table somehow include what section the page belongs
-        #  to? This isn't standard sphinx-needs metadata so would need
-        #  `needs_extra_options` in conf.py.
         if types is not Diataxis.ALL:
             options.append(f":types: {types}")
-        # TODO: is looking for `topic_all` brittle hard-coding?
         if tags != "topic_all":
             options.append(f":tags: {tags}")
         options_str = "\n".join(options)
@@ -91,8 +85,6 @@ class DiataxisDirective(Directive):
         tab_item_title = tab_item_title.removeprefix("z_")
         tab_item_title = tab_item_title.capitalize()
 
-        # TODO: should there be a caption for ALL as well? Even if that's just
-        #  for visual consistency.
         caption = DIATAXIS_CAPTIONS.get(diataxis, "")
         content = [
             # sync means all tab-sets on this page switch tabs together.

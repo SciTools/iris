@@ -28,11 +28,6 @@ navigate by section.
    - :doc:`User Guide </user_manual/section_indexes/userguide>`: a linear
      narrative introduction to Iris' data model and functionality.
 
-.. todo:
-   Should the sections also be offered as another Diataxis tab? This would allow
-   topic-based filtering, and allow all pages to be found through the same
-   route.
-
 .. comment:
    The tree structure for user_manual is specified here. As mentioned in the
    text, we prefer readers to use the tabbed sections below, so the toctree is
