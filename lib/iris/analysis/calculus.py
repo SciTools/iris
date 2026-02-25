@@ -5,7 +5,7 @@
 """Calculus operations on :class:`iris.cube.Cube` instances.
 
 .. z_reference:: iris.analysis.calculus
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    API reference
 

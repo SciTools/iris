@@ -1,5 +1,5 @@
 .. z_reference:: Glossary
-   :tags: topic_data_model;topic_about;topic_load_save;topic_lazy_data;topic_plotting;topic_statistics;topic_regrid;topic_customisation;topic_troubleshooting;topic_slice_combine
+   :tags: topic_data_model;topic_about;topic_load_save;topic_lazy_data;topic_plotting;topic_maths_stats;topic_regrid;topic_customisation;topic_troubleshooting;topic_slice_combine
 
    Information on common terms used within Iris documentation.
 

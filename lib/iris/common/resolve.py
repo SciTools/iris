@@ -5,7 +5,7 @@
 """Resolve metadata common between two cubes.
 
 .. z_reference:: iris.common.resolve
-   :tags: topic_data_model;topic_statistics
+   :tags: topic_data_model;topic_maths_stats
 
    API reference
 

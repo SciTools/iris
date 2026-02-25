@@ -3,7 +3,7 @@ Fitting a Polynomial
 ====================
 
 .. how-to:: Fitting a Polynomial
-   :tags: topic_plotting;topic_statistics;topic_data_model
+   :tags: topic_plotting;topic_maths_stats;topic_data_model
 
    How to compute and plot a polynomial fit to 1D data in an Iris cube.
 

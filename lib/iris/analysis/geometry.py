@@ -5,7 +5,7 @@
 """Various utilities related to geometric operations.
 
 .. z_reference:: iris.analysis.geometry
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    API reference
 

@@ -1,5 +1,5 @@
 .. tutorial:: Cube Maths
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    A lesson in mathematical operations on Iris Cubes.
 

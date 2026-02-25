@@ -3,7 +3,7 @@ Test Data Showing Inset Plots
 =============================
 
 .. how-to:: Test Data Showing Inset Plots
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to create inset plots within a main plot.
 

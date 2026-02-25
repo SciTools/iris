@@ -116,17 +116,15 @@ Pages about Iris' use of :term:`Cartopy` or :ref:`ugrid geovista` to plot
 .. diataxis-page-list:: topic_plotting
 
 
-.. _topic_statistics:
+.. _topic_maths_stats:
 
-topic: ``statistics``
-^^^^^^^^^^^^^^^^^^^^^
-
-.. todo: not sure about this topic - very unclear scope.
+topic: ``maths_stats``
+^^^^^^^^^^^^^^^^^^^^^^
 
 Pages about statistical and mathematical operations on :class:`~iris.cube.Cube`
 data, e.g. computing means, differences, etc.
 
-.. diataxis-page-list:: topic_statistics
+.. diataxis-page-list:: topic_maths_stats
 
 
 .. _topic_regrid:

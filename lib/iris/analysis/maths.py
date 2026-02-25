@@ -5,7 +5,7 @@
 """Basic mathematical and statistical operations.
 
 .. z_reference:: iris.analysis.maths
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    API reference
 """

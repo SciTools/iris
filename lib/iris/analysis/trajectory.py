@@ -5,7 +5,7 @@
 """Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.
 
 .. z_reference:: iris.analysis.trajectory
-   :tags: topic_statistics;topic_regrid
+   :tags: topic_maths_stats;topic_regrid
 
    API reference
 """

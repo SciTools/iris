@@ -3,7 +3,7 @@ Plotting Wind Direction Using Barbs
 ===================================
 
 .. how-to:: Plotting Wind Direction Using Barbs
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to use Iris to derive and plot wind barbs.
 

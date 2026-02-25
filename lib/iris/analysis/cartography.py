@@ -5,7 +5,7 @@
 """Various utilities and numeric transformations relevant to cartography.
 
 .. z_reference:: iris.analysis.cartography
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    API reference
 """

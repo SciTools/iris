@@ -5,7 +5,7 @@
 """Statistical operations between cubes.
 
 .. z_reference:: iris.analysis.stats
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    API reference
 """

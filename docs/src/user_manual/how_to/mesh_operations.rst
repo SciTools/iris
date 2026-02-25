@@ -1,5 +1,5 @@
 .. how-to:: Working with Mesh Data
-   :tags: topic_mesh;topic_load_save;topic_plotting;topic_regrid;topic_statistics
+   :tags: topic_mesh;topic_load_save;topic_plotting;topic_regrid;topic_maths_stats
 
    How to perform common Iris operations on unstructured mesh data.
 

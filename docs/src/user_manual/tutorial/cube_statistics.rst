@@ -1,5 +1,5 @@
 .. tutorial:: Cube Statistics
-   :tags: topic_statistics
+   :tags: topic_maths_stats
 
    A lesson in statistical operations on Iris Cubes.
 

@@ -5,7 +5,7 @@
 """A package providing :class:`iris.cube.Cube` analysis support.
 
 .. z_reference:: iris.analysis
-   :tags: topic_statistics;topic_regrid
+   :tags: topic_maths_stats;topic_regrid
 
    API reference
 

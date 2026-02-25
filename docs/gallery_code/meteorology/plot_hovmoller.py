@@ -3,7 +3,7 @@ Hovmoller Diagram of Monthly Surface Temperature
 ================================================
 
 .. how-to:: Hovmoller Diagram of Monthly Surface Temperature
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to collapse and plot Cubes to create a Hovmoller diagram.
 

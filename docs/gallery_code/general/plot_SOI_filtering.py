@@ -3,7 +3,7 @@ Applying a Filter to a Time-Series
 ==================================
 
 .. how-to:: Applying a Filter to a Time-Series
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to apply a low pass filter to an Iris Cube via rolling_window().
 

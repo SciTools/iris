@@ -3,7 +3,7 @@ Zonal Mean Diagram of Air Temperature
 =====================================
 
 .. how-to:: Zonal Mean Diagram of Air Temperature
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to use aligned plots to visualise collapsed dimensional statistics.
 

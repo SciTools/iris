@@ -5,7 +5,7 @@
 """Provides the infrastructure to support lenient client/service behaviour.
 
 .. z_reference:: iris.common.lenient
-   :tags: topic_data_model;topic_statistics
+   :tags: topic_data_model;topic_maths_stats
 
    API reference
 """

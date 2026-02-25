@@ -1,5 +1,5 @@
 .. explanation:: Lenient Cube Maths
-   :tags: topic_data_model;topic_statistics
+   :tags: topic_data_model;topic_maths_stats
 
    Read about the options for handling metadata differences during Cube maths.
 

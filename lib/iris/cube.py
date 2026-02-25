@@ -6,7 +6,7 @@
 """Classes for representing multi-dimensional data with metadata.
 
 .. z_reference:: iris.cube
-   :tags: topic_data_model;topic_lazy_data;topic_statistics;topic_regrid;topic_slice_combine
+   :tags: topic_data_model;topic_lazy_data;topic_maths_stats;topic_regrid;topic_slice_combine
 
    API reference
 """

@@ -3,7 +3,7 @@ Colouring Anomaly Data With Logarithmic Scaling
 ===============================================
 
 .. how-to:: Colouring Anomaly Data With Logarithmic Scaling
-   :tags: topic_plotting;topic_statistics
+   :tags: topic_plotting;topic_maths_stats
 
    How to visualise values using a logarithmic scale.
 
