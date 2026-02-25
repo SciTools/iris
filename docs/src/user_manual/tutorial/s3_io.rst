@@ -1,3 +1,8 @@
+.. tutorial:: Loading From and Saving To S3 Buckets
+   :tags: topic_load_save
+
+   A lesson on using s3-fuse with Iris to load/save data from/to S3 buckets.
+
 .. _s3_io:
 
 Loading From and Saving To S3 Buckets
