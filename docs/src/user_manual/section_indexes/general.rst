@@ -16,6 +16,7 @@ filters, as seen in the :doc:`../index` top page.
     ../explanation/iris_philosophy
     ../explanation/missing_data_handling
     ../explanation/netcdf_io
+    ../tutorial/s3_io
     ../explanation/um_files_loading
     ../explanation/ux_guide
     ../explanation/which_regridder_to_use
