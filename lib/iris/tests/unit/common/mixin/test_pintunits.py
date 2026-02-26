@@ -1,7 +1,10 @@
 from datetime import datetime
 
+import cf_units
 import numpy as np
+import pytest
 
+import iris.common.mixin
 from iris.common.mixin import CfpintUnit
 
 
@@ -32,3 +35,87 @@ def test_calendar():
     #   .. but it is cf_units behaviour + currently required for correct netcdf saving
     #   it also means that calendar is not checked in unit/string eq (!!!)
     assert str(unit) == "days since 1970-01-01"
+
+
+_UNKNOWN_NAMES = iris.common.mixin.CfpintUnit._IRIS_EXTRA_CATEGORIES["unknown"]
+_NOUNIT_NAMES = iris.common.mixin.CfpintUnit._IRIS_EXTRA_CATEGORIES["no_unit"]
+
+
+class TestFromUnit:
+    """Test CfpintUnit creation from various sources."""
+
+    def test_none_unknown(self):
+        unit = CfpintUnit.from_unit(None)
+        assert unit.category == "unknown"
+        assert unit.calendar is None
+        assert unit == "unknown"
+
+    @pytest.mark.parametrize("name", _UNKNOWN_NAMES)
+    def test_str_unknown(self, name):
+        unit = CfpintUnit.from_unit(None)
+        assert unit.category == "unknown"
+        assert unit.calendar is None
+        assert all(unit == form for form in _UNKNOWN_NAMES)  # string equivalence
+
+    def test_cfunits_unknown(self):
+        cfunit = cf_units.Unit(None)
+        unit = CfpintUnit.from_unit(None)
+        assert unit.is_unknown()
+
+    @pytest.mark.parametrize("name", _NOUNIT_NAMES)
+    def test_str_nounit(self, name):
+        unit = CfpintUnit.from_unit(name)
+        assert unit.category == "no_unit"
+        assert unit.calendar is None
+        assert all(unit == form for form in _NOUNIT_NAMES)  # string equivalence
+
+    def test_cfunits_nounit(self):
+        cfunit = cf_units.Unit("no_unit")
+        unit = CfpintUnit.from_unit(cfunit)
+        assert unit.is_no_unit()
+
+    def test_str(self):
+        unit = CfpintUnit.from_unit("m")
+        assert unit == "metres"  # string equivalence
+        assert unit.calendar is None
+        assert unit.category == "regular"
+
+    def test_cfunits(self):
+        cfunit = cf_units.Unit("m")
+        unit = CfpintUnit.from_unit(cfunit)
+        assert unit == "metre"
+
+    def test_str_date(self):
+        unit = CfpintUnit.from_unit("days since 1970-01-01")
+        assert unit == "days since 1970-01-01"
+        assert unit.category == "regular"
+        assert unit.is_datelike()
+        assert unit.calendar == "standard"
+
+    @pytest.mark.skip("from_unit does not support calendar (yet?)")
+    def test_str_date_calendar(self):
+        unit = CfpintUnit.from_unit("days since 1970-01-01", calendar="360_day")
+        # YUCK!! cf_units compatibility
+        # TODO: this needs to change
+        assert unit == "days since 1970-01-01"
+        assert unit.category == "regular"
+        assert unit.is_datelike()
+        assert unit.calendar == "360_day"
+
+    def test_cfunits_date(self):
+        cfunit = cf_units.Unit("hours since 1800-03-09 11:11")
+        unit = CfpintUnit.from_unit(cfunit)
+        # NB time ref is reproduced as-is
+        # TODO: should get normalised
+        assert unit == "hours since 1800-03-09 11:11"
+        assert unit.is_datelike()
+        assert unit.calendar == "standard"
+
+    def test_cfunits_date_calendar(self):
+        cfunit = cf_units.Unit("hours since 1800-03-09 11:11", calendar="365_day")
+        unit = CfpintUnit.from_unit(cfunit)
+        # NB time ref is reproduced as-is
+        # TODO: should get normalised
+        assert unit == "hours since 1800-03-09 11:11"
+        assert unit.is_datelike()
+        assert unit.calendar == "365_day"
