@@ -679,7 +679,7 @@ needs_default_layout = "focus"
 # The `tags_links` jinja template displays a list of tags where every topic_*
 #  tag is a link to the relevant section in user_manual/index.rst.
 needs_template_folder = "_templates"
-needs_global_options = {
+needs_fields = {
     "post_template": {"default": "tags_links"},
 }
 
