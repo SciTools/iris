@@ -122,11 +122,11 @@ This document explains the changes made to Iris for this release
    from unittest to pytest. Iris is now also ruff-PT compliant, save for PT019.
    (:issue:`6212`, :pull:`6939`)
 
-#. `@hsteptoe`_ and ... (reviewer) updated chained assignment useage within the tests 
+#. `@hsteptoe`_ and `@ESadek-MO`_ (reviewer) updated chained assignment useage within the tests 
    associated with :mod:`iris.pandas` to reflect changes in pandas v3 `New pandas v3 copy behaviour`_. 
    (:pull:`6948`, :issue:`6761`)
 
-#. `@hsteptoe`_ and ... (reviewer) added static type hinting to :mod:`iris.pandas`. (:pull:`6948`)
+#. `@hsteptoe`_ and `@ESadek-MO`_ (reviewer) added static type hinting to :mod:`iris.pandas`. (:pull:`6948`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
