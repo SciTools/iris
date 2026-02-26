@@ -19,7 +19,7 @@ import cftime
 import numpy as np
 import numpy.ma as ma
 import pandas as pd
-from pandas import Index as pandasIndex
+from pandas import Index as pd_index
 
 import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
@@ -36,7 +36,7 @@ except ImportError:
 
 def _get_dimensional_metadata(
     name: str,
-    values: np.ndarray | DatetimeIndex | pandasIndex,
+    values: np.ndarray | DatetimeIndex | pd_index,
     calendar: Optional[str] = None,
     dm_class: Optional[AuxCoord | DimCoord] = None,
 ) -> AuxCoord | DimCoord:
@@ -88,7 +88,7 @@ def _get_dimensional_metadata(
 def _add_iris_coord(
     cube: Cube,
     name: str,
-    points: np.ndarray | DatetimeIndex | pandasIndex,
+    points: np.ndarray | DatetimeIndex | pd_index,
     dim: int,
     calendar: Optional[str] = None,
 ) -> None:
@@ -497,7 +497,9 @@ def as_cubes(
             #  for this object. _series_index_unique should have ensured
             #  that we are indeed removing the duplicates.
             shaped = content.reshape(cube_shape)
-            indices: list = [0] * len(cube_shape)
+            indices: list = [0] * len(
+                cube_shape
+            )  # static typing added to aid mypy type checking
             for dim in dimensions:
                 indices[dim] = slice(None)
             collapsed = shaped[tuple(indices)]
