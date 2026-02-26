@@ -6,7 +6,6 @@
 
 from typing import ClassVar
 
-from geovista import Transform
 import numpy as np
 import pytest
 
