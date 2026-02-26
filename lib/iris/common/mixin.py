@@ -9,10 +9,12 @@ from __future__ import annotations
 from collections.abc import Mapping
 from datetime import timedelta
 from functools import wraps
-from typing import Any, Literal
+from typing import Any, TypeAlias
 import warnings
 
 import cftime
+
+from iris.util import is_masked
 
 # TODO: use a FUTURE flag to control this
 try:
@@ -22,6 +24,7 @@ except ImportError:
 
 try:
     import cfpint
+    import pint
 except ImportError:
     cfpint = None
 
@@ -251,11 +254,23 @@ if cfpint is not None:
         # TODO: ideally we would get rid of this class altogether.
         @classmethod
         def from_unit(cls, unit):
-            """Cast anything into the standard Unit class for use within Iris."""
+            """Cast anything into the standard Unit class for use within Iris.
+
+            Unit may be a string,
+            """
             if isinstance(unit, CfpintUnit):
                 result = unit
+            elif isinstance(unit, cf_units.Unit):
+                # We need a special case for cf_unit conversion.
+                # Although we fallback to str() for native Pint units ('else' below),
+                # we can't do that for cf-units **because the str() omits calendars**.
+                result = CfpintUnit(str(unit), calendar=unit.calendar)
+            elif unit is None:
+                # A special case, so we can support "None" -> "unknown" for object
+                # creation with no given units.
+                result = CfpintUnit("unknown")
             else:
-                # A crude str-based conversion -- works for cf_units too ?
+                # E.G. probably a string, or a native Pint unit: take the str()
                 result = CfpintUnit(str(unit))
             return result
 
@@ -287,26 +302,72 @@ if cfpint is not None:
                 result = self.category
             else:
                 result = super().__str__()
+                if self.is_datelike() or self.is_time():
+                    # Recognise short time units + replace with long forms
+                    #  -- weird, as most Pint units work "the other way",
+                    #       e.g. "m" -> "metre" !
+                    #  -- but probably due to the cfxarray-like "short_formatter"
+                    #       - see "cfpint._cfarray_units_like.short_formatter"
+                    # TODO: this should probably be fixed **in cfpint** ?
+                    result = self._make_unitstr_cftimelike(result)
+            return result
+
+        # remove <> from reprs, since CDL seems to use this
+        #  (? so calendars are recorded, due to not appearing in str(date-unit) ?)
+        # TODO: remove this
+        _REPR_NO_LTGT = True
+
+        def __repr__(self):
+            """Correct the repr.
+
+            For fuller backwards-compatibility with cf_units,
+            mostly because assert_CML (i.e. the xml methods) need it.
+            TODO: remove this
+            """
+            if self.category != "regular":
+                result = f"<Unit('{self.category}')>"
+            elif self.dimensionless:
+                # Cfpint fixes this for "str" but not "repr"
+                result = f"<Unit('1')>"
+            else:
+                result = super().__repr__()
+
+            if self._REPR_NO_LTGT:
+                # Just strip off the "<>" wrapping.  Result should then be equivalent
+                if len(result) and result[0] == "<":
+                    result = result[1:]
+                if len(result) and result[-1] == ">":
+                    result = result[:-1]
+
+            if self.is_datelike() or self.is_time():
+                # TODO: this should probably be fixed **in cfpint** ?
+                result = self._make_unitstr_cftimelike(result)
             return result
 
         def convert(self, arraylike, other):
+            is_masked = np.ma.isMaskedArray(arraylike)
+            if is_masked:
+                arraylike = arraylike.data
             quantity = arraylike * self
             quantity = quantity.to(str(other))
             # TODO: I *think* this is the appropriate way to strip the units.
-            return quantity.m
+            result = quantity.m
+            if is_masked:
+                result = np.ma.masked_array(result, arraylike.mask)
+            return result
 
-        def _cftime_unit(self) -> str:
-            """Make a cftime-compatible unit string."""
-            if not self.is_datelike():
-                raise ValueError(f"Called 'num2date' on a non-datelike unit: {self!r}.")
-            units = str(self)
+        def _make_unitstr_cftimelike(self, units: str) -> str:
+            """Make a unit string cftime-compatible."""
             # Some kludges needed for now!
-            # TODO: ideally, fix how cfpoint units represent h/m/s/d
+            # TODO: to aid use of cftime, this fix **should be in cfpint***
+            #   - ideally, fix how cfpint units represent h/m/s/d
+            #   - if *not* fixed in basic units registry, at least fix str(), as here
             reps = {"s": "seconds", "m": "minutes", "h": "hours", "d": "days"}
             for char, name in reps.items():
-                chars = char + " "
-                if units.startswith(chars):
-                    units = units.replace(chars, name + " ", 1)
+                if units == char:
+                    units = name
+                elif units.startswith(char + " "):
+                    units = units.replace(char + " ", name + " ", 1)
             return units
 
         def num2date(
@@ -367,11 +428,18 @@ if cfpint is not None:
             But here, it is explicitly re-implemented using only cftime.
             Ultimately, we will lose this, and users should use cftime explicitly.
             """
-            units = self._cftime_unit()
+            if not self.is_datelike():
+                raise ValueError(f"Called 'num2date' on a non-datelike unit: {self!r}.")
+            units_str = str(self)
+            # TODO: this should probably be fixed **in cfpint** ?
+            units_str = self._make_unitstr_cftimelike(units_str)
+            calendar = self.calendar
+            if calendar is None:
+                calendar = "standard"
             result = cftime.num2date(
-                times=time_value,
-                units=units,
-                calendar=self.calendar,
+                time_value,
+                units=units_str,
+                calendar=calendar,
                 only_use_cftime_datetimes=only_use_cftime_datetimes,
                 only_use_python_datetimes=only_use_python_datetimes,
             )
@@ -411,8 +479,12 @@ if cfpint is not None:
             But here, it is explicitly re-implemented using only cftime.
             Ultimately, we will lose this, and users should use cftime explicitly.
             """
-            units = self._cftime_unit()
-            result = cftime.date2num(date, units, self.calendar)
+            if not self.is_datelike():
+                raise ValueError(f"Called 'date2num' on a non-datelike unit: {self!r}.")
+            units_str = str(self)
+            # TODO: this should probably be fixed **in cfpint** ?
+            units_str = self._make_unitstr_cftimelike(units_str)
+            result = cftime.date2num(date, units_str, self.calendar)
             return result
 
         def is_udunits(self):
@@ -425,8 +497,11 @@ if cfpint is not None:
         def is_no_unit(self):
             return self.category == "no_unit"
 
-        def is_reference_time(self):
+        def is_time_reference(self):
             return self.is_datelike()
+
+        def is_long_time_interval(self):
+            return False
 
         def is_convertible(self, other):
             if not isinstance(other, cfpint.Unit):
@@ -445,7 +520,29 @@ if cfpint is not None:
             return self.dimensionality in (pressure_dims, height_dims)
 
 
+# FOR NOW: insist on pint units
 _DEFAULT_UNITCLASS: type = CfpintUnit
+
+# And force pint too.
+# TODO: since we may have seen problems with doing this dynamically, this could affect
+#  the whole attempt to divide functions between Iris and Cfpint functionality
+
+
+# See: https://pint.readthedocs.io/en/stable/advanced/custom-registry-class.html#custom-quantity-and-unit-class
+class IrispintRegistry(pint.registry.UnitRegistry):
+    Quantity: TypeAlias = pint.Quantity
+    Unit: TypeAlias = CfpintUnit
+
+
+# Create our own registry, based on our own UnitRegistry subclass
+from cfpint._cfarray_units_like import make_registry
+
+IRIS_PINT_REGISTRY: IrispintRegistry = make_registry(
+    IrispintRegistry
+)  # include all 'normal' features
+pint.set_application_registry(IRIS_PINT_REGISTRY)
+pint.application_registry.default_system = "SI"
+pint.application_registry.default_format = "cfu"
 
 
 def default_units_class():
@@ -526,13 +623,13 @@ class CFVariableMixin:
         self._metadata_manager.var_name = name
 
     @property
-    def units(self) -> cf_units.Unit:
+    def units(self) -> cf_units.Unit | cfpint.Unit:
         """The S.I. unit of the object."""
         return self._metadata_manager.units
 
     @units.setter
-    def units(self, unit: cf_units.Unit | str | None) -> None:
-        unit = cf_units.as_unit(unit)
+    def units(self, unit: cf_units.Unit | cfpint.Unit | str | None) -> None:
+        # unit = cf_units.as_unit(unit)
         self._metadata_manager.units = default_units_class().from_unit(unit)
 
     @property
