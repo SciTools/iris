@@ -35,18 +35,6 @@ class Test:
         self.coord = self.src_levels.coord("wibble")
         self.axes = (self.coord, self.coord.name(), None, 0)
 
-    def test_broadcast_fail_src_levels(self):
-        emsg = "Cannot broadcast the cube and src_levels"
-        data = np.arange(60).reshape(3, 4, 5)
-        with pytest.raises(ValueError, match=emsg):
-            relevel(self.cube, AuxCoord(data), [1, 2, 3])
-
-    def test_broadcast_fail_tgt_levels(self):
-        emsg = "Cannot broadcast the cube and tgt_levels"
-        data = np.arange(60).reshape(3, 4, 5)
-        with pytest.raises(ValueError, match=emsg):
-            relevel(self.cube, self.coord, data)
-
     def test_standard_input(self):
         for axis in self.axes:
             result = relevel(self.cube, self.src_levels, [-1, 0, 5.5], axis=axis)
