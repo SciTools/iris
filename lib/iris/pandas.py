@@ -497,9 +497,9 @@ def as_cubes(
             #  for this object. _series_index_unique should have ensured
             #  that we are indeed removing the duplicates.
             shaped = content.reshape(cube_shape)
-            indices: list = [0] * len(
-                cube_shape
-            )  # static typing added to aid mypy type checking
+            # Static typing `indices` needed to avoid mypy call-overload error
+            # from assuming int instead of list for later slicing
+            indices: list = [0] * len(cube_shape)
             for dim in dimensions:
                 indices[dim] = slice(None)
             collapsed = shaped[tuple(indices)]
