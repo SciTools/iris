@@ -15,11 +15,9 @@ User Manual
 
 Welcome to the Iris User Manual!
 
-This is designed as a searchable index of **all** our user documentation. You
-are encouraged to explore the content using the tabbed sections below, which
-combine the `Diataxis`_ framework and topic-based filters to find content
-best suited to your purpose today. Alternatively, you can use the sidebar to
-navigate by section.
+This is designed as a searchable index of **all** our user documentation. Try
+the Topic and `Diataxis`_ filters below to find the information you need today.
+Alternatively, you can use the sidebar to navigate by section.
 
 .. tip::
 

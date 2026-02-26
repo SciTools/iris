@@ -1,9 +1,13 @@
 General
 =======
 
-The pages below do not belong to any other User Manual section. For the best
-experience: we encourage you to explore the User Manual via topic or `Diataxis`_
-filters, as seen in the :doc:`../index` top page.
+Below are any pages not belonging to any other User Manual section.
+
+.. tip::
+
+    To maximise discoverability of **all** pages, the primary design of the
+    User Manual is based on navigating with the Topic and `Diataxis`_
+    filters in the top page: :doc:`../index`.
 
 .. toctree::
     :maxdepth: 1
