@@ -1,3 +1,5 @@
+.. include:: /common_links.inc
+
 .. comment:
    now that User Manual is the official top-level, and the User Guide is a
    sub-section, the original labels have been relocated here.
@@ -195,6 +197,3 @@ topic: ``about``
 Pages about the non-code aspects of Iris: philosophy, installation, etc.
 
 .. diataxis-page-list:: topic_about
-
-
-.. _Diataxis: https://diataxis.fr/
