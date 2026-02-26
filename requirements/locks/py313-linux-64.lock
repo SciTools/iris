@@ -214,7 +214,6 @@ https://conda.anaconda.org/conda-forge/noarch/pygments-2.19.2-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.3.2-pyhcf101f3_0.conda#3687cc0b82a8b4c17e1f0eb7e47163d5
 https://conda.anaconda.org/conda-forge/noarch/pyshp-3.0.3-pyhd8ed1ab_0.conda#c138c7aaa6a10b5762dcd92247864aff
 https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyha55dd90_7.conda#461219d1a5bd61342293efa2c0c90eac
-https://conda.anaconda.org/conda-forge/noarch/python-tzdata-2025.3-pyhd8ed1ab_0.conda#7ead57407430ba33f681738905278d03
 https://conda.anaconda.org/conda-forge/linux-64/python-xxhash-3.6.0-py313heab5758_1.conda#82df5d372f2796c389fcbe5104664f5a
 https://conda.anaconda.org/conda-forge/noarch/pytz-2025.2-pyhd8ed1ab_0.conda#bc8e3267d44011051f2eb14d22fb0960
 https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py313h3dea7bd_1.conda#f256753e840c3cd3766488c9437a8f8b
@@ -293,7 +292,7 @@ https://conda.anaconda.org/conda-forge/linux-64/libegl-devel-1.7.0-ha4b6fd6_2.co
 https://conda.anaconda.org/conda-forge/linux-64/libgdal-core-3.12.2-hc2c0581_1.conda#c8ca404aeab8e32c9d6d82a82aeb6511
 https://conda.anaconda.org/conda-forge/linux-64/mo_pack-0.3.1-py313h29aa505_2.conda#ad53894d278895bf15c8fc324727d224
 https://conda.anaconda.org/conda-forge/linux-64/netcdf-fortran-4.6.2-nompi_h90de81b_102.conda#f4c67a50ac3008a578530e7fc32f3d98
-https://conda.anaconda.org/conda-forge/linux-64/pandas-2.3.3-py313h08cd8bf_2.conda#8a69ea71fdd37bfe42a28f0967dbb75a
+https://conda.anaconda.org/conda-forge/linux-64/pandas-3.0.1-py313hbfd7664_0.conda#1c8807728f0333228766dee685394e16
 https://conda.anaconda.org/conda-forge/linux-64/pykdtree-1.4.3-py313h29aa505_2.conda#e3a598d20bf2fa7b03a771e9e4471be9
 https://conda.anaconda.org/conda-forge/noarch/pytest-9.0.2-pyhcf101f3_0.conda#2b694bad8a50dc2f712f5368de866480
 https://conda.anaconda.org/conda-forge/linux-64/pywavelets-1.9.0-py313h29aa505_2.conda#60f5d1c039da10fe89a530cc93ea50ac
