@@ -102,7 +102,7 @@ This document explains the changes made to Iris for this release
 #. `@pp-mo`_ added a page on how to access datafiles in S3 buckets.
    (:issue:`6374`, :pull:`6951`)
 
-#. `@trexfeathers`_, `@stephenworsley`_ and `@tkknight`_ reorganised **all**
+#. `@trexfeathers`_, `@stephenworsley`_, `@ESadek-MO`_ and `@tkknight`_ reorganised **all**
    user documentation pages into a new structure: :doc:`/user_manual/index`.
    This restructure is to maximise discoverability of the available pages, as
    well as embracing the `Diataxis`_ framework for better engagement with user
