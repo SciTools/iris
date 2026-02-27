@@ -30,7 +30,7 @@ class Test__lazy_stream_data:
         mock_dataset = mock.MagicMock()
         mock_dataset_class = mock.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
-        target1 = "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
+        target1 = "iris.fileformats.netcdf.saver.bytecoding_datasets.DatasetWrapper"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"

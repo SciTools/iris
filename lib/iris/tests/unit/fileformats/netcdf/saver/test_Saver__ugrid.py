@@ -401,12 +401,12 @@ class TestSaveUgrid__cube(tests.IrisTest):
         # into the iris.fileformats.netcdf.saver. Also we want to check that the
         # compression kwargs are passed into the NetCDF4 createVariable method
         patch = self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         # No need to patch this NetCDF4 variable to compensate for the previous patch
         # on createVariable, which doesn't actually create the variable.
         self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         cube = make_cube(var_name=(var_name := "a"))
         compression_kwargs = {
@@ -785,10 +785,10 @@ class TestSaveUgrid__mesh(tests.IrisTest):
 
         """
         patch = self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         self.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         mesh = make_mesh()
         compression_kwargs = {

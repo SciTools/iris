@@ -35,7 +35,8 @@ from iris.coord_systems import (
 )
 from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.fileformats.netcdf import Saver
+from iris.fileformats.netcdf import _bytecoding_datasets as ds_wrappers
 from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
 
@@ -219,7 +220,7 @@ class Test_write(tests.IrisTest):
 
     def test_zlib(self):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
+        api = self.patch("iris.fileformats.netcdf.saver.bytecoding_datasets")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         # Mock the apparent dtype of mocked variables, to avoid an error.
@@ -230,7 +231,7 @@ class Test_write(tests.IrisTest):
         # a fill-value report on a non-compliant variable in a non-file (!)
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
-        dataset = api.DatasetWrapper.return_value
+        dataset = api.EncodedDataset.return_value
         create_var_call = mock.call(
             "air_pressure_anomaly",
             np.dtype("float32"),
@@ -270,8 +271,12 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                tgt = (
+                    "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                    ".EncodedDataset.createVariable"
+                )
                 createvar_spy = self.patch(
-                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    tgt,
                     # Use 'wraps' to allow the patched methods to function as normal
                     #  - the patch object just acts as a 'spy' on its calls.
                     wraps=saver._dataset.createVariable,
@@ -306,8 +311,12 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                tgt = (
+                    "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                    ".EncodedDataset.createVariable"
+                )
                 createvar_spy = self.patch(
-                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    tgt,
                     # Use 'wraps' to allow the patched methods to function as normal
                     #  - the patch object just acts as a 'spy' on its calls.
                     wraps=saver._dataset.createVariable,
@@ -342,8 +351,12 @@ class Test_write(tests.IrisTest):
 
         with self.temp_filename(suffix=".nc") as nc_path:
             with Saver(nc_path, "NETCDF4", compute=False) as saver:
+                tgt = (
+                    "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                    ".EncodedDataset.createVariable"
+                )
                 createvar_spy = self.patch(
-                    "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+                    tgt,
                     # Use 'wraps' to allow the patched methods to function as normal
                     #  - the patch object just acts as a 'spy' on its calls.
                     wraps=saver._dataset.createVariable,
@@ -382,7 +395,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertFalse(ds.dimensions["dim0"].isunlimited())
             self.assertFalse(ds.dimensions["dim1"].isunlimited())
             ds.close()
@@ -392,7 +405,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=None)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             for dim in ds.dimensions.values():
                 self.assertFalse(dim.isunlimited())
             ds.close()
@@ -414,7 +427,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=unlimited_dimensions)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
@@ -423,7 +436,7 @@ class Test_write(tests.IrisTest):
             coords = [cube.coord(dim) for dim in unlimited_dimensions]
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=coords)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             for dim in unlimited_dimensions:
                 self.assertTrue(ds.dimensions[dim].isunlimited())
             ds.close()
@@ -434,7 +447,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             res = ds.getncattr("dimensions")
             ds.close()
             self.assertEqual(res, "something something_else")
@@ -456,7 +469,7 @@ class Test_write(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             # Confirm that the only dimension is the one denoting the number
             #  of bounds - have successfully saved the 2D bounds array into 1D.
             self.assertEqual(["bnds"], list(ds.dimensions.keys()))
@@ -496,7 +509,7 @@ class Test__create_cf_bounds(tests.IrisTest):
         saver._ensure_valid_dtype.return_value = mock.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = mock.MagicMock(spec=_thread_safe_nc.VariableWrapper)
+        var = mock.MagicMock(spec=ds_wrappers.EncodedVariable)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
@@ -537,7 +550,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.valid_range, vrange)
             ds.close()
 
@@ -549,7 +562,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.valid_min, 1)
             ds.close()
 
@@ -561,7 +574,7 @@ class Test_write__valid_x_cube_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.valid_max, 2)
             ds.close()
 
@@ -581,7 +594,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
             ds.close()
 
@@ -593,7 +606,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_min, 1)
             ds.close()
 
@@ -605,7 +618,7 @@ class Test_write__valid_x_coord_attributes(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             self.assertArrayEqual(ds.variables["longitude"].valid_max, 2)
             ds.close()
 
@@ -637,7 +650,7 @@ class Test_write_fill_value(tests.IrisTest):
         with self.temp_filename(".nc") as nc_path:
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, **kwargs)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             (var,) = [
                 var
                 for var in ds.variables.values()
@@ -714,7 +727,7 @@ class _Common__check_attribute_compliance:
             )
         )
         patch = mock.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             dataset_class,
         )
         _ = patch.start()
