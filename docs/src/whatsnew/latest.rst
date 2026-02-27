@@ -24,7 +24,10 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. We've had a makeover! ✨ All user documentation pages have been reorganised
+   into a new structure: :doc:`/user_manual/index`. This restructure is to
+   maximise discoverability of the available pages, as well as embracing the
+   `Diataxis`_ framework for better engagement with user needs going forward.
 
 
 ✨ Features
@@ -98,6 +101,12 @@ This document explains the changes made to Iris for this release
 
 #. `@pp-mo`_ added a page on how to access datafiles in S3 buckets.
    (:issue:`6374`, :pull:`6951`)
+
+#. `@trexfeathers`_, `@stephenworsley`_ and `@tkknight`_ reorganised **all**
+   user documentation pages into a new structure: :doc:`/user_manual/index`.
+   This restructure is to maximise discoverability of the available pages, as
+   well as embracing the `Diataxis`_ framework for better engagement with user
+   needs going forward. (:issue:`6511`, :pull:`6868`)
 
 
 💼 Internal
