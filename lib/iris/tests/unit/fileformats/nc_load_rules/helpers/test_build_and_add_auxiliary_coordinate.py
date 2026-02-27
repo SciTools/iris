@@ -171,7 +171,7 @@ class TestDtype(tests.IrisTest):
     def setUp(self):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
-        cf_data = mock.MagicMock(_FillValue=None)
+        cf_data = mock.MagicMock(_FillValue=None, shape=points.shape)
         cf_data.chunking = mock.MagicMock(return_value=points.shape)
 
         self.engine = mock.Mock(
