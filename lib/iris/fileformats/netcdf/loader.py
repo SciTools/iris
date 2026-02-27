@@ -293,7 +293,7 @@ def _get_cf_var_data(cf_var):
             # Make a data-proxy that mimics array access and can fetch from the file.
             # Note: Special handling needed for "variable length string" types which
             # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
-            if cf_var.dtype.kind == "U":
+            if getattr(cf_var.dtype, "kind", None) == "U":
                 # Special handling for "string variables".
                 fill_value = ""
             else:
