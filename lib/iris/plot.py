@@ -261,7 +261,7 @@ def _broadcast_2d(u, v):
 
 def _string_coord_axis_tick_labels(string_axes, axes=None):
     """Apply tick labels for string coordinates."""
-    ax = axes if axes else plt.gca()
+    ax = axes or plt.gca()
     for axis, ticks in string_axes.items():
         # Define a tick formatter. This will assign a label to all ticks
         # located precisely on  an integer in range(len(ticks)) and assign
@@ -295,7 +295,7 @@ def _invert_yaxis(v_coord, axes=None):
     axes : optional
 
     """
-    axes = axes if axes else plt.gca()
+    axes = axes or plt.gca()
     yaxis_is_inverted = axes.yaxis_inverted()
     if not yaxis_is_inverted and isinstance(v_coord, iris.coords.Coord):
         attr_pve = v_coord.attributes.get("positive")
@@ -480,7 +480,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             u, v = _broadcast_2d(u, v)
 
         axes = kwargs.pop("axes", None)
-        draw_method = getattr(axes if axes else plt, draw_method_name)
+        draw_method = getattr(axes or plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
         # Apply tick labels for string coordinates.
@@ -571,7 +571,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         u, v = _broadcast_2d(u, v)
 
         axes = kwargs.pop("axes", None)
-        draw_method = getattr(axes if axes else plt, draw_method_name)
+        draw_method = getattr(axes or plt, draw_method_name)
         if arg_func is not None:
             args, kwargs = arg_func(u, v, data, *args, **kwargs)
             result = draw_method(*args, **kwargs)
@@ -827,7 +827,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
             u = _shift_plot_sections(u_object, u, v)
 
     axes = kwargs.pop("axes", None)
-    draw_method = getattr(axes if axes else plt, draw_method_name)
+    draw_method = getattr(axes or plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v, *args, **kwargs)
         result = draw_method(*args, **kwargs)
@@ -875,7 +875,7 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object1, kwargs)
 
     axes = kwargs.pop("axes", None)
-    draw_method = getattr(axes if axes else plt, draw_method_name)
+    draw_method = getattr(axes or plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v1, v2, *args, **kwargs)
         result = draw_method(*args, **kwargs)
@@ -1072,7 +1072,7 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwar
 
     # Draw the contour lines/filled contours.
     axes = kwargs.pop("axes", None)
-    plotfn = getattr(axes if axes else plt, draw_method_name)
+    plotfn = getattr(axes or plt, draw_method_name)
     return plotfn(*new_args, **kwargs)
 
 
@@ -1850,7 +1850,7 @@ def citation(text, figure=None, axes=None):
             figure = plt.gcf()
         anchor = AnchoredText(text, prop=dict(size=6), frameon=True, loc=4)
         anchor.patch.set_boxstyle("round, pad=0, rounding_size=0.2")
-        axes = axes if axes else figure.gca()
+        axes = axes or figure.gca()
         axes.add_artist(anchor)
 
 
