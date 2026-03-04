@@ -126,7 +126,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@ukmo-ccbunney`_ updated CI to support Python 3.14
    inline with `SPEC0 Minimum Supported Dependencies`_. Note: `pyvista` (and
    hence `geovista`) is not yet compatible with Python 3.14, so
-   `:module:~iris.experimental.geovista` is currently only available for
+   :mod:`iris.experimental.geovista` is currently only available for
    Python \<3.14.  (:pull:`6816`, :issue:`6775`)
 
 #. `@ESadek-MO`_, `@trexfeathers`_, `@bjlittle`_, `@HGWright`_, `@pp-mo`_,
