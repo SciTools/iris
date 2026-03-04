@@ -3155,8 +3155,8 @@ class CellMethod(iris.util._OrderedHashable):
         elif isinstance(coords, str):
             _coords.append(BaseMetadata.token(coords) or default_name)
         else:
-            normalise = (
-                lambda coord: coord.name(token=True)
+            normalise = lambda coord: (
+                coord.name(token=True)
                 if isinstance(coord, Coord)
                 else BaseMetadata.token(coord) or default_name
             )

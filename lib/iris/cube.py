@@ -4929,8 +4929,10 @@ x            -              -
         # coordinate dimension.
         shared_coords = list(
             filter(
-                lambda coord_: coord_ not in groupby_coords
-                and dimension_to_groupby in self.coord_dims(coord_),
+                lambda coord_: (
+                    coord_ not in groupby_coords
+                    and dimension_to_groupby in self.coord_dims(coord_)
+                ),
                 self.dim_coords + self.aux_coords,
             )
         )

@@ -210,13 +210,15 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 # Certain members never participate in strict equivalence, so
                 # are filtered out.
                 fields = filter(
-                    lambda field: field
-                    not in (
-                        "circular",
-                        "location_axis",
-                        "node_dimension",
-                        "edge_dimension",
-                        "face_dimension",
+                    lambda field: (
+                        field
+                        not in (
+                            "circular",
+                            "location_axis",
+                            "node_dimension",
+                            "edge_dimension",
+                            "face_dimension",
+                        )
                     ),
                     self._fields,
                 )

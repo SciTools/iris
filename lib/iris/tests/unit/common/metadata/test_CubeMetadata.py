@@ -814,7 +814,7 @@ class Test_difference(MixinSplitattrsMatrixTests):
 
     def test_op_different__none(self, fieldname, leniency, mocker):
         # One side has field=value, and the other field=None, both strict + lenient.
-        if fieldname in ("attributes",):
+        if fieldname == "attributes":
             # These cannot properly be set to 'None'.  Tested elsewhere.
             pytest.skip()
 
