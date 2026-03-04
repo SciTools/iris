@@ -141,8 +141,8 @@ This document explains the changes made to Iris for this release
 #. `@hsteptoe`_ and `@ESadek-MO`_ (reviewer) added static type hinting to :mod:`iris.pandas`. (:pull:`6948`)
 
 #. `@ukmo-ccbunney`_ changed formatting of numpy scalars attributes when generating a
-    Cube/Coord summary to use ``str`` representation instead of ``repr``.
-    (:pull:`6966`, :issue:`6692`)
+   Cube/Coord summary to use ``str`` representation instead of ``repr``.
+   (:pull:`6966`, :issue:`6692`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
