@@ -155,64 +155,62 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         # grid mapping types.
         #
 
-        # Those which require 'latitude of projection origin'
-        if mapping_type_name in (
-            hh.CF_GRID_MAPPING_TRANSVERSE,
-            hh.CF_GRID_MAPPING_STEREO,
-            hh.CF_GRID_MAPPING_GEOSTATIONARY,
-            hh.CF_GRID_MAPPING_VERTICAL,
-        ):
-            latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
-            g_string += f"""
-                {g_varname}:{latpo_name} = 0.0 ;
-            """
-        # Those which require 'longitude of projection origin'
-        if mapping_type_name in (
-            hh.CF_GRID_MAPPING_STEREO,
-            hh.CF_GRID_MAPPING_GEOSTATIONARY,
-            hh.CF_GRID_MAPPING_VERTICAL,
-        ):
-            lonpo_name = hh.CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
-            g_string += f"""
-                {g_varname}:{lonpo_name} = 0.0 ;
-            """
-        # Those which require 'longitude of central meridian'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_TRANSVERSE,):
-            latcm_name = hh.CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
-            g_string += f"""
-                {g_varname}:{latcm_name} = 0.0 ;
-            """
-        # Those which require 'perspective point height'
-        if mapping_type_name in (
-            hh.CF_GRID_MAPPING_VERTICAL,
-            hh.CF_GRID_MAPPING_GEOSTATIONARY,
-        ):
-            pph_name = hh.CF_ATTR_GRID_PERSPECTIVE_HEIGHT
-            g_string += f"""
-                {g_varname}:{pph_name} = 600000.0 ;
-            """
-        # Those which require 'sweep angle axis'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_GEOSTATIONARY,):
-            saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
-            g_string += f"""
-                {g_varname}:{saa_name} = "y" ;
-            """
-        # Polar stereo needs a special 'latitude of projection origin', a
-        # 'straight_vertical_longitude_from_pole' and a `standard_parallel` or
-        # `scale_factor_at_projection_origin` so treat it specially
-        if mapping_type_name in (hh.CF_GRID_MAPPING_POLAR,):
-            latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
-            g_string += f"""
-                {g_varname}:{latpo_name} = 90.0 ;
-            """
-            svl_name = hh.CF_ATTR_GRID_STRAIGHT_VERT_LON
-            g_string += f"""
-                {g_varname}:{svl_name} = 0.0 ;
-            """
-            stanpar_name = hh.CF_ATTR_GRID_STANDARD_PARALLEL
-            g_string += f"""
-                {g_varname}:{stanpar_name} = 1.0 ;
-            """
+        match mapping_type_name:
+            # Those which require 'latitude of projection origin'
+            case (
+                hh.CF_GRID_MAPPING_TRANSVERSE
+                | hh.CF_GRID_MAPPING_STEREO
+                | hh.CF_GRID_MAPPING_GEOSTATIONARY
+                | hh.CF_GRID_MAPPING_VERTICAL
+            ):
+                latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
+                g_string += f"""
+                    {g_varname}:{latpo_name} = 0.0 ;
+                """
+            # Those which require 'longitude of projection origin'
+            case (
+                hh.CF_GRID_MAPPING_STEREO
+                | hh.CF_GRID_MAPPING_GEOSTATIONARY
+                | hh.CF_GRID_MAPPING_VERTICAL
+            ):
+                lonpo_name = hh.CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
+                g_string += f"""
+                    {g_varname}:{lonpo_name} = 0.0 ;
+                """
+            # Those which require 'longitude of central meridian'
+            case hh.CF_GRID_MAPPING_TRANSVERSE:
+                latcm_name = hh.CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
+                g_string += f"""
+                    {g_varname}:{latcm_name} = 0.0 ;
+                """
+            # Those which require 'perspective point height'
+            case hh.CF_GRID_MAPPING_VERTICAL | hh.CF_GRID_MAPPING_GEOSTATIONARY:
+                pph_name = hh.CF_ATTR_GRID_PERSPECTIVE_HEIGHT
+                g_string += f"""
+                    {g_varname}:{pph_name} = 600000.0 ;
+                """
+            # Those which require 'sweep angle axis'
+            case hh.CF_GRID_MAPPING_GEOSTATIONARY:
+                saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
+                g_string += f"""
+                    {g_varname}:{saa_name} = "y" ;
+                """
+            # Polar stereo needs a special 'latitude of projection origin', a
+            # 'straight_vertical_longitude_from_pole' and a `standard_parallel` or
+            # `scale_factor_at_projection_origin` so treat it specially
+            case hh.CF_GRID_MAPPING_POLAR:
+                latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
+                g_string += f"""
+                    {g_varname}:{latpo_name} = 90.0 ;
+                """
+                svl_name = hh.CF_ATTR_GRID_STRAIGHT_VERT_LON
+                g_string += f"""
+                    {g_varname}:{svl_name} = 0.0 ;
+                """
+                stanpar_name = hh.CF_ATTR_GRID_STANDARD_PARALLEL
+                g_string += f"""
+                    {g_varname}:{stanpar_name} = 1.0 ;
+                """
 
         # y-coord values
         if yco_values is None:
