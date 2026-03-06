@@ -64,7 +64,7 @@ Features
   a fixed surface type of 107.
 
 * Added several new helper functions for file-save customisation,
-  (see also : :doc:`Saving Iris Cubes </userguide/saving_iris_cubes>`):
+  (see also : :doc:`Saving Iris Cubes </user_manual/tutorial/saving_iris_cubes>`):
 
   * :meth:`iris.fileformats.grib.as_pairs`
   * :meth:`iris.fileformats.grib.as_messages`
@@ -193,8 +193,8 @@ Deprecations
 Documentation
 =============
 
-* A chapter on :doc:`saving iris cubes </userguide/saving_iris_cubes>` has been
-  added to the :doc:`user guide </userguide/index>`.
+* A chapter on :doc:`saving iris cubes </user_manual/tutorial/saving_iris_cubes>` has been
+  added to the :doc:`User Guide </user_manual/section_indexes/userguide>`.
 
 * Added script and documentation for building a what's new page from
   developer-submitted contributions.  See

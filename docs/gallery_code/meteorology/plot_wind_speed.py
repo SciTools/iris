@@ -2,6 +2,11 @@
 Plotting Wind Direction Using Quiver
 ====================================
 
+.. how-to:: Plotting Wind Direction Using Quiver
+   :tags: topic_plotting
+
+   How to use Iris to plot wind quivers.
+
 This example demonstrates using quiver to plot wind speed contours and wind
 direction arrows from wind vector component input data. The vector components
 are co-located in space in this case.

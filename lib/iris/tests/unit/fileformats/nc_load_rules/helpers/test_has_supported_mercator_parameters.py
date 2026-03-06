@@ -7,26 +7,24 @@ has_supported_mercator_parameters`.
 
 """
 
-from unittest import mock
+import re
 import warnings
 
 from iris.fileformats._nc_load_rules.helpers import has_supported_mercator_parameters
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-def _engine(cf_grid_var, cf_name):
-    cf_group = {cf_name: cf_grid_var}
-    cf_var = mock.Mock(cf_group=cf_group)
-    return mock.Mock(cf_var=cf_var)
+class _EngineMixin(MockerMixin):
+    def engine(self, cf_grid_var, cf_name):
+        cf_group = {cf_name: cf_grid_var}
+        cf_var = self.mocker.Mock(cf_group=cf_group)
+        return self.mocker.Mock(cf_var=cf_var)
 
 
-class TestHasSupportedMercatorParameters(tests.IrisTest):
-    def test_valid_base(self):
+class TestHasSupportedMercatorParameters(_EngineMixin):
+    def test_valid_base(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             longitude_of_projection_origin=-90,
             false_easting=0,
@@ -35,15 +33,15 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_mercator_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_false_easting_northing(self):
+    def test_valid_false_easting_northing(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             longitude_of_projection_origin=-90,
             false_easting=15,
@@ -52,15 +50,15 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_mercator_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_standard_parallel(self):
+    def test_valid_standard_parallel(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             longitude_of_projection_origin=-90,
             false_easting=0,
@@ -69,15 +67,15 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_mercator_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_scale_factor(self):
+    def test_valid_scale_factor(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             longitude_of_projection_origin=0,
             false_easting=0,
@@ -86,17 +84,17 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_mercator_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_invalid_scale_factor_and_standard_parallel(self):
+    def test_invalid_scale_factor_and_standard_parallel(self, mocker):
         # Scale factor and standard parallel cannot both be specified for
         # Mercator projections
         cf_name = "mercator"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             longitude_of_projection_origin=0,
             false_easting=0,
@@ -106,19 +104,16 @@ class TestHasSupportedMercatorParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
             is_valid = has_supported_mercator_parameters(engine, cf_name)
 
-        self.assertFalse(is_valid)
-        self.assertEqual(len(warns), 1)
-        self.assertRegex(
-            str(warns[0]),
-            'both "scale_factor_at_projection_origin" and "standard_parallel"',
+        assert not is_valid
+        assert len(warns) == 1
+
+        msg = re.escape(
+            'both "scale_factor_at_projection_origin" and "standard_parallel"'
         )
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert re.search(msg, str(warns[0]))

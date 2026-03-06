@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Regridding functions.
 
+.. z_reference:: iris.experimental.regrid
+   :tags: topic_experimental;topic_regrid
+
+   API reference
+
 Notes
 -----
 .. deprecated:: 3.2.0

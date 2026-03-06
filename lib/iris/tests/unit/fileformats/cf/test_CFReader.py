@@ -301,32 +301,34 @@ class Test_build_cf_groups__formula_terms:
         self.orography.dimensions = ["lat", "wibble"]
         with pytest.warns(match="Ignoring formula terms variable"):
             cf_group = CFReader("dummy").cf_group
-            group = cf_group.promoted
-            assert list(group.keys()) == ["orography"]
-            assert group["orography"].cf_data == self.orography
+        group = cf_group.promoted
+        assert list(group.keys()) == ["orography"]
+        assert group["orography"].cf_data == self.orography
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
         with pytest.warns(match=r"Ignoring variable x"):
             cf_group = CFReader("dummy").cf_group
-            promoted = ["x", "orography"]
-            group = cf_group.promoted
-            assert set(group.keys()) == set(promoted)
-            for name in promoted:
-                assert group[name].cf_data == getattr(self, name)
+        promoted = ["x", "orography"]
+        group = cf_group.promoted
+        assert set(group.keys()) == set(promoted)
+        for name in promoted:
+            assert group[name].cf_data == getattr(self, name)
 
     def test_promoted_auxiliary_ignore(self):
         self.wibble = netcdf_variable("wibble", "lat wibble", np.float64)
         self.variables["wibble"] = self.wibble
         self.orography.coordinates = "wibble"
+
         with pytest.warns(match="Ignoring variable wibble") as warns:
             cf_group = CFReader("dummy").cf_group.promoted
-            promoted = ["wibble", "orography"]
-            assert set(cf_group.keys()) == set(promoted)
-            for name in promoted:
-                assert cf_group[name].cf_data == getattr(self, name)
-                # we should have got 2 warnings
-            assert len(warns.list) == 2
+
+        promoted = ["wibble", "orography"]
+        assert set(cf_group.keys()) == set(promoted)
+        for name in promoted:
+            assert cf_group[name].cf_data == getattr(self, name)
+        # we should have got 2 warnings
+        assert len(warns.list) == 2
 
 
 class Test_build_cf_groups__ugrid:

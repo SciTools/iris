@@ -3,7 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Provides an interface to manage URI scheme support in iris."""
+"""Provides an interface to manage URI scheme support in iris.
+
+.. z_reference:: iris.io
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import collections
 from collections import OrderedDict
@@ -54,7 +60,7 @@ def run_callback(callback, cube, field, filename):
     the caller of this function should handle this case.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -452,7 +458,7 @@ def save(source, target, saver=None, **kwargs):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube, CubeList

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Wrapper for animating iris cubes using iris or matplotlib plotting functions.
 
+.. z_reference:: iris.experimental.animate
+   :tags: topic_experimental;topic_plotting
+
+   API reference
+
 Notes
 -----
 .. deprecated:: 3.4.0

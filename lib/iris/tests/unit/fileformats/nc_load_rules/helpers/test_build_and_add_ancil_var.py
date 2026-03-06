@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers.build_and_add_ancil_var`."""
 
-from unittest import mock
-
 import numpy as np
 import pytest
 
@@ -18,25 +16,25 @@ from iris.loading import LOAD_PROBLEMS
 
 
 @pytest.fixture
-def mock_engine():
-    return mock.Mock(
-        cube=mock.Mock(),
-        cf_var=mock.Mock(dimensions=("foo", "bar")),
+def mock_engine(mocker):
+    return mocker.Mock(
+        cube=mocker.Mock(),
+        cf_var=mocker.Mock(dimensions=("foo", "bar")),
         filename="DUMMY",
         cube_parts=dict(ancillary_variables=[]),
     )
 
 
 @pytest.fixture
-def mock_cf_av_var(monkeypatch, mock_engine):
+def mock_cf_av_var(mocker, monkeypatch, mock_engine):
     data = np.arange(6)
-    output = mock.Mock(
+    output = mocker.Mock(
         spec=CFAncillaryDataVariable,
         dimensions=("foo",),
         scale_factor=1,
         add_offset=0,
         cf_name="wibble",
-        cf_data=mock.MagicMock(chunking=mock.Mock(return_value=None), spec=[]),
+        cf_data=mocker.MagicMock(chunking=mocker.Mock(return_value=None), spec=[]),
         filename=mock_engine.filename,
         standard_name=None,
         long_name="wibble",

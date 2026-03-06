@@ -100,18 +100,21 @@ class Test_rolling_window:
     def test_window_too_short(self):
         # raise an error if the window length is less than 1
         a = np.empty([5])
-        with pytest.raises(ValueError):
+        msg = "`window` must be at least 1."
+        with pytest.raises(ValueError, match=msg):
             rolling_window(a, window=0)
 
     def test_window_too_long(self):
         # raise an error if the window length is longer than the
         # corresponding array dimension
         a = np.empty([7, 5])
-        with pytest.raises(ValueError):
+        msg = "`window` is too long."
+        with pytest.raises(ValueError, match=msg):
             rolling_window(a, window=6, axis=1)
 
     def test_invalid_step(self):
         # raise an error if the step between windows is less than 1
         a = np.empty([5])
-        with pytest.raises(ValueError):
+        msg = "`step` must be at least 1."
+        with pytest.raises(ValueError, match=msg):
             rolling_window(a, step=0)

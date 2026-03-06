@@ -21,9 +21,9 @@ classifiers = [
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3 :: Only",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering",
     "Topic :: Scientific/Engineering :: Atmospheric Science",
@@ -50,7 +50,7 @@ keywords = [
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 name = "scitools-iris"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [project.urls]
 Code = "https://github.com/SciTools/iris"
@@ -64,7 +64,7 @@ Issues = "https://github.com/SciTools/iris/issues"
 extend-exclude = [
     "_ff_cross_references.py",
     "um_cf_map.py",
-    "docs/src/sphinxext",
+    "docs/src/sphinxext/api_rst_formatting.py",
     "tools",
 ]
 line-length = 88
@@ -111,6 +111,11 @@ known-first-party = ["iris"]
     "D205",  # 1 blank line required between summary line and description
     "D401",  # 1 First line of docstring should be in imperative mood
 ]
+
+# Deprecated unittest tests
+
+"lib/iris/tests/__init__.py" = ["PT"]
+"lib/iris/tests/unit/tests/test_IrisTest.py" = ["PT"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

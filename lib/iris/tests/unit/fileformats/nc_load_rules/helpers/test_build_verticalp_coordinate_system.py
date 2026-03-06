@@ -7,20 +7,15 @@ build_vertical_perspective_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import VerticalPerspective
 from iris.fileformats._nc_load_rules.helpers import (
     build_vertical_perspective_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
+class TestBuildVerticalPerspectiveCoordinateSystem(MockerMixin):
     def _test(self, inverse_flattening=False, no_offsets=False):
         """Generic test that can check vertical perspective validity with or
         without inverse flattening, and false_east/northing-s.
@@ -50,7 +45,7 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
             test_easting = 0
             test_northing = 0
 
-        cf_grid_var = mock.Mock(**cf_grid_var_kwargs)
+        cf_grid_var = self.mocker.Mock(**cf_grid_var_kwargs)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
 
         cs = build_vertical_perspective_coordinate_system(None, cf_grid_var)
@@ -63,7 +58,7 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
             ellipsoid=ellipsoid,
         )
 
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
     def test_valid(self):
         self._test(inverse_flattening=False)
@@ -75,7 +70,3 @@ class TestBuildVerticalPerspectiveCoordinateSystem(tests.IrisTest):
     def test_no_offsets(self):
         # Check when false_easting/northing attributes are absent.
         self._test(no_offsets=True)
-
-
-if __name__ == "__main__":
-    tests.main()
