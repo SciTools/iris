@@ -75,7 +75,7 @@ def decode_bytesarray_to_stringarray(
     result = np.empty(var_shape, dtype=string_dtype)
     for ndindex in np.ndindex(var_shape):
         element_bytes = byte_array[ndindex]
-        bytes = b"".join([b if b else b"\0" for b in element_bytes])
+        bytes = b"".join([b or b"\0" for b in element_bytes])
         string = bytes.decode(encoding)
         result[ndindex] = string
     return result
@@ -135,7 +135,12 @@ class VariableEncoder:
         if self.is_chardata:
             self.read_encoding = self._get_encoding(cf_var, writing=False)
             self.write_encoding = self._get_encoding(cf_var, writing=True)
-            self.n_chars_dim = cf_var.group().dimensions[cf_var.dimensions[-1]].size
+            n_chars_dim = 1  # default to 1 for a scalar var
+            if len(cf_var.dimensions) >= 1:
+                dim_name = cf_var.dimensions[-1]
+                if dim_name in cf_var.group().dimensions:
+                    n_chars_dim = cf_var.group().dimensions[dim_name].size
+            self.n_chars_dim = n_chars_dim
             self.string_width = self._get_string_width(cf_var)
 
     @staticmethod

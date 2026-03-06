@@ -74,7 +74,7 @@ reference_terms = dict(
 def _is_str_dtype(var):
     # N.B. use 'datatype' not 'dtype', to "look inside" variable wrappers which
     #  represent 'S1' type data as 'U<xx>'.
-    return isinstance(var.datatype, np.dtype) and np.issubdtype(var.datatype, np.bytes_)
+    return np.dtype(var.dtype).kind in "SU"
 
 
 ################################################################################
