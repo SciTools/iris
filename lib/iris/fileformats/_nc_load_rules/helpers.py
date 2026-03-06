@@ -1209,8 +1209,8 @@ def get_attr_units(cf_var, attributes, capture_invalid=False):
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
 
-    if np.issubdtype(cf_var.dtype, np.str_):
-        attr_units = NO_UNIT_STRING
+    # if np.issubdtype(cf_var.dtype, np.str_):
+    #     attr_units = NO_UNIT_STRING
 
     if any(
         hasattr(cf_var.cf_data, name)
