@@ -69,9 +69,9 @@ def fetch_undecoded_var(path, varname):
 
 def check_array_matching(arr1, arr2):
     """Check for arrays matching shape, dtype and content."""
-    assert (
-        arr1.shape == arr2.shape and arr1.dtype == arr2.dtype and np.all(arr1 == arr2)
-    )
+    assert arr1.shape == arr2.shape
+    assert arr1.dtype == arr2.dtype
+    assert np.all(arr1 == arr2)
 
 
 def check_raw_content(path, varname, expected_byte_array):
@@ -338,7 +338,8 @@ class TestRead:
             if encoding == "utf-8":
                 # In this case, with the given non-ascii sample data, the
                 #  "default minimum string length" is overestimated.
-                assert strlen == 7 and result.dtype == "U7"
+                assert strlen == 7
+                assert result.dtype == "U7"
                 # correct the result dtype to pass the write_strings comparison below
                 truncated_result = result.astype("U4")
                 # Also check that content is the same (i.e. not actually truncated)
