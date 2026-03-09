@@ -11,8 +11,9 @@ from cf_units import Unit
 import numpy as np
 import pytest
 
-from iris.analysis._grid_angles import _2D_geuss_bounds
-from iris.analysis.cartography import gridcell_angles
+from iris.analysis._grid_angles import _2D_guess_bounds
+from iris.analysis.cartography import gridcell_angles, _transform_xy
+from iris.coord_systems import RotatedGeogCS, Mercator
 from iris.coords import AuxCoord
 from iris.cube import Cube
 from iris.tests import _shared_utils
@@ -304,15 +305,86 @@ class TestGridcellAngles:
             self._check_multiple_orientations_and_latitudes(method="something_unknown")
 
 
-def test_2D_guess_bounds():
+def test_2D_guess_bounds_contiguity():
     cube = _2d_multicells_testcube()
     assert not cube.coord("latitude").is_contiguous()
     assert not cube.coord("longitude").is_contiguous()
 
-    _2D_geuss_bounds(cube)
-    assert cube.coord("latitude").is_contiguous()
-    assert cube.coord("longitude").is_contiguous()
+    result_extrap = _2D_guess_bounds(cube)
+    assert result_extrap.coord("latitude").is_contiguous()
+    assert result_extrap.coord("longitude").is_contiguous()
 
-    _2D_geuss_bounds(cube, rotate=False)
-    assert cube.coord("latitude").is_contiguous()
-    assert cube.coord("longitude").is_contiguous()
+    result_clipped = _2D_guess_bounds(cube, extrapolate=False)
+    assert result_clipped.coord("latitude").is_contiguous()
+    assert result_clipped.coord("longitude").is_contiguous()
+
+
+def test_2D_guess_bounds_rotational_equivalence():
+    # Check that _2D_guess_bounds is rotationally equivalent.
+    cube = _2d_multicells_testcube()
+
+    # Define a rotation with a pair of coordinate systems.
+    rotated_cs = RotatedGeogCS(20, 30).as_cartopy_crs()
+    unrotated_cs = RotatedGeogCS(0, 0).as_cartopy_crs()
+
+    # Guess the bounds before rotating the lat-lon points.
+    _2D_guess_bounds(cube, extrapolate=True, in_place=True)
+    lon_bounds_unrotated = cube.coord("longitude").bounds
+    lat_bounds_unrotated = cube.coord("latitude").bounds
+
+    # Rotate the guessed lat-lon bounds.
+    rotated_lon_bounds, rotated_lat_bounds = _transform_xy(
+        unrotated_cs, lon_bounds_unrotated.flatten(), lat_bounds_unrotated.flatten(), rotated_cs
+    )
+
+    # Rotate the lat-lon points.
+    lat = cube.coord("latitude")
+    lon = cube.coord("longitude")
+    lon.points, lat.points = _transform_xy(unrotated_cs, lon.points, lat.points, rotated_cs)
+
+    # guess the bounds after rotating the lat-lon points.
+    _2D_guess_bounds(cube, extrapolate=True, in_place=True)
+    lon_bounds_from_rotated_points = cube.coord("longitude").bounds
+    lat_bounds_from_rotated_points = cube.coord("latitude").bounds
+
+    # Check that the results are equivalent.
+    assert np.allclose(rotated_lon_bounds, lon_bounds_from_rotated_points.flatten())
+    assert np.allclose(rotated_lat_bounds, lat_bounds_from_rotated_points.flatten())
+
+
+def test_2D_guess_bounds_transpose_equivalence():
+    # Check that _2D_guess_bounds is transpose equivalent.
+    cube = _2d_multicells_testcube()
+    cube_transposed = _2d_multicells_testcube()
+    cube_transposed.transpose()
+
+    _2D_guess_bounds(cube, extrapolate=True, in_place=True)
+    _2D_guess_bounds(cube_transposed, extrapolate=True, in_place=True)
+
+    cube_transposed.transpose()
+
+    assert np.allclose(cube_transposed.coord("latitude").bounds, cube.coord("latitude").bounds)
+    assert np.allclose(cube_transposed.coord("longitude").bounds, cube.coord("longitude").bounds)
+
+
+def test_2D_guess_bounds_coord_systems():
+    rotated_cs = RotatedGeogCS(20, 30)
+    mercator_cs = Mercator()
+
+    rotated_cube = _2d_multicells_testcube()
+    rotated_cube.coord("latitude").coord_system = rotated_cs
+    rotated_cube.coord("latitude").standard_name = "grid_latitude"
+    rotated_cube.coord("longitude").coord_system = rotated_cs
+    rotated_cube.coord("longitude").standard_name = "grid_longitude"
+
+    _2D_guess_bounds(rotated_cube, in_place=True)
+
+    assert rotated_cube.coord("grid_latitude").is_contiguous()
+    assert rotated_cube.coord("grid_longitude").is_contiguous()
+
+    mercator_cube = _2d_multicells_testcube()
+    mercator_cube.coord("latitude").coord_system = mercator_cs
+    mercator_cube.coord("longitude").coord_system = mercator_cs
+
+    with pytest.raises(ValueError):
+        _2D_guess_bounds(mercator_cube)
