@@ -225,21 +225,21 @@ class VariableEncoder:
 
 
 class NetcdfStringDecodeSetting(threading.local):
-    def __init__(self, perform_encoding: bool = True):
-        self.set(perform_encoding)
+    def __init__(self, perform_decoding: bool = True):
+        self.set(perform_decoding)
 
-    def set(self, perform_encoding: bool):
-        self.perform_encoding = perform_encoding
+    def set(self, perform_decoding: bool):
+        self.perform_decoding = perform_decoding
 
     def __bool__(self):
-        return self.perform_encoding
+        return self.perform_decoding
 
     @contextlib.contextmanager
-    def context(self, perform_encoding: bool):
-        old_setting = self.perform_encoding
-        self.perform_encoding = perform_encoding
+    def context(self, perform_decoding: bool):
+        old_setting = self.perform_decoding
+        self.perform_decoding = perform_decoding
         yield
-        self.perform_encoding = old_setting
+        self.perform_decoding = old_setting
 
 
 DECODE_TO_STRINGS_ON_READ = NetcdfStringDecodeSetting()
