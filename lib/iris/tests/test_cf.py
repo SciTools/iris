@@ -11,6 +11,7 @@ import pytest
 
 import iris
 import iris.fileformats.cf as cf
+from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ
 from iris.tests import _shared_utils
 
 
@@ -335,7 +336,10 @@ class TestLabels:
                 "A1B-99999a-river-sep-2070-2099.nc",
             )
         )
-        self.cfr_start = cf.CFReader(filename)
+        # NOTE: this one should now be read without byte-to-string translation,
+        # since we no longer support a non-final string dimension.
+        with DECODE_TO_STRINGS_ON_READ.context(perform_decoding=False):
+            self.cfr_start = cf.CFReader(filename)
 
         filename = _shared_utils.get_data_path(
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
@@ -354,7 +358,17 @@ class TestLabels:
         assert sorted(cf_data_var.cf_group.labels.keys()) == ["region_name"]
 
         assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
-        assert region_group.cf_label_data(cf_data_var)[0] == "Anglian"
+        # data was specifically read as bytes, owing to non-standard dimension order
+        sample_chars = region_group.cf_label_data(cf_data_var)[:, 0]  # first string
+
+        def chars2string(chararray_1d):
+            # Translating byte arrays is slightly awkward
+            bytes = b"".join(b for b in chararray_1d if b != "b\0")
+            string = bytes.decode("ascii")  # not testing encodings, expect only ascii
+            return string
+
+        sample_string = chars2string(sample_chars)
+        assert sample_string == "Anglian"
 
         cf_data_var = self.cfr_start.cf_group["cdf_temp_dmax_tmean_abs"]
 
@@ -362,7 +376,9 @@ class TestLabels:
         assert sorted(cf_data_var.cf_group.labels.keys()) == ["region_name"]
 
         assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
-        assert region_group.cf_label_data(cf_data_var)[0] == "Anglian"
+        sample_chars = region_group.cf_label_data(cf_data_var)[:, 0]
+        sample_string = chars2string(sample_chars)
+        assert sample_string == "Anglian"
 
     def test_label_dim_end(self):
         cf_data_var = self.cfr_end.cf_group["tas"]
@@ -378,26 +394,20 @@ class TestLabels:
             "source",
         ]
 
-        assert self.cfr_end.cf_group.labels["experiment_id"].cf_label_dimensions(
-            cf_data_var
-        ) == ("ensemble",)
-        assert (
-            self.cfr_end.cf_group.labels["experiment_id"].cf_label_data(cf_data_var)[0]
-            == "2005"
-        )
+        var = self.cfr_end.cf_group.labels["experiment_id"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = var.cf_label_data(cf_data_var)[0]
+        expect = "2005".ljust(len(content))
+        assert content == expect
 
-        assert self.cfr_end.cf_group.labels["institution"].cf_label_dimensions(
-            cf_data_var
-        ) == ("ensemble",)
-        assert (
-            self.cfr_end.cf_group.labels["institution"].cf_label_data(cf_data_var)[0]
-            == "ECMWF"
-        )
+        var = self.cfr_end.cf_group.labels["institution"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = var.cf_label_data(cf_data_var)[0]
+        expect = "ECMWF".ljust(len(content))
+        assert content == expect
 
-        assert self.cfr_end.cf_group.labels["source"].cf_label_dimensions(
-            cf_data_var
-        ) == ("ensemble",)
-        assert (
-            self.cfr_end.cf_group.labels["source"].cf_label_data(cf_data_var)[0]
-            == "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES"
-        )
+        var = self.cfr_end.cf_group.labels["source"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = var.cf_label_data(cf_data_var)[0]
+        expect = "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES".ljust(len(content))
+        assert content == expect
