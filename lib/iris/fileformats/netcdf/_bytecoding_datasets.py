@@ -117,13 +117,18 @@ class VariableEncoder:
     varname: str  # just for the error messages
     dtype: np.dtype
     is_chardata: bool  # just a shortcut for the dtype test
-    read_encoding: str  # *always* a valid encoding from the codecs package
-    write_encoding: str  # *always* a valid encoding from the codecs package
-    n_chars_dim: int  # length of associated character dimension
-    string_width: int  # string lengths when viewing as strings (i.e. "Uxx")
+    read_encoding: str  # IF 'is_chardata': a valid encoding from the codecs package
+    write_encoding: str  # IF 'is_chardata': a valid encoding from the codecs package
+    n_chars_dim: int  # IF 'is_chardata': length of associated character dimension
+    string_width: int  # IF 'is_chardata': width when viewed as strings (i.e. "Uxx")
 
     def __init__(self, cf_var):
-        """Get all the info from an netCDF4 variable (or similar wrapper object).
+        """Capture the encoding info for a netCDF4 variable.
+
+        Can be either an actual netCDF4.Variable, or a _thread_safe_nc.VariableWrapper.
+
+        Can *not* be a _bytecoding_datasets.EncodedVariable, since we need to see the
+        true, underlying .dtype.
 
         Most importantly, we do *not* store 'cf_var' : instead we extract the
         necessary information and store it in this object.
