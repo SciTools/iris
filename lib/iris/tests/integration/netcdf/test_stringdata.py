@@ -82,7 +82,7 @@ def convert_bytearray_to_strings(
     result = np.empty(var_shape, dtype=string_dtype)
     for ndindex in np.ndindex(var_shape):
         element_bytes = byte_array[ndindex]
-        bytes = b"".join([b if b else b"\0" for b in element_bytes])
+        bytes = b"".join([b or b"\0" for b in element_bytes])
         string = bytes.decode(encoding)
         result[ndindex] = string
     return result
@@ -198,13 +198,13 @@ class TestReadEncodings:
     @pytest.fixture(autouse=True)
     def _clear_load_problems(self):
         iris.loading.LOAD_PROBLEMS.reset()
-        yield
+        return
 
     @pytest.fixture(params=["coordsSameDim", "coordsOwnDim"])
     def use_separate_dims(self, request):
-        yield request.param == "coordsOwnDim"
+        return request.param == "coordsOwnDim"
 
-    @pytest.fixture()
+    @pytest.fixture
     def readtest_path(
         self,
         encoding,
@@ -223,15 +223,15 @@ class TestReadEncodings:
             filetag = encoding
         dimtag = "diffdims" if use_separate_dims else "samedims"
         tempfile_path = tmp_path / f"sample_read_{filetag}_{dimtag}.nc"
-        yield tempfile_path
+        return tempfile_path
 
-    @pytest.fixture()
+    @pytest.fixture
     def readtest_data(
         self,
         encoding,
         readtest_path,
         use_separate_dims,
-    ) -> Iterable[SamplefileDetails]:
+    ) -> SamplefileDetails:
         """Create a suitable valid testfile, and return expected string content."""
         testdata = make_testfile(
             testfile_path=readtest_path,
@@ -242,7 +242,7 @@ class TestReadEncodings:
         # # TODO: temporary for debug -- TO REMOVE
         # from iris.tests.integration.netcdf.test_chararrays import ncdump
         # ncdump(str(tempfile_path))
-        yield testdata
+        return testdata
 
     def test_valid_encodings(self, encoding, readtest_data: SamplefileDetails):
         testfile_path, datavar_strings, coordvar_strings, numeric_data = (
@@ -273,7 +273,7 @@ class TestReadEncodings:
 
 @pytest.fixture(params=["stringdata", "bytedata"])
 def as_bytes(request):
-    yield request.param == "bytedata"
+    return request.param == "bytedata"
 
 
 @dataclass
@@ -342,9 +342,9 @@ class TestWriteEncodings:
 
     @pytest.fixture(params=["dataAsStrings", "dataAsBytes"])
     def write_bytes(self, request):
-        yield request.param == "dataAsBytes"
+        return request.param == "dataAsBytes"
 
-    @pytest.fixture()
+    @pytest.fixture
     def writetest_path(self, encoding, write_bytes, tmp_path):
         """Create a suitable test cube, with either string or byte content."""
         if PERSIST_TESTFILES:
@@ -355,9 +355,9 @@ class TestWriteEncodings:
             filetag = encoding
         datatag = "writebytes" if write_bytes else "writestrings"
         tempfile_path = tmp_path / f"sample_write_{filetag}_{datatag}.nc"
-        yield tempfile_path
+        return tempfile_path
 
-    @pytest.fixture()
+    @pytest.fixture
     def writetest_data(self, writetest_path, encoding, write_bytes):
         """Create a suitable test cube + save to a file.
 
@@ -368,7 +368,7 @@ class TestWriteEncodings:
         cube_info.save_path = writetest_path
         cube = cube_info.cube
         iris.save(cube, writetest_path)
-        yield cube_info
+        return cube_info
 
     def test_valid_encodings(self, encoding, writetest_data, write_bytes):
         cube_info = writetest_data
