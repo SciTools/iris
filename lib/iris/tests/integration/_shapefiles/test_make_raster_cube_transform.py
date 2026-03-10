@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for :func:`iris._shapefiles._make_raster_cube_transform`."""
+"""Integration tests for :func:`iris._shapefiles._make_raster_cube_transform`."""
 
 from affine import Affine
 import numpy as np
