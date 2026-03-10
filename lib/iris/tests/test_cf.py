@@ -6,13 +6,28 @@
 
 import contextlib
 import io
+from typing import Iterable
 
 import pytest
 
 import iris
 import iris.fileformats.cf as cf
 from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ
+from iris.fileformats.netcdf.loader import _get_cf_var_data
 from iris.tests import _shared_utils
+
+
+def fetch_cfvar_data(var, indices=()):
+    """Fetch variable data, or part of it.
+
+    Optionally subindex it.  If lazy, .compute() it.
+    """
+    if not isinstance(indices, Iterable):
+        indices = (indices,)
+    data = _get_cf_var_data(var)[*indices]
+    if hasattr(data, "compute"):
+        data = data.compute()
+    return data
 
 
 class TestCaching:
@@ -359,7 +374,7 @@ class TestLabels:
 
         assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
         # data was specifically read as bytes, owing to non-standard dimension order
-        sample_chars = region_group.cf_label_data(cf_data_var)[:, 0]  # first string
+        sample_chars = fetch_cfvar_data(region_group, [slice(None), 0])  # first string
 
         def chars2string(chararray_1d):
             # Translating byte arrays is slightly awkward
@@ -376,7 +391,7 @@ class TestLabels:
         assert sorted(cf_data_var.cf_group.labels.keys()) == ["region_name"]
 
         assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
-        sample_chars = region_group.cf_label_data(cf_data_var)[:, 0]
+        sample_chars = fetch_cfvar_data(region_group, [slice(None), 0])
         sample_string = chars2string(sample_chars)
         assert sample_string == "Anglian"
 
@@ -396,18 +411,20 @@ class TestLabels:
 
         var = self.cfr_end.cf_group.labels["experiment_id"]
         assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
-        content = var.cf_label_data(cf_data_var)[0]
+        content = fetch_cfvar_data(var, 0)
         expect = "2005".ljust(len(content))
         assert content == expect
 
         var = self.cfr_end.cf_group.labels["institution"]
         assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
-        content = var.cf_label_data(cf_data_var)[0]
-        expect = "ECMWF".ljust(len(content))
+        content = fetch_cfvar_data(var, 0)
+        expect = "ECMWF"
+        expect = expect.ljust(len(str(content)))  # expand to full string width
         assert content == expect
 
         var = self.cfr_end.cf_group.labels["source"]
         assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
-        content = var.cf_label_data(cf_data_var)[0]
-        expect = "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES".ljust(len(content))
+        content = fetch_cfvar_data(var, 0)
+        expect = "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES"
+        expect = expect.ljust(len(str(content)))  # expand to full string width
         assert content == expect

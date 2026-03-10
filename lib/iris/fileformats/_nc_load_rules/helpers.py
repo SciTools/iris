@@ -1571,11 +1571,7 @@ def _build_auxiliary_coordinate(
     # Get units
     attr_units = get_attr_units(cf_coord_var, attributes)
 
-    # Get any coordinate point data.
-    if isinstance(cf_coord_var, cf.CFLabelVariable):
-        points_data = cf_coord_var.cf_label_data(engine.cf_var)
-    else:
-        points_data = _get_cf_var_data(cf_coord_var)
+    points_data = _get_cf_var_data(cf_coord_var)
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
