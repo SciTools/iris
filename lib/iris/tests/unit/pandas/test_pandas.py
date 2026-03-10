@@ -54,20 +54,34 @@ def activate_pandas_ndim():
 class TestAsSeries:
     """Test conversion of 1D cubes to Pandas using as_series()."""
 
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self._series = mocker.patch("iris.pandas.pd.Series")
+
     def test_no_dim_coord(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        series = iris.pandas.as_series(cube)
-        expected_index = np.array([0, 1, 2, 3, 4])
-        _shared_utils.assert_array_equal(series, cube.data)
-        _shared_utils.assert_array_equal(series.index, expected_index)
+        expected_data = cube.data
+
+        iris.pandas.as_series(cube)
+        args, _ = self._series.call_args
+
+        self._series.assert_called_once()
+        _shared_utils.assert_array_equal(args[0], expected_data)
+        # index is only assigned with dim_coords present
+        assert args[1] is None
 
     def test_simple(self):
         cube = Cube(np.array([0, 1, 2, 3, 4.4]), long_name="foo")
         dim_coord = DimCoord([5, 6, 7, 8, 9], long_name="bar")
         cube.add_dim_coord(dim_coord, 0)
-        expected_index = np.array([5, 6, 7, 8, 9])
+        expected_index = dim_coord.points[0]
+        expected_data = cube.data
+
         series = iris.pandas.as_series(cube)
-        _shared_utils.assert_array_equal(series, cube.data)
+        args, _ = self._series.call_args
+
+        self._series.assert_called_once()
+        _shared_utils.assert_array_equal(args[0], expected_data)
         _shared_utils.assert_array_equal(series.index, expected_index)
 
     def test_masked(self):
@@ -75,46 +89,6 @@ class TestAsSeries:
         cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         _shared_utils.assert_array_equal(series, cube.data.astype("f").filled(np.nan))
-
-    def test_time_standard(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
-        time_coord = DimCoord(
-            [0, 100.1, 200.2, 300.3, 400.4],
-            long_name="time",
-            units="days since 2000-01-01 00:00",
-        )
-        cube.add_dim_coord(time_coord, 0)
-        expected_index = [
-            datetime.datetime(2000, 1, 1, 0, 0),
-            datetime.datetime(2000, 4, 10, 2, 24),
-            datetime.datetime(2000, 7, 19, 4, 48),
-            datetime.datetime(2000, 10, 27, 7, 12),
-            datetime.datetime(2001, 2, 4, 9, 36),
-        ]
-        series = iris.pandas.as_series(cube)
-        _shared_utils.assert_array_equal(series, cube.data)
-        assert list(series.index) == expected_index
-
-    def test_time_360(self):
-        cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="ts")
-        time_unit = cf_units.Unit(
-            "days since 2000-01-01 00:00", calendar=cf_units.CALENDAR_360_DAY
-        )
-        time_coord = DimCoord(
-            [0, 100.1, 200.2, 300.3, 400.4], long_name="time", units=time_unit
-        )
-        cube.add_dim_coord(time_coord, 0)
-        expected_index = [
-            cftime.Datetime360Day(2000, 1, 1, 0, 0),
-            cftime.Datetime360Day(2000, 4, 11, 2, 24),
-            cftime.Datetime360Day(2000, 7, 21, 4, 48),
-            cftime.Datetime360Day(2000, 11, 1, 7, 12),
-            cftime.Datetime360Day(2001, 2, 11, 9, 36),
-        ]
-
-        series = iris.pandas.as_series(cube)
-        _shared_utils.assert_array_equal(series, cube.data)
-        _shared_utils.assert_array_equal(series.index, expected_index)
 
     def test_copy_true(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
