@@ -348,7 +348,7 @@ class EncodedNetCDFDataProxy(NetCDFDataProxy):
 class EncodedNetCDFWriteProxy(NetCDFWriteProxy):
     def __init__(self, filepath, cf_var, file_write_lock):
         super().__init__(filepath, cf_var, file_write_lock)
-        self.encoding_details = VariableEncoder(cf_var)
+        self.encoding_details = VariableEncoder(cf_var._contained_instance)
 
     def __setitem__(self, key, data):
         data = np.asanyarray(data)

@@ -287,6 +287,7 @@ class SampleCubeDetails:
 def make_testcube(
     encoding_str: str | None = None,
     byte_data: bool = False,
+    lazy_data: bool = False,
 ) -> SampleCubeDetails:
     data_is_ascii = encoding_str in (NO_ENCODING_STR, "ascii")
 
@@ -316,6 +317,12 @@ def make_testcube(
             datavar_strings, maxlen=N_CHARS_DIM, encoding=write_encoding
         )
 
+    if lazy_data:
+        from iris._lazy_data import as_lazy_data
+
+        datavar_array, coordvar_array = (
+            as_lazy_data(arr) for arr in [datavar_array, coordvar_array]
+        )
     cube = Cube(datavar_array, var_name="v")
     cube.add_dim_coord(DimCoord(np.arange(N_XDIM), var_name="x"), 0)
     if encoding_str != NO_ENCODING_STR:
@@ -340,6 +347,13 @@ class TestWriteEncodings:
     To avoid circularity, we generate and save *cube* data.
     """
 
+    @pytest.fixture(params=["allLazy", "smallReal"])
+    def lazy_data(self, request, mocker):
+        is_lazy = request.param == "allLazy"
+        if is_lazy:
+            mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        return is_lazy
+
     @pytest.fixture(params=["dataAsStrings", "dataAsBytes"])
     def write_bytes(self, request):
         return request.param == "dataAsBytes"
@@ -358,13 +372,17 @@ class TestWriteEncodings:
         return tempfile_path
 
     @pytest.fixture
-    def writetest_data(self, writetest_path, encoding, write_bytes):
+    def writetest_data(self, writetest_path, encoding, write_bytes, lazy_data):
         """Create a suitable test cube + save to a file.
 
         Apply the given encoding to both coord and cube data.
         Form the data as bytes, or as strings, depending on 'write_bytes'.'
         """
-        cube_info = make_testcube(encoding_str=encoding, byte_data=write_bytes)
+        cube_info = make_testcube(
+            encoding_str=encoding,
+            byte_data=write_bytes,
+            lazy_data=lazy_data,
+        )
         cube_info.save_path = writetest_path
         cube = cube_info.cube
         iris.save(cube, writetest_path)
