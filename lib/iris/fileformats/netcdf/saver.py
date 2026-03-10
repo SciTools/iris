@@ -2554,6 +2554,8 @@ class Saver:
                 ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
+                    if np.dtype(cf_var.dtype).kind in "SU":
+                        raise ValueError("Lazy strings")
                     write_wrapper = bytecoding_datasets.EncodedNetCDFWriteProxy(
                         self.filepath, cf_var, self.file_write_lock
                     )
