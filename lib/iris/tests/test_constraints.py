@@ -305,12 +305,21 @@ class TestCubeListStrictConstraint(StrictConstraintMixin):
         return cubes
 
 
+@pytest.fixture
+def _skip_sample_data_path():
+    try:
+        fname = iris.sample_data_path("atlantic_profiles.nc")
+        cubes = iris.load(fname)
+    except ImportError:
+        cubes = iris.cube.CubeList([stock.simple_pp(), stock.simple_3d()])
+    return cubes
+
+
 @_shared_utils.skip_data
 class TestCubeExtract__names(ConstraintMixin):
     @pytest.fixture(autouse=True)
-    def _setup(self, _setup_mixin):
-        fname = iris.sample_data_path("atlantic_profiles.nc")
-        self.cubes = iris.load(fname)
+    def _setup(self, _setup_mixin, _skip_sample_data_path):
+        self.cubes = _skip_sample_data_path
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
@@ -365,9 +374,8 @@ class TestCubeExtract__names(ConstraintMixin):
 @_shared_utils.skip_data
 class TestCubeExtract__name_constraint(ConstraintMixin):
     @pytest.fixture(autouse=True)
-    def _setup(self, _setup_mixin):
-        fname = iris.sample_data_path("atlantic_profiles.nc")
-        self.cubes = iris.load(fname)
+    def _setup(self, _setup_mixin, _skip_sample_data_path):
+        self.cubes = _skip_sample_data_path
         cube = iris.load_cube(self.theta_path)
         # Expected names...
         self.standard_name = "air_potential_temperature"
