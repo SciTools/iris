@@ -5,6 +5,7 @@
 """Unit tests for :class:`iris.fileformats.netcdf._bytecoding_datasets` module."""
 
 from pathlib import Path
+import warnings
 
 import numpy as np
 import pytest
@@ -12,12 +13,13 @@ import pytest
 from iris.exceptions import TranslationError
 from iris.fileformats.netcdf._bytecoding_datasets import (
     DECODE_TO_STRINGS_ON_READ,
+    SUPPORTED_ENCODINGS,
     EncodedDataset,
 )
 from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
-encoding_options = [None, "ascii", "utf-8", "utf-32"]
+encoding_options = [None] + SUPPORTED_ENCODINGS
 
 samples_3_ascii = np.array(
     ["one", "", "seven"],  # N.B. include empty!
@@ -215,7 +217,10 @@ class TestWriteStrings:
         path = tempdir / "test_writestrings_badencoding_ignore.nc"
         ds = make_encoded_dataset(path, strlen=5, encoding="unknown")
         v = ds.variables["vxs"]
-        msg = r"Ignoring unknown encoding for variable 'vxs': _Encoding = 'unknown'\."
+        msg = (
+            r"Ignoring unsupported encoding for netCDF variable 'vxs': "
+            ".*'unknown', is not recognised as one of the supported encodings"
+        )
         with pytest.warns(IrisCfSaveWarning, match=msg):
             v[:] = samples_3_ascii  # will work OK
 
@@ -335,18 +340,24 @@ class TestRead:
             # Test "normal" read --> string array
             result = v[:]
             expected = write_strings
-            if encoding == "utf-8":
-                # In this case, with the given non-ascii sample data, the
+            if encoding in ("utf-8", "utf-16"):
+                # In these cases, with the given non-ascii sample data, the
                 #  "default minimum string length" is overestimated.
-                assert strlen == 7
-                assert result.dtype == "U7"
-                # correct the result dtype to pass the write_strings comparison below
-                truncated_result = result.astype("U4")
+                if encoding == "utf-8":
+                    assert strlen == 7
+                    assert result.dtype == "U7"
+                    # correct the result dtype to pass the write_strings comparison below
+                    truncated_result = result.astype("U4")
+                elif encoding == "utf-16":
+                    assert strlen == 10
+                    assert result.dtype == "U8"
+                    # correct the result dtype to pass the write_strings comparison below
+                    truncated_result = result.astype("U4")
                 # Also check that content is the same (i.e. not actually truncated)
                 assert np.all(truncated_result == result)
                 result = truncated_result
         else:
-            # Close and re-open as "regular" dataset -- just to check the raw content
+            # Close and re-open as "regular" dataset -- just to check "raw" byte content
             v = self.undecoded_testvar(ds_encoded, "vxs")
             result = v[:]
             expected = write_bytes
@@ -449,7 +460,10 @@ class TestRead:
         )
         v[:] = test_utf8_bytes
 
-        msg = r"Ignoring unknown encoding for variable 'vxs': _Encoding = 'unknown'\."
+        msg = (
+            r"Ignoring unsupported encoding for netCDF variable 'vxs': "
+            ".*'unknown', is not recognised as one of the supported encodings"
+        )
         with pytest.warns(IrisCfLoadWarning, match=msg):
             # raises warning but succeeds, due to default read encoding of 'utf-8'
             v[:]

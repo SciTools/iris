@@ -29,6 +29,7 @@ from ._bytecoding_datasets import (
     DECODE_TO_STRINGS_ON_READ,
     DEFAULT_READ_ENCODING,
     DEFAULT_WRITE_ENCODING,
+    SUPPORTED_ENCODINGS,
 )
 from .loader import DEBUG, NetCDFDataProxy, load_cubes
 from .saver import (
@@ -53,6 +54,7 @@ __all__ = (
     "MESH_ELEMENTS",
     "NetCDFDataProxy",
     "SPATIO_TEMPORAL_AXES",
+    "SUPPORTED_ENCODINGS",
     "Saver",
     "UnknownCellMethodWarning",
     "load_cubes",

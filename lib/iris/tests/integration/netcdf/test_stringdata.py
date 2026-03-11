@@ -19,7 +19,7 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import SUPPORTED_ENCODINGS, _thread_safe_nc
 
 
 @pytest.fixture(scope="module")
@@ -38,14 +38,7 @@ N_CHARS_DIM = 64
 PERSIST_TESTFILES: str | None = None
 
 NO_ENCODING_STR = "<noencoding>"
-TEST_ENCODINGS = [
-    NO_ENCODING_STR,
-    "ascii",
-    "utf-8",
-    # "iso8859-1",  # a common one-byte-per-char "codepage" type
-    # "utf-16",
-    "utf-32",
-]
+TEST_ENCODINGS = [NO_ENCODING_STR] + SUPPORTED_ENCODINGS
 
 
 #
@@ -255,10 +248,12 @@ class TestReadEncodings:
         assert load_problems_list() == []
         assert cube.shape == (N_XDIM,)
 
-        if encoding != "utf-32":
-            expected_string_width = N_CHARS_DIM
-        else:
+        if encoding == "utf-32":
             expected_string_width = (N_CHARS_DIM // 4) - 1
+        elif encoding == "utf-16":
+            expected_string_width = N_CHARS_DIM - 2
+        else:
+            expected_string_width = N_CHARS_DIM
         assert cube.dtype == f"<U{expected_string_width}"
         cube_data = cube.data
         assert np.all(cube_data == datavar_strings)
@@ -303,6 +298,8 @@ def make_testcube(
         charlen = N_CHARS_DIM
         if encoding_str == "utf-32":
             charlen = charlen // 4 - 1
+        elif encoding_str == "utf-16":
+            charlen = charlen - 2
         strings_dtype = np.dtype(f"U{charlen}")
         coordvar_array = np.array(coordvar_strings, dtype=strings_dtype)
         datavar_array = np.array(datavar_strings, dtype=strings_dtype)

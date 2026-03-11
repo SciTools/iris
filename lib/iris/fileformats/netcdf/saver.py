@@ -1833,17 +1833,46 @@ class Saver:
         if not is_dataless and np.issubdtype(data.dtype, np.str_):
             # Deal with string-type variables.
             # Typically CF label variables, but also possibly ancil-vars ?
+
+            # NOTE: all we are doing here is to calculate the byte dimension length,
+            # based on the dtype and any encoding attribute.
+            # The actual char --> byte data *translation* is done by the variable,
+            # being a _bytecoding_datasets.EncodedVariable.
             string_dimension_depth = data.dtype.itemsize
+
             if data.dtype.kind == "U":
-                encoding = element.attributes.get("_Encoding", "ascii")
-                # TODO: this can fail -- use a sensible warning + default?
-                encoding = codecs.lookup(encoding).name
-                if encoding == "utf-32":
-                    # UTF-32 is a special case -- always 4 exactly bytes per char, plus 4
-                    string_dimension_depth += 4
-                else:
-                    # generally, 4 bytes per char in numpy --> make bytewidth = string-width
-                    string_dimension_depth //= 4
+                # String content (U) instead of bytes (S).
+                # For numpy strings, itemsize is **always** a multiple of 4
+                if string_dimension_depth % 4 != 0:
+                    msg = (
+                        "Unexpected numpy string 'itemsize' for element "
+                        f"{cube_or_mesh.name()}: "
+                        f"'dtype.itemsize = {string_dimension_depth}, expected "
+                        "a multiple of four (always)."
+                    )
+                    raise ValueError(msg)
+                nchars = string_dimension_depth // 4
+
+                encoding_attr = element.attributes.get("_Encoding", "ascii")
+                # Look this up + return a supported encoding name
+                # NB implements defaults and raises a warning if given not recognised.
+                encoding = bytecoding_datasets._identify_encoding(
+                    encoding=encoding_attr, var_name=cf_name, writing=True
+                )
+                width_fns = bytecoding_datasets._ENCODING_WIDTH_TRANSLATIONS[encoding]
+                string_dimension_depth = width_fns.nchars_2_nbytes(nchars)
+            else:
+                if data.dtype.kind != "S" or data.dtype.itemsize != 1:
+                    # Some type of data we don't "understand".
+                    # NB this includes "Sxx" types other than "S1" :  It seems that
+                    # netCDF4 can treat Sxx as if it was Uxx, as least if there is an
+                    # _Encoding attribute.  But we don't support that type in Iris.
+                    msg = (
+                        f"Variable {cf_name!r} has unexpected string/character dtype, "
+                        f"{data.dtype} -- should be either 'S' or 'U' type."
+                    )
+                    raise ValueError(msg)
+
             string_dimension_name = "string%d" % string_dimension_depth
 
             # Determine whether to create the string length dimension.
@@ -1861,26 +1890,6 @@ class Saver:
 
             # Create the label coordinate variable.
             cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
-
-            # # Convert data from an array of strings into a character array
-            # # with an extra string-length dimension.
-            # if len(element_dims) == 1:
-            #     # Scalar variable (only has string dimension).
-            #     data_first = data[0]
-            #     if is_lazy_data(data_first):
-            #         data_first = dask.compute(data_first)
-            #     data = list("%- *s" % (string_dimension_depth, data_first))
-            # else:
-            #     # NOTE: at present, can't do this lazily??
-            #     orig_shape = data.shape
-            #     new_shape = orig_shape + (string_dimension_depth,)
-            #     new_data = np.zeros(new_shape, cf_var.dtype)
-            #     for index in np.ndindex(orig_shape):
-            #         index_slice = tuple(list(index) + [slice(None, None)])
-            #         new_data[index_slice] = list(
-            #             "%- *s" % (string_dimension_depth, data[index])
-            #         )
-            #     data = new_data
         else:
             # A normal (numeric) variable.
             # ensure a valid datatype for the file format.

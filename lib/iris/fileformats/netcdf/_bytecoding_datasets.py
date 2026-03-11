@@ -44,6 +44,7 @@ import codecs
 import contextlib
 import dataclasses
 import threading
+from typing import Callable
 import warnings
 
 import numpy as np
@@ -117,8 +118,8 @@ class VariableEncoder:
     varname: str  # just for the error messages
     dtype: np.dtype
     is_chardata: bool  # just a shortcut for the dtype test
-    read_encoding: str  # IF 'is_chardata': a valid encoding from the codecs package
-    write_encoding: str  # IF 'is_chardata': a valid encoding from the codecs package
+    read_encoding: str  # IF 'is_chardata': one of the supported encodings
+    write_encoding: str  # IF 'is_chardata': one of the supported encodings
     n_chars_dim: int  # IF 'is_chardata': length of associated character dimension
     string_width: int  # IF 'is_chardata': width when viewed as strings (i.e. "Uxx")
 
@@ -138,59 +139,30 @@ class VariableEncoder:
         self.dtype = cf_var.dtype
         self.is_chardata = np.issubdtype(self.dtype, np.bytes_)
         if self.is_chardata:
-            self.read_encoding = self._get_encoding(cf_var, writing=False)
-            self.write_encoding = self._get_encoding(cf_var, writing=True)
+            encoding_attr = getattr(cf_var, "_Encoding", None)
+            self.read_encoding = _identify_encoding(
+                encoding_attr, var_name=cf_var.name, writing=False
+            )
+            self.write_encoding = _identify_encoding(
+                encoding_attr, var_name=cf_var.name, writing=True
+            )
             n_chars_dim = 1  # default to 1 for a scalar var
             if len(cf_var.dimensions) >= 1:
                 dim_name = cf_var.dimensions[-1]
                 if dim_name in cf_var.group().dimensions:
                     n_chars_dim = cf_var.group().dimensions[dim_name].size
             self.n_chars_dim = n_chars_dim
-            self.string_width = self._get_string_width(cf_var)
+            self.string_width = self._get_string_width()
 
-    @staticmethod
-    def _get_encoding(cf_var, writing=False) -> str:
-        """Get the byte encoding defined for this variable (or None)."""
-        result = getattr(cf_var, "_Encoding", None)
-        if result is not None:
-            try:
-                # Accept + normalise naming of encodings
-                result = codecs.lookup(result).name
-                # NOTE: if encoding does not suit data, errors can occur.
-                # For example, _Encoding = "ascii", with non-ascii content.
-            except LookupError:
-                # Unrecognised encoding name : handle this as just a warning
-                msg = (
-                    f"Ignoring unknown encoding for variable {cf_var.name!r}: "
-                    f"_Encoding = {result!r}."
-                )
-                warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
-                warnings.warn(msg, category=warntype)
-                # Proceed as if there is no specified encoding
-                result = None
-
-        if result is None:
-            if writing:
-                result = DEFAULT_WRITE_ENCODING
-            else:
-                result = DEFAULT_READ_ENCODING
-        return result
-
-    def _get_string_width(self, cf_var) -> int:
+    def _get_string_width(self) -> int:
         """Return the string-length defined for this variable."""
         # Work out the actual byte width from the parent dataset dimensions.
-        strlen = self.n_chars_dim
+        n_bytes = self.n_chars_dim
         # Convert the string dimension length (i.e. bytes) to a sufficiently-long
         #  string width, depending on the (read) encoding used.
         encoding = self.read_encoding
-        if "utf-16" in encoding:
-            # Each char needs at least 2 bytes -- including a terminator char
-            strlen = (strlen // 2) - 1
-        elif "utf-32" in encoding:
-            # Each char needs exactly 4 bytes -- including a terminator char
-            strlen = (strlen // 4) - 1
-        # "ELSE": assume there can be (at most) as many chars as bytes
-        return strlen
+        n_chars = _ENCODING_WIDTH_TRANSLATIONS[encoding].nbytes_2_nchars(n_bytes)
+        return n_chars
 
     def decode_bytes_to_stringarray(self, data: np.ndarray) -> np.ndarray:
         if self.is_chardata:
@@ -252,6 +224,98 @@ class NetcdfStringDecodeSetting(threading.local):
 DECODE_TO_STRINGS_ON_READ = NetcdfStringDecodeSetting()
 DEFAULT_READ_ENCODING = "utf-8"
 DEFAULT_WRITE_ENCODING = "ascii"
+
+
+@dataclasses.dataclass
+class EncodingWidthRelations:
+    """Encode the default string-width <-> byte-dimension relations.
+
+    These translations are just a "best guess"...
+
+    When translating bytes (dtype S1) to strings (dtype Uxx), the chosen (default)
+    string width may be longer than is needed for the actual content.  But it is at
+    least "safe".
+
+    When translating strings to bytes, we *can* get more bytes than the default
+    byte dimension length, and the code will then truncate
+    ( with a warning : see '_identify_encoding' ).
+    This can be avoided if necessary, in specific cases, by recasting the data to a
+    dtype with greater width (Uxx).
+    """
+
+    nchars_2_nbytes: Callable[[int], int]
+    nbytes_2_nchars: Callable[[int], int]
+
+
+_ENCODING_WIDTH_TRANSLATIONS = {
+    "ascii": EncodingWidthRelations(lambda x: x, lambda x: x),
+    "utf-8": EncodingWidthRelations(lambda x: x, lambda x: x),
+    "utf-16": EncodingWidthRelations(
+        nchars_2_nbytes=lambda x: x + 2,
+        nbytes_2_nchars=lambda x: x - 2,
+    ),
+    "utf-32": EncodingWidthRelations(
+        nchars_2_nbytes=lambda x: (x + 1) * 4,
+        nbytes_2_nchars=lambda x: x // 4 - 1,
+    ),
+}
+SUPPORTED_ENCODINGS = list(_ENCODING_WIDTH_TRANSLATIONS.keys())
+
+
+def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
+    """Normalise an encoding name + check it is supported.
+
+    Parameters
+    ----------
+    encoding : Any
+        Select an encoding : None, or a string, or anything printable (via str()).
+    var_name : str
+        Name of the relevant dataste variable (i.e. 'var_name') :
+        used only to produce warning messages.
+    writing : bool
+        Specify whether reading or writing, which affects any *default* return value,
+        i.e. select between DEFAULT_READ_ENCODING / DEFAULT_WRITE_ENCODING.
+
+    If given, and supported, return a normalised encoding name,
+    -- i.e. always one of SUPPORTED_ENCODINGS.
+    If not given, or not supported, return the default encoding name.
+
+    If given **but not recognised/supported**, also emit a warning (and return default).
+    """
+    if encoding is not None:
+        encoding = str(encoding)
+
+    result: str | None = None  # not yet 'found' : we will never *return* this
+
+    if encoding is not None:
+        # Normalise the name : NB must recognised by Python "codecs".
+        try:
+            result = codecs.lookup(encoding).name
+        except LookupError:
+            pass
+
+        if result is not None:
+            if result not in SUPPORTED_ENCODINGS:
+                # Python "codecs" recognised it, but we don't support it.
+                result = None
+
+    if encoding is not None and result is None:
+        # Unrecognised encoding name : handle this as just a warning
+        msg = (
+            f"Ignoring unsupported encoding for netCDF variable {var_name!r}: "
+            f"_Encoding = {encoding!r}, is not recognised as one of the supported "
+            f"encodings, {SUPPORTED_ENCODINGS}."
+        )
+        warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
+        warnings.warn(msg, category=warntype)
+
+    if result is None:
+        if writing:
+            result = DEFAULT_WRITE_ENCODING
+        else:
+            result = DEFAULT_READ_ENCODING
+
+    return result
 
 
 class EncodedVariable(VariableWrapper):
