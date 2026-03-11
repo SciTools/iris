@@ -356,15 +356,33 @@ def test_2D_guess_bounds_transpose_equivalence():
     # Check that _2D_guess_bounds is transpose equivalent.
     cube = _2d_multicells_testcube()
     cube_transposed = _2d_multicells_testcube()
+
+    def transpose_2D_coord(coord):
+        new_points = coord.points.transpose()
+        new_bounds = coord.bounds.transpose((1, 0, 2))[:,:,(0,3,2,1)]
+        new_coord = AuxCoord(new_points, bounds=new_bounds, standard_name=coord.standard_name, units=coord.units)
+        return new_coord
+
+
     cube_transposed.transpose()
+
+    new_lat = transpose_2D_coord(cube_transposed.coord("latitude"))
+    new_lon = transpose_2D_coord(cube_transposed.coord("longitude"))
+    cube_transposed.remove_coord("latitude")
+    cube_transposed.remove_coord("longitude")
+    cube_transposed.add_aux_coord(new_lat, (0, 1))
+    cube_transposed.add_aux_coord(new_lon, (0, 1))
 
     _2D_guess_bounds(cube, extrapolate=True, in_place=True)
     _2D_guess_bounds(cube_transposed, extrapolate=True, in_place=True)
 
     cube_transposed.transpose()
 
-    assert np.allclose(cube_transposed.coord("latitude").bounds, cube.coord("latitude").bounds)
-    assert np.allclose(cube_transposed.coord("longitude").bounds, cube.coord("longitude").bounds)
+    untransposed_lat = transpose_2D_coord(cube_transposed.coord("latitude"))
+    untransposed_lon = transpose_2D_coord(cube_transposed.coord("longitude"))
+
+    assert np.allclose(untransposed_lat.bounds, cube.coord("latitude").bounds)
+    assert np.allclose(untransposed_lon.bounds, cube.coord("longitude").bounds)
 
 
 def test_2D_guess_bounds_coord_systems():
