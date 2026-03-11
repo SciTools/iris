@@ -56,6 +56,7 @@ import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf import _dask_locks
+from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 import iris.io
 import iris.util
@@ -2523,7 +2524,7 @@ class Saver:
     def _lazy_stream_data(
         self,
         data: np.typing.ArrayLike,
-        cf_var: CFVariable,
+        cf_var: threadsafe_nc.VariableWrapper,
     ) -> None:
         if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
             # (Don't do this check for string data).
@@ -2550,7 +2551,7 @@ class Saver:
                 # later by a call to delayed_completion().
                 def store(
                     data: np.typing.ArrayLike,
-                    cf_var: CFVariable,
+                    cf_var: threadsafe_nc.VariableWrapper,
                 ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
@@ -2564,7 +2565,7 @@ class Saver:
                 # Real data is always written directly, i.e. not via lazy save.
                 def store(
                     data: np.typing.ArrayLike,
-                    cf_var: CFVariable,
+                    cf_var: threadsafe_nc.VariableWrapper,
                 ) -> None:
                     cf_var[:] = data  # type: ignore[index]
 
