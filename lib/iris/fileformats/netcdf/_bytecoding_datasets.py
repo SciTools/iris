@@ -251,8 +251,8 @@ _ENCODING_WIDTH_TRANSLATIONS = {
     "ascii": EncodingWidthRelations(lambda x: x, lambda x: x),
     "utf-8": EncodingWidthRelations(lambda x: x, lambda x: x),
     "utf-16": EncodingWidthRelations(
-        nchars_2_nbytes=lambda x: x + 2,
-        nbytes_2_nchars=lambda x: x - 2,
+        nchars_2_nbytes=lambda x: (x + 1) * 2,
+        nbytes_2_nchars=lambda x: x // 2 - 1,
     ),
     "utf-32": EncodingWidthRelations(
         nchars_2_nbytes=lambda x: (x + 1) * 4,
@@ -270,7 +270,7 @@ def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
     encoding : Any
         Select an encoding : None, or a string, or anything printable (via str()).
     var_name : str
-        Name of the relevant dataste variable (i.e. 'var_name') :
+        Name of the relevant dataset variable (i.e. 'var_name') :
         used only to produce warning messages.
     writing : bool
         Specify whether reading or writing, which affects any *default* return value,

@@ -350,7 +350,7 @@ class TestRead:
                     truncated_result = result.astype("U4")
                 elif encoding == "utf-16":
                     assert strlen == 10
-                    assert result.dtype == "U8"
+                    assert result.dtype == "U4"
                     # correct the result dtype to pass the write_strings comparison below
                     truncated_result = result.astype("U4")
                 # Also check that content is the same (i.e. not actually truncated)

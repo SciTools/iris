@@ -251,7 +251,7 @@ class TestReadEncodings:
         if encoding == "utf-32":
             expected_string_width = (N_CHARS_DIM // 4) - 1
         elif encoding == "utf-16":
-            expected_string_width = N_CHARS_DIM - 2
+            expected_string_width = (N_CHARS_DIM) // 2 - 1
         else:
             expected_string_width = N_CHARS_DIM
         assert cube.dtype == f"<U{expected_string_width}"
@@ -295,11 +295,13 @@ def make_testcube(
         datavar_strings = ["bun", "éclair", "sandwich"]
 
     if not byte_data:
+        # Do our own conversion between intended byte dimension and string width
+        # N.B. N_CHARS_DIM is set big enough so the test strings will never overflow
         charlen = N_CHARS_DIM
         if encoding_str == "utf-32":
-            charlen = charlen // 4 - 1
+            charlen = (charlen // 4) - 1
         elif encoding_str == "utf-16":
-            charlen = charlen - 2
+            charlen = (charlen // 2) - 1
         strings_dtype = np.dtype(f"U{charlen}")
         coordvar_array = np.array(coordvar_strings, dtype=strings_dtype)
         datavar_array = np.array(datavar_strings, dtype=strings_dtype)
