@@ -48,6 +48,7 @@
 .. _netCDF4: https://github.com/Unidata/netcdf4-python
 .. _SciTools Contributor's License Agreement (CLA): https://cla-assistant.io/SciTools/
 .. _extlinks: https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+.. _Diataxis: https://diataxis.fr/
 
 
 .. comment

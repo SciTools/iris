@@ -3,7 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Classes for representing multi-dimensional data with metadata."""
+"""Classes for representing multi-dimensional data with metadata.
+
+.. z_reference:: iris.cube
+   :tags: topic_data_model;topic_lazy_data;topic_maths_stats;topic_regrid;topic_slice_combine
+
+   API reference
+"""
 
 from __future__ import annotations
 
@@ -1126,7 +1132,7 @@ class Cube(CFVariableMixin):
                 source                      'Data from Met Office Unified Model'
 
 
-    See the :doc:`user guide</userguide/index>` for more information.
+    See the :doc:`user manual</user_manual/index>` for more information.
 
     """
 
@@ -4923,8 +4929,10 @@ x            -              -
         # coordinate dimension.
         shared_coords = list(
             filter(
-                lambda coord_: coord_ not in groupby_coords
-                and dimension_to_groupby in self.coord_dims(coord_),
+                lambda coord_: (
+                    coord_ not in groupby_coords
+                    and dimension_to_groupby in self.coord_dims(coord_)
+                ),
                 self.dim_coords + self.aux_coords,
             )
         )

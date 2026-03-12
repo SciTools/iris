@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of coordinates and other dimensional metadata."""
+"""Definitions of coordinates and other dimensional metadata.
+
+.. z_reference:: iris.coords
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
@@ -3149,8 +3155,8 @@ class CellMethod(iris.util._OrderedHashable):
         elif isinstance(coords, str):
             _coords.append(BaseMetadata.token(coords) or default_name)
         else:
-            normalise = (
-                lambda coord: coord.name(token=True)
+            normalise = lambda coord: (
+                coord.name(token=True)
                 if isinstance(coord, Coord)
                 else BaseMetadata.token(coord) or default_name
             )
