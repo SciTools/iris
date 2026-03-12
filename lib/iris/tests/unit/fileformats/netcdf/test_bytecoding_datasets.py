@@ -227,12 +227,15 @@ class TestWriteStrings:
     def test_overlength(self, tempdir):
         # Check expected behaviour with over-length data
         path = tempdir / "test_writestrings_overlength.nc"
-        strlen = 5
-        ds = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
+        strlen = 6
+        ds = make_encoded_dataset(path, strlen=strlen, encoding="utf8")
         v = ds.variables["vxs"]
-        msg = r"String .* written to netcdf exceeds string dimension .* : [0-9]* > 5\."
+        msg = (
+            r"String .* written into netcdf variable 'vxs' with encoding \'utf-8\' "
+            r"is 7 bytes long, which exceeds .* 6\. This can be fixed by "
+        )
         with pytest.raises(TranslationError, match=msg):
-            v[:] = ["1", "123456789", "two"]
+            v[:] = ["1", "éclair", "two"]
 
     def test_overlength_splitcoding(self, tempdir):
         # Check expected behaviour when non-ascii multibyte coding gets truncated

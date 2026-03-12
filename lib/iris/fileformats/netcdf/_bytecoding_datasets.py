@@ -60,7 +60,7 @@ from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
 
 def decode_bytesarray_to_stringarray(
-    byte_array: np.ndarray, encoding: str, string_width: int
+    byte_array: np.ndarray, encoding: str, string_width: int, var_name: str
 ) -> np.ndarray:
     """Convert an array of bytes to an array of strings, with one less dimension.
 
@@ -77,13 +77,24 @@ def decode_bytesarray_to_stringarray(
     for ndindex in np.ndindex(var_shape):
         element_bytes = byte_array[ndindex]
         bytes = b"".join([b or b"\0" for b in element_bytes])
-        string = bytes.decode(encoding)
+        try:
+            string = bytes.decode(encoding)
+        except UnicodeDecodeError as err:
+            msg = (
+                f"Character data in variable {var_name!r} could not be decoded "
+                f"with the {encoding!r} encoding.  This can be fixed by setting the "
+                "variable '_Encoding' attribute to suit the content."
+            )
+            raise ValueError(msg) from err
         result[ndindex] = string
     return result
 
 
 def encode_stringarray_as_bytearray(
-    data: np.typing.ArrayLike, encoding: str, string_dimension_length: int
+    data: np.typing.ArrayLike,
+    encoding: str,
+    string_dimension_length: int,
+    var_name: str,
 ) -> np.ndarray:
     """Encode strings as a bytes array."""
     data = np.asanyarray(data)
@@ -92,15 +103,28 @@ def encode_stringarray_as_bytearray(
     right_pad = b"\0" * string_dimension_length
     for index in np.ndindex(element_shape):
         string = data[index]
-        bytes = string.encode(encoding=encoding)
+        try:
+            bytes = string.encode(encoding=encoding)
+        except UnicodeEncodeError as err:
+            msg = (
+                f"String data written to netcdf character variable {var_name!r} "
+                f"could not be represented in encoding {encoding!r}.  "
+                "This can be fixed by setting a suitable variable '_Encoding' "
+                'attribute, e.g. variable._Encoding="UTF-8".'
+            )
+            raise ValueError(msg) from err
+
         n_bytes = len(bytes)
         # TODO: may want to issue warning or error if we overflow the length?
         if n_bytes > string_dimension_length:
             from iris.exceptions import TranslationError
 
             msg = (
-                f"String {string!r} written to netcdf exceeds string dimension after "
-                f"encoding : {n_bytes} > {string_dimension_length}."
+                f"String '{string}' written into netcdf variable {var_name!r} with "
+                f"encoding {encoding!r} is {n_bytes} bytes long, which exceeds the "
+                f"string dimension length, {string_dimension_length}. "
+                'This can be fixed by converting the data to a "wider" string dtype, '
+                f'e.g. cube.data = cube.data.astype("U{n_bytes}").'
             )
             raise TranslationError(msg)
 
@@ -169,15 +193,9 @@ class VariableEncoder:
             # N.B. read encoding default is UTF-8 --> a "usually safe" choice
             encoding = self.read_encoding
             strlen = self.string_width
-            try:
-                data = decode_bytesarray_to_stringarray(data, encoding, strlen)
-            except UnicodeDecodeError as err:
-                msg = (
-                    f"Character data in variable {self.varname!r} could not be decoded "
-                    f"with the {encoding!r} encoding.  This can be fixed by setting the "
-                    "variable '_Encoding' attribute to suit the content."
-                )
-                raise ValueError(msg) from err
+            data = decode_bytesarray_to_stringarray(
+                data, encoding, strlen, self.varname
+            )
 
         return data
 
@@ -185,19 +203,11 @@ class VariableEncoder:
         if self.is_chardata and data.dtype.kind == "U":
             # N.B. it is also possible to pass a byte array (dtype "S1"),
             #  to be written directly, without processing.
-            try:
-                # N.B. write encoding *default* is "ascii" --> fails bad content
-                encoding = self.write_encoding
-                strlen = self.n_chars_dim
-                data = encode_stringarray_as_bytearray(data, encoding, strlen)
-            except UnicodeEncodeError as err:
-                msg = (
-                    f"String data written to netcdf character variable {self.varname!r} "
-                    f"could not be represented in encoding {self.write_encoding!r}.  "
-                    "This can be fixed by setting a suitable variable '_Encoding' "
-                    'attribute, e.g. <variable>._Encoding="UTF-8".'
-                )
-                raise ValueError(msg) from err
+            # N.B. write encoding *default* is "ascii" --> fails bad content
+            encoding = self.write_encoding
+            strlen = self.n_chars_dim
+            data = encode_stringarray_as_bytearray(data, encoding, strlen, self.varname)
+
         return data
 
 
