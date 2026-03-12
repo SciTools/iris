@@ -22,6 +22,8 @@ def fake_stratify():
         fake = types.ModuleType("stratify")
         fake.interpolate = lambda *a, **k: None
         sys.modules["stratify"] = fake
+
+    try:
         yield
     finally:
         # Remove fake after tests in this module complete
