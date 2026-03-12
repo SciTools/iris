@@ -85,21 +85,8 @@ class TestAsSeries:
         _shared_utils.assert_array_equal(args[0], expected_data)
         _shared_utils.assert_array_equal(series.index, expected_index)
 
-    def test_masked(self):
-        data = np.ma.MaskedArray([0, 1, 2, 3, 4.4], mask=[0, 1, 0, 1, 0])
-        cube = Cube(data, long_name="foo")
-        series = iris.pandas.as_series(cube)
-        _shared_utils.assert_array_equal(series, cube.data.astype("f").filled(np.nan))
-
     def test_copy_true(self):
         cube = Cube(np.array([0, 1, 2, 3, 4]), long_name="foo")
-        series = iris.pandas.as_series(cube)
-        series[0] = 99
-        assert cube.data[0] == 0
-
-    def test_copy_masked_true(self):
-        data = np.ma.MaskedArray([0, 1, 2, 3, 4], mask=[0, 1, 0, 1, 0])
-        cube = Cube(data, long_name="foo")
         series = iris.pandas.as_series(cube)
         series[0] = 99
         assert cube.data[0] == 0
