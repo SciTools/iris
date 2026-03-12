@@ -110,8 +110,8 @@ class TestLoadCubes:
         aux_factory = mock.Mock()
         factory = mock.Mock()
         factory.args = [{"name": "foo"}]
-        factory.factory_class = (
-            lambda *args: setattr(aux_factory, "fake_args", args) or aux_factory
+        factory.factory_class = lambda *args: (
+            setattr(aux_factory, "fake_args", args) or aux_factory
         )
 
         def converter(field):

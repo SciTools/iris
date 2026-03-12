@@ -24,7 +24,10 @@ This document explains the changes made to Iris for this release
 📢 Announcements
 ================
 
-#. N/A
+#. We've had a makeover! ✨ All user documentation pages have been reorganised
+   into a new structure: :doc:`/user_manual/index`. This restructure is to
+   maximise discoverability of the available pages, as well as embracing the
+   `Diataxis`_ framework for better engagement with user needs going forward.
 
 
 ✨ Features
@@ -75,6 +78,9 @@ This document explains the changes made to Iris for this release
    testing conveniences in favour of the conveniences found in :mod:`iris/tests/_shared_utils.py`.
    (:pull:`6950`)
 
+#. `@hsteptoe`_ has deprecated the use of the `copy` kwarg across :mod:`iris.pandas` to reflect changes
+   to the default behaviour of pandas v3 `New pandas v3 copy behaviour`_. (:pull:`6948`)
+
 
 🔗 Dependencies
 ===============
@@ -92,6 +98,15 @@ This document explains the changes made to Iris for this release
 
 #. :user:`bjlittle` added the ``:user:`` `extlinks`_ ``github`` user convenience.
    (:pull:`6931`)
+
+#. `@pp-mo`_ added a page on how to access datafiles in S3 buckets.
+   (:issue:`6374`, :pull:`6951`)
+
+#. `@trexfeathers`_, `@stephenworsley`_, `@ESadek-MO`_ and `@tkknight`_ reorganised **all**
+   user documentation pages into a new structure: :doc:`/user_manual/index`.
+   This restructure is to maximise discoverability of the available pages, as
+   well as embracing the `Diataxis`_ framework for better engagement with user
+   needs going forward. (:issue:`6511`, :pull:`6868`)
 
 
 💼 Internal
@@ -111,7 +126,7 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@ukmo-ccbunney`_ updated CI to support Python 3.14
    inline with `SPEC0 Minimum Supported Dependencies`_. Note: `pyvista` (and
    hence `geovista`) is not yet compatible with Python 3.14, so
-   `:module:~iris.experimental.geovista` is currently only available for
+   :mod:`iris.experimental.geovista` is currently only available for
    Python \<3.14.  (:pull:`6816`, :issue:`6775`)
 
 #. `@ESadek-MO`_, `@trexfeathers`_, `@bjlittle`_, `@HGWright`_, `@pp-mo`_,
@@ -119,13 +134,25 @@ This document explains the changes made to Iris for this release
    from unittest to pytest. Iris is now also ruff-PT compliant, save for PT019.
    (:issue:`6212`, :pull:`6939`)
 
+#. `@hsteptoe`_ and `@ESadek-MO`_ (reviewer) updated chained assignment useage within the tests 
+   associated with :mod:`iris.pandas` to reflect changes in pandas v3 `New pandas v3 copy behaviour`_. 
+   (:pull:`6948`, :issue:`6761`)
+
+#. `@hsteptoe`_ and `@ESadek-MO`_ (reviewer) added static type hinting to :mod:`iris.pandas`. (:pull:`6948`)
+
+#. `@ukmo-ccbunney`_ changed formatting of numpy scalars attributes when generating a
+   Cube/Coord summary to use ``str`` representation instead of ``repr``.
+   (:pull:`6966`, :issue:`6692`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
 .. _@hdyson: https://github.com/hdyson
-
-.. _SPEC0 Minimum Supported Dependencies: https://scientific-python.org/specs/spec-0000/
+.. _@hsteptoe: https://github.com/hsteptoe
 
 .. comment
     Whatsnew resources in alphabetical order:
+
+.. _New pandas v3 copy behaviour: https://pandas.pydata.org/docs/whatsnew/v3.0.0.html#consistent-copy-view-behaviour-with-copy-on-write
+.. _SPEC0 Minimum Supported Dependencies: https://scientific-python.org/specs/spec-0000/

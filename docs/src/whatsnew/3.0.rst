@@ -479,7 +479,7 @@ v3.0.4 (22 July 2021)
    links are more visible to users.  This uses the sphinx-panels_ extension.
    (:pull:`3884`)
 
-#. `@bjlittle`_ created the :ref:`Further topics <further topics>` section and
+#. `@bjlittle`_ created the 'Further Topics' section and
    included documentation for :ref:`metadata`, :ref:`lenient metadata`, and
    :ref:`lenient maths`. (:pull:`3890`)
 

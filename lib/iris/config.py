@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides access to Iris-specific configuration values.
 
+.. z_reference:: iris.config
+   :tags: topic_customisation
+
+   API reference
+
 The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
 defined by :mod:`configparser`.
