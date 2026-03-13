@@ -243,8 +243,10 @@ class NetcdfStringDecodeSetting(threading.local):
     def context(self, perform_decoding: bool):
         old_setting = self.perform_decoding
         self.perform_decoding = perform_decoding
-        yield
-        self.perform_decoding = old_setting
+        try:
+            yield
+        finally:
+            self.perform_decoding = old_setting
 
 
 DECODE_TO_STRINGS_ON_READ = NetcdfStringDecodeSetting()
