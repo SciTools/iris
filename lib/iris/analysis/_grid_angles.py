@@ -515,7 +515,10 @@ def _2D_guess_bounds(cube, extrapolate=True, in_place=False):
     if lons.units != "degrees" or lats.units != "degrees":
         msg = "Coordinate units are expected to be degrees."
         raise ValueError(msg)
-    if not all(isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None) for coord in [lats, lons]):
+    if not all(
+        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
+        for coord in [lats, lons]
+    ):
         msg = "Coordinate systems are expected geodetic."
         raise ValueError(msg)
 

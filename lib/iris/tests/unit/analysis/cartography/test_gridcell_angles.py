@@ -12,8 +12,8 @@ import numpy as np
 import pytest
 
 from iris.analysis._grid_angles import _2D_guess_bounds
-from iris.analysis.cartography import gridcell_angles, _transform_xy
-from iris.coord_systems import RotatedGeogCS, Mercator
+from iris.analysis.cartography import _transform_xy, gridcell_angles
+from iris.coord_systems import Mercator, RotatedGeogCS
 from iris.coords import AuxCoord
 from iris.cube import Cube
 from iris.tests import _shared_utils
@@ -334,13 +334,18 @@ def test_2D_guess_bounds_rotational_equivalence():
 
     # Rotate the guessed lat-lon bounds.
     rotated_lon_bounds, rotated_lat_bounds = _transform_xy(
-        unrotated_cs, lon_bounds_unrotated.flatten(), lat_bounds_unrotated.flatten(), rotated_cs
+        unrotated_cs,
+        lon_bounds_unrotated.flatten(),
+        lat_bounds_unrotated.flatten(),
+        rotated_cs,
     )
 
     # Rotate the lat-lon points.
     lat = cube.coord("latitude")
     lon = cube.coord("longitude")
-    lon.points, lat.points = _transform_xy(unrotated_cs, lon.points, lat.points, rotated_cs)
+    lon.points, lat.points = _transform_xy(
+        unrotated_cs, lon.points, lat.points, rotated_cs
+    )
 
     # guess the bounds after rotating the lat-lon points.
     _2D_guess_bounds(cube, extrapolate=True, in_place=True)
@@ -359,10 +364,14 @@ def test_2D_guess_bounds_transpose_equivalence():
 
     def transpose_2D_coord(coord):
         new_points = coord.points.transpose()
-        new_bounds = coord.bounds.transpose((1, 0, 2))[:,:,(0,3,2,1)]
-        new_coord = AuxCoord(new_points, bounds=new_bounds, standard_name=coord.standard_name, units=coord.units)
+        new_bounds = coord.bounds.transpose((1, 0, 2))[:, :, (0, 3, 2, 1)]
+        new_coord = AuxCoord(
+            new_points,
+            bounds=new_bounds,
+            standard_name=coord.standard_name,
+            units=coord.units,
+        )
         return new_coord
-
 
     cube_transposed.transpose()
 
@@ -404,5 +413,5 @@ def test_2D_guess_bounds_coord_systems():
     mercator_cube.coord("latitude").coord_system = mercator_cs
     mercator_cube.coord("longitude").coord_system = mercator_cs
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Coordinate systems are expected geodetic."):
         _2D_guess_bounds(mercator_cube)
