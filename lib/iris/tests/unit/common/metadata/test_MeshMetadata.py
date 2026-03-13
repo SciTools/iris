@@ -94,8 +94,9 @@ class Test__eq__:
         # The "node_dimension", "edge_dimension" and "face_dimension" members
         # are stateful only; they do not participate in lenient/strict equivalence.
         self.members_dim_names = filter(
-            lambda member: member
-            in ("node_dimension", "edge_dimension", "face_dimension"),
+            lambda member: (
+                member in ("node_dimension", "edge_dimension", "face_dimension")
+            ),
             self.cls._members,
         )
 

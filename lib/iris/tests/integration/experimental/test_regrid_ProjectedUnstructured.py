@@ -4,15 +4,10 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for experimental regridding."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-import unittest
-
 import cartopy.crs as ccrs
 from cf_units import Unit
 import numpy as np
+import pytest
 
 import iris
 import iris.aux_factory
@@ -21,13 +16,15 @@ from iris.experimental.regrid import (
     ProjectedUnstructuredLinear,
     ProjectedUnstructuredNearest,
 )
+from iris.tests import _shared_utils
 from iris.tests.stock import global_pp
 
 
-@tests.skip_data
-class TestProjectedUnstructured(tests.IrisTest):
-    def setUp(self):
-        path = tests.get_data_path(
+@_shared_utils.skip_data
+class TestProjectedUnstructured:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        path = _shared_utils.get_data_path(
             ("NetCDF", "unstructured_grid", "theta_nodal_not_ugrid.nc")
         )
         self.src = iris.load_cube(path, "Potential Temperature")
@@ -41,37 +38,37 @@ class TestProjectedUnstructured(tests.IrisTest):
 
     def test_nearest(self):
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest())
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res, (1, 6, 73, 96), 315.8913582, 11.00063922733, rtol=1e-8
         )
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res[:, 0], (1, 73, 96), 299.99993826, 3.9226378869e-5
         )
 
     def test_nearest_sinusoidal(self):
         crs = ccrs.Sinusoidal()
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredNearest(crs))
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res, (1, 6, 73, 96), 315.891358296, 11.000639227, rtol=1e-8
         )
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res[:, 0], (1, 73, 96), 299.99993826, 3.9223839688e-5
         )
 
-    @unittest.skip("Deprecated API and provenance of reference numbers unknown.")
+    @pytest.mark.skip("Deprecated API and provenance of reference numbers unknown.")
     def test_nearest_gnomonic_uk_domain(self):
         crs = ccrs.Gnomonic(central_latitude=60.0)
         uk_grid = self.global_grid.intersection(longitude=(-20, 20), latitude=(40, 80))
         res = self.src.regrid(uk_grid, ProjectedUnstructuredNearest(crs))
 
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res,
             (1, 6, 17, 11),
             315.8854720963427,
             11.000539210625737,
             rtol=1e-8,
         )
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res[:, 0],
             (1, 17, 11),
             299.9999985207442,
@@ -84,7 +81,9 @@ class TestProjectedUnstructured(tests.IrisTest):
                 [318.92881733, 318.92881733, 318.92881733],
             ]
         )
-        self.assertArrayAlmostEqual(expected_subset, res.data[0, 3, 5:8, 4:7].data)
+        _shared_utils.assert_array_almost_equal(
+            expected_subset, res.data[0, 3, 5:8, 4:7].data
+        )
 
     def test_nearest_aux_factories(self):
         src = self.src
@@ -121,20 +120,22 @@ class TestProjectedUnstructured(tests.IrisTest):
         )
         res = src.regrid(self.global_grid, ProjectedUnstructuredNearest())
 
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res, (1, 6, 73, 96), 315.8913582, 11.000639227334, rtol=1e-8
         )
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res[:, 0], (1, 73, 96), 299.99993826, 3.9226378869e-5
         )
-        self.assertEqual(res.coord("altitude").shape, (6, 73, 96))
+        assert res.coord("altitude").shape == (6, 73, 96)
 
     def test_linear_sinusoidal(self):
         res = self.src.regrid(self.global_grid, ProjectedUnstructuredLinear())
-        self.assertArrayShapeStats(
+        _shared_utils.assert_array_shape_stats(
             res, (1, 6, 73, 96), 315.8914839, 11.0006338412, rtol=1e-8
         )
-        self.assertArrayShapeStats(res[:, 0], (1, 73, 96), 299.99993826, 3.775024069e-5)
+        _shared_utils.assert_array_shape_stats(
+            res[:, 0], (1, 73, 96), 299.99993826, 3.775024069e-5
+        )
         expected_subset = np.array(
             [
                 [299.999987, 299.999996, 299.999999],
@@ -142,8 +143,6 @@ class TestProjectedUnstructured(tests.IrisTest):
                 [299.999973, 299.999977, 299.999982],
             ]
         )
-        self.assertArrayAlmostEqual(expected_subset, res.data[0, 0, 20:23, 40:43].data)
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_almost_equal(
+            expected_subset, res.data[0, 0, 20:23, 40:43].data
+        )

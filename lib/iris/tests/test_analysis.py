@@ -213,8 +213,8 @@ class TestAnalysisWeights:
         if a.dtype > np.float32:
             cast_data = a.data.astype(np.float32)
             a.data = cast_data
-        _shared_utils.assert_CML_approx_data(
-            self.request, a, ("analysis", "weighted_mean_lat.cml")
+        _shared_utils.assert_CML(
+            self.request, a, ("analysis", "weighted_mean_lat.cml"), approx_data=True
         )
 
         b = cube.collapsed(lon_coord, iris.analysis.MEAN, weights=weights)
@@ -222,8 +222,8 @@ class TestAnalysisWeights:
             cast_data = b.data.astype(np.float32)
             b.data = cast_data
         b.data = np.asarray(b.data)
-        _shared_utils.assert_CML_approx_data(
-            self.request, b, ("analysis", "weighted_mean_lon.cml")
+        _shared_utils.assert_CML(
+            self.request, b, ("analysis", "weighted_mean_lon.cml"), approx_data=True
         )
         assert b.coord("dummy").shape == (1,)
 
@@ -234,8 +234,8 @@ class TestAnalysisWeights:
         if c.dtype > np.float32:
             cast_data = c.data.astype(np.float32)
             c.data = cast_data
-        _shared_utils.assert_CML_approx_data(
-            self.request, c, ("analysis", "weighted_mean_latlon.cml")
+        _shared_utils.assert_CML(
+            self.request, c, ("analysis", "weighted_mean_latlon.cml"), approx_data=True
         )
         assert c.coord("dummy").shape == (1,)
 
@@ -331,25 +331,32 @@ class TestAnalysisBasic:
         _shared_utils.assert_CML(self.request, self.cube, ("analysis", original_name))
 
         a = self.cube.collapsed("grid_latitude", aggregate)
-        _shared_utils.assert_CML_approx_data(
-            self.request, a, ("analysis", "%s_latitude.cml" % name), *args, **kwargs
+        _shared_utils.assert_CML(
+            self.request,
+            a,
+            ("analysis", "%s_latitude.cml" % name),
+            *args,
+            approx_data=True,
+            **kwargs,
         )
 
         b = a.collapsed("grid_longitude", aggregate)
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             self.request,
             b,
             ("analysis", "%s_latitude_longitude.cml" % name),
             *args,
+            approx_data=True,
             **kwargs,
         )
 
         c = self.cube.collapsed(["grid_latitude", "grid_longitude"], aggregate)
-        _shared_utils.assert_CML_approx_data(
+        _shared_utils.assert_CML(
             self.request,
             c,
             ("analysis", "%s_latitude_longitude_1call.cml" % name),
             *args,
+            approx_data=True,
             **kwargs,
         )
 
@@ -1012,7 +1019,8 @@ class TestAggregators:
             self.request, bar_result, ("analysis", "max_run_bar_2d.cml"), checksum=False
         )
 
-        with pytest.raises(ValueError):
+        msg = "Not possible to calculate runs over more than one dimension"
+        with pytest.raises(ValueError, match=msg):
             _ = cube.collapsed(
                 ("foo", "bar"),
                 iris.analysis.MAX_RUN,
@@ -1356,12 +1364,14 @@ class TestAreaWeightGeneration:
 
     def test_area_weights_no_lon_bounds(self):
         self.cube.coord("grid_longitude").bounds = None
-        with pytest.raises(ValueError):
+        msg = "Coordinates 'grid_latitude' and 'grid_longitude' must have bounds to determine the area weights."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.cartography.area_weights(self.cube)
 
     def test_area_weights_no_lat_bounds(self):
         self.cube.coord("grid_latitude").bounds = None
-        with pytest.raises(ValueError):
+        msg = "Coordinates 'grid_latitude' and 'grid_longitude' must have bounds to determine the area weights"
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.cartography.area_weights(self.cube)
 
 
@@ -1503,12 +1513,14 @@ class TestLatitudeWeightGeneration:
     def test_cosine_latitude_weights_no_latitude(self):
         # no coordinate identified as latitude
         self.cube_dim_lat.remove_coord("grid_latitude")
-        with pytest.raises(ValueError):
+        msg = "Cannot get latitude coordinate from cube 'precipitation_flux'."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.cartography.cosine_latitude_weights(self.cube_dim_lat)
 
     def test_cosine_latitude_weights_multiple_latitude(self):
         # two coordinates identified as latitude
-        with pytest.raises(ValueError):
+        msg = "Multiple latitude coords are currently disallowed."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.cartography.cosine_latitude_weights(self.cube)
 
 

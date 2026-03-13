@@ -3,11 +3,18 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Classes for representing multi-dimensional data with metadata."""
+"""Classes for representing multi-dimensional data with metadata.
+
+.. z_reference:: iris.cube
+   :tags: topic_data_model;topic_lazy_data;topic_maths_stats;topic_regrid;topic_slice_combine
+
+   API reference
+"""
 
 from __future__ import annotations
 
 from collections.abc import (
+    Callable,
     Container,
     Iterable,
     Iterator,
@@ -19,10 +26,9 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, TypeGuard
+from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypeGuard
 import warnings
 from xml.dom.minidom import Document
-import zlib
 
 from cf_units import Unit
 import dask.array as da
@@ -56,6 +62,7 @@ if TYPE_CHECKING:
     from iris.mesh import MeshCoord
 import iris.exceptions
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 __all__ = ["Cube", "CubeAttrsDict", "CubeList"]
@@ -72,6 +79,12 @@ NP_PRINTOPTIONS_LEGACY = (
 
 # The XML namespace to use for CubeML documents
 XML_NAMESPACE_URI = "urn:x-iris:cubeml-0.2"
+
+
+# Type alias for all dimensional cube components (derived from iris.coords._DimensionalMetadata)
+DimensionalCubeComponent: TypeAlias = (
+    DimCoord | AuxCoord | CellMeasure | AncillaryVariable
+)
 
 
 class CubeList(list):
@@ -171,7 +184,10 @@ class CubeList(list):
         super(CubeList, self).insert(index, cube)
 
     def xml(self, checksum=False, order=True, byteorder=True):
-        """Return a string of the XML that this list of cubes represents."""
+        """Return a string of the XML that this list of cubes represents.
+
+        See :func:`iris.util.CML_SETTINGS.set` for controlling the XML output formatting.
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
             cubes_xml_element = doc.createElement("cubes")
@@ -1116,7 +1132,7 @@ class Cube(CFVariableMixin):
                 source                      'Data from Met Office Unified Model'
 
 
-    See the :doc:`user guide</userguide/index>` for more information.
+    See the :doc:`user manual</user_manual/index>` for more information.
 
     """
 
@@ -1377,6 +1393,7 @@ class Cube(CFVariableMixin):
         Return a single _DimensionalMetadata instance that matches the given
         name_or_dimensional_metadata. If one is not found, raise an error.
 
+        TODO: Deprecate in favour of `cube.component`?
         """
         found_item = None
         for cube_method in [
@@ -1472,25 +1489,25 @@ class Cube(CFVariableMixin):
         This operation preserves lazy data.
 
         """
+        dataless = self.is_dataless()
         # If the cube has units convert the data.
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("convert_units")
         if self.units.is_unknown():
             raise iris.exceptions.UnitConversionError(
                 "Cannot convert from unknown units. "
                 'The "cube.units" attribute may be set directly.'
             )
-        if self.has_lazy_data():
-            # Make fixed copies of old + new units for a delayed conversion.
-            old_unit = Unit(self.units)
-            new_unit = unit
+        if not dataless:
+            if self.has_lazy_data():
+                # Make fixed copies of old + new units for a delayed conversion.
+                old_unit = Unit(self.units)
+                new_unit = unit
 
-            pointwise_convert = partial(old_unit.convert, other=new_unit)
+                pointwise_convert = partial(old_unit.convert, other=new_unit)
 
-            new_data = _lazy.lazy_elementwise(self.lazy_data(), pointwise_convert)
-        else:
-            new_data = self.units.convert(self.data, unit)
-        self.data = new_data
+                new_data = _lazy.lazy_elementwise(self.lazy_data(), pointwise_convert)
+            else:
+                new_data = self.units.convert(self.data, unit)
+            self.data = new_data
         for key in "actual_range", "valid_max", "valid_min", "valid_range":
             if key in self.attributes.locals:
                 self.attributes.locals[key] = self.units.convert(
@@ -1902,6 +1919,33 @@ class Cube(CFVariableMixin):
             for ancillary_variable_, dim in self._ancillary_variables_and_dims
             if ancillary_variable_ is not ancillary_variable
         ]
+
+    def remove_component(
+        self, name_or_component: str | DimensionalCubeComponent
+    ) -> None:
+        """Remove a dimensional component from the cube.
+
+        Parameters
+        ----------
+        name_or_component :
+            The name or instance of the dimensional component to remove from the cube.
+            If a dimensional component object is passed, it must be one of:
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
+
+        """
+        component = self.component(name_or_component)
+        match component:
+            case iris.coords.DimCoord() | iris.coords.AuxCoord():
+                self.remove_coord(component)
+            case iris.coords.CellMeasure():
+                self.remove_cell_measure(component)
+            case iris.coords.AncillaryVariable():
+                self.remove_ancillary_variable(component)
+            case _:
+                msg = f"{type(component)!r} is not a dimensional component of a cube."  # type: ignore[unreachable]
+                raise TypeError(msg)
 
     def replace_coord(self, new_coord: DimCoord | AuxCoord) -> None:
         """Replace the coordinate whose metadata matches the given coordinate."""
@@ -2808,6 +2852,177 @@ class Cube(CFVariableMixin):
                     raise ValueError(msg)
         self._metadata_manager.cell_methods = cell_methods
 
+    def components(
+        self,
+        name_or_component: str | CoordMetadata | DimensionalCubeComponent | None = None,
+    ) -> list[DimensionalCubeComponent]:
+        """Return a list of cube dimensional components.
+
+        Parameters
+        ----------
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A list of cube components matching the given criteria.
+        """
+        components: list[DimensionalCubeComponent] = []
+
+        cube_methods: list[Callable[..., list[Any]]] = [
+            self.coords,
+            self.cell_measures,
+            self.ancillary_variables,
+        ]
+        for cube_method in cube_methods:
+            components.extend(cube_method(name_or_component))
+
+        return components
+
+    def component(
+        self, name_or_component: str | CoordMetadata | DimensionalCubeComponent
+    ) -> DimensionalCubeComponent:
+        """Return a single cube dimensional component.
+
+        Parameters
+        ----------
+        name_or_component : str | CoordMetadata | DimensionalCubeComponent | None
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * A component or metadata instance equal to that of the desired
+              cube component e.g., :class:`~iris.coords.DimCoord` or
+              :class:`~iris.common.metadata.CoordMetadata`.
+
+        Returns
+        -------
+        A cube component matching the given criteria.
+        """
+        try:
+            component = self._dimensional_metadata(name_or_component)
+        except KeyError:
+            # Special handling for KeyError raised from _dimensional_metadata to give
+            # a more informative error message.
+            msg = f"Expected to find exactly 1 cube component matching {name_or_component!r}, but found none."
+            raise iris.exceptions.CubeComponentNotFoundError(msg)
+        return component
+
+    def add_component(
+        self,
+        component: DimensionalCubeComponent,
+        data_dims: Iterable[int] | int | None = None,
+    ) -> None:
+        """Add a dimensional component to the cube.
+
+        Parameters
+        ----------
+        component :
+            The dimensional component to add to the cube. This must be one of
+            :class:`~iris.coords.DimCoord`, :class:`~iris.coords.AuxCoord`,
+            :class:`~iris.coords.CellMeasure` or
+            :class:`~iris.coords.AncillaryVariable`.
+        data_dims :
+            Integer giving the data dimension spanned by the component.
+
+        See Also
+        --------
+        add_dim_coord : For adding dimension coordinates.
+        add_aux_coord : For adding auxiliary coordinates.
+        add_cell_measure : For adding cell measures.
+        add_ancillary_variable : For adding ancillary variables.
+
+        """
+
+        def _value_is_int_or_tuple_of_ints(
+            value: Any,
+        ) -> TypeGuard[int | tuple[int]]:
+            return isinstance(value, int) or (
+                isinstance(value, tuple)
+                and all(isinstance(item, int) for item in value)
+            )
+
+        match component:
+            case iris.coords.DimCoord():
+                if data_dims is None:
+                    # No data_dims given, so add as auxiliary coordinate:
+                    self.add_aux_coord(component, data_dims)
+                else:
+                    # Try to add as a dimension coordinate, but if fails try to add
+                    # as an auxiliary coordinate:
+                    try:
+                        if TYPE_CHECKING:
+                            # TypeGuard to narrow Iterable[int] -> tuple[int]
+                            assert _value_is_int_or_tuple_of_ints(data_dims)
+                        self.add_dim_coord(component, data_dims)
+                    except ValueError:
+                        self.add_aux_coord(component, data_dims)
+            case iris.coords.AuxCoord():
+                self.add_aux_coord(component, data_dims)
+            case iris.coords.CellMeasure():
+                self.add_cell_measure(component, data_dims)
+            case iris.coords.AncillaryVariable():
+                self.add_ancillary_variable(component, data_dims)
+            case _:
+                msg = f"Cannot add component of type {type(component)!r} to cube."  # type: ignore[unreachable]
+                raise iris.exceptions.CannotAddError(msg)
+
+    def component_dims(
+        self, component: str | DimensionalCubeComponent
+    ) -> tuple[int, ...]:
+        """Return the data dimensions spanned by the given cube component.
+
+        Parameters
+        ----------
+        component :
+            Either:
+
+            * A string specifying the :attr:`standard_name`, :attr:`long_name`,
+              or :attr:`var_name` which is compared against the
+              :meth:`~iris.common.mixin.CFVariableMixin.name`.
+
+            * An instance of one of the following: :class:`~iris.coords.DimCoord`,
+              :class:`~iris.coords.AuxCoord`, :class:`~iris.coords.CellMeasure` or
+              :class:`~iris.coords.AncillaryVariable`.
+
+        Returns
+        -------
+        tuple
+            A tuple of integers giving the data dimensions spanned by the
+            component.
+
+        See Also
+        --------
+        :func:`iris.cube.Cube.coord_dims` : For getting the data dimensions spanned by a coordinate.
+
+        :func:`iris.cube.Cube.cell_measure_dims` : For getting the data dimensions spanned by a cell measure.
+
+        :func:`iris.cube.Cube.ancillary_variable_dims` : For getting the data dimensions spanned by an ancillary variable.
+        """
+        component = self.component(name_or_component=component)
+        match component:
+            case iris.coords.DimCoord() | iris.coords.AuxCoord():
+                return self.coord_dims(component)
+            case iris.coords.CellMeasure():
+                return self.cell_measure_dims(component)
+            case iris.coords.AncillaryVariable():
+                return self.ancillary_variable_dims(component)
+            case _:
+                msg = (  # type: ignore[unreachable]
+                    f"Cannot get dimensions for component of type {type(component)!r}."
+                )
+                raise TypeError(msg)
+
     def core_data(self) -> np.ndarray | da.Array:
         """Retrieve the data array of this :class:`~iris.cube.Cube`.
 
@@ -3047,9 +3262,12 @@ class Cube(CFVariableMixin):
 
         # Fetch the data as a generic array-like object.
         cube_data = self._data_manager.core_data()
+        dataless = self.is_dataless()
 
         # Index with the keys, using orthogonal slicing.
-        dimension_mapping, data = iris.util._slice_data_with_keys(cube_data, keys)
+        dimension_mapping, data = iris.util._slice_data_with_keys(
+            cube_data, keys, shape=self.shape
+        )
 
         # We don't want a view of the data, so take a copy of it.
         data = deepcopy(data)
@@ -3061,14 +3279,11 @@ class Cube(CFVariableMixin):
         if isinstance(data, ma.core.MaskedConstant) and data.dtype != cube_data.dtype:
             data = ma.array(data.data, mask=data.mask, dtype=cube_data.dtype)
 
-        # Make the new cube slice
-        cube = self.__class__(data)
-        cube.metadata = deepcopy(self.metadata)
-
         # Record a mapping from old coordinate IDs to new coordinates,
         # for subsequent use in creating updated aux_factories.
         coord_mapping = {}
 
+        aux_coords = []
         # Slice the coords
         for coord in self.aux_coords:
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
@@ -3078,28 +3293,52 @@ class Cube(CFVariableMixin):
                 # TODO make this except more specific to catch monotonic error
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-            cube.add_aux_coord(new_coord, new_coord_dims(coord))
+            aux_coords.append((new_coord, new_coord_dims(coord)))
             coord_mapping[id(coord)] = new_coord
 
-        for coord in self.dim_coords:
-            coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
-            new_dims = new_coord_dims(coord)
-            # Try/Catch to handle slicing that makes the points/bounds
-            # non-monotonic
+        dim_coords = []
+        shape = ()
+
+        for dim in range(self.ndim):
+            coord_keys = full_slice[dim]
             try:
-                new_coord = coord[coord_keys]
-                if not new_dims:
-                    # If the associated dimension has been sliced so the coord
-                    # is a scalar move the coord to the aux_coords container
-                    cube.add_aux_coord(new_coord, new_dims)
-                else:
-                    cube.add_dim_coord(new_coord, new_dims)
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
-                # Attempt to slice it by converting to AuxCoord first
-                new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
-                cube.add_aux_coord(new_coord, new_dims)
-            coord_mapping[id(coord)] = new_coord
+                coord = self.coord(dimensions=dim, dim_coords=True)
+                new_dims = new_coord_dims(coord)
+                # Try/Catch to handle slicing that makes the points/bounds
+                # non-monotonic
+                try:
+                    new_coord = coord[coord_keys]
+                    if not new_dims:
+                        # If the associated dimension has been sliced so the coord
+                        # is a scalar move the coord to the aux_coords container
+                        aux_coords.append((new_coord, new_dims))
+                    else:
+                        dim_coords.append((new_coord, new_dims))
+                        shape += new_coord.core_points().shape
+                except ValueError:
+                    # TODO make this except more specific to catch monotonic error
+                    # Attempt to slice it by converting to AuxCoord first
+                    new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
+                    aux_coords.append((new_coord, new_dims))
+                coord_mapping[id(coord)] = new_coord
+            except iris.exceptions.CoordinateNotFoundError:
+                points = np.zeros(self.shape[dim])[coord_keys]
+                if points.shape != ():
+                    dim_shape = points.shape
+                    shape += dim_shape
+
+        # Make the new cube slice
+        if dataless:
+            cube = self.__class__(shape=shape)
+        else:
+            cube = self.__class__(data)
+        cube.metadata = deepcopy(self.metadata)
+
+        for coord, dim in dim_coords:
+            cube.add_dim_coord(coord, dim)
+
+        for coord, dims in aux_coords:
+            cube.add_aux_coord(coord, dims)
 
         for factory in self.aux_factories:
             cube.add_aux_factory(factory.updated(coord_mapping))
@@ -3128,8 +3367,6 @@ class Cube(CFVariableMixin):
         whole cube is returned. As such, the operation is not strict.
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("subset")
         if not isinstance(coord, iris.coords.Coord):
             raise ValueError("coord_to_extract must be a valid Coord.")
 
@@ -3251,8 +3488,6 @@ class Cube(CFVariableMixin):
             which intersects with the requested coordinate intervals.
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("intersection")
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
@@ -3324,9 +3559,17 @@ class Cube(CFVariableMixin):
         if len(chunks) == 1:
             result = chunks[0]
         else:
-            chunk_data = [chunk.core_data() for chunk in chunks]
-            data = _lazy.concatenate(chunk_data, axis=dim)
-            result = iris.cube.Cube(data)
+            if self.is_dataless():
+                old_shape = list(self.shape)
+                newlen = sum(chunk.coord(coord).shape[0] for chunk in chunks)
+                old_shape[dim] = newlen
+                new_shape = tuple(old_shape)
+                data = None
+            else:
+                chunk_data = [chunk.core_data() for chunk in chunks]
+                data = _lazy.concatenate(chunk_data, axis=dim)
+                new_shape = None
+            result = iris.cube.Cube(data=data, shape=new_shape)
             result.metadata = deepcopy(self.metadata)
 
             # Record a mapping from old coordinate IDs to new coordinates,
@@ -3777,9 +4020,6 @@ class Cube(CFVariableMixin):
             dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("slices")
-
         if not isinstance(ordered, bool):
             raise TypeError("'ordered' argument to slices must be boolean.")
 
@@ -3867,9 +4107,14 @@ class Cube(CFVariableMixin):
 
         # Transpose the data payload.
         dm = self._data_manager
-        if not self.is_dataless():
+        if self.is_dataless():
+            data = None
+            shape = dm.shape
+        else:
             data = dm.core_data().transpose(new_order)
-        self._data_manager = DataManager(data)
+            shape = None
+
+        self._data_manager = DataManager(data=data, shape=shape)
 
         dim_mapping = {src: dest for dest, src in enumerate(new_order)}
 
@@ -3902,12 +4147,29 @@ class Cube(CFVariableMixin):
         order: bool = True,
         byteorder: bool = True,
     ) -> str:
-        """Return a fully valid CubeML string representation of the Cube."""
+        """Return a fully valid CubeML string representation of the Cube.
+
+        The format of the generated XML can be controlled using the
+        ``iris.util.CML_SETTINGS.set`` method as a context manager.
+
+        For example, to include array statistics for the coordinate data:
+
+        .. code-block:: python
+
+            with CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
+
+        See :func:`iris.util.CML_SETTINGS.set` for more details.
+
+        """
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             doc = Document()
 
             cube_xml_element = self._xml_element(
-                doc, checksum=checksum, order=order, byteorder=byteorder
+                doc,
+                checksum=checksum,
+                order=order,
+                byteorder=byteorder,
             )
             cube_xml_element.setAttribute("xmlns", XML_NAMESPACE_URI)
             doc.appendChild(cube_xml_element)
@@ -3916,7 +4178,13 @@ class Cube(CFVariableMixin):
             doc = self._sort_xml_attrs(doc)
             return iris.util._print_xml(doc)
 
-    def _xml_element(self, doc, checksum=False, order=True, byteorder=True):
+    def _xml_element(
+        self,
+        doc,
+        checksum=False,
+        order=True,
+        byteorder=True,
+    ):
         cube_xml_element = doc.createElement("cube")
 
         if self.standard_name:
@@ -4006,39 +4274,46 @@ class Cube(CFVariableMixin):
         data_xml_element = doc.createElement("data")
         data_xml_element.setAttribute("shape", str(self.shape))
 
-        # NB. Getting a checksum triggers any deferred loading,
+        # NB. Getting a checksum or data stats triggers any deferred loading,
         # in which case it also has the side-effect of forcing the
         # byte order to be native.
+
         if checksum:
             data = self.data
-
-            # Ensure consistent memory layout for checksums.
-            def normalise(data):
-                data = np.ascontiguousarray(data)
-                if data.dtype.newbyteorder("<") != data.dtype:
-                    data = data.byteswap(False)
-                    data.dtype = data.dtype.newbyteorder("<")
-                return data
-
+            crc = iris.util.array_checksum(data)
+            data_xml_element.setAttribute("checksum", crc)
             if ma.isMaskedArray(data):
-                # Fill in masked values to avoid the checksum being
-                # sensitive to unused numbers. Use a fixed value so
-                # a change in fill_value doesn't affect the
-                # checksum.
-                crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
                 if ma.is_masked(data):
-                    crc = "0x%08x" % (zlib.crc32(normalise(data.mask)) & 0xFFFFFFFF,)
+                    crc = iris.util.array_checksum(data.mask)
                 else:
                     crc = "no-masked-elements"
                 data_xml_element.setAttribute("mask_checksum", crc)
+
+        if CML_SETTINGS.data_array_stats:
+            data = self.data
+            data_min = data.min()
+            data_max = data.max()
+            if data_min == data_max:
+                # When data is constant, std() is too sensitive.
+                data_std = 0
             else:
-                crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
-                data_xml_element.setAttribute("checksum", crc)
-        elif self.has_lazy_data():
-            data_xml_element.setAttribute("state", "deferred")
-        else:
-            data_xml_element.setAttribute("state", "loaded")
+                data_std = data.std()
+
+            stats_xml_element = doc.createElement("stats")
+            stats_xml_element.setAttribute("std", str(data_std))
+            stats_xml_element.setAttribute("min", str(data_min))
+            stats_xml_element.setAttribute("max", str(data_max))
+            stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+            stats_xml_element.setAttribute("mean", str(data.mean()))
+
+            data_xml_element.appendChild(stats_xml_element)
+
+        # We only print the "state" if we have not output checksum or data stats:
+        if not (checksum or CML_SETTINGS.data_array_stats):
+            if self.has_lazy_data():
+                data_xml_element.setAttribute("state", "deferred")
+            else:
+                data_xml_element.setAttribute("state", "loaded")
 
         # Add the dtype, and also the array and mask orders if the
         # data is loaded.
@@ -4065,8 +4340,14 @@ class Cube(CFVariableMixin):
                 if array_byteorder is not None:
                     data_xml_element.setAttribute("byteorder", array_byteorder)
 
-            if order and ma.isMaskedArray(data):
-                data_xml_element.setAttribute("mask_order", _order(data.mask))
+            if ma.isMaskedArray(data):
+                if CML_SETTINGS.masked_value_count:
+                    data_xml_element.setAttribute(
+                        "masked_count", str(np.count_nonzero(data.mask))
+                    )
+                if order:
+                    data_xml_element.setAttribute("mask_order", _order(data.mask))
+
         else:
             dtype = self.lazy_data().dtype
         data_xml_element.setAttribute("dtype", dtype.name)
@@ -4364,8 +4645,6 @@ class Cube(CFVariableMixin):
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("collapsed")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4468,7 +4747,7 @@ class Cube(CFVariableMixin):
 
         # If we weren't able to complete a lazy aggregation, compute it
         # directly now.
-        if data_result is None:
+        if data_result is None and not self.is_dataless():
             # Perform the (non-lazy) aggregation over the cube data
             # First reshape the data so that the dimensions being aggregated
             # over are grouped 'at the end' (i.e. axis=-1).
@@ -4586,8 +4865,6 @@ x            -              -
                     STASH                       m01s00i024
 
         """
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("aggregated_by")
         # Update weights kwargs (if necessary) to handle different types of
         # weights
         weights_info = None
@@ -4652,8 +4929,10 @@ x            -              -
         # coordinate dimension.
         shared_coords = list(
             filter(
-                lambda coord_: coord_ not in groupby_coords
-                and dimension_to_groupby in self.coord_dims(coord_),
+                lambda coord_: (
+                    coord_ not in groupby_coords
+                    and dimension_to_groupby in self.coord_dims(coord_)
+                ),
                 self.dim_coords + self.aux_coords,
             )
         )
@@ -4690,59 +4969,64 @@ x            -              -
             orig_id = id(self.coord(coord))
             coord_mapping[orig_id] = coord
 
-        # Determine the group-by cube data shape.
-        data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
-        data_shape[dimension_to_groupby] = len(groupby)
+        if not self.is_dataless():
+            # Determine the group-by cube data shape.
+            data_shape = list(self.shape + aggregator.aggregate_shape(**kwargs))
+            data_shape[dimension_to_groupby] = len(groupby)
 
-        # Choose appropriate data and functions for data aggregation.
-        if aggregator.lazy_func is not None and self.has_lazy_data():
-            input_data = self.lazy_data()
-            agg_method = aggregator.lazy_aggregate
-        else:
-            input_data = self.data
-            agg_method = aggregator.aggregate
+            # Choose appropriate data and functions for data aggregation.
+            if aggregator.lazy_func is not None and self.has_lazy_data():
+                input_data = self.lazy_data()
+                agg_method = aggregator.lazy_aggregate
+            else:
+                input_data = self.data
+                agg_method = aggregator.aggregate
 
-        # Create data and weights slices.
-        front_slice = (slice(None),) * dimension_to_groupby
-        back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
+            # Create data and weights slices.
+            front_slice = (slice(None),) * dimension_to_groupby
+            back_slice = (slice(None),) * (len(data_shape) - dimension_to_groupby - 1)
 
-        groupby_subarrs = (
-            iris.util._slice_data_with_keys(
-                input_data, front_slice + (groupby_slice,) + back_slice
-            )[1]
-            for groupby_slice in groupby.group()
-        )
-
-        if weights is not None:
-            groupby_subweights = (
-                weights[front_slice + (groupby_slice,) + back_slice]
+            groupby_subarrs = (
+                iris.util._slice_data_with_keys(
+                    input_data,
+                    front_slice + (groupby_slice,) + back_slice,
+                    shape=(self.shape),
+                )[1]
                 for groupby_slice in groupby.group()
             )
-        else:
-            groupby_subweights = (None for _ in range(len(groupby)))
 
-        # Aggregate data slices.
-        agg = iris.analysis.create_weighted_aggregator_fn(
-            agg_method, axis=dimension_to_groupby, **kwargs
-        )
-        result = tuple(map(agg, groupby_subarrs, groupby_subweights))
+            if weights is not None:
+                groupby_subweights = (
+                    weights[front_slice + (groupby_slice,) + back_slice]
+                    for groupby_slice in groupby.group()
+                )
+            else:
+                groupby_subweights = (None for _ in range(len(groupby)))
 
-        # If weights are returned, "result" is a list of tuples (each tuple
-        # contains two elements; the first is the aggregated data, the
-        # second is the aggregated weights). Convert these to two lists
-        # (one for the aggregated data and one for the aggregated weights)
-        # before combining the different slices.
-        if return_weights:
-            data_result, weights_result = list(zip(*result))
-            aggregateby_weights = _lazy.stack(weights_result, axis=dimension_to_groupby)
-        else:
-            data_result = result
-            aggregateby_weights = None
+            # Aggregate data slices.
+            agg = iris.analysis.create_weighted_aggregator_fn(
+                agg_method, axis=dimension_to_groupby, **kwargs
+            )
+            result = tuple(map(agg, groupby_subarrs, groupby_subweights))
 
-        aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
-        # Ensure plain ndarray is output if plain ndarray was input.
-        if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
-            aggregateby_data = ma.getdata(aggregateby_data)
+            # If weights are returned, "result" is a list of tuples (each tuple
+            # contains two elements; the first is the aggregated data, the
+            # second is the aggregated weights). Convert these to two lists
+            # (one for the aggregated data and one for the aggregated weights)
+            # before combining the different slices.
+            if return_weights:
+                data_result, weights_result = list(zip(*result))
+                aggregateby_weights = _lazy.stack(
+                    weights_result, axis=dimension_to_groupby
+                )
+            else:
+                data_result = result
+                aggregateby_weights = None
+
+            aggregateby_data = _lazy.stack(data_result, axis=dimension_to_groupby)
+            # Ensure plain ndarray is output if plain ndarray was input.
+            if ma.isMaskedArray(aggregateby_data) and not ma.isMaskedArray(input_data):
+                aggregateby_data = ma.getdata(aggregateby_data)
 
         # Add the aggregation meta data to the aggregate-by cube.
         aggregator.update_metadata(
@@ -4784,13 +5068,14 @@ x            -              -
             aggregateby_cube.add_aux_factory(factory.updated(coord_mapping))
 
         # Attach the aggregate-by data into the aggregate-by cube.
-        if aggregateby_weights is None:
-            data_result = aggregateby_data
-        else:
-            data_result = (aggregateby_data, aggregateby_weights)
-        aggregateby_cube = aggregator.post_process(
-            aggregateby_cube, data_result, coordinates, **kwargs
-        )
+        if not self.is_dataless():
+            if aggregateby_weights is None:
+                data_result = aggregateby_data
+            else:
+                data_result = (aggregateby_data, aggregateby_weights)
+            aggregateby_cube = aggregator.post_process(
+                aggregateby_cube, data_result, coordinates, **kwargs
+            )
 
         return aggregateby_cube
 
@@ -4887,8 +5172,7 @@ x            -               -
         """  # noqa: D214, D406, D407, D410, D411
         # Update weights kwargs (if necessary) to handle different types of
         # weights
-        if self.is_dataless():
-            raise iris.exceptions.DatalessError("rolling_window")
+        dataless = self.is_dataless()
         weights_info = None
         if kwargs.get("weights") is not None:
             weights_info = _Weights(kwargs["weights"], self)
@@ -4927,13 +5211,13 @@ x            -               -
         key = [slice(None, None)] * self.ndim
         key[dimension] = slice(None, self.shape[dimension] - window + 1)
         new_cube = new_cube[tuple(key)]
-
-        # take a view of the original data using the rolling_window function
-        # this will add an extra dimension to the data at dimension + 1 which
-        # represents the rolled window (i.e. will have a length of window)
-        rolling_window_data = iris.util.rolling_window(
-            self.core_data(), window=window, axis=dimension
-        )
+        if not dataless:
+            # take a view of the original data using the rolling_window function
+            # this will add an extra dimension to the data at dimension + 1 which
+            # represents the rolled window (i.e. will have a length of window)
+            rolling_window_data = iris.util.rolling_window(
+                self.core_data(), window=window, axis=dimension
+            )
 
         # now update all of the coordinates to reflect the aggregation
         for coord_ in self.coords(dimensions=dimension):
@@ -4982,27 +5266,30 @@ x            -               -
         )
         # and perform the data transformation, generating weights first if
         # needed
-        if isinstance(
-            aggregator, iris.analysis.WeightedAggregator
-        ) and aggregator.uses_weighting(**kwargs):
-            if "weights" in kwargs:
-                weights = kwargs["weights"]
-                if weights.ndim > 1 or weights.shape[0] != window:
-                    raise ValueError(
-                        "Weights for rolling window aggregation "
-                        "must be a 1d array with the same length "
-                        "as the window."
+        if not dataless:
+            if isinstance(
+                aggregator, iris.analysis.WeightedAggregator
+            ) and aggregator.uses_weighting(**kwargs):
+                if "weights" in kwargs:
+                    weights = kwargs["weights"]
+                    if weights.ndim > 1 or weights.shape[0] != window:
+                        raise ValueError(
+                            "Weights for rolling window aggregation "
+                            "must be a 1d array with the same length "
+                            "as the window."
+                        )
+                    kwargs = dict(kwargs)
+                    kwargs["weights"] = iris.util.broadcast_to_shape(
+                        weights, rolling_window_data.shape, (dimension + 1,)
                     )
-                kwargs = dict(kwargs)
-                kwargs["weights"] = iris.util.broadcast_to_shape(
-                    weights, rolling_window_data.shape, (dimension + 1,)
-                )
 
-        if aggregator.lazy_func is not None and self.has_lazy_data():
-            agg_method = aggregator.lazy_aggregate
+            if aggregator.lazy_func is not None and self.has_lazy_data():
+                agg_method = aggregator.lazy_aggregate
+            else:
+                agg_method = aggregator.aggregate
+            data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
         else:
-            agg_method = aggregator.aggregate
-        data_result = agg_method(rolling_window_data, axis=dimension + 1, **kwargs)
+            data_result = None
         result = aggregator.post_process(new_cube, data_result, [coord], **kwargs)
         return result
 
@@ -5095,7 +5382,9 @@ x            -               -
 
         """
         if self.is_dataless():
-            raise iris.exceptions.DatalessError("interoplate")
+            raise iris.exceptions.DatalessError(
+                "Dataless cubes cannot be interpolated."
+            )
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
         return interp(points, collapse_scalar=collapse_scalar)
@@ -5142,7 +5431,7 @@ x            -               -
 
         """
         if self.is_dataless():
-            raise iris.exceptions.DatalessError("regrid")
+            raise iris.exceptions.DatalessError("Dataless cubes cannot be regridded.")
         regridder = scheme.regridder(self, grid)
         return regridder(self)
 

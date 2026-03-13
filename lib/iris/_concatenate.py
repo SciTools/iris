@@ -239,7 +239,15 @@ class _OtherMetaData(namedtuple("OtherMetaData", ["defn", "dims"])):
         return self.defn.name()
 
 
-class _SkeletonCube(namedtuple("SkeletonCube", ["signature", "data"])):
+class _SkeletonCube(
+    namedtuple(
+        "SkeletonCube",
+        ["signature", "data", "shape"],
+        defaults=[
+            None,
+        ],
+    )
+):
     """Basis of a source-cube.
 
     Basis of a source-cube, containing the associated coordinate metadata,
@@ -575,8 +583,6 @@ def concatenate(
     """
     cube_signatures = []
     for cube in cubes:
-        if cube.is_dataless():
-            raise iris.exceptions.DatalessError("concatenate")
         cube_signatures.append(_CubeSignature(cube))
 
     proto_cubes: list[_ProtoCube] = []
@@ -869,8 +875,13 @@ class _CubeSignature:
             msgs.append(
                 msg_template.format("Data dimensions", "", self.ndim, other.ndim)
             )
-        # Check data type.
-        if self.data_type != other.data_type:
+        if (
+            self.data_type is not None
+            and other.data_type is not None
+            and self.data_type != other.data_type
+        ):
+            # N.B. allow "None" to match any other dtype: this means that dataless
+            # cubes can merge with 'dataful' ones.
             msgs.append(
                 msg_template.format("Data types", "", self.data_type, other.data_type)
             )
@@ -1026,7 +1037,9 @@ class _ProtoCube:
 
         # The list of source-cubes relevant to this proto-cube.
         self._skeletons = []
-        self._add_skeleton(self._coord_signature, self._cube.lazy_data())
+        self._add_skeleton(
+            self._coord_signature, self._cube.lazy_data(), shape=self._cube.shape
+        )
 
         # The nominated axis of concatenation.
         self._axis = None
@@ -1090,6 +1103,10 @@ class _ProtoCube:
 
             # Concatenate the new data payload.
             data = self._build_data()
+            if data is None:
+                shape = [coord.shape[0] for coord, _dim in dim_coords_and_dims]
+            else:
+                shape = None
 
             # Build the new cube.
             all_aux_coords_and_dims = aux_coords_and_dims + [
@@ -1098,6 +1115,7 @@ class _ProtoCube:
             kwargs = cube_signature.defn._asdict()
             cube = iris.cube.Cube(
                 data,
+                shape=shape,
                 dim_coords_and_dims=dim_coords_and_dims,
                 aux_coords_and_dims=all_aux_coords_and_dims,
                 cell_measures_and_dims=cell_measures_and_dims,
@@ -1268,7 +1286,11 @@ class _ProtoCube:
 
         if match:
             # Register the cube as a source-cube for this proto-cube.
-            self._add_skeleton(coord_signature, cube_signature.src_cube.lazy_data())
+            self._add_skeleton(
+                coord_signature,
+                cube_signature.src_cube.lazy_data(),
+                shape=cube_signature.src_cube.shape,
+            )
             # Declare the nominated axis of concatenation.
             self._axis = candidate_axis
             # If the protocube dimension order is constant (indicating it was
@@ -1284,7 +1306,7 @@ class _ProtoCube:
 
         return match, mismatch_error_msg
 
-    def _add_skeleton(self, coord_signature, data):
+    def _add_skeleton(self, coord_signature, data, shape=None):
         """Create and add the source-cube skeleton to the :class:`_ProtoCube`.
 
         Parameters
@@ -1298,7 +1320,7 @@ class _ProtoCube:
             source-cube.
 
         """
-        skeleton = _SkeletonCube(coord_signature, data)
+        skeleton = _SkeletonCube(coord_signature, data, shape)
         self._skeletons.append(skeleton)
 
     def _build_aux_coordinates(self):
@@ -1534,9 +1556,22 @@ class _ProtoCube:
 
         """
         skeletons = self._skeletons
-        data = [skeleton.data for skeleton in skeletons]
 
-        data = concatenate_arrays(data, self.axis)
+        if all(skeleton.data is None for skeleton in skeletons):
+            data = None
+        else:
+            data = []
+            for skeleton in skeletons:
+                if skeleton.data is None:
+                    skeleton_data = da.ma.masked_array(
+                        data=da.zeros(skeleton.shape, dtype=np.int8),
+                        mask=da.ones(skeleton.shape),
+                    )
+                else:
+                    skeleton_data = skeleton.data
+                data.append(skeleton_data)
+
+            data = concatenate_arrays(data, self.axis)
 
         return data
 

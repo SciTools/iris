@@ -34,7 +34,6 @@ recursive-include requirements *.txt
 
 #---------
 # SECTION: root files
-exclude .flake8
 exclude .git-blame-ignore-revs
 exclude .git_archival.txt
 exclude .gitattributes

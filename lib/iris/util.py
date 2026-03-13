@@ -2,21 +2,31 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Miscellaneous utility functions."""
+"""Miscellaneous utility functions.
+
+.. z_reference:: iris.util
+   :tags: topic_data_model;topic_slice_combine
+
+   API reference
+"""
 
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from contextlib import contextmanager
 from copy import deepcopy
+from dataclasses import dataclass
 import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
+import threading
 from typing import TYPE_CHECKING, Any, List, Literal
 from warnings import warn
+import zlib
 
 import cf_units
 from dask import array as da
@@ -25,7 +35,6 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
-from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
 from iris.coord_systems import GeogCS
@@ -33,6 +42,11 @@ import iris.exceptions
 import iris.warnings
 
 if TYPE_CHECKING:
+    import cartopy
+    from numpy.typing import ArrayLike
+    import pyproj
+    import shapely
+
     from iris.cube import Cube, CubeList
 
 
@@ -84,7 +98,7 @@ def broadcast_to_shape(array, shape, dim_map, chunks=None):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if isinstance(array, da.Array):
@@ -167,7 +181,7 @@ def delta(ndarray, dimension, circular=False):
     .. note::
 
         This function maintains laziness when called; it does not realise data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if circular is not False:
@@ -209,7 +223,7 @@ def describe_diff(cube_a, cube_b, output_file=None):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. note::
 
@@ -286,7 +300,7 @@ def guess_coord_axis(coord) -> Axis | None:
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     The ``guess_coord_axis`` behaviour can be skipped by setting the
     :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
@@ -363,7 +377,7 @@ def rolling_window(
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if window < 1:
@@ -468,7 +482,7 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
 
     Parameters
     ----------
-    array1, array2 : arraylike
+    array1, array2 : array-like
         Args to be compared, normalised if necessary with :func:`np.asarray`.
     withnans : default=False
         When unset (default), the result is False if either input contains NaN
@@ -483,7 +497,7 @@ def array_equal(array1, array2, withnans: bool = False) -> bool:
     additional support for arrays of strings and NaN-tolerant operation.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
 
     def normalise_array(array):
@@ -532,7 +546,7 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. deprecated:: 3.2.0
 
@@ -592,7 +606,7 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if lh_inclusive and rh_inclusive:
@@ -652,7 +666,7 @@ def reverse(cube_or_array, coords_or_dims):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -724,7 +738,7 @@ def monotonic(array, strict=False, return_direction=False):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if array.ndim != 1 or len(array) <= 1:
@@ -781,7 +795,7 @@ def column_slices_generator(full_slice, ndims):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     list_of_slices = []
@@ -902,7 +916,7 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
-def _slice_data_with_keys(data, keys):
+def _slice_data_with_keys(data, keys, shape=None):
     """Index an array-like object as "data[keys]", with orthogonal indexing.
 
     Parameters
@@ -911,6 +925,9 @@ def _slice_data_with_keys(data, keys):
         Array to index.
     keys : list
         List of indexes, as received from a __getitem__ call.
+    shape : tuple, optional
+        Tuple of dimension lengths. Only used when wanting
+        dim_maps, but no data i.e. in dataless operations.
 
     Returns
     -------
@@ -935,14 +952,31 @@ def _slice_data_with_keys(data, keys):
     # column_slices_generator.
     # By slicing on only one index at a time, this also mostly avoids copying
     # the data, except some cases when a key contains a list of indices.
-    n_dims = len(data.shape)
+    if data is not None:
+        shape = data.shape
+    elif shape is None:
+        raise TypeError("Dataless slicing requires shape.")
+    n_dims = len(shape)
     full_slice = _build_full_slice_given_keys(keys, n_dims)
     dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
-    for this_slice in slices_iter:
-        data = data[this_slice]
-        if data.ndim > 0 and min(data.shape) < 1:
-            # Disallow slicings where a dimension has no points, like "[5:5]".
-            raise IndexError("Cannot index with zero length slice.")
+
+    if data is not None:
+        for this_slice in slices_iter:
+            data = data[this_slice]
+            if data.ndim > 0 and min(data.shape) < 1:
+                # Disallow slicings where a dimension has no points, like "[5:5]".
+                raise IndexError("Cannot index with zero length slice.")
+    else:
+        if not isinstance(keys, tuple):
+            keys = tuple([keys])
+        for key in keys:
+            if isinstance(key, slice):
+                if (
+                    len(shape) > 0
+                    and (key.start and key.stop)
+                    and key.start == key.stop
+                ):
+                    raise IndexError("Cannot index with zero length slice.")
 
     return dims_mapping, data
 
@@ -1165,7 +1199,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if clip_length >= len(the_str) or clip_length <= 0:
@@ -1187,7 +1221,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-def format_array(arr):
+def format_array(arr, edgeitems=3):
     """Create a new axis as the leading dimension of the cube.
 
     Returns the given array as a string, using the python builtin str
@@ -1200,7 +1234,7 @@ def format_array(arr):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     max_line_len = 50
@@ -1208,6 +1242,7 @@ def format_array(arr):
     result = np.array2string(
         arr,
         max_line_len,
+        edgeitems=edgeitems,
         separator=", ",
         threshold=85,
     )
@@ -1253,7 +1288,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
 
@@ -1372,7 +1407,7 @@ def squeeze(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
@@ -1449,7 +1484,7 @@ def is_regular(coord):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     try:
         regular_step(coord)
@@ -1466,7 +1501,7 @@ def regular_step(coord):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if coord.ndim != 1:
@@ -1500,7 +1535,7 @@ def regular_points(zeroth, step, count):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
 
     def make_steps(dtype: np.dtype):
@@ -1532,7 +1567,7 @@ def points_step(points):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # Calculations only make sense with multiple points
     points = np.asanyarray(points)
@@ -1567,7 +1602,7 @@ def unify_time_units(cubes):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     epochs = {}
@@ -1709,7 +1744,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.coords import Coord, DimCoord
@@ -1828,7 +1863,7 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.coords import Coord
@@ -1922,7 +1957,7 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     lats_and_lons = [
@@ -2056,7 +2091,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 
     """
@@ -2107,7 +2142,7 @@ def equalise_attributes(cubes):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # deferred import to avoid circularity problem
@@ -2183,7 +2218,7 @@ def is_masked(array):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 
     """
@@ -2222,26 +2257,28 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
-    """Take a shape object and masks all points not touching it in a cube.
-
-    Finds the overlap between the `shape` and the `cube` in 2D xy space and
-    masks out any cells with less % overlap with shape than set.
-    Default behaviour is to count any overlap between shape and cell as valid
+def mask_cube_from_shapefile(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    minimum_weight: float = 0.0,
+    in_place: bool = False,
+) -> iris.cube.Cube | None:
+    """Mask all points in a cube that do not intersect a shapefile object.
 
     Parameters
     ----------
     cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`.
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+         rather than a :class:`~iris.cube.CubeList`.
     shape : Shapely.Geometry object
-        A single `shape` of the area to remain unmasked on the `cube`.
+        A single `shape` of the area to remain unmasked on the ``cube``.
         If it a line object of some kind then minimum_weight will be ignored,
         because you cannot compare the area of a 1D line and 2D Cell.
     minimum_weight : float , default=0.0
         A number between 0-1 describing what % of a cube cell area must
         the shape overlap to include it.
     in_place : bool, default=False
-        Whether to mask the `cube` in-place or return a newly masked `cube`.
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
         Defaults to False.
 
     Returns
@@ -2253,32 +2290,208 @@ def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
     --------
     :func:`~iris.util.mask_cube`
         Mask any cells in the cube’s data array.
+    :func:`~iris.util.mask_cube_from_shape`
+        Mask all points in a cube that do not intersect a shape object.
 
     Notes
     -----
-    This function allows masking a cube with any cartopy projection by a shape object,
-    most commonly from Natural Earth Shapefiles via cartopy.
-    To mask a cube from a shapefile, both must first be on the same coordinate system.
-    Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
-    The shapefile is projected to the coord system of the cube using cartopy, then each cell
-    is compared to the shapefile to determine overlap and populate a true/false array
-    This array is then used to mask the cube using the `iris.util.mask_cube` function
-    This uses numpy arithmetic logic for broadcasting, so you may encounter unexpected
-    results if your cube has other dimensions the same length as the x/y dimensions
+    .. deprecated:: 3.14
+
+        :func:`mask_cube_from_shapefile` function is scheduled for removal in a
+        future release, being replaced by :func:`iris.util.mask_cube_from_shape`,
+        which offers richer shape handling.
+
+    Warnings
+    --------
+    This function requires additional dependencies:
+    `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
+    """
+    message = (
+        "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
+        "future release. Please use iris.util.mask_cube_from_shape instead."
+    )
+    warn_deprecated(message)
+
+    # Make depreciated function defaults:
+    # https://github.com/SciTools/iris/blob/fa6d61dd5f358c9e6b585a132cc213acebf95b70/lib/iris/_shapefiles.py#L142C18-L144C6
+    from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
+
+    shape_crs = iris.coord_systems.GeogCS(
+        DEFAULT_SPHERICAL_EARTH_RADIUS
+    ).as_cartopy_projection()
+    # Call the new function `mask_cube_from_shape`with the same parameters.
+    return mask_cube_from_shape(
+        cube,
+        shape,
+        shape_crs=shape_crs,
+        in_place=in_place,
+        minimum_weight=minimum_weight,
+    )
+
+
+def mask_cube_from_shape(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | pyproj.CRS = None,
+    in_place: bool = False,
+    minimum_weight: float = 0.0,
+    all_touched: bool | None = None,
+    invert: bool = False,
+) -> iris.cube.Cube | None:
+    """Mask all points in a cube that do not intersect a shape object.
+
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles
+    via ``cartopy``). Finds the overlap between the ``shape`` and the :class:`~iris.cube.Cube`
+    and masks out any cells that *do not* intersect the shape.
+
+    Shapes can be Polygons, Lines or Points, or their multi-part equivalents.
+
+    By default, all cells touched by geometries are kept (equivalent to ``minimum_weight=0``).
+    This behaviour can be changed by increasing the ``minimum_weight`` keyword argument or
+    setting ``all_touched=False``, then only the only cells whose *centre* is within the
+    polygon or that are selected by Bresenham’s line algorithm (for line type shapes) are kept.
+
+    For points, ``minimum_weight`` is ignored, and the cell that intersects the point
+    is kept.
+
+    Parameters
+    ----------
+    cube : :class:`~iris.cube.Cube` object
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+        rather than a :class:`~iris.cube.CubeList`.
+    shape : shapely.Geometry object
+        A single ``shape`` of the area to remain unmasked on the ``cube``.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell.
+    shape_crs : cartopy.crs.CRS, default=None
+        The coordinate reference system of the ``shape`` object.
+    in_place : bool, default=False
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
+        Defaults to ``False``.
+    minimum_weight : float, default=0.0
+        A number between 0-1 describing what percentage of a cube cell area must the shape overlap to be masked.
+        Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
+    all_touched : bool, default=None
+        If ``True``, all cells touched by the shape are kept. If ``False``, only cells whose
+        center is within the polygon or that are selected by Bresenham’s line algorithm
+        (for line type shape) are kept. Note that ``minimum_weight`` and ``all_touched`` are
+        mutually exclusive options: an error will be raised if a ``minimum_weight`` > 0 *and*
+        ``all_touched`` is set to ``True``. This is because ``all_touched=True`` is equivalent
+        to ``minimum_weight=0``.
+    invert : bool, default=False
+        If ``True``, the mask is inverted, meaning that cells that intersect the shape are masked out
+        and cells that do not intersect the shape are kept. If ``False``, the mask is applied normally,
+        meaning that cells that intersect the shape are kept and cells that do not intersect the shape
+        are masked out.
+
+    Returns
+    -------
+    iris.Cube
+        A masked version of the input cube, if ``in_place`` is ``False``.
+
+    See Also
+    --------
+    :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
 
     Examples
     --------
+    >>> import numpy as np
     >>> import shapely
-    >>> from iris.util import mask_cube_from_shapefile
+    >>> from pyproj import CRS
+    >>> from iris.util import mask_cube_from_shape
+
+    Extract a rectangular region covering the UK from a stereographic projection cube:
+
+    >>> cube = iris.load_cube(iris.sample_data_path("toa_brightness_stereographic.nc"))
+    >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
+    >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
+
+    Note that there is no change in the dimensions of the masked cube, only in the mask
+    applied to data values:
+
+    >>> print(cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {np.sum(cube.data.mask)} of {np.multiply(*cube.shape)}")
+    Masked cells: 3152 of 40960
+    >>> print(masked_cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {sum(sum(masked_cube.data.mask))} of {np.multiply(*masked_cube.shape)}")
+    Masked cells: 40062 of 40960
+
+    Extract a trajectory by using a line shapefile:
+
+    >>> from shapely import LineString
+    >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
+    >>> masked_cube = mask_cube_from_shape(cube, line, wgs84)
+
+    Standard shapely manipulations can be applied.  For example, to extract a trajectory
+    with a 1 degree buffer around it:
+
+    >>> buffer = line.buffer(1)
+    >>> masked_cube = mask_cube_from_shape(cube, buffer, wgs84)
+
+    You can load more complex shapes from other libraries. For example, to extract the
+    Canadian provience of Ontario from a cube:
+
+    >>> import cartopy.io.shapereader as shpreader
+    >>> admin1 = shpreader.natural_earth(resolution='110m',
+    ...                                  category='cultural',
+    ...                                  name='admin_1_states_provinces_lakes')
+    >>> admin1shp = shpreader.Reader(admin1).geometries()
+
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
+
+    Notes
+    -----
+    Iris does not handle the shape loading so it is agnostic to the source type of the shape.
+    The shape can be loaded from an Esri shapefile, created using the
+    `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
+    can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
+    object, such as shapes encoded in a geoJSON or KML file.
+
+    Warnings
+    --------
+    For best masking results, both the cube **and** masking geometry should have a
+    coordinate reference system (CRS) defined. Note that CRS of the masking geometry
+    must be provided explicitly to this function (via ``shape_crs``), whereas the
+    cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
+
+    Masking results will be most consistent when the cube and masking geometry have the same CRS.
+
+    If a CRS is **not** provided for the the masking geometry, the CRS of the cube is assumed.
+
+    This function requires additional dependencies: `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
+
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.  For shapes
+    that do cross these boundaries, this function expects the user to undertake fixes upstream
+    of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
+    `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
 
     """
-    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    from iris._shapefiles import create_shape_mask
+
+    shapefile_mask = create_shape_mask(
+        geometry=shape,
+        geometry_crs=shape_crs,
+        cube=cube,
+        minimum_weight=minimum_weight,
+        all_touched=all_touched,
+        invert=invert,
+    )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
+    return None
 
 
 def equalise_cubes(
@@ -2588,8 +2801,8 @@ def make_gridcube(
     xlims: tuple[float | int, float | int] = (0.0, 360.0),
     ylims: tuple[float | int, float | int] = (-90.0, 90.0),
     *,
-    x_points: np.typing.ArrayLike | None = None,
-    y_points: np.typing.ArrayLike | None = None,
+    x_points: ArrayLike | None = None,
+    y_points: ArrayLike | None = None,
     coord_system: iris.coord_systems.CoordSystem | None = None,
 ) -> Cube:
     """Make a 2D sample cube with a specified XY grid.
@@ -2597,6 +2810,9 @@ def make_gridcube(
     The cube is suitable as a regridding target, amongst other uses.
     It has one-dimensional X and Y coordinates, in a specific coordinate system.
     Both can be given either regularly spaced or irregular points.
+
+    The cube is dataless, meaning that ``cube.data`` is ``None``, but data can easily be
+    assigned if required.  See :ref:`dataless-cubes`.
 
     Parameters
     ----------
@@ -2627,7 +2843,7 @@ def make_gridcube(
     Returns
     -------
     cube: iris.cube.Cube
-        A cube with the specified grid, and all-zeroes (lazy) data.
+        A cube with the specified grid, but no data.
 
     Warnings
     --------
@@ -2644,14 +2860,14 @@ def make_gridcube(
     # float32 zero, to force minimum 'f4' floating point precision
     zero_f4 = np.asarray(
         0.0,
-        dtype="f4",  # single precision (minimum), or what was passed
+        dtype="f4",
     )
 
     def dimco(
         axis: str,  # 'x' or 'y'
         name: str,
         units: str,
-        points: np.typing.ArrayLike | None,
+        points: ArrayLike | None,
         lims: tuple[float | int, float | int],
         num: int,
         coord_system: iris.coord_systems.CoordSystem,
@@ -2732,8 +2948,244 @@ def make_gridcube(
     xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
     yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
     cube = Cube(
-        da.zeros((yco.shape[0], xco.shape[0]), dtype=np.int8),
+        data=None,
+        shape=(yco.shape[0], xco.shape[0]),
         long_name="grid_cube",
         dim_coords_and_dims=((yco, 0), (xco, 1)),
     )
     return cube
+
+
+def array_checksum(data: ArrayLike) -> str:
+    """Calculate a checksum for an array.
+
+    Returns the crc32 checksum of the array data as a hex string.
+    Masked data is filled with zeros before calculating to ensure
+    that the checksum is not sensitive to unset values.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to calculate the checksum for.
+
+    Returns
+    -------
+    str :
+        32 bit checksum hexstring, e.g. '0x1a2b3c4d'.
+    """
+
+    # Ensure consistent memory layout for checksums.
+    def normalise(data):
+        data = np.ascontiguousarray(data)
+        if data.dtype.newbyteorder("<") != data.dtype:
+            data = data.byteswap(False)
+            data.dtype = data.dtype.newbyteorder("<")
+        return data
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+
+    if ma.isMaskedArray(data):
+        # Fill in masked values to avoid the checksum being
+        # sensitive to unused numbers. Use a fixed value so
+        # a change in fill_value doesn't affect the
+        # checksum.
+        crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
+    else:
+        crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
+
+    return crc
+
+
+def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> str:
+    """Return a strictly formatted summarised view of an array (first and last N elements).
+
+    Generates a string formatted summary of the array. The first and last `edgeitems` elements
+    are printed out with strictly controlled formatting. Useful for summarising arrays in
+    tests for comparing against known good outputs.
+
+    Multi-dimensional arrays will be flattened prior to summarising.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to summarise.
+
+    edgeitems : int, optional
+        The number of elements at the beginning and end of the array to format. Should be
+        a positive value > 1. Defaults to 3.
+
+    precision : int, optional
+        The precision to use for floating point values. Defaults to 8.
+
+    Returns
+    -------
+    str :
+        A string formatted summary of the array.
+    """
+    edgeitems = max(abs(edgeitems), 1)
+    precision = max(abs(precision), 0)
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+    if data.shape == ():
+        data = np.asanyarray([data])  # Handle scalars
+
+    isnumeric = np.issubdtype(data.dtype, np.number)
+
+    def _get_format_str(data):
+        """Return the format string for the datatype."""
+        # default to empty formatting string (default python formatting)
+        fmt = ""
+
+        # for numeric types, explicitly set the formatter based on
+        # type and size of number:
+        if isnumeric:
+            data = data[np.isfinite(data)]
+
+            if data.size == 0:
+                return ""  # no valid data
+
+            abs_non_zero = np.absolute(data[data != 0])
+
+            if abs_non_zero.size:
+                abs_max = np.max(abs_non_zero)
+                abs_min = np.min(abs_non_zero)
+
+                exp_max_cutoff = 1e8
+                exp_min_cutoff = 1e-4
+
+                # If we have very large or very small numbers, prefer scientific
+                # number formatting (e.g. 1.2e7)
+                exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+            else:
+                exp_mode = False  # all data is zero
+
+            if issubclass(data.dtype.type, np.floating):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = f".{precision}f"
+            elif issubclass(data.dtype.type, np.integer):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = "d"
+        # For all other types, use default python formatting
+        return fmt
+
+    def _format(value: Any) -> str:
+        """Format a single array element in to a string."""
+        if value is np.ma.masked:
+            return "--"
+        elif isnumeric and np.isnan(value):
+            return "nan"
+        elif isnumeric and np.isinf(value):
+            if np.sign(value) < 0:
+                return "-inf"
+            return "inf"
+        else:
+            # apply the formatter
+            s = f"{value:{fmt}}"
+            if isnumeric and np.issubdtype(type(value), np.floating):
+                s = s.rstrip("0")  # strip trailing zeros from floats
+            elif isinstance(value, (str, bytes)):
+                s = f"'{s}'"  # quote strings
+            return s
+
+    data = data.ravel()  # flatten multi-dimensional arrays
+
+    if data.size > edgeitems * 2:
+        summary = np.concatenate((data[:edgeitems], data[-edgeitems:]))
+        fmt = _get_format_str(summary)
+        s = (
+            "["
+            + ", ".join(_format(x) for x in summary[:edgeitems])
+            + ", ..., "
+            + ", ".join(_format(x) for x in summary[-edgeitems:])
+            + "]"
+        )
+    else:
+        fmt = _get_format_str(data)
+        s = "[" + ", ".join(_format(x) for x in data) + "]"
+
+    return s
+
+
+@dataclass
+class CMLSettings(threading.local):
+    """Settings for controlling the behaviour and formatting of the CML output.
+
+    Use the ``set`` method of this class as a context manager to temporarily
+    modify the settings.
+    """
+
+    numpy_formatting: bool = True
+    data_array_stats: bool = False
+    coord_checksum: bool = False
+    coord_data_array_stats: bool = False
+    coord_order: bool = False
+    array_edgeitems: int = 3
+    masked_value_count: bool = False
+
+    @contextmanager
+    def set(
+        self,
+        numpy_formatting: bool | None = None,
+        data_array_stats: bool | None = None,
+        coord_checksum: bool | None = None,
+        coord_data_array_stats: bool | None = None,
+        coord_order: bool | None = None,
+        array_edgeitems: int | None = None,
+        masked_value_count: bool | None = None,
+    ):
+        """Context manager to control the CML output settings.
+
+        Use this method in a `with` statement to override specific output settings
+        of the Cube Metadata Language (CML), e.g. as generated from ``cube.xml()``.
+
+        Example:
+
+        # Generate a CML output for a cube, but also include array statistics for the
+        # cube coordinate data:
+
+        .. code-block:: python
+
+            with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
+
+
+        Parameters
+        ----------
+        numpy_formatting : bool or None, optional
+            Whether to use numpy-style formatting for arrays.
+        data_array_stats : bool or None, optional
+            Whether to include statistics for cube data array.
+        coord_checksum : bool or None, optional
+            Whether to include a checksum for coordinate data arrays.
+        coord_data_array_stats : bool or None, optional
+            Whether to include statistics for coordinate data arrays.
+        coord_order : bool or None, optional
+            Whether to output the array ordering (i.e. Fortran/C) for coordinate data arrays.
+        array_edgeitems : int or None, optional
+            The number of elements to display at the edges of arrays.
+        masked_value_count : bool or None, optional
+            Whether to include a count of masked values in the output.
+        """
+        # Keep track of current state:
+        prev_state = self.__dict__.copy()
+
+        # Set new values for non-None arguments:
+        opts = {k: v for k, v in list(locals().items()) if v is not None}
+        self.__dict__.update(opts)
+
+        # Try/finally block needed to ensure previous state is reinstated
+        # if code yielded to raises an exception.
+        try:
+            yield
+
+        finally:
+            # Reinstate previous values
+            self.__dict__.update(prev_state)
+
+
+# Global CML settings object for use as context manager
+CML_SETTINGS: CMLSettings = CMLSettings()

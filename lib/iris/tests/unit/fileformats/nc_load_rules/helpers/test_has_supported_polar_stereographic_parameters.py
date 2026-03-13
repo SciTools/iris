@@ -7,28 +7,26 @@ has_supported_polar_stereographic_parameters`.
 
 """
 
-from unittest import mock
+import re
 import warnings
 
 from iris.fileformats._nc_load_rules.helpers import (
     has_supported_polar_stereographic_parameters,
 )
-
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-def _engine(cf_grid_var, cf_name):
-    cf_group = {cf_name: cf_grid_var}
-    cf_var = mock.Mock(cf_group=cf_group)
-    return mock.Mock(cf_var=cf_var)
+class _EngineMixin(MockerMixin):
+    def engine(self, cf_grid_var, cf_name):
+        cf_group = {cf_name: cf_grid_var}
+        cf_var = self.mocker.Mock(cf_group=cf_group)
+        return self.mocker.Mock(cf_var=cf_var)
 
 
-class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
-    def test_valid_base_north(self):
+class TestHasSupportedPolarStereographicParameters(_EngineMixin):
+    def test_valid_base_north(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -38,15 +36,15 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_base_south(self):
+    def test_valid_base_south(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=-90,
@@ -56,15 +54,15 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_straight_vertical_longitude(self):
+    def test_valid_straight_vertical_longitude(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=30,
             latitude_of_projection_origin=90,
@@ -74,15 +72,15 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_false_easting_northing(self):
+    def test_valid_false_easting_northing(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -92,15 +90,15 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_standard_parallel(self):
+    def test_valid_standard_parallel(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -110,15 +108,15 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_valid_scale_factor(self):
+    def test_valid_scale_factor(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -128,17 +126,17 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertTrue(is_valid)
+        assert is_valid
 
-    def test_invalid_scale_factor_and_standard_parallel(self):
+    def test_invalid_scale_factor_and_standard_parallel(self, mocker):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -149,24 +147,25 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
             is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertFalse(is_valid)
-        self.assertEqual(len(warns), 1)
-        self.assertRegex(
-            str(warns[0]),
-            'both "scale_factor_at_projection_origin" and "standard_parallel"',
-        )
+        assert not is_valid
+        assert len(warns) == 1
 
-    def test_absent_scale_factor_and_standard_parallel(self):
+        msg = re.escape(
+            'both "scale_factor_at_projection_origin" and "standard_parallel"'
+        )
+        assert re.search(msg, str(warns[0]))
+
+    def test_absent_scale_factor_and_standard_parallel(self, mocker):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
@@ -175,25 +174,25 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
             is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertFalse(is_valid)
-        self.assertEqual(len(warns), 1)
-        self.assertRegex(
-            str(warns[0]),
-            'One of "scale_factor_at_projection_origin" and '
-            '"standard_parallel" is required.',
-        )
+        assert not is_valid
+        assert len(warns) == 1
 
-    def test_invalid_latitude_of_projection_origin(self):
+        msg = re.escape(
+            'One of "scale_factor_at_projection_origin" and "standard_parallel" is required.'
+        )
+        assert re.search(msg, str(warns[0]))
+
+    def test_invalid_latitude_of_projection_origin(self, mocker):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mock.Mock(
+        cf_grid_var = mocker.Mock(
             spec=[],
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=45,
@@ -203,19 +202,14 @@ class TestHasSupportedPolarStereographicParameters(tests.IrisTest):
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
         )
-        engine = _engine(cf_grid_var, cf_name)
+        engine = self.engine(cf_grid_var, cf_name)
 
         with warnings.catch_warnings(record=True) as warns:
             warnings.simplefilter("always")
             is_valid = has_supported_polar_stereographic_parameters(engine, cf_name)
 
-        self.assertFalse(is_valid)
-        self.assertEqual(len(warns), 1)
-        self.assertRegex(
-            str(warns[0]),
-            r'"latitude_of_projection_origin" must be \+90 or -90\.',
-        )
+        assert not is_valid
+        assert len(warns) == 1
 
-
-if __name__ == "__main__":
-    tests.main()
+        msg = r'"latitude_of_projection_origin" must be \+90 or -90\.'
+        assert re.search(msg, str(warns[0]))

@@ -4,13 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide capability to load netCDF files and interpret them.
 
+.. z_reference:: iris.fileformats.cf
+   :tags: topic_load_save
+
+   API reference
+
 Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
 References
 ----------
     [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
-    [NUG] NetCDF User's Guide, https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/
+    [NUG] NetCDF User's Guide, https://docs.unidata.ucar.edu/nug/current/
 
 """
 

@@ -67,7 +67,7 @@ def _check_requirements(package: str) -> None:
 
 def _prep_data_gen_env() -> None:
     """Create or access a separate, unchanging environment for generating test data."""
-    python_version = "3.13"
+    python_version = "3.14"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")
@@ -99,7 +99,7 @@ def _prep_data_gen_env() -> None:
             return clone_dir
 
         echo("Installing Mule into data generation environment ...")
-        mule_dir = clone_resource("mule", "https://github.com/metomi/mule.git")
+        mule_dir = clone_resource("mule", "https://github.com/MetOffice/mule.git")
         _subprocess_runner(
             [
                 str(data_gen_python),

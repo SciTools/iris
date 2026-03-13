@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of coordinates and other dimensional metadata."""
+"""Definitions of coordinates and other dimensional metadata.
+
+.. z_reference:: iris.coords
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
@@ -32,6 +38,7 @@ from iris.common import (
 import iris.exceptions
 import iris.time
 import iris.util
+from iris.util import CML_SETTINGS
 import iris.warnings
 
 #: The default value for ignore_axis which controls guess_coord_axis' behaviour
@@ -853,9 +860,44 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             if self.coord_system:
                 element.appendChild(self.coord_system.xml_element(doc))
 
+        is_masked_array = np.ma.isMaskedArray(self._values)
+
         # Add the values
         element.setAttribute("value_type", str(self._value_type_name()))
         element.setAttribute("shape", str(self.shape))
+
+        # data checksum
+        if CML_SETTINGS.coord_checksum:
+            crc = iris.util.array_checksum(self._values)
+            element.setAttribute("checksum", crc)
+
+            if is_masked_array:
+                # Add the number of masked elements
+                if np.ma.is_masked(self._values):
+                    crc = iris.util.array_checksum(self._values.mask)
+                else:
+                    crc = "no-masked-elements"
+                element.setAttribute("mask_checksum", crc)
+
+        # array ordering:
+        def _order(array):
+            order = ""
+            if array.flags["C_CONTIGUOUS"]:
+                order = "C"
+            elif array.flags["F_CONTIGUOUS"]:
+                order = "F"
+            return order
+
+        if CML_SETTINGS.coord_order:
+            element.setAttribute("order", _order(self._values))
+            if is_masked_array:
+                element.setAttribute("mask_order", _order(self._values.mask))
+
+        # masked element count:
+        if CML_SETTINGS.masked_value_count and is_masked_array:
+            element.setAttribute(
+                "masked_count", str(np.count_nonzero(self._values.mask))
+            )
 
         # The values are referred to "points" of a coordinate and "data"
         # otherwise.
@@ -865,7 +907,31 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
             values_term = "indices"
         else:
             values_term = "data"
-        element.setAttribute(values_term, self._xml_array_repr(self._values))
+        element.setAttribute(
+            values_term,
+            self._xml_array_repr(self._values),
+        )
+
+        if iris.util.CML_SETTINGS.coord_data_array_stats and len(self._values) > 1:
+            data = self._values
+
+            if np.issubdtype(data.dtype.type, np.number):
+                data_min = data.min()
+                data_max = data.max()
+                if data_min == data_max:
+                    # When data is constant, std() is too sensitive.
+                    data_std = 0
+                else:
+                    data_std = data.std()
+
+                stats_xml_element = doc.createElement("stats")
+                stats_xml_element.setAttribute("std", str(data_std))
+                stats_xml_element.setAttribute("min", str(data_min))
+                stats_xml_element.setAttribute("max", str(data_max))
+                stats_xml_element.setAttribute("masked", str(ma.is_masked(data)))
+                stats_xml_element.setAttribute("mean", str(data.mean()))
+
+                element.appendChild(stats_xml_element)
 
         return element
 
@@ -896,7 +962,11 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         if hasattr(data, "to_xml_attr"):
             result = data._values.to_xml_attr()
         else:
-            result = iris.util.format_array(data)
+            edgeitems = CML_SETTINGS.array_edgeitems
+            if CML_SETTINGS.numpy_formatting:
+                result = iris.util.format_array(data, edgeitems=edgeitems)
+            else:
+                result = iris.util.array_summary(data, edgeitems=edgeitems)
         return result
 
     def _value_type_name(self):
@@ -2219,7 +2289,7 @@ class Coord(_DimensionalMetadata):
                 item = self.core_points()
 
             # Determine the array library for stacking
-            al = da if _lazy.is_lazy_data(item) else np
+            al = da if _lazy.is_lazy_data(item) else ma
 
             # Calculate the bounds and points along the right dims
             bounds = al.stack(
@@ -2230,6 +2300,12 @@ class Coord(_DimensionalMetadata):
                 axis=-1,
             )
             points = al.array(bounds.sum(axis=-1) * 0.5, dtype=self.dtype)
+
+            if ma.isMaskedArray(points) and not np.any(points.mask):
+                points = points.data
+
+            if ma.isMaskedArray(bounds) and not np.any(bounds.mask):
+                bounds = bounds.data
 
             # Create the new collapsed coordinate.
             coord = self.copy(points=points, bounds=bounds)
@@ -2332,8 +2408,12 @@ class Coord(_DimensionalMetadata):
                 points = np.empty(self.shape[0] + 2)
                 points[1:-1] = self.points
                 direction = 1 if self.points[-1] > self.points[0] else -1
-                points[0] = self.points[-1] - (self.units.modulus * direction)
-                points[-1] = self.points[0] + (self.units.modulus * direction)
+                modulus_type = np.promote_types(
+                    self.points.dtype, type(self.units.modulus)
+                )
+                (modulus,) = np.array([self.units.modulus], dtype=modulus_type)
+                points[0] = self.points[-1] - (modulus * direction)
+                points[-1] = self.points[0] + (modulus * direction)
                 diffs = np.diff(points)
             else:
                 diffs = np.diff(self.points)
@@ -2559,7 +2639,10 @@ class Coord(_DimensionalMetadata):
 
         # Add bounds, points are handled by the parent class.
         if self.has_bounds():
-            element.setAttribute("bounds", self._xml_array_repr(self.bounds))
+            element.setAttribute(
+                "bounds",
+                self._xml_array_repr(self.bounds),
+            )
 
         return element
 
@@ -2721,13 +2804,15 @@ class DimCoord(Coord):
         #: Whether the coordinate wraps by ``coord.units.modulus``.
         self.circular = circular
 
-    def __deepcopy__(self, memo):  # numpydoc ignore=SS02
-        """coord.__deepcopy__() -> Deep copy of coordinate.
+    def __deepcopy__(self, memo):
+        """Return a deep copy of the DimCoord, with read-only points and bounds."""
+        # Inspired by matplotlib#30198.
+        # Replicates the default copy behaviour, which can then be modified below.
+        cls = self.__class__
+        memo[id(self)] = new_coord = cls.__new__(cls)
+        for key, val in self.__dict__.items():
+            setattr(new_coord, key, copy.deepcopy(val, memo))
 
-        Used if copy.deepcopy is called on a coordinate.
-
-        """
-        new_coord = copy.deepcopy(super(), memo)
         # Ensure points and bounds arrays are read-only.
         new_coord._values_dm.data.flags.writeable = False
         if new_coord._bounds_dm is not None:
@@ -3070,8 +3155,8 @@ class CellMethod(iris.util._OrderedHashable):
         elif isinstance(coords, str):
             _coords.append(BaseMetadata.token(coords) or default_name)
         else:
-            normalise = (
-                lambda coord: coord.name(token=True)
+            normalise = lambda coord: (
+                coord.name(token=True)
                 if isinstance(coord, Coord)
                 else BaseMetadata.token(coord) or default_name
             )

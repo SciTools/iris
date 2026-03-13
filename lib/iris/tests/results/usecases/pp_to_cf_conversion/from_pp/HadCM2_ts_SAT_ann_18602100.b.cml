@@ -7,28 +7,23 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a62739f9" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
+        <dimCoord checksum="0x0f2199e1" id="a62739f9" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[-89.9      ,  89.9      ],
- [  1.25     ,  89.9      ],
- [-89.9      ,   1.2499847]]" id="77a50eb5" points="[  0.     ,  45.575  , -44.32501]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord bounds="[-89.90000153, 89.90000153, 1.25, 89.90000153, -89.90000153, 1.24998474]" checksum="0x0d544ac7" id="77a50eb5" points="[0., 45.57500076, -44.32500839]" shape="(3,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <auxCoord bounds="[[ -1.875, 358.125],
- [ -1.875, 358.125],
- [ -1.875, 358.125]]" id="f913a8b3" points="[178.125, 178.125, 178.125]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <auxCoord bounds="[-1.875, 358.125, -1.875, 358.125, -1.875, 358.125]" checksum="0xd5e49b67" id="f913a8b3" points="[178.125, 178.125, 178.125]" shape="(3,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </auxCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="22225738" long_name="site_number" points="[1., 2., 3.]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0xb20e96b1" id="22225738" long_name="site_number" points="[1., 2., 3.]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="42c82ea7" points="[670020., 670380., 670740., ..., 755340., 755700.,
- 756060.]" shape="(240,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
+        <dimCoord checksum="0xce657ffd" id="42c82ea7" points="[670020., 670380., 670740., ..., 755340., 755700., 756060.]" shape="(240,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods>

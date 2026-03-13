@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.rules._make_cube`."""
 
-from unittest import mock
-
 import numpy as np
 import pytest
 
@@ -13,7 +11,7 @@ from iris.fileformats.rules import ConversionMetadata, _make_cube
 
 
 class Test:
-    def test_invalid_units(self):
+    def test_invalid_units(self, mocker):
         # Mock converter() function that returns an invalid
         # units string amongst the collection of other elements.
         factories = None
@@ -36,10 +34,10 @@ class Test:
             dim_coords_and_dims,
             aux_coords_and_dims,
         )
-        converter = mock.Mock(return_value=metadata)
+        converter = mocker.Mock(return_value=metadata)
 
         data = np.arange(3.0)
-        field = mock.Mock(
+        field = mocker.Mock(
             core_data=lambda: data, bmdi=9999.0, realised_dtype=data.dtype
         )
 

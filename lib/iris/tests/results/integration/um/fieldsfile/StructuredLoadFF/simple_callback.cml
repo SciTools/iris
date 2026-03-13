@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_pressure" units="Pa">
+    <attributes>
+      <attribute name="STASH" value="m01s00i407"/>
+      <attribute name="processing" value="fast-ff"/>
+      <attribute name="source" value="Data from Met Office Unified Model"/>
+      <attribute name="um_version" value="8.5"/>
+    </attributes>
+    <coords>
+      <coord datadims="[0]">
+        <dimCoord checksum="0x557d9dd7" id="1d45e087" points="[13681., 13682.]" shape="(2,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord>
+        <dimCoord checksum="0x5c599900" id="9c8bdf81" points="[182880.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord checksum="0x603fcd68" id="77a50eb5" points="[-43.2421875, -43.0078125, -42.7734375, ..., -36.9140625, -36.6796875, -36.4453125]" shape="(30,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[0., 10.0000001, 10.0000001, 26.66666665, 26.66666665, 49.99999965]" checksum="0x2a3c671a" id="fb105c19" long_name="level_height" points="[4.99999997, 18.33333295, 38.33333315]" shape="(3,)" units="Unit('m')" value_type="float64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord checksum="0xe39c60bc" id="f913a8b3" points="[70.13671875, 70.48828125, 70.83984375, ..., 83.14453125, 83.49609375, 83.84765625]" shape="(40,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+          <geogCS earth_radius="6371229.0"/>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord checksum="0x2bcb8d87" id="38fd0305" points="[1, 2, 3]" shape="(3,)" standard_name="model_level_number" units="Unit('1')" value_type="int64">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[1., 0.99887003, 0.99887003, 0.99698817, 0.99698817, 0.99435654]" checksum="0x0022c1b5" id="a5c170db" long_name="sigma" points="[0.99943494, 0.99792888, 0.99567192]" shape="(3,)" units="Unit('1')" value_type="float64"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord checksum="0x36704aa3" id="cb784457" points="[196561., 196562.]" shape="(2,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data checksum="0x42a6d5c8" dtype="float32" shape="(2, 3, 30, 40)"/>
+  </cube>
+</cubes>

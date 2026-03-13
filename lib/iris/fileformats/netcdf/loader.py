@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support loading Iris cubes from NetCDF files using the CF conventions for metadata interpretation.
 
+.. z_reference:: iris.fileformats.netcdf.loader
+   :tags: topic_load_save
+
+   API reference
+
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 
@@ -392,8 +397,17 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    data = _get_cf_var_data(cf_var)
-    cube = Cube(data)
+    from iris.fileformats.netcdf.saver import Saver
+
+    if hasattr(cf_var, Saver._DATALESS_ATTRNAME):
+        # This data-variable represents a dataless cube.
+        # The variable array content was never written (to take up no space).
+        data = None
+        shape = cf_var.shape
+    else:
+        data = _get_cf_var_data(cf_var)
+        shape = None
+    cube = Cube(data=data, shape=shape)
 
     # Reset the actions engine.
     engine.reset()
@@ -592,24 +606,26 @@ def _translate_constraints_to_var_callback(constraints):
 
     Notes
     -----
-    For now, ONLY handles a single NameConstraint with no 'STASH' component.
+    For now, ONLY handles NameConstraints with no 'STASH' component.
 
     """
     import iris._constraints
 
     constraints = iris._constraints.list_of_constraints(constraints)
-    result = None
-    if len(constraints) == 1:
-        (constraint,) = constraints
-        if (
-            isinstance(constraint, iris._constraints.NameConstraint)
-            and constraint.STASH == "none"
-        ):
-            # As long as it doesn't use a STASH match, then we can treat it as
-            # a testing against name properties of cf_var.
-            # That's just like testing against name properties of a cube, except that they may not all exist.
-            def inner(cf_datavar):
-                match = True
+    if len(constraints) == 0 or not all(
+        isinstance(constraint, iris._constraints.NameConstraint)
+        and constraint.STASH == "none"
+        for constraint in constraints
+    ):
+        # We can define a var-filtering function to speedup the load, *ONLY* when we
+        #  have some constraints, and all are simple NameConstraints with no STASH.
+        result = None
+    else:
+
+        def inner(cf_datavar):
+            match_any_constraint = False
+            for constraint in constraints:
+                match_this_constraint = True
                 for name in constraint._names:
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
@@ -620,11 +636,14 @@ def _translate_constraints_to_var_callback(constraints):
                             continue
                         actual = getattr(cf_datavar, attr_name, "")
                         if actual != expected:
-                            match = False
+                            match_this_constraint = False
                             break
-                return match
+                if match_this_constraint:
+                    match_any_constraint = True
+                    break
+            return match_any_constraint
 
-            result = inner
+        result = inner
     return result
 
 

@@ -24,7 +24,8 @@ class TestCubeDelta:
             _ = iris.analysis.calculus.cube_delta(cube, "surface_altitude")
         with pytest.raises(iris.exceptions.CoordinateMultiDimError):
             _ = iris.analysis.calculus.cube_delta(cube, "altitude")
-        with pytest.raises(ValueError):
+        msg = "Cannot calculate delta over 'forecast_period' as it has length of 1."
+        with pytest.raises(ValueError, match=msg):
             _ = iris.analysis.calculus.cube_delta(cube, "forecast_period")
 
     def test_delta_coord_lookup(self):
@@ -43,6 +44,24 @@ class TestCubeDelta:
         delta_coord = delta.coord("projection_x_coordinate")
         assert delta_coord == delta.coord(coord)
         assert coord == cube.coord(delta_coord)
+
+    @pytest.mark.parametrize("is_lazy", [True, False], ids=["is_lazy", "not_lazy"])
+    def test_delta_lazypreserving(self, is_lazy):
+        cube = iris.cube.Cube(np.arange(10), standard_name="air_temperature")
+        # Add a coordinate with a lot of metadata.
+        coord = iris.coords.DimCoord(
+            np.arange(10),
+            long_name="projection_x_coordinate",
+            var_name="foo",
+            attributes={"source": "testing"},
+            units="m",
+            coord_system=iris.coord_systems.OSGB(),
+        )
+        cube.add_dim_coord(coord, 0)
+        if is_lazy:
+            cube.data = cube.lazy_data()
+        delta = iris.analysis.calculus.cube_delta(cube, "projection_x_coordinate")
+        assert delta.has_lazy_data() == is_lazy
 
 
 class TestDeltaAndMidpoint:
@@ -157,7 +176,8 @@ class TestDeltaAndMidpoint:
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with pytest.raises(ValueError):
+        msg = "Cannot take interval differences of a single valued coordinate."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.calculus._construct_delta_coord(lon)
 
     def test_singular_midpoint(self):
@@ -178,7 +198,8 @@ class TestDeltaAndMidpoint:
 
         # Test single valued coordinate mid-points when not circular
         lon.circular = False
-        with pytest.raises(ValueError):
+        msg = "Cannot take the midpoints of a single valued coordinate."
+        with pytest.raises(ValueError, match=msg):
             iris.analysis.calculus._construct_midpoint_coord(lon)
 
 
@@ -287,15 +308,28 @@ class TestCalculusSimple3:
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
 
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade2_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade2_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade2_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade2_wrt_lat.cml"),
+            approx_data=True,
         )
+
+    @pytest.mark.parametrize("is_lazy", [True, False], ids=["is_lazy", "not_lazy"])
+    def test_diff_lazypreserving(self, is_lazy):
+        if is_lazy:
+            self.cube.data = self.cube.lazy_data()
+        t = iris.analysis.calculus.differentiate(self.cube, "longitude")
+        assert t.has_lazy_data() == is_lazy
 
 
 class TestCalculusSimple2:
@@ -352,50 +386,74 @@ class TestCalculusSimple2:
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_y(self):
         t = iris.analysis.calculus.differentiate(self.cube, "y")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_y.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_y.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lon(self):
         t = iris.analysis.calculus.differentiate(self.cube, "longitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_diff_wrt_lat(self):
         t = iris.analysis.calculus.differentiate(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_wrt_lat.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_y(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "y")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_y.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_y.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_lon(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "longitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lon.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_lon.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_lat(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "latitude")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_wrt_lat.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_wrt_lat.cml"),
+            approx_data=True,
         )
 
 
@@ -428,14 +486,20 @@ class TestCalculusSimple1:
 
     def test_diff_wrt_x(self):
         t = iris.analysis.calculus.differentiate(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "handmade_simple_wrt_x.cml"),
+            approx_data=True,
         )
 
     def test_delta_wrt_x(self):
         t = iris.analysis.calculus.cube_delta(self.cube, "x")
-        _shared_utils.assert_CML_approx_data(
-            self.request, t, ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            t,
+            ("analysis", "calculus", "delta_handmade_simple_wrt_x.cml"),
+            approx_data=True,
         )
 
 

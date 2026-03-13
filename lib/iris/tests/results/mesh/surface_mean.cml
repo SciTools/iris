@@ -14,27 +14,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -65,27 +51,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -116,27 +88,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -167,27 +125,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -218,27 +162,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -269,27 +199,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -320,27 +236,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -371,27 +273,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -422,27 +310,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -473,27 +347,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -524,27 +384,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -575,27 +421,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -626,27 +458,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -677,27 +495,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -728,27 +532,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -779,27 +569,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -830,27 +606,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>
@@ -881,27 +643,13 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <meshCoord bounds="[[ 33.515625,  34.356213,  36.124363,  35.26439 ],
- [ 34.356213,  35.15224 ,  36.9373  ,  36.124363],
- [ 35.15224 ,  35.904663,  37.7044  ,  36.9373  ],
- ...,
- [-37.7044  , -36.9373  , -37.9318  , -38.765453],
- [-36.9373  , -36.124363, -37.05172 , -37.9318  ],
- [-36.124363, -35.26439 , -36.124363, -37.05172 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 34.81874 ,  35.64616 ,  36.428314, ...,
- -37.84214 , -37.018673, -36.148518]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+        <meshCoord bounds="[33.515625, 34.35621262, 36.12436295, ..., -35.26438904, -36.12436295, -37.05171967]" checksum="0x40bcb05a" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[34.81874084, 35.64616013, 36.42831421, ..., -37.8421402, -37.01867294, -36.14851761]" shape="(13824,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
       </coord>
       <coord datadims="[1]">
-        <meshCoord bounds="[[315.     , 316.875  , 316.875  , 315.     ],
- [316.875  , 318.75   , 318.75   , 316.875  ],
- [318.75   , 320.625  , 320.625  , 318.75   ],
- ...,
- [230.625  , 228.75   , 226.88306, 228.77419],
- [228.75   , 226.875  , 225.     , 226.88306],
- [226.875  , 225.     , 223.125  , 225.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[315.93265, 317.80777, 319.68292, ..., 228.75943,
- 226.8777 , 225.     ]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+        <meshCoord bounds="[315., 316.875, 316.875, ..., 225., 223.125, 225.]" checksum="0x2718cc5c" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[315.93264771, 317.80776978, 319.68292236, ..., 228.75942993, 226.87770081, 225.]" shape="(13824,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[15508800., 15595200.]]" id="17a27d05" long_name="Time axis" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
+        <auxCoord bounds="[15508800., 15595200.]" checksum="0x144e336c" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[15552000.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='360_day')" value_type="float64" var_name="time_centered">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>

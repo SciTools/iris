@@ -12,10 +12,10 @@ from pathlib import Path
 import subprocess
 from typing import List, Tuple
 
+from packaging.version import Version
 import pytest
 
 import iris
-from iris.fileformats.netcdf import _thread_safe_nc
 from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
@@ -44,6 +44,9 @@ def test_netcdf4_import():
     # Please avoid including these phrases in any comments/strings throughout
     #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
     #  below search to remain quick and simple.
+    from iris.fileformats.netcdf import _thread_safe_nc
+    from iris.tests.unit.fileformats.netcdf._thread_safe_nc import test_NetCDFWriteProxy
+
     import_strings = ("import netCDF4", "from netCDF4")
 
     files_including_import = []
@@ -55,6 +58,7 @@ def test_netcdf4_import():
 
     expected = [
         Path(_thread_safe_nc.__file__),
+        Path(test_NetCDFWriteProxy.__file__),
         Path(system_test.__file__),
         Path(__file__),
     ]
@@ -67,8 +71,9 @@ def test_python_versions():
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
     """
-    latest_supported = "3.13"
-    all_supported = ["3.11", "3.12", latest_supported]
+    all_supported = ["3.12", "3.13", "3.14"]
+    _parsed = [Version(v) for v in all_supported]
+    latest_supported = str(max(_parsed))
 
     root_dir = Path(__file__).parents[3]
     workflows_dir = root_dir / ".github" / "workflows"
@@ -242,8 +247,8 @@ class TestLicenseHeaders:
             "dist/*",
             "docs/gallery_code/*/*.py",
             "docs/src/developers_guide/documenting/*.py",
-            "docs/src/userguide/plotting_examples/*.py",
-            "docs/src/userguide/regridding_plots/*.py",
+            "docs/src/user_manual/tutorial/plotting_examples/*.py",
+            "docs/src/user_manual/tutorial/regridding_plots/*.py",
             "docs/src/_build/*",
             "lib/iris/analysis/_scipy_interpolate.py",
         )

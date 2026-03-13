@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generalised mechanisms for metadata translation and cube construction."""
+"""Generalised mechanisms for metadata translation and cube construction.
+
+.. z_reference:: iris.fileformats.rules
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import collections
 import threading
@@ -14,6 +20,7 @@ from iris.analysis import Linear
 import iris.cube
 import iris.exceptions
 import iris.fileformats.um_cf_map
+from iris.loading import _CONCRETE_DERIVED_LOADING
 import iris.warnings
 
 Factory = collections.namedtuple("Factory", ["factory_class", "args"])
@@ -158,8 +165,12 @@ def _dereference_args(factory, reference_targets, regrid_cache, cube):
                 # match the grid of this cube.
                 src, cube = _ensure_aligned(regrid_cache, src, cube)
                 if src is not None:
+                    if _CONCRETE_DERIVED_LOADING:
+                        data = src.data
+                    else:
+                        data = src.core_data()
                     new_coord = iris.coords.AuxCoord(
-                        src.core_data(),
+                        data,
                         src.standard_name,
                         src.long_name,
                         src.var_name,

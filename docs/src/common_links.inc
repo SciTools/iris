@@ -47,6 +47,8 @@
 .. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
 .. _netCDF4: https://github.com/Unidata/netcdf4-python
 .. _SciTools Contributor's License Agreement (CLA): https://cla-assistant.io/SciTools/
+.. _extlinks: https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+.. _Diataxis: https://diataxis.fr/
 
 
 .. comment
@@ -67,6 +69,7 @@
 .. _@HGWright: https://github.com/HGWright
 .. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
+.. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@marqh: https://github.com/marqh
