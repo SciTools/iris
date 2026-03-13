@@ -500,7 +500,7 @@ def _2D_gb_buffer_inner(array_shape):
         + ([1] * (y - 1))
     )
     y_i = (
-        ([1] * x) + list(range(1, y - 1)) + ([y - 1] * x) + list(range(1, y - 1))[::-1]
+        ([1] * x) + list(range(1, y - 1)) + ([y - 2] * x) + list(range(1, y - 1))[::-1]
     )
     return np.s_[:, x_i, y_i]
 
