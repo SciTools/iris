@@ -162,6 +162,7 @@ class GroupWrapper(_ThreadSafeWrapper):
     # Class to use when creating variable wrappers (default=VariableWrapper).
     # - needed to support _byte_encoded_data.EncodedDataset.
     VAR_WRAPPER_CLS = VariableWrapper
+    GRP_WRAPPER_CLS: typing.Any | None = None  # self-reference : fill in later
 
     # All Group API that returns Dimension(s) is wrapped to instead return
     #  DimensionWrapper(s).
@@ -255,7 +256,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             groups_ = self._contained_instance.groups
-        return {k: self.__class__.from_existing(v) for k, v in groups_.items()}
+        return {k: self.GRP_WRAPPER_CLS.from_existing(v) for k, v in groups_.items()}
 
     @property
     def parent(self):
@@ -271,7 +272,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             parent_ = self._contained_instance.parent
-        return self.__class__.from_existing(parent_)
+        return self.GRP_WRAPPER_CLS.from_existing(parent_)
 
     def createGroup(self, *args, **kwargs):
         """Call createGroup() from netCDF4.Group/Dataset.
@@ -284,7 +285,10 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_group = self._contained_instance.createGroup(*args, **kwargs)
-        return self.__class__.from_existing(new_group)
+        return self.GRP_WRAPPER_CLS.from_existing(new_group)
+
+
+GroupWrapper.GRP_WRAPPER_CLS = GroupWrapper
 
 
 class DatasetWrapper(GroupWrapper):

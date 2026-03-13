@@ -44,13 +44,14 @@ import codecs
 import contextlib
 import dataclasses
 import threading
-from typing import Callable
+from typing import Any, Callable
 import warnings
 
 import numpy as np
 
 from iris.fileformats.netcdf._thread_safe_nc import (
     DatasetWrapper,
+    GroupWrapper,
     NetCDFDataProxy,
     NetCDFWriteProxy,
     VariableWrapper,
@@ -386,16 +387,31 @@ class EncodedVariable(VariableWrapper):
         raise TypeError(msg)
 
 
-class EncodedDataset(DatasetWrapper):
-    """A specialised DatasetWrapper whose variables perform byte encoding."""
+class EncodedGroup(GroupWrapper):
+    """A specialised GroupWrapper whose variables are EncodedVariables."""
 
     VAR_WRAPPER_CLS = EncodedVariable
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    GRP_WRAPPER_CLS: Any | None = None
 
     def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedDataset' type."
+        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
+        raise TypeError(msg)
+
+
+EncodedGroup.GRP_WRAPPER_CLS = EncodedGroup
+
+
+class EncodedDataset(DatasetWrapper):
+    """A specialised DatasetWrapper.
+
+    Its groups are EncodedGroups and variables are EncodedVariables.
+    """
+
+    VAR_WRAPPER_CLS = EncodedVariable
+    GRP_WRAPPER_CLS = EncodedGroup
+
+    def set_auto_chartostring(self, onoff: bool):
+        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
         raise TypeError(msg)
 
 

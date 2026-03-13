@@ -7,16 +7,26 @@
 from pathlib import Path
 import warnings
 
+import netCDF4
 import numpy as np
 import pytest
 
+from iris import tests
 from iris.exceptions import TranslationError
 from iris.fileformats.netcdf._bytecoding_datasets import (
     DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,
     EncodedDataset,
+    EncodedGroup,
+    EncodedVariable,
 )
-from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
+from iris.fileformats.netcdf._thread_safe_nc import (
+    DatasetWrapper,
+    GroupWrapper,
+    VariableWrapper,
+)
+import iris.tests._shared_utils as testutils
+from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
 encoding_options = [None] + SUPPORTED_ENCODINGS
@@ -470,3 +480,52 @@ class TestRead:
         with pytest.warns(IrisCfLoadWarning, match=msg):
             # raises warning but succeeds, due to default read encoding of 'utf-8'
             v[:]
+
+
+class TestObjectTypes:
+    """Check that the types of dataset content objects are consistent."""
+
+    @pytest.fixture
+    def samplefile_path(self, tmp_path):
+        testpath = tmp_path / "test.nc"
+        ds = netCDF4.Dataset(testpath, "w")
+        ds.createDimension("x", 4)
+        grp_a = ds.createGroup("grp_a")
+        ds.createVariable("vx", float, ["x"])
+        grp_a.createVariable("a_vx", int, ["x"])
+        ds.close()
+        return testpath
+
+    @pytest.fixture(params=["netCDF4", "unencoded", "encoded"])
+    def classtype(self, request):
+        param = request.param
+        if param == "netCDF4":
+            self.dataset_class = netCDF4.Dataset
+            self.group_class = netCDF4.Group
+            self.variable_class = netCDF4.Variable
+        elif param == "unencoded":
+            self.dataset_class = DatasetWrapper
+            self.group_class = GroupWrapper
+            self.variable_class = VariableWrapper
+        else:
+            self.dataset_class = EncodedDataset
+            self.group_class = EncodedGroup
+            self.variable_class = EncodedVariable
+        return param
+
+    def test_dataset_nonencoded_types(self, samplefile_path, classtype):
+        ds = self.dataset_class(samplefile_path)
+        try:
+            grps = ds.groups
+            grp_a = grps["grp_a"]
+            assert type(grp_a) is self.group_class
+            assert grps == {"grp_a": grp_a}
+
+            var_vx = ds.variables["vx"]
+            assert type(var_vx) is self.variable_class
+
+            var_a_vx = grp_a.variables["a_vx"]
+            assert type(var_a_vx) is self.variable_class
+
+        finally:
+            ds.close()
