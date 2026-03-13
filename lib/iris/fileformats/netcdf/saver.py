@@ -1865,8 +1865,7 @@ class Saver:
                 if data.dtype.kind != "S" or data.dtype.itemsize != 1:
                     # Some type of data we don't "understand".
                     # NB this includes "Sxx" types other than "S1" :  It seems that
-                    # netCDF4 can treat Sxx as if it was Uxx, as least if there is an
-                    # _Encoding attribute.  But we don't support that type in Iris.
+                    # netCDF4 saves Sxx as variable-length strings.  But we don't support that type in Iris.
                     msg = (
                         f"Variable {cf_name!r} has unexpected string/character dtype, "
                         f"{data.dtype} -- should be either 'S' or 'U' type."
