@@ -19,7 +19,11 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import SUPPORTED_ENCODINGS, _thread_safe_nc
+from iris.fileformats.netcdf import (
+    DECODE_TO_STRINGS_ON_READ,
+    SUPPORTED_ENCODINGS,
+    _thread_safe_nc,
+)
 
 
 @pytest.fixture(scope="module")
@@ -87,7 +91,9 @@ class SamplefileDetails:
 
     filepath: Path
     datavar_data: ArrayLike
+    datavar_bytes: ArrayLike
     stringcoord_data: ArrayLike
+    stringcoord_bytes: ArrayLike
     numericcoord_data: ArrayLike
 
 
@@ -171,7 +177,9 @@ def make_testfile(
     return SamplefileDetails(
         filepath=testfile_path,
         datavar_data=datavar_strings,
+        datavar_bytes=datavar_bytearray,
         stringcoord_data=coordvar_strings,
+        stringcoord_bytes=coordvar_bytearray,
         numericcoord_data=numeric_values,
     )
 
@@ -237,29 +245,63 @@ class TestReadEncodings:
         # ncdump(str(tempfile_path))
         return testdata
 
-    def test_valid_encodings(self, encoding, readtest_data: SamplefileDetails):
-        testfile_path, datavar_strings, coordvar_strings, numeric_data = (
+    @pytest.fixture(params=["strings", "bytes"])
+    def readmode(self, request):
+        return request.param
+
+    def test_valid_encodings(
+        self, encoding, readtest_data: SamplefileDetails, readmode
+    ):
+        (
+            testfile_path,
+            datavar_strings,
+            datavar_bytes,
+            coordvar_strings,
+            coordvar_bytes,
+            numeric_data,
+        ) = (
             readtest_data.filepath,
             readtest_data.datavar_data,
+            readtest_data.datavar_bytes,
             readtest_data.stringcoord_data,
+            readtest_data.stringcoord_bytes,
             readtest_data.numericcoord_data,
         )
-        cube = iris.load_cube(testfile_path)
-        assert load_problems_list() == []
-        assert cube.shape == (N_XDIM,)
-
-        if encoding == "utf-32":
-            expected_string_width = (N_CHARS_DIM // 4) - 1
-        elif encoding == "utf-16":
-            expected_string_width = (N_CHARS_DIM) // 2 - 1
+        as_strings = readmode == "strings"
+        if as_strings:
+            # Regular load
+            cube = iris.load_cube(testfile_path)
+            expected_shape: tuple = (N_XDIM,)
         else:
-            expected_string_width = N_CHARS_DIM
-        assert cube.dtype == f"<U{expected_string_width}"
+            # Special NON-decoded read
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                cube = iris.load_cube(testfile_path)
+            expected_shape = (N_XDIM, N_CHARS_DIM)
+
+        assert load_problems_list() == []
+        assert cube.shape == expected_shape
+
+        if as_strings:
+            if encoding == "utf-32":
+                expected_string_width = (N_CHARS_DIM // 4) - 1
+            elif encoding == "utf-16":
+                expected_string_width = (N_CHARS_DIM) // 2 - 1
+            else:
+                expected_string_width = N_CHARS_DIM
+            expected_dtype = f"<U{expected_string_width}"
+        else:
+            expected_dtype = "S1"
+        assert cube.dtype == expected_dtype
+
         cube_data = cube.data
-        assert np.all(cube_data == datavar_strings)
+        expected_data = datavar_strings if as_strings else datavar_bytes
+        assert np.all(cube_data == expected_data)
+
         coord_var = cube.coord("v_co")
-        assert coord_var.dtype == f"<U{expected_string_width}"
-        assert np.all(coord_var.points == coordvar_strings)
+        assert coord_var.dtype == expected_dtype
+        expected_points = coordvar_strings if as_strings else coordvar_bytes
+        assert np.all(coord_var.points == expected_points)
+
         # Also check the numeric one.
         coord_var_2 = cube.coord("v_numeric")
         assert coord_var_2.dtype == np.float64

@@ -14,7 +14,6 @@ import pytest
 from iris import tests
 from iris.exceptions import TranslationError
 from iris.fileformats.netcdf._bytecoding_datasets import (
-    DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,
     EncodedDataset,
     EncodedGroup,
@@ -314,8 +313,8 @@ class TestRead:
     datafiles with 'make_dataset' and assigning raw bytes, as-per 'TestWriteChars'.
 
     We are mostly checking here that reading back produces string arrays as expected.
-    However, it is simple + convenient to also check the 'DECODE_TO_STRINGS_ON_READ'
-    function here, i.e. "raw" bytes reads.  So that is also done in this class.
+    However, each testcase also reads and checks the "raw" byte content by re-opening
+    with a non-encoded _thread_safe_nc.DatasetWrapper, to check content is as expected.
     """
 
     @pytest.fixture(params=["strings", "bytes"])
