@@ -8,20 +8,14 @@ from functools import partial
 
 import numpy as np
 import pytest
+import stratify
 
 from iris.coords import AuxCoord, DimCoord
+from iris.experimental.stratify import relevel
 from iris.tests import _shared_utils
 import iris.tests.stock as stock
 
-try:
-    import stratify
 
-    from iris.experimental.stratify import relevel
-except ImportError:
-    stratify = None
-
-
-@_shared_utils.skip_stratify
 class Test:
     @pytest.fixture(autouse=True)
     def _setup(self):

@@ -23,17 +23,10 @@ from iris.warnings import IrisUserWarning
 # Importing pandas has the side-effect of messing with the formatters
 # used by matplotlib for handling dates.
 default_units_registry = copy.copy(matplotlib.units.registry)
-try:
-    import pandas as pd
-except ImportError:
-    # Disable all these tests if pandas is not installed.
-    pd = None
+import pandas as pd
+
 matplotlib.units.registry = default_units_registry
 
-skip_pandas = pytest.mark.skipif(
-    pd is None,
-    reason='Test(s) require "pandas", which is not available.',
-)
 
 if pd is not None:
     from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
@@ -48,7 +41,6 @@ def activate_pandas_ndim():
     iris.FUTURE.pandas_ndim = False
 
 
-@skip_pandas
 @pytest.mark.filterwarnings(
     "ignore:.*as_series has been deprecated.*:iris._deprecation.IrisDeprecation"
 )
@@ -131,7 +123,6 @@ class TestAsSeries:
         assert cube.data[0] == 0
 
 
-@skip_pandas
 @pytest.mark.filterwarnings(
     "ignore:You are using legacy 2-dimensional behaviour.*:FutureWarning"
 )
@@ -261,7 +252,6 @@ class TestAsDataFrame:
         assert cube.data[0, 0] == 0
 
 
-@skip_pandas
 class TestAsDataFrameNDim:
     """Test conversion of n-dimensional cubes to Pandas using as_data_frame()."""
 
@@ -565,7 +555,6 @@ class TestAsDataFrameNDim:
             _ = iris.pandas.as_data_frame(list())
 
 
-@skip_pandas
 @pytest.mark.filterwarnings(
     "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
 )
@@ -647,7 +636,6 @@ class TestSeriesAsCube:
         assert series[5] == 0
 
 
-@skip_pandas
 @pytest.mark.filterwarnings(
     "ignore:.*as_cube has been deprecated.*:iris._deprecation.IrisDeprecation"
 )
@@ -750,7 +738,6 @@ class TestDataFrameAsCube:
         assert data_frame.iloc[0, 0] == 0
 
 
-@skip_pandas
 class TestFutureAndDeprecation:
     def test_as_cube_deprecation_warning(self):
         data_frame = pd.DataFrame([[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]])
@@ -819,7 +806,6 @@ class TestFutureAndDeprecation:
             _ = test_function(test_input, copy=False)
 
 
-@skip_pandas
 class TestPandasAsCubes:
     @staticmethod
     def _create_pandas(index_levels=0, is_series=False):

@@ -979,12 +979,6 @@ skip_inet = pytest.mark.skipif(
 )
 
 
-skip_stratify = pytest.mark.skipif(
-    not STRATIFY_AVAILABLE,
-    reason='Test(s) require "python-stratify", which is not available.',
-)
-
-
 def no_warnings(func):
     """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
