@@ -2563,6 +2563,8 @@ class Saver:
                 ) -> None:
                     # Create a data-writeable object that we can stream into, which
                     # encapsulates the file to be opened + variable to be written.
+                    # Note: we do *not* support selectable string encoding for writes,
+                    # so this never needs to be a _thread_safe_nc.NetCDFWriteProxy.
                     write_wrapper = bytecoding_datasets.EncodedNetCDFWriteProxy(
                         self.filepath, cf_var, self.file_write_lock
                     )
