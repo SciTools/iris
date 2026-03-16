@@ -144,6 +144,10 @@ This document explains the changes made to Iris for this release
    Cube/Coord summary to use ``str`` representation instead of ``repr``.
    (:pull:`6966`, :issue:`6692`)
 
+#. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
+   except for mo_pack.
+   (:issue:`6832`, :pull:`6976`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
