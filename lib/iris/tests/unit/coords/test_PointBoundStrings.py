@@ -43,7 +43,7 @@ def test_PointBoundStrings_no_bounds():
     expected_output = "Points:\n['0.0' '1.0' '2.0' '3.0' '4.0']"
     assert str(pbs) == expected_output
 
-    expected_points = np.array(['0.0', '1.0', '2.0', '3.0', '4.0'])
+    expected_points = np.array(["0.0", "1.0", "2.0", "3.0", "4.0"])
     assert np.array_equal(pbs.points, expected_points)
 
     assert pbs.bounds is None
