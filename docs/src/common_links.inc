@@ -83,5 +83,6 @@
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
 .. _@ukmo-ccbunney: https://github.com/ukmo-ccbunney
+.. _@vsherratt: https://github.com/vsherratt
 .. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus

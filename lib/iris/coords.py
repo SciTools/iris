@@ -45,6 +45,57 @@ import iris.warnings
 DEFAULT_IGNORE_AXIS = False
 
 
+class PointBoundStrings:
+    """Class for representing formatted string arrays of points and bounds."""
+
+    def __init__(self, core_points, core_bounds, units, fmt=None):
+        """Construct an object for formatting points and bounds as string arrays."""
+        self._core_points = core_points
+        self._core_bounds = core_bounds
+        self._units = units
+        self._points = None
+        self._bounds = None
+        self.fmt = fmt
+
+    @property
+    def points(self):
+        """Format the points as a string array."""
+        if self._points is None:
+            points = _lazy.as_concrete_data(self._core_points)
+            if self._units.is_time_reference():
+                points = self._units.num2date(points)
+            if self.fmt:
+                self._points = np.vectorize(lambda x: format(x, self.fmt))(points)
+            else:
+                self._points = points.astype("str")
+            self._core_points = None
+        return self._points
+
+    @property
+    def bounds(self):
+        """Format the bounds as a string array."""
+        if self._bounds is None:
+            if self._core_bounds is not None:
+                bounds = _lazy.as_concrete_data(self._core_bounds)
+                if self._units.is_time_reference():
+                    bounds = self._units.num2date(bounds)
+                if self.fmt:
+                    self._bounds = np.vectorize(lambda x: format(x, self.fmt))(bounds)
+                else:
+                    self._bounds = bounds.astype("str")
+                self._core_bounds = None
+        return self._bounds
+
+    def __str__(self):
+        """Format the points and bounds as a string."""
+        output = ["Points:", np.array2string(self.points)]
+        if self.bounds is not None:
+            output.extend(["Bounds:", np.array2string(self.bounds)])
+        else:
+            output.extend(["Bounds:", "None"])
+        return "\n".join(output)
+
+
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     """Superclass for dimensional metadata."""
 
@@ -2650,6 +2701,26 @@ class Coord(_DimensionalMetadata):
         """Coord specific stuff for the xml id."""
         unique_value += str(self.coord_system).encode("utf-8") + b"\0"
         return unique_value
+
+    def as_string_arrays(self, fmt=None):
+        """Access a formatted array of strings from the points and bounds.
+
+        Will return a :class:`~iris.coords.PointBoundString`. This can either be
+        converted directly to a string, or numpy string arrays for the points and
+        bounds can be accessed via the `points` and `bounds` properties. These
+        properties are designed to be only calculated when they are called and any
+        lazy points and bounds on the coordinate will remain lazy.
+
+        Parameters
+        ----------
+        fmt : str, optional
+            The format string to be applied when converting to a string. If the
+            coordinate contains datetime information, the points and bounds will
+            be converted to datetimes before being formatted to strings.
+        """
+        return PointBoundStrings(
+            self.core_points(), self.core_bounds(), self.units, fmt=fmt
+        )
 
 
 _regular_points = lru_cache(iris.util.regular_points)
