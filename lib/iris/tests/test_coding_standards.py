@@ -17,6 +17,7 @@ import pytest
 
 import iris
 from iris.tests import system_test
+from iris.tests.unit.fileformats.netcdf import test_bytecoding_datasets
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
@@ -61,6 +62,7 @@ def test_netcdf4_import():
         Path(test_NetCDFWriteProxy.__file__),
         Path(system_test.__file__),
         Path(__file__),
+        Path(test_bytecoding_datasets.__file__),
     ]
     assert set(files_including_import) == set(expected)
 

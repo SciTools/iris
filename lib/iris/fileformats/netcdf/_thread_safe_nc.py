@@ -159,6 +159,10 @@ class GroupWrapper(_ThreadSafeWrapper):
     CONTAINED_CLASS = netCDF4.Group
     # Note: will also accept a whole Dataset object, but that is OK.
     _DUCKTYPE_CHECK_PROPERTIES = ["createVariable"]
+    # Class to use when creating variable wrappers (default=VariableWrapper).
+    # - needed to support _byte_encoded_data.EncodedDataset.
+    VAR_WRAPPER_CLS = VariableWrapper
+    GRP_WRAPPER_CLS: typing.Any | None = None  # self-reference : fill in later
 
     # All Group API that returns Dimension(s) is wrapped to instead return
     #  DimensionWrapper(s).
@@ -203,7 +207,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             variables_ = self._contained_instance.variables
-        return {k: VariableWrapper.from_existing(v) for k, v in variables_.items()}
+        return {k: self.VAR_WRAPPER_CLS.from_existing(v) for k, v in variables_.items()}
 
     def createVariable(self, *args, **kwargs) -> VariableWrapper:
         """Call createVariable() from netCDF4.Group/Dataset within _GLOBAL_NETCDF4_LOCK.
@@ -216,7 +220,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_variable = self._contained_instance.createVariable(*args, **kwargs)
-        return VariableWrapper.from_existing(new_variable)
+        return self.VAR_WRAPPER_CLS.from_existing(new_variable)
 
     def get_variables_by_attributes(
         self, *args, **kwargs
@@ -234,7 +238,7 @@ class GroupWrapper(_ThreadSafeWrapper):
             variables_ = list(
                 self._contained_instance.get_variables_by_attributes(*args, **kwargs)
             )
-        return [VariableWrapper.from_existing(v) for v in variables_]
+        return [self.VAR_WRAPPER_CLS.from_existing(v) for v in variables_]
 
     # All Group API that returns Group(s) is wrapped to instead return
     #  GroupWrapper(s).
@@ -252,7 +256,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             groups_ = self._contained_instance.groups
-        return {k: GroupWrapper.from_existing(v) for k, v in groups_.items()}
+        return {k: self.GRP_WRAPPER_CLS.from_existing(v) for k, v in groups_.items()}
 
     @property
     def parent(self):
@@ -268,7 +272,7 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             parent_ = self._contained_instance.parent
-        return GroupWrapper.from_existing(parent_)
+        return self.GRP_WRAPPER_CLS.from_existing(parent_)
 
     def createGroup(self, *args, **kwargs):
         """Call createGroup() from netCDF4.Group/Dataset.
@@ -281,7 +285,10 @@ class GroupWrapper(_ThreadSafeWrapper):
         """
         with _GLOBAL_NETCDF4_LOCK:
             new_group = self._contained_instance.createGroup(*args, **kwargs)
-        return GroupWrapper.from_existing(new_group)
+        return self.GRP_WRAPPER_CLS.from_existing(new_group)
+
+
+GroupWrapper.GRP_WRAPPER_CLS = GroupWrapper
 
 
 class DatasetWrapper(GroupWrapper):
@@ -311,14 +318,22 @@ class DatasetWrapper(GroupWrapper):
 class NetCDFDataProxy:
     """A reference to the data payload of a single NetCDF file variable."""
 
-    __slots__ = ("shape", "dtype", "path", "variable_name", "fill_value")
+    __slots__ = (
+        "shape",
+        "dtype",
+        "path",
+        "variable_name",
+        "fill_value",
+        "use_byte_data",
+    )
 
-    def __init__(self, shape, dtype, path, variable_name, fill_value):
-        self.shape = shape
+    def __init__(self, cf_var, dtype, path, fill_value, *, use_byte_data=False):
+        self.shape = cf_var.shape
+        self.variable_name = cf_var.name
         self.dtype = dtype
         self.path = path
-        self.variable_name = variable_name
         self.fill_value = fill_value
+        self.use_byte_data = use_byte_data
 
     @property
     def ndim(self):
@@ -337,6 +352,8 @@ class NetCDFDataProxy:
             dataset = netCDF4.Dataset(self.path)
             try:
                 variable = dataset.variables[self.variable_name]
+                if self.use_byte_data:
+                    variable.set_auto_chartostring(False)
                 # Get the NetCDF variable data and slice.
                 var = variable[keys]
             finally:
