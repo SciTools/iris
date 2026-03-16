@@ -34,6 +34,21 @@ def test_PointBoundStrings_lazy():
     assert lazy_coord.has_lazy_bounds()
 
 
+def test_PointBoundStrings_no_bounds():
+    points = np.arange(5, dtype=np.float64)
+
+    coord = AuxCoord(points, standard_name="latitude")
+    pbs = coord.as_string_arrays()
+
+    expected_output = "Points:\n['0.0' '1.0' '2.0' '3.0' '4.0']"
+    assert str(pbs) == expected_output
+
+    expected_points = np.array(['0.0', '1.0', '2.0', '3.0', '4.0'])
+    assert np.array_equal(pbs.points, expected_points)
+
+    assert pbs.bounds is None
+
+
 def test_PointBoundStrings_time_coord():
     time_unit = Unit("days since epoch")
     points = np.arange(5)

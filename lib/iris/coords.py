@@ -75,26 +75,23 @@ class PointBoundStrings:
     def bounds(self):
         """Format the bounds as a string array."""
         if self._bounds is None:
-            bounds = _lazy.as_concrete_data(self._core_bounds)
-            if self._units.is_time_reference():
-                bounds = self._units.num2date(bounds)
-            if self.fmt:
-                self._bounds = np.vectorize(lambda x: format(x, self.fmt))(bounds)
-            else:
-                self._bounds = bounds.astype("str")
-            self._core_bounds = None
+            if self._core_bounds is not None:
+                bounds = _lazy.as_concrete_data(self._core_bounds)
+                if self._units.is_time_reference():
+                    bounds = self._units.num2date(bounds)
+                if self.fmt:
+                    self._bounds = np.vectorize(lambda x: format(x, self.fmt))(bounds)
+                else:
+                    self._bounds = bounds.astype("str")
+                self._core_bounds = None
         return self._bounds
 
     def __repr__(self):
         """Format the points and bounds as a string."""
-        return "\n".join(
-            [
-                "Points:",
-                np.array2string(self.points),
-                "Bounds:",
-                np.array2string(self.bounds),
-            ]
-        )
+        output = ["Points:", np.array2string(self.points)]
+        if self.bounds is not None:
+            output.extend(["Bounds:", np.array2string(self.bounds)])
+        return "\n".join(output)
 
 
 class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
