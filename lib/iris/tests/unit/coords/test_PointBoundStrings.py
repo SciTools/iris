@@ -10,6 +10,7 @@ import numpy as np
 
 from iris._lazy_data import is_lazy_data
 from iris.coords import AuxCoord, PointBoundStrings
+from iris.tests._shared_utils import assert_array_equal
 
 
 def test_PointBoundStrings_lazy():
@@ -44,7 +45,7 @@ def test_PointBoundStrings_no_bounds():
     assert str(pbs) == expected_output
 
     expected_points = np.array(["0.0", "1.0", "2.0", "3.0", "4.0"])
-    assert np.array_equal(pbs.points, expected_points)
+    assert_array_equal(pbs.points, expected_points)
 
     assert pbs.bounds is None
 
