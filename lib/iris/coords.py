@@ -86,7 +86,7 @@ class PointBoundStrings:
                 self._core_bounds = None
         return self._bounds
 
-    def __repr__(self):
+    def __str__(self):
         """Format the points and bounds as a string."""
         output = ["Points:", np.array2string(self.points)]
         if self.bounds is not None:
