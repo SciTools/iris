@@ -55,7 +55,7 @@ This document explains the changes made to Iris for this release
 
 #. `@stephenworsley`_ added the coordinate method :meth:`~iris.coords.Coord.as_string_arrays`
    and the class :class:`~iris.coords.PointBoundStrings` to help represent points and
-   bounds data on coordinates. This adapts code suggestions by @`rcomer`_ and @`vsherratt`_.
+   bounds data on coordinates. This adapts code suggestions by `@rcomer`_ and `@vsherratt`_. (:issue:`4508`, :pull:`6978`)
 
 🐛 Bugs Fixed
 =============
