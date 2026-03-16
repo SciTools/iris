@@ -91,6 +91,8 @@ class PointBoundStrings:
         output = ["Points:", np.array2string(self.points)]
         if self.bounds is not None:
             output.extend(["Bounds:", np.array2string(self.bounds)])
+        else:
+            output.extend(["Bounds:", "None"])
         return "\n".join(output)
 
 
@@ -2701,7 +2703,21 @@ class Coord(_DimensionalMetadata):
         return unique_value
 
     def as_string_arrays(self, fmt=None):
-        """Access a formatted array of strings from the points and bounds."""
+        """Access a formatted array of strings from the points and bounds.
+
+        Will return a :class:`~iris.coords.PointBoundString`. This can either be
+        converted directly to a string, or numpy string arrays for the points and
+        bounds can be accessed via the `points` and `bounds` properties. These
+        properties are designed to be only calculated when they are called and any
+        lazy points and bounds on the coordinate will remain lazy.
+
+        Parameters
+        ----------
+        fmt : str, optional
+            The format string to be applied when converting to a string. If the
+            coordinate contains datetime information, the points and bounds will
+            be converted to datetimes before being formatted to strings.
+        """
         return PointBoundStrings(
             self.core_points(), self.core_bounds(), self.units, fmt=fmt
         )

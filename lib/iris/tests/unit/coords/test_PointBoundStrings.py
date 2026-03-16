@@ -40,7 +40,7 @@ def test_PointBoundStrings_no_bounds():
     coord = AuxCoord(points, standard_name="latitude")
     pbs = coord.as_string_arrays()
 
-    expected_output = "Points:\n['0.0' '1.0' '2.0' '3.0' '4.0']"
+    expected_output = "Points:\n['0.0' '1.0' '2.0' '3.0' '4.0']\nBounds:\nNone"
     assert str(pbs) == expected_output
 
     expected_points = np.array(["0.0", "1.0", "2.0", "3.0", "4.0"])
