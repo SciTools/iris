@@ -411,7 +411,7 @@ class Saver:
             # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
             # Except if it already is one, since they forbid "re-wrapping".
             if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
-                self._dataset = bytecoding_datasets.DatasetWrapper.from_existing(
+                self._dataset = bytecoding_datasets.EncodedDataset.from_existing(
                     self._dataset
                 )
 
