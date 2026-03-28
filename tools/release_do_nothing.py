@@ -515,7 +515,7 @@ class IrisRelease(Progress):
 
         if self.first_in_series:
             message = (
-                "Visit https://github.com/SciTools/iris and create the"
+                "Visit https://github.com/SciTools/iris and create the "
                 f"``{self.version.branch}`` release branch from ``main``."
             )
             self.wait_for_done(message)
