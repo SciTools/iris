@@ -549,9 +549,9 @@ def default_units_class():
     if _DEFAULT_UNITCLASS is not None:
         result = _DEFAULT_UNITCLASS
     else:
-        from iris import FUTURE
+        from iris.experimental.units import USE_CFPINT
 
-        result = CfpintUnit if FUTURE.use_cfpint_units else CfUnit
+        result = CfpintUnit if USE_CFPINT.use_cfpint_units else CfUnit
     return result
 
 
