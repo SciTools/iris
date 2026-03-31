@@ -6,6 +6,7 @@ For further details, see https://nox.thea.codes/en/stable/#
 
 import hashlib
 import os
+import pathlib
 from pathlib import Path
 
 import nox
@@ -181,6 +182,31 @@ def tests(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
+
+    # HACK EXTRAS: install pint; download cfpint + make it importable with a pth
+    session.conda_install("pint")
+
+    def expth(pth):
+        return str(pathlib.Path(pth).expanduser().absolute())
+
+    session.run("mkdir", "-p", expth("~/extra_installs"), external=True)
+    session.run(
+        "git",
+        "clone",
+        "https://github.com/SciTools/cfpint.git",
+        expth("~/extra_installs/cfpint"),
+        external=True,
+    )
+    session.run(
+        "mkdir",
+        "-p",
+        expth(f"~/.local/lib/python{session.python}/site-packages"),
+        external=True,
+    )
+    path = expth(f"~/.local/lib/python{session.python}/site-packages/cfpint.pth")
+    with open(path, "w") as f_out:
+        f_out.write(expth("~/extra_installs/cfpint/src"))
+
     run_args = [
         "pytest",
         "-n",

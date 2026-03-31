@@ -23,11 +23,22 @@ except ImportError:
     cf_units = None
 
 try:
-    import cfpint
     import pint
+except ImportError:
+    pint = None
+
+try:
+    import cfpint
 except ImportError:
     cfpint = None
 
+print("\n")
+import sys
+
+print("sys.path .. ")
+print("\n".join([f"  {x}" for x in sys.path]))
+print("pint=", pint)
+print("cfpint=", cfpint)
 import numpy as np
 
 import iris.std_names
@@ -521,7 +532,7 @@ if cfpint is not None:
 
 
 # FOR NOW: insist on pint units
-_DEFAULT_UNITCLASS: type = CfpintUnit
+_DEFAULT_UNITCLASS: type = CfUnit
 
 # And force pint too.
 # TODO: since we may have seen problems with doing this dynamically, this could affect

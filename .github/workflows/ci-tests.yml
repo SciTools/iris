@@ -96,6 +96,13 @@ jobs:
           env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
 
+#      - name: "install latest cfpint"
+#        run: |
+#          mkdir -p ~/extra_installs
+#          git clone https://github.com/SciTools/cfpint.git ~/extra_installs/cfpint
+#          mkdir -p ~/.local/lib/python${{ matrix.python-version }}/site-packages
+#          echo $(readlink -f ~/extra_installs/cfpint/src) >~/.local/lib/python${{ matrix.python-version }}/site-packages/cfpint.pth
+
       - name: "conda info"
         run: |
           conda info
