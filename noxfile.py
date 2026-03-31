@@ -167,6 +167,35 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         )
 
 
+def force_install_pint_cfpint(session: nox.sessions.Session) -> None:
+    # HACK EXTRAS: install pint; download cfpint + make it importable with a pth
+    # Install pint : N.B. *not* conda_install, as benchmark-validate has no conda.
+    session.install("pint")
+
+    def expth(pth):
+        return str(pathlib.Path(pth).expanduser().absolute())
+
+    session.run("mkdir", "-p", expth("~/extra_installs"), external=True)
+    session.run(
+        "git",
+        "clone",
+        "https://github.com/SciTools/cfpint.git",
+        expth("~/extra_installs/cfpint"),
+        external=True,
+    )
+    local_sites_path = expth(f"~/.local/lib/python{session.python}/site-packages")
+    session.run(
+        "mkdir",
+        "-p",
+        local_sites_path,
+        external=True,
+    )
+    if not session._runner.global_config.install_only:
+        pth_path = local_sites_path + "/cfpint.pth"
+        with open(pth_path, "w") as f_out:
+            f_out.write(expth("~/extra_installs/cfpint/src"))
+
+
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
     """Perform iris system, integration and unit tests.
@@ -183,29 +212,7 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
 
-    # HACK EXTRAS: install pint; download cfpint + make it importable with a pth
-    session.conda_install("pint")
-
-    def expth(pth):
-        return str(pathlib.Path(pth).expanduser().absolute())
-
-    session.run("mkdir", "-p", expth("~/extra_installs"), external=True)
-    session.run(
-        "git",
-        "clone",
-        "https://github.com/SciTools/cfpint.git",
-        expth("~/extra_installs/cfpint"),
-        external=True,
-    )
-    session.run(
-        "mkdir",
-        "-p",
-        expth(f"~/.local/lib/python{session.python}/site-packages"),
-        external=True,
-    )
-    path = expth(f"~/.local/lib/python{session.python}/site-packages/cfpint.pth")
-    with open(path, "w") as f_out:
-        f_out.write(expth("~/extra_installs/cfpint/src"))
+    force_install_pint_cfpint(session)
 
     run_args = [
         "pytest",
@@ -231,6 +238,9 @@ def doctest(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
+
+    force_install_pint_cfpint(session)
+
     session.cd("docs")
     session.run(
         "make",
@@ -258,6 +268,9 @@ def gallery(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
+
+    force_install_pint_cfpint(session)
+
     session.run(
         "pytest",
         "-n",
@@ -285,6 +298,9 @@ def wheel(session: nox.sessions.Session):
         emsg = f"Expected to find 1 wheel to install, found {len(fname)} instead."
         raise ValueError(emsg)
     session.install(fname[0].name)
+
+    force_install_pint_cfpint(session)
+
     session.run(
         "python",
         "-c",
@@ -312,6 +328,9 @@ def benchmarks(session: nox.sessions.Session):
             "nox -s benchmarks -- something\n"
         )
         session.error(message)
+
     session.install("asv", "nox")
+    force_install_pint_cfpint(session)
+
     bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
     session.run("python", bm_runner_path, *session.posargs)
