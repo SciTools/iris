@@ -641,7 +641,9 @@ class CFVariableMixin:
     @units.setter
     def units(self, unit: cf_units.Unit | cfpint.Unit | str | None) -> None:
         # unit = cf_units.as_unit(unit)
-        self._metadata_manager.units = default_units_class().from_unit(unit)
+        if unit is not None:
+            unit = default_units_class().from_unit(unit)
+        self._metadata_manager.units = unit
 
     @property
     def attributes(self) -> LimitedAttributeDict:
