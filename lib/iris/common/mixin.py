@@ -23,22 +23,11 @@ except ImportError:
     cf_units = None
 
 try:
-    import pint
-except ImportError:
-    pint = None
-
-try:
     import cfpint
+    import pint
 except ImportError:
     cfpint = None
 
-print("\n")
-import sys
-
-print("sys.path .. ")
-print("\n".join([f"  {x}" for x in sys.path]))
-print("pint=", pint)
-print("cfpint=", cfpint)
 import numpy as np
 
 import iris.std_names
