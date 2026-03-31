@@ -190,6 +190,7 @@ if cf_units is not None:
         @classmethod
         def from_unit(cls, unit: cf_units.Unit):
             """Cast a :class:`cf_units.Unit` to an :class:`Unit`."""
+            unit = cf_units.as_unit(unit)
             if isinstance(unit, CfUnit):
                 result = unit
             elif isinstance(unit, cf_units.Unit):
