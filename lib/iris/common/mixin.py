@@ -246,6 +246,12 @@ if cf_units is not None:
 
             return result
 
+        def __repr__(self):
+            # Adjust repr to look like the parent class, to avoid many CML errors.
+            string = super().__repr__()
+            string = string.replace(self.__class__.__name__ + "(", "Unit(", 1)
+            return string
+
 
 if cfpint is not None:
 
