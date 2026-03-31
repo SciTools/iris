@@ -551,7 +551,7 @@ def default_units_class():
     else:
         from iris.experimental.units import USE_CFPINT
 
-        result = CfpintUnit if USE_CFPINT.use_cfpint_units else CfUnit
+        result = CfpintUnit if USE_CFPINT else CfUnit
     return result
 
 
