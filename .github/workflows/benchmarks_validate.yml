@@ -26,26 +26,23 @@ jobs:
       ENV_CACHE_BUILD: "1"
 
     steps:
-      - name: Disabled-no-cfpint
-        run: echo "Can't benchmark without installable cfpint."
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-#      - name: Checkout repo
-#        uses: actions/checkout@v6
-#        with:
-#          fetch-depth: 0
-#
-#      - name: Install run dependencies
-#        run: pip install asv nox!=2025.05.01
-#
-#      - name: Cache environment directories
-#        id: cache-env-dir
-#        uses: actions/cache@v5
-#        with:
-#          path: |
-#            .nox
-#            benchmarks/.asv/env
-#            $CONDA/pkgs
-#          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
-#
-#      - name: Validate setup
-#        run: nox -s benchmarks -- validate
+      - name: Install run dependencies
+        run: pip install asv nox!=2025.05.01
+
+      - name: Cache environment directories
+        id: cache-env-dir
+        uses: actions/cache@v5
+        with:
+          path: |
+            .nox
+            benchmarks/.asv/env
+            $CONDA/pkgs
+          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
+
+      - name: Validate setup
+        run: nox -s benchmarks -- validate
