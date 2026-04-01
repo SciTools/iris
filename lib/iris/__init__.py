@@ -229,11 +229,6 @@ class Future(threading.local):
             to a PP file will set the pole longitude (PP field ``bplon``) to
             180.0 degrees if the grid is defined on a standard pole. Does not
             affect global or rotated-pole domains.
-        use_cfpint_units : bool, default=False
-            When True, units attributes will be created as :class:`cfpint.Unit` by
-            default.  At present you can still assign class:`cf_units.Unit` objects
-            explicitly, and either may be used.  However, support for cf_units will
-            eventually be retired.
 
         """
         # The flag 'example_future_flag' is provided as a reference for the
@@ -249,7 +244,6 @@ class Future(threading.local):
         self.__dict__["date_microseconds"] = date_microseconds
         self.__dict__["derived_bounds"] = derived_bounds
         self.__dict__["lam_pole_offset"] = lam_pole_offset
-        self.__dict__["use_cfpint_units"] = use_cfpint_units
 
         # TODO: next major release: set IrisDeprecation to subclass
         #  DeprecationWarning instead of UserWarning.
