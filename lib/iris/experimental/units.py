@@ -9,8 +9,8 @@ from contextlib import contextmanager
 import threading
 
 
-class Use_cfpint(threading.local):
-    def __init__(self, units):
+class UseCfpint(threading.local):
+    def __init__(self):
         """Thead-safe state to enable experimental cfpint based unit creation.
 
         A flag for dictating whether to use the experimental cfpint based units
@@ -27,7 +27,7 @@ class Use_cfpint(threading.local):
         return self._state
 
     @contextmanager
-    def context(self):
+    def context(self, pint_units=True):
         """Temporarily activate experimental cfpint based unit creation.
 
         Create cfpint based units :class:`~iris.common.mixin.CfpintUnit` when
@@ -35,11 +35,12 @@ class Use_cfpint(threading.local):
 
         Use via the run-time switch :const:`~iris.experimental.units.USE_CFPINT`.
         """
+        old_state = self._state
         try:
-            self._state = True
+            self._state = pint_units
             yield
         finally:
-            self._state = False
+            self._state = old_state
 
 
-USE_CFPINT = Use_cfpint()
+USE_CFPINT = UseCfpint()
