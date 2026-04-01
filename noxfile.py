@@ -238,9 +238,6 @@ def doctest(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
-
-    force_install_pint_cfpint(session)
-
     session.cd("docs")
     session.run(
         "make",
@@ -268,9 +265,6 @@ def gallery(session: nox.sessions.Session):
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
-
-    force_install_pint_cfpint(session)
-
     session.run(
         "pytest",
         "-n",
@@ -298,9 +292,6 @@ def wheel(session: nox.sessions.Session):
         emsg = f"Expected to find 1 wheel to install, found {len(fname)} instead."
         raise ValueError(emsg)
     session.install(fname[0].name)
-
-    force_install_pint_cfpint(session)
-
     session.run(
         "python",
         "-c",
@@ -328,9 +319,6 @@ def benchmarks(session: nox.sessions.Session):
             "nox -s benchmarks -- something\n"
         )
         session.error(message)
-
     session.install("asv", "nox")
-    force_install_pint_cfpint(session)
-
     bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
     session.run("python", bm_runner_path, *session.posargs)
