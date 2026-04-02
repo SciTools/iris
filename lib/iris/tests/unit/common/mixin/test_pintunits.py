@@ -1,3 +1,12 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Stopgap testing for pint units.
+
+So far, only a few specific things are tested.
+"""
+
 from datetime import datetime
 
 import cf_units
@@ -29,7 +38,9 @@ def test_nounit_eq():
 
 def test_calendar():
     unit = CfpintUnit("days since 1970-01-01", calendar="360_day")
-    assert repr(unit) == "<Unit('days since 1970-01-01', calendar='360_day')>"
+    # NOTE: no <>, due to "backwards compatibility" for assert_CDL
+    # TODO: remove the CfpintUnit._REPR_NO_LTGT
+    assert repr(unit) == "Unit('days since 1970-01-01', calendar='360_day')"
     # TODO: should really add the calendar to the string format
     #   I think this is a bit horrible,
     #   .. but it is cf_units behaviour + currently required for correct netcdf saving

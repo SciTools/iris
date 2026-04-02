@@ -179,6 +179,7 @@ if cf_units is not None:
         @classmethod
         def from_unit(cls, unit: cf_units.Unit):
             """Cast a :class:`cf_units.Unit` to an :class:`Unit`."""
+            unit = cf_units.as_unit(unit)
             if isinstance(unit, CfUnit):
                 result = unit
             elif isinstance(unit, cf_units.Unit):
@@ -233,6 +234,12 @@ if cf_units is not None:
                     result = _round(result)
 
             return result
+
+        def __repr__(self):
+            # Adjust repr to look like the parent class, to avoid many CML errors.
+            string = super().__repr__()
+            string = string.replace(self.__class__.__name__ + "(", "Unit(", 1)
+            return string
 
 
 if cfpint is not None:
@@ -520,29 +527,28 @@ if cfpint is not None:
             return self.dimensionality in (pressure_dims, height_dims)
 
 
-# FOR NOW: insist on pint units
-_DEFAULT_UNITCLASS: type = CfpintUnit
+# FOR NOW: still cf_units by default
+_DEFAULT_UNITCLASS: type = CfUnit
 
 # And force pint too.
 # TODO: since we may have seen problems with doing this dynamically, this could affect
 #  the whole attempt to divide functions between Iris and Cfpint functionality
 
+if cfpint:
+    # See: https://pint.readthedocs.io/en/stable/advanced/custom-registry-class.html#custom-quantity-and-unit-class
+    class IrispintRegistry(pint.registry.UnitRegistry):
+        Quantity: TypeAlias = pint.Quantity
+        Unit: TypeAlias = CfpintUnit
 
-# See: https://pint.readthedocs.io/en/stable/advanced/custom-registry-class.html#custom-quantity-and-unit-class
-class IrispintRegistry(pint.registry.UnitRegistry):
-    Quantity: TypeAlias = pint.Quantity
-    Unit: TypeAlias = CfpintUnit
+    # Create our own registry, based on our own UnitRegistry subclass
+    from cfpint._cfarray_units_like import make_registry
 
-
-# Create our own registry, based on our own UnitRegistry subclass
-from cfpint._cfarray_units_like import make_registry
-
-IRIS_PINT_REGISTRY: IrispintRegistry = make_registry(
-    IrispintRegistry
-)  # include all 'normal' features
-pint.set_application_registry(IRIS_PINT_REGISTRY)
-pint.application_registry.default_system = "SI"
-pint.application_registry.default_format = "cfu"
+    IRIS_PINT_REGISTRY: IrispintRegistry = make_registry(
+        IrispintRegistry
+    )  # include all 'normal' features
+    pint.set_application_registry(IRIS_PINT_REGISTRY)
+    pint.application_registry.default_system = "SI"
+    pint.application_registry.default_format = "cfu"
 
 
 def default_units_class():
@@ -553,12 +559,6 @@ def default_units_class():
 
         result = CfpintUnit if USE_CFPINT else CfUnit
     return result
-
-
-#
-# if cfpint is None or cf_units is None:
-#     # Only one choice to make, so make it now + fix it for all future use.
-#     _DEFAULT_UNITCLASS = default_units_class()
 
 
 class CFVariableMixin:
@@ -629,8 +629,8 @@ class CFVariableMixin:
 
     @units.setter
     def units(self, unit: cf_units.Unit | cfpint.Unit | str | None) -> None:
-        # unit = cf_units.as_unit(unit)
-        self._metadata_manager.units = default_units_class().from_unit(unit)
+        unit = default_units_class().from_unit(unit)
+        self._metadata_manager.units = unit
 
     @property
     def attributes(self) -> LimitedAttributeDict:
