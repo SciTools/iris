@@ -183,7 +183,6 @@ class Future(threading.local):
         date_microseconds=False,
         derived_bounds=False,
         lam_pole_offset=False,
-        use_cfpint_units=False,
     ):
         """Container for run-time options controls.
 

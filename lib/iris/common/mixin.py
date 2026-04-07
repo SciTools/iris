@@ -552,12 +552,13 @@ if cfpint:
 
 
 def default_units_class():
-    if _DEFAULT_UNITCLASS is not None:
+    from iris.experimental.units import USE_CFPINT
+    if USE_CFPINT:
+        result = CfpintUnit
+    elif _DEFAULT_UNITCLASS is not None:
         result = _DEFAULT_UNITCLASS
     else:
-        from iris.experimental.units import USE_CFPINT
-
-        result = CfpintUnit if USE_CFPINT else CfUnit
+        result = CfUnit
     return result
 
 
