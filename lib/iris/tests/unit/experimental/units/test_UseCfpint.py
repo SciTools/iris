@@ -10,9 +10,11 @@ from iris.cube import Cube
 from iris.common.mixin import CfpintUnit
 from iris.experimental.units import USE_CFPINT
 
+
 def test_without_context():
     cube = Cube(1, units="m")
     assert isinstance(cube.units, cf_unit)
+
 
 def test_with_context():
     with USE_CFPINT.context():
