@@ -41,7 +41,12 @@ def make_unit(arg: cf_units.Unit | pint.Unit | Any) -> CfUnit | PintUnit:
     """Convert input into an Iris unit.
 
     Converts strings to units, and pint/cf_units Units to the Iris specialised
-    derived unit types .
+    derived unit types.
+
+    The type returned is either :class:`iris.common.units.CfUnit` or
+    :class:`iris.common.units.PintUnit`.  If the argument is a non-unit object, such as
+    a string or number, the resulting type is determined by the
+    :data:`iris.common.units.USE_CFPINT` control.
     """
     if cf_units is not None and isinstance(arg, cf_units.Unit):
         unit_class = CfUnit

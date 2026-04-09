@@ -6,7 +6,7 @@
 
 import pytest
 
-from iris.common.mixin import CfpintUnit, CfUnit
+from iris.common.units import CfUnit, PintUnit
 from iris.cube import Cube
 from iris.experimental.units import USE_CFPINT
 
@@ -19,7 +19,7 @@ def test_without_context():
 def test_with_context():
     with USE_CFPINT.context():
         cube = Cube(1, units="m")
-    assert isinstance(cube.units, CfpintUnit)
+    assert isinstance(cube.units, PintUnit)
 
 
 def test_explicit_context():
@@ -28,4 +28,4 @@ def test_explicit_context():
     assert isinstance(cube_false_context.units, CfUnit)
     with USE_CFPINT.context(pint_units=True):
         cube_true_context = Cube(1, units="m")
-    assert isinstance(cube_true_context.units, CfpintUnit)
+    assert isinstance(cube_true_context.units, PintUnit)
