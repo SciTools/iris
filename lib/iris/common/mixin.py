@@ -14,9 +14,6 @@ import warnings
 
 import cftime
 
-from iris.util import is_masked
-
-# TODO: use a FUTURE flag to control this
 try:
     import cf_units
 except ImportError:
@@ -558,23 +555,18 @@ def _default_units_class():
     return result
 
 
-def make_unit(
-    arg: None | str | int | float | np.number | cf_units.Unit | pint.Unit,
-) -> CfUnit | CfpintUnit:
+def make_unit(arg: cf_units.Unit | pint.Unit | Any) -> CfUnit | CfpintUnit:
     """Convert input into an Iris unit.
 
     Converts strings to units, and pint/cf_units Units to the Iris specialised
     derived unit types .
     """
-    if arg is None or isinstance(arg, str | int | float | np.number):
-        unit_class = _default_units_class()
-    elif isinstance(arg, cf_units.Unit):  # type: ignore[unreachable]
+    if isinstance(arg, cf_units.Unit):
         unit_class = CfUnit
     elif isinstance(arg, pint.Unit):
         unit_class = CfpintUnit
     else:
-        msg = f"Cannot make unit from type {type(arg)}."
-        raise TypeError(msg)
+        unit_class = _default_units_class()
     return unit_class.from_unit(arg)
 
 

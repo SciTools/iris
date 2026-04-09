@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the object :mod:`iris.experimental.units.USE_CFPINT` ."""
 
-from cf_units import Unit as cf_unit
-from pint import Unit as pint_unit
 import pytest
 
 from iris.common.mixin import CfpintUnit, CfUnit
@@ -24,22 +22,13 @@ def test_with_context():
     assert isinstance(cube.units, CfpintUnit)
 
 
-def test_from_pint():
-    unit = pint_unit("m")
-    cube_no_context = Cube(1, units=unit)
-    with USE_CFPINT.context():
-        cube_with_context = Cube(1, units=unit)
-    assert isinstance(cube_no_context.units, CfpintUnit)
-    assert isinstance(cube_with_context.units, CfpintUnit)
-
-
-def test_from_cf_units():
-    unit = cf_unit("m")
-    cube_no_context = Cube(1, units=unit)
-    with USE_CFPINT.context():
-        cube_with_context = Cube(1, units=unit)
-    assert isinstance(cube_no_context.units, CfUnit)
-    assert isinstance(cube_with_context.units, CfUnit)
+def test_explicit_context():
+    with USE_CFPINT.context(False):
+        cube_false_context = Cube(1, units="m")
+    assert isinstance(cube_false_context.units, CfUnit)
+    with USE_CFPINT.context(pint_units=True):
+        cube_true_context = Cube(1, units="m")
+    assert isinstance(cube_true_context.units, CfpintUnit)
 
 
 def test_error_no_context():
