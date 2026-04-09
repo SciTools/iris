@@ -14,9 +14,6 @@ import warnings
 
 import cftime
 
-from iris.util import is_masked
-
-# TODO: use a FUTURE flag to control this
 try:
     import cf_units
 except ImportError:
@@ -27,6 +24,7 @@ try:
     import pint
 except ImportError:
     cfpint = None
+    pint = None
 
 import numpy as np
 
@@ -527,9 +525,6 @@ if cfpint is not None:
             return self.dimensionality in (pressure_dims, height_dims)
 
 
-# FOR NOW: still cf_units by default
-_DEFAULT_UNITCLASS: type = CfUnit
-
 # And force pint too.
 # TODO: since we may have seen problems with doing this dynamically, this could affect
 #  the whole attempt to divide functions between Iris and Cfpint functionality
@@ -551,14 +546,29 @@ if cfpint:
     pint.application_registry.default_format = "cfu"
 
 
-def default_units_class():
-    if _DEFAULT_UNITCLASS is not None:
-        result = _DEFAULT_UNITCLASS
-    else:
-        from iris.experimental.units import USE_CFPINT
+def _default_units_class():
+    from iris.experimental.units import USE_CFPINT
 
-        result = CfpintUnit if USE_CFPINT else CfUnit
+    if USE_CFPINT:
+        result = CfpintUnit
+    else:
+        result = CfUnit
     return result
+
+
+def make_unit(arg: cf_units.Unit | pint.Unit | Any) -> CfUnit | CfpintUnit:
+    """Convert input into an Iris unit.
+
+    Converts strings to units, and pint/cf_units Units to the Iris specialised
+    derived unit types .
+    """
+    if cf_units is not None and isinstance(arg, cf_units.Unit):
+        unit_class = CfUnit
+    elif pint is not None and isinstance(arg, pint.Unit):
+        unit_class = CfpintUnit
+    else:
+        unit_class = _default_units_class()
+    return unit_class.from_unit(arg)
 
 
 class CFVariableMixin:
@@ -629,7 +639,7 @@ class CFVariableMixin:
 
     @units.setter
     def units(self, unit: cf_units.Unit | cfpint.Unit | str | None) -> None:
-        unit = default_units_class().from_unit(unit)
+        unit = make_unit(unit)
         self._metadata_manager.units = unit
 
     @property
