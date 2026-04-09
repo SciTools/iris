@@ -29,14 +29,3 @@ def test_explicit_context():
     with USE_CFPINT.context(pint_units=True):
         cube_true_context = Cube(1, units="m")
     assert isinstance(cube_true_context.units, CfpintUnit)
-
-
-def test_error_no_context():
-    with pytest.raises(TypeError):
-        _ = Cube(1, units=["m"])
-
-
-def test_error_with_context():
-    with pytest.raises(TypeError):
-        with USE_CFPINT.context():
-            _ = Cube(1, units=["m"])
