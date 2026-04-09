@@ -44,5 +44,3 @@ class UseCfpint(threading.local):
 
 
 USE_CFPINT = UseCfpint()
-
-

@@ -6,8 +6,8 @@
 
 from cf_units import Unit as cf_unit
 
-from iris.cube import Cube
 from iris.common.mixin import CfpintUnit
+from iris.cube import Cube
 from iris.experimental.units import USE_CFPINT
 
 

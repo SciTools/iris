@@ -558,9 +558,7 @@ def _default_units_class():
     return result
 
 
-def make_unit(
-        arg: None | str | cf_units.Unit | pint.Unit
-) -> CfUnit | CfpintUnit:
+def make_unit(arg: None | str | cf_units.Unit | pint.Unit) -> CfUnit | CfpintUnit:
     """Convert input into an Iris unit.
 
     Converts strings to units, and pint/cf_units Units to the Iris specialised
