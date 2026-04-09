@@ -168,32 +168,9 @@ def prepare_venv(session: nox.sessions.Session) -> None:
 
 
 def force_install_pint_cfpint(session: nox.sessions.Session) -> None:
-    # HACK EXTRAS: install pint; download cfpint + make it importable with a pth
     # Install pint : N.B. *not* conda_install, as benchmark-validate has no conda.
-    session.install("pint")
-
-    def expth(pth):
-        return str(pathlib.Path(pth).expanduser().absolute())
-
-    session.run("mkdir", "-p", expth("~/extra_installs"), external=True)
-    session.run(
-        "git",
-        "clone",
-        "https://github.com/SciTools/cfpint.git",
-        expth("~/extra_installs/cfpint"),
-        external=True,
-    )
-    local_sites_path = expth(f"~/.local/lib/python{session.python}/site-packages")
-    session.run(
-        "mkdir",
-        "-p",
-        local_sites_path,
-        external=True,
-    )
-    if not session._runner.global_config.install_only:
-        pth_path = local_sites_path + "/cfpint.pth"
-        with open(pth_path, "w") as f_out:
-            f_out.write(expth("~/extra_installs/cfpint/src"))
+    # N.B. this installs direct from the repo (latest 'main').
+    session.install("git+https://github.com/SciTools/cfpint")
 
 
 @nox.session(python=PY_VER, venv_backend="conda")
