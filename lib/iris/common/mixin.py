@@ -564,7 +564,15 @@ def make_unit(arg: None | str | cf_units.Unit | pint.Unit) -> CfUnit | CfpintUni
     Converts strings to units, and pint/cf_units Units to the Iris specialised
     derived unit types .
     """
-    unit_class = _default_units_class()
+    if arg is None or isinstance(arg, str):
+        unit_class = _default_units_class()
+    elif isinstance(arg, cf_units.Unit):
+        unit_class = CfUnit
+    elif isinstance(arg, pint.Unit):
+        unit_class = CfpintUnit
+    else:
+        msg = f"Cannot make unit from type {type(arg)}."
+        raise TypeError(msg)
     return unit_class.from_unit(arg)
 
 
