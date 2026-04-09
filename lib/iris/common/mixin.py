@@ -24,6 +24,7 @@ try:
     import pint
 except ImportError:
     cfpint = None
+    pint = None
 
 import numpy as np
 
@@ -561,9 +562,9 @@ def make_unit(arg: cf_units.Unit | pint.Unit | Any) -> CfUnit | CfpintUnit:
     Converts strings to units, and pint/cf_units Units to the Iris specialised
     derived unit types .
     """
-    if isinstance(arg, cf_units.Unit):
+    if cf_units is not None and isinstance(arg, cf_units.Unit):
         unit_class = CfUnit
-    elif isinstance(arg, pint.Unit):
+    elif pint is not None and isinstance(arg, pint.Unit):
         unit_class = CfpintUnit
     else:
         unit_class = _default_units_class()
