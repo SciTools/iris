@@ -72,7 +72,10 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ altered the messaging for 'stale' issues and pull requests,
+   to reduce the negative connotations. We now use ``needs-checkin`` for the
+   initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
+   (:issue:`6993`, :pull:`7036`)
 
 
 .. comment
