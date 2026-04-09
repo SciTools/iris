@@ -41,7 +41,7 @@ jobs:
           stale-pr-message: |
             It has been 500 days since last activity on this PR, so it has been given the https://github.com/SciTools/iris/labels/needs-checkin label. This reminder prompts us to identify PRs which:
             
-            1. Are for a problem that is now fixed.
+            1. Have now been addressed by other PR(s).
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
             4. Are still outstanding but which there is not enough resource for - our backlog is often larger than available resource; the 500-day inactivity _may_ be a sign of lower priority.
