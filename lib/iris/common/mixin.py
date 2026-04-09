@@ -568,7 +568,7 @@ def make_unit(
     """
     if arg is None or isinstance(arg, str | int | float | np.number):
         unit_class = _default_units_class()
-    elif isinstance(arg, cf_units.Unit):
+    elif isinstance(arg, cf_units.Unit):  # type: ignore[unreachable]
         unit_class = CfUnit
     elif isinstance(arg, pint.Unit):
         unit_class = CfpintUnit
