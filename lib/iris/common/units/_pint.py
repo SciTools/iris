@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris pint-based units, based on the 'cfpint' package."""
 
+from enum import StrEnum
 from typing import TypeAlias
 
 import cf_units
@@ -52,20 +53,43 @@ class CfpintUnit(cfpint.Unit):
             result = cls(str(unit))
         return result
 
-    _IRIS_EXTRA_CATEGORIES = {
+    class UnitCategory(StrEnum):
+        """The possible categories of units.
+
+        These are basically employed to define 'no-unit' and 'unknown' as distinct
+        "categories" of a PintUnit, while "regular" implies that the unit is equivalent
+        to an 'ordinary' cfpint.Pint object.
+
+        Units of a category other than "regular" are only of meaning *within Iris*.
+        For example, they can't be saved to a netcdf-CF dataset.
+        """
+
+        regular = "regular"
+        no_unit = "no_unit"
+        unknown = "unknown"
+
+    _IRIS_CATEGORY_ALIASES = {
         "unknown": ["unknown", "?", ""],
         "no_unit": ["no-unit", "no_unit", "-"],
     }
 
+    @property
+    def category(self):
+        return self._category
+
+    @category.setter
+    def category(self, value):
+        self._category = CfpintUnit.UnitCategory(value)
+
     def __init__(self, *args, **kwargs):
         """Create an Iris pint-based unit."""
-        self.category = "regular"
+        self._category: CfpintUnit.UnitCategory = "regular"
         if args and (arg := args[0]) is None or isinstance(arg, str):
             # Catch + transform "extra" special-category cases.
             if arg is None:
                 arg = ""
             arg = arg.lower()
-            for name, matches in self._IRIS_EXTRA_CATEGORIES.items():
+            for name, matches in self._IRIS_CATEGORY_ALIASES.items():
                 if arg in matches:
                     self.category = name
                     arg = "1"  # this is how we do it...
@@ -79,7 +103,7 @@ class CfpintUnit(cfpint.Unit):
         """Correct the str() to support the additional categories."""
         # N.B. cfpint.Unit.__repr__ is based on __str__, so we only overload this.
         if self.category != "regular":
-            result = self.category
+            result = str(self.category)
         else:
             result = super().__str__()
         return result
@@ -302,7 +326,7 @@ class CfuLikeUnit(CfpintUnit):
         return result
 
     #
-    # cf_units-like unit category test methods.
+    # cf_units-like unit-type test methods.
     #
 
     def is_udunits(self):
@@ -336,10 +360,10 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.2.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
-            equality, or test ``unit.category``.
+            equality, or test ``unit._category``.
 
         """
-        return self.category == "unknown"
+        return self.category == PintUnit.UnitCategory.unknown
 
     def is_no_unit(self):
         """Whether this unit is "no-unit".
@@ -351,10 +375,10 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.2.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
-            equality, or test ``unit.category``.
+            equality, or test ``unit._category``.
 
         """
-        return self.category == "no_unit"
+        return self._category == PintUnit.UnitCategory.no_unit
 
     def is_time_reference(self):
         """Whether this unit is a date, or time-reference type.
