@@ -17,6 +17,8 @@ build:
       - git stash
     post_install:
       - git stash pop
+      # Also make cfpint available : NOTE looks forward to #7037 method
+      - pip install git+https://github.com/SciTools/cfpint
 
 conda:
   environment: requirements/readthedocs.yml
