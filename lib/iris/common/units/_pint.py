@@ -438,7 +438,7 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.2.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with the
-            :meth:`pint.Unit.dimensionless` property.
+            :attr:`pint.Unit.dimensionless` property.
 
         """
         return self.dimensionless
