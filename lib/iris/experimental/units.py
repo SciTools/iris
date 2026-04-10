@@ -43,5 +43,5 @@ class UseCfpint(threading.local):
             self._state = old_state
 
 
-#: The global switch for type of units used in Iris.
 USE_CFPINT = UseCfpint()
+"""The global switch for type of units used in Iris."""
