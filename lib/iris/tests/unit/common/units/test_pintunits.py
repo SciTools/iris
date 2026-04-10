@@ -47,8 +47,8 @@ def test_calendar():
     assert str(unit) == "days since 1970-01-01"
 
 
-_UNKNOWN_NAMES = iris.common.units.PintUnit._IRIS_CATEGORY_ALIASES["unknown"]
-_NOUNIT_NAMES = iris.common.units.PintUnit._IRIS_CATEGORY_ALIASES["no_unit"]
+_UNKNOWN_NAMES = PintUnit._IRIS_CATEGORY_ALIASES[PintUnit.UnitCategory.unknown]
+_NOUNIT_NAMES = PintUnit._IRIS_CATEGORY_ALIASES[PintUnit.UnitCategory.no_unit]
 
 
 class TestFromUnit:

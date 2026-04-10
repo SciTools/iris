@@ -70,11 +70,11 @@ class CfpintUnit(cfpint.Unit):
 
     _IRIS_CATEGORY_ALIASES = {
         UnitCategory.unknown: ["unknown", "?", ""],
-        UnitCategory.unknown.no_unit: ["no-unit", "no_unit", "-"],
+        UnitCategory.no_unit: ["no-unit", "no_unit", "-"],
     }
 
     @property
-    def category(self):
+    def category(self) -> UnitCategory:
         return self._category
 
     @category.setter
@@ -83,7 +83,7 @@ class CfpintUnit(cfpint.Unit):
 
     def __init__(self, *args, **kwargs):
         """Create an Iris pint-based unit."""
-        self._category: CfpintUnit.UnitCategory = "regular"
+        self._category = CfpintUnit.UnitCategory.regular
         if args and (arg := args[0]) is None or isinstance(arg, str):
             # Catch + transform "extra" special-category cases.
             if arg is None:
@@ -93,7 +93,7 @@ class CfpintUnit(cfpint.Unit):
                 if arg in matches:
                     self.category = name
                     arg = "1"  # this is how we do it...
-            if self.category != "regular":
+            if self.category is not CfpintUnit.UnitCategory.regular:
                 # Replace args[0]
                 args = tuple([arg] + list(args[1:]))
         super().__init__(*args, **kwargs)
@@ -102,7 +102,7 @@ class CfpintUnit(cfpint.Unit):
     def __str__(self):
         """Correct the str() to support the additional categories."""
         # N.B. cfpint.Unit.__repr__ is based on __str__, so we only overload this.
-        if self.category != "regular":
+        if self.category is not CfpintUnit.UnitCategory.regular:
             result = str(self.category)
         else:
             result = super().__str__()
@@ -110,7 +110,7 @@ class CfpintUnit(cfpint.Unit):
 
     def __repr__(self):
         """Correct the repr() to support the additional categories."""
-        if self.category != "regular":
+        if self.category is not CfpintUnit.UnitCategory.regular:
             result = f"<Unit('{self.category}')>"
         elif self.dimensionless:
             # Cfpint fixes this for "str" but not "repr"
@@ -123,7 +123,7 @@ class CfpintUnit(cfpint.Unit):
         """Determine whether this is a valid CF unit."""
         # TODO: this may require an active runtime check on whether the content is
         # valid or not -- effectively == "should we write this to netcdf?"
-        ok = self.category == "regular"
+        ok = self.category is CfpintUnit.UnitCategory.regular
 
     def convert(self, arraylike, other):
         """Scale arraylike data from this unit to another.
@@ -360,10 +360,10 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
-            equality, or test ``unit._category``.
+            equality, or test :attr:`category`.
 
         """
-        return self.category == PintUnit.UnitCategory.unknown
+        return self.category is PintUnit.UnitCategory.unknown
 
     def is_no_unit(self):
         """Whether this unit is "no-unit".
@@ -375,10 +375,10 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
-            equality, or test ``unit._category``.
+            equality, or test :attr:`category`.
 
         """
-        return self._category == PintUnit.UnitCategory.no_unit
+        return self.category is PintUnit.UnitCategory.no_unit
 
     def is_time_reference(self):
         """Whether this unit is a date, or time-reference type.
