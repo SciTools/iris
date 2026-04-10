@@ -30,7 +30,7 @@ class UseCfpint(threading.local):
     def context(self, pint_units=True):
         """Temporarily activate experimental cfpint based unit creation.
 
-        Create cfpint based units :class:`~iris.common.unit.PintUnit` when
+        Create cfpint based units :class:`~iris.common.units.PintUnit` when
         interpreting unit strings, while within the context manager.
 
         Use via the run-time switch :const:`~iris.experimental.units.USE_CFPINT`.
