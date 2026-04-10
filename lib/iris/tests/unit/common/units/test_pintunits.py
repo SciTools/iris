@@ -39,7 +39,6 @@ def test_nounit_eq():
 def test_calendar():
     unit = PintUnit("days since 1970-01-01", calendar="360_day")
     # NOTE: no <>, due to "backwards compatibility" for assert_CDL
-    # TODO: remove the PintUnit._REPR_NO_LTGT
     assert repr(unit) == "Unit('days since 1970-01-01', calendar='360_day')"
     # TODO: should really add the calendar to the string format
     #   I think this is a bit horrible,

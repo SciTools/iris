@@ -224,7 +224,11 @@ class CFVariableMixin:
 
     @property
     def units(self) -> cf_units.Unit | cfpint.Unit:
-        """The S.I. unit of the object."""
+        """The S.I. unit of the object.
+
+        If not ``None``, this is always an Iris Unit type - either :class:`CfUnit` or
+        :class:`cfpint.Unit`.  See :func:`iris.common.units.make_unit`.
+        """
         return self._metadata_manager.units
 
     @units.setter
