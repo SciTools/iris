@@ -69,8 +69,8 @@ class CfpintUnit(cfpint.Unit):
         unknown = "unknown"
 
     _IRIS_CATEGORY_ALIASES = {
-        "unknown": ["unknown", "?", ""],
-        "no_unit": ["no-unit", "no_unit", "-"],
+        UnitCategory.unknown: ["unknown", "?", ""],
+        UnitCategory.unknown.no_unit: ["no-unit", "no_unit", "-"],
     }
 
     @property
