@@ -453,7 +453,7 @@ class CfuLikeUnit(CfpintUnit):
         .. deprecated:: 3.2.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with a test of the
-            :meth:`pint.Unit.dimensionality` property.
+            :attr:`pint.Unit.dimensionality` property.
 
         """
         return self.dimensionality == {"[time]": 1}
