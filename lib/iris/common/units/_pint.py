@@ -255,7 +255,7 @@ class CfuLikeUnit(CfpintUnit):
         This mimics :meth:`cf_units.Unit.num2date`.
         But here, it is explicitly re-implemented using only cftime.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with explicit use
             of :mod:`cftime`.
@@ -311,7 +311,7 @@ class CfuLikeUnit(CfpintUnit):
         This mimics :meth:`cf_units.Unit.date2num`.
         But here, it is explicitly re-implemented using only cftime.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with explicit use
             of :mod:`cftime`.
@@ -342,7 +342,7 @@ class CfuLikeUnit(CfpintUnit):
         date units in CF styles, which are not strictly UDUNITS2.
         However, the name is required for compatibility with cf_units.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with
             :meth:`iris.common.units.PintUnit.is_valid_cf`.
@@ -357,7 +357,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_unknown`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
             equality, or test ``unit._category``.
@@ -372,7 +372,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_no_unit`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses by testing with
             equality, or test ``unit._category``.
@@ -387,7 +387,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_time_reference`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with
             :meth:`~iris.common.units.PintUnit.is_datelike`.
@@ -403,7 +403,7 @@ class CfuLikeUnit(CfpintUnit):
         This mimics :meth:`cf_units.Unit.is_long_time_interval`.
         That method is itself now obsolete, and deprecated.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  Code should no longer have any reason to
             use this.
@@ -418,7 +418,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_convertible`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with
             :meth:`pint.Unit.is_compatible_with`.
@@ -435,7 +435,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_dimensionless`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with the
             :attr:`pint.Unit.dimensionless` property.
@@ -450,7 +450,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_time`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with a test of the
             :attr:`pint.Unit.dimensionality` property.
@@ -465,7 +465,7 @@ class CfuLikeUnit(CfpintUnit):
         -----
         This mimics :meth:`cf_units.Unit.is_time`.
 
-        .. deprecated:: 3.2.0
+        .. deprecated:: 3.15.0
             This method is for interim backwards compatibility with cf_units, and will
             be removed in a future release.  You should replace uses with a test of the
             :attr:`pint.Unit.dimensionality` property.
