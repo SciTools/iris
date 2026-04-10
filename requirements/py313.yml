@@ -32,7 +32,7 @@ dependencies:
   - iris-sample-data >=2.4.0
   - mo_pack
   - nc-time-axis >=1.4
-  - pandas <3
+  - pandas
   - pip
   - python-stratify
   - rasterio
@@ -59,6 +59,8 @@ dependencies:
   - sphinx-design
   # Pinned reason: https://github.com/SciTools/iris/issues/6885
   - pydata-sphinx-theme !=0.16.0,!=0.16.1,<0.16.2
+  - sphinx-needs
+  - sphinx-reredirects
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051

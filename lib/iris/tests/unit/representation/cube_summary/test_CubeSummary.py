@@ -220,15 +220,24 @@ class Test_CubeSummary:
 
     def test_attributes(self):
         cube = self.cube
-        cube.attributes = {"a": 1, "b": "two", "c": " this \n   that\tand."}
+        cube.attributes = {
+            "a": 1,
+            "b": "two",
+            "c": " this \n   that\tand.",
+            "d": np.array([1, 2]),
+            "e": np.float32(123.456),
+        }
         rep = CubeSummary(cube)
 
         attribute_section = rep.scalar_sections["Attributes:"]
         attribute_contents = attribute_section.contents
+        print(attribute_contents)
         expected_contents = [
             "a: 1",
             "b: 'two'",
             "c: ' this \\n   that\\tand.'",
+            "d: array([1, 2])",
+            "e: 123.456",
         ]
         # Note: a string with \n or \t in it gets "repr-d".
         # Other strings don't (though in coord 'extra' lines, they do.)

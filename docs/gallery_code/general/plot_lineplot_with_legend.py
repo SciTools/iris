@@ -2,6 +2,11 @@
 Multi-Line Temperature Profile Plot
 ===================================
 
+.. how-to:: Multi-Line Temperature Profile Plot
+   :tags: topic_plotting
+
+   How to plot multiple lines on a single plot with a legend.
+
 """  # noqa: D205, D212, D400
 
 import matplotlib.pyplot as plt

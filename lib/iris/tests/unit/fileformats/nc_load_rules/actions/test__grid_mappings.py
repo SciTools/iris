@@ -177,7 +177,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 {g_varname}:{lonpo_name} = 0.0 ;
             """
         # Those which require 'longitude of central meridian'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_TRANSVERSE,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_TRANSVERSE:
             latcm_name = hh.CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
             g_string += f"""
                 {g_varname}:{latcm_name} = 0.0 ;
@@ -192,7 +192,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 {g_varname}:{pph_name} = 600000.0 ;
             """
         # Those which require 'sweep angle axis'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_GEOSTATIONARY,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_GEOSTATIONARY:
             saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
             g_string += f"""
                 {g_varname}:{saa_name} = "y" ;
@@ -200,7 +200,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         # Polar stereo needs a special 'latitude of projection origin', a
         # 'straight_vertical_longitude_from_pole' and a `standard_parallel` or
         # `scale_factor_at_projection_origin` so treat it specially
-        if mapping_type_name in (hh.CF_GRID_MAPPING_POLAR,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_POLAR:
             latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
             g_string += f"""
                 {g_varname}:{latpo_name} = 90.0 ;

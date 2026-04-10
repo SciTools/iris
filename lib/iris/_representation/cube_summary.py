@@ -81,7 +81,8 @@ def array_repr(arr):
 
 def value_repr(value, quote_strings=False, clip_strings=False):
     """Produce a single-line printable version of an attribute or scalar value."""
-    if hasattr(value, "dtype"):
+    if hasattr(value, "dtype") and hasattr(value, "shape") and len(value.shape) > 0:
+        # Only format as array if value is not a scalar.
         value = array_repr(value)
     elif isinstance(value, str):
         value = string_repr(

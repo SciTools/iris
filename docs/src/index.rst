@@ -30,10 +30,10 @@ For more information see :ref:`why_iris`.
 
         Installing and gallery examples.
 
-    .. grid-item-card:: User Guide
+    .. grid-item-card:: User Manual
         :class-title: custom-title
         :class-body: custom-body
-        :link: getting_started_index
+        :link: user_manual_index
         :link-type: ref
         :img-top: _static/icon_instructions.svg
         :class-img-top: dark-light
@@ -114,20 +114,12 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: Getting Started
+   :caption: User Manual
    :maxdepth: 1
+   :name: user_manual
    :hidden:
 
-   getting_started
-
-
-.. toctree::
-   :caption: User Guide
-   :maxdepth: 1
-   :name: userguide_index
-   :hidden:
-
-   userguide/index
+   user_manual/index
 
 
 .. toctree::
@@ -140,29 +132,12 @@ The legacy support resources:
 
 
 .. toctree::
-   :caption: Community
-   :maxdepth: 1
-   :name: community_index
-   :hidden:
-
-   Community <community/index>
-
-
-.. toctree::
    :caption: What's New in Iris
    :maxdepth: 1
    :name: whats_new_index
    :hidden:
 
    whatsnew/index
-
-
-.. toctree::
-   :caption: Iris API
-   :maxdepth: 1
-   :hidden:
-
-   Iris API <generated/api/iris>
 
 
 .. todolist::

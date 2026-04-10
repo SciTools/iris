@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides the infrastructure to support the common metadata API."""
+"""Provides the infrastructure to support the common metadata API.
+
+.. z_reference:: iris.common.metadata
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from __future__ import annotations
 
@@ -204,13 +210,15 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 # Certain members never participate in strict equivalence, so
                 # are filtered out.
                 fields = filter(
-                    lambda field: field
-                    not in (
-                        "circular",
-                        "location_axis",
-                        "node_dimension",
-                        "edge_dimension",
-                        "face_dimension",
+                    lambda field: (
+                        field
+                        not in (
+                            "circular",
+                            "location_axis",
+                            "node_dimension",
+                            "edge_dimension",
+                            "face_dimension",
+                        )
                     ),
                     self._fields,
                 )

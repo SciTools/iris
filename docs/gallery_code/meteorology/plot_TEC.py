@@ -2,6 +2,11 @@
 Ionosphere Space Weather
 ========================
 
+.. how-to:: Ionosphere Space Weather
+   :tags: topic_plotting
+
+   How to mask out values below a threshold in a plot.
+
 This space weather example plots a filled contour of rotated pole point
 data with a shaded relief image underlay. The plot shows aggregated
 vertical electron content in the ionosphere.

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package providing :class:`iris.cube.Cube` analysis support.
 
+.. z_reference:: iris.analysis
+   :tags: topic_maths_stats;topic_regrid
+
+   API reference
+
 This module defines a suite of :class:`~iris.analysis.Aggregator` instances,
 which are used to specify the statistical measure to calculate over a
 :class:`~iris.cube.Cube`, using methods such as
@@ -2281,7 +2286,7 @@ kind : str or int, optional
 Notes
 ------
 This function does not maintain laziness when called; it realises data.
-See more at :doc:`/userguide/real_and_lazy_data`.
+See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 """
 
@@ -2334,7 +2339,7 @@ class _Groupby:
         self._groupby_coords: list[AuxCoord | DimCoord] = []
         self._shared_coords: list[tuple[AuxCoord | DimCoord, int]] = []
         self._groupby_indices: list[tuple[int, ...]] = []
-        self._stop = None
+        self._stop: Optional[int] = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
             raise TypeError("groupby_coords must be a `collections.Iterable` type.")
@@ -2599,7 +2604,7 @@ def clear_phenomenon_identity(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     cube.rename(None)
