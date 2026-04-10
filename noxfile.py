@@ -214,7 +214,9 @@ def doctest(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    force_install_pint_cfpint(session)
     session.env.update(ENV)
+
     session.cd("docs")
     session.run(
         "make",
@@ -261,6 +263,8 @@ def wheel(session: nox.sessions.Session):
 
     """
     prepare_venv(session)
+    force_install_pint_cfpint(session)
+
     session.cd("dist")
     fname = list(Path(".").glob("scitools_iris-*.whl"))
     if len(fname) == 0:

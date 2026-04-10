@@ -14,10 +14,10 @@ class UseCfpint(threading.local):
         """Thead-safe state to enable experimental cfpint based unit creation.
 
         A flag for dictating whether to use the experimental cfpint based units
-        :class:`~iris.common.mixin.CfpintUnit` when interpreting unit strings.
-        When True, units attributes will be created as :class:`~iris.common.mixin.CfpintUnit`
+        :class:`~iris.common.units.PintUnit` when interpreting unit strings.
+        When True, units attributes will be created as :class:`~iris.common.units.PintUnit`
         (based on the cfpint class :class:`cfpint.Unit`) by default. At present
-        you can still assign class:`cf_units.Unit` objects explicitly, and either
+        you can still assign :class:`cf_units.Unit` objects explicitly, and either
         may be used. However, support for cf_units will eventually be retired.
         Object is thread-safe.
         """
@@ -30,8 +30,8 @@ class UseCfpint(threading.local):
     def context(self, pint_units=True):
         """Temporarily activate experimental cfpint based unit creation.
 
-        Create cfpint based units :class:`~iris.common.mixin.CfpintUnit` when
-        interpreting unit strings while within the context manager.
+        Create cfpint based units :class:`~iris.common.units.PintUnit` when
+        interpreting unit strings, while within the context manager.
 
         Use via the run-time switch :const:`~iris.experimental.units.USE_CFPINT`.
         """
@@ -44,3 +44,4 @@ class UseCfpint(threading.local):
 
 
 USE_CFPINT = UseCfpint()
+"""The global switch for type of units used in Iris."""
