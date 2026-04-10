@@ -17,7 +17,7 @@ class UseCfpint(threading.local):
         :class:`~iris.common.units.PintUnit` when interpreting unit strings.
         When True, units attributes will be created as :class:`~iris.common.units.PintUnit`
         (based on the cfpint class :class:`cfpint.Unit`) by default. At present
-        you can still assign class:`cf_units.Unit` objects explicitly, and either
+        you can still assign :class:`cf_units.Unit` objects explicitly, and either
         may be used. However, support for cf_units will eventually be retired.
         Object is thread-safe.
         """
