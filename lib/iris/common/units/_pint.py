@@ -14,16 +14,20 @@ import pint
 
 
 class CfpintUnit(cfpint.Unit):
-    """Specialisation of cfpint.Unit with extensions for Iris.
+    """Specialise cfpint.Unit with extensions for Iris.
 
-    We subclass the basic cfpint.Unit and add Iris-specific behaviour.
+    Notably, add support for "no-unit" + "unknown", as separate 'categories'.
 
-    The overrides and extensions here implement necessary behaviour extensions
-    for Iris use.
+    This class contains all our *permanent* Iris-specific extensions.
 
-    Further extensions are implemented in :class:`IrisCfulikeCfpintUnit`, which is
-    the class *actually used in Iris* for the foreseeable future :  However, those
-    further extensions are intended to be temporary -- see there.
+    Meanwhile ..
+
+    *  the 'CfulikeUnit' class specialises this + adds *temporary* feaures
+       for backward compatibility with cf_units -- which are all deprecated.
+
+    * the 'PintUnit' class then specialises 'CfulikeUnit', but adds only a docstring.
+      - this is the 'public' face of the module.
+
     """
 
     @classmethod
@@ -54,6 +58,7 @@ class CfpintUnit(cfpint.Unit):
     }
 
     def __init__(self, *args, **kwargs):
+        """Create an Iris pint-based unit."""
         self.category = "regular"
         if args and (arg := args[0]) is None or isinstance(arg, str):
             # Catch + transform "extra" special-category cases.
@@ -90,14 +95,8 @@ class CfpintUnit(cfpint.Unit):
             result = super().__repr__()
         return result
 
-    def is_valid_cf_unit(self):
-        """Determine whether this is a valid CF unit.
-
-        Notes
-        -----
-        "udunits" is actually a misnomer, since it allows forms like 'levels' and
-        date units in CF styles, which are not strictly UDUNITS2.
-        """
+    def is_valid_cf(self):
+        """Determine whether this is a valid CF unit."""
         # TODO: this may require an active runtime check on whether the content is
         # valid or not -- effectively == "should we write this to netcdf?"
         ok = self.category == "regular"
@@ -123,17 +122,17 @@ class CfpintUnit(cfpint.Unit):
         return result
 
 
-class IrisCfulikePintUnit(CfpintUnit):
-    """Specialisation of IrisCfpintUnit for backward compatibility.
+class CfuLikeUnit(CfpintUnit):
+    """Add cf_units backward compatibility to CfpintUnit.
 
-    This makes a class with specific behaviours to mimic the cf_units API.
+    This adds specific behaviours to mimic the cf_units API.
 
-    All of this functionality is intended to be temporary :  We will progressively
-    replace the Iris units code to stop using these cf_units-like operations on
-    pint-type units, which will eventually enable us to stop supporting cf_units.
+    All of this functionality is intended to be temporary.
 
-    We subclass the basic IrisCfpintUnit and add convenience operations for
-    backwards compatibility with cf_units.
+    We will progressively replace the Iris units code, to stop using these cf_units-like
+    operations on pint-type units, which will eventually enable us to stop supporting
+    cf_units.
+
     """
 
     def __str__(self):
@@ -229,9 +228,14 @@ class IrisCfulikePintUnit(CfpintUnit):
 
         Notes
         -----
-        This mimic what we already have in Iris, derived from cf_units behaviour.
+        This mimics :meth:`cf_units.Unit.num2date`.
         But here, it is explicitly re-implemented using only cftime.
-        Ultimately, we will lose this, and users should use cftime explicitly.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with explicit use
+            of :mod:`cftime`.
+
         """
         if not self.is_datelike():
             raise ValueError(f"Called 'num2date' on a non-datelike unit: {self!r}.")
@@ -280,9 +284,14 @@ class IrisCfulikePintUnit(CfpintUnit):
 
         Notes
         -----
-        This mimics what we already have in Iris, derived from cf_units behaviour.
+        This mimics :meth:`cf_units.Unit.date2num`.
         But here, it is explicitly re-implemented using only cftime.
-        Ultimately, we will lose this, and users should use cftime explicitly.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with explicit use
+            of :mod:`cftime`.
+
         """
         if not self.is_datelike():
             raise ValueError(f"Called 'date2num' on a non-datelike unit: {self!r}.")
@@ -297,44 +306,162 @@ class IrisCfulikePintUnit(CfpintUnit):
     #
 
     def is_udunits(self):
-        return self.is_valid_cf_unit()
+        """Whether this is a valid CF unit.
+
+        Tells whether this would be a valid netcdf-CF 'units' attribute.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_udunits`.
+
+        "udunits" is actually a misnomer, since we also allow units like 'levels' and
+        date units in CF styles, which are not strictly UDUNITS2.
+        However, the name is required for compatibility with cf_units.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with
+            :meth:`iris.common.units.PintUnit.is_valid_cf`.
+
+        """
+        return self.is_valid_cf()
 
     def is_unknown(self):
+        """Whether this unit is "unknown".
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_unknown`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses by testing with
+            equality, or test ``unit.category``.
+
+        """
         return self.category == "unknown"
 
     def is_no_unit(self):
+        """Whether this unit is "no-unit".
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_no_unit`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses by testing with
+            equality, or test ``unit.category``.
+
+        """
         return self.category == "no_unit"
 
     def is_time_reference(self):
+        """Whether this unit is a date, or time-reference type.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_time_reference`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with
+            :meth:`~iris.common.units.PintUnit.is_datelike`.
+
+        """
         return self.is_datelike()
 
     def is_long_time_interval(self):
+        """Whether the unit period is valid for cftime.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_long_time_interval`.
+        That method is itself now obsolete, and deprecated.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  Code should no longer have any reason to
+            use this.
+
+        """
         return False
 
     def is_convertible(self, other):
+        """Whether the unit period is valid for cftime.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_convertible`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with
+            :meth:`pint.Unit.is_compatible_with`.
+
+        """
         if not isinstance(other, cfpint.Unit):
             other = CfpintUnit(other)
         return self.dimensionality == other.dimensionality
 
     def is_dimensionless(self):
+        """Whether the unit is a pure number.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_dimensionless`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with the
+            :meth:`pint.Unit.dimensionless` property.
+
+        """
         return self.dimensionless
 
     def is_time(self):
+        """Whether the unit is a time period.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_time`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with a test of the
+            :meth:`pint.Unit.dimensionality` property.
+
+        """
         return self.dimensionality == {"[time]": 1}
 
     def is_vertical(self):
+        """Whether the unit is a time period.
+
+        Notes
+        -----
+        This mimics :meth:`cf_units.Unit.is_time`.
+
+        .. deprecated:: 3.2.0
+            This method is for interim backwards compatibility with cf_units, and will
+            be removed in a future release.  You should replace uses with a test of the
+            :meth:`pint.Unit.dimensionality` property.
+
+        """
         pressure_dims = {"[length]": -1, "[mass]": 1, "[time]": -2}
         height_dims = {"[length]": 1}
         return self.dimensionality in (pressure_dims, height_dims)
 
 
-class PintUnit(IrisCfulikePintUnit):
+class PintUnit(CfuLikeUnit):
     """The Iris class for pint-based units.
 
-    This is the standard class used to create pint-based unit properties in Iris.
+    This is the "standard" class used to create pint-based unit properties in Iris.
 
-    Eventually, you will use this as standard to create units,
-    i.e. ``PintUnit(arg)`` replaces ``cf_units.Unit(arg)``.
+    Provided pint units will be converted to this, and non-unit content such as strings
+    and number also, when enabled by :data:`iris.experimental.units.USE_CFPINT`.
+
+    In a future release, this will become the standard type of units used in Iris.
+    At present, Iris object units may be *either* :class:`PintUnit` or :class:`CfUnit`.
 
     """
 
