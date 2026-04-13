@@ -72,7 +72,11 @@ You make this choice using the :data:`iris.experimental.units.USE_CFPINT` flag:
    ...     print(repr(my_cube.units))
    Unit('meter / second')
 
-In both cases Iris internals ensure the unit is CF-compliant. CF-compliance is
+Both the above classes - :class:`~iris.common.units.CfUnit` and
+:class:`~iris.common.units.PintUnit` - are Iris subclasses of the original
+Cf-units and Pint classes - :class:`cf_units.Unit` and :class:`pint.Unit`
+respectively. In both cases Iris internals ensure the unit is CF-compliant.
+CF-compliance is
 standard behaviour for Cf-units; while the Pint case currently (``2026-04-13``)
 uses the cfpint library with some Iris-specific modifications. The intent is a
 **seamless user experience**

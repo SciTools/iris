@@ -203,7 +203,7 @@ Glossary
         The unit with which the :term:`phenomenon` is measured e.g. m / sec.
 
         | **Related:** :term:`Cube`
-        | **More information:** :doc:`../explanation/iris_cubes`
+        | **More information:** :doc:`../explanation/units` :doc:`../explanation/iris_cubes`
         |
 
    Xarray

@@ -26,3 +26,4 @@ Below are any pages not belonging to any other User Manual section.
     ../explanation/um_files_loading
     ../explanation/ux_guide
     ../explanation/which_regridder_to_use
+    ../explanation/units

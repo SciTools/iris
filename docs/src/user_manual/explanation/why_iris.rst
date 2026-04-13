@@ -17,7 +17,7 @@ It excels when working with multi-dimensional Earth Science data, where tabular
 representations become unwieldy and inefficient.
 
 `CF Standard names <https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html>`_,
-`units <https://github.com/SciTools/cf_units>`_, and coordinate metadata
+units, and coordinate metadata
 are built into Iris, giving you a rich and expressive interface for maintaining
 an accurate representation of your data. Its treatment of data and
 associated metadata as first-class objects includes:
