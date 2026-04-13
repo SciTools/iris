@@ -23,7 +23,7 @@ jobs:
 
     env:
       # Lets us manually bump the cache to rebuild
-      ENV_CACHE_BUILD: "1"
+      ENV_CACHE_BUILD: "0"
 
     steps:
       - name: Checkout repo
