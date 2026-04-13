@@ -3,7 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Control for unit types."""
+"""Control for unit types.
+
+.. z_reference:: iris.experimental.units
+   :tags: topic_experimental;topic_data_model
+
+   API reference
+"""
 
 from contextlib import contextmanager
 import threading

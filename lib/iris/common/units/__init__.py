@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generic definition of units as used in Iris."""
+"""Generic definition of units as used in Iris.
+
+.. z_reference:: iris.common.units
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from typing import Any
 
