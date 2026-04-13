@@ -49,7 +49,7 @@ Setting the :attr:`~iris.common.mixin.CFVariableMixin.units` on an object is
 simple - you provide a string and Iris will parse and store it appropriately:
 
    >>> my_cube.units = 'm/s'
-   >>> print(my_cube.units, type(my_cube.units))
+   >>> print(my_cube.units)
    m/s
    >>> print(repr(my_cube.units))
    Unit('m/s')
