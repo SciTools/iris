@@ -3,6 +3,8 @@
 
    Read about how Iris objects such as Cubes and Coordinates are assigned scientific units.
 
+.. include:: /common_links.inc
+
 =====
 Units
 =====
@@ -60,8 +62,22 @@ created when assigning an input to the
 
 You can choose which library you want Iris to use for unit parsing and operations:
 
-- Cf-units (:class:`iris.common.units.CfUnit`)
-- Pint (:class:`iris.common.units.PintUnit`) - **experimental** at time of writing (``2026-04-13``)
+.. list-table:: Choice of Cf-units or Pint in Iris
+   :header-rows: 1
+   :stub-columns: 1
+
+   * - Library
+     - Iris Class
+     - Parent Class
+     - Status @ ``2026-04-13``
+   * - `Cf-units`_
+     - :class:`iris.common.units.CfUnit`
+     - :class:`cf_units.Unit`
+     - Default
+   * - `Pint`_
+     - :class:`iris.common.units.PintUnit`
+     - :class:`pint.Unit`
+     - Experimental
 
 You make this choice using the :data:`iris.experimental.units.USE_CFPINT` flag:
 
@@ -72,16 +88,12 @@ You make this choice using the :data:`iris.experimental.units.USE_CFPINT` flag:
    ...     print(repr(my_cube.units))
    Unit('meter / second')
 
-Both the above classes - :class:`~iris.common.units.CfUnit` and
-:class:`~iris.common.units.PintUnit` - are Iris subclasses of the original
-Cf-units and Pint classes - :class:`cf_units.Unit` and :class:`pint.Unit`
-respectively. In both cases Iris internals ensure the unit is CF-compliant.
-CF-compliance is
+In both cases Iris internals ensure the unit is CF-compliant. CF-compliance is
 standard behaviour for Cf-units; while the Pint case currently (``2026-04-13``)
-uses the cfpint library with some Iris-specific modifications. The intent is a
+uses the `Cfpint`_ library with some Iris-specific modifications. The intent is a
 **seamless user experience**
 regardless of the underlying library, hopefully allowing a
-**gradual transition to Pint**,
+**gradual transition to `Pint`_**,
 bringing Iris users closer to the wider scientific Python ecosystem.
 
 To aid the above transition, any compatibility features have been marked as
@@ -93,14 +105,13 @@ The Libraries Underneath
 
 The :term:`CF Conventions` officially define unit behaviour as follows:
 
-- Reference time units: (e.g.
-  ``days since 2000-12-01 in the proleptic gregorian calendar``) behaviour
-  described directly in the CF Conventions pages; section x.x.x?
-- All other units: behaviour provided by the UDUNITS2 package, with a small
-  number of modifications described in the CF Conventions pages; section x.x.x
+- Reference time units: e.g. ``days since 2000-12-01``, behaviour
+  described directly in the `CF Conventions`_ pages; section 4.4.
+- All other units: behaviour provided by the `UDUNITS2`_ package, with a small
+  number of modifications described in the `CF Conventions`_ pages; section 3.1.
 
 Since reference time units are not based on existing software, the rules given
-by the CF Conventions are implemented by the cftime Python package.
+by the CF Conventions are implemented by the `Cftime`_ Python package.
 
 A full software implementation of CF Conventions units must therefore combine:
 
@@ -108,16 +119,16 @@ A full software implementation of CF Conventions units must therefore combine:
 - UDUNITS2
 - The specific UDUNITS2 modifications
 
-The two most established packages for this are: Cf-units and Cfunits.
+The two most established packages for this are: `Cf-units`_ and `Cfunits`_.
 
 Both of these packages have
 struggled to find ways of combining Python with UDUNITS2, especially when it
 comes to installation. These struggles have inspired attempts to implement
-UDUNITS2 in Python or via the Pint Python package, all of which are experimental
+UDUNITS2 in Python or via the `Pint`_ Python package, all of which are experimental
 at time of writing (``2026-04-13``).
 
 Iris' hope for the future is for a mature and well maintained implementation of
-CF-compliant Pint. The CF Conventions are the de facto standard for storing
+**CF-compliant Pint**. The CF Conventions are the de facto standard for storing
 atmospheric/oceanographic data, while Pint is the most widely accepted Python
 package for units. Being Pint-based (rather than UDUNITS2-based), should
 improve the Iris user experience:
@@ -130,3 +141,10 @@ improve the Iris user experience:
 This is why we are future-proofing Iris to support both Cf-units and Pint, and
 why we are working with international collaborators to establish a
 CF-compliant Pint implementation.
+
+.. _Cf-units: https://github.com/SciTools/cf-units
+.. _Cfunits: https://github.com/NCAS-CMS/cfunits
+.. _Pint: https://github.com/hgrecco/pint
+.. _Cfpint: https://github.com/SciTools/cfpint
+.. _UDUNITS2: https://www.unidata.ucar.edu/software/udunits
+.. _Cftime: https://github.com/unidata/cftime
