@@ -1293,7 +1293,7 @@ class Cube(CFVariableMixin):
         #: The "standard name" for the Cube's phenomenon.
         self.standard_name = standard_name
 
-        #: An instance of :class:`cf_units.Unit` describing the Cube's data.
+        #: An instance of :class:`~iris.common.units.CfUnit` or :class:`~iris.common.units.PintUnit` describing the Cube's data.
         self.units = units
 
         #: The "long name" for the Cube's phenomenon.
