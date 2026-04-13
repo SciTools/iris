@@ -49,7 +49,7 @@ Setting the :attr:`~iris.common.mixin.CFVariableMixin.units` on an object is
 simple - you provide a string and Iris will parse and store it appropriately:
 
    >>> my_cube.units = 'm/s'
-   >>> print(my_cube.units)
+   >>> print(my_cube.units, type(my_cube.units))
    m/s
    >>> print(repr(my_cube.units))
    Unit('m/s')
@@ -83,9 +83,9 @@ You make this choice using the :data:`iris.experimental.units.USE_CFPINT` flag:
 
    >>> with USE_CFPINT.context():
    ...     my_cube.units = "m/s"
-   ...     print(my_cube.units)
+   >>> print(my_cube.units)
    m s-1
-   ...     print(repr(my_cube.units))
+   >>> print(repr(my_cube.units))
    Unit('meter / second')
 
 In both cases Iris internals ensure the unit is CF-compliant. CF-compliance is
