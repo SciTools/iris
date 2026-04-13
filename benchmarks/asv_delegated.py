@@ -136,14 +136,15 @@ class Delegated(_DelegatedABC):
                 )
 
                 env_parent_contents = list(env_parent_dir.iterdir())
-                if len(env_parent_contents) != 1:
+                env_parent_dirs = [p for p in env_parent_contents if p.is_dir()]
+                if len(env_parent_dirs) != 1:
                     message = (
-                        f"{env_parent_dir} contains {len(env_parent_contents)} "
-                        "items, expected 1. Cannot determine the environment "
+                        f"{env_parent_dir} contains {len(env_parent_dirs)} "
+                        "directories, expected 1. Cannot determine the environment "
                         "directory."
                     )
                     raise FileNotFoundError(message)
-                (delegated_env_path,) = env_parent_contents
+                (delegated_env_path,) = env_parent_dirs
 
             case _:
                 message = "No environment setup is known for this commit of Iris."
