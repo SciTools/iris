@@ -72,7 +72,9 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
-#. N/A
+#. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
+   Nox release ``2026.04.10`` (which adds more files to the environment parent
+   directory, breaking previous assumptions). (:pull:`7046`)
 
 
 .. comment
