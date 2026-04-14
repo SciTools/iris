@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from functools import wraps
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 # Optional imports : actually only needed for type hints
 try:
@@ -33,6 +33,9 @@ import iris.std_names
 
 from .metadata import BaseMetadata
 from .units import make_unit
+
+if TYPE_CHECKING:
+    from units import CfUnit, PintUnit
 
 __all__ = ["CFVariableMixin", "LimitedAttributeDict"]
 
@@ -229,11 +232,12 @@ class CFVariableMixin:
         self._metadata_manager.var_name = name
 
     @property
-    def units(self) -> cf_units.Unit | cfpint.Unit:
+    def units(self) -> CfUnit | PintUnit:
         """The S.I. unit of the object.
 
-        If not ``None``, this is always an Iris Unit type - either :class:`CfUnit` or
-        :class:`cfpint.Unit`.  See :func:`iris.common.units.make_unit`.
+        If not ``None``, this is always an Iris Unit type - either
+        :class:`~iris.common.units.CfUnit` or :class:`~iris.common.units.PintUnit`.
+        See :func:`iris.common.units.make_unit`.
         """
         return self._metadata_manager.units
 

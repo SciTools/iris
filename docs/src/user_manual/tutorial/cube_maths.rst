@@ -17,7 +17,7 @@ this attribute can then be manipulated directly::
    cube.data -= 273.15
 
 The problem with manipulating the data directly is that other metadata may
-become inconsistent; in this case the units of the cube are no longer what was
+become inconsistent; in this case the :term:`unit` of the cube are no longer what was
 intended. This example could be rectified by changing the units attribute::
 
    cube.units = 'celsius'
@@ -236,6 +236,8 @@ The result could now be plotted using the guidance provided in the
 
 Combining Units
 ---------------
+
+More about units: :doc:`../explanation/units`.
 
 It should be noted that when combining cubes by multiplication, division or
 power operations, the resulting cube will have a unit which is an appropriate

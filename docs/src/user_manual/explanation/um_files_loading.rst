@@ -344,6 +344,8 @@ Time Information
 
 **Details**
 
+More about units: :doc:`../explanation/units`.
+
 In Iris (as in CF) times and time intervals are both expressed as simple
 numbers, following the approach of the
 `UDUNITS project <https://www.unidata.ucar.edu/software/udunits/>`_.

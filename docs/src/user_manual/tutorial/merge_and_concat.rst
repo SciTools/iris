@@ -593,7 +593,7 @@ Concatenate
 
 **Time Units**
 
-Differences in the units of the time coordinates of the input cubes probably cause
+Differences in the :term:`unit` of the time coordinates of the input cubes probably cause
 the greatest amount of concatenate-related difficulties.
 In recognition of this, Iris has a helper function,
 :func:`~iris.util.unify_time_units`, to apply a common time unit to all the input cubes.
