@@ -6,6 +6,7 @@
 import enum
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Any, NamedTuple
 
 import pytest
@@ -79,11 +80,13 @@ def mock_inputs(mocker, *inputs: str) -> None:
     mocker.patch("builtins.input", side_effect=inputs)
 
 
-def assert_message_in_input(call: Any, expected: str) -> None:
+def assert_input_msg_regex(call: Any, expected: re.Pattern[str] | str) -> None:
+    if isinstance(expected, str):
+        expected = re.compile(expected)
     assert hasattr(call, "args") and len(call.args) > 0
     message = call.args[0]
     assert isinstance(message, str)
-    assert expected in message
+    assert expected.search(message) is not None, f"Expected message matching {expected!r} in {message!r}"
 
 
 class TestIrisVersion:
@@ -400,25 +403,31 @@ class TestApplyPatches:
         mock_inputs(mocker, self.instance.version.branch)
         self.instance.apply_patches()
         call = self.get_wait_for_done_call()
-        assert_message_in_input(call, "patch change(s) are on the ideal branch")
-        assert_message_in_input(call, self.instance.version.branch)
+        branch = re.escape(self.instance.version.branch)
+        assert_input_msg_regex(
+            call, rf"patch change\(s\) are on the ideal branch.*{branch}.*"
+        )
 
     def test_patch_branch_empty(self, mocker):
         # User inputs nothing - message instructs them to create a PR.
         mock_inputs(mocker, "")
         self.instance.apply_patches()
         call = self.get_wait_for_done_call()
-        assert_message_in_input(call, "Propose the patch change(s)")
-        assert_message_in_input(call, self.instance.version.branch)
+        branch = re.escape(self.instance.version.branch)
+        assert_input_msg_regex(
+            call, rf"Propose the patch change\(s\).*{branch}.*"
+        )
 
     def test_patch_branch_other(self, mocker):
         # User inputs a different branch - message warns about cherry-pick conflicts.
         mock_inputs(mocker, "some-other-branch")
         self.instance.apply_patches()
         call = self.get_wait_for_done_call()
-        assert_message_in_input(call, "cherry-picking the patch change(s)")
-        assert_message_in_input(call, "some-other-branch")
-        assert_message_in_input(call, self.instance.version.branch)
+        branch = re.escape(self.instance.version.branch)
+        assert_input_msg_regex(
+            call,
+            rf"cherry-picking the patch change\(s\).*some-other-branch.*{branch}.*"
+        )
 
 
 class TestValidate:
@@ -510,7 +519,7 @@ class TestValidate:
         self.instance.validate()
         mock_wait_for_done.assert_called_once()
         (call,) = mock_wait_for_done.call_args_list
-        assert_message_in_input(call, "Confirm that the details above are correct")
+        assert_input_msg_regex(call, "Confirm that the details above are correct")
 
 
 class TestUpdateStandardNames:
@@ -545,7 +554,7 @@ class TestUpdateStandardNames:
             (merge, "Work with the development team to get the PR merged"),
         ]
         for call, expected in message_fragments:
-            assert_message_in_input(call, expected)
+            assert_input_msg_regex(call, expected)
 
 
 class TestCheckDeprecations:
@@ -568,7 +577,7 @@ class TestCheckDeprecations:
         self.instance.check_deprecations()
         self.mock_wait_for_done.assert_called_once()
         (call,) = self.mock_wait_for_done.call_args_list
-        assert_message_in_input(call, "be sure to finalise all deprecations")
+        assert_input_msg_regex(call, "be sure to finalise all deprecations")
 
 
 class TestCreateReleaseBranch:
@@ -587,7 +596,7 @@ class TestCreateReleaseBranch:
         self.instance.create_release_branch()
         self.mock_wait_for_done.assert_called_once()
         (call,) = self.mock_wait_for_done.call_args_list
-        assert_message_in_input(
+        assert_input_msg_regex(
             call,
             f"create the ``{self.instance.version.branch}`` release branch"
         )
@@ -597,7 +606,7 @@ class TestCreateReleaseBranch:
         self.instance.create_release_branch()
         self.mock_wait_for_done.assert_called_once()
         (call,) = self.mock_wait_for_done.call_args_list
-        assert_message_in_input(
+        assert_input_msg_regex(
             call,
             "If necessary: cherry-pick any specific commits that are needed",
         )
@@ -609,10 +618,10 @@ class TestFinaliseWhatsNew:
         DELETE = "avoid a name clash by deleting any existing local branch"
         CHECKOUT = "Checkout a local branch from the official"
         CUT = "'Cut' the What's New for the release"
-        REFS = r"Replace references to"
-        TITLE = "set the page title to"
+        REFS = r"Replace references to.*latest\.rst with.*{series}"
+        TITLE = r"set the page title to.*\nv{series}"
         UNDERLINE = "ensure the page title underline is the exact same length"
-        DROPDOWN_HIGHLIGHT = "set the sphinx-design dropdown title"
+        DROPDOWN_HIGHLIGHT = r"set the sphinx-design dropdown title.*\nv{series}"
         REFLECTION = "ensure it is a good reflection of what is new"
         HIGHLIGHTS = "populate the Release Highlights dropdown"
         DROPDOWN_PATCH = "Create a patch dropdown section"
@@ -639,7 +648,8 @@ class TestFinaliseWhatsNew:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            assert_message_in_input(call, expected)
+            expected = expected.format(series=re.escape(self.instance.version.series[1:]))
+            assert_input_msg_regex(call, expected)
 
     def test_first_in_series(self):
         expected_messages = [
@@ -717,7 +727,7 @@ class TestCutRelease:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            assert_message_in_input(call, expected)
+            assert_input_msg_regex(call, expected)
 
     def test_latest(self):
         self.instance.git_tag = "v1.2.0"
@@ -778,18 +788,19 @@ class TestCheckRtd:
             git_tag += "rc0"
         self.instance.git_tag = git_tag
         self.instance.check_rtd()
+        series = re.escape(self.instance.version.series)
         expected_messages = [
             "Visit https://readthedocs.org/projects/scitools-iris/versions/",
-            "to Active, un-Hidden",
-            "to Active, Hidden",
+            rf"{series}.* to Active, un-Hidden",
+            rf"{series}.* to Active, Hidden",
             "Keep only the latest 2 branch doc builds active",
-            "is available in RTD's version switcher",
-            "is NOT available in RTD's version switcher",
+            rf"{series}.* is available in RTD's version switcher",
+            rf"{series}.* is NOT available in RTD's version switcher",
         ]
         call_args_list = self.mock_wait_for_done.call_args_list
         assert self.mock_wait_for_done.call_count == len(expected_messages)
         for call, expected in zip(call_args_list, expected_messages):
-            assert_message_in_input(call, expected)
+            assert_input_msg_regex(call, expected)
 
         (check_message,) = call_args_list[4][0]
         check_expected = "Selecting 'stable' in the version switcher"
@@ -803,9 +814,9 @@ class TestCheckPyPI:
     """Tests for the :meth:`IrisRelease.check_pypi` method."""
     class WaitMessages(enum.StrEnum):
         URL = "Confirm that the following URL is correctly populated"
-        TOP = "is at the top of this page"
-        PRE_RELEASE = "is marked as a pre-release on this page"
-        TAG = "is the tag shown on the scitools-iris PyPI homepage"
+        TOP = "{public} is at the top of this page"
+        PRE_RELEASE = "{public} is marked as a pre-release on this page"
+        TAG = "{public} is the tag shown on the scitools-iris PyPI homepage"
         INSTALL = "Confirm that pip install works as expected"
 
     @pytest.fixture(autouse=True)
@@ -831,7 +842,8 @@ class TestCheckPyPI:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            assert_message_in_input(call, expected)
+            expected = expected.format(public=re.escape(self.instance.version.public))
+            assert_input_msg_regex(call, expected)
 
     def test_latest(self):
         expected_messages = [
@@ -970,11 +982,11 @@ class TestUpdateLinks:
         revisit, update, comment = self.mock_wait_for_done.call_args_list
         message_fragments = [
             (revisit, "Revisit the GitHub release:"),
-            (update, "the above links and anything else appropriate"),
+            (update, "Update .* with the above links and anything else appropriate"),
             (comment, "notify anyone watching"),
         ]
         for call, expected in message_fragments:
-            assert_message_in_input(call, expected)
+            assert_input_msg_regex(call, expected)
 
     def test_url_input(self, mocker, capfd):
         mock_inputs(mocker, "some-url")
@@ -982,8 +994,8 @@ class TestUpdateLinks:
         out, err = capfd.readouterr()
         assert "What is the URL for the GitHub discussions page" in out
         revisit, update, comment = self.mock_wait_for_done.call_args_list
-        assert_message_in_input(update, "some-url")
-        assert_message_in_input(comment, "some-url")
+        assert_input_msg_regex(update, "some-url")
+        assert_input_msg_regex(comment, "some-url")
 
 
 class TestBlueskyAnnounce:
@@ -1007,9 +1019,9 @@ class TestBlueskyAnnounce:
         self.instance.bluesky_announce()
         self.mock_wait_for_done.assert_called_once()
         (call,) = self.mock_wait_for_done.call_args_list
-        assert_message_in_input(call, "Announce the release")
+        assert_input_msg_regex(call, "Announce the release")
         if not first_in_series:
-            assert_message_in_input(call, "Consider replying within an existing")
+            assert_input_msg_regex(call, "Consider replying within an existing")
 
 
 class TestMergeBack:
@@ -1047,6 +1059,6 @@ class TestNextRelease:
                 (champion, "importance of regularly championing their release"),
             ]
             for call, expected in message_fragments:
-                assert_message_in_input(call, expected)
+                assert_input_msg_regex(call, expected)
         else:
             self.mock_wait_for_done.assert_not_called()
