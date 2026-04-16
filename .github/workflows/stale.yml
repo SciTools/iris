@@ -31,7 +31,7 @@ jobs:
             1. Have been resolved since their last update.
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
-            4. Are still outstanding but which there is not enough resource for.
+            4. Are still outstanding but for which there is not enough resource.
             
             If this issue is still important to you, then please comment on this issue. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
             
