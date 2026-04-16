@@ -77,6 +77,10 @@ This document explains the changes made to Iris for this release
    initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
    (:issue:`6993`, :pull:`7036`)
 
+#. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
+   Nox release ``2026.04.10`` (which adds more files to the environment parent
+   directory, breaking previous assumptions). (:pull:`7046`)
+
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
