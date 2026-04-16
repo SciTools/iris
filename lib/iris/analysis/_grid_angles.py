@@ -14,7 +14,6 @@ import cartopy.crs as ccrs
 import numpy as np
 
 import iris
-from iris.coord_systems import GeogCS, RotatedGeogCS
 
 
 def _3d_xyz_from_latlon(lon, lat):
@@ -503,38 +502,6 @@ def _2D_gb_buffer_inner(array_shape):
         ([1] * x) + list(range(1, y - 1)) + ([y - 2] * x) + list(range(1, y - 1))[::-1]
     )
     return np.s_[:, x_i, y_i]
-
-
-def _2D_guess_bounds(cube, extrapolate=True, in_place=False):
-    lons = cube.coord(axis="X")
-    lats = cube.coord(axis="Y")
-    h_dims = cube.coord_dims(lons)
-    assert h_dims == cube.coord_dims(lats)
-    assert len(h_dims) == 2
-
-    if lons.units != "degrees" or lats.units != "degrees":
-        msg = "Coordinate units are expected to be degrees."
-        raise ValueError(msg)
-    if not all(
-        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
-        for coord in [lats, lons]
-    ):
-        msg = "Coordinate systems are expected geodetic."
-        raise ValueError(msg)
-
-    if in_place:
-        _2D_guess_bounds_in_place(lons, lats, extrapolate=extrapolate)
-
-    else:
-        new_lons = lons.copy()
-        new_lats = lats.copy()
-        _2D_guess_bounds_in_place(new_lons, new_lats, extrapolate=extrapolate)
-        cube.remove_coord(lons)
-        cube.remove_coord(lats)
-        cube.add_aux_coord(new_lons, h_dims)
-        cube.add_aux_coord(new_lats, h_dims)
-
-        return cube
 
 
 def _2D_guess_bounds_in_place(lons, lats, extrapolate=True):

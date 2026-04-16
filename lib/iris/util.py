@@ -37,7 +37,7 @@ from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
-from iris.coord_systems import GeogCS
+from iris.coord_systems import GeogCS, RotatedGeogCS
 import iris.exceptions
 import iris.warnings
 
@@ -3108,6 +3108,46 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
         s = "[" + ", ".join(_format(x) for x in data) + "]"
 
     return s
+
+
+def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
+    """Guess the bounds of a pair of 2D coords.
+
+    Parameters
+    ----------
+    x : class:`~iris.coords.AuxCoord`
+        A "longitude" or "grid_longitude" coordinate.
+    y : class:`~iris.coords.AuxCoord`
+        A "latitude" or "grid_latitude" coordinate.
+    extrapolate : bool, default=True
+        If True, extend the edge bounds beyond the limits of the edge points.
+    in_place : bool, default=False
+        If True, modify the coordinate arguments in place.
+    """
+    from iris.analysis._grid_angles import _2D_guess_bounds_in_place
+
+    assert len(x.shape) == len(y.shape) == 2
+    assert x.standard_name in ("longitude", "grid_longitude")
+    assert y.standard_name in ("latitude", "grid_latitude")
+
+    if x.units != "degrees" or y.units != "degrees":
+        msg = "Coordinate units are expected to be degrees."
+        raise ValueError(msg)
+    if not all(
+        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
+        for coord in [x, y]
+    ):
+        msg = "Coordinate systems are expected geodetic."
+        raise ValueError(msg)
+
+    if in_place:
+        new_x = x
+        new_y = y
+    else:
+        new_x = x.copy()
+        new_y = y.copy()
+    _2D_guess_bounds_in_place(new_x, new_y, extrapolate=extrapolate)
+    return new_x, new_y
 
 
 @dataclass
