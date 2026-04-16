@@ -35,7 +35,7 @@ jobs:
             
             If this issue is still important to you, then please comment on this issue. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
             
-            If there is no activity on this issue for 28 days: it will be closed and given the https://github.com/SciTools/iris/labels/not-resourced label.
+            If there is no activity on this issue for 28 days, it will be closed and given the https://github.com/SciTools/iris/labels/not-resourced label.
 
           # Comment on the staled prs.
           stale-pr-message: |
