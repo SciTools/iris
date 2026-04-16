@@ -72,6 +72,11 @@ This document explains the changes made to Iris for this release
 💼 Internal
 ===========
 
+#. `@trexfeathers`_ altered the messaging for 'stale' issues and pull requests,
+   to reduce the negative connotations. We now use ``needs-checkin`` for the
+   initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
+   (:issue:`6993`, :pull:`7036`)
+
 #. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
    Nox release ``2026.04.10`` (which adds more files to the environment parent
    directory, breaking previous assumptions). (:pull:`7046`)
