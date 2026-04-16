@@ -31,7 +31,7 @@ jobs:
             1. Have been resolved since their last update.
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
-            4. Are still outstanding but which there is not enough resource for - our backlog is often larger than available resource; the 500-day inactivity _may_ be a sign of lower priority.
+            4. Are still outstanding but which there is not enough resource for.
             
             If this issue is still important to you, then please comment on this issue. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
             
@@ -44,7 +44,7 @@ jobs:
             1. Have now been addressed by other PR(s).
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
-            4. Are still outstanding but which there is not enough resource for - our backlog is often larger than available resource; the 500-day inactivity _may_ be a sign of lower priority.
+            4. Are still outstanding but which there is not enough resource for.
             
             If this PR is still important to you, then please comment on this PR. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
             
@@ -52,7 +52,7 @@ jobs:
 
           # Comment on the staled issues while closed.
           close-issue-message: |
-            This issue has been automatically closed due to inactivity, with the https://github.com/SciTools/iris/labels/not-resourced label.
+            This issue has been automatically closed due to inactivity since the recent https://github.com/SciTools/iris/labels/needs-checkin request.
             
             If you still want this issue to get attention, then please either:
             
@@ -61,7 +61,7 @@ jobs:
 
           # Comment on the staled prs while closed.
           close-pr-message: |
-            This PR has been automatically closed due to inactivity, with the https://github.com/SciTools/iris/labels/not-resourced label.
+            This PR has been automatically closed due to inactivity since the recent https://github.com/SciTools/iris/labels/needs-checkin request.
             
             If you still want this PR to get attention, then please either:
             
