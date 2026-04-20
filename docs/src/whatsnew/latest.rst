@@ -60,13 +60,15 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
+   PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
 
 
 📚 Documentation
 ================
 
-#. N/A
+#. `@trexfeathers`_ and `@tkknight`_ made the docs compatible with the latest
+   versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
 
 
 💼 Internal

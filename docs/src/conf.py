@@ -513,7 +513,9 @@ def generate_carousel(
     :width: {width}
     :margin: {margin}
     :class-card: align-self-center
+    :class-body: d-none
 """
+    # :class-body: d-none = remove the text space, since we have no text.
 
     # TODO @bjlittle: use Path.walk when python >=3.12
     for root, _, files in os.walk(str(base)):
