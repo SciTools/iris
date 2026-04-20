@@ -71,7 +71,8 @@ This document explains the changes made to Iris for this release
    versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
 
 #. `@tkknight`_ enabled the theme option to collapse the sidebar.  Note, it only
-   appears once you click on a link away from the landing page. (:pull:`705?`)
+   appears once you click on a link away from the landing page.  Also moved
+   the search box to the top navigation bar. (:pull:`7060`)
 
 
 💼 Internal
