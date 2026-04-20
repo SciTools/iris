@@ -318,7 +318,7 @@ html_theme = "pydata_sphinx_theme"
 html_sidebars = {
     "**": [
         "custom_sidebar_logo_version",
-        "search-field",
+        "sidebar-collapse",
         "sidebar-nav-bs",
         "sidebar-ethical-ads",
     ]
@@ -333,8 +333,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
-    # removes the search box from the top bar
-    "navbar_persistent": [],
+    "navbar_persistent": ["search-field"],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",

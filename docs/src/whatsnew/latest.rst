@@ -70,6 +70,9 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@tkknight`_ made the docs compatible with the latest
    versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
 
+#. `@tkknight`_ enabled the theme option to collapse the sidebar.  Note, it only
+   appears once you click on a link away from the landing page. (:pull:`705?`)
+
 
 💼 Internal
 ===========
