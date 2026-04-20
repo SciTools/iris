@@ -44,7 +44,7 @@ ul.squarelist {
 
 .custom-body {
     text-align: left;
-    margin-left: max(45px, 15%);
+    padding-left:  max(45px, 20%) !important;
 }
 
 .center {
