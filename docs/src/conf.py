@@ -507,7 +507,7 @@ def generate_carousel(
     cards_by_link = {}
 
     card = r""".. card::
-    :img-bottom: {image}
+    :img-background: {image}
     :link: {link}
     :link-type: ref
     :width: {width}
