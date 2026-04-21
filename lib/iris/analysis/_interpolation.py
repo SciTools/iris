@@ -12,7 +12,6 @@ import numpy as np
 from numpy.lib.stride_tricks import as_strided
 import numpy.ma as ma
 
-from iris._lazy_data import map_complete_blocks
 from iris.coords import AuxCoord, DimCoord
 import iris.util
 
@@ -164,15 +163,6 @@ def snapshot_grid(cube):
     return x.copy(), y.copy()
 
 
-def _interpolated_dtype(dtype, method):
-    """Determine the minimum base dtype required by the underlying interpolator."""
-    if method == "nearest":
-        result = dtype
-    else:
-        result = np.result_type(_DEFAULT_DTYPE, dtype)
-    return result
-
-
 class RectilinearInterpolator:
     """Provide support for performing nearest-neighbour or linear interpolation.
 
@@ -210,8 +200,13 @@ class RectilinearInterpolator:
               set to NaN.
 
         """
-        # Snapshot the cube state to ensure that the interpolator is impervious
-        # to external changes to the original source cube.
+        # Trigger any deferred loading of the source cube's data and snapshot
+        # its state to ensure that the interpolator is impervious to external
+        # changes to the original source cube. The data is loaded to prevent
+        # the snapshot having lazy data, avoiding the potential for the
+        # same data to be loaded again and again.
+        if src_cube.has_lazy_data():
+            src_cube.data
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
@@ -282,27 +277,17 @@ class RectilinearInterpolator:
             data = data[tuple(dim_slices)]
         return data
 
-    @staticmethod
-    def _interpolate(
-        data,
-        src_points,
-        interp_points,
-        interp_shape,
-        method="linear",
-        extrapolation_mode="nanmask",
-    ):
+    def _interpolate(self, data, interp_points):
         """Interpolate a data array over N dimensions.
 
-        Create the interpolator instance before invoking it to perform
-        interpolation over the data at the given coordinate point values.
+        Create and cache the underlying interpolator instance before invoking
+        it to perform interpolation over the data at the given coordinate point
+        values.
 
         Parameters
         ----------
         data : ndarray
             A data array, to be interpolated in its first 'N' dimensions.
-        src_points :
-            The point values defining the dimensions to be interpolated.
-            (len(src_points) should be N).
         interp_points : ndarray
             An array of interpolation coordinate values.
             Its shape is (..., N) where N is the number of interpolation
@@ -311,53 +296,44 @@ class RectilinearInterpolator:
             coordinate, which is mapped to the i'th data dimension.
             The other (leading) dimensions index over the different required
             sample points.
-        interp_shape :
-            The shape of the interpolated array in its first 'N' dimensions
-            (len(interp_shape) should be N).
-        method : str
-            Interpolation method (see :class:`iris.analysis._interpolation.RectilinearInterpolator`).
-        extrapolation_mode : str
-            Extrapolation mode (see :class:`iris.analysis._interpolation.RectilinearInterpolator`).
 
         Returns
         -------
         :class:`np.ndarray`.
-            Its shape is "interp_shape + extra_shape",
+            Its shape is "points_shape + extra_shape",
             where "extra_shape" is the remaining non-interpolated dimensions of
-            the data array (i.e. 'data.shape[N:]').
+            the data array (i.e. 'data.shape[N:]'), and "points_shape" is the
+            leading dimensions of interp_points,
+            (i.e. 'interp_points.shape[:-1]').
+
         """
         from iris.analysis._scipy_interpolate import _RegularGridInterpolator
 
-        dtype = _interpolated_dtype(data.dtype, method)
+        dtype = self._interpolated_dtype(data.dtype)
         if data.dtype != dtype:
             # Perform dtype promotion.
             data = data.astype(dtype)
 
-        # Determine the shape of the interpolated result.
-        ndims_interp = len(interp_shape)
-        extra_shape = data.shape[ndims_interp:]
-        final_shape = [*interp_shape, *extra_shape]
+        mode = EXTRAPOLATION_MODES[self._mode]
+        if self._interpolator is None:
+            # Cache the interpolator instance.
+            # NB. The constructor of the _RegularGridInterpolator class does
+            # some unnecessary checks on the fill_value parameter,
+            # so we set it afterwards instead. Sneaky. ;-)
+            self._interpolator = _RegularGridInterpolator(
+                self._src_points,
+                data,
+                method=self.method,
+                bounds_error=mode.bounds_error,
+                fill_value=None,
+            )
+        else:
+            self._interpolator.values = data
 
-        mode = EXTRAPOLATION_MODES[extrapolation_mode]
-        _data = np.ma.getdata(data)
-        # NB. The constructor of the _RegularGridInterpolator class does
-        # some unnecessary checks on the fill_value parameter,
-        # so we set it afterwards instead. Sneaky. ;-)
-        interpolator = _RegularGridInterpolator(
-            src_points,
-            _data,
-            method=method,
-            bounds_error=mode.bounds_error,
-            fill_value=None,
-        )
-        interpolator.fill_value = mode.fill_value
-        result = interpolator(interp_points)
-
-        # The interpolated result has now shape "points_shape + extra_shape"
-        # where "points_shape" is the leading dimension of "interp_points"
-        # (i.e. 'interp_points.shape[:-1]'). We reshape it to match the shape
-        # of the interpolated dimensions.
-        result = result.reshape(final_shape)
+        # We may be re-using a cached interpolator, so ensure the fill
+        # value is set appropriately for extrapolating data values.
+        self._interpolator.fill_value = mode.fill_value
+        result = self._interpolator(interp_points)
 
         if result.dtype != data.dtype:
             # Cast the data dtype to be as expected. Note that, the dtype
@@ -370,11 +346,13 @@ class RectilinearInterpolator:
             # `data` is not a masked array.
             src_mask = np.ma.getmaskarray(data)
             # Switch the extrapolation to work with mask values.
-            interpolator.fill_value = mode.mask_fill_value
-            interpolator.values = src_mask
-            mask_fraction = interpolator(interp_points)
+            self._interpolator.fill_value = mode.mask_fill_value
+            self._interpolator.values = src_mask
+            mask_fraction = self._interpolator(interp_points)
             new_mask = mask_fraction > 0
-            result = np.ma.MaskedArray(result, new_mask)
+            if ma.isMaskedArray(data) or np.any(new_mask):
+                result = np.ma.MaskedArray(result, new_mask)
+
         return result
 
     def _resample_coord(self, sample_points, coord, coord_dims):
@@ -480,6 +458,14 @@ class RectilinearInterpolator:
                     msg = "Cannot interpolate over the non-monotonic coordinate {}."
                     raise ValueError(msg.format(coord.name()))
 
+    def _interpolated_dtype(self, dtype):
+        """Determine the minimum base dtype required by the underlying interpolator."""
+        if self._method == "nearest":
+            result = dtype
+        else:
+            result = np.result_type(_DEFAULT_DTYPE, dtype)
+        return result
+
     def _points(self, sample_points, data, data_dims=None):
         """Interpolate at the specified points.
 
@@ -504,8 +490,9 @@ class RectilinearInterpolator:
 
         Returns
         -------
-        ndarray
-            The interpolated data array.
+        :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
+            An :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
+            instance of the interpolated data.
 
         """
         dims = list(range(self._src_cube.ndim))
@@ -543,17 +530,22 @@ class RectilinearInterpolator:
         _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
 
         # Prepare the sample points for interpolation and calculate the
-        # shape of the interpolated dimensions.
+        # shape of the interpolated result.
         interp_points = []
         interp_shape = []
         for index, points in enumerate(sample_points):
-            dtype = _interpolated_dtype(self._src_points[index].dtype, self._method)
+            dtype = self._interpolated_dtype(self._src_points[index].dtype)
             points = np.array(points, dtype=dtype, ndmin=1)
             interp_points.append(points)
             interp_shape.append(points.size)
 
+        interp_shape.extend(
+            length for dim, length in enumerate(data.shape) if dim not in di
+        )
+
         # Convert the interpolation points into a cross-product array
         # with shape (n_cross_points, n_dims)
+
         interp_points = np.asarray([pts for pts in product(*interp_points)])
 
         # Adjust for circularity.
@@ -563,21 +555,9 @@ class RectilinearInterpolator:
             # Transpose data in preparation for interpolation.
             data = np.transpose(data, interp_order)
 
-        # Interpolate the data, ensuring the interpolated dimensions
-        # are not chunked.
-        dims_not_chunked = [dmap[d] for d in di]
-        result = map_complete_blocks(
-            data,
-            self._interpolate,
-            dims=dims_not_chunked,
-            out_sizes=interp_shape,
-            dtype=_interpolated_dtype(data.dtype, self._method),
-            src_points=self._src_points,
-            interp_points=interp_points,
-            interp_shape=interp_shape,
-            method=self._method,
-            extrapolation_mode=self._mode,
-        )
+        # Interpolate and reshape the data ...
+        result = self._interpolate(data, interp_points)
+        result = result.reshape(interp_shape)
 
         if src_order != dims:
             # Restore the interpolated result to the original
@@ -585,12 +565,116 @@ class RectilinearInterpolator:
             result = np.transpose(result, src_order)
 
         return result
+    
+    def _trajectory(self, sample_points, data, data_dims=None):
+        """Interpolate at the specified points.
 
-    def __call__(self, sample_points, collapse_scalar=True):
+        Interpolate the given data values at the specified list of orthogonal
+        (coord, points) pairs.
+
+        Parameters
+        ----------
+        sample_points :
+            A list of N iterables, where N is the number of coordinates
+            passed to the constructor.
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
+        data :
+            The data to interpolate - not necessarily the data from the cube
+            that was used to construct this interpolator. If the data has
+            fewer dimensions, then data_dims must be defined.
+        data_dims : optional
+            The dimensions of the given data array in terms of the original
+            cube passed through to this interpolator's constructor. If None,
+            the data dimensions must map one-to-one onto the increasing
+            dimension order of the cube.
+
+        Returns
+        -------
+        :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
+            An :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
+            instance of the interpolated data.
+
+        """
+        dims = list(range(self._src_cube.ndim))
+        data_dims = data_dims or dims
+
+        if len(data_dims) != data.ndim:
+            msg = (
+                "Data being interpolated is not consistent with "
+                "the data passed through."
+            )
+            raise ValueError(msg)
+
+        if sorted(data_dims) != list(data_dims):
+            # To do this, a pre & post transpose will be necessary.
+            msg = "Currently only increasing data_dims is supported."
+            raise NotImplementedError(msg)
+
+        # Broadcast the data into the shape of the original cube.
+        if data_dims != list(range(self._src_cube.ndim)):
+            strides = list(data.strides)
+            for dim in range(self._src_cube.ndim):
+                if dim not in data_dims:
+                    strides.insert(dim, 0)
+            data = as_strided(data, strides=strides, shape=self._src_cube.shape)
+
+        data = self._account_for_inverted(data)
+        # Calculate the transpose order to shuffle the interpolated dimensions
+        # to the lower dimensions for the interpolation algorithm. Then the
+        # transpose order to restore the dimensions to their original
+        # positions.
+        di = self._interp_dims
+        ds = sorted(dims, key=lambda d: d not in di)
+        dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
+        interp_order, _ = zip(*sorted(dmap.items(), key=operator.itemgetter(1)))
+        _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
+
+        # Prepare the sample points for interpolation and calculate the
+        # shape of the interpolated result.
+        interp_points = []
+        interp_shape = []
+        for index, points in enumerate(sample_points):
+            dtype = self._interpolated_dtype(self._src_points[index].dtype)
+            points = np.array(points, dtype=dtype, ndmin=1)
+            interp_points.append(points)
+            interp_shape.append(points.size)
+
+        interp_shape.extend(
+            length for dim, length in enumerate(data.shape) if dim not in di
+        )
+
+        # ----------------------- Modification ---------------------------
+
+        # Convert the interpolation points into a cross-product array
+        # with shape (n_cross_points, n_dims)
+
+        #interp_points = np.asarray([pts for pts in product(*interp_points)])
+        interp_points = np.column_stack(interp_points)
+
+        # Adjust for circularity.
+        interp_points, data = self._account_for_circular(interp_points, data)
+
+        if interp_order != dims:
+            # Transpose data in preparation for interpolation.
+            data = np.transpose(data, interp_order)
+
+        # Interpolate and reshape the data ...
+        result = self._interpolate(data, interp_points)
+        #result = result.reshape(interp_shape)
+
+        if result.ndim > 1:
+            if src_order != dims:
+                # Restore the interpolated result to the original
+                # source cube dimensional order.
+                # result = np.transpose(result, src_order)
+                result = result.T
+
+        # ----------------------- /Modification ---------------------------
+
+        return result
+
+    def __call__(self, sample_points, collapse_scalar=True, trajectory=False):
         """Construct a cube from the specified orthogonal interpolation points.
-
-        If the source cube has lazy data, the returned cube will also
-        have lazy data.
 
         Parameters
         ----------
@@ -609,14 +693,6 @@ class RectilinearInterpolator:
             of the cube will be the number of original cube dimensions minus
             the number of scalar coordinates, if collapse_scalar is True.
 
-        Notes
-        -----
-        .. note::
-
-            If the source cube has lazy data,
-            `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
-            in the interpolated dimensions will be combined before regridding.
-
         """
         if len(sample_points) != len(self._src_coords):
             msg = "Expected sample points for {} coordinates, got {}."
@@ -624,9 +700,18 @@ class RectilinearInterpolator:
 
         sample_points = _canonical_sample_points(self._src_coords, sample_points)
 
-        data = self._src_cube.core_data()
+        data = self._src_cube.data
+
+        # ----------------------- Modification ---------------------------
+
         # Interpolate the cube payload.
-        interpolated_data = self._points(sample_points, data)
+        if trajectory:
+            interpolated_data = self._trajectory(sample_points, data)
+            return interpolated_data
+        else:
+            interpolated_data = self._points(sample_points, data)
+
+        # ----------------------- /Modification ---------------------------
 
         if collapse_scalar:
             # When collapse_scalar is True, keep track of the dimensions for

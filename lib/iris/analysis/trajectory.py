@@ -2,13 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.
-
-.. z_reference:: iris.analysis.trajectory
-   :tags: topic_maths_stats;topic_regrid
-
-   API reference
-"""
+"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory."""
 
 import math
 
@@ -213,7 +207,7 @@ def interpolate(cube, sample_points, method=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 
@@ -323,8 +317,11 @@ def interpolate(cube, sample_points, method=None):
         # cube.interpolate (or the underlying method on the interpolator)
         # repeatedly, so using this approach for now. In future, it would be
         # ideal if we only interpolated at the points we care about
-        columns = cube.interpolate(sample_points, Linear())
-        # np.einsum(a, [0, 0], [0]) is like np.diag(a)
+
+        # ----------------------- Modification ---------------------------
+        interpolated_array = cube.interpolate(sample_points, Linear(), trajectory=True)
+        new_cube.data = interpolated_array
+        '''# np.einsum(a, [0, 0], [0]) is like np.diag(a)
         # We're using einsum here to do an n-dimensional diagonal, leaving the
         # other dimensions unaffected and putting the diagonal's direction on
         # the final axis
@@ -368,7 +365,8 @@ def interpolate(cube, sample_points, method=None):
                         )
                     )
                 # Replace the points
-                new_cube.coord(columns_coord.name()).points = new_coord_points
+                new_cube.coord(columns_coord.name()).points = new_coord_points'''
+        # ----------------------- /Modification ---------------------------
 
     elif method == "nearest":
         # Use a cache with _nearest_neighbour_indices_ndcoords()
@@ -566,7 +564,8 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             coord, value = sample_points[0]
         except (KeyError, ValueError):
             emsg = (
-                "Sample points must be a list of (coordinate, value) pairs, got {!r}."
+                "Sample points must be a list of "
+                "(coordinate, value) pairs, got {!r}."
             )
             raise TypeError(emsg.format(sample_points))
 
