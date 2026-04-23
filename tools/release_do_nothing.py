@@ -63,7 +63,6 @@ class IrisRelease(Progress):
     def get_steps(cls) -> list[typing.Callable[..., None]]:
         return [
             cls.analyse_remotes,
-            # cls.parse_tags,
             cls.get_release_tag,
             cls.get_all_patches,
             cls.apply_patches,
