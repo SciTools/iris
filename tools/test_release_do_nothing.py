@@ -884,7 +884,7 @@ class TestCheckPyPI:
         mock_inputs(mocker, fake_sha)
         self.instance.check_pypi()
         out, err = capfd.readouterr()
-        assert "Visit the below and click `view details`" in out
+        assert "Visit the below to view the details" in out
         assert self.instance.sha256 == fake_sha
 
     def test_invalid_sha(self, mocker, mock_report_problem):
