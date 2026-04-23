@@ -72,11 +72,12 @@ class IrisRelease(Progress):
             cls.create_release_branch,
             cls.finalise_whats_new,
             cls.cut_release,
-            cls.check_rtd,
             cls.check_pypi,
             cls.update_conda_forge,
+            cls.check_rtd,
             cls.update_links,
             cls.bluesky_announce,
+            cls.revisit_conda_forge,
             cls.merge_back,
             cls.next_release,
         ]
@@ -1047,32 +1048,14 @@ class IrisRelease(Progress):
             )
             self.wait_for_done(message)
 
-        if self.is_release_candidate:
-            channel_command = " -c conda-forge/label/rc_iris "
-        else:
-            channel_command = " -c conda-forge "
-
         message = (
             "The new release will now undergo testing and validation in the "
             "cf-staging channel. Once this is complete, the release will be "
             "available in the standard conda-forge channel. This can "
             "sometimes take minutes, or up to an hour.\n"
-            "Confirm that the new release is available for use from "
-            "conda-forge by running the following command:\n"
-            f"conda search{channel_command}iris=={self.version.public};"
+            "We'll come back later."
         )
-        self.wait_for_done(message)
-
-        message = (
-            "Confirm that conda (or mamba) install works as expected:\n"
-            f"conda create -n tmp_iris{channel_command}iris="
-            f"{self.version.public};\n"
-            "conda activate tmp_iris;\n"
-            'python -c "import iris; print(iris.__version__)";\n'
-            "conda deactivate;\n"
-            f"conda remove -n tmp_iris --all;"
-        )
-        self.wait_for_done(message)
+        self.print(message)
 
         if not self.is_latest_tag and not self.more_patches_after_this_one:
             latest_version = max(self._get_tagged_versions())
@@ -1085,6 +1068,37 @@ class IrisRelease(Progress):
                 "no new conda-forge release will be triggered.\n"
             )
             self.wait_for_done(message)
+
+    # As many steps as possible will be put between update_conda_forge and
+    #  revisit_conda_forge, given the delay.
+
+    def revisit_conda_forge(self):
+        self.print("Revisiting conda-forge ...")
+
+        if self.is_release_candidate:
+            channel_command = " -c conda-forge/label/rc_iris "
+        else:
+            channel_command = " -c conda-forge "
+
+        message = (
+            "Confirm that the new release is available for use from "
+            "conda-forge by running the following command:\n"
+            f"conda search{channel_command}iris=={self.version.public};"
+        )
+        self.wait_for_done(message)
+
+        message = (
+            "Confirm that conda (or mamba) install works as expected:\n"
+            "If anything is wrong: consider whether announcement(s) might need "
+            "undoing/updating.\n"
+            f"conda create -n tmp_iris{channel_command}iris="
+            f"{self.version.public};\n"
+            "conda activate tmp_iris;\n"
+            'python -c "import iris; print(iris.__version__)";\n'
+            "conda deactivate;\n"
+            f"conda remove -n tmp_iris --all;"
+        )
+        self.wait_for_done(message)
 
     def update_links(self):
         self.print("Link updates ...")
@@ -1127,6 +1141,7 @@ class IrisRelease(Progress):
             "Announce the release via https://bsky.app/profile/scitools.bsky.social, "
             "and any "
             "other appropriate message boards (e.g. Viva Engage).\n"
+            "Visuals like plots or screenshots are GREAT!\n"
             "Any content used for the announcement should be stored in the "
             "SciTools/bluesky-scitools GitHub repo.\n"
         )

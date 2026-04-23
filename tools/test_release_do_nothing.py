@@ -908,8 +908,6 @@ class TestCheckPyPI:
 
 class TestUpdateCondaForge:
     """Tests for the :meth:`IrisRelease.update_conda_forge` method."""
-    # TODO: Confirming this one behaves correctly is a nightmare. There is more
-    #  conditional branching than elsewhere. Suggestions welcome.
     class WaitMessages(enum.StrEnum):
         FORK = "Make sure you have a GitHub fork of"
         RC_BRANCHES = "Visit the conda-forge feedstock branches page"
@@ -930,8 +928,6 @@ class TestUpdateCondaForge:
         CI = "wait for the CI to complete"
         LIST = r"Confirm that {public} appears in this list:"
         LATEST = "is displayed on this page as the latest available"
-        TESTING = "The new release will now undergo testing and validation"
-        INSTALL = re.escape("Confirm that conda (or mamba) install works as expected")
         PATCH = r"{version} is not the latest Iris release"
 
     @pytest.fixture(autouse=True)
@@ -1049,6 +1045,30 @@ class TestUpdateCondaForge:
             "Invalid entry. Please try again ..."
         )
 
+class TestRevisitCondaForge:
+    """Tests for the :meth:`IrisRelease.revisit_conda_forge` method."""
+    @pytest.fixture(autouse=True)
+    def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
+        self.instance = IrisRelease(_dry_run=True, git_tag="v1.2.0")
+        self.mock_wait_for_done = mock_wait_for_done
+        mock_git_ls_remote_tags.return_value = (
+            "abcd1234  refs/tags/v1.0.0\n"
+            "abcd1235  refs/tags/v1.0.1\n"
+            "abcd1236  refs/tags/v1.1.0\n"
+            "abcd1237  refs/tags/v2.0.0\n"
+        )
+
+    def test_waits(self):
+        self.instance.revisit_conda_forge()
+        assert self.mock_wait_for_done.call_count == 2
+        available, installable = self.mock_wait_for_done.call_args_list
+        message_fragments = [
+            (available, "Confirm that the new release is available"),
+            (installable, re.escape("Confirm that conda (or mamba) install works as expected")),
+        ]
+        for call, expected in message_fragments:
+            assert_input_msg_regex(call, expected)
+
     @pytest.mark.parametrize("rc", [True, False], ids=["is_rc", "not_rc"])
     def test_channel_command(self, rc, mocker):
         git_tag = "v1.2.0"
@@ -1056,7 +1076,7 @@ class TestUpdateCondaForge:
             git_tag += "rc0"
         self.instance.git_tag = git_tag
         mock_inputs(mocker, "rc-original", "n")
-        self.instance.update_conda_forge()
+        self.instance.revisit_conda_forge()
         if rc:
             assert any("label/rc_iris" in call.args[0] for call in self.mock_wait_for_done.call_args_list)
         else:
@@ -1121,8 +1141,6 @@ class TestBlueskyAnnounce:
 
 class TestMergeBack:
     """Tests for the :meth:`IrisRelease.merge_back` method."""
-    # TODO: figure out how to test this one - more complex than the rest.
-
     class WaitMessages(enum.StrEnum):
         DELETE = "avoid a name clash by deleting any existing local branch"
         CHECKOUT = "Checkout a local branch from the official"
