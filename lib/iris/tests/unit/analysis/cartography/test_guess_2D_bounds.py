@@ -7,13 +7,12 @@
 import numpy as np
 import pytest
 
-from iris.analysis.cartography import _transform_xy
+from iris.analysis.cartography import _transform_xy, guess_2D_bounds
 from iris.coord_systems import Mercator, RotatedGeogCS
 from iris.coords import AuxCoord
 from iris.tests.unit.analysis.cartography.test_gridcell_angles import (
     _2d_multicells_testcube,
 )
-from iris.analysis.cartography import guess_2D_bounds
 
 
 def _2D_guess_bounds(cube, extrapolate=True, in_place=False):
