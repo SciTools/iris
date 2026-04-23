@@ -970,6 +970,7 @@ class IrisRelease(Progress):
             f"- The version at the very top of the file: "
             f"{self.version.public}\n"
             f"- The sha256 hash: {self.sha256}\n"
+            "- Build number: reset to 0 (or advance it if this is not a new release).\n"
             "- Requirements: align the packages and pins with those in the "
             "Iris repo\n"
             "- Maintainers: update with any changes to the dev team\n"
