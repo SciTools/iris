@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the function :func:`iris.util.guess_2D_bounds`."""
+"""Unit tests for the function :func:`iris.analysis.cartography.guess_2D_bounds`."""
 
 import numpy as np
 import pytest
@@ -13,7 +13,7 @@ from iris.coords import AuxCoord
 from iris.tests.unit.analysis.cartography.test_gridcell_angles import (
     _2d_multicells_testcube,
 )
-from iris.util import guess_2D_bounds
+from iris.analysis.cartography import guess_2D_bounds
 
 
 def _2D_guess_bounds(cube, extrapolate=True, in_place=False):

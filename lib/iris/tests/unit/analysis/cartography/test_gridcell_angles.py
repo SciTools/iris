@@ -11,7 +11,6 @@ from cf_units import Unit
 import numpy as np
 import pytest
 
-from iris.analysis._grid_angles import _2D_guess_bounds
 from iris.analysis.cartography import gridcell_angles
 from iris.coords import AuxCoord
 from iris.cube import Cube
