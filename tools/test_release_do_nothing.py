@@ -993,11 +993,11 @@ class TestUpdateCondaForge:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            expected = expected.format(
+            expected_str = expected.format(
                 public=re.escape(self.instance.version.public),
                 version=re.escape(str(self.instance.version)),
             )
-            assert_input_msg_regex(call, expected)
+            assert_input_msg_regex(call, expected_str)
 
     def test_original_rc_branch_name(self, mocker):
         self.instance.git_tag = "v2.1.0rc0"
