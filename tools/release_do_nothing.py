@@ -990,6 +990,8 @@ class IrisRelease(Progress):
             "No other file normally needs changing in iris-feedstock, "
             "so push up "
             "the changes to prepare for a Pull Request:\n"
+            "WARNING: accidentally pushing straight to conda-forge (instead "
+            "of your fork) will instantly trigger a release!\n"
             f"git add recipe/meta.yaml;\n"
             f'git commit -m "Recipe updates for {self.version} .";\n'
             f"git push -u origin {self.version};"
