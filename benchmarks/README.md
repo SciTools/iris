@@ -57,7 +57,7 @@ accordingly.
 used to generate benchmark test objects/files; see
 [Data generation](#data-generation). The benchmark runner sets this 
 automatically, but will defer to any value already set in the shell. Note that
-[Mule](https://github.com/metomi/mule) will be  automatically installed into 
+[Mule](https://github.com/MetOffice/mule) will be  automatically installed into 
 this environment, and sometimes 
 [iris-test-data](https://github.com/SciTools/iris-test-data) (see 
 `OVERRIDE_TEST_DATA_REPOSITORY`).

@@ -26,33 +26,38 @@ class Test___init__:
         self.kwargs = dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
     def test_insufficient_coordinates(self):
-        with pytest.raises(ValueError):
+        msg = "Unable to construct ocean sigma coordinate factory due to insufficient source coordinates."
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory()
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(sigma=None, eta=self.eta, depth=self.depth)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(sigma=self.sigma, eta=None, depth=self.depth)
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(sigma=self.sigma, eta=self.eta, depth=None)
 
     def test_sigma_too_many_bounds(self):
         self.sigma.nbounds = 4
-        with pytest.raises(ValueError):
+        msg = "Invalid sigma coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(**self.kwargs)
 
     def test_sigma_incompatible_units(self):
         self.sigma.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Invalid units: sigma coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(**self.kwargs)
 
     def test_eta_incompatible_units(self):
         self.eta.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(**self.kwargs)
 
     def test_depth_incompatible_units(self):
         self.depth.units = Unit("km")
-        with pytest.raises(ValueError):
+        msg = "Incompatible units: eta coordinate .*and depth coordinate .*must have the same units."
+        with pytest.raises(ValueError, match=msg):
             OceanSigmaFactory(**self.kwargs)
 
     def test_promote_sigma_units_unknown_to_dimensionless(self):
@@ -138,12 +143,14 @@ class Test_update:
 
     def test_sigma_too_many_bounds(self):
         new_sigma = Mock(units=Unit("1"), nbounds=4)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid sigma coordinate .*: must have either 0 or 2 bounds."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.sigma, new_sigma)
 
     def test_sigma_incompatible_units(self):
         new_sigma = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Invalid units: sigma coordinate .* must be dimensionless."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.sigma, new_sigma)
 
     def test_eta(self):
@@ -153,7 +160,8 @@ class Test_update:
 
     def test_eta_incompatible_units(self):
         new_eta = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.eta, new_eta)
 
     def test_depth(self):
@@ -163,5 +171,6 @@ class Test_update:
 
     def test_depth_incompatible_units(self):
         new_depth = Mock(units=Unit("Pa"), nbounds=0)
-        with pytest.raises(ValueError):
+        msg = "Failed to update dependencies. Incompatible units: eta coordinate .* and depth coordinate .* must have the same units."
+        with pytest.raises(ValueError, match=msg):
             self.factory.update(self.depth, new_depth)

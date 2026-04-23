@@ -1084,7 +1084,7 @@ class Test___call____rotated_to_lat_lon:
             result = regridder(src)
             result.transpose([3, 1, 2, 0])
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def _grid_subset(self):
         # The destination grid points are entirely contained within the
@@ -1102,60 +1102,76 @@ class Test___call____rotated_to_lat_lon:
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
             regridder = Regridder(src, grid[::-1], method, self.mode)
             result = regridder(src)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
+            _shared_utils.assert_CML(request, result[:, :, ::-1], cml, approx_data=True)
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
+            _shared_utils.assert_CML(request, result[:, :, ::-1], cml, approx_data=True)
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
+            _shared_utils.assert_CML(request, result[:, :, ::-1], cml, approx_data=True)
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1], cml)
+            _shared_utils.assert_CML(request, result[:, :, ::-1], cml, approx_data=True)
 
             regridder = Regridder(src, grid[:, ::-1], method, self.mode)
             result = regridder(src)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, :, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, :, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, :, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[:, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, :, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, :, ::-1], cml, approx_data=True
+            )
 
             regridder = Regridder(src, grid[::-1, ::-1], method, self.mode)
             result = regridder(src)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, ::-1, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, ::-1, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, :, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, ::-1, ::-1], cml, approx_data=True
+            )
 
             sample = src[:, :, ::-1, ::-1]
             regridder = Regridder(sample, grid[::-1, ::-1], method, self.mode)
             result = regridder(sample)
-            _shared_utils.assert_CML_approx_data(request, result[:, :, ::-1, ::-1], cml)
+            _shared_utils.assert_CML(
+                request, result[:, :, ::-1, ::-1], cml, approx_data=True
+            )
 
     def test_grid_subset(self, request):
         # The destination grid points are entirely contained within the
@@ -1165,7 +1181,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def _big_grid(self):
         grid = self._grid_subset()
@@ -1182,7 +1198,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(self.src, big_grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_subset_big_transposed(self, request):
         # The order of the grid's dimensions (including the X and Y
@@ -1193,7 +1209,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(self.src, big_grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_subset.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_subset_anon(self, request):
         # Must cope OK with anonymous source dimensions.
@@ -1204,7 +1220,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_anon.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_subset_missing_data_1(self, request):
         # The destination grid points are entirely contained within the
@@ -1217,7 +1233,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_masked_1.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_subset_missing_data_2(self, request):
         # The destination grid points are entirely contained within the
@@ -1230,7 +1246,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_subset_masked_2.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_partial_overlap(self, request):
         # The destination grid points are partially contained within the
@@ -1242,7 +1258,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
             cml = RESULT_DIR + ("{}_partial_overlap.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_grid_no_overlap(self, request):
         # The destination grid points are NOT contained within the
@@ -1253,8 +1269,8 @@ class Test___call____rotated_to_lat_lon:
         for method in self.methods:
             regridder = Regridder(self.src, grid, method, self.mode)
             result = regridder(self.src)
-            _shared_utils.assert_CML_approx_data(
-                request, result, RESULT_DIR + ("no_overlap.cml",)
+            _shared_utils.assert_CML(
+                request, result, RESULT_DIR + ("no_overlap.cml",), approx_data=True
             )
 
     def test_grid_subset_missing_data_aux(self, request):
@@ -1267,7 +1283,7 @@ class Test___call____rotated_to_lat_lon:
             regridder = Regridder(src, grid, method, self.mode)
             result = regridder(src)
             cml = RESULT_DIR + ("{}_masked_altitude.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
 
 @_shared_utils.skip_data
@@ -1338,7 +1354,7 @@ class Test___call____circular:
             result = regridder(self.src)
             assert not result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_non_circular.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def _check_circular_results(self, src_cube, request, missingmask=""):
         results = []
@@ -1348,7 +1364,7 @@ class Test___call____circular:
             results.append(result)
             assert not result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_circular_src{}.cml".format(method, missingmask),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
         return results
 
     def test_circular_src(self, request):
@@ -1465,7 +1481,7 @@ class Test___call____circular:
             result = regridder(self.src)
             assert result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_circular_grid.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)
 
     def test_circular_src_and_grid(self, request):
         # Circular src -> circular grid
@@ -1478,4 +1494,4 @@ class Test___call____circular:
             result = regridder(src)
             assert result.coord("longitude").circular
             cml = RESULT_DIR + ("{}_both_circular.cml".format(method),)
-            _shared_utils.assert_CML_approx_data(request, result, cml)
+            _shared_utils.assert_CML(request, result, cml, approx_data=True)

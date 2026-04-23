@@ -251,11 +251,11 @@ class TestBasicMaths:
             new_unit=a.units**2,
             in_place=False,
         )
-        _shared_utils.assert_CML_approx_data(
-            request, a, ("analysis", "apply_ufunc_original.cml")
+        _shared_utils.assert_CML(
+            request, a, ("analysis", "apply_ufunc_original.cml"), approx_data=True
         )
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ufunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ufunc.cml"), approx_data=True
         )
 
         b = iris.analysis.maths.apply_ufunc(
@@ -265,11 +265,11 @@ class TestBasicMaths:
             new_unit=a.units**2,
             in_place=True,
         )
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ufunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ufunc.cml"), approx_data=True
         )
-        _shared_utils.assert_CML_approx_data(
-            request, a, ("analysis", "apply_ufunc.cml")
+        _shared_utils.assert_CML(
+            request, a, ("analysis", "apply_ufunc.cml"), approx_data=True
         )
 
         def vec_mag(u, v):
@@ -279,8 +279,8 @@ class TestBasicMaths:
 
         vec_mag_ufunc = np.frompyfunc(vec_mag, 2, 1)
         b = iris.analysis.maths.apply_ufunc(vec_mag_ufunc, a, c)
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ufunc_frompyfunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ufunc_frompyfunc.cml"), approx_data=True
         )
 
     def test_apply_ufunc_fail(self):
@@ -301,20 +301,20 @@ class TestBasicMaths:
         my_ifunc = iris.analysis.maths.IFunc(np.square, lambda a: a.units**2)
         b = my_ifunc(a, new_name="squared temperature", in_place=False)
 
-        _shared_utils.assert_CML_approx_data(
-            request, a, ("analysis", "apply_ifunc_original.cml")
+        _shared_utils.assert_CML(
+            request, a, ("analysis", "apply_ifunc_original.cml"), approx_data=True
         )
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ifunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ifunc.cml"), approx_data=True
         )
 
         b = my_ifunc(a, new_name="squared temperature", in_place=True)
 
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ifunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ifunc.cml"), approx_data=True
         )
-        _shared_utils.assert_CML_approx_data(
-            request, a, ("analysis", "apply_ifunc.cml")
+        _shared_utils.assert_CML(
+            request, a, ("analysis", "apply_ifunc.cml"), approx_data=True
         )
 
         def vec_mag(u, v):
@@ -326,8 +326,8 @@ class TestBasicMaths:
         my_ifunc = iris.analysis.maths.IFunc(vec_mag_ufunc, lambda a, b: (a + b).units)
 
         b = my_ifunc(a, c)
-        _shared_utils.assert_CML_approx_data(
-            request, b, ("analysis", "apply_ifunc_frompyfunc.cml")
+        _shared_utils.assert_CML(
+            request, b, ("analysis", "apply_ifunc_frompyfunc.cml"), approx_data=True
         )
 
     def test_ifunc_init_fail(self):
@@ -562,8 +562,8 @@ class TestExponentiate:
     def test_exponentiate(self, request):
         a = self.cube
         e = pow(a, 4)
-        _shared_utils.assert_CML_approx_data(
-            request, e, ("analysis", "exponentiate.cml")
+        _shared_utils.assert_CML(
+            request, e, ("analysis", "exponentiate.cml"), approx_data=True
         )
 
     def test_square_root(self, request):
@@ -590,7 +590,7 @@ class TestExponential:
 
     def test_exp(self, request):
         e = iris.analysis.maths.exp(self.cube)
-        _shared_utils.assert_CML_approx_data(request, e, ("analysis", "exp.cml"))
+        _shared_utils.assert_CML(request, e, ("analysis", "exp.cml"), approx_data=True)
 
 
 class TestApplyUfunc:
@@ -688,16 +688,16 @@ class TestLog:
 
     def test_log(self, request):
         e = iris.analysis.maths.log(self.cube)
-        _shared_utils.assert_CML_approx_data(request, e, ("analysis", "log.cml"))
+        _shared_utils.assert_CML(request, e, ("analysis", "log.cml"), approx_data=True)
 
     def test_log2(self, request):
         e = iris.analysis.maths.log2(self.cube)
-        _shared_utils.assert_CML_approx_data(request, e, ("analysis", "log2.cml"))
+        _shared_utils.assert_CML(request, e, ("analysis", "log2.cml"), approx_data=True)
 
     def test_log10(self, request):
         e = iris.analysis.maths.log10(self.cube)
-        _shared_utils.assert_CML_approx_data(
-            request, e, ("analysis", "log10.cml"), rtol=1e-6
+        _shared_utils.assert_CML(
+            request, e, ("analysis", "log10.cml"), approx_data=True, rtol=1e-6
         )
 
 

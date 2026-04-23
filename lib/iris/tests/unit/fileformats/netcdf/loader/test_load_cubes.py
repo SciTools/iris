@@ -9,14 +9,6 @@ todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from pathlib import Path
-from shutil import rmtree
-import tempfile
-
 from cf_units import as_unit
 import numpy as np
 import pytest
@@ -27,17 +19,14 @@ from iris.fileformats.netcdf import logger
 from iris.fileformats.netcdf.loader import load_cubes
 from iris.loading import LOAD_PROBLEMS
 from iris.mesh import MeshCoord
+from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
-def setUpModule():
+@pytest.fixture(autouse=True, scope="module")
+def _setup(tmp_path_factory):
     global TMP_DIR
-    TMP_DIR = Path(tempfile.mkdtemp())
-
-
-def tearDownModule():
-    if TMP_DIR is not None:
-        rmtree(TMP_DIR)
+    TMP_DIR = tmp_path_factory.mktemp("temp")
 
 
 def cdl_to_nc(cdl):
@@ -47,7 +36,7 @@ def cdl_to_nc(cdl):
     return str(nc_path)
 
 
-class Tests(tests.IrisTest):
+class Tests:
     def test_ancillary_variables(self):
         # Note: using a CDL string as a test data reference, rather than a
         # binary file.
@@ -76,9 +65,9 @@ class Tests(tests.IrisTest):
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
         avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
+        assert len(avs) == 1
         expected = AncillaryVariable(
             np.ma.array([11.0, 12.0, 13.0]),
             long_name="refs",
@@ -86,7 +75,7 @@ class Tests(tests.IrisTest):
             units="1",
             attributes={"custom": "extra-attribute"},
         )
-        self.assertEqual(avs[0], expected)
+        assert avs[0] == expected
 
     def test_status_flags(self):
         # Note: using a CDL string as a test data reference, rather than a binary file.
@@ -115,9 +104,9 @@ class Tests(tests.IrisTest):
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
         avs = cubes[0].ancillary_variables()
-        self.assertEqual(len(avs), 1)
+        assert len(avs) == 1
         expected = AncillaryVariable(
             np.ma.array([1, 1, 2], dtype=np.int8),
             long_name="qq status_flag",
@@ -128,7 +117,7 @@ class Tests(tests.IrisTest):
                 "flag_meanings": "a b",
             },
         )
-        self.assertEqual(avs[0], expected)
+        assert avs[0] == expected
 
     def test_cell_measures(self):
         # Note: using a CDL string as a test data reference, rather than a binary file.
@@ -162,9 +151,9 @@ class Tests(tests.IrisTest):
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
         cms = cubes[0].cell_measures()
-        self.assertEqual(len(cms), 1)
+        assert len(cms) == 1
         expected = CellMeasure(
             np.ma.array([[110.0, 120.0, 130.0], [221.0, 231.0, 241.0]]),
             measure="area",
@@ -173,7 +162,7 @@ class Tests(tests.IrisTest):
             units="m2",
             attributes={"custom": "extra-attribute"},
         )
-        self.assertEqual(cms[0], expected)
+        assert cms[0] == expected
 
     def test_default_units(self):
         # Note: using a CDL string as a test data reference, rather than a binary file.
@@ -206,17 +195,17 @@ class Tests(tests.IrisTest):
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
-        self.assertEqual(len(cubes), 1)
-        self.assertEqual(cubes[0].units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("y").units, as_unit("unknown"))
-        self.assertEqual(cubes[0].coord("x").units, as_unit(1))
-        self.assertEqual(cubes[0].ancillary_variable("refs").units, as_unit("unknown"))
-        self.assertEqual(cubes[0].cell_measure("areas").units, as_unit("unknown"))
+        assert len(cubes) == 1
+        assert cubes[0].units == as_unit("unknown")
+        assert cubes[0].coord("y").units == as_unit("unknown")
+        assert cubes[0].coord("x").units == as_unit(1)
+        assert cubes[0].ancillary_variable("refs").units == as_unit("unknown")
+        assert cubes[0].cell_measure("areas").units == as_unit("unknown")
 
 
-class TestsMesh(tests.IrisTest):
+class TestsMesh:
     @classmethod
-    def setUpClass(cls):
+    def setup_class(cls):
         cls.ref_cdl = """
             netcdf mesh_test {
                 dimensions:
@@ -266,14 +255,15 @@ class TestsMesh(tests.IrisTest):
         cls.nc_path = cdl_to_nc(cls.ref_cdl)
         cls.mesh_cubes = list(load_cubes(cls.nc_path))
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Interim measure to allow pytest-style patching in the absence of
         #  full-scale pytest conversion.
         self.monkeypatch = pytest.MonkeyPatch()
 
     def test_standard_dims(self):
         for cube in self.mesh_cubes:
-            self.assertIsNotNone(cube.coords("levels"))
+            assert cube.coords("levels") is not None
 
     def test_mesh_coord(self):
         cube = [cube for cube in self.mesh_cubes if cube.var_name == "face_data"][0]
@@ -281,21 +271,21 @@ class TestsMesh(tests.IrisTest):
         face_y = cube.coord("latitude")
 
         for coord in (face_x, face_y):
-            self.assertIsInstance(coord, MeshCoord)
-            self.assertEqual("face", coord.location)
-            self.assertArrayEqual(np.ma.array([0.5]), coord.points)
+            assert isinstance(coord, MeshCoord)
+            assert "face" == coord.location
+            _shared_utils.assert_array_equal(np.ma.array([0.5]), coord.points)
 
-        self.assertEqual("x", face_x.axis)
-        self.assertEqual("y", face_y.axis)
-        self.assertEqual(face_x.mesh, face_y.mesh)
-        self.assertArrayEqual(np.ma.array([[0.0, 2.0, 1.0]]), face_x.bounds)
-        self.assertArrayEqual(np.ma.array([[0.0, 0.0, 1.0]]), face_y.bounds)
+        assert "x" == face_x.axis
+        assert "y" == face_y.axis
+        assert face_x.mesh == face_y.mesh
+        _shared_utils.assert_array_equal(np.ma.array([[0.0, 2.0, 1.0]]), face_x.bounds)
+        _shared_utils.assert_array_equal(np.ma.array([[0.0, 0.0, 1.0]]), face_y.bounds)
 
     def test_shared_mesh(self):
         cube_meshes = [cube.coord("latitude").mesh for cube in self.mesh_cubes]
-        self.assertEqual(cube_meshes[0], cube_meshes[1])
+        assert cube_meshes[0] == cube_meshes[1]
 
-    def test_missing_mesh(self):
+    def test_missing_mesh(self, caplog):
         ref_cdl = self.ref_cdl.replace(
             'face_data:mesh = "mesh"', 'face_data:mesh = "mesh2"'
         )
@@ -305,7 +295,9 @@ class TestsMesh(tests.IrisTest):
         _ = list(load_cubes(nc_path))
 
         log_regex = r".*could not be found in file."
-        with self.assertLogs(logger, level="DEBUG", msg_regex=log_regex):
+        with _shared_utils.assert_logs(
+            caplog, logger=logger, level="DEBUG", msg_regex=log_regex
+        ):
             _ = list(load_cubes(nc_path))
 
     def test_mesh_coord_not_built(self):

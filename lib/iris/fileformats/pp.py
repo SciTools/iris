@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides UK Met Office Post Process (PP) format specific capabilities."""
+"""Provides UK Met Office Post Process (PP) format specific capabilities.
+
+.. z_reference:: iris.fileformats.pp
+   :tags: topic_load_save
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 import collections
@@ -54,7 +60,7 @@ __all__ = [
     "save_pairs_from_cube",
 ]
 
-
+#: Standard spherical earth radius, as defined for MetOffice Unified Model.
 EARTH_RADIUS = 6371229.0
 
 

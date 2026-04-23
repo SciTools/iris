@@ -30,18 +30,13 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@pp-mo`_ added a new utility function for making a test cube with a specified 2D
-   horizontal grid.
-   (:issue:`5770`, :pull:`6581`)
+#. N/A
 
 
 🐛 Bugs Fixed
 =============
 
-#. `@trexfeathers`_ corrected the ESMF/ESMPy import in
-   :mod:`iris.experimental.regrid_conservative` (the module was renamed to ESMPy
-   in v8.4). Note that :mod:`~iris.experimental.regrid_conservative`
-   is already deprecated and will be removed in a future release. (:pull:`6643`)
+#. N/A
 
 
 💣 Incompatible Changes
@@ -65,24 +60,33 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
+   PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
 
 
 📚 Documentation
 ================
 
-#. `@rcomer`_ updated all Cartopy references to point to the new location at
-   https://cartopy.readthedocs.io (:pull:`6636`)
+#. `@trexfeathers`_ and `@tkknight`_ made the docs compatible with the latest
+   versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
 
 
 💼 Internal
 ===========
 
-#. `@trexfeathers`_ fixed benchmark result comparison to inspect the results
-   for the current machine only. This is useful for setups where a single
-   home-space is shared between multiple machines, as with some virtual desktop
-   arrangements. (:pull:`6550`)
+#. `@trexfeathers`_ altered the messaging for 'stale' issues and pull requests,
+   to reduce the negative connotations. We now use ``needs-checkin`` for the
+   initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
+   (:issue:`6993`, :pull:`7036`)
 
+#. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
+   Nox release ``2026.04.10`` (which adds more files to the environment parent
+   directory, breaking previous assumptions). (:pull:`7046`)
+
+
+#. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
+   except for mo_pack.
+   (:issue:`6832`, :pull:`6976`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,

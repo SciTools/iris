@@ -466,7 +466,7 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
             "LinearInterpolator",
             "basic_orthogonal_cube.cml",
         )
-        _shared_utils.assert_CML_approx_data(request, result_cube, result_path)
+        _shared_utils.assert_CML(request, result_cube, result_path, approx_data=True)
         assert result_cube.coord("longitude").dtype == np.int32
         assert result_cube.coord("height").dtype == np.int64
 
@@ -479,7 +479,7 @@ class Test___call___2D_non_contiguous(ThreeDimCube):
             "LinearInterpolator",
             "orthogonal_cube_1d_squashed.cml",
         )
-        _shared_utils.assert_CML_approx_data(request, result_cube, result_path)
+        _shared_utils.assert_CML(request, result_cube, result_path, approx_data=True)
         assert result_cube.coord("longitude").dtype == np.int32
         assert result_cube.coord("height").dtype == np.int64
 

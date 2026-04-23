@@ -4,17 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for aux-factory-related loading and saving netcdf files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
 
 import iris
+from iris.tests import _shared_utils
 from iris.tests import stock as stock
 
 
-@tests.skip_data
-class TestAtmosphereSigma(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestAtmosphereSigma:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Modify stock cube so it is suitable to have a atmosphere sigma
         # factory added to it.
         cube = stock.realistic_4d_no_derived()
@@ -33,23 +33,24 @@ class TestAtmosphereSigma(tests.IrisTest):
         cube.add_aux_factory(factory)
         self.cube = cube
 
-    def test_save(self):
-        with self.temp_filename(suffix=".nc") as filename:
-            iris.save(self.cube, filename)
-            self.assertCDL(filename)
+    def test_save(self, request, tmp_path):
+        filename = tmp_path / "fn.nc"
+        iris.save(self.cube, filename)
+        _shared_utils.assert_CDL(request, filename)
 
-    def test_save_load_loop(self):
+    def test_save_load_loop(self, tmp_path):
         # Ensure that the AtmosphereSigmaFactory is automatically loaded
         # when loading the file.
-        with self.temp_filename(suffix=".nc") as filename:
-            iris.save(self.cube, filename)
-            cube = iris.load_cube(filename, "air_potential_temperature")
-            assert cube.coords("air_pressure")
+        filename = tmp_path / "fn.nc"
+        iris.save(self.cube, filename)
+        cube = iris.load_cube(filename, "air_potential_temperature")
+        assert cube.coords("air_pressure")
 
 
-@tests.skip_data
-class TestHybridPressure(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestHybridPressure:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Modify stock cube so it is suitable to have a
         # hybrid pressure factory added to it.
         cube = stock.realistic_4d_no_derived()
@@ -66,29 +67,27 @@ class TestHybridPressure(tests.IrisTest):
         cube.add_aux_factory(factory)
         self.cube = cube
 
-    def test_save(self):
-        with self.temp_filename(suffix=".nc") as filename:
-            iris.save(self.cube, filename)
-            self.assertCDL(filename)
+    def test_save(self, request, tmp_path):
+        filename = tmp_path / "fn.nc"
+        iris.save(self.cube, filename)
+        _shared_utils.assert_CDL(request, filename)
 
-    def test_save_load_loop(self):
+    def test_save_load_loop(self, tmp_path):
         # Tests an issue where the variable names in the formula
         # terms changed to the standard_names instead of the variable names
         # when loading a previously saved cube.
-        with (
-            self.temp_filename(suffix=".nc") as filename,
-            self.temp_filename(suffix=".nc") as other_filename,
-        ):
-            iris.save(self.cube, filename)
-            cube = iris.load_cube(filename, "air_potential_temperature")
-            iris.save(cube, other_filename)
-            other_cube = iris.load_cube(other_filename, "air_potential_temperature")
-            self.assertEqual(cube, other_cube)
+        filename = tmp_path / "fn.nc"
+        other_filename = tmp_path / "ofn.nc"
+        iris.save(self.cube, filename)
+        cube = iris.load_cube(filename, "air_potential_temperature")
+        iris.save(cube, other_filename)
+        other_cube = iris.load_cube(other_filename, "air_potential_temperature")
+        assert cube == other_cube
 
 
-@tests.skip_data
-class TestSaveMultipleAuxFactories(tests.IrisTest):
-    def test_hybrid_height_and_pressure(self):
+@_shared_utils.skip_data
+class TestSaveMultipleAuxFactories:
+    def test_hybrid_height_and_pressure(self, request, tmp_path):
         cube = stock.realistic_4d()
         cube.add_aux_coord(
             iris.coords.DimCoord(1200.0, long_name="level_pressure", units="hPa")
@@ -105,11 +104,11 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
             cube.coord("surface_air_pressure"),
         )
         cube.add_aux_factory(factory)
-        with self.temp_filename(suffix=".nc") as filename:
-            iris.save(cube, filename)
-            self.assertCDL(filename)
+        filename = tmp_path / "fn.nc"
+        iris.save(cube, filename)
+        _shared_utils.assert_CDL(request, filename)
 
-    def test_shared_primary(self):
+    def test_shared_primary(self, tmp_path):
         cube = stock.realistic_4d()
         factory = iris.aux_factory.HybridHeightFactory(
             cube.coord("level_height"),
@@ -118,37 +117,29 @@ class TestSaveMultipleAuxFactories(tests.IrisTest):
         )
         factory.rename("another altitude")
         cube.add_aux_factory(factory)
-        with (
-            self.temp_filename(suffix=".nc") as filename,
-            self.assertRaisesRegex(ValueError, "multiple aux factories"),
-        ):
+        filename = tmp_path / "fn.nc"
+        with pytest.raises(ValueError, match="multiple aux factories"):
             iris.save(cube, filename)
 
-    def test_hybrid_height_cubes(self):
+    def test_hybrid_height_cubes(self, request, tmp_path):
         hh1 = stock.simple_4d_with_hybrid_height()
         hh1.attributes["cube"] = "hh1"
         hh2 = stock.simple_4d_with_hybrid_height()
         hh2.attributes["cube"] = "hh2"
         sa = hh2.coord("surface_altitude")
         sa.points = sa.points * 10
-        with self.temp_filename(".nc") as fname:
-            iris.save([hh1, hh2], fname)
-            cubes = iris.load(fname, "air_temperature")
-            cubes = sorted(cubes, key=lambda cube: cube.attributes["cube"])
-            self.assertCML(cubes)
+        filename = tmp_path / "fn.nc"
+        iris.save([hh1, hh2], filename)
+        cubes = iris.load(filename, "air_temperature")
+        cubes = sorted(cubes, key=lambda cube: cube.attributes["cube"])
+        _shared_utils.assert_CML(request, cubes)
 
-    def test_hybrid_height_cubes_on_dimension_coordinate(self):
+    def test_hybrid_height_cubes_on_dimension_coordinate(self, tmp_path):
         hh1 = stock.hybrid_height()
         hh2 = stock.hybrid_height()
         sa = hh2.coord("surface_altitude")
         sa.points = sa.points * 10
         emsg = "Unable to create dimensonless vertical coordinate."
-        with (
-            self.temp_filename(".nc") as fname,
-            self.assertRaisesRegex(ValueError, emsg),
-        ):
-            iris.save([hh1, hh2], fname)
-
-
-if __name__ == "__main__":
-    tests.main()
+        filename = tmp_path / "fn.nc"
+        with pytest.raises(ValueError, match=emsg):
+            iris.save([hh1, hh2], filename)

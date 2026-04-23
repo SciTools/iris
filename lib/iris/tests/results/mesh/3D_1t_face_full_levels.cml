@@ -14,37 +14,20 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="54e672a6" points="[ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.,
- 10., 11., 12., 13., 14., 15., 16., 17., 18., 19.,
- 20., 21., 22., 23., 24., 25., 26., 27., 28., 29.,
- 30., 31., 32., 33., 34., 35., 36., 37., 38.]" shape="(39,)" units="Unit('unknown')" value_type="float32" var_name="full_levels">
+        <dimCoord checksum="0x728d8742" id="54e672a6" points="[0., 1., 2., ..., 36., 37., 38.]" shape="(39,)" units="Unit('unknown')" value_type="float32" var_name="full_levels">
           <attributes>
             <attribute name="name" value="full_levels"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <meshCoord bounds="[[ 28.483465,  31.331442,  38.42684 ,  35.26439 ],
- [ 31.331442,  33.60502 ,  40.893394,  38.42684 ],
- [ 33.60502 ,  35.333504,  42.73421 ,  40.893394],
- ...,
- [-42.73421 , -40.893394, -46.161003, -48.911953],
- [-40.893394, -38.42684 , -42.66117 , -46.161003],
- [-38.42684 , -35.26439 , -38.42684 , -42.66117 ]]" id="72da1058" long_name="Characteristic latitude of mesh faces." points="[ 33.432835,  36.12256 ,  38.20116 , ...,
- -44.791004, -42.15829 , -38.815006]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_full_levels_face_y"/>
+        <meshCoord bounds="[28.48346519, 31.33144188, 38.42684174, ..., -35.26438904, -38.42684174, -42.66117096]" checksum="0x20acc81e" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[33.43283463, 36.12255859, 38.20116043, ..., -44.79100418, -42.15829086, -38.81500626]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_full_levels_face_y"/>
       </coord>
       <coord datadims="[2]">
-        <meshCoord bounds="[[ -45.     ,  -37.5    ,  -37.5    ,  -45.     ],
- [ -37.5    ,  -30.     ,  -30.     ,  -37.5    ],
- [ -30.     ,  -22.5    ,  -22.5    ,  -30.     ],
- ...,
- [-112.5    , -120.     , -126.95844, -118.36078],
- [-120.     , -127.5    , -135.     , -126.95844],
- [-127.5    , -135.     , -142.5    , -135.     ]]" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." points="[ -41.31521 ,  -33.80677 ,  -26.29605 , ...,
- -119.376945, -127.321014, -135.      ]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_full_levels_face_x"/>
+        <meshCoord bounds="[-45., -37.5, -37.5, ..., -135., -142.5, -135.]" checksum="0x1037ec45" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[-41.31520844, -33.80677032, -26.29604912, ..., -119.3769455, -127.3210144, -135.]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_full_levels_face_x"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[21600., 21600.]]" id="17a27d05" long_name="Time axis" points="[21600.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='standard')" value_type="float64" var_name="time_instant">
+        <auxCoord bounds="[21600., 21600.]" checksum="0xfd845d6b" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[21600.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='standard')" value_type="float64" var_name="time_instant">
           <attributes>
             <attribute name="time_origin" value="2016-01-01 15:00:00"/>
           </attributes>

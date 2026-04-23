@@ -61,7 +61,7 @@ def test_warning(time_coord, future_date_microseconds):
 
 @pytest.mark.parametrize(
     "indexing",
-    (np.s_[0], np.s_[:], np.s_[:, np.newaxis]),
+    [np.s_[0], np.s_[:], np.s_[:, np.newaxis]],
     ids=("single", "array", "array_2d"),
 )
 def test_num2date(time_coord, future_date_microseconds, indexing):

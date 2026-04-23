@@ -25,57 +25,20 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[  0.,  50.],
- [ 50., 100.],
- [100., 150.],
- [150., 200.],
- [200., 250.],
- [250., 300.],
- [300., 350.],
- [350., 400.],
- [400., 450.],
- [450., 500.]]" id="28673685" long_name="altitude above sea level" points="[ 25.,  75., 125., 175., 225., 275., 325., 375.,
- 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[0., 50., 50., ..., 450., 450., 500.]" checksum="0xa6a31e57" id="28673685" long_name="altitude above sea level" points="[25., 75., 125., ..., 375., 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="77a50eb5" points="[51.0214]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x493048d6" id="77a50eb5" points="[51.0214]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="f913a8b3" points="[-3.09994]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x9385d31f" id="f913a8b3" points="[-3.09994]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[402912., 402913.],
- [402913., 402914.],
- [402914., 402915.],
- [402915., 402916.],
- [402916., 402917.],
- [402917., 402918.],
- [402918., 402919.],
- [402919., 402920.],
- [402920., 402921.],
- [402921., 402922.],
- [402922., 402923.],
- [402923., 402924.],
- [402924., 402925.],
- [402925., 402926.],
- [402926., 402927.],
- [402927., 402928.],
- [402928., 402929.],
- [402929., 402930.],
- [402930., 402931.],
- [402931., 402932.],
- [402932., 402933.],
- [402933., 402934.],
- [402934., 402935.],
- [402935., 402936.]]" id="cb784457" points="[402913., 402914., 402915., 402916., 402917.,
- 402918., 402919., 402920., 402921., 402922.,
- 402923., 402924., 402925., 402926., 402927.,
- 402928., 402929., 402930., 402931., 402932.,
- 402933., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[402912., 402913., 402913., ..., 402935., 402935., 402936.]" checksum="0x9fc8064c" id="cb784457" points="[402913., 402914., 402915., ..., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -106,57 +69,20 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[  0.,  50.],
- [ 50., 100.],
- [100., 150.],
- [150., 200.],
- [200., 250.],
- [250., 300.],
- [300., 350.],
- [350., 400.],
- [400., 450.],
- [450., 500.]]" id="28673685" long_name="altitude above sea level" points="[ 25.,  75., 125., 175., 225., 275., 325., 375.,
- 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[0., 50., 50., ..., 450., 450., 500.]" checksum="0xa6a31e57" id="28673685" long_name="altitude above sea level" points="[25., 75., 125., ..., 375., 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="77a50eb5" points="[50.711]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0xd1ab24d0" id="77a50eb5" points="[50.711]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="f913a8b3" points="[-3.4991]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0xc8e0fdb1" id="f913a8b3" points="[-3.4991]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[402912., 402913.],
- [402913., 402914.],
- [402914., 402915.],
- [402915., 402916.],
- [402916., 402917.],
- [402917., 402918.],
- [402918., 402919.],
- [402919., 402920.],
- [402920., 402921.],
- [402921., 402922.],
- [402922., 402923.],
- [402923., 402924.],
- [402924., 402925.],
- [402925., 402926.],
- [402926., 402927.],
- [402927., 402928.],
- [402928., 402929.],
- [402929., 402930.],
- [402930., 402931.],
- [402931., 402932.],
- [402932., 402933.],
- [402933., 402934.],
- [402934., 402935.],
- [402935., 402936.]]" id="cb784457" points="[402913., 402914., 402915., 402916., 402917.,
- 402918., 402919., 402920., 402921., 402922.,
- 402923., 402924., 402925., 402926., 402927.,
- 402928., 402929., 402930., 402931., 402932.,
- 402933., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[402912., 402913., 402913., ..., 402935., 402935., 402936.]" checksum="0x9fc8064c" id="cb784457" points="[402913., 402914., 402915., ..., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -187,57 +113,20 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[  0.,  50.],
- [ 50., 100.],
- [100., 150.],
- [150., 200.],
- [200., 250.],
- [250., 300.],
- [300., 350.],
- [350., 400.],
- [400., 450.],
- [450., 500.]]" id="28673685" long_name="altitude above sea level" points="[ 25.,  75., 125., 175., 225., 275., 325., 375.,
- 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[0., 50., 50., ..., 450., 450., 500.]" checksum="0xa6a31e57" id="28673685" long_name="altitude above sea level" points="[25., 75., 125., ..., 375., 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="77a50eb5" points="[51.46841]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0xb2014be9" id="77a50eb5" points="[51.46841]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="f913a8b3" points="[-2.730792]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x36120eae" id="f913a8b3" points="[-2.730792]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[402912., 402913.],
- [402913., 402914.],
- [402914., 402915.],
- [402915., 402916.],
- [402916., 402917.],
- [402917., 402918.],
- [402918., 402919.],
- [402919., 402920.],
- [402920., 402921.],
- [402921., 402922.],
- [402922., 402923.],
- [402923., 402924.],
- [402924., 402925.],
- [402925., 402926.],
- [402926., 402927.],
- [402927., 402928.],
- [402928., 402929.],
- [402929., 402930.],
- [402930., 402931.],
- [402931., 402932.],
- [402932., 402933.],
- [402933., 402934.],
- [402934., 402935.],
- [402935., 402936.]]" id="cb784457" points="[402913., 402914., 402915., 402916., 402917.,
- 402918., 402919., 402920., 402921., 402922.,
- 402923., 402924., 402925., 402926., 402927.,
- 402928., 402929., 402930., 402931., 402932.,
- 402933., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[402912., 402913., 402913., ..., 402935., 402935., 402936.]" checksum="0x9fc8064c" id="cb784457" points="[402913., 402914., 402915., ..., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -268,57 +157,20 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[  0.,  50.],
- [ 50., 100.],
- [100., 150.],
- [150., 200.],
- [200., 250.],
- [250., 300.],
- [300., 350.],
- [350., 400.],
- [400., 450.],
- [450., 500.]]" id="28673685" long_name="altitude above sea level" points="[ 25.,  75., 125., 175., 225., 275., 325., 375.,
- 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
+        <dimCoord bounds="[0., 50., 50., ..., 450., 450., 500.]" checksum="0xa6a31e57" id="28673685" long_name="altitude above sea level" points="[25., 75., 125., ..., 375., 425., 475.]" shape="(10,)" standard_name="altitude" units="Unit('m')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="77a50eb5" points="[52.27939]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x30ab2e90" id="77a50eb5" points="[52.27939]" shape="(1,)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="f913a8b3" points="[-1.597874]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+        <dimCoord checksum="0x27584ad0" id="f913a8b3" points="[-1.597874]" shape="(1,)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[402912., 402913.],
- [402913., 402914.],
- [402914., 402915.],
- [402915., 402916.],
- [402916., 402917.],
- [402917., 402918.],
- [402918., 402919.],
- [402919., 402920.],
- [402920., 402921.],
- [402921., 402922.],
- [402922., 402923.],
- [402923., 402924.],
- [402924., 402925.],
- [402925., 402926.],
- [402926., 402927.],
- [402927., 402928.],
- [402928., 402929.],
- [402929., 402930.],
- [402930., 402931.],
- [402931., 402932.],
- [402932., 402933.],
- [402933., 402934.],
- [402934., 402935.],
- [402935., 402936.]]" id="cb784457" points="[402913., 402914., 402915., 402916., 402917.,
- 402918., 402919., 402920., 402921., 402922.,
- 402923., 402924., 402925., 402926., 402927.,
- 402928., 402929., 402930., 402931., 402932.,
- 402933., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+        <dimCoord bounds="[402912., 402913., 402913., ..., 402935., 402935., 402936.]" checksum="0x9fc8064c" id="cb784457" points="[402913., 402914., 402915., ..., 402934., 402935., 402936.]" shape="(24,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Module to support the saving of Iris cubes to a NetCDF file.
 
+.. z_reference:: iris.fileformats.netcdf.saver
+   :tags: topic_load_save
+
+   API reference
+
 Module to support the saving of Iris cubes to a NetCDF file, also using the CF
 conventions for metadata interpretation.
 
@@ -500,7 +505,7 @@ class Saver:
             Used to manually specify the HDF5 chunksizes for each dimension of
             the variable. A detailed discussion of HDF chunking and I/O
             performance is available
-            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/netcdf_perf_chunking.html>`__.
+            `here <https://docs.unidata.ucar.edu/nug/current/netcdf_perf_chunking.html>`__.
             Basically, you want the chunk size for each dimension to match
             as closely as possible the size of the data block that users will
             read from the file. `chunksizes` cannot be set if `contiguous=True`.
@@ -529,7 +534,7 @@ class Saver:
             describes a numpy integer dtype(i.e. 'i2', 'short', 'u4') or a
             dict of packing parameters as described below. This provides
             support for netCDF data packing as described
-            `here <https://www.unidata.ucar.edu/software/netcdf/documentation/NUG/best_practices.html#bp_Packed-Data-Values>`__.
+            `here <https://docs.unidata.ucar.edu/nug/current/best_practices.html#bp_Best_Practices>`__.
             If this argument is a type (or type string), appropriate values of
             scale_factor and add_offset will be automatically calculated based
             on `cube.data` and possible masking. For more control, pass a dict
@@ -587,11 +592,6 @@ class Saver:
         all_dimensions = mesh_dimensions + nonmesh_dimensions
         self._create_cf_dimensions(cube, all_dimensions, unlimited_dimensions)
 
-        # Create the mesh components, if there is a mesh.
-        # We do this before creating the data-var, so that mesh vars precede
-        # data-vars in the file.
-        cf_mesh_name = self._add_mesh(cube)
-
         # Group the generic compression keyword arguments together for
         # convenience, as they will be applied to other cube metadata
         # as well as the cube data payload.
@@ -601,6 +601,11 @@ class Saver:
             "shuffle": shuffle,
             "zlib": zlib,
         }
+
+        # Create the mesh components, if there is a mesh.
+        # We do this before creating the data-var, so that mesh vars precede
+        # data-vars in the file.
+        cf_mesh_name = self._add_mesh(cube, compression_kwargs=compression_kwargs)
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
@@ -772,7 +777,7 @@ class Saver:
                     size = self._existing_dim[dim_name]
                 self._dataset.createDimension(dim_name, size)
 
-    def _add_mesh(self, cube_or_mesh):
+    def _add_mesh(self, cube_or_mesh, /, *, compression_kwargs=None):
         """Add the cube's mesh, and all related variables to the dataset.
 
         Add the cube's mesh, and all related variables to the dataset.
@@ -787,6 +792,8 @@ class Saver:
         ----------
         cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
             The Cube or Mesh being saved to the netCDF file.
+        compression_kwargs : dict, optional
+            NetCDF data compression keyword arguments.
 
         Returns
         -------
@@ -801,10 +808,8 @@ class Saver:
         from iris.cube import Cube
 
         if isinstance(cube_or_mesh, Cube):
-            cube = cube_or_mesh
-            mesh = cube.mesh
+            mesh = cube_or_mesh.mesh
         else:
-            cube = None  # The underlying routines must support this !
             mesh = cube_or_mesh
 
         if mesh:
@@ -830,10 +835,11 @@ class Saver:
                             if coord is None:
                                 continue  # an awkward thing that mesh.coords does
                             coord_name = self._create_generic_cf_array_var(
-                                cube_or_mesh,
+                                mesh,
                                 [],
                                 coord,
                                 element_dims=(mesh_dims[location],),
+                                compression_kwargs=compression_kwargs,
                             )
                             # Only created once per file, but need to fetch the
                             #  name later in _add_inner_related_vars().
@@ -878,11 +884,12 @@ class Saver:
                     else:
                         fill_value = None
                     cf_conn_name = self._create_generic_cf_array_var(
-                        cube_or_mesh,
+                        mesh,
                         [],
                         conn,
                         element_dims=conn_dims,
                         fill_value=fill_value,
+                        compression_kwargs=compression_kwargs,
                     )
                     # Add essential attributes to the Connectivity variable.
                     cf_conn_var = self._dataset.variables[cf_conn_name]
@@ -1757,7 +1764,7 @@ class Saver:
             An Iris :class:`iris.coords._DimensionalMetadata`, belonging to the
             cube.  Provides data, units and standard/long/var names.
             Not used if 'element_dims' is not None.
-        element_dims : list of str, optionsl
+        element_dims : list of str, optional
             If set, contains the variable dimension (names),
             otherwise these are taken from `element.cube_dims[cube]`.
             For Mesh components (element coordinates and connectivities), this
@@ -1793,7 +1800,7 @@ class Saver:
         while cf_name in self._dataset.variables:
             cf_name = self._increment_name(cf_name)
 
-        if element_dims is None:
+        if cube and element_dims is None:
             # Get the list of file-dimensions (names), to create the variable.
             element_dims = [
                 cube_dim_names[dim] for dim in element.cube_dims(cube)
@@ -1804,7 +1811,8 @@ class Saver:
         # (e.g. =points if a coord, =data if an ancillary, etc)
         data = element._core_values()
 
-        if cube is None or cube.shape != data.shape:
+        # This compression contract is *not* applicable to a mesh.
+        if cube and cube.shape != data.shape:
             compression_kwargs = {}
 
         if np.issubdtype(data.dtype, np.str_):
@@ -2272,6 +2280,10 @@ class Saver:
             if grid_mapping:
                 _setncattr(cf_var_cube, "grid_mapping", grid_mapping)
 
+    _DATALESS_ATTRNAME = "iris_dataless_cube"
+    _DATALESS_DTYPE = np.dtype("u1")
+    _DATALESS_FILLVALUE = 127
+
     def _create_cf_data_variable(
         self,
         cube,
@@ -2312,9 +2324,19 @@ class Saver:
         # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
         # be removed.
         # Get the values in a form which is valid for the file format.
-        data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
+        is_dataless = cube.is_dataless()
+        if is_dataless:
+            data = None
+        else:
+            data = self._ensure_valid_dtype(cube.core_data(), "cube", cube)
 
-        if packing:
+        if is_dataless:
+            # The variable must have *some* dtype, and it must be maskable
+            dtype = self._DATALESS_DTYPE
+            fill_value = self._DATALESS_FILLVALUE
+        elif not packing:
+            dtype = data.dtype.newbyteorder("=")
+        else:
             if isinstance(packing, dict):
                 if "dtype" not in packing:
                     msg = "The dtype attribute is required for packing."
@@ -2352,8 +2374,6 @@ class Saver:
                         add_offset = (cmax + cmin) / 2
                     else:
                         add_offset = cmin + 2 ** (n - 1) * scale_factor
-        else:
-            dtype = data.dtype.newbyteorder("=")
 
         def set_packing_ncattrs(cfvar):
             """Set netCDF packing attributes.
@@ -2377,8 +2397,9 @@ class Saver:
             cf_name, dtype, dimension_names, fill_value=fill_value, **kwargs
         )
 
-        set_packing_ncattrs(cf_var)
-        self._lazy_stream_data(data=data, cf_var=cf_var)
+        if not is_dataless:
+            set_packing_ncattrs(cf_var)
+            self._lazy_stream_data(data=data, cf_var=cf_var)
 
         if cube.standard_name:
             _setncattr(cf_var, "standard_name", cube.standard_name)
@@ -2442,6 +2463,10 @@ class Saver:
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
 
             _setncattr(cf_var, attr_name, value)
+
+        # Add the 'dataless' marker if needed
+        if is_dataless:
+            _setncattr(cf_var, self._DATALESS_ATTRNAME, "true")
 
         # Create the CF-netCDF data variable cell method attribute.
         cell_methods = self._create_cf_cell_methods(cube, dimension_names)
@@ -2785,13 +2810,7 @@ def save(
         # Fnd any global attributes which are not the same on *all* cubes.
         def attr_values_equal(val1, val2):
             # An equality test which also works when some values are numpy arrays (!)
-            # As done in :meth:`iris.common.mixin.LimitedAttributeDict.__eq__`.
-            match = val1 == val2
-            try:
-                match = bool(match)
-            except ValueError:
-                match = match.all()
-            return match
+            return iris.util._attribute_equal(val1, val2)
 
         cube0 = cubes[0]
         invalid_globals = set(
@@ -2878,7 +2897,9 @@ def save(
             common_keys.intersection_update(keys)
             different_value_keys = []
             for key in common_keys:
-                if np.any(attributes[key] != cube.attributes[key]):
+                if not iris.util._attribute_equal(
+                    attributes[key], cube.attributes[key]
+                ):
                     different_value_keys.append(key)
             common_keys.difference_update(different_value_keys)
             local_keys.update(different_value_keys)
@@ -2997,7 +3018,17 @@ def save(
     return result
 
 
-def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
+def save_mesh(
+    mesh,
+    filename,
+    /,
+    *,
+    complevel=4,
+    fletcher32=False,
+    netcdf_format="NETCDF4",
+    shuffle=True,
+    zlib=False,
+):
     """Save mesh(es) to a netCDF file.
 
     Parameters
@@ -3006,15 +3037,36 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
         Mesh(es) to save.
     filename : str
         Name of the netCDF file to create.
+    complevel : int, default=4
+        An integer between 1 and 9 describing the level of compression
+        desired. Ignored if ``zlib=False``.
+    fletcher32 : bool, default=False
+        If ``True``, the Fletcher32 HDF5 checksum algorithm is activated to
+        detect errors.
     netcdf_format : str, default="NETCDF4"
-        Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
-        'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
+        Underlying netCDF file format, one of ``NETCDF4``, ``NETCDF4_CLASSIC``,
+        ``NETCDF3_CLASSIC`` or ``NETCDF3_64BIT``. Default is ``NETCDF4`` format.
+    shuffle : bool, default=True
+        If ``True``, the HDF5 shuffle filter will be applied before
+        compressing the data. This significantly improves compression.
+        Ignored if ``zlib=False``.
+    zlib : bool, default=False
+        If ``True``, the data will be compressed in the netCDF file using
+        gzip compression.
 
     """
     if isinstance(mesh, typing.Iterable):
         meshes = mesh
     else:
         meshes = [mesh]
+
+    # Group the generic compression keyword arguments together.
+    compression_kwargs = {
+        "complevel": complevel,
+        "fletcher32": fletcher32,
+        "shuffle": shuffle,
+        "zlib": zlib,
+    }
 
     # Initialise Manager for saving
     with Saver(filename, netcdf_format) as sman:
@@ -3027,7 +3079,7 @@ def save_mesh(mesh, filename, netcdf_format="NETCDF4"):
             sman._create_cf_dimensions(cube=None, dimension_names=mesh_dimensions)
 
             # Create the mesh components.
-            sman._add_mesh(mesh)
+            sman._add_mesh(mesh, compression_kwargs=compression_kwargs)
 
         # Add a conventions attribute.
         # TODO: add 'UGRID' to conventions, when this is agreed with CF ?

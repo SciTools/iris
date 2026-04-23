@@ -1,8 +1,3 @@
-/* import the standard theme css */
-@import url("styles/theme.css");
-
-/* now we can add custom css.... */
-
 /* Used for very strong warning */
 #slim-red-box-banner {
   background: #ff0000;
@@ -25,4 +20,33 @@ ul.squarelist {
   margin-left: 0;
   text-indent: 1em;
   padding-left: 5em;
+}
+
+/* custom css for the cards on the homepage */
+.sd-card-img-top {
+    width: 15% !important;
+    position: absolute !important;
+    padding-left: 10px;
+    min-width: 50px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.sd-card-img {
+    height: auto;
+}
+
+.custom-title {
+    font-weight: bold;
+    color: #1B8FB7 !important;
+    text-align: left;
+}
+
+.custom-body {
+    text-align: left;
+    padding-left:  max(45px, 20%) !important;
+}
+
+.center {
+    text-align: center;
 }

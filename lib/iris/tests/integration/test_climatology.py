@@ -4,25 +4,20 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from os.path import dirname
-from os.path import join as path_join
 from os.path import sep as os_sep
-import shutil
-import tempfile
+
+import pytest
 
 import iris
-from iris.tests import stock
+from iris.tests import _shared_utils, stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
-class TestClimatology(tests.IrisTest):
+class TestClimatology:
     reference_cdl_path = os_sep.join(
         [
-            dirname(tests.__file__),
+            dirname(iris.tests.__file__),
             (
                 "results/integration/climatology/TestClimatology/"
                 "reference_simpledata.cdl"
@@ -51,12 +46,13 @@ class TestClimatology(tests.IrisTest):
         cube.var_name = None
         return cube
 
-    @classmethod
-    def setUpClass(cls):
+    @pytest.fixture(autouse=True, scope="class")
+    def _setup(self, request, tmp_path_factory):
         # Create a temp directory for temp files.
-        cls.temp_dir = tempfile.mkdtemp()
-        cls.path_ref_cdl = path_join(cls.temp_dir, "standard.cdl")
-        cls.path_ref_nc = path_join(cls.temp_dir, "standard.nc")
+        cls = request.cls
+        cls.temp_dir = tmp_path_factory.mktemp("temp")
+        cls.path_ref_cdl = cls.temp_dir / "standard.cdl"
+        cls.path_ref_nc = cls.temp_dir / "standard.nc"
         # Create reference CDL and netcdf files (with ncgen).
         ncgen_from_cdl(
             cdl_str=cls._simple_cdl_string(),
@@ -64,15 +60,10 @@ class TestClimatology(tests.IrisTest):
             nc_path=cls.path_ref_nc,
         )
 
-        cls.path_temp_nc = path_join(cls.temp_dir, "tmp.nc")
+        cls.path_temp_nc = cls.temp_dir / "tmp.nc"
 
         # Create reference cube.
         cls.cube_ref = stock.climatology_3d()
-
-    @classmethod
-    def tearDownClass(cls):
-        # Destroy a temp directory for temp files.
-        shutil.rmtree(cls.temp_dir)
 
     ###############################################################################
     # Round-trip tests
@@ -82,14 +73,15 @@ class TestClimatology(tests.IrisTest):
         # reference cube.
         iris.save(self.cube_ref, self.path_temp_nc)
         cube = self._load_sanitised_cube(self.path_temp_nc)
-        self.assertEqual(cube, self.cube_ref)
+        assert cube == self.cube_ref
 
-    def test_file_to_file(self):
+    def test_file_to_file(self, request):
         # Load cube from reference file, save same cube to file, test against
         # reference CDL.
         cube = iris.load_cube(self.path_ref_nc)
         iris.save(cube, self.path_temp_nc)
-        self.assertCDL(
+        _shared_utils.assert_CDL(
+            request,
             self.path_temp_nc,
             reference_filename=self.reference_cdl_path,
             flags="",
@@ -105,8 +97,4 @@ class TestClimatology(tests.IrisTest):
     def test_load_from_file(self):
         # Create cube from file, test against reference cube.
         cube = self._load_sanitised_cube(self.path_ref_nc)
-        self.assertEqual(cube, self.cube_ref)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert cube == self.cube_ref

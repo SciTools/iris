@@ -7,20 +7,15 @@ build_sterographic_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import Stereographic
 from iris.fileformats._nc_load_rules.helpers import (
     build_stereographic_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestBuildStereographicCoordinateSystem(tests.IrisTest):
+class TestBuildStereographicCoordinateSystem(MockerMixin):
     def _test(self, inverse_flattening=False, no_offsets=False):
         test_easting = -100
         test_northing = 200
@@ -49,7 +44,7 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             test_easting = 0
             test_northing = 0
 
-        cf_grid_var = mock.Mock(spec=[], **gridvar_props)
+        cf_grid_var = self.mocker.Mock(spec=[], **gridvar_props)
 
         cs = build_stereographic_coordinate_system(None, cf_grid_var)
 
@@ -62,7 +57,7 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
             ellipsoid=expected_ellipsoid,
         )
 
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
     def test_basic(self):
         self._test()
@@ -74,7 +69,3 @@ class TestBuildStereographicCoordinateSystem(tests.IrisTest):
     def test_no_offsets(self):
         # Check when false_easting/northing attributes are absent.
         self._test(no_offsets=True)
-
-
-if __name__ == "__main__":
-    tests.main()

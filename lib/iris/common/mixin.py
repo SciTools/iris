@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides common metadata mixin behaviour."""
+"""Provides common metadata mixin behaviour.
+
+.. z_reference:: iris.common.mixin
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from __future__ import annotations
 
@@ -115,6 +121,9 @@ class LimitedAttributeDict(dict):
         match = set(self.keys()) == set(other.keys())
         if match:
             for key, value in self.items():
+                # TODO: should this use the iris.common.metadata approach of
+                #  using hexdigest? Might be a breaking change for some corner
+                #  cases, so would need a major release.
                 match = np.array_equal(
                     np.array(value, ndmin=1), np.array(other[key], ndmin=1)
                 )

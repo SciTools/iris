@@ -20,7 +20,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v4
+    - uses: actions/cache@v5
       id: cartopy-cache
       with:
         path: ~/.local/share/cartopy

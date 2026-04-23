@@ -6,7 +6,6 @@
 
 from typing import ClassVar
 
-from geovista import Transform
 import numpy as np
 import pytest
 
@@ -67,8 +66,8 @@ class ParentClass:
 
     @pytest.fixture
     def mocked_operation(self, mocker):
-        mocking = mocker.Mock()
-        setattr(Transform, self.MOCKED_OPERATION, mocking)
+        target = f"geovista.Transform.{self.MOCKED_OPERATION}"
+        mocking = mocker.patch(target, mocker.Mock())
         return mocking
 
     @staticmethod

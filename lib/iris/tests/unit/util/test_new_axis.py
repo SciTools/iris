@@ -18,7 +18,7 @@ from iris.util import new_axis
 
 
 class Test:
-    @pytest.fixture()
+    @pytest.fixture
     def stock_cube(self):
         cube = stock.simple_2d_w_cell_measure_ancil_var()
         time = iris.coords.DimCoord([1], standard_name="time")
