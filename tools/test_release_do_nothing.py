@@ -915,14 +915,14 @@ class TestUpdateCondaForge:
         RC_ARCHIVE = "Archive the rc-original branch"
         CHECKOUT = "Checkout a new branch for the conda-forge"
 
-        UPDATE = re.escape("Update ./recipe/meta.yaml:") + ".*unsure\.$"
-        UPDATE_NOT_LATEST = re.escape("Update ./recipe/meta.yaml:") + ".*unsure\..*{version} is not the latest Iris release"
+        UPDATE = re.escape("Update ./recipe/meta.yaml:") + r".*unsure\.$"
+        UPDATE_NOT_LATEST = re.escape("Update ./recipe/meta.yaml:") + r".*unsure\..*{version} is not the latest Iris release"
 
         PUSH = "push up the changes to prepare for a Pull Request"
         PR = "Create a Pull Request for your changes"
 
-        AUTO = "Follow the automatic conda-forge guidance.*Pull Request\.$"
-        AUTO_RC = "Follow the automatic conda-forge guidance.*Pull Request\..*release candidate"
+        AUTO = r"Follow the automatic conda-forge guidance.*Pull Request\.$"
+        AUTO_RC = r"Follow the automatic conda-forge guidance.*Pull Request\..*release candidate"
 
         MAINTAINERS = "Work with your fellow feedstock maintainers"
         CI = "wait for the CI to complete"
@@ -1147,8 +1147,8 @@ class TestMergeBack:
         MERGE_IN = "Merge in the commits from {branch}"
         TEMPLATE = "Recreate the What's New template"
         LATEST = "Recreate the What's New latest"
-        GUIDANCE = "Follow any guidance in .*latest\.rst"
-        INDEX = "Add .*latest\.rst to the top of the list"
+        GUIDANCE = r"Follow any guidance in .*latest\.rst"
+        INDEX = r"Add .*latest\.rst to the top of the list"
         PUSH = "Commit and push all the What's New changes"
         PR = "Create a Pull Request for your changes"
         RISKY = "COMBINING BRANCHES CAN BE RISKY"
