@@ -1009,7 +1009,8 @@ class IrisRelease(Progress):
         if self.is_release_candidate:
             readme_url = f"https://github.com/{self.github_user}/iris-feedstock/blob/{self.version}/README.md"
             rc_evidence = (
-                "\n\nConfirm that conda-forge knows your changes are for the "
+                "\n\nAfter conda-forge has committed the re-render: "
+                "confirm that conda-forge knows your changes are for the "
                 "release candidate channel by checking the below README file. "
                 "This should make multiple references to the `rc_iris` label:\n"
                 f"{readme_url}"
