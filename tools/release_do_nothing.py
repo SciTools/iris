@@ -1199,7 +1199,6 @@ class IrisRelease(Progress):
                 "Recreate the What's New latest from the template:\n"
                 f"cp {self.whats_news.template.absolute()} "
                 f"{self.whats_news.latest.absolute()};\n"
-                f"git add {self.whats_news.latest.absolute()};\n"
             )
             self.wait_for_done(message)
 
@@ -1220,6 +1219,7 @@ class IrisRelease(Progress):
 
             message = (
                 "Commit and push all the What's New changes.\n"
+                f"git add {self.whats_news.latest.absolute()};\n"
                 f"git add {self.whats_news.index_.absolute()};\n"
                 'git commit -m "Restore latest Whats-New files.";\n'
                 f"git push -u {self.github_fork} {working_branch};"
