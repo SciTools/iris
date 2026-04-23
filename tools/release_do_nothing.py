@@ -846,9 +846,9 @@ class IrisRelease(Progress):
             return result
 
         message = (
-            f"Visit the below and click `view details` for the Source Distribution"
+            f"Visit the below to view the details for the Source Distribution"
             f"(`.tar.gz`):\n"
-            f"https://pypi.org/project/scitools-iris/{self.version.public}#files\n"
+            f"https://pypi.org/project/scitools-iris/{self.version.public}##scitools_iris-{self.version.public}.tar.gz\n"
         )
         self.set_value_from_input(
             key="sha256",
