@@ -340,7 +340,7 @@ class IrisRelease(Progress):
             match patch_branch:
                 case self.version.branch:
                     message = (
-                        "The patch change(s) are on the ideal branch to avoid later"
+                        "The patch change(s) are on the ideal branch to avoid later "
                         f"Git conflicts: {self.version.branch} . Continue ..."
                     )
                 case "":
