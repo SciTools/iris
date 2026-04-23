@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Tests for the ``release_do_nothing.py`` file."""
 import enum
-from datetime import datetime
 from pathlib import Path
 import re
 from typing import Any, NamedTuple

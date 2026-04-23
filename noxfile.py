@@ -180,6 +180,7 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("git+https://github.com/SciTools-incubator/nothing.git")
     session.env.update(ENV)
     run_args = [
         "pytest",
