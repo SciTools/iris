@@ -1097,7 +1097,7 @@ class IrisRelease(Progress):
             "notes:\n\n"
             f"https://scitools-iris.readthedocs.io/en/{self.version}/\n"
             f"https://pypi.org/project/scitools-iris/{self.version.public}/\n"
-            f"https://anaconda.org/conda-forge/iris?version={self.version.public}\n"
+            f"https://anaconda.org/channels/conda-forge/packages/iris/files?file_q={self.version.public}\n"
         )
         self.wait_for_done(message)
 
