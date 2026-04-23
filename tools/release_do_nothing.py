@@ -107,7 +107,7 @@ class IrisRelease(Progress):
             for parts in remotes_split
         ]
 
-        scitools_regex = re.compile(r"github\.com[:/]SciTools/iris\.git")
+        scitools_regex = re.compile(r"github\.com[:/]SciTools/iris")
         self.github_scitools = [
             r.name for r in remotes
             if r.fetch and scitools_regex.search(r.url)
