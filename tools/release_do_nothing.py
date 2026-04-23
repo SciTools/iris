@@ -1269,7 +1269,7 @@ class IrisRelease(Progress):
                 def run(self):
                     pass
 
-            next_patch_kwargs = self.state | dict(
+            next_patch_kwargs = self.__getstate__() | dict(
                 git_tag=str(next_patch),
                 sha256=None,
                 latest_complete_step=NextPatch.get_steps().index(NextPatch.validate) - 1,
