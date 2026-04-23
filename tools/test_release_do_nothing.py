@@ -101,9 +101,9 @@ class TestIrisVersion:
         expecteds = {"9.0.0": "v9.0.0", "9.0.1": "v9.0.1", "9.1.0": "v9.1.0"}
         assert str(self.version) == expecteds[self.input_str]
 
-    def test_series(self):
+    def test_minor_series(self):
         expecteds = {"9.0.0": "v9.0", "9.0.1": "v9.0", "9.1.0": "v9.1"}
-        assert self.version.series == expecteds[self.input_str]
+        assert self.version.minor_series == expecteds[self.input_str]
 
     def test_branch(self):
         expecteds = {"9.0.0": "v9.0.x", "9.0.1": "v9.0.x", "9.1.0": "v9.1.x"}
@@ -181,8 +181,8 @@ class TestProperties:
         expecteds = {
             "8.1.0": False,     # Not a PATCH release.
             "8.1.1": True,      # 9.0.0 still to patch.
-            "9.0.1": False,     # Last PATCH in series.
-            "9.1.1": False,     # Beyond max series.
+            "9.0.1": False,     # Last PATCH in minor_series.
+            "9.1.1": False,     # Beyond max minor_series.
         }
         expected = expecteds[git_tag]
         self.instance.git_tag = git_tag
@@ -328,13 +328,13 @@ class TestGetAllPatches:
         assert self.instance.patch_min_max_tag is None
 
     def test_patch_single_series(self, mocker):
-        # PATCH release, user doesn't want to patch multiple series
+        # PATCH release, user doesn't want to patch multiple minor_series
         mock_inputs(mocker, "1,1")
         self.instance.get_all_patches()
         assert self.instance.patch_min_max_tag == ("v1.1.1", "v1.1.1")
 
     def test_patch_multiple_series(self, mocker):
-        # User selects a range of series to patch
+        # User selects a range of minor_series to patch
         mock_inputs(mocker, "1,2")
         self.instance.get_all_patches()
         assert self.instance.patch_min_max_tag == ("v1.1.1", "v1.2.1")
@@ -649,7 +649,7 @@ class TestFinaliseWhatsNew:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            expected = expected.format(series=re.escape(self.instance.version.series[1:]))
+            expected = expected.format(series=re.escape(self.instance.version.minor_series[1:]))
             assert_input_msg_regex(call, expected)
 
     def test_first_in_series(self):
@@ -789,7 +789,7 @@ class TestCheckRtd:
             git_tag += "rc0"
         self.instance.git_tag = git_tag
         self.instance.check_rtd()
-        series = re.escape(self.instance.version.series)
+        series = re.escape(self.instance.version.minor_series)
         expected_messages = [
             "Visit https://readthedocs.org/projects/scitools-iris/versions/",
             rf"{series}.* to Active, un-Hidden",
@@ -1210,7 +1210,7 @@ class TestMergeBack:
             "_get_tagged_versions",
             return_value=[IrisVersion("v1.0.0")],
         )
-        with pytest.raises(RuntimeError, match="Error finding next series"):
+        with pytest.raises(RuntimeError, match="Error finding next minor_series"):
             self.instance.merge_back()
 
     def test_next_patch_file(self):

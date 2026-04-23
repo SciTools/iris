@@ -34,14 +34,12 @@ class IrisVersion(Version):
         return f"v{super().__str__()}"
 
     @property
-    def series(self) -> str:
-        # TODO: find an alternative word which is meaningful to everyone
-        #  while not being ambiguous.
+    def minor_series(self) -> str:
         return f"v{self.major}.{self.minor}"
 
     @property
     def branch(self) -> str:
-        return f"{self.series}.x"
+        return f"{self.minor_series}.x"
 
 
 class IrisRelease(Progress):
@@ -246,18 +244,18 @@ class IrisRelease(Progress):
 
     @property
     def first_in_series(self) -> bool:
-        return self.version.series not in [v.series for v in self._get_tagged_versions()]
+        return self.version.minor_series not in [v.minor_series for v in self._get_tagged_versions()]
 
     def get_all_patches(self):
         if self.release_type is self.ReleaseTypes.PATCH:
             message = (
                 "PATCH release detected. Sometimes a patch needs to be applied "
-                "to multiple series."
+                "to multiple minor_series."
             )
             self.print(message)
 
             tagged_versions = self._get_tagged_versions()
-            series_all = [v.series for v in sorted(tagged_versions)]
+            series_all = [v.minor_series for v in sorted(tagged_versions)]
             series_unique = sorted(set(series_all), key=series_all.index)
             series_numbered = "\n".join(f"{i}: {s}" for i, s in enumerate(series_unique))
 
@@ -282,7 +280,7 @@ class IrisRelease(Progress):
                     return None
 
                 def series_new_patch(series: str) -> str:
-                    latest = max(v for v in tagged_versions if v.series == series)
+                    latest = max(v for v in tagged_versions if v.minor_series == series)
                     iris_version = IrisVersion(
                         f"{latest.major}.{latest.minor}.{latest.micro + 1}"
                     )
@@ -294,7 +292,7 @@ class IrisRelease(Progress):
                 key="patch_min_max_tag",
                 message=(
                     f"{series_numbered}\n\n"
-                    "Input the earliest and latest series that need patching."
+                    "Input the earliest and latest minor_series that need patching."
                 ),
                 expected_inputs=f"Choose two numbers from above e.g. 0,2",
                 post_process=numbers_to_new_patches,
@@ -326,7 +324,7 @@ class IrisRelease(Progress):
         return(
             self.release_type is self.ReleaseTypes.PATCH and
             self.patch_min_max is not None and
-            self.version.series < self.patch_min_max[1].series
+            self.version.minor_series < self.patch_min_max[1].minor_series
         )
 
     def apply_patches(self):
@@ -393,18 +391,18 @@ class IrisRelease(Progress):
 
         if self.first_in_series:
             message_pre = (
-                f"No previous releases found in the {self.version.series} series."
+                f"No previous releases found in the {self.version.minor_series} minor_series."
             )
             if self.release_type is self.ReleaseTypes.PATCH:
                 message = (
                     f"{message_pre} This script cannot handle a PATCH release "
-                    f"that is the first in a series."
+                    f"that is the first in a minor_series."
                 )
                 raise RuntimeError(message)
 
             if not self.is_release_candidate:
                 message = (
-                    f"{message_pre} The first release in a series is expected "
+                    f"{message_pre} The first release in a minor_series is expected "
                     f"to be a release candidate, but this is not. Are you sure "
                     f"you want to continue?"
                 )
@@ -418,12 +416,12 @@ class IrisRelease(Progress):
             "Release tag": self.git_tag,
             "Release type": self.release_type.name,
             "Release candidate?": self.is_release_candidate,
-            f"First release in {self.version.series} series?": self.first_in_series,
+            f"First release in {self.version.minor_series} minor_series?": self.first_in_series,
             "Current latest Iris release": max(self._get_tagged_versions()),
         }
         if self.release_type is self.ReleaseTypes.PATCH and self.patch_min_max is not None:
-            status["Series being patched"] = (
-                f"{self.patch_min_max[0].series} to {self.patch_min_max[1].series}"
+            status["Minor series being patched"] = (
+                f"{self.patch_min_max[0].minor_series} to {self.patch_min_max[1].minor_series}"
             )
         message = (
             "\n".join(f"- {k}: {v}" for k, v in status.items()) + "\n\n"
@@ -556,7 +554,7 @@ class IrisRelease(Progress):
 
         return self.WhatsNewRsts(
             latest=latest,
-            release=whatsnew_dir / (self.version.series[1:] + ".rst"),
+            release=whatsnew_dir / (self.version.minor_series[1:] + ".rst"),
             index_=whatsnew_dir / "index.rst",
             template=latest.with_suffix(".rst.template"),
         )
@@ -595,7 +593,7 @@ class IrisRelease(Progress):
 
         if not self.release_type is self.ReleaseTypes.PATCH:
             whatsnew_title = (
-                f"{self.version.series} ({datetime.today().strftime('%d %b %Y')}"
+                f"{self.version.minor_series} ({datetime.today().strftime('%d %b %Y')}"
             )
             if self.is_release_candidate:
                 whatsnew_title += " [release candidate]"
@@ -618,7 +616,7 @@ class IrisRelease(Progress):
             )
             self.wait_for_done(message)
 
-            dropdown_title = f"\n{self.version.series} Release Highlights\n"
+            dropdown_title = f"\n{self.version.minor_series} Release Highlights\n"
             message = (
                 f"In {self.whats_news.release.name}: set the sphinx-design "
                 f"dropdown title to:{dropdown_title}"
@@ -627,7 +625,7 @@ class IrisRelease(Progress):
 
             message = (
                 f"Review {self.whats_news.release.name} to ensure it is a good "
-                f"reflection of what is new in {self.version.series}.\n"
+                f"reflection of what is new in {self.version.minor_series}.\n"
                 "I.e. all significant work you are aware of should be "
                 "present, such as a major dependency pin, a big new feature, "
                 "a known performance change. You can not be expected to know "
@@ -979,7 +977,7 @@ class IrisRelease(Progress):
             message += (
                 f"\nNOTE: {self.version} is not the latest Iris release, so "
                 "you may need to restore settings from an earlier version "
-                f"(check previous {self.version.series} releases)."
+                f"(check previous {self.version.minor_series} releases)."
             )
         self.wait_for_done(message)
 
@@ -1127,7 +1125,7 @@ class IrisRelease(Progress):
         if not self.first_in_series:
             message += (
                 f"Consider replying within an existing "
-                f"{self.version.series} "
+                f"{self.version.minor_series} "
                 "announcement thread, if appropriate."
             )
         self.wait_for_done(message)
@@ -1142,15 +1140,15 @@ class IrisRelease(Progress):
 
         def next_series_patch() -> IrisVersion:
             tagged_versions = self._get_tagged_versions()
-            series_all = sorted(set(v.series for v in tagged_versions))
+            series_all = sorted(set(v.minor_series for v in tagged_versions))
             try:
-                next_series = series_all[series_all.index(self.version.series) + 1]
+                next_series = series_all[series_all.index(self.version.minor_series) + 1]
             except (IndexError, ValueError):
-                message = f"Error finding next series after {self.version.series} ."
+                message = f"Error finding next minor_series after {self.version.minor_series} ."
                 raise RuntimeError(message)
 
             series_latest = max(
-                v for v in tagged_versions if v.series == next_series
+                v for v in tagged_versions if v.minor_series == next_series
             )
             return IrisVersion(
                 f"{series_latest.major}.{series_latest.minor}.{series_latest.micro + 1}"
@@ -1158,7 +1156,7 @@ class IrisRelease(Progress):
 
         if self.more_patches_after_this_one:
             message = (
-                "More series need patching. Merge into the next series' branch ..."
+                "More minor_series need patching. Merge into the next minor_series' branch ..."
             )
             self.print(message)
             next_patch = next_series_patch()
