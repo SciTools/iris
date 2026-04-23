@@ -748,15 +748,19 @@ class IrisRelease(Progress):
         self.print("Read the Docs checks ...")
 
         message = (
-            "Visit https://readthedocs.org/projects/scitools-iris/versions/ "
+            "Visit https://app.readthedocs.org/projects/scitools-iris/ "
             "and make sure you are logged in."
         )
         self.wait_for_done(message)
 
-        message = f"Set {self.version} to Active, un-Hidden."
+        add_version = (
+            "You may need to click `Add version` if it is not already in the list"
+        )
+
+        message = f"Set {self.version} to Active, un-Hidden.\n{add_version}"
         self.wait_for_done(message)
 
-        message = f"Set {self.version.branch} to Active, Hidden."
+        message = f"Set {self.version.branch} to Active, Hidden.\n{add_version}"
         self.wait_for_done(message)
 
         message = (

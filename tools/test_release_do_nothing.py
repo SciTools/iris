@@ -790,7 +790,7 @@ class TestCheckRtd:
         self.instance.check_rtd()
         series = re.escape(self.instance.version.minor_series)
         expected_messages = [
-            "Visit https://readthedocs.org/projects/scitools-iris/versions/",
+            "Visit https://app.readthedocs.org/projects/scitools-iris/",
             rf"{series}.* to Active, un-Hidden",
             rf"{series}.* to Active, Hidden",
             "Keep only the latest 2 branch doc builds active",
