@@ -859,6 +859,7 @@ class IrisRelease(Progress):
 
         message = (
             "Confirm that pip install works as expected:\n"
+            "Beware of any Python pin Iris might have when creating your Conda environment!\n"
             "conda create -y -n tmp_iris pip cf-units;\n"
             "conda activate tmp_iris;\n"
             f"pip install scitools-iris=={self.version.public};\n"
