@@ -522,6 +522,37 @@ class TestValidate:
         assert_input_msg_regex(call, "Confirm that the details above are correct")
 
 
+class TestReleaseHighlights:
+    """Tests for the :meth:`IrisRelease.release_highlights` method."""
+    @pytest.fixture(autouse=True)
+    def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
+        self.instance = IrisRelease(_dry_run=True)
+        self.mock_wait_for_done = mock_wait_for_done
+        mock_git_ls_remote_tags.return_value = (
+            "abcd1234  refs/tags/v1.0.0\n"
+        )
+
+    @pytest.mark.parametrize("first", [True, False], ids=["first in series", "not first in series"])
+    def test_release_highlights(self, first):
+        if first:
+            git_tag = "v1.1.0"
+        else:
+            git_tag = "v1.0.1"
+        self.instance.git_tag = git_tag
+
+        self.instance.release_highlights()
+
+        if first:
+            self.mock_wait_for_done.assert_called_once()
+            (call,) = self.mock_wait_for_done.call_args_list
+            assert_input_msg_regex(
+                call,
+                "Assemble some bullet points summarising the highlights",
+            )
+        else:
+            self.mock_wait_for_done.assert_not_called()
+
+
 class TestUpdateStandardNames:
     """Tests for the :meth:`IrisRelease.update_standard_names` method."""
     @pytest.fixture(autouse=True)

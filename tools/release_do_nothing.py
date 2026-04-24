@@ -71,6 +71,7 @@ class IrisRelease(Progress):
             cls.get_all_patches,
             cls.apply_patches,
             cls.validate,
+            cls.release_highlights,
             cls.update_standard_names,
             cls.check_deprecations,
             cls.create_release_branch,
@@ -469,6 +470,16 @@ class IrisRelease(Progress):
             f"{full_url}"
         )
         self.wait_for_done(pr_message)
+
+    def release_highlights(self):
+        if self.first_in_series:
+            message = (
+                "Assemble some bullet points summarising the highlights of "
+                "this release. Share with the development team for feedback.\n"
+                "The finalised highlights will be included in the What's New "
+                "page later in this process."
+            )
+            self.wait_for_done(message)
 
     def update_standard_names(self):
         if self.first_in_series:
