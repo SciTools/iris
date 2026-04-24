@@ -53,13 +53,13 @@ def _has_netcdf4_import(node: ast.Import | ast.ImportFrom) -> bool:
 
 def check_file(path: Path) -> list[str]:
     """Return a list of violation strings for *path*, empty if clean."""
+    if _is_permitted(path):
+        return []
+
     file_text = path.read_text()
 
     # Fast pre-filter: skip parsing if "netCDF4" doesn't appear at all.
     if "netCDF4" not in file_text:
-        return []
-
-    if _is_permitted(path):
         return []
 
     try:
