@@ -14,6 +14,7 @@ files: |
         docs\/.+\.py|
         lib\/.+\.py|
         benchmarks\/.+\.py
+        .hooks\/.+\.py
     )
 minimum_pre_commit_version: 1.21.0
 
@@ -23,7 +24,7 @@ repos:
     -   id: check-netcdf4-imports
         name: Check netCDF4 imports are via _thread_safe_nc
         language: python
-        entry: python tools/check_netcdf4_imports.py
+        entry: python .hooks/check_netcdf4_imports.py
         types: [python]
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
