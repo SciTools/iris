@@ -842,7 +842,7 @@ class TestCheckPyPI:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            expected = expected.format(public=re.escape(self.instance.version.public))
+            expected = expected.format(public=re.escape(self.instance.version.short))
             assert_input_msg_regex(call, expected)
 
     def test_latest(self):
@@ -989,7 +989,7 @@ class TestUpdateCondaForge:
             expected_messages,
         ):
             expected_str = expected.format(
-                public=re.escape(self.instance.version.public),
+                public=re.escape(self.instance.version.short),
                 version=re.escape(str(self.instance.version)),
             )
             assert_input_msg_regex(call, expected_str)

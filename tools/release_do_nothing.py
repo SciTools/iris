@@ -41,6 +41,10 @@ class IrisVersion(Version):
     def branch(self) -> str:
         return f"{self.minor_series}.x"
 
+    @property
+    def short(self) -> str:
+        return str(self)[1:]
+
 
 class IrisRelease(Progress):
     class ReleaseTypes(IntEnum):
@@ -711,8 +715,8 @@ class IrisRelease(Progress):
             message = (
                 "This is a release candidate - include the following "
                 "instructions for installing with conda or pip:\n"
-                f"conda install -c conda-forge/label/rc_iris iris={self.version.public}\n"
-                f"pip install scitools-iris=={self.version.public}"
+                f"conda install -c conda-forge/label/rc_iris iris={self.version.short}\n"
+                f"pip install scitools-iris=={self.version.short}"
             )
             self.wait_for_done(message)
 
@@ -805,27 +809,27 @@ class IrisRelease(Progress):
 
         message = (
             "Confirm that the following URL is correctly populated:\n"
-            f"https://pypi.org/project/scitools-iris/{self.version.public}/"
+            f"https://pypi.org/project/scitools-iris/{self.version.short}/"
         )
         self.wait_for_done(message)
 
         if self.is_latest_tag:
             message = (
-                f"Confirm that {self.version.public} is at the top of this page:\n"
+                f"Confirm that {self.version.short} is at the top of this page:\n"
                 "https://pypi.org/project/scitools-iris/#history"
             )
             self.wait_for_done(message)
 
         if self.is_release_candidate:
             message = (
-                f"Confirm that {self.version.public} is marked as a "
+                f"Confirm that {self.version.short} is marked as a "
                 f"pre-release on this page:\n"
                 "https://pypi.org/project/scitools-iris/#history"
             )
             self.wait_for_done(message)
         elif self.is_latest_tag:
             message = (
-                f"Confirm that {self.version.public} is the tag shown on the "
+                f"Confirm that {self.version.short} is the tag shown on the "
                 "scitools-iris PyPI homepage:\n"
                 "https://pypi.org/project/scitools-iris/"
             )
@@ -849,7 +853,7 @@ class IrisRelease(Progress):
         message = (
             f"Visit the below to view the details for the Source Distribution"
             f"(`.tar.gz`):\n"
-            f"https://pypi.org/project/scitools-iris/{self.version.public}##scitools_iris-{self.version.public}.tar.gz\n"
+            f"https://pypi.org/project/scitools-iris/{self.version.short}##scitools_iris-{self.version.short}.tar.gz\n"
         )
         self.set_value_from_input(
             key="sha256",
@@ -863,7 +867,7 @@ class IrisRelease(Progress):
             "Beware of any Python pin Iris might have when creating your Conda environment!\n"
             "conda create -y -n tmp_iris pip cf-units;\n"
             "conda activate tmp_iris;\n"
-            f"pip install scitools-iris=={self.version.public};\n"
+            f"pip install scitools-iris=={self.version.short};\n"
             'python -c "import iris; print(iris.__version__)";\n'
             "conda deactivate;\n"
             "conda remove -n tmp_iris --all;\n"
@@ -969,7 +973,7 @@ class IrisRelease(Progress):
         message = (
             "Update ./recipe/meta.yaml:\n\n"
             f"- The version at the very top of the file: "
-            f"{self.version.public}\n"
+            f"{self.version.short}\n"
             f"- The sha256 hash: {self.sha256}\n"
             "- Build number: reset to 0 (or advance it if this is not a new release).\n"
             "- Requirements: align the packages and pins with those in the "
@@ -1035,14 +1039,14 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
         message = (
-            f"Confirm that {self.version.public} appears in this list:\n"
+            f"Confirm that {self.version.short} appears in this list:\n"
             "https://anaconda.org/conda-forge/iris/files"
         )
         self.wait_for_done(message)
 
         if not self.is_release_candidate and self.is_latest_tag:
             message = (
-                f"Confirm that {self.version.public} is displayed on this "
+                f"Confirm that {self.version.short} is displayed on this "
                 "page as the latest available:\n"
                 "https://anaconda.org/conda-forge/iris"
             )
@@ -1083,7 +1087,7 @@ class IrisRelease(Progress):
         message = (
             "Confirm that the new release is available for use from "
             "conda-forge by running the following command:\n"
-            f"conda search{channel_command}iris=={self.version.public};"
+            f"conda search{channel_command}iris=={self.version.short};"
         )
         self.wait_for_done(message)
 
@@ -1092,7 +1096,7 @@ class IrisRelease(Progress):
             "If anything is wrong: consider whether announcement(s) might need "
             "undoing/updating.\n"
             f"conda create -n tmp_iris{channel_command}iris="
-            f"{self.version.public};\n"
+            f"{self.version.short};\n"
             "conda activate tmp_iris;\n"
             'python -c "import iris; print(iris.__version__)";\n'
             "conda deactivate;\n"
@@ -1110,8 +1114,8 @@ class IrisRelease(Progress):
             "updated correctly. Include the following links in the release "
             "notes:\n\n"
             f"https://scitools-iris.readthedocs.io/en/{self.version}/\n"
-            f"https://pypi.org/project/scitools-iris/{self.version.public}/\n"
-            f"https://anaconda.org/channels/conda-forge/packages/iris/files?file_q={self.version.public}\n"
+            f"https://pypi.org/project/scitools-iris/{self.version.short}/\n"
+            f"https://anaconda.org/channels/conda-forge/packages/iris/files?file_q={self.version.short}\n"
         )
         self.wait_for_done(message)
 
