@@ -11,7 +11,7 @@ wrapper at ``iris.fileformats.netcdf._thread_safe_nc``.
 
 Usage (pre-commit passes staged file paths as arguments)::
 
-    python tools/check_netcdf4_imports.py [file ...]
+    python .hooks/check_netcdf4_imports.py [file ...]
 
 Exit codes:
     0 – all clear

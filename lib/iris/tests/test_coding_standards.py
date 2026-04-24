@@ -40,10 +40,10 @@ IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
 
 def test_netcdf4_import():
     """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe_nc ."""
-    # Logic lives in tools/check_netcdf4_imports.py (also used as a pre-commit hook).
+    # Logic lives in .hooks/check_netcdf4_imports.py (also used as a pre-commit hook).
     import importlib.util
 
-    _hook_path = Path(__file__).parents[3] / "tools" / "check_netcdf4_imports.py"
+    _hook_path = Path(__file__).parents[3] / ".hooks" / "check_netcdf4_imports.py"
     _spec = importlib.util.spec_from_file_location("check_netcdf4_imports", _hook_path)
     _mod = importlib.util.module_from_spec(_spec)
     _spec.loader.exec_module(_mod)
