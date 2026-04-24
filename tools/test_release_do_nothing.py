@@ -3,15 +3,16 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Tests for the ``release_do_nothing.py`` file."""
+
 import enum
 from pathlib import Path
 import re
 from typing import Any, NamedTuple
 
+import nothing
 import pytest
 from pytest_mock import MockType
 
-import nothing
 from release_do_nothing import IrisRelease, IrisVersion
 
 
@@ -83,14 +84,18 @@ def assert_input_msg_regex(call: Any, expected: re.Pattern[str] | str) -> None:
     # TODO: use this for testing ALL messages that include dynamic content?
     if isinstance(expected, str):
         expected = re.compile(expected, re.DOTALL)
-    assert hasattr(call, "args") and len(call.args) > 0
+    assert hasattr(call, "args")
+    assert len(call.args) > 0
     message = call.args[0]
     assert isinstance(message, str)
-    assert expected.search(message) is not None, f"Expected message matching {expected!r} in {message!r}"
+    assert expected.search(message) is not None, (
+        f"Expected message matching {expected!r} in {message!r}"
+    )
 
 
 class TestIrisVersion:
     """Tests for the :class:`IrisVersion` class."""
+
     @pytest.fixture(params=["9.0.0", "9.0.1", "9.1.0"], autouse=True)
     def _setup(self, request):
         self.version = IrisVersion(request.param)
@@ -111,6 +116,7 @@ class TestIrisVersion:
 
 class TestProperties:
     """Tests for the properties of the :class:`IrisRelease` class."""
+
     @pytest.fixture(autouse=True)
     def _setup(self) -> None:
         self.instance = IrisRelease(
@@ -129,9 +135,7 @@ class TestProperties:
 
     @pytest.mark.parametrize("git_tag", ["1.1.0", "1.1.2"])
     def test_is_latest_tag(self, git_tag, mock_git_ls_remote_tags):
-        mock_git_ls_remote_tags.return_value = (
-            "abcd1234 refs/tags/1.1.1\n"
-        )
+        mock_git_ls_remote_tags.return_value = "abcd1234 refs/tags/1.1.1\n"
         expecteds = {"1.1.0": False, "1.1.2": True}
         expected = expecteds[git_tag]
         self.instance.git_tag = git_tag
@@ -156,7 +160,11 @@ class TestProperties:
         assert self.instance.is_release_candidate is expected
 
     @pytest.mark.parametrize("git_tag", ["1.0.0", "1.0.1", "1.1.0"])
-    @pytest.mark.parametrize("release_complete", [True, False], ids=["release complete", "release not complete"])
+    @pytest.mark.parametrize(
+        "release_complete",
+        [True, False],
+        ids=["release complete", "release not complete"],
+    )
     def test_first_in_series(self, git_tag, release_complete, mock_git_ls_remote_tags):
         mock_git_ls_remote_tags.return_value = (
             "abcd1234 refs/tags/1.0.0\n"
@@ -181,22 +189,21 @@ class TestProperties:
             IrisVersion("8.0.0"),
             IrisVersion("9.0.0"),
         )
+        self.instance.patch_min_max_tag = ("9.0.0",)
         with pytest.raises(AssertionError, match="^$"):
-            self.instance.patch_min_max_tag = ("9.0.0",)
             _ = self.instance.patch_min_max
 
     @pytest.mark.parametrize("git_tag", ["8.1.0", "8.1.1", "9.0.1", "9.1.1"])
     def test_more_patches_after_this_one(self, git_tag):
         expecteds = {
-            "8.1.0": False,     # Not a PATCH release.
-            "8.1.1": True,      # 9.0.0 still to patch.
-            "9.0.1": False,     # Last PATCH in minor_series.
-            "9.1.1": False,     # Beyond max minor_series.
+            "8.1.0": False,  # Not a PATCH release.
+            "8.1.1": True,  # 9.0.0 still to patch.
+            "9.0.1": False,  # Last PATCH in minor_series.
+            "9.1.1": False,  # Beyond max minor_series.
         }
         expected = expecteds[git_tag]
         self.instance.git_tag = git_tag
         assert self.instance.more_patches_after_this_one is expected
-
 
     def test_whats_news(self):
         whatsnew_dir = Path(__file__).parents[1] / "docs" / "src" / "whatsnew"
@@ -211,6 +218,7 @@ class TestProperties:
 
 class TestAnalyseRemotes:
     """Tests for the :meth:`IrisRelease.analyse_remotes` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_git_remote_get_url, mock_git_remote_v) -> None:
         self.instance = IrisRelease(_dry_run=True)
@@ -275,6 +283,7 @@ class TestAnalyseRemotes:
 
 class TestGetReleaseTag:
     """Tests for the :meth:`IrisRelease.get_release_tag` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
@@ -316,6 +325,7 @@ class TestGetReleaseTag:
 
 class TestGetAllPatches:
     """Tests for the :meth:`IrisRelease.get_all_patches` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(
@@ -354,8 +364,7 @@ class TestGetAllPatches:
         mock_inputs(mocker, "not-numbers", "1,2")
         self.instance.get_all_patches()
         mock_report_problem.assert_called_once_with(
-            "Invalid input, expected two integers comma-separated. "
-            "Please try again ..."
+            "Invalid input, expected two integers comma-separated. Please try again ..."
         )
         assert self.instance.patch_min_max_tag == ("v1.1.1", "v1.2.1")
         assert self.instance.git_tag == "v1.1.1"
@@ -389,6 +398,7 @@ class TestGetAllPatches:
 
 class TestApplyPatches:
     """Tests for the :meth:`IrisRelease.apply_patches` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done) -> None:
         self.instance = IrisRelease(
@@ -424,9 +434,7 @@ class TestApplyPatches:
         self.instance.apply_patches()
         call = self.get_wait_for_done_call()
         branch = re.escape(self.instance.version.branch)
-        assert_input_msg_regex(
-            call, rf"Propose the patch change\(s\).*{branch}.*"
-        )
+        assert_input_msg_regex(call, rf"Propose the patch change\(s\).*{branch}.*")
 
     def test_patch_branch_other(self, mocker):
         # User inputs a different branch - message warns about cherry-pick conflicts.
@@ -436,18 +444,17 @@ class TestApplyPatches:
         branch = re.escape(self.instance.version.branch)
         assert_input_msg_regex(
             call,
-            rf"cherry-picking the patch change\(s\).*some-other-branch.*{branch}.*"
+            rf"cherry-picking the patch change\(s\).*some-other-branch.*{branch}.*",
         )
 
 
 class TestValidate:
     """Tests for the :meth:`IrisRelease.validate` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(
-            _dry_run=True,
-            github_user="user",
-            patch_min_max_tag=("1.0.0", "1.1.0")
+            _dry_run=True, github_user="user", patch_min_max_tag=("1.0.0", "1.1.0")
         )
         mock_git_ls_remote_tags.return_value = "abcd1234 refs/tags/1.0.0"
 
@@ -455,28 +462,32 @@ class TestValidate:
         git_tag: str
         match: str
 
-    @pytest.fixture(params=[
-        pytest.param(
-            Case("1.1.dev0", "development release.*cannot handle"),
-            id="dev release",
-        ),
-        pytest.param(
-            Case("1.1.post0", "post release.*cannot handle"),
-            id="post release",
-        ),
-        pytest.param(
-            Case("1.1.alpha0", "release candidate.*got 'a'"),
-            id="pre-release non-rc",
-        ),
-        pytest.param(
-            Case("1.1.1rc0", "PATCH release AND a release candidate.*cannot handle"),
-            id="patch release rc",
-        ),
-        pytest.param(
-            Case("1.1.1", "No previous releases.*cannot handle a PATCH"),
-            id="first in series patch",
-        ),
-    ])
+    @pytest.fixture(
+        params=[
+            pytest.param(
+                Case("1.1.dev0", "development release.*cannot handle"),
+                id="dev release",
+            ),
+            pytest.param(
+                Case("1.1.post0", "post release.*cannot handle"),
+                id="post release",
+            ),
+            pytest.param(
+                Case("1.1.alpha0", "release candidate.*got 'a'"),
+                id="pre-release non-rc",
+            ),
+            pytest.param(
+                Case(
+                    "1.1.1rc0", "PATCH release AND a release candidate.*cannot handle"
+                ),
+                id="patch release rc",
+            ),
+            pytest.param(
+                Case("1.1.1", "No previous releases.*cannot handle a PATCH"),
+                id="first in series patch",
+            ),
+        ]
+    )
     def unhandled_cases(self, request) -> Case:
         case = request.param
         self.instance.git_tag = case.git_tag
@@ -492,7 +503,9 @@ class TestValidate:
     def first_in_series_not_rc(self) -> None:
         self.instance.git_tag = "1.1.0"
 
-    def test_first_in_series_not_rc_message(self, first_in_series_not_rc, capfd, mocker):
+    def test_first_in_series_not_rc_message(
+        self, first_in_series_not_rc, capfd, mocker
+    ):
         # Two "yes" answers to arrive at the appropriate decision node.
         mock_inputs(mocker, "y", "y")
         self.instance.validate()
@@ -513,13 +526,15 @@ class TestValidate:
         self.instance.validate()
 
     # Not an exhaustive list, just the inverse of the unhandled cases.
-    @pytest.fixture(params=[
-        pytest.param("2.0.0rc0", id="major release RC"),
-        pytest.param("1.1.0rc0", id="minor release RC"),
-        pytest.param("1.1.0", id="minor release existing major"),
-        pytest.param("1.0.1", id="patch release existing minor"),
-        pytest.param("1.1.0", id="first in series not RC"),
-    ])
+    @pytest.fixture(
+        params=[
+            pytest.param("2.0.0rc0", id="major release RC"),
+            pytest.param("1.1.0rc0", id="minor release RC"),
+            pytest.param("1.1.0", id="minor release existing major"),
+            pytest.param("1.0.1", id="patch release existing minor"),
+            pytest.param("1.1.0", id="first in series not RC"),
+        ]
+    )
     def handled_cases(self, request) -> None:
         self.instance.git_tag = request.param
 
@@ -534,15 +549,16 @@ class TestValidate:
 
 class TestReleaseHighlights:
     """Tests for the :meth:`IrisRelease.release_highlights` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
         self.mock_wait_for_done = mock_wait_for_done
-        mock_git_ls_remote_tags.return_value = (
-            "abcd1234  refs/tags/v1.0.0\n"
-        )
+        mock_git_ls_remote_tags.return_value = "abcd1234  refs/tags/v1.0.0\n"
 
-    @pytest.mark.parametrize("first", [True, False], ids=["first in series", "not first in series"])
+    @pytest.mark.parametrize(
+        "first", [True, False], ids=["first in series", "not first in series"]
+    )
     def test_release_highlights(self, first):
         if first:
             git_tag = "v1.1.0"
@@ -565,13 +581,13 @@ class TestReleaseHighlights:
 
 class TestUpdateStandardNames:
     """Tests for the :meth:`IrisRelease.update_standard_names` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
         self.mock_wait_for_done = mock_wait_for_done
         mock_git_ls_remote_tags.return_value = (
-            "abcd1234  refs/tags/v1.0.0\n"
-            "abcd1235  refs/tags/v1.0.1\n"
+            "abcd1234  refs/tags/v1.0.0\nabcd1235  refs/tags/v1.0.1\n"
         )
 
     def test_not_first_in_series(self):
@@ -600,6 +616,7 @@ class TestUpdateStandardNames:
 
 class TestCheckDeprecations:
     """Tests for the :meth:`IrisRelease.check_deprecations` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done) -> None:
         self.instance = IrisRelease(_dry_run=True)
@@ -623,13 +640,13 @@ class TestCheckDeprecations:
 
 class TestCreateReleaseBranch:
     """Tests for the :meth:`IrisRelease.create_release_branch` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
         self.mock_wait_for_done = mock_wait_for_done
         mock_git_ls_remote_tags.return_value = (
-            "abcd1234  refs/tags/v1.0.0\n"
-            "abcd1235  refs/tags/v1.0.1\n"
+            "abcd1234  refs/tags/v1.0.0\nabcd1235  refs/tags/v1.0.1\n"
         )
 
     def test_first_in_series(self):
@@ -638,8 +655,7 @@ class TestCreateReleaseBranch:
         self.mock_wait_for_done.assert_called_once()
         (call,) = self.mock_wait_for_done.call_args_list
         assert_input_msg_regex(
-            call,
-            f"create the ``{self.instance.version.branch}`` release branch"
+            call, f"create the ``{self.instance.version.branch}`` release branch"
         )
 
     def test_not_first_in_series(self):
@@ -655,6 +671,7 @@ class TestCreateReleaseBranch:
 
 class TestFinaliseWhatsNew:
     """Tests for the :meth:`IrisRelease.finalise_whats_new` method."""
+
     class WaitMessages(enum.StrEnum):
         DELETE = "avoid a name clash by deleting any existing local branch"
         CHECKOUT = "Checkout a local branch from the official"
@@ -689,7 +706,9 @@ class TestFinaliseWhatsNew:
             self.mock_wait_for_done.call_args_list,
             expected_messages,
         ):
-            expected = expected.format(series=re.escape(self.instance.version.minor_series[1:]))
+            expected = expected.format(
+                series=re.escape(self.instance.version.minor_series[1:])
+            )
             assert_input_msg_regex(call, expected)
 
     def test_first_in_series(self):
@@ -739,6 +758,7 @@ class TestFinaliseWhatsNew:
 
 class TestCutRelease:
     """Tests for the :meth:`IrisRelease.cut_release` method."""
+
     class WaitMessages(enum.StrEnum):
         WEBPAGE = "Visit https://github.com/SciTools/iris/releases/new"
         TAG = "as the new tag to create, and also as the Release title"
@@ -808,6 +828,7 @@ class TestCutRelease:
 
 class TestCheckRtd:
     """Tests for the :meth:`IrisRelease.check_rtd` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
@@ -853,6 +874,7 @@ class TestCheckRtd:
 
 class TestCheckPyPI:
     """Tests for the :meth:`IrisRelease.check_pypi` method."""
+
     class WaitMessages(enum.StrEnum):
         URL = "Confirm that the following URL is correctly populated"
         TOP = "{public} is at the top of this page"
@@ -949,6 +971,7 @@ class TestCheckPyPI:
 
 class TestUpdateCondaForge:
     """Tests for the :meth:`IrisRelease.update_conda_forge` method."""
+
     class WaitMessages(enum.StrEnum):
         FORK = "Make sure you have a GitHub fork of"
         RC_BRANCHES = "Visit the conda-forge feedstock branches page"
@@ -957,7 +980,10 @@ class TestUpdateCondaForge:
         CHECKOUT = "Checkout a new branch for the conda-forge"
 
         UPDATE = re.escape("Update ./recipe/meta.yaml:") + r".*unsure\.$"
-        UPDATE_NOT_LATEST = re.escape("Update ./recipe/meta.yaml:") + r".*unsure\..*{version} is not the latest Iris release"
+        UPDATE_NOT_LATEST = (
+            re.escape("Update ./recipe/meta.yaml:")
+            + r".*unsure\..*{version} is not the latest Iris release"
+        )
 
         PUSH = "push up the changes to prepare for a Pull Request"
         PR = "Create a Pull Request for your changes"
@@ -984,7 +1010,9 @@ class TestUpdateCondaForge:
 
     @pytest.mark.parametrize("latest", [True, False], ids=["is_latest", "not_latest"])
     @pytest.mark.parametrize("rc", [True, False], ids=["is_rc", "not_rc"])
-    @pytest.mark.parametrize("more_patches", [True, False], ids=["more_patches", "no_more_patches"])
+    @pytest.mark.parametrize(
+        "more_patches", [True, False], ids=["more_patches", "no_more_patches"]
+    )
     def test_waits(self, latest: bool, rc: bool, more_patches: bool, mocker):
         if latest:
             git_tag = "v2.1"
@@ -1042,7 +1070,9 @@ class TestUpdateCondaForge:
         wait_messages = [
             call.args[0] for call in self.mock_wait_for_done.call_args_list
         ]
-        expected = self.WaitMessages.RC_ARCHIVE.replace("rc-original", "my-special-rc-branch")
+        expected = self.WaitMessages.RC_ARCHIVE.replace(
+            "rc-original", "my-special-rc-branch"
+        )
         not_expected = self.WaitMessages.RC_ARCHIVE
         assert any(re.search(expected, m) for m in wait_messages)
         assert not any(re.search(not_expected, m) for m in wait_messages)
@@ -1057,12 +1087,16 @@ class TestUpdateCondaForge:
         self.instance.update_conda_forge()
         all_calls = [call.args[0] for call in self.mock_wait_for_done.call_args_list]
         calls = [
-            call for call in all_calls
-            if any(phrase in call for phrase in [
-                "Checkout a new branch",
-                "Create a Pull Request",
-                "branch needs to be restored",
-            ])
+            call
+            for call in all_calls
+            if any(
+                phrase in call
+                for phrase in [
+                    "Checkout a new branch",
+                    "Create a Pull Request",
+                    "branch needs to be restored",
+                ]
+            )
         ]
         expected = "rc-new" if rc else "main"
         assert all(expected in c for c in calls)
@@ -1086,8 +1120,10 @@ class TestUpdateCondaForge:
             "Invalid entry. Please try again ..."
         )
 
+
 class TestRevisitCondaForge:
     """Tests for the :meth:`IrisRelease.revisit_conda_forge` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True, git_tag="v1.2.0")
@@ -1105,7 +1141,10 @@ class TestRevisitCondaForge:
         available, installable = self.mock_wait_for_done.call_args_list
         message_fragments = [
             (available, "Confirm that the new release is available"),
-            (installable, re.escape("Confirm that conda (or mamba) install works as expected")),
+            (
+                installable,
+                re.escape("Confirm that conda (or mamba) install works as expected"),
+            ),
         ]
         for call, expected in message_fragments:
             assert_input_msg_regex(call, expected)
@@ -1119,13 +1158,20 @@ class TestRevisitCondaForge:
         mock_inputs(mocker, "rc-original", "n")
         self.instance.revisit_conda_forge()
         if rc:
-            assert any("label/rc_iris" in call.args[0] for call in self.mock_wait_for_done.call_args_list)
+            assert any(
+                "label/rc_iris" in call.args[0]
+                for call in self.mock_wait_for_done.call_args_list
+            )
         else:
-            assert not any("label/rc_iris" in call.args[0] for call in self.mock_wait_for_done.call_args_list)
+            assert not any(
+                "label/rc_iris" in call.args[0]
+                for call in self.mock_wait_for_done.call_args_list
+            )
 
 
 class TestUpdateLinks:
     """Tests for the :meth:`IrisRelease.update_links` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done) -> None:
         self.instance = IrisRelease(_dry_run=True, git_tag="v1.2.0")
@@ -1156,16 +1202,18 @@ class TestUpdateLinks:
 
 class TestBlueskyAnnounce:
     """Tests for the :meth:`IrisRelease.bluesky_announce` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done, mock_git_ls_remote_tags) -> None:
         self.instance = IrisRelease(_dry_run=True)
         self.mock_wait_for_done = mock_wait_for_done
         mock_git_ls_remote_tags.return_value = (
-            "abcd1234  refs/tags/v1.0.0\n"
-            "abcd1235  refs/tags/v1.0.1\n"
+            "abcd1234  refs/tags/v1.0.0\nabcd1235  refs/tags/v1.0.1\n"
         )
 
-    @pytest.mark.parametrize("first_in_series", [True, False], ids=["first_in_series", "not_first_in_series"])
+    @pytest.mark.parametrize(
+        "first_in_series", [True, False], ids=["first_in_series", "not_first_in_series"]
+    )
     def test_wait(self, first_in_series: bool):
         if first_in_series:
             git_tag = "v1.1.0"
@@ -1182,6 +1230,7 @@ class TestBlueskyAnnounce:
 
 class TestMergeBack:
     """Tests for the :meth:`IrisRelease.merge_back` method."""
+
     class WaitMessages(enum.StrEnum):
         DELETE = "avoid a name clash by deleting any existing local branch"
         CHECKOUT = "Checkout a local branch from the official"
@@ -1206,11 +1255,17 @@ class TestMergeBack:
             "abcd1236  refs/tags/v1.2.0\n"
         )
 
-    @pytest.mark.parametrize("first", [True, False], ids=["first_in_series", "not_first_in_series"])
-    @pytest.mark.parametrize("more_patches", [True, False], ids=["more_patches", "no_more_patches"])
+    @pytest.mark.parametrize(
+        "first", [True, False], ids=["first_in_series", "not_first_in_series"]
+    )
+    @pytest.mark.parametrize(
+        "more_patches", [True, False], ids=["more_patches", "no_more_patches"]
+    )
     def test_waits(self, first, more_patches):
         if first and more_patches:
-            pytest.skip("first_in_series and more_patches are mutually exclusive in reality.")
+            pytest.skip(
+                "first_in_series and more_patches are mutually exclusive in reality."
+            )
         if first:
             git_tag = "v1.3.0"
         else:
@@ -1238,7 +1293,9 @@ class TestMergeBack:
             expected = expected.format(branch=re.escape(self.instance.version.branch))
             assert_input_msg_regex(call, expected)
 
-    @pytest.mark.parametrize("more_patches", [True, False], ids=["more_patches", "no_more_patches"])
+    @pytest.mark.parametrize(
+        "more_patches", [True, False], ids=["more_patches", "no_more_patches"]
+    )
     def test_branches(self, more_patches):
         self.instance.git_tag = "v1.0.1"
         if more_patches:
@@ -1278,13 +1335,20 @@ class TestMergeBack:
         self.instance.merge_back()
         assert expected_file.exists()
         next_patch = IrisRelease.load(expected_file, dry_run=True)
-        assert next_patch.latest_complete_step == IrisRelease.get_steps().index(IrisRelease.validate) - 1
+        assert (
+            next_patch.latest_complete_step
+            == IrisRelease.get_steps().index(IrisRelease.validate) - 1
+        )
         assert next_patch.git_tag == "v1.1.1"
-        assert next_patch.patch_min_max == (IrisVersion("v1.0.1"), IrisVersion("v1.2.1"))
+        assert next_patch.patch_min_max == (
+            IrisVersion("v1.0.1"),
+            IrisVersion("v1.2.1"),
+        )
 
 
 class TestNextRelease:
     """Tests for the :meth:`IrisRelease.next_release` method."""
+
     @pytest.fixture(autouse=True)
     def _setup(self, mock_wait_for_done) -> None:
         self.instance = IrisRelease(_dry_run=True)
@@ -1303,7 +1367,9 @@ class TestNextRelease:
         self.instance.next_release()
         if not patch and not rc:
             assert self.mock_wait_for_done.call_count == 5
-            manager, milestone, discussion, sprints, champion = self.mock_wait_for_done.call_args_list
+            manager, milestone, discussion, sprints, champion = (
+                self.mock_wait_for_done.call_args_list
+            )
             message_fragments = [
                 (manager, "Confirm that there is a release manager"),
                 (milestone, "has set up a milestone for their release"),

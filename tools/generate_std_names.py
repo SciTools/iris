@@ -2,8 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-Script converting standard names information from provided XML file to a Python dict.
+"""Script converting standard names information from provided XML file to a Python dict.
 
 Takes two arguments: the first is the XML file to process and the second
 is the name of the file to write the Python dictionary file into.
@@ -21,7 +20,6 @@ import argparse
 from pathlib import Path
 import pprint
 import xml.etree.ElementTree as ET
-
 
 STD_VALUES_FILE_TEMPLATE = '''
 # Copyright Iris contributors
@@ -61,8 +59,7 @@ STD_NAMES = '''.lstrip()
 
 
 def process_name_table(tree, element_name, *child_elements):
-    """
-    Yield id->mapping dictionaries for each entry in the standard name table.
+    """Yield id->mapping dictionaries for each entry in the standard name table.
 
     Yields a series of dictionaries with the key being the id of the entry element and the value containing
     another dictionary mapping other attributes of the standard name to their values, e.g. units, description, grib value etc.
@@ -72,9 +69,11 @@ def process_name_table(tree, element_name, *child_elements):
 
         for child_elem in child_elements:
             found_elem = elem.find(child_elem)
-            sub_section[child_elem] = found_elem.text if found_elem is not None else None
+            sub_section[child_elem] = (
+                found_elem.text if found_elem is not None else None
+            )
 
-        yield {elem.get("id") : sub_section}
+        yield {elem.get("id"): sub_section}
 
 
 def to_dict(infile, outfile):
@@ -83,34 +82,41 @@ def to_dict(infile, outfile):
 
     tree = ET.parse(infile)
 
-    cf_table_version_string = tree.find('version_number').text
+    cf_table_version_string = tree.find("version_number").text
 
-    for section in process_name_table(tree, 'entry', 'canonical_units'):
+    for section in process_name_table(tree, "entry", "canonical_units"):
         values.update(section)
 
-    for section in process_name_table(tree, 'alias', 'entry_id'):
+    for section in process_name_table(tree, "alias", "entry_id"):
         aliases.update(section)
 
     for key, valued in aliases.items():
-        values.update({
-                key : {'canonical_units' : values.get(valued['entry_id']).get('canonical_units')}
-            })
+        values.update(
+            {
+                key: {
+                    "canonical_units": values.get(valued["entry_id"]).get(
+                        "canonical_units"
+                    )
+                }
+            }
+        )
 
     text = STD_VALUES_FILE_TEMPLATE.format(table_version=cf_table_version_string)
     text += pprint.pformat(values)
-    text += f'\n\nCF_STANDARD_NAMES_TABLE_VERSION = {cf_table_version_string}\n'
+    text += f"\n\nCF_STANDARD_NAMES_TABLE_VERSION = {cf_table_version_string}\n"
     outfile.write(text)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='Create Python code from CF standard name XML.')
-    parser.add_argument('input', metavar='INPUT',
-                        help='Path to CF standard name XML')
-    parser.add_argument('output', metavar='OUTPUT',
-                        help='Path to resulting Python code')
+        description="Create Python code from CF standard name XML."
+    )
+    parser.add_argument("input", metavar="INPUT", help="Path to CF standard name XML")
+    parser.add_argument(
+        "output", metavar="OUTPUT", help="Path to resulting Python code"
+    )
     args = parser.parse_args()
 
-    with open(args.input, 'r', encoding='utf-8') as in_fh:
-        with open(args.output, 'w', encoding='utf-8') as out_fh:
+    with open(args.input, "r", encoding="utf-8") as in_fh:
+        with open(args.output, "w", encoding="utf-8") as out_fh:
             to_dict(in_fh, out_fh)

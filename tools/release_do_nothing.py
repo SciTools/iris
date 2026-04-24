@@ -3,12 +3,12 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-A do-nothing script to hand-hold through the Iris release process.
+"""A do-nothing script to hand-hold through the Iris release process.
 
 https://blog.danslimmon.com/2019/07/15/do-nothing-scripting-the-key-to-gradual-automation/
 
 """
+
 from datetime import datetime
 from enum import IntEnum
 from pathlib import Path
@@ -48,6 +48,8 @@ class IrisVersion(Version):
 
 class IrisRelease(Progress):
     class ReleaseTypes(IntEnum):
+        """Enumeration of semantic versioning types."""
+
         MAJOR = 0
         MINOR = 1
         PATCH = 2
@@ -115,13 +117,11 @@ class IrisRelease(Progress):
 
         scitools_regex = re.compile(r"github\.com[:/]SciTools/iris")
         self.github_scitools = [
-            r.name for r in remotes
-            if r.fetch and scitools_regex.search(r.url)
+            r.name for r in remotes if r.fetch and scitools_regex.search(r.url)
         ][0]
 
         possible_forks = [
-            r for r in remotes
-            if not r.fetch and r.name != self.github_scitools
+            r for r in remotes if not r.fetch and r.name != self.github_scitools
         ]
         assert len(possible_forks) > 0
 
@@ -164,12 +164,9 @@ class IrisRelease(Progress):
     def _get_tagged_versions(self) -> list[IrisVersion]:
         tag_regex = re.compile(r"(?<=refs/tags/).*$")
         scitools_tags_raw = self._git_ls_remote_tags().splitlines()
-        scitools_tags_searched = [
-            tag_regex.search(line) for line in scitools_tags_raw
-        ]
+        scitools_tags_searched = [tag_regex.search(line) for line in scitools_tags_raw]
         scitools_tags = [
-            search.group(0) for search in scitools_tags_searched
-            if search is not None
+            search.group(0) for search in scitools_tags_searched if search is not None
         ]
 
         def get_version(tag: str) -> IrisVersion | None:
@@ -194,10 +191,7 @@ class IrisRelease(Progress):
             try:
                 version = IrisVersion(input_tag)
             except InvalidVersion as err:
-                self.report_problem(
-                    f"Packaging error: {err}\n"
-                    "Please try again ..."
-                )
+                self.report_problem(f"Packaging error: {err}\nPlease try again ...")
             else:
                 if version in self._get_tagged_versions():
                     self.report_problem(
@@ -205,7 +199,7 @@ class IrisRelease(Progress):
                         "Please try again ..."
                     )
                 else:
-                    result= input_tag  # v1.2.3rc0
+                    result = input_tag  # v1.2.3rc0
             return result
 
         message = (
@@ -252,12 +246,12 @@ class IrisRelease(Progress):
         release_step = IrisRelease.get_steps().index(IrisRelease.cut_release)
         release_complete = self.latest_complete_step >= release_step
         same_series = [
-            v for v in self._get_tagged_versions()
+            v
+            for v in self._get_tagged_versions()
             if v.minor_series == self.version.minor_series
         ]
-        result = (
-            len(same_series) == 0
-            or (release_complete and same_series == [self.version])
+        result = len(same_series) == 0 or (
+            release_complete and same_series == [self.version]
         )
         return result
 
@@ -272,11 +266,11 @@ class IrisRelease(Progress):
             tagged_versions = self._get_tagged_versions()
             series_all = [v.minor_series for v in sorted(tagged_versions)]
             series_unique = sorted(set(series_all), key=series_all.index)
-            series_numbered = "\n".join(f"{i}: {s}" for i, s in enumerate(series_unique))
+            series_numbered = "\n".join(
+                f"{i}: {s}" for i, s in enumerate(series_unique)
+            )
 
-            def numbers_to_new_patches(
-                input_numbers: str
-            ) -> tuple[str, str] | None:
+            def numbers_to_new_patches(input_numbers: str) -> tuple[str, str] | None:
                 try:
                     first_str, last_str = input_numbers.split(",")
                     first, last = int(first_str), int(last_str)
@@ -336,10 +330,10 @@ class IrisRelease(Progress):
 
     @property
     def more_patches_after_this_one(self) -> bool:
-        return(
-            self.release_type is self.ReleaseTypes.PATCH and
-            self.patch_min_max is not None and
-            self.version.minor_series < self.patch_min_max[1].minor_series
+        return (
+            self.release_type is self.ReleaseTypes.PATCH
+            and self.patch_min_max is not None
+            and self.version.minor_series < self.patch_min_max[1].minor_series
         )
 
     def apply_patches(self):
@@ -405,9 +399,7 @@ class IrisRelease(Progress):
             raise RuntimeError(message)
 
         if self.first_in_series:
-            message_pre = (
-                f"No previous releases found in the {self.version.minor_series} minor_series."
-            )
+            message_pre = f"No previous releases found in the {self.version.minor_series} minor_series."
             if self.release_type is self.ReleaseTypes.PATCH:
                 message = (
                     f"{message_pre} This script cannot handle a PATCH release "
@@ -434,7 +426,10 @@ class IrisRelease(Progress):
             f"First release in {self.version.minor_series} minor_series?": self.first_in_series,
             "Current latest Iris release": max(self._get_tagged_versions()),
         }
-        if self.release_type is self.ReleaseTypes.PATCH and self.patch_min_max is not None:
+        if (
+            self.release_type is self.ReleaseTypes.PATCH
+            and self.patch_min_max is not None
+        ):
             status["Minor series being patched"] = (
                 f"{self.patch_min_max[0].minor_series} to {self.patch_min_max[1].minor_series}"
             )
@@ -447,11 +442,7 @@ class IrisRelease(Progress):
         self.wait_for_done(message)
 
     def _create_pr(
-        self,
-        base_org: str,
-        base_repo: str,
-        base_branch: str,
-        head_branch: str
+        self, base_org: str, base_repo: str, base_branch: str, head_branch: str
     ) -> None:
         """Instruct user to create a PR with a specified base and head.
 
@@ -565,6 +556,8 @@ class IrisRelease(Progress):
         IrisRelease.wait_for_done(message)
 
     class WhatsNewRsts(typing.NamedTuple):
+        """The various paths that make up the What's New structure."""
+
         latest: Path
         release: Path
         index_: Path
@@ -925,13 +918,10 @@ class IrisRelease(Progress):
                 "`rc` / `release-candidate` / similar .\n"
             )
             rc_branch = self.get_input(
-                message,
-                "Input the name of the release candidate branch"
+                message, "Input the name of the release candidate branch"
             )
 
-            message = (
-                f"Is the latest commit on {rc_branch} over 1 month ago?"
-            )
+            message = f"Is the latest commit on {rc_branch} over 1 month ago?"
             archive_rc = None
             while archive_rc is None:
                 valid_entries = ["y", "n"]
@@ -1190,7 +1180,9 @@ class IrisRelease(Progress):
             tagged_versions = self._get_tagged_versions()
             series_all = sorted(set(v.minor_series for v in tagged_versions))
             try:
-                next_series = series_all[series_all.index(self.version.minor_series) + 1]
+                next_series = series_all[
+                    series_all.index(self.version.minor_series) + 1
+                ]
             except (IndexError, ValueError):
                 message = f"Error finding next minor_series after {self.version.minor_series} ."
                 raise RuntimeError(message)
@@ -1203,9 +1195,7 @@ class IrisRelease(Progress):
             )
 
         if self.more_patches_after_this_one:
-            message = (
-                "More minor_series need patching. Merge into the next minor_series' branch ..."
-            )
+            message = "More minor_series need patching. Merge into the next minor_series' branch ..."
             self.print(message)
             next_patch = next_series_patch()
             target_branch = next_patch.branch
@@ -1312,7 +1302,8 @@ class IrisRelease(Progress):
             next_patch_kwargs = self.__getstate__() | dict(
                 git_tag=str(next_patch),
                 sha256=None,
-                latest_complete_step=NextPatch.get_steps().index(NextPatch.validate) - 1,
+                latest_complete_step=NextPatch.get_steps().index(NextPatch.validate)
+                - 1,
             )
             next_patch_script = NextPatch(**next_patch_kwargs)
             next_patch_script.save()
@@ -1329,7 +1320,10 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
     def next_release(self):
-        if self.release_type is not self.ReleaseTypes.PATCH and not self.is_release_candidate:
+        if (
+            self.release_type is not self.ReleaseTypes.PATCH
+            and not self.is_release_candidate
+        ):
             self.print("Prep next release ...")
 
             message = (
