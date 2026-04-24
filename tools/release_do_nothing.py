@@ -249,7 +249,17 @@ class IrisRelease(Progress):
 
     @property
     def first_in_series(self) -> bool:
-        return self.version.minor_series not in [v.minor_series for v in self._get_tagged_versions()]
+        release_step = IrisRelease.get_steps().index(IrisRelease.cut_release)
+        release_complete = self.latest_complete_step >= release_step
+        same_series = [
+            v for v in self._get_tagged_versions()
+            if v.minor_series == self.version.minor_series
+        ]
+        result = (
+            len(same_series) == 0
+            or (release_complete and same_series == [self.version])
+        )
+        return result
 
     def get_all_patches(self):
         if self.release_type is self.ReleaseTypes.PATCH:

@@ -156,12 +156,22 @@ class TestProperties:
         assert self.instance.is_release_candidate is expected
 
     @pytest.mark.parametrize("git_tag", ["1.0.0", "1.0.1", "1.1.0"])
-    def test_first_in_series(self, git_tag, mock_git_ls_remote_tags):
+    @pytest.mark.parametrize("release_complete", [True, False], ids=["release complete", "release not complete"])
+    def test_first_in_series(self, git_tag, release_complete, mock_git_ls_remote_tags):
         mock_git_ls_remote_tags.return_value = (
             "abcd1234 refs/tags/1.0.0\n"
             "abcd1235 refs/tags/1.0.1\n"
+            "abcd1236 refs/tags/1.1.0\n"
         )
-        expecteds = {"1.0.0": False, "1.0.1": False, "1.1.0": True}
+        release_step = IrisRelease.get_steps().index(IrisRelease.cut_release)
+
+        if release_complete:
+            self.instance.latest_complete_step = release_step
+            expecteds = {"1.0.0": False, "1.0.1": False, "1.1.0": True}
+        else:
+            self.instance.latest_complete_step = release_step - 1
+            expecteds = {"1.0.0": False, "1.0.1": False, "1.1.0": False}
+
         expected = expecteds[git_tag]
         self.instance.git_tag = git_tag
         assert self.instance.first_in_series is expected
