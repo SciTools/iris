@@ -16,7 +16,6 @@ from packaging.version import Version
 import pytest
 
 import iris
-from iris.tests import system_test
 
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
@@ -41,28 +40,25 @@ IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
 
 def test_netcdf4_import():
     """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe_nc ."""
-    # Please avoid including these phrases in any comments/strings throughout
-    #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
-    #  below search to remain quick and simple.
-    from iris.fileformats.netcdf import _thread_safe_nc
-    from iris.tests.unit.fileformats.netcdf._thread_safe_nc import test_NetCDFWriteProxy
+    # Logic lives in tools/check_netcdf4_imports.py (also used as a pre-commit hook).
+    import importlib.util
 
-    import_strings = ("import netCDF4", "from netCDF4")
+    _hook_path = Path(__file__).parents[3] / "tools" / "check_netcdf4_imports.py"
+    _spec = importlib.util.spec_from_file_location("check_netcdf4_imports", _hook_path)
+    _mod = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_mod)
+    check_file = _mod.check_file
 
-    files_including_import = []
+    all_violations = []
     for file_path in Path(IRIS_DIR).rglob("*.py"):
-        file_text = file_path.read_text()
+        all_violations.extend(check_file(file_path))
 
-        if any([i in file_text for i in import_strings]):
-            files_including_import.append(file_path)
-
-    expected = [
-        Path(_thread_safe_nc.__file__),
-        Path(test_NetCDFWriteProxy.__file__),
-        Path(system_test.__file__),
-        Path(__file__),
-    ]
-    assert set(files_including_import) == set(expected)
+    message = (
+        "The following files import netCDF4 directly, which is not allowed:\n"
+        + "\n".join(all_violations)
+        + "\nAll netCDF4 imports must be via iris.fileformats.netcdf._thread_safe_nc."
+    )
+    assert not all_violations, message
 
 
 def test_python_versions():
