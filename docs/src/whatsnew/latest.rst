@@ -63,12 +63,19 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
    PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
 
+#. `@tkknight`_ added a minimum pin for the PyData Sphinxc Theme as we use the
+   collapse sidebar feature introduced in 0.17.0. (:pull:`7060`)
+
 
 📚 Documentation
 ================
 
 #. `@trexfeathers`_ and `@tkknight`_ made the docs compatible with the latest
    versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
+
+#. `@tkknight`_ enabled the theme option to collapse the sidebar.  Note, it only
+   appears once you click on a link away from the landing page.  Also moved
+   the search box to the top navigation bar. (:pull:`7060`)
 
 
 💼 Internal
