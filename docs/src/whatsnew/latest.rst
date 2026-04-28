@@ -77,6 +77,9 @@ This document explains the changes made to Iris for this release
    appears once you click on a link away from the landing page.  Also moved
    the search box to the top navigation bar. (:pull:`7060`)
 
+#. `@trexfeathers`_ switched to using the offical URL of the `cf-checker`_, after
+   our previous URL of choice was taken down. (:pull:`7072`)
+
 
 💼 Internal
 ===========
@@ -104,3 +107,4 @@ This document explains the changes made to Iris for this release
 
 .. comment
     Whatsnew resources in alphabetical order:
+.. _cf-checker: https://github.com/cedadev/cf-checker
