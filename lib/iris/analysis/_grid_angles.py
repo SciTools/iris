@@ -14,6 +14,7 @@ import cartopy.crs as ccrs
 import numpy as np
 
 import iris
+from iris.coord_systems import GeogCS, RotatedGeogCS
 
 
 def _3d_xyz_from_latlon(lon, lat):
@@ -453,3 +454,125 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
     v_out.data = np.ma.masked_array(vv, mask=mask)
 
     return u_out, v_out
+
+
+def _vectorised_matmul(mats, vecs):
+    return np.einsum("ijk,ji->ki", mats, vecs)
+
+
+def _generate_180_mats_from_uvecs(uvecs):
+    mats = np.einsum("ji,ki->ijk", uvecs, uvecs) * 2
+    np.einsum("ijj->ij", mats)[:] -= 1
+    return mats
+
+
+def _2D_guess_bounds_first_pass(array):
+    # average and normalise, boundary buffer represents edges and corners
+    result_array = np.zeros((array.shape[0], array.shape[1] + 1, array.shape[2] + 1))
+    pads = ((0, 1), (1, 0))
+    for pad_i in pads:
+        for pad_j in pads:
+            result_array += np.pad(array, ((0, 0), pad_i, pad_j))
+
+    # normalise
+    result_array /= np.linalg.norm(result_array, ord=2, axis=0)[np.newaxis, ...]
+    return result_array
+
+
+def _2D_gb_buffer_outer(array_shape):
+    # return appropriate numpy slice for outer halo
+    _, x, y = array_shape
+    x_i = list(range(x)) + ([x - 1] * (y - 2)) + list(range(x))[::-1] + ([0] * (y - 2))
+    y_i = (
+        ([0] * (x - 1)) + list(range(y)) + ([y - 1] * (x - 2)) + list(range(1, y))[::-1]
+    )
+    return np.s_[:, x_i, y_i]
+
+
+def _2D_gb_buffer_inner(array_shape):
+    # return appropriate numpy slice for inner halo
+    _, x, y = array_shape
+    x_i = (
+        [1]
+        + list(range(1, x - 1))
+        + ([x - 2] * y)
+        + list(range(1, x - 1))[::-1]
+        + ([1] * (y - 1))
+    )
+    y_i = (
+        ([1] * x) + list(range(1, y - 1)) + ([y - 2] * x) + list(range(1, y - 1))[::-1]
+    )
+    return np.s_[:, x_i, y_i]
+
+
+def _2D_guess_bounds_in_place(lons, lats, extrapolate=True):
+    lon_array = lons.points
+    lat_array = lats.points
+    xyz_array = _3d_xyz_from_latlon(lon_array, lat_array)
+
+    result_xyz = _2D_guess_bounds_first_pass(xyz_array)
+    if extrapolate:
+        outer_inds = _2D_gb_buffer_outer(result_xyz.shape)
+        inner_inds = _2D_gb_buffer_inner(result_xyz.shape)
+        mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+        result_xyz[outer_inds] = _vectorised_matmul(mats, result_xyz[inner_inds])
+
+    result_lon_bounds, result_lat_bounds = _latlon_from_xyz(result_xyz)
+
+    # add these bounds cf style
+    lons.bounds = np.stack(
+        [
+            result_lon_bounds[:-1, :-1],
+            result_lon_bounds[:-1, 1:],
+            result_lon_bounds[1:, 1:],
+            result_lon_bounds[1:, :-1],
+        ],
+        axis=2,
+    )
+    lats.bounds = np.stack(
+        [
+            result_lat_bounds[:-1, :-1],
+            result_lat_bounds[:-1, 1:],
+            result_lat_bounds[1:, 1:],
+            result_lat_bounds[1:, :-1],
+        ],
+        axis=2,
+    )
+
+
+def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
+    """Guess the bounds of a pair of 2D coords.
+
+    Parameters
+    ----------
+    x : class:`~iris.coords.AuxCoord`
+        A "longitude" or "grid_longitude" coordinate.
+    y : class:`~iris.coords.AuxCoord`
+        A "latitude" or "grid_latitude" coordinate.
+    extrapolate : bool, default=True
+        If True, extend the edge bounds beyond the limits of the edge points.
+    in_place : bool, default=False
+        If True, modify the coordinate arguments in place.
+    """
+    assert len(x.shape) == len(y.shape) == 2
+    assert x.standard_name in ("longitude", "grid_longitude")
+    assert y.standard_name in ("latitude", "grid_latitude")
+
+    if x.units != "degrees" or y.units != "degrees":
+        msg = "Coordinate units are expected to be degrees."
+        raise ValueError(msg)
+    if not all(
+        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
+        for coord in [x, y]
+    ):
+        msg = "Coordinate systems are expected geodetic."
+        raise ValueError(msg)
+
+    if in_place:
+        new_x = x
+        new_y = y
+    else:
+        new_x = x.copy()
+        new_y = y.copy()
+    _2D_guess_bounds_in_place(new_x, new_y, extrapolate=extrapolate)
+    return new_x, new_y

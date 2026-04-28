@@ -27,7 +27,7 @@ import iris.exceptions
 from iris.util import _meshgrid
 import iris.warnings
 
-from ._grid_angles import gridcell_angles, rotate_grid_vectors
+from ._grid_angles import gridcell_angles, guess_2D_bounds, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
@@ -39,6 +39,7 @@ __all__ = [
     "get_xy_contiguous_bounded_grids",
     "get_xy_grids",
     "gridcell_angles",
+    "guess_2D_bounds",
     "project",
     "rotate_grid_vectors",
     "rotate_pole",
