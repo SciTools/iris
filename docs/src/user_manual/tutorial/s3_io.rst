@@ -148,8 +148,8 @@ system you just created with `s3fs`, e.g.
 
 .. code-block:: python
 
-    >>> path = "/home/self.me/s3_root/testbucket_mountpoint/sub_dir/a_file.nc"
-    >>> cubes = iris.load(path)
+    path = "/home/self.me/s3_root/testbucket_mountpoint/sub_dir/a_file.nc"
+    cubes = iris.load(path)
 
 
 After use (after Python exit)

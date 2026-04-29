@@ -35,6 +35,8 @@ as the **nodes** when creating the Iris
 .. dropdown:: Code
     :icon: code
 
+    .. blacken-docs:off
+
     .. code-block:: python
 
         >>> import iris
@@ -104,6 +106,8 @@ as the **nodes** when creating the Iris
                     <AuxCoord: longitude / (degrees)  <lazy>  shape(126859,)>
                     <AuxCoord: latitude / (degrees)  <lazy>  shape(126859,)>
 
+    .. blacken-docs:on
+
 `WAVEWATCH III`_ Spherical Multi-Cell (SMC) WAVE Quad Grid
 ----------------------------------------------------------
 ..  figure:: images/smc_mesh.png
@@ -123,6 +127,8 @@ as the **nodes** when creating the Iris
 
 .. dropdown:: Code
     :icon: code
+
+    .. blacken-docs:off
 
     .. code-block:: python
 
@@ -228,6 +234,8 @@ as the **nodes** when creating the Iris
                     <AuxCoord: longitude / (degrees)  [...]  shape(666328,)>
                     <AuxCoord: latitude / (degrees)  [...]  shape(666328,)>
 
+    .. blacken-docs:on
+
 
 .. _ORCA_example:
 
@@ -263,6 +271,8 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
 
 .. dropdown:: Code
     :icon: code
+
+    .. blacken-docs:off
 
     .. code-block:: python
 
@@ -362,6 +372,8 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
                 0                                time: mean
             Attributes:
                 Conventions                      'CF-1.5'
+
+    .. blacken-docs:on
 
 
 .. _WAVEWATCH III: https://github.com/NOAA-EMC/WW3

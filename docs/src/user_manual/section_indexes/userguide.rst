@@ -22,8 +22,8 @@ they may serve as a useful reference for future exploration.
    sequentially using the ``next`` and ``previous`` links at the bottom
    of each page.
 
-.. note:: 
-   
+.. note::
+
    There is also useful learning material held in the
    https://github.com/scitools-classroom repo, including tutorials, courses
    and presentations.
@@ -43,4 +43,3 @@ they may serve as a useful reference for future exploration.
    ../tutorial/merge_and_concat
    ../tutorial/cube_statistics
    ../tutorial/cube_maths
-

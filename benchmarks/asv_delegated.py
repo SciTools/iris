@@ -11,9 +11,8 @@ from os.path import getmtime
 from pathlib import Path
 import re
 
-from asv import util as asv_util
-
 from _asv_delegated_abc import _DelegatedABC
+from asv import util as asv_util
 
 
 class Delegated(_DelegatedABC):

@@ -87,12 +87,18 @@ that have been merged.
 
     import numpy as np
     import iris
+
+
     def _xy_cube(z):
-        cube = iris.cube.Cube(np.arange(20).reshape(4, 5), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='y'), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name='x'), 1)
-        cube.add_aux_coord(iris.coords.DimCoord(z, long_name='z', units='meters'))
+        cube = iris.cube.Cube(
+            np.arange(20).reshape(4, 5), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="y"), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name="x"), 1)
+        cube.add_aux_coord(iris.coords.DimCoord(z, long_name="z", units="meters"))
         return cube
+
+
     cubes = iris.cube.CubeList([_xy_cube(1), _xy_cube(2), _xy_cube(3)])
 
 
@@ -165,14 +171,20 @@ into a single cube:
 
     import numpy as np
     import iris
+
+
     def _xy_cube(z):
-        cube = iris.cube.Cube(np.arange(20).reshape(4, 5), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='y'), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name='x'), 1)
-        cube.add_aux_coord(iris.coords.DimCoord(z, long_name='z', units='meters'))
+        cube = iris.cube.Cube(
+            np.arange(20).reshape(4, 5), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="y"), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name="x"), 1)
+        cube.add_aux_coord(iris.coords.DimCoord(z, long_name="z", units="meters"))
         return cube
+
+
     cubes = iris.cube.CubeList([_xy_cube(1), _xy_cube(2), _xy_cube(3)])
-    cubes[0].attributes['Conventions'] = 'CF-1.5'
+    cubes[0].attributes["Conventions"] = "CF-1.5"
 
 .. doctest:: merge_vs_merge_cube
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
@@ -277,13 +289,25 @@ cubes to form a new cube with an extended ``t`` coordinate:
 
     import numpy as np
     import iris
+
+
     def _xyt_cube(t):
-        cube = iris.cube.Cube(np.arange(12 * len(t)).reshape(-1, 3, 4), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name='y'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='x'), 2)
-        cube.add_dim_coord(iris.coords.DimCoord(t, long_name='t'), 0)
+        cube = iris.cube.Cube(
+            np.arange(12 * len(t)).reshape(-1, 3, 4), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name="y"), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="x"), 2)
+        cube.add_dim_coord(iris.coords.DimCoord(t, long_name="t"), 0)
         return cube
-    cubes = iris.cube.CubeList([_xyt_cube(np.arange(31)), _xyt_cube(np.arange(28) + 31), _xyt_cube(np.arange(31) + 59)])
+
+
+    cubes = iris.cube.CubeList(
+        [
+            _xyt_cube(np.arange(31)),
+            _xyt_cube(np.arange(28) + 31),
+            _xyt_cube(np.arange(31) + 59),
+        ]
+    )
 
 .. doctest:: concatenate
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
@@ -332,14 +356,26 @@ concatenate into a single cube:
 
     import numpy as np
     import iris
+
+
     def _xyt_cube(t):
-        cube = iris.cube.Cube(np.arange(12 * len(t)).reshape(-1, 3, 4), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name='y'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='x'), 2)
-        cube.add_dim_coord(iris.coords.DimCoord(t, long_name='t'), 0)
+        cube = iris.cube.Cube(
+            np.arange(12 * len(t)).reshape(-1, 3, 4), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name="y"), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="x"), 2)
+        cube.add_dim_coord(iris.coords.DimCoord(t, long_name="t"), 0)
         return cube
-    cubes = iris.cube.CubeList([_xyt_cube(np.arange(31)), _xyt_cube(np.arange(28) + 31), _xyt_cube(np.arange(31) + 59)])
-    cubes[0].attributes['History'] = 'Created 2010-06-30'
+
+
+    cubes = iris.cube.CubeList(
+        [
+            _xyt_cube(np.arange(31)),
+            _xyt_cube(np.arange(28) + 31),
+            _xyt_cube(np.arange(31) + 59),
+        ]
+    )
+    cubes[0].attributes["History"] = "Created 2010-06-30"
 
 .. doctest:: concatenate_vs_concatenate_cube
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
@@ -505,12 +541,18 @@ is the default behaviour):
 
     import numpy as np
     import iris
+
+
     def _xy_cube(z):
-        cube = iris.cube.Cube(np.arange(20).reshape(4, 5), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='y'), 0)
-        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name='x'), 1)
-        cube.add_aux_coord(iris.coords.DimCoord(z, long_name='z', units='meters'))
+        cube = iris.cube.Cube(
+            np.arange(20).reshape(4, 5), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="y"), 0)
+        cube.add_dim_coord(iris.coords.DimCoord(range(5), long_name="x"), 1)
+        cube.add_aux_coord(iris.coords.DimCoord(z, long_name="z", units="meters"))
         return cube
+
+
     cubes = iris.cube.CubeList([_xy_cube(1), _xy_cube(2), _xy_cube(1)])
 
 .. doctest:: merge_duplicate
@@ -608,18 +650,28 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
 
     import numpy as np
     import iris
+
+
     def _xyt_cube(t):
-        cube = iris.cube.Cube(np.arange(12 * len(t)).reshape(-1, 3, 4), 'air_temperature', units='kelvin')
-        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name='y'), 1)
-        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name='x'), 2)
-        cube.add_dim_coord(iris.coords.DimCoord(t, long_name='t'), 0)
+        cube = iris.cube.Cube(
+            np.arange(12 * len(t)).reshape(-1, 3, 4), "air_temperature", units="kelvin"
+        )
+        cube.add_dim_coord(iris.coords.DimCoord(range(3), long_name="y"), 1)
+        cube.add_dim_coord(iris.coords.DimCoord(range(4), long_name="x"), 2)
+        cube.add_dim_coord(iris.coords.DimCoord(t, long_name="t"), 0)
         return cube
-    cubes = iris.cube.CubeList([_xyt_cube(np.arange(31).astype(np.float64)),
-                                _xyt_cube(np.arange(28).astype(np.float64) + 31),
-                                _xyt_cube(np.arange(31).astype(np.float64) + 59)])
-    cubes[0].coord('t').units = 'days since 1990-02-15'
-    cubes[1].coord('t').units = 'days since 1970-01-01'
-    cubes[2].coord('t').units = 'days since 1970-01-01'
+
+
+    cubes = iris.cube.CubeList(
+        [
+            _xyt_cube(np.arange(31).astype(np.float64)),
+            _xyt_cube(np.arange(28).astype(np.float64) + 31),
+            _xyt_cube(np.arange(31).astype(np.float64) + 59),
+        ]
+    )
+    cubes[0].coord("t").units = "days since 1990-02-15"
+    cubes[1].coord("t").units = "days since 1970-01-01"
+    cubes[2].coord("t").units = "days since 1970-01-01"
 
 .. doctest:: concatenate_time_units
     :options: +ELLIPSIS, +NORMALIZE_WHITESPACE
@@ -630,9 +682,9 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
     1: air_temperature / (kelvin)          (t: 28; y: 3; x: 4)
     2: air_temperature / (kelvin)          (t: 31; y: 3; x: 4)
 
-    >>> print(cubes[0].coord('t').units)
+    >>> print(cubes[0].coord("t").units)
     days since 1990-02-15
-    >>> print(cubes[1].coord('t').units)
+    >>> print(cubes[1].coord("t").units)
     days since 1970-01-01
 
     >>> print(cubes.concatenate_cube())
@@ -643,7 +695,7 @@ the input cubes using :meth:`~iris.cube.CubeList.concatenate_cube`:
 
     >>> unify_time_units(cubes)
 
-    >>> print(cubes[1].coord('t').units)
+    >>> print(cubes[1].coord("t").units)
     days since 1990-02-15
 
     >>> print(cubes.concatenate_cube())

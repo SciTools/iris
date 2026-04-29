@@ -10,7 +10,8 @@
   import numpy as np
   import iris
   import warnings
-  warnings.simplefilter('ignore')
+
+  warnings.simplefilter("ignore")
 
 =================================
 Cube Interpolation and Regridding

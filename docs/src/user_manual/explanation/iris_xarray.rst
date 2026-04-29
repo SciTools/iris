@@ -55,6 +55,7 @@ For example :
 .. code-block:: python
 
       from ncdata.iris_xarray import cubes_from_xarray, cubes_to_xarray
+
       cubes = cubes_from_xarray(dataset)
       xrds = cubes_to_xarray(cubes)
 

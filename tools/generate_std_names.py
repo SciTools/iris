@@ -2,9 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""
-A script to convert the standard names information from the provided XML
-file into a Python dictionary format.
+"""Script converting standard names information from provided XML file to a Python dict.
 
 Takes two arguments: the first is the XML file to process and the second
 is the name of the file to write the Python dictionary file into.
@@ -61,7 +59,8 @@ STD_NAMES = '''.lstrip()
 
 
 def process_name_table(tree, element_name, *child_elements):
-    """
+    """Yield id->mapping dictionaries for each entry in the standard name table.
+
     Yields a series of dictionaries with the key being the id of the entry element and the value containing
     another dictionary mapping other attributes of the standard name to their values, e.g. units, description, grib value etc.
     """
@@ -109,8 +108,6 @@ if __name__ == "__main__":
                         help='Path to resulting Python code')
     args = parser.parse_args()
 
-    encoding = {'encoding': 'utf-8'}
-
-    with open(args.input, 'r', **encoding) as in_fh:
-        with open(args.output, 'w', **encoding) as out_fh:
+    with open(args.input, 'r', encoding="utf-8") as in_fh:
+        with open(args.output, 'w', encoding="utf-8") as out_fh:
             to_dict(in_fh, out_fh)

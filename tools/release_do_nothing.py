@@ -31,11 +31,11 @@ class IrisRelease(Progress):
         MINOR = 1
         PATCH = 2
 
-    github_user: str = None
-    release_type: ReleaseTypes = None
-    git_tag: str = None  # v1.2.3rc0
-    first_in_series: bool = None
-    sha256: str = None
+    github_user: typing.Optional[str] = None
+    release_type: typing.Optional[ReleaseTypes] = None
+    git_tag: typing.Optional[str] = None  # v1.2.3rc0
+    first_in_series: typing.Optional[bool] = None
+    sha256: typing.Optional[str] = None
 
     @classmethod
     def get_cmd_description(cls) -> str:
@@ -65,10 +65,12 @@ class IrisRelease(Progress):
 
     def get_github_user(self):
         def validate(input_user: str) -> str | None:
+            result = None
             if not re.fullmatch(r"[a-zA-Z0-9-]+", input_user):
                 self.report_problem("Invalid GitHub username. Please try again ...")
             else:
-                return input_user
+                result = input_user
+            return result
 
         message = (
             "Please input your GitHub username.\n"
@@ -84,10 +86,12 @@ class IrisRelease(Progress):
 
     def get_release_type(self):
         def validate(input_value: str) -> IrisRelease.ReleaseTypes | None:
+            result = None
             try:
-                return self.ReleaseTypes(int(input_value))
+                result = self.ReleaseTypes(int(input_value))
             except ValueError:
                 self.report_problem("Invalid release type. Please try again ...")
+            return result
 
         self.set_value_from_input(
             key="release_type",
@@ -102,6 +106,7 @@ class IrisRelease(Progress):
 
         def validate(input_tag: str) -> str | None:
             # TODO: use the packaging library?
+            result = None
             version_mask = r"v\d+\.\d+\.\d+\D*.*"
             regex_101 = "https://regex101.com/r/dLVaNH/1"
             if re.fullmatch(version_mask, input_tag) is None:
@@ -112,7 +117,8 @@ class IrisRelease(Progress):
                 )
                 self.report_problem(problem_message)
             else:
-                return input_tag  # v1.2.3rc0
+                result = input_tag  # v1.2.3rc0
+            return result
 
         message = (
             "Input the release tag you are creating today, including any "
@@ -136,6 +142,7 @@ class IrisRelease(Progress):
 
     @property
     def strings(self) -> Strings:
+        assert self.git_tag is not None
         series = ".".join(self.git_tag.split(".")[:2])  # v1.2
         return self.Strings(
             series=series,
@@ -145,6 +152,7 @@ class IrisRelease(Progress):
 
     @property
     def is_release_candidate(self) -> bool:
+        assert self.git_tag is not None
         return "rc" in self.git_tag
 
     def check_release_candidate(self):
@@ -299,7 +307,7 @@ class IrisRelease(Progress):
     class WhatsNewRsts(typing.NamedTuple):
         latest: Path
         release: Path
-        index: Path
+        index_: Path
         template: Path
 
     @property
@@ -312,7 +320,7 @@ class IrisRelease(Progress):
         return self.WhatsNewRsts(
             latest=latest,
             release=whatsnew_dir / (self.strings.series[1:] + ".rst"),
-            index=whatsnew_dir / "index.rst",
+            index_=whatsnew_dir / "index.rst",
             template=latest.with_suffix(".rst.template"),
         )
 
@@ -340,7 +348,7 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                f"In {self.whats_news.index.absolute()}:\n"
+                f"In {self.whats_news.index_.absolute()}:\n"
                 f"Replace references to {self.whats_news.latest.name} with "
                 f"{self.whats_news.release.name}"
             )
@@ -416,8 +424,8 @@ class IrisRelease(Progress):
         message = (
             "Commit and push all the What's New changes.\n"
             f"git add {self.whats_news.release.absolute()};\n"
-            f"git add {self.whats_news.index.absolute()};\n"
-            f'git commit -m "Whats new updates for {self.git_tag} .";\n'
+            f"git add {self.whats_news.index_.absolute()};\n"
+            f'git commit -m "What\'s new updates for {self.git_tag} .";\n'
             f"git push -u origin {working_branch};"
         )
         self.wait_for_done(message)
@@ -579,7 +587,8 @@ class IrisRelease(Progress):
             )
         self.wait_for_done(message)
 
-        def validate(sha256_string: str) -> str:
+        def validate(sha256_string: str) -> str | None:
+            result = None
             valid = True
             try:
                 _ = int(sha256_string, 16)
@@ -590,7 +599,8 @@ class IrisRelease(Progress):
             if not valid:
                 self.report_problem("Invalid SHA256 hash. Please try again ...")
             else:
-                return sha256_string
+                result = sha256_string
+            return result
 
         message = (
             f"Visit the below and click `view hashes` for the Source Distribution"
@@ -912,7 +922,7 @@ class IrisRelease(Progress):
             self.wait_for_done(message)
 
             message = (
-                f"In {self.whats_news.index.absolute()}:\n"
+                f"In {self.whats_news.index_.absolute()}:\n"
                 f"Add {self.whats_news.latest.name} to the top of the list of .rst "
                 f"files, "
                 f"and set the top include:: to be {self.whats_news.latest.name} ."
@@ -921,8 +931,8 @@ class IrisRelease(Progress):
 
             message = (
                 "Commit and push all the What's New changes.\n"
-                f"git add {self.whats_news.index.absolute()};\n"
-                'git commit -m "Restore latest Whats New files.";\n'
+                f"git add {self.whats_news.index_.absolute()};\n"
+                'git commit -m "Restore latest What\'s New files.";\n'
                 f"git push -u origin {working_branch};"
             )
             self.wait_for_done(message)
