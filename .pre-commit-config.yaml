@@ -18,7 +18,7 @@ files: |
         lib\/.+\.py|
         noxfile\.py|
         pyproject\.toml|
-        setup\.py|
+        setup\.py
     )
 minimum_pre_commit_version: 1.21.0
 
