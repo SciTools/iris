@@ -57,6 +57,112 @@ Discussions = "https://github.com/SciTools/iris/discussions"
 Documentation = "https://scitools-iris.readthedocs.io/en/stable/"
 Issues = "https://github.com/SciTools/iris/issues"
 
+[tool.check-manifest]
+ignore = [
+    "lib/iris/_version.py",
+    "lib/iris/std_names.py",
+]
+
+[tool.codespell]
+ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin,re-use,re-uses,re-using,re-used,anc,abl,ND,Nd" # This is the full list of words that we ignore in all repositories.
+skip = "./CODE_OF_CONDUCT.md,_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.run]
+branch = true
+source = [
+    "lib/iris",
+]
+omit = [
+    "lib/iris/tests/*",
+    "lib/iris/etc/*",
+]
+
+[tool.mypy]
+# See https://mypy.readthedocs.io/en/stable/config_file.html
+# https://mypy.readthedocs.io/en/stable/error_code_list2.html
+# TODO: remove when MyPy fixed (see https://github.com/python/mypy/issues/17166)
+disable_error_code = ["call-arg"]
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    'noxfile\.py',
+    'docs/src/conf\.py'
+]
+ignore_missing_imports = true
+strict = false
+warn_unreachable = true
+warn_unused_configs = true
+
+[tool.numpydoc_validation]
+checks = [
+    "all",  # Enable all numpydoc validation rules, apart from the following:
+
+    # -> Docstring text (summary) should start in the line immediately
+    #    after the opening quotes (not in the same line, or leaving a
+    #    blank line in between)
+    # Reason for ignore: A chosen house-style
+    "GL01",  # Permit summary line on same line as docstring opening quotes.
+
+    # -> Closing quotes should be placed in the line after the last text
+    #    in the docstring (do not close the quotes in the same line as
+    #    the text, or leave a blank line between the last text and the
+    #    quotes)
+    # Reason for ignore: A chosen house-style
+    "GL02",  # Permit a blank line before docstring closing quotes.
+
+    # -> Double line break found; please use only one blank line to
+    #    separate sections or paragraphs, and do not leave blank lines
+    #    at the end of docstrings
+    # Reason for ignore: We benefit from more flexability in formatting
+    "GL03",  # Ignoring.
+
+    # -> See Also section not found
+    "SA01",  # Not all docstrings require a "See Also" section.
+
+    # -> No extended summary found
+    "ES01",  # Not all docstrings require an "Extended Summary" section.
+
+    # -> No examples section found
+    "EX01",  # Not all docstrings require an "Examples" section.
+
+    # -> No Yields section found
+    "YD01",  # Not all docstrings require a "Yields" section.
+
+    # Temporary checks to ignore, will be reviewed at a later date.
+    "GL08",  # The object does not have a docstrings not have a docstring
+    "PR01",  # Parameters ... not documented
+    "PR02",  # Unknown parameters {....}
+    "PR04",  # Parameter "...." has no type
+    "PR07",  # Parameter "...." has no description
+    "RT01",  # No Returns section found
+    "RT03",  # Return value has no description
+]
+exclude = [
+    '\.__eq__$',
+    '\.__ne__$',
+    '\.__repr__$',
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "-ra",
+    "--durations=25",
+    "--strict-config",
+    "--strict-markers",
+]
+filterwarnings = ["default"]
+log_level = "INFO"
+minversion = "6.0"
+required_plugins = "pytest-mock"
+testpaths = "lib/iris"
+xfail_strict = "True"
+
 [tool.repo-review]
 # A list of the currently failing repo-review checks.
 ignore = [
@@ -86,11 +192,6 @@ extend-exclude = [
     "tools",
 ]
 line-length = 88
-src = [
-    "benchmarks",
-    "lib",
-    "docs/src",
-]
 
 [tool.ruff.format]
 preview = false
@@ -108,19 +209,24 @@ ignore = [
     # https://docs.astral.sh/ruff/rules/single-line-implicit-string-concatenation/
     # NOTE: This rule may cause conflicts when used with "ruff format".
     "ISC001",  # Implicitly concatenate string literals on one line.
-    ]
-    preview = false
-    select = [
-        "ALL",
-        # list specific rules to include that is skipped using numpy convention.
-        "D212",  # Multi-line docstring summary should start at the first line
-    ]
+]
+preview = false
+select = [
+    "ALL",
+    # Note: the above "all" disables conflicting rules, if you want that
+    # rule it needs to be explicitly enabled below:
+    "D212",  # Multi-line docstring summary should start at the first line
+]
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["iris"]
 
+[tool.ruff.lint.mccabe]
+max-complexity = 22
+
 [tool.ruff.lint.per-file-ignores]
+# https://docs.astral.sh/ruff/rules
 # All test scripts
 
 "lib/iris/tests/*.py" = [
@@ -150,108 +256,7 @@ include = ["iris*"]
 where = ["lib"]
 
 [tool.setuptools_scm]
-write_to = "lib/iris/_version.py"
 local_scheme = "dirty-tag"
+# https://setuptools-scm.readthedocs.io/en/latest/extending/#version-number-construction
 version_scheme = "release-branch-semver"
-
-[tool.pytest.ini_options]
-addopts = [
-    "-ra",
-    "--durations=25",
-    "--strict-config",
-    "--strict-markers",
-]
-filterwarnings = ["default"]
-log_level = "INFO"
-minversion = "6.0"
-required_plugins = "pytest-mock"
-testpaths = "lib/iris"
-xfail_strict = "True"
-
-[tool.coverage.run]
-branch = true
-source = [
-    "lib/iris",
-]
-omit = [
-    "lib/iris/tests/*",
-    "lib/iris/etc/*",
-]
-
-[tool.coverage.report]
-exclude_lines = [
-    "pragma: no cover",
-    "if __name__ == .__main__.:",
-    "if TYPE_CHECKING:",
-]
-
-[tool.codespell]
-ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin,re-use,re-uses,re-using,re-used,anc,abl"
-skip = "./CODE_OF_CONDUCT.md,_build,*.css,*.ipynb,*.js,*.html,*.svg,*.xml,.git,generated"
-
-[tool.check-manifest]
-ignore = [
-    "lib/iris/_version.py",
-    "lib/iris/std_names.py",
-]
-
-[tool.mypy]
-# See https://mypy.readthedocs.io/en/stable/config_file.html
-# TODO: remove when MyPy fixed (see https://github.com/python/mypy/issues/17166)
-disable_error_code = ["call-arg"]
-enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
-exclude = [
-    'noxfile\.py',
-    'docs/src/conf\.py'
-]
-ignore_missing_imports = true
-strict = false
-warn_unreachable = true
-warn_unused_configs = true
-
-[tool.numpydoc_validation]
-checks = [
-    "all",  # Enable all numpydoc validation rules, apart from the following:
-
-    # -> Docstring text (summary) should start in the line immediately
-    #    after the opening quotes (not in the same line, or leaving a
-    #    blank line in between)
-    "GL01",  # Permit summary line on same line as docstring opening quotes.
-
-    # -> Closing quotes should be placed in the line after the last text
-    #    in the docstring (do not close the quotes in the same line as
-    #    the text, or leave a blank line between the last text and the
-    #    quotes)
-    "GL02",  # Permit a blank line before docstring closing quotes.
-
-    # -> Double line break found; please use only one blank line to
-    #    separate sections or paragraphs, and do not leave blank lines
-    #    at the end of docstrings
-    "GL03",  # Ignoring.
-
-    # -> See Also section not found
-    "SA01",  # Not all docstrings require a "See Also" section.
-
-    # -> No extended summary found
-    "ES01",  # Not all docstrings require an "Extended Summary" section.
-
-    # -> No examples section found
-    "EX01",  # Not all docstrings require an "Examples" section.
-
-    # -> No Yields section found
-    "YD01",  # Not all docstrings require a "Yields" section.
-
-    # Temporary checks to ignore, will be reviewed at a later date.
-    "GL08",  # The object does not have a docstrings not have a docstring
-    "PR01",  # Parameters ... not documented
-    "PR02",  # Unknown parameters {....}
-    "PR04",  # Parameter "...." has no type
-    "PR07",  # Parameter "...." has no description
-    "RT01",  # No Returns section found
-    "RT03",  # Return value has no description
-]
-exclude = [
-    '\.__eq__$',
-    '\.__ne__$',
-    '\.__repr__$',
-]
+write_to = "lib/iris/_version.py"
