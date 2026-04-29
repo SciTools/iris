@@ -9,21 +9,17 @@ WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from pathlib import Path
-import shutil
-import tempfile
 
 import numpy as np
+import pytest
 
 from iris import save
 from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.mesh import Connectivity, MeshXY, save_mesh
+from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
 XY_LOCS = ("x", "y")
@@ -358,38 +354,39 @@ def filter_compression_calls(patch, compression_kwargs, mismatch=False):
     return result
 
 
-class TestSaveUgrid__cube(tests.IrisTest):
+class TestSaveUgrid__cube:
     """Test for saving cubes which have meshes."""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.temp_dir = Path(tempfile.mkdtemp())
+    @pytest.fixture(autouse=True, scope="class")
+    @staticmethod
+    def _setup(request, tmp_path_factory):
+        request.cls.temp_dir = tmp_path_factory.mktemp("test")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.temp_dir)
+    @pytest.fixture
+    def check_save_cubes(self, request):
+        def _check_save_cubes(cube_or_cubes, compression_kwargs=None):
+            """Write cubes to a new file in the common temporary directory.
 
-    def check_save_cubes(self, cube_or_cubes, compression_kwargs=None):
-        """Write cubes to a new file in the common temporary directory.
+            Use a name unique to this testcase, to avoid any clashes.
 
-        Use a name unique to this testcase, to avoid any clashes.
+            """
+            # use 'result_path' to name the file after the test function
+            tempfile_path = _shared_utils.result_path(request, ext=".nc")
+            # Create a file of that name, but discard the result path and put it
+            # in the common temporary directory.
+            tempfile_path = self.temp_dir / Path(tempfile_path).name
 
-        """
-        # use 'result_path' to name the file after the test function
-        tempfile_path = self.result_path(ext=".nc")
-        # Create a file of that name, but discard the result path and put it
-        # in the common temporary directory.
-        tempfile_path = self.temp_dir / Path(tempfile_path).name
+            if compression_kwargs is None:
+                compression_kwargs = {}
 
-        if compression_kwargs is None:
-            compression_kwargs = {}
+            # Save data to the file.
+            save(cube_or_cubes, tempfile_path, **compression_kwargs)
 
-        # Save data to the file.
-        save(cube_or_cubes, tempfile_path, **compression_kwargs)
+            return tempfile_path
 
-        return tempfile_path
+        return _check_save_cubes
 
-    def test_compression(self):
+    def test_compression(self, check_save_cubes, mocker):
         """Test NetCDF serialization of a cube with attached mesh using compression.
 
         NetCDF data compression keyword arguments include "complevel",
@@ -400,12 +397,12 @@ class TestSaveUgrid__cube(tests.IrisTest):
         # Note that the patch location is "_thread_safe_nc" when it is imported
         # into the iris.fileformats.netcdf.saver. Also we want to check that the
         # compression kwargs are passed into the NetCDF4 createVariable method
-        patch = self.patch(
+        patch = mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
         )
         # No need to patch this NetCDF4 variable to compensate for the previous patch
         # on createVariable, which doesn't actually create the variable.
-        self.patch(
+        mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
         )
         cube = make_cube(var_name=(var_name := "a"))
@@ -416,7 +413,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
             "zlib": True,
         }
 
-        _ = self.check_save_cubes(cube, compression_kwargs=compression_kwargs)
+        _ = check_save_cubes(cube, compression_kwargs=compression_kwargs)
 
         # The following mesh components and cube should be compressed on serialization.
         result = filter_compression_calls(patch, compression_kwargs)
@@ -427,12 +424,12 @@ class TestSaveUgrid__cube(tests.IrisTest):
         expected = {"Mesh2d"}
         assert result == expected
 
-    def test_basic_mesh(self):
+    def test_basic_mesh(self, request, check_save_cubes):
         # Save a small mesh example and check aspects of the resulting file.
         cube = make_cube()  # A simple face-mapped data example.
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes(cube)
+        tempfile_path = check_save_cubes(cube)
         dims, vars = scan_dataset(tempfile_path)
 
         # There is exactly 1 mesh var.
@@ -444,68 +441,64 @@ class TestSaveUgrid__cube(tests.IrisTest):
         mesh_props = vars[mesh_name]
 
         # The mesh var links to the mesh, with location 'faces'
-        self.assertEqual(a_name, "unknown")
-        self.assertEqual(a_props["mesh"], mesh_name)
-        self.assertEqual(a_props["location"], "face")
+        assert a_name == "unknown"
+        assert a_props["mesh"] == mesh_name
+        assert a_props["location"] == "face"
 
         # There are 2 face coords == those listed in the mesh
         face_coords = mesh_props["face_coordinates"].split(" ")
-        self.assertEqual(len(face_coords), 2)
+        assert len(face_coords) == 2
 
         # The face coords should both map that single dim.
         face_dim = vars_meshdim(vars, "face")
-        self.assertTrue(all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords))
+        assert all(vars[co][_VAR_DIMS] == [face_dim] for co in face_coords)
 
         # The face coordinates should be referenced by the data variable.
         for coord in face_coords:
-            self.assertIn(coord, a_props["coordinates"])
+            assert coord in a_props["coordinates"]
 
         # The dims of the datavar also == [<faces-dim>]
-        self.assertEqual(a_props[_VAR_DIMS], [face_dim])
+        assert a_props[_VAR_DIMS] == [face_dim]
 
         # There are 2 node coordinates == those listed in the mesh.
         node_coords = mesh_props["node_coordinates"].split(" ")
-        self.assertEqual(len(node_coords), 2)
+        assert len(node_coords) == 2
         # These are the *only* ones using the 'nodes' dimension.
         node_dim = vars_meshdim(vars, "node")
-        self.assertEqual(
-            sorted(node_coords), sorted(vars_w_dims(vars, [node_dim]).keys())
-        )
+        assert sorted(node_coords) == sorted(vars_w_dims(vars, [node_dim]).keys())
 
         # There are no edges.
-        self.assertNotIn("edge_node_connectivity", mesh_props)
-        self.assertEqual(len(vars_w_props(vars, cf_role="edge_node_connectivity")), 0)
+        assert "edge_node_connectivity" not in mesh_props
+        assert len(vars_w_props(vars, cf_role="edge_node_connectivity")) == 0
 
         # The dims are precisely (nodes, faces, nodes-per-face), in that order.
-        self.assertEqual(
-            list(dims.keys()),
-            ["Mesh2d_nodes", "Mesh2d_faces", "Mesh2d_face_N_nodes"],
-        )
+        assert list(dims.keys()) == [
+            "Mesh2d_nodes",
+            "Mesh2d_faces",
+            "Mesh2d_face_N_nodes",
+        ]
 
         # The variables are exactly (mesh, 2*node-coords, 2*face-coords,
         # face-nodes, data) -- in that order
-        self.assertEqual(
-            list(vars.keys()),
-            [
-                "Mesh2d",
-                "node_x",
-                "node_y",
-                "face_x",
-                "face_y",
-                "mesh2d_faces",
-                "unknown",
-            ],
-        )
+        assert list(vars.keys()) == [
+            "Mesh2d",
+            "node_x",
+            "node_y",
+            "face_x",
+            "face_y",
+            "mesh2d_faces",
+            "unknown",
+        ]
 
         # For completeness, also check against a full CDL snapshot
-        self.assertCDL(tempfile_path)
+        _shared_utils.assert_CDL(request, tempfile_path)
 
-    def test_multi_cubes_common_mesh(self):
+    def test_multi_cubes_common_mesh(self, check_save_cubes):
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b")
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes([cube1, cube2])
+        tempfile_path = check_save_cubes([cube1, cube2])
         dims, vars = scan_dataset(tempfile_path)
 
         # there is exactly 1 mesh in the file
@@ -513,19 +506,19 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # both the main variables reference the same mesh, and 'face' location
         v_a, v_b = vars["a"], vars["b"]
-        self.assertEqual(v_a["mesh"], mesh_name)
-        self.assertEqual(v_a["location"], "face")
-        self.assertEqual(v_a["coordinates"], "face_x face_y")
-        self.assertEqual(v_b["mesh"], mesh_name)
-        self.assertEqual(v_b["location"], "face")
-        self.assertEqual(v_b["coordinates"], "face_x face_y")
+        assert v_a["mesh"] == mesh_name
+        assert v_a["location"] == "face"
+        assert v_a["coordinates"] == "face_x face_y"
+        assert v_b["mesh"] == mesh_name
+        assert v_b["location"] == "face"
+        assert v_b["coordinates"] == "face_x face_y"
 
-    def test_multi_cubes_different_locations(self):
+    def test_multi_cubes_different_locations(self, check_save_cubes):
         cube1 = make_cube(var_name="a", location="face")
         cube2 = make_cube(var_name="b", location="node")
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes([cube1, cube2])
+        tempfile_path = check_save_cubes([cube1, cube2])
         dims, vars = scan_dataset(tempfile_path)
 
         # there is exactly 1 mesh in the file
@@ -533,20 +526,20 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # the main variables reference the same mesh at different locations
         v_a, v_b = vars["a"], vars["b"]
-        self.assertEqual(v_a["mesh"], mesh_name)
-        self.assertEqual(v_a["location"], "face")
-        self.assertEqual(v_a["coordinates"], "face_x face_y")
-        self.assertEqual(v_b["mesh"], mesh_name)
-        self.assertEqual(v_b["location"], "node")
-        self.assertEqual(v_b["coordinates"], "node_x node_y")
+        assert v_a["mesh"] == mesh_name
+        assert v_a["location"] == "face"
+        assert v_a["coordinates"] == "face_x face_y"
+        assert v_b["mesh"] == mesh_name
+        assert v_b["location"] == "node"
+        assert v_b["coordinates"] == "node_x node_y"
 
         # the main variables map the face and node dimensions
         face_dim = vars_meshdim(vars, "face")
         node_dim = vars_meshdim(vars, "node")
-        self.assertEqual(v_a[_VAR_DIMS], [face_dim])
-        self.assertEqual(v_b[_VAR_DIMS], [node_dim])
+        assert v_a[_VAR_DIMS] == [face_dim]
+        assert v_b[_VAR_DIMS] == [node_dim]
 
-    def test_multi_cubes_equal_meshes(self):
+    def test_multi_cubes_equal_meshes(self, check_save_cubes):
         # Make 2 identical meshes
         # NOTE: *can't* name these explicitly, as it stops them being identical.
         mesh1 = make_mesh()
@@ -555,49 +548,49 @@ class TestSaveUgrid__cube(tests.IrisTest):
         cube2 = make_cube(var_name="b", mesh=mesh2)
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes([cube1, cube2])
+        tempfile_path = check_save_cubes([cube1, cube2])
         dims, vars = scan_dataset(tempfile_path)
 
         # there is exactly 1 mesh in the file
         mesh_names = vars_meshnames(vars)
-        self.assertEqual(sorted(mesh_names), ["Mesh2d"])
+        assert sorted(mesh_names) == ["Mesh2d"]
 
         # same dimensions
-        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
-        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
+        assert vars_meshdim(vars, "node", mesh_name="Mesh2d") == "Mesh2d_nodes"
+        assert vars_meshdim(vars, "face", mesh_name="Mesh2d") == "Mesh2d_faces"
 
         # there are exactly two data-variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
-        self.assertEqual(["a", "b"], list(mesh_datavars))
+        assert ["a", "b"] == list(mesh_datavars)
 
         # the data variables reference the same mesh
         a_props, b_props = vars["a"], vars["b"]
         for props in a_props, b_props:
-            self.assertEqual(props["mesh"], "Mesh2d")
-            self.assertEqual(props["location"], "face")
-            self.assertEqual(props["coordinates"], "face_x face_y")
+            assert props["mesh"] == "Mesh2d"
+            assert props["location"] == "face"
+            assert props["coordinates"] == "face_x face_y"
 
         # the data variables map the appropriate node dimension
-        self.assertEqual(a_props[_VAR_DIMS], ["Mesh2d_faces"])
-        self.assertEqual(b_props[_VAR_DIMS], ["Mesh2d_faces"])
+        assert a_props[_VAR_DIMS] == ["Mesh2d_faces"]
+        assert b_props[_VAR_DIMS] == ["Mesh2d_faces"]
 
-    def test_multi_cubes_different_mesh(self):
+    def test_multi_cubes_different_mesh(self, check_save_cubes):
         # Check that we can correctly distinguish 2 different meshes.
         cube1 = make_cube(var_name="a")
         cube2 = make_cube(var_name="b", mesh=make_mesh(n_faces=4))
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes([cube1, cube2])
+        tempfile_path = check_save_cubes([cube1, cube2])
         dims, vars = scan_dataset(tempfile_path)
 
         # there are 2 meshes in the file
         mesh_names = vars_meshnames(vars)
-        self.assertEqual(len(mesh_names), 2)
+        assert len(mesh_names) == 2
 
         # there are two (data)variables with a 'mesh' property
         mesh_datavars = vars_w_props(vars, mesh="*")
-        self.assertEqual(2, len(mesh_datavars))
-        self.assertEqual(["a", "b"], sorted(mesh_datavars.keys()))
+        assert 2 == len(mesh_datavars)
+        assert ["a", "b"] == sorted(mesh_datavars.keys())
 
         def get_props_attrs(props: dict):
             return props["mesh"], props["location"], props["coordinates"]
@@ -606,18 +599,18 @@ class TestSaveUgrid__cube(tests.IrisTest):
         a_props, b_props = vars["a"], vars["b"]
         mesh_a, loc_a, coords_a = get_props_attrs(a_props)
         mesh_b, loc_b, coords_b = get_props_attrs(b_props)
-        self.assertNotEqual(mesh_a, mesh_b)
-        self.assertNotEqual(coords_a, coords_b)
-        self.assertEqual(loc_a, "face")
-        self.assertEqual(loc_b, "face")
+        assert mesh_a != mesh_b
+        assert coords_a != coords_b
+        assert loc_a == "face"
+        assert loc_b == "face"
 
-    def test_nonmesh_dim(self):
+    def test_nonmesh_dim(self, check_save_cubes):
         # Check where the data variable has a 'normal' dim and a mesh dim.
         cube = make_cube()
         cube = add_height_dim(cube)
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes(cube)
+        tempfile_path = check_save_cubes(cube)
         dims, vars = scan_dataset(tempfile_path)
 
         # have just 1 mesh, including a face and node coordinates.
@@ -631,12 +624,12 @@ class TestSaveUgrid__cube(tests.IrisTest):
         ((data_name, data_props),) = vars_w_props(vars, mesh="*").items()
 
         # data maps to the height + mesh dims
-        self.assertEqual(data_props[_VAR_DIMS], ["height", face_dim])
-        self.assertEqual(data_props["mesh"], mesh_name)
-        self.assertEqual(data_props["location"], "face")
+        assert data_props[_VAR_DIMS] == ["height", face_dim]
+        assert data_props["mesh"] == mesh_name
+        assert data_props["location"] == "face"
 
-    @tests.skip_data
-    def test_nonmesh_hybrid_dim(self):
+    @_shared_utils.skip_data
+    def test_nonmesh_hybrid_dim(self, check_save_cubes):
         # Check a case with a hybrid non-mesh dimension
         cube = realistic_4d()
         # Strip off the time and longitude dims, to make it simpler.
@@ -663,7 +656,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
             cube.add_aux_coord(coord, (i_horizontal_dim,))
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes(cube)
+        tempfile_path = check_save_cubes(cube)
         dims, vars = scan_dataset(tempfile_path)
 
         # have just 1 mesh, including face and node coordinates.
@@ -672,29 +665,26 @@ class TestSaveUgrid__cube(tests.IrisTest):
         _ = vars_meshdim(vars, "node", mesh_name)
 
         # have hybrid vertical dimension, with all the usual term variables.
-        self.assertIn("model_level_number", dims)
+        assert "model_level_number" in dims
         vert_vars = list(vars_w_dims(vars, ["model_level_number"]).keys())
         # The list of file variables mapping the vertical dimension:
         # = the data-var, plus all the height terms
-        self.assertEqual(
-            vert_vars,
-            [
-                "air_potential_temperature",
-                "model_level_number",
-                "level_height",
-                "level_height_bnds",
-                "sigma",
-                "sigma_bnds",
-            ],
-        )
+        assert vert_vars == [
+            "air_potential_temperature",
+            "model_level_number",
+            "level_height",
+            "level_height_bnds",
+            "sigma",
+            "sigma_bnds",
+        ]
 
         # have just 1 data-variable, which maps to hybrid-height and mesh dims
         ((data_name, data_props),) = vars_w_props(vars, mesh="*").items()
-        self.assertEqual(data_props[_VAR_DIMS], ["model_level_number", face_dim])
-        self.assertEqual(data_props["mesh"], mesh_name)
-        self.assertEqual(data_props["location"], "face")
+        assert data_props[_VAR_DIMS] == ["model_level_number", face_dim]
+        assert data_props["mesh"] == mesh_name
+        assert data_props["location"] == "face"
 
-    def test_alternate_cube_dim_order(self):
+    def test_alternate_cube_dim_order(self, check_save_cubes):
         # A cube transposed from the 'usual' order
         # Should work much the same as the "basic" case.
         cube_1 = make_cube(var_name="a")
@@ -705,7 +695,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         cube_2.transpose()
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes([cube_1, cube_2])
+        tempfile_path = check_save_cubes([cube_1, cube_2])
         dims, vars = scan_dataset(tempfile_path)
 
         # There is only 1 mesh
@@ -713,16 +703,16 @@ class TestSaveUgrid__cube(tests.IrisTest):
 
         # both variables reference the same mesh
         v_a, v_b = vars["a"], vars["b"]
-        self.assertEqual(v_a["mesh"], mesh_name)
-        self.assertEqual(v_a["location"], "face")
-        self.assertEqual(v_b["mesh"], mesh_name)
-        self.assertEqual(v_b["location"], "face")
+        assert v_a["mesh"] == mesh_name
+        assert v_a["location"] == "face"
+        assert v_b["mesh"] == mesh_name
+        assert v_b["location"] == "face"
 
         # Check the var dimensions
-        self.assertEqual(v_a[_VAR_DIMS], ["height", "Mesh2d_faces"])
-        self.assertEqual(v_b[_VAR_DIMS], ["Mesh2d_faces", "height"])
+        assert v_a[_VAR_DIMS] == ["height", "Mesh2d_faces"]
+        assert v_b[_VAR_DIMS] == ["Mesh2d_faces", "height"]
 
-    def test_mixed_aux_coords(self):
+    def test_mixed_aux_coords(self, check_save_cubes):
         """``coordinates`` attribute should include mesh location coords and 'normal' coords."""
         cube = make_cube()
         mesh_dim = cube.mesh_dim()
@@ -731,7 +721,7 @@ class TestSaveUgrid__cube(tests.IrisTest):
         cube.add_aux_coord(coord, mesh_dim)
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_cubes(cube)
+        tempfile_path = check_save_cubes(cube)
         dims, vars = scan_dataset(tempfile_path)
 
         # There is exactly 1 mesh-linked (data)var
@@ -742,41 +732,42 @@ class TestSaveUgrid__cube(tests.IrisTest):
         expected_coords.append(coord)
         expected_coord_names = [c.var_name for c in expected_coords]
         expected_coord_attr = " ".join(sorted(expected_coord_names))
-        self.assertEqual(a_props["coordinates"], expected_coord_attr)
+        assert a_props["coordinates"] == expected_coord_attr
 
 
-class TestSaveUgrid__mesh(tests.IrisTest):
+class TestSaveUgrid__mesh:
     """Tests for saving meshes to a file."""
 
-    @classmethod
-    def setUpClass(cls):
-        cls.temp_dir = Path(tempfile.mkdtemp())
+    @pytest.fixture(autouse=True, scope="class")
+    @staticmethod
+    def _setup(request, tmp_path_factory):
+        request.cls.temp_dir = tmp_path_factory.mktemp("test")
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.temp_dir)
+    @pytest.fixture
+    def check_save_mesh(self, request):
+        def _check_save_mesh(mesh, compression_kwargs=None):
+            """Write a mesh to a new file in the common temporary directory.
 
-    def check_save_mesh(self, mesh, compression_kwargs=None):
-        """Write a mesh to a new file in the common temporary directory.
+            Use a name unique to this testcase, to avoid any clashes.
 
-        Use a name unique to this testcase, to avoid any clashes.
+            """
+            # use 'result_path' to name the file after the test function
+            tempfile_path = _shared_utils.result_path(request, ext=".nc")
+            # Create a file of that name, but discard the result path and put it
+            # in the common temporary directory.
+            tempfile_path = self.temp_dir / Path(tempfile_path).name
 
-        """
-        # use 'result_path' to name the file after the test function
-        tempfile_path = self.result_path(ext=".nc")
-        # Create a file of that name, but discard the result path and put it
-        # in the common temporary directory.
-        tempfile_path = self.temp_dir / Path(tempfile_path).name
+            if compression_kwargs is None:
+                compression_kwargs = {}
 
-        if compression_kwargs is None:
-            compression_kwargs = {}
+            # Save data to the file.
+            save_mesh(mesh, tempfile_path, **compression_kwargs)
 
-        # Save data to the file.
-        save_mesh(mesh, tempfile_path, **compression_kwargs)
+            return tempfile_path
 
-        return tempfile_path
+        return _check_save_mesh
 
-    def test_compression(self):
+    def test_compression(self, check_save_mesh, mocker):
         """Test NetCDF serialization of a mesh using compression.
 
         NetCDF data compression keyword arguments include "complevel",
@@ -784,10 +775,10 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         are only applicable when "zlib=True".
 
         """
-        patch = self.patch(
+        patch = mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
         )
-        self.patch(
+        mocker.patch(
             "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
         )
         mesh = make_mesh()
@@ -798,7 +789,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             "zlib": True,
         }
 
-        _ = self.check_save_mesh(mesh, compression_kwargs=compression_kwargs)
+        _ = check_save_mesh(mesh, compression_kwargs=compression_kwargs)
 
         # The following mesh components should be compressed on serialization.
         result = filter_compression_calls(patch, compression_kwargs)
@@ -809,7 +800,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         expected = {"Mesh2d"}
         assert result == expected
 
-    def test_connectivity_dim_order(self):
+    def test_connectivity_dim_order(self, check_save_mesh):
         """Test a mesh with some connectivities in the 'other' order.
 
         This should also create a property with the dimension name.
@@ -832,7 +823,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         )
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh(mesh2)
+        tempfile_path = check_save_mesh(mesh2)
         dims, vars = scan_dataset(tempfile_path)
 
         # Check shape and dimensions of the associated connectivity variables.
@@ -842,24 +833,20 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         edgeconn_name = mesh_props["edge_node_connectivity"]
         faceconn_props = vars[faceconn_name]
         edgeconn_props = vars[edgeconn_name]
-        self.assertEqual(
-            faceconn_props[_VAR_DIMS], ["Mesh_2d_face_N_nodes", "Mesh2d_face"]
-        )
-        self.assertEqual(
-            edgeconn_props[_VAR_DIMS], ["Mesh_2d_edge_N_nodes", "Mesh2d_edge"]
-        )
+        assert faceconn_props[_VAR_DIMS] == ["Mesh_2d_face_N_nodes", "Mesh2d_face"]
+        assert edgeconn_props[_VAR_DIMS] == ["Mesh_2d_edge_N_nodes", "Mesh2d_edge"]
 
         # Check the dimension lengths are also as expected
-        self.assertEqual(dims["Mesh2d_face"], 2)
-        self.assertEqual(dims["Mesh_2d_face_N_nodes"], 4)
-        self.assertEqual(dims["Mesh2d_edge"], 7)
-        self.assertEqual(dims["Mesh_2d_edge_N_nodes"], 2)
+        assert dims["Mesh2d_face"] == 2
+        assert dims["Mesh_2d_face_N_nodes"] == 4
+        assert dims["Mesh2d_edge"] == 7
+        assert dims["Mesh_2d_edge_N_nodes"] == 2
 
         # the mesh has extra location-dimension properties
-        self.assertEqual(mesh_props["face_dimension"], "Mesh2d_face")
-        self.assertEqual(mesh_props["edge_dimension"], "Mesh2d_edge")
+        assert mesh_props["face_dimension"] == "Mesh2d_face"
+        assert mesh_props["edge_dimension"] == "Mesh2d_edge"
 
-    def test_connectivity_start_index(self):
+    def test_connectivity_start_index(self, check_save_mesh):
         """Test a mesh where some connectivities have start_index = 1."""
         # Make a mesh with both faces *and* some edges
         mesh = make_mesh(n_edges=7)
@@ -881,7 +868,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         )
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh(mesh2)
+        tempfile_path = check_save_mesh(mesh2)
         dims, vars = scan_dataset(tempfile_path)
 
         # Check shape and dimensions of the associated connectivity variables.
@@ -891,10 +878,10 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         edgeconn_name = mesh_props["edge_node_connectivity"]
         faceconn_props = vars[faceconn_name]
         edgeconn_props = vars[edgeconn_name]
-        self.assertEqual(faceconn_props["start_index"], 0)
-        self.assertEqual(edgeconn_props["start_index"], 1)
+        assert faceconn_props["start_index"] == 0
+        assert edgeconn_props["start_index"] == 1
 
-    def test_nonuniform_connectivity(self):
+    def test_nonuniform_connectivity(self, check_save_mesh):
         # Check handling of connectivities with missing points.
         n_faces = 7
         mesh = make_mesh(n_faces=n_faces)
@@ -915,65 +902,66 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         mesh.add_connectivities(conn)
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh(mesh)
+        tempfile_path = check_save_mesh(mesh)
         dims, vars = scan_dataset(tempfile_path)
 
         # Check that the mesh saved with the additional connectivity
         (mesh_name,) = vars_meshnames(vars)
         mesh_props = vars[mesh_name]
-        self.assertIn("face_face_connectivity", mesh_props)
+        assert "face_face_connectivity" in mesh_props
         ff_conn_name = mesh_props["face_face_connectivity"]
 
         # check that the connectivity has the corrects dims and fill-property
         ff_props = vars[ff_conn_name]
-        self.assertEqual(ff_props[_VAR_DIMS], ["Mesh2d_faces", "Mesh2d_face_N_faces"])
-        self.assertIn("_FillValue", ff_props)
-        self.assertEqual(ff_props["_FillValue"], -1)
+        assert ff_props[_VAR_DIMS] == ["Mesh2d_faces", "Mesh2d_face_N_faces"]
+        assert "_FillValue" in ff_props
+        assert ff_props["_FillValue"] == -1
 
         # Check that a 'normal' connectivity does *not* have a _FillValue
         fn_conn_name = mesh_props["face_node_connectivity"]
         fn_props = vars[fn_conn_name]
-        self.assertNotIn("_FillValue", fn_props)
+        assert "_FillValue" not in fn_props
 
         # For what it's worth, *also* check the actual data array in the file
         ds = _thread_safe_nc.DatasetWrapper(tempfile_path)
         conn_var = ds.variables[ff_conn_name]
         data = conn_var[:]
         ds.close()
-        self.assertIsInstance(data, np.ma.MaskedArray)
-        self.assertEqual(data.fill_value, -1)
+        assert isinstance(data, np.ma.MaskedArray)
+        assert data.fill_value == -1
         # Compare raw values stored to indices, but with -1 at missing points
         raw_data = data.data
         filled_indices = indices.filled(-1)
-        self.assertArrayEqual(raw_data, filled_indices)
+        _shared_utils.assert_array_equal(raw_data, filled_indices)
 
-    def test_one_dimensional(self):
+    def test_one_dimensional(self, check_save_mesh):
         # Test a mesh with edges only.
         mesh = make_mesh(n_edges=5, n_faces=0, mesh_kwargs={"var_name": "Mesh1d"})
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh(mesh)
+        tempfile_path = check_save_mesh(mesh)
         dims, vars = scan_dataset(tempfile_path)
 
         # there is a single mesh-var
         (mesh_name,) = vars_meshnames(vars)
 
         # the dims include edges but not faces
-        self.assertEqual(
-            list(dims.keys()),
-            ["Mesh1d_node", "Mesh1d_edge", "Mesh1d_edge_N_nodes"],
-        )
-        self.assertEqual(vars_meshdim(vars, "node"), "Mesh1d_node")
-        self.assertEqual(vars_meshdim(vars, "edge"), "Mesh1d_edge")
+        assert list(dims.keys()) == [
+            "Mesh1d_node",
+            "Mesh1d_edge",
+            "Mesh1d_edge_N_nodes",
+        ]
+        assert vars_meshdim(vars, "node") == "Mesh1d_node"
+        assert vars_meshdim(vars, "edge") == "Mesh1d_edge"
 
         # check suitable mesh properties
-        self.assertEqual(mesh_name, "Mesh1d")
+        assert mesh_name == "Mesh1d"
         mesh_props = vars[mesh_name]
-        self.assertEqual(mesh_props["topology_dimension"], 1)
-        self.assertIn("edge_node_connectivity", mesh_props)
-        self.assertNotIn("face_node_connectivity", mesh_props)
+        assert mesh_props["topology_dimension"] == 1
+        assert "edge_node_connectivity" in mesh_props
+        assert "face_node_connectivity" not in mesh_props
 
-    def test_location_coord_units(self):
+    def test_location_coord_units(self, check_save_mesh):
         # Check that units on mesh locations are handled correctly.
         # NOTE: at present, the MeshXY class cannot handle coordinates that are
         # not recognised by 'guess_coord_axis' == suitable standard names
@@ -1007,7 +995,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         )
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh(mesh)
+        tempfile_path = check_save_mesh(mesh)
         dims, vars = scan_dataset(tempfile_path)
 
         # there is a single mesh-var
@@ -1024,17 +1012,17 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         # 2. non- (plain) lonlat are NOT converted
         # 3. other names remain as whatever was given
         # 4. no units on input --> none on output
-        self.assertEqual(node_x["units"], "degrees")
-        self.assertEqual(node_y["units"], "ms-1")
-        self.assertNotIn("units", face_x)
-        self.assertEqual(face_y["units"], "degrees_north")
+        assert node_x["units"] == "degrees"
+        assert node_y["units"] == "ms-1"
+        assert "units" not in face_x
+        assert face_y["units"] == "degrees_north"
 
         # Check also that we did not add 'axis' properties.
         # We should *only* do that for dim-coords.
-        self.assertNotIn("axis", node_x)
-        self.assertNotIn("axis", node_y)
-        self.assertNotIn("axis", face_x)
-        self.assertNotIn("axis", face_y)
+        assert "axis" not in node_x
+        assert "axis" not in node_y
+        assert "axis" not in face_x
+        assert "axis" not in face_y
 
     @staticmethod
     def _namestext(names):
@@ -1044,7 +1032,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         ]
         return f"({' '.join(name_texts)})"
 
-    def test_mesh_names(self):
+    def test_mesh_names(self, check_save_mesh):
         # Check the selection of mesh-variables names.
         # N.B. this is basically centralised in Saver._get_mesh_variable_name,
         # but we test in an implementation-neutral way (as it's fairly easy).
@@ -1100,7 +1088,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             # Make a mesh, with the mesh names set for the testcase
             mesh = make_mesh(mesh_kwargs=mesh_name_kwargs)
 
-            filepath = self.check_save_mesh(mesh)
+            filepath = check_save_mesh(mesh)
             dims, vars = scan_dataset(filepath)
 
             (mesh_name,) = vars_meshnames(vars)
@@ -1114,9 +1102,9 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 f"Unexpected resulting names {self._namestext(result_names)} "
                 f"when saving mesh with {self._namestext(given_names)}"
             )
-            self.assertEqual(expected_names, result_names, fail_msg)
+            assert expected_names == result_names, fail_msg
 
-    def test_location_coord_names(self):
+    def test_location_coord_names(self, check_save_mesh):
         # Check the selection of mesh-element coordinate names.
         # Check the selection of mesh-variables names.
         # N.B. this is basically centralised in Saver._get_mesh_variable_name,
@@ -1165,7 +1153,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             ):
                 setattr(coord, key, name)
 
-            filepath = self.check_save_mesh(mesh)
+            filepath = check_save_mesh(mesh)
             dims, vars = scan_dataset(filepath)
 
             (mesh_name,) = vars_meshnames(vars)
@@ -1181,9 +1169,9 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 "when saving mesh coordinate "
                 f"with {self._namestext(given_names)}"
             )
-            self.assertEqual(expected_names, result_names, fail_msg)
+            assert expected_names == result_names, fail_msg
 
-    def test_mesh_dim_names(self):
+    def test_mesh_dim_names(self, check_save_mesh):
         # Check the selection of dimension names from the mesh.
 
         dim_names_tests = [
@@ -1194,7 +1182,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
         for given_name, expected_name in dim_names_tests:
             mesh = make_mesh(mesh_kwargs={"face_dimension": given_name})
 
-            filepath = self.check_save_mesh(mesh)
+            filepath = check_save_mesh(mesh)
             dims, vars = scan_dataset(filepath)
 
             (mesh_name,) = vars_meshnames(vars)
@@ -1204,9 +1192,9 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 f'Unexpected resulting dimension name "{face_dim}" '
                 f'when saving mesh with dimension name of "{given_name}".'
             )
-            self.assertEqual(expected_name, face_dim, fail_msg)
+            assert expected_name == face_dim, fail_msg
 
-    def test_connectivity_names(self):
+    def test_connectivity_names(self, check_save_mesh):
         # Check the selection of connectivity names.
         conn_names_tests = [
             # var_name only
@@ -1258,7 +1246,7 @@ class TestSaveUgrid__mesh(tests.IrisTest):
             ):
                 setattr(conn, key, name)
 
-            filepath = self.check_save_mesh(mesh)
+            filepath = check_save_mesh(mesh)
             dims, vars = scan_dataset(filepath)
 
             (mesh_name,) = vars_meshnames(vars)
@@ -1275,111 +1263,98 @@ class TestSaveUgrid__mesh(tests.IrisTest):
                 "when saving connectivity "
                 f"with {self._namestext(given_names)}"
             )
-            self.assertEqual(expected_names, result_names, fail_msg)
+            assert expected_names == result_names, fail_msg
 
-    def test_multiple_equal_mesh(self):
+    def test_multiple_equal_mesh(self, check_save_mesh):
         mesh1 = make_mesh()
         mesh2 = make_mesh()
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh([mesh1, mesh2])
+        tempfile_path = check_save_mesh([mesh1, mesh2])
         dims, vars = scan_dataset(tempfile_path)
 
         # In this case there should be only *one* mesh.
         mesh_names = vars_meshnames(vars)
-        self.assertEqual(1, len(mesh_names))
+        assert 1 == len(mesh_names)
 
         # Check it has the correct number of coords + conns (no duplicates)
         # Should have 2 each X and Y coords (face+node): _no_ edge coords.
         coord_vars_x = vars_w_props(vars, standard_name="longitude")
         coord_vars_y = vars_w_props(vars, standard_name="latitude")
-        self.assertEqual(2, len(coord_vars_x))
-        self.assertEqual(2, len(coord_vars_y))
+        assert 2 == len(coord_vars_x)
+        assert 2 == len(coord_vars_y)
 
         # Check the connectivities are all present: _only_ 1 var of each type.
         for conn in mesh1.all_connectivities:
             if conn is not None:
                 conn_vars = vars_w_props(vars, cf_role=conn.cf_role)
-                self.assertEqual(1, len(conn_vars))
+                assert 1 == len(conn_vars)
 
-    def test_multiple_different_meshes(self):
+    def test_multiple_different_meshes(self, check_save_mesh):
         # Create 2 meshes with different faces, but same edges.
         # N.B. they should then share an edge dimension.
         mesh1 = make_mesh(n_faces=3, n_edges=2)
         mesh2 = make_mesh(n_faces=4, n_edges=2)
 
         # Save and snapshot the result
-        tempfile_path = self.check_save_mesh([mesh1, mesh2])
+        tempfile_path = check_save_mesh([mesh1, mesh2])
         dims, vars = scan_dataset(tempfile_path)
 
         # Check the dims are as expected
-        self.assertEqual(dims["Mesh2d_faces"], 3)
-        self.assertEqual(dims["Mesh2d_faces_0"], 4)
+        assert dims["Mesh2d_faces"] == 3
+        assert dims["Mesh2d_faces_0"] == 4
         # There are no 'second' edge and node dims
-        self.assertEqual(dims["Mesh2d_nodes"], 5)
-        self.assertEqual(dims["Mesh2d_edge"], 2)
+        assert dims["Mesh2d_nodes"] == 5
+        assert dims["Mesh2d_edge"] == 2
 
         # Check there are two independent meshes in the file...
 
         # there are exactly 2 meshes in the file
         mesh_names = vars_meshnames(vars)
-        self.assertEqual(sorted(mesh_names), ["Mesh2d", "Mesh2d_0"])
+        assert sorted(mesh_names) == ["Mesh2d", "Mesh2d_0"]
 
         # they use different dimensions
         # mesh1
-        self.assertEqual(vars_meshdim(vars, "node", mesh_name="Mesh2d"), "Mesh2d_nodes")
-        self.assertEqual(vars_meshdim(vars, "face", mesh_name="Mesh2d"), "Mesh2d_faces")
+        assert vars_meshdim(vars, "node", mesh_name="Mesh2d") == "Mesh2d_nodes"
+        assert vars_meshdim(vars, "face", mesh_name="Mesh2d") == "Mesh2d_faces"
         if "edge_coordinates" in vars["Mesh2d"]:
-            self.assertEqual(
-                vars_meshdim(vars, "edge", mesh_name="Mesh2d"), "Mesh2d_edge"
-            )
+            assert vars_meshdim(vars, "edge", mesh_name="Mesh2d") == "Mesh2d_edge"
 
         # mesh2
-        self.assertEqual(
-            vars_meshdim(vars, "node", mesh_name="Mesh2d_0"), "Mesh2d_nodes"
-        )
-        self.assertEqual(
-            vars_meshdim(vars, "face", mesh_name="Mesh2d_0"), "Mesh2d_faces_0"
-        )
+        assert vars_meshdim(vars, "node", mesh_name="Mesh2d_0") == "Mesh2d_nodes"
+        assert vars_meshdim(vars, "face", mesh_name="Mesh2d_0") == "Mesh2d_faces_0"
         if "edge_coordinates" in vars["Mesh2d_0"]:
-            self.assertEqual(
-                vars_meshdim(vars, "edge", mesh_name="Mesh2d_0"),
-                "Mesh2d_edge",
-            )
+            assert vars_meshdim(vars, "edge", mesh_name="Mesh2d_0") == "Mesh2d_edge"
 
         # the relevant coords + connectivities are also distinct
         # mesh1
-        self.assertEqual(vars["node_x"][_VAR_DIMS], ["Mesh2d_nodes"])
-        self.assertEqual(vars["face_x"][_VAR_DIMS], ["Mesh2d_faces"])
-        self.assertEqual(
-            vars["mesh2d_faces"][_VAR_DIMS],
-            ["Mesh2d_faces", "Mesh2d_face_N_nodes"],
-        )
+        assert vars["node_x"][_VAR_DIMS] == ["Mesh2d_nodes"]
+        assert vars["face_x"][_VAR_DIMS] == ["Mesh2d_faces"]
+        assert vars["mesh2d_faces"][_VAR_DIMS] == [
+            "Mesh2d_faces",
+            "Mesh2d_face_N_nodes",
+        ]
         if "edge_coordinates" in vars["Mesh2d"]:
-            self.assertEqual(vars["longitude"][_VAR_DIMS], ["Mesh2d_edge"])
-            self.assertEqual(
-                vars["mesh2d_edge"][_VAR_DIMS],
-                ["Mesh2d_edge", "Mesh2d_edge_N_nodes"],
-            )
+            assert vars["longitude"][_VAR_DIMS] == ["Mesh2d_edge"]
+            assert vars["mesh2d_edge"][_VAR_DIMS] == [
+                "Mesh2d_edge",
+                "Mesh2d_edge_N_nodes",
+            ]
 
         # mesh2
-        self.assertEqual(vars["node_x_0"][_VAR_DIMS], ["Mesh2d_nodes"])
-        self.assertEqual(vars["face_x_0"][_VAR_DIMS], ["Mesh2d_faces_0"])
-        self.assertEqual(
-            vars["mesh2d_faces_0"][_VAR_DIMS],
-            ["Mesh2d_faces_0", "Mesh2d_0_face_N_nodes"],
-        )
+        assert vars["node_x_0"][_VAR_DIMS] == ["Mesh2d_nodes"]
+        assert vars["face_x_0"][_VAR_DIMS] == ["Mesh2d_faces_0"]
+        assert vars["mesh2d_faces_0"][_VAR_DIMS] == [
+            "Mesh2d_faces_0",
+            "Mesh2d_0_face_N_nodes",
+        ]
         if "edge_coordinates" in vars["Mesh2d_0"]:
-            self.assertEqual(vars["longitude_0"][_VAR_DIMS], ["Mesh2d_edge"])
-            self.assertEqual(
-                vars["mesh2d_edge_0"][_VAR_DIMS],
-                ["Mesh2d_edge", "Mesh2d_0_edge_N_nodes"],
-            )
+            assert vars["longitude_0"][_VAR_DIMS] == ["Mesh2d_edge"]
+            assert vars["mesh2d_edge_0"][_VAR_DIMS] == [
+                "Mesh2d_edge",
+                "Mesh2d_0_edge_N_nodes",
+            ]
 
 
 # WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
 # :mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
-
-
-if __name__ == "__main__":
-    tests.main()

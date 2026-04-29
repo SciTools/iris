@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support loading Iris cubes from NetCDF files using the CF conventions for metadata interpretation.
 
+.. z_reference:: iris.fileformats.netcdf.loader
+   :tags: topic_load_save
+
+   API reference
+
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 

@@ -7,32 +7,28 @@ get_attr_units`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import numpy as np
+import pytest
 
 from iris.fileformats._nc_load_rules.helpers import get_attr_units
 from iris.fileformats.cf import CFDataVariable
 from iris.loading import LOAD_PROBLEMS
+from iris.tests import _shared_utils
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 from iris.warnings import IrisCfLoadWarning
 
 
-class TestGetAttrUnits(tests.IrisTest):
-    @staticmethod
-    def _make_cf_var(global_attributes=None):
+class TestGetAttrUnits(MockerMixin):
+    def _make_cf_var(self, global_attributes=None):
         if global_attributes is None:
             global_attributes = {}
 
-        cf_group = mock.Mock(global_attributes=global_attributes)
+        cf_group = self.mocker.Mock(global_attributes=global_attributes)
 
-        cf_var = mock.MagicMock(
+        cf_var = self.mocker.MagicMock(
             spec=CFDataVariable,
             cf_name="sound_frequency",
-            cf_data=mock.Mock(spec=[]),
+            cf_data=self.mocker.Mock(spec=[]),
             filename="DUMMY",
             standard_name=None,
             long_name=None,
@@ -48,30 +44,26 @@ class TestGetAttrUnits(tests.IrisTest):
         expected_attributes = {"invalid_units": "\u266b"}
         cf_var = self._make_cf_var()
         attr_units = get_attr_units(cf_var, attributes)
-        self.assertEqual(attr_units, "?")
-        self.assertEqual(attributes, expected_attributes)
+        assert attr_units == "?"
+        assert attributes == expected_attributes
 
     def test_warn(self):
         attributes = {}
         expected_attributes = {"invalid_units": "\u266b"}
         cf_var = self._make_cf_var()
-        with self.assertWarns(IrisCfLoadWarning, msg="Ignoring invalid units"):
+        with pytest.warns(IrisCfLoadWarning, match="Ignoring invalid units"):
             attr_units = get_attr_units(cf_var, attributes)
-        self.assertEqual(attr_units, "?")
-        self.assertEqual(attributes, expected_attributes)
+        assert attr_units == "?"
+        assert attributes == expected_attributes
 
     def test_capture(self):
         attributes = {}
         expected_attributes = {"invalid_units": "\u266b"}
         cf_var = self._make_cf_var()
-        with self.assertNoWarningsRegexp("Ignoring invalid units"):
+        with _shared_utils.assert_no_warnings_regexp("Ignoring invalid units"):
             attr_units = get_attr_units(cf_var, attributes, capture_invalid=True)
-        self.assertEqual(attr_units, "?")
-        self.assertEqual(attributes, expected_attributes)
+        assert attr_units == "?"
+        assert attributes == expected_attributes
 
         load_problem = LOAD_PROBLEMS.problems[-1]
-        self.assertEqual(load_problem.loaded, {"units": "\u266b"})
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert load_problem.loaded == {"units": "\u266b"}

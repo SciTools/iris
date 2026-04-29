@@ -256,7 +256,8 @@ class Test_merge_cube:
             CubeList([self.cube1, cube2]).merge_cube()
 
     def test_empty(self):
-        with pytest.raises(ValueError):
+        msg = "can't merge an empty CubeList"
+        with pytest.raises(ValueError, match=msg):
             CubeList([]).merge_cube()
 
     def test_single_cube(self):

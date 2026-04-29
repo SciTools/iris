@@ -30,23 +30,8 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. `@ukmo-ccbunney`_ added new *cube component* convenience methods that allow
-   for manipulation of any named dimensional component that can be attached to a
-   cube (i.e. coordinates, cell measures and ancillary variables) via a common
-   interface. The following methods are provided:
+#. N/A
 
-   * :func:`~iris.cube.Cube.component` and :func:`~iris.cube.Cube.components`:
-     get one or more components from a cube
-   * :func:`~iris.cube.Cube.add_component`: add a component to a cube
-   * :func:`~iris.cube.Cube.remove_component`: remove a component from a cube
-   * :func:`~iris.cube.Cube.component_dims`: return the cube dimension(s)
-     spanned by a component.
-
-   (:issue:`5819`, :pull:`6854`)
-
-#. `@ESadek-MO`_ added functionality to allow :func:`~iris.cube.Cube.concatenate`,
-   :func:`~iris.cube.Cube.rolling_window` and :func:`~iris.cube.Cube.intersection`
-   to work with dataless cubes. (:pull:`6860`, :pull:`6757`)
 
 🐛 Bugs Fixed
 =============
@@ -75,45 +60,51 @@ This document explains the changes made to Iris for this release
 🔗 Dependencies
 ===============
 
-#. N/A
+#. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
+   PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
+
+#. `@tkknight`_ added a minimum pin for the PyData Sphinxc Theme as we use the
+   collapse sidebar feature introduced in 0.17.0. (:pull:`7060`)
 
 
 📚 Documentation
 ================
 
-#. `@tkknight`_ reduced the space used on the documentation homepage by the quick
-   link cards to allow for easier reading.  (:pull:`6886`)
+#. `@trexfeathers`_ and `@tkknight`_ made the docs compatible with the latest
+   versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`, :pull:`7053`)
 
-#. `@tkknight`_ added a gallery carousel to the documentation homepage. (:pull:`6884`)
+#. `@tkknight`_ enabled the theme option to collapse the sidebar.  Note, it only
+   appears once you click on a link away from the landing page.  Also moved
+   the search box to the top navigation bar. (:pull:`7060`)
+
+#. `@trexfeathers`_ switched to using the offical URL of the `cf-checker`_, after
+   our previous URL of choice was taken down. (:pull:`7072`)
 
 
 💼 Internal
 ===========
 
-#. `@trexfeathers`_ and `@hdyson`_ updated ``_ff_replacement.py`` to clarify
-   that Iris supports Ancillaries. (:pull:`6792`)
+#. `@trexfeathers`_ altered the messaging for 'stale' issues and pull requests,
+   to reduce the negative connotations. We now use ``needs-checkin`` for the
+   initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
+   (:issue:`6993`, :pull:`7036`)
 
-#. `@trexfeathers`_ adapted ``test_OceanSigmaZFactory`` for NumPy 2.4 - only
-   0-dimensional arrays can now be converted to scalars. (:pull:`6876`)
+#. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
+   Nox release ``2026.04.10`` (which adds more files to the environment parent
+   directory, breaking previous assumptions). (:pull:`7046`)
 
-#. `@trexfeathers`_ updated benchmarking to source Mule from its new home:
-   https://github.com/MetOffice/mule . (:pull:`6879`)
 
-#. `@tkknight`_ removed flake8, we have ruff now instead.  (:pull:`6889`)
-
-#. `@trexfeathers`_ and `@ukmo-ccbunney`_ updated CI to support Python 3.14
-   inline with `SPEC0 Minimum Supported Dependencies`_. Note: `pyvista` (and
-   hence `geovista`) is not yet compatible with Python 3.14, so
-   `:module:~iris.experimental.geovista` is currently only available for
-   Python \<3.14.  (:pull:`6816`, :issue:`6775`)
+#. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
+   except for mo_pack.
+   (:issue:`6832`, :pull:`6976`)
 
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-.. _@hdyson: https://github.com/hdyson
 
-.. _SPEC0 Minimum Supported Dependencies: https://scientific-python.org/specs/spec-0000/
+
 
 .. comment
     Whatsnew resources in alphabetical order:
+.. _cf-checker: https://github.com/cedadev/cf-checker

@@ -64,14 +64,14 @@ repos:
         types: [file, rst]
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: "v2.4.1"
+    rev: "v2.4.2"
     hooks:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: 'v1.19.1'
+    rev: 'v1.20.0'
     hooks:
     -   id: mypy
         additional_dependencies:
@@ -86,7 +86,7 @@ repos:
         types: [file, python]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.14.14"
+    rev: "v0.15.9"
     hooks:
     -   id: ruff-check
         types: [file, python]

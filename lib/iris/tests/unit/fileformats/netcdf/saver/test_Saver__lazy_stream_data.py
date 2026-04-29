@@ -11,7 +11,6 @@ integration tests.
 """
 
 from collections.abc import Iterator
-from unittest import mock
 
 import dask.array as da
 import numpy as np
@@ -24,19 +23,19 @@ from iris.fileformats.netcdf.saver import Saver
 class Test__lazy_stream_data:
     @staticmethod
     @pytest.fixture(autouse=True)
-    def saver_patch():
+    def saver_patch(mocker):
         # Install patches, so we can create a Saver without opening a real output file.
         # Mock just enough of Dataset behaviour to allow a 'Saver.complete()' call.
-        mock_dataset = mock.MagicMock()
-        mock_dataset_class = mock.Mock(return_value=mock_dataset)
+        mock_dataset = mocker.MagicMock()
+        mock_dataset_class = mocker.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
         target1 = "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
-        with mock.patch(target1, mock_dataset_class):
-            with mock.patch(target2, mock_dataset_class):
-                yield
+        mocker.patch(target1, mock_dataset_class)
+        mocker.patch(target2, mock_dataset_class)
+        return
 
     # A fixture to parametrise tests over delayed and non-delayed Saver type.
     # NOTE: this only affects the saver context-exit, which we do not test here, so
@@ -44,13 +43,13 @@ class Test__lazy_stream_data:
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["nocompute", "compute"])
     def compute(request) -> Iterator[bool]:
-        yield request.param
+        return request.param
 
     # A fixture to parametrise tests over real and lazy-type data.
     @staticmethod
     @pytest.fixture(params=["realdata", "lazydata", "emulateddata"])
     def data_form(request) -> Iterator[bool]:
-        yield request.param
+        return request.param
 
     @staticmethod
     def saver(compute) -> Saver:
@@ -58,14 +57,14 @@ class Test__lazy_stream_data:
         return Saver(filename="<dummy>", netcdf_format="NETCDF4", compute=compute)
 
     @staticmethod
-    def mock_var(shape, with_data_array):
+    def mock_var(shape, with_data_array, mocker):
         # Create a test cf_var object.
         # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
         if with_data_array:
-            extra_properties = {"_data_array": mock.sentinel.initial_data_array}
+            extra_properties = {"_data_array": mocker.sentinel.initial_data_array}
         else:
             extra_properties = {}
-        mock_cfvar = mock.MagicMock(
+        mock_cfvar = mocker.MagicMock(
             spec=threadsafe_nc.VariableWrapper,
             shape=tuple(shape),
             dtype=np.dtype(np.float32),
@@ -77,7 +76,7 @@ class Test__lazy_stream_data:
         mock_cfvar.name = "<mock_cfvar>"
         return mock_cfvar
 
-    def test_data_save(self, compute, data_form):
+    def test_data_save(self, compute, data_form, mocker):
         """Real data is transferred immediately, lazy data creates a delayed write."""
         saver = self.saver(compute=compute)
 
@@ -86,7 +85,7 @@ class Test__lazy_stream_data:
             data = da.from_array(data)
 
         cf_var = self.mock_var(
-            data.shape, with_data_array=(data_form == "emulateddata")
+            data.shape, with_data_array=(data_form == "emulateddata"), mocker=mocker
         )
         saver._lazy_stream_data(data=data, cf_var=cf_var)
         if data_form == "lazydata":
@@ -111,4 +110,4 @@ class Test__lazy_stream_data:
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
-            cf_var._data_array == mock.sentinel.exact_data_array
+            cf_var._data_array == mocker.sentinel.exact_data_array

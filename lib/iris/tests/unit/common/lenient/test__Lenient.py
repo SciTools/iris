@@ -16,7 +16,7 @@ from iris.common.lenient import (
 )
 
 
-@pytest.fixture()
+@pytest.fixture
 def lenient():
     return _Lenient()
 

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Experimental module for importing/exporting raster data from Iris cubes using the GDAL library.
 
+.. z_reference:: iris.experimental.raster
+   :tags: topic_experimental;topic_load_save
+
+   API reference
+
 See also: `GDAL - Geospatial Data Abstraction Library <https://www.gdal.org>`_.
 
 TODO: If this module graduates from experimental the (optional) GDAL

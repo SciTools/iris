@@ -7,6 +7,7 @@
       <attribute name="nimrod_version" value="2"/>
       <attribute name="num_model_levels" value="1"/>
       <attribute name="processing" value="['accumulation or average']"/>
+      <attribute name="software_identifier" value="0"/>
       <attribute name="source" value="STEPS"/>
       <attribute name="title" value="Unknown"/>
     </attributes>

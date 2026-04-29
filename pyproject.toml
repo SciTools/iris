@@ -82,7 +82,7 @@ ignore = [
 extend-exclude = [
     "_ff_cross_references.py",
     "um_cf_map.py",
-    "docs/src/sphinxext",
+    "docs/src/sphinxext/api_rst_formatting.py",
     "tools",
 ]
 line-length = 88
@@ -129,6 +129,11 @@ known-first-party = ["iris"]
     "D205",  # 1 blank line required between summary line and description
     "D401",  # 1 First line of docstring should be in imperative mood
 ]
+
+# Deprecated unittest tests
+
+"lib/iris/tests/__init__.py" = ["PT"]
+"lib/iris/tests/unit/tests/test_IrisTest.py" = ["PT"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
