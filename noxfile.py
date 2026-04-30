@@ -142,7 +142,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         # populate the environment from the lockfile
         logger.debug(f"Populating conda env at {venv_dir}")
         session.conda_install("--file", str(lockfile))
-        session.conda_install(MPL_URL_3V11RC0)
+        session.install(MPL_URL_3V11RC0)
         cache_venv(session)
 
     elif venv_changed(session):
@@ -152,7 +152,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         session.virtualenv.reuse_existing = False
         session.virtualenv.create()
         session.conda_install("--file", str(lockfile))
-        session.conda_install(MPL_URL_3V11RC0)
+        session.install(MPL_URL_3V11RC0)
         session.virtualenv.reuse_existing = _re_orig
         cache_venv(session)
 
