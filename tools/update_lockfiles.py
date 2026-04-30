@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the BSD license.
@@ -19,7 +20,6 @@ import subprocess
 import sys
 from warnings import warn
 
-
 message = (
     "Iris' large requirements may require Mamba to successfully solve. If you "
     "don't want to install Mamba, consider using the workflow_dispatch on "
@@ -38,10 +38,10 @@ parser = argparse.ArgumentParser(
     "Iris Lockfile Generator",
 )
 
-parser.add_argument('files', nargs='+',
-    help="List of environment.yml files to lock")
-parser.add_argument('--output-dir', '-o', default='.',
-    help="Directory to save output lock files")
+parser.add_argument("files", nargs="+", help="List of environment.yml files to lock")
+parser.add_argument(
+    "--output-dir", "-o", default=".", help="Directory to save output lock files"
+)
 
 args = parser.parse_args()
 
@@ -49,21 +49,29 @@ for infile in args.files:
     print(f"generating lockfile for {infile}", file=sys.stderr)
 
     fname = Path(infile).name
-    ftype = fname.split('.')[-1]
-    if ftype.lower() in ('yaml', 'yml'):
-        fname = '.'.join(fname.split('.')[:-1])
+    ftype = fname.split(".")[-1]
+    if ftype.lower() in ("yaml", "yml"):
+        fname = ".".join(fname.split(".")[:-1])
 
     # conda-lock --filename-template expects a string with a "...{platform}..."
     # placeholder in it, so we have to build the .lock filename without
     # using .format
-    ofile_template = Path(args.output_dir) / (fname+'-{platform}.lock')
-    subprocess.call([
-        'conda-lock',
-        'lock',
-        '--filename-template', ofile_template,
-        '--file', infile,
-        '-k', 'explicit',
-        '--platform', 'linux-64'
-    ])
-    print(f"lockfile saved to {ofile_template}".format(platform='linux-64'),
-        file=sys.stderr)
+    ofile_template = Path(args.output_dir) / (fname + "-{platform}.lock")
+    subprocess.call(
+        [
+            "conda-lock",
+            "lock",
+            "--filename-template",
+            ofile_template,
+            "--file",
+            infile,
+            "-k",
+            "explicit",
+            "--platform",
+            "linux-64",
+        ]
+    )
+    print(
+        f"lockfile saved to {ofile_template}".format(platform="linux-64"),
+        file=sys.stderr,
+    )

@@ -62,6 +62,12 @@ ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
 ]
+"tools/test_*.py" = [
+    "D100",
+    "D106",
+    "D205",
+    "D401",
+]
 
 [tool.codespell]
 ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin,re-use,re-uses,re-using,re-used,anc,abl,ND,Nd" # This is the full list of words that we ignore in all repositories.
@@ -189,7 +195,6 @@ extend-exclude = [
     "_ff_cross_references.py",
     "um_cf_map.py",
     "docs/src/sphinxext/api_rst_formatting.py",
-    "tools",
 ]
 line-length = 88
 
@@ -404,8 +409,15 @@ max-complexity = 22
 "lib/iris/tests/*.py" = [
     # https://docs.astral.sh/ruff/rules/undocumented-public-module/
     "D100",  # Missing docstring in public module
+    "D106",  # Missing docstring in public nested class
     "D205",  # 1 blank line required between summary line and description
     "D401",  # 1 First line of docstring should be in imperative mood
+]
+"tools/test_*.py" = [
+    "D100",
+    "D106",
+    "D205",
+    "D401",
 ]
 
 # Deprecated unittest tests
