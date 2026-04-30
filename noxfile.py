@@ -180,12 +180,14 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("git+https://github.com/SciTools-incubator/nothing.git")
     session.env.update(ENV)
     run_args = [
         "pytest",
         "-n",
         "auto",
         "lib/iris/tests",
+        "tools",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
