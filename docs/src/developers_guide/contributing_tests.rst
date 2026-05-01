@@ -212,9 +212,9 @@ as opposed to:
 
 .. code-block:: python
 
-    from iris.tests._shared_utils import assert_string
+    from iris.tests._shared_utils import assert_CDL
 
-    assert_string()
+    assert_CDL()
 
 .. note::
 
