@@ -62,12 +62,6 @@ ignore = [
     "lib/iris/_version.py",
     "lib/iris/std_names.py",
 ]
-"tools/test_*.py" = [
-    "D100",
-    "D106",
-    "D205",
-    "D401",
-]
 
 [tool.codespell]
 ignore-words-list = "alpha-numeric,assertIn,degreee,discontiguities,lazyness,meaned,nin,re-use,re-uses,re-using,re-used,anc,abl,ND,Nd" # This is the full list of words that we ignore in all repositories.
