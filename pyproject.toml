@@ -392,6 +392,7 @@ select = [
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["iris"]
+known-local-folder = ["_asv_delegated_abc"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 22
