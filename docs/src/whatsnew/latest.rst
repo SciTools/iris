@@ -80,6 +80,10 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ switched to using the offical URL of the `cf-checker`_, after
    our previous URL of choice was taken down. (:pull:`7072`)
 
+#. `@tkknight`_ updated the voted table that uses datatables to not highlight the
+   sorted column or row as is uses the incorrect theme color (light). Also updated
+   the datatables version from 2.3.2 to 2.3.8. (:pull:`????`)
+
 
 💼 Internal
 ===========
