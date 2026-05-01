@@ -157,3 +157,50 @@ def test_2D_guess_bounds_coord_systems():
 
     with pytest.raises(ValueError, match="Coordinate systems are expected geodetic."):
         _2D_guess_bounds(mercator_cube)
+
+
+def test_invalid_coords_1D():
+    lat_1D = AuxCoord(np.arange(5), standard_name="latitude")
+    lon_1D = AuxCoord(np.arange(5), standard_name="longitude")
+    with pytest.raises(ValueError, match="Coordinates are not 2D."):
+        guess_2D_bounds(lon_1D, lat_1D)
+
+
+def test_invalid_coords_shape():
+    lat = AuxCoord(np.ones([2, 3]), standard_name="latitude")
+    lon = AuxCoord(np.ones([3, 2]), standard_name="longitude")
+    with pytest.raises(ValueError, match="Coordinates do not have the same shape."):
+        guess_2D_bounds(lon, lat)
+
+
+def test_invalid_coords_size():
+    expected_msg = "Coordinates must have length at least 2 in each dimension."
+
+    lat = AuxCoord(np.ones([1, 3]), standard_name="latitude")
+    lon = AuxCoord(np.ones([1, 3]), standard_name="longitude")
+    with pytest.raises(ValueError, match=expected_msg):
+        guess_2D_bounds(lon, lat)
+
+    lat = AuxCoord(np.ones([3, 1]), standard_name="latitude")
+    lon = AuxCoord(np.ones([3, 1]), standard_name="longitude")
+    with pytest.raises(ValueError, match=expected_msg):
+        guess_2D_bounds(lon, lat)
+
+
+def test_invalid_coords_name():
+    lat_valid = AuxCoord(np.ones([2, 3]), standard_name="latitude")
+    lon_valid = AuxCoord(np.ones([2, 3]), standard_name="longitude")
+    lat_invalid = AuxCoord(np.ones([2, 3]), long_name="lat")
+    lon_invalid = AuxCoord(np.ones([2, 3]), long_name="long")
+    with pytest.raises(
+        ValueError, match="X coordinate is not 'longitude' or 'grid_longitude'."
+    ):
+        guess_2D_bounds(lon_invalid, lat_valid)
+    with pytest.raises(
+        ValueError, match="X coordinate is not 'longitude' or 'grid_longitude'."
+    ):
+        guess_2D_bounds(lat_valid, lon_valid)
+    with pytest.raises(
+        ValueError, match="Y coordinate is not 'latitude' or 'grid_latitude'."
+    ):
+        guess_2D_bounds(lon_valid, lat_invalid)

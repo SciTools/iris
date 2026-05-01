@@ -543,20 +543,65 @@ def _2D_guess_bounds_in_place(lons, lats, extrapolate=True):
 def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
     """Guess the bounds of a pair of 2D coords.
 
+    Bounds on a 2D coordinate are structured so that each point of the coordinate
+    has 4 associated bounds, with each pair of neighbouring points sharing 2 of their
+    bounds in common. We can categorise these bounds by how many points they are
+    associated with:
+    - Internal bounds, belonging to 4 surrounding points.
+    - Edge bounds, belonging only to 2 points on the edge of the grid.
+    - Corner bounds, belonging only to 1 point on the corner of the grid.
+    Since each of these categories of bounds has a different number of points associated
+    with them, they must also be calculated differently:
+    - Each internal bound is calculated from the 4 surrounding points. The surrounding
+      points are first transformed from 2D lat-lon space to 3D space on the surface of a
+      unit sphere. The average of these points in 3D space is then taken. This point is then
+      projected onto that unit sphere and transformed back to 2D lat-lon space. Note that in
+      the edge case where the 3D average is precisely the origin, it will not be possible to
+      project onto the unit sphere and an error will be raised.
+    - The calculation for edge bounds depends on if the `extrapolate` keyword is True or
+      False. When `extrapolate` is False, the edge bound is calculated as the midpoint of
+      the 2 neighbouring bounds. This calculation is done, as above, by converting into 3D
+      space, averaging, and then converting back to lat-lon space. When `extrapolate` is True,
+      edge bounds are calculated using the neighbouring internal bound. The edge bound and the
+      neighbouring internal bound will be precisely the 2 bounds which the edge points share
+      in common. The extrapolated edge bound is calculated by rotating the internal bound 180
+      degrees about the midpoint between the 2 neighbouring points calculated previously. This
+      rotation is done in 3D space about the axis defined by the line which passes through the
+      midpoint and the origin. This is equivalent to defining the edge bound so that the
+      midpoint between the two bounds is the same as the midpoint between the two points.
+    - The calculation for the corner bounds similarly depends on `extrapolate`. When
+      `extrapolate` is False, each corner bound is precisely equal to its associated corner
+      point. When `extrapolate` is True, we calculate the corner bound by taking the only
+      internal bound associated with the corner point and, as above, rotating it by 180
+      degrees about the corner point.
+
+
     Parameters
     ----------
     x : class:`~iris.coords.AuxCoord`
-        A "longitude" or "grid_longitude" coordinate.
+        A "longitude" or "grid_longitude" coordinate. Coordinate must be 2D.
     y : class:`~iris.coords.AuxCoord`
-        A "latitude" or "grid_latitude" coordinate.
+        A "latitude" or "grid_latitude" coordinate. Coordinate must be 2D.
     extrapolate : bool, default=True
         If True, extend the edge bounds beyond the limits of the edge points.
     in_place : bool, default=False
         If True, modify the coordinate arguments in place.
     """
-    assert len(x.shape) == len(y.shape) == 2
-    assert x.standard_name in ("longitude", "grid_longitude")
-    assert y.standard_name in ("latitude", "grid_latitude")
+    if x.shape != y.shape:
+        msg = "Coordinates do not have the same shape."
+        raise ValueError(msg)
+    if len(x.shape) != 2:
+        msg = "Coordinates are not 2D."
+        raise ValueError(msg)
+    if x.shape[0] < 2 or x.shape[1] < 2:
+        msg = "Coordinates must have length at least 2 in each dimension."
+        raise ValueError(msg)
+    if x.standard_name not in ("longitude", "grid_longitude"):
+        msg = "X coordinate is not 'longitude' or 'grid_longitude'."
+        raise ValueError(msg)
+    if y.standard_name not in ("latitude", "grid_latitude"):
+        msg = "Y coordinate is not 'latitude' or 'grid_latitude'."
+        raise ValueError(msg)
 
     if x.units != "degrees" or y.units != "degrees":
         msg = "Coordinate units are expected to be degrees."
