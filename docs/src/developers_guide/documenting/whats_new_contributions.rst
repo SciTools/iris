@@ -155,4 +155,3 @@ users.  To achieve this several categories may be used.
 **💼 Internal**
   Changes to any internal or development related topics, such as testing,
   environment dependencies etc.
-

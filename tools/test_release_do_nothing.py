@@ -12,7 +12,6 @@ from typing import Any, NamedTuple
 import nothing
 import pytest
 from pytest_mock import MockType
-
 from release_do_nothing import IrisRelease, IrisVersion
 
 

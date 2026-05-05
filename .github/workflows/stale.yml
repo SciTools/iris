@@ -27,44 +27,44 @@ jobs:
           # Comment on the staled issues.
           stale-issue-message: |
             It has been 500 days since last activity on this issue, so it has been given the https://github.com/SciTools/iris/labels/needs-checkin label. This reminder prompts us to identify issues which:
-            
+
             1. Have been resolved since their last update.
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
             4. Are still outstanding but for which there is not enough resource.
-            
+
             If this issue is still important to you, then please comment on this issue. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
-            
+
             If there is no activity on this issue for 28 days, it will be closed and given the https://github.com/SciTools/iris/labels/not-resourced label.
 
           # Comment on the staled prs.
           stale-pr-message: |
             It has been 500 days since last activity on this PR, so it has been given the https://github.com/SciTools/iris/labels/needs-checkin label. This reminder prompts us to identify PRs which:
-            
+
             1. Have now been addressed by other PR(s).
             2. Are no longer relevant.
             3. Are still outstanding and should be assigned resource.
             4. Are still outstanding but for which there is not enough resource.
-            
+
             If this PR is still important to you, then please comment on this PR. The https://github.com/SciTools/iris/labels/needs-checkin label will be automatically removed.
-            
+
             If there is no activity on this PR for 28 days, it will be closed and given the https://github.com/SciTools/iris/labels/not-resourced label.
 
           # Comment on the staled issues while closed.
           close-issue-message: |
             This issue has been automatically closed due to inactivity since the recent https://github.com/SciTools/iris/labels/needs-checkin request.
-            
+
             If you still want this issue to get attention, then please either:
-            
+
             - Re-open this issue, if you have sufficient permissions, or ...
             - Add a comment pinging `@SciTools/iris-devs` who will re-open on your behalf.
 
           # Comment on the staled prs while closed.
           close-pr-message: |
             This PR has been automatically closed due to inactivity since the recent https://github.com/SciTools/iris/labels/needs-checkin request.
-            
+
             If you still want this PR to get attention, then please either:
-            
+
             - Re-open this PR, if you have sufficient permissions, or ...
             - Add a comment pinging `@SciTools/iris-devs` who will re-open on your behalf.
 
