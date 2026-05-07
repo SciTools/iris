@@ -457,30 +457,66 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
 
 
 def _vectorised_matmul(mats, vecs):
-    return np.einsum("ijk,ji->ki", mats, vecs)
+    # We interpret the 3D array `mats` as if it were a list of matrices varying over
+    # its last dimension so that mats[:,:,i] represents a single matrix. We consider
+    # the 2D array `vecs` to represent a list of vectors varying over its last dimension
+    # so that vecs[:,i] represents a single vector. The output will be such that for:
+    # result[:,i] == mats[:,:,i] @ vecs[:,i].
+    return np.einsum("jki,ji->ki", mats, vecs)
 
 
 def _generate_180_mats_from_uvecs(uvecs):
-    mats = np.einsum("ji,ki->ijk", uvecs, uvecs) * 2
-    np.einsum("ijj->ij", mats)[:] -= 1
+    # Generates a 3D array representing a list of matrices which can be used by the
+    # function _vectorised_matmul. Both the input `uvecs` and the `result` vary in their
+    # last dimension so that uvecs[:,i] is a length 3 vector corresponding to the
+    # rotation matrix result[:,:,i], where this is a rotation of 180 degrees about the
+    # axis passing through uvecs[:,i] and the origin.
+    # If the vector uvecs[:,i] = (x,y,z), the equivalent rotation matrix result[:,:,i]
+    # will be:
+    # | 2x^2 - 1   2xy      2xz    |
+    # |   2xy    2y^2 - 1   2yz    |
+    # |   2xz      2yz    2z^2 - 1 |
+    mats = np.einsum("ji,ki->jki", uvecs, uvecs) * 2
+
+    # At this point the matrix mats[:,:,i] will be:
+    # |   2x^2     2xy      2xz    |
+    # |   2xy      2y^2     2yz    |
+    # |   2xz      2yz      2z^2   |
+    # to achieve the desired result, we take one from the diagonal.
+    np.einsum("jji->ji", mats)[:] -= 1
     return mats
 
 
 def _2D_guess_bounds_first_pass(array):
-    # average and normalise, boundary buffer represents edges and corners
+    # Average and normalise sets of neighbouring points. This calculation actually
+    # normalises the sum rather than the average, since this is equivalent.
+    # Coners of the resulting array will be the sum of only a single corner of the
+    # source array. Edges of the resulting array will be the midpoint between edge
+    # points in the source. Internal points in the resulting array will correspond
+    # to internal bounds in the final result of `guess_2D_bounds`.
+    # Note: if `extrapolate` is False, this array will contain all the bounds in the
+    # final result of `guess_2D_bounds`.
     result_array = np.zeros((array.shape[0], array.shape[1] + 1, array.shape[2] + 1))
     pads = ((0, 1), (1, 0))
     for pad_i in pads:
         for pad_j in pads:
             result_array += np.pad(array, ((0, 0), pad_i, pad_j))
 
-    # normalise
+    # Normalise
     result_array /= np.linalg.norm(result_array, ord=2, axis=0)[np.newaxis, ...]
     return result_array
 
 
 def _2D_gb_buffer_outer(array_shape):
-    # return appropriate numpy slice for outer halo
+    # Return appropriate numpy slice for outer halo.
+    # This slice preserves the first dimension, which captures the 3D vector points and
+    # lists a series of indices in the next 2 dimensions.
+    # Each index in this slice corresponds to a corner or edge bound.
+
+    # This halo starts at the index [:, 0, 0], the next set of indices increase in the
+    # second dimension until the index [:, -1, 0], then the last dimension increases
+    # until it reaches the index [:, -1, -1], the remaining indices follow the edge of
+    # the array anit-clockwise until it reaches the last index at [:, 0, 1].
     _, x, y = array_shape
     x_i = list(range(x)) + ([x - 1] * (y - 2)) + list(range(x))[::-1] + ([0] * (y - 2))
     y_i = (
@@ -490,7 +526,23 @@ def _2D_gb_buffer_outer(array_shape):
 
 
 def _2D_gb_buffer_inner(array_shape):
-    # return appropriate numpy slice for inner halo
+    # Return appropriate numpy slice for inner halo.
+    # This slice preserves the first dimension, which captures the 3D vector points and
+    # lists a series of indices in the next 2 dimensions.
+    # Each index in this slice corresponds to an internal bound neighbouring a corner or
+    # edge bound.
+    # For every index in the outer halo, this gives the nearest index not in the outer halo.
+    # Note: the internal bounds which are nearest to the corner bounds ar each the nearest
+    # bound for at least two other edge or corner bounds. Therefore, these indices will
+    # occur at least 3 times in the returned slice.
+
+    # This halo starts at the index [:, 1, 1], the next index is also [:, 1, 1]. The
+    # next set of indices increase in the second dimension until the index [:, -2, 1],
+    # this index is repeated twice. In the edge case where the index [:, 1, 1] is
+    # equivalent to [:, -2, 1] the first two copies of the index will be followed
+    # immediately by two more copies. Then the last dimension increases until it reaches
+    # the index [:, -2, -2], repeating twice again, the remaining indices follow this
+    # pattern until it reaches the last index at [:, 1, 1].
     _, x, y = array_shape
     x_i = (
         [1]
@@ -508,18 +560,26 @@ def _2D_gb_buffer_inner(array_shape):
 def _2D_guess_bounds_in_place(lons, lats, extrapolate=True):
     lon_array = lons.points
     lat_array = lats.points
+    # Convert from lat-lon to 3D space.
     xyz_array = _3d_xyz_from_latlon(lon_array, lat_array)
 
+    # Create an array with internal-bounds, edge-midpoints, and corner-points.
     result_xyz = _2D_guess_bounds_first_pass(xyz_array)
     if extrapolate:
+        # Generate slice of edge-midpoints/edge-bounds and corner-points/corner-bounds.
         outer_inds = _2D_gb_buffer_outer(result_xyz.shape)
+        # Generate slice of internal-bounds which neighbour the above bounds.
         inner_inds = _2D_gb_buffer_inner(result_xyz.shape)
+        # Generate rotation matrices about corner-points and edge-midpoints
         mats = _generate_180_mats_from_uvecs(result_xyz[outer_inds])
+        # Rotate internal-bounds about their corresponding corner-point/edge-midpoint.
+        # Replace the corner-point/edge-midpoint with this result.
         result_xyz[outer_inds] = _vectorised_matmul(mats, result_xyz[inner_inds])
 
+    # Convert back from 3D to lat-lon.
     result_lon_bounds, result_lat_bounds = _latlon_from_xyz(result_xyz)
 
-    # add these bounds cf style
+    # Reformat these bounds as CF style bounds.
     lons.bounds = np.stack(
         [
             result_lon_bounds[:-1, :-1],
