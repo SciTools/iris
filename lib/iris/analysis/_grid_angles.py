@@ -607,11 +607,14 @@ def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
     has 4 associated bounds, with each pair of neighbouring points sharing 2 of their
     bounds in common. We can categorise these bounds by how many points they are
     associated with:
+
     - Internal bounds, belonging to 4 surrounding points.
     - Edge bounds, belonging only to 2 points on the edge of the grid.
     - Corner bounds, belonging only to 1 point on the corner of the grid.
+
     Since each of these categories of bounds has a different number of points associated
     with them, they must also be calculated differently:
+
     - Each internal bound is calculated from the 4 surrounding points. The surrounding
       points are first transformed from 2D lat-lon space to 3D space on the surface of a
       unit sphere. The average of these points in 3D space is then taken. This point is then
