@@ -490,7 +490,7 @@ def _generate_180_mats_from_uvecs(uvecs):
 def _2D_guess_bounds_first_pass(array):
     # Average and normalise sets of neighbouring points. This calculation actually
     # normalises the sum rather than the average, since this is equivalent.
-    # Coners of the resulting array will be the sum of only a single corner of the
+    # Corners of the resulting array will be the sum of only a single corner of the
     # source array. Edges of the resulting array will be the midpoint between edge
     # points in the source. Internal points in the resulting array will correspond
     # to internal bounds in the final result of `guess_2D_bounds`.
