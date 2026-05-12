@@ -25,15 +25,14 @@ LICENSE_TEMPLATE = """# Copyright Iris contributors
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
-IRIS_DIR = os.path.realpath(os.path.dirname(iris.__file__))
-IRIS_INSTALL_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
-DOCS_DIR = os.path.join(IRIS_INSTALL_DIR, "docs", "iris")
-DOCS_DIR = iris.config.get_option("Resources", "doc_dir", default=DOCS_DIR)
+IRIS_DIR = Path(iris.__file__).parent.resolve()
+IRIS_INSTALL_DIR = Path(IRIS_DIR).parent.parent
+DOCS_DIR = Path(IRIS_INSTALL_DIR) / "docs" / "iris"
+DOCS_DIR = iris.config.get_option("Resources", "doc_dir", default=str(DOCS_DIR))
 exclusion = ["Makefile", "build"]
-DOCS_DIRS = glob(os.path.join(DOCS_DIR, "*"))
-DOCS_DIRS = [
-    DOC_DIR for DOC_DIR in DOCS_DIRS if os.path.basename(DOC_DIR) not in exclusion
-]
+DOCS_DIRS = glob(str(Path(DOCS_DIR) / "*"))
+DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if Path(DOC_DIR).name not in exclusion]
+
 # Get a dirpath to the git repository : allow setting with an environment
 # variable, so Travis can test for headers in the repo, not the installation.
 IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
@@ -220,7 +219,7 @@ class TestLicenseHeaders:
 
         """
         # Check the ".git" folder exists at the repo dir.
-        if not os.path.isdir(os.path.join(IRIS_REPO_DIRPATH, ".git")):
+        if not (Path(IRIS_REPO_DIRPATH) / ".git").is_dir():
             msg = "{} is not a git repository."
             raise ValueError(msg.format(IRIS_REPO_DIRPATH))
 
@@ -262,10 +261,13 @@ class TestLicenseHeaders:
 
         failed = False
         for fname, last_change in sorted(last_change_by_fname.items()):
-            full_fname = os.path.join(IRIS_REPO_DIRPATH, fname)
+            full_fname = Path(IRIS_REPO_DIRPATH) / fname
+            is_file = full_fname.is_file()
+            full_fname = str(full_fname)
+
             if (
                 full_fname.endswith(".py")
-                and os.path.isfile(full_fname)
+                and is_file
                 and not any(fnmatch(fname, pat) for pat in exclude_patterns)
             ):
                 with open(full_fname) as fh:

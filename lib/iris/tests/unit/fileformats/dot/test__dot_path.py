@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.dot._dot_path`."""
 
-import os.path
+from pathlib import Path
 import subprocess
 
 import pytest
@@ -26,25 +26,25 @@ class Test:
 
     def test_valid_absolute_path(self, mocker):
         # Override the configuration value for System.dot_path
-        real_path = os.path.abspath(__file__)
-        assert os.path.exists(real_path)
-        assert os.path.isabs(real_path)
+        real_path = Path(__file__).absolute()
+        assert real_path.exists()
+        assert real_path.is_absolute()
         mocker.patch("iris.config.get_option", return_value=real_path)
         result = _dot_path()
         assert result == real_path
 
     def test_invalid_absolute_path(self, mocker):
         # Override the configuration value for System.dot_path
-        dummy_path = "/not_a_real_path" * 10
-        assert not os.path.exists(dummy_path)
+        dummy_path = Path("/not_a_real_path" * 10)
+        assert not dummy_path.exists()
         mocker.patch("iris.config.get_option", return_value=dummy_path)
         result = _dot_path()
         assert result is None
 
     def test_valid_relative_path(self, mocker):
         # Override the configuration value for System.dot_path
-        dummy_path = "not_a_real_path" * 10
-        assert not os.path.exists(dummy_path)
+        dummy_path = Path("not_a_real_path" * 10)
+        assert not dummy_path.exists()
         mocker.patch("iris.config.get_option", return_value=dummy_path)
         # Pretend we have a valid installation of dot
         mocker.patch("subprocess.check_output")
@@ -53,8 +53,8 @@ class Test:
 
     def test_valid_relative_path_broken_install(self, mocker):
         # Override the configuration value for System.dot_path
-        dummy_path = "not_a_real_path" * 10
-        assert not os.path.exists(dummy_path)
+        dummy_path = Path("not_a_real_path" * 10)
+        assert not dummy_path.exists()
         mocker.patch("iris.config.get_option", return_value=dummy_path)
         # Pretend we have a broken installation of dot
         error = subprocess.CalledProcessError(-5, "foo", "bar")
