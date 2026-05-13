@@ -102,6 +102,8 @@ This document explains the changes made to Iris for this release
    except for mo_pack.
    (:issue:`6832`, :pull:`6976`)
 
+#. `@SgtVarmint` _ migrated codebase from os.path to pathlib.Path where possible
+   (:issue:`4523`, :pull:`7087`)
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
