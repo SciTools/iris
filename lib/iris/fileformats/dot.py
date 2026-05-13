@@ -11,6 +11,7 @@
 """
 
 import os
+from pathlib import Path
 import subprocess
 
 import iris
@@ -40,8 +41,8 @@ def _dot_path():
         path = _DOT_EXECUTABLE_PATH
     else:
         path = iris.config.get_option("System", "dot_path", default="dot")
-        if not os.path.exists(path):
-            if not os.path.isabs(path):
+        if not Path(path).exists():
+            if not Path(path).is_absolute():
                 try:
                     # Check PATH
                     subprocess.check_output([path, "-V"], stderr=subprocess.STDOUT)
@@ -49,7 +50,7 @@ def _dot_path():
                     path = None
             else:
                 path = None
-        _DOT_EXECUTABLE_PATH = path
+        _DOT_EXECUTABLE_PATH = str(path)
         _DOT_CHECKED = True
     return path
 
