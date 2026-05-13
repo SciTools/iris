@@ -82,7 +82,7 @@ if on_rtd:
 # documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(str(Path("sphinxtext").absolute()))
+sys.path.append(str((Path("sphinxext").absolute())))
 
 # add some sample files from the developers guide..
 sys.path.append(str(Path("developers_guide").absolute()))
