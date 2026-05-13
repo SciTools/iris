@@ -66,6 +66,8 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a minimum pin for the PyData Sphinxc Theme as we use the
    collapse sidebar feature introduced in 0.17.0. (:pull:`7060`)
 
+#. `@tkknight`_ updated a dependency in the Read The Docs configuration file to
+   use the latest python. (:pull:`7084`)
 
 📚 Documentation
 ================
