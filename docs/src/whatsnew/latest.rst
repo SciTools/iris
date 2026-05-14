@@ -48,7 +48,9 @@ This document explains the changes made to Iris for this release
 🚀 Performance Enhancements
 ===========================
 
-#. N/A
+#. `@trexfeathers`_ improved the speed of field iteration when reading PP files.
+   Up to 3x speed up has been seen, dependending on the circumstances.
+   (:pull:`7089`)
 
 
 🔥 Deprecations
