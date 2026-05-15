@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.abf.ABFField` class."""
 
+import pytest
+
 from iris.fileformats.abf import ABFField
 
 
@@ -23,3 +25,11 @@ class Test_data:
         # Check that _read was called, and np.fromfile.
         fromfile.assert_called_once_with(path, dtype=">u1")
         assert read.call_count == 1
+
+    def test_invalid_name_length(self, mocker):
+        # len == 23
+        path = "0000000000000000jan0000"
+
+        msg = "ABFField expects a filename of 24 characters: {}".format(path)
+        with pytest.raises(ValueError, match=msg) as value_error:
+            field = ABFField(path)
