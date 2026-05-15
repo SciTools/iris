@@ -418,7 +418,7 @@ class Saver:
         else:
             # Given a filepath string/path : create a dataset from that
             try:
-                self.filepath = Path(filename)
+                self.filepath = Path(filename).absolute()
                 self._dataset = _thread_safe_nc.DatasetWrapper(
                     self.filepath, mode="w", format=netcdf_format
                 )

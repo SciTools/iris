@@ -30,6 +30,6 @@ class Test_data:
         # len == 23
         path = "0000000000000000jan0000"
 
-        msg = "ABFField expects a filename of 24 characters: {}".format(path)
+        msg = f"ABFField expects a filename of 24 characters: {path}"
         with pytest.raises(ValueError, match=msg) as value_error:
             field = ABFField(path)
