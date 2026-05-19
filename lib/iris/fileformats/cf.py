@@ -24,6 +24,7 @@ from collections.abc import Iterable, MutableMapping
 from pathlib import Path
 import re
 from typing import ClassVar, Optional
+from urllib.parse import urlparse
 import warnings
 
 import numpy as np
@@ -1365,8 +1366,9 @@ class CFReader:
         self._own_file = False
         if isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
-            self._filename = Path(file_source).expanduser()
-            if file_source.startswith("https:"):
+            if not urlparse(file_source).scheme:
+                self._filename = Path(file_source).expanduser()
+            else:
                 self._filename = file_source
 
             self._dataset = _thread_safe_nc.DatasetWrapper(self._filename, mode="r")
