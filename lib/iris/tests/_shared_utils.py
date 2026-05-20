@@ -17,7 +17,6 @@ import gzip
 import json
 import math
 import os
-import os.path
 from pathlib import Path
 import re
 import shutil
@@ -79,7 +78,7 @@ except ImportError:
     STRATIFY_AVAILABLE = False
 
 #: Basepath for test results.
-_RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+_RESULT_PATH = Path(__file__).parent / "results"
 MIN_PICKLE_PROTOCOL = 4
 
 
@@ -168,34 +167,36 @@ def get_data_path(relative_path):
 
     """
     if not isinstance(relative_path, str):
-        relative_path = os.path.join(*relative_path)
+        relative_path = str(Path(*relative_path))
     test_data_dir = iris.config.TEST_DATA_DIR
     if test_data_dir is None:
         test_data_dir = ""
-    data_path = os.path.join(test_data_dir, relative_path)
+
+    data_path = Path(test_data_dir) / relative_path
+    data_path_str = str(data_path)
 
     if iris.tests._EXPORT_DATAPATHS_FILE is not None:
-        iris.tests._EXPORT_DATAPATHS_FILE.write(data_path + "\n")
+        iris.tests._EXPORT_DATAPATHS_FILE.write(data_path_str + "\n")
 
-    if isinstance(data_path, str) and not os.path.exists(data_path):
+    if isinstance(data_path_str, str) and not data_path.exists():
         # if the file is gzipped, ungzip it and return the path of the ungzipped
         # file.
-        gzipped_fname = data_path + ".gz"
-        if os.path.exists(gzipped_fname):
-            with gzip.open(gzipped_fname, "rb") as gz_fh:
+        gzipped_fname = Path(data_path_str + ".gz")
+        if gzipped_fname.exists():
+            with gzip.open(str(gzipped_fname), "rb") as gz_fh:
                 try:
-                    with open(data_path, "wb") as fh:
+                    with open(data_path_str, "wb") as fh:
                         fh.writelines(gz_fh)
                 except IOError:
                     # Put ungzipped data file in a temporary path, since we
                     # can't write to the original path (maybe it is owned by
                     # the system.)
-                    _, ext = os.path.splitext(data_path)
-                    data_path = iris.util.create_temp_filename(suffix=ext)
-                    with open(data_path, "wb") as fh:
+                    ext = data_path.suffix
+                    data_path_str = iris.util.create_temp_filename(suffix=ext)
+                    with open(data_path_str, "wb") as fh:
                         fh.writelines(gz_fh)
 
-    return data_path
+    return data_path_str
 
 
 def get_result_path(relative_path):
@@ -204,8 +205,8 @@ def get_result_path(relative_path):
 
     """
     if not isinstance(relative_path, str):
-        relative_path = os.path.join(*relative_path)
-    return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
+        relative_path = Path(*relative_path)
+    return str((_RESULT_PATH / relative_path).absolute())
 
 
 def _check_for_request_fixture(request, func_name: str):
@@ -722,16 +723,16 @@ def file_checksum(file_path):
 
 
 def _check_reference_file(reference_path):
-    reference_exists = os.path.isfile(reference_path)
-    if not (reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")):
+    reference_exists = Path(reference_path).is_file()
+    if not (str(reference_exists) or os.environ.get("IRIS_TEST_CREATE_MISSING")):
         msg = "Missing test result: {}".format(reference_path)
         raise AssertionError(msg)
     return reference_exists
 
 
 def _ensure_folder(path):
-    dir_path = os.path.dirname(path)
-    if not os.path.exists(dir_path):
+    dir_path = Path(path).parent
+    if not dir_path.exists():
         os.makedirs(dir_path)
 
 
@@ -886,7 +887,7 @@ def pp_cube_save_test(
             txt_file.writelines(str(pp_fields))
 
     # Watch out for a missing reference text file
-    if not os.path.isfile(reference_txt_path):
+    if not Path(reference_txt_path).is_file:
         if reference_cubes:
             temp_pp_path = iris.util.create_temp_filename(".pp")
             try:
@@ -932,7 +933,7 @@ def skip_data(fn):
     """
     no_data = (
         not iris.config.TEST_DATA_DIR
-        or not os.path.isdir(iris.config.TEST_DATA_DIR)
+        or not Path(iris.config.TEST_DATA_DIR).is_dir()
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 

@@ -7,7 +7,7 @@
 import iris.tests as tests  # isort:skip
 
 from datetime import datetime
-import os.path
+from pathlib import Path
 from typing import NamedTuple
 
 from cartopy.crs import CRS
@@ -572,7 +572,7 @@ def realistic_4d():
 
     """
     data_path = tests.get_data_path(("stock", "stock_arrays.npz"))
-    if not os.path.isfile(data_path):
+    if not Path(data_path).is_file():
         raise IOError("Test data is not available at {}.".format(data_path))
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given.
@@ -671,7 +671,7 @@ def realistic_4d_no_derived():
 
 def realistic_4d_w_missing_data():
     data_path = tests.get_data_path(("stock", "stock_mdi_arrays.npz"))
-    if not os.path.isfile(data_path):
+    if not Path(data_path).is_file():
         raise IOError("Test data is not available at {}.".format(data_path))
     data_archive = np.load(data_path)
     data = ma.masked_array(data_archive["arr_0"], mask=data_archive["arr_1"])

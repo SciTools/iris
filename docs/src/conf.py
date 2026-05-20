@@ -79,13 +79,13 @@ if on_rtd:
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(os.path.abspath("sphinxext"))
+sys.path.append(str((Path("sphinxext").absolute())))
 
 # add some sample files from the developers guide..
-sys.path.append(os.path.abspath(os.path.join("developers_guide")))
+sys.path.append(str(Path("developers_guide").absolute()))
 
 # why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it

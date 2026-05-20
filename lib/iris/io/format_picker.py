@@ -48,7 +48,7 @@ original specification and can be customised to your project's needs.
 
 from collections.abc import Callable
 import functools
-import os
+from pathlib import Path
 import struct
 
 
@@ -348,7 +348,7 @@ class FileExtension(FileElement):
 
     def get_element(self, basename, file_handle):
         # noqa D102
-        return os.path.splitext(basename)[1]
+        return Path(basename).suffix
 
 
 class LeadingLine(FileElement):

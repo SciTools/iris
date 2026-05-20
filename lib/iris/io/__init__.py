@@ -14,7 +14,6 @@
 import collections
 from collections import OrderedDict
 import glob
-import os.path
 import pathlib
 import re
 
@@ -168,7 +167,8 @@ def expand_filespecs(file_specs, files_expected=True):
     """
     # Remove any hostname component - currently unused
     filenames = [
-        os.path.abspath(os.path.expanduser(fn.removeprefix("//"))) for fn in file_specs
+        str(pathlib.Path(fn.removeprefix("//")).expanduser().absolute())
+        for fn in file_specs
     ]
 
     if files_expected:
@@ -214,7 +214,7 @@ def load_files(filenames, callback, constraints=None):
     handler_map = collections.defaultdict(list)
     for fn in all_file_paths:
         with open(fn, "rb") as fh:
-            handling_format_spec = FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
+            handling_format_spec = FORMAT_AGENT.get_spec(pathlib.Path(fn).name, fh)
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the appropriate filenames

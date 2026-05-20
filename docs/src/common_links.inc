@@ -86,3 +86,4 @@
 .. _@vsherratt: https://github.com/vsherratt
 .. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus
+.. _@SgtVarmint: https://github.com/SgtVarmint
