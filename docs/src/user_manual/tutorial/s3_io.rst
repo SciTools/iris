@@ -76,7 +76,7 @@ Though not suggested, this appears to work on Unix systems where we have tried i
 
 For this, you can use conda -- e.g.
 
-.. code-block:: bash
+.. code-block:: text
 
     $ conda install s3-fuse
 
@@ -95,7 +95,7 @@ Create an empty mount directory
 You need an empty directory in your existing filesystem tree, that you will map your
 S3 bucket **onto** -- e.g.
 
-.. code-block:: bash
+.. code-block:: text
 
     $ mkdir /home/self.me/s3_root/testbucket_mountpoint
 
@@ -117,7 +117,7 @@ command "s3fs".
 
 Map your S3 bucket "into" the chosen empty directory -- e.g.
 
-.. code-block:: bash
+.. code-block:: text
 
     $ s3fs my-test-bucket /home/self.me/s3_root/testbucket_mountpoint
 
@@ -146,7 +146,7 @@ Within Python code
 You can now access objects at the remote S3 URL via the mount point on your local file
 system you just created with `s3fs`, e.g.
 
-.. code-block:: python
+.. code-block:: text
 
     >>> path = "/home/self.me/s3_root/testbucket_mountpoint/sub_dir/a_file.nc"
     >>> cubes = iris.load(path)
@@ -158,7 +158,7 @@ When you have finished accessing the S3 objects in the mounted virtual filesyste
 is a good idea to **unmount** it.  Before doing this, make sure that all file handles to
 the objects have been closed and there are no terminals open in that directory.
 
-.. code-block:: bash
+.. code-block:: text
 
     $ umount /home/self.me/s3_root/testbucket_mountpoint
 

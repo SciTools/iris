@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.experimental.geovista.extract_unstructured_region` function."""
 
-from geovista.common import VTK_CELL_IDS, VTK_POINT_IDS
 import numpy as np
 import pytest
 
@@ -12,6 +11,9 @@ from iris.experimental.geovista import extract_unstructured_region
 from iris.tests import _shared_utils
 from iris.tests.stock import sample_2d_latlons
 from iris.tests.stock.mesh import sample_mesh_cube
+
+VTK_CELL_IDS = "vtkOriginalCellIds"
+VTK_POINT_IDS = "vtkOriginalPointIds"
 
 
 class TestRegionExtraction:

@@ -55,6 +55,7 @@ For example :
 .. code-block:: python
 
       from ncdata.iris_xarray import cubes_from_xarray, cubes_to_xarray
+
       cubes = cubes_from_xarray(dataset)
       xrds = cubes_to_xarray(cubes)
 
@@ -140,7 +141,7 @@ There is also relevant documentation
 `at this page <https://docs.xarray.dev/en/stable/user-guide/weather-climate.html#weather-and-climate-data>`_.
 
 In some particular aspects, CF data is not loaded well (or at all), and in many cases
-output is not fully CF compliant (as-per `the cf checker <https://cfchecker.ncas.ac.uk/>`_).
+output is not fully CF compliant (as-per `the cf checker <https://github.com/cedadev/cf-checker/>`_).
 
 * xarray has it's own interpretation of coordinates, which is different from the CF-based
   approach in Iris, and means that the use of the "coordinates" attribute in output is

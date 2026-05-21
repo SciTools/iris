@@ -2339,7 +2339,7 @@ class _Groupby:
         self._groupby_coords: list[AuxCoord | DimCoord] = []
         self._shared_coords: list[tuple[AuxCoord | DimCoord, int]] = []
         self._groupby_indices: list[tuple[int, ...]] = []
-        self._stop = None
+        self._stop: Optional[int] = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
             raise TypeError("groupby_coords must be a `collections.Iterable` type.")
