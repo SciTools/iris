@@ -90,6 +90,20 @@ If any CI tasks fail, then the pull-request is unlikely to be merged to the
 Iris target branch by a core developer.
 
 
+Data Repositories
+-----------------
+
+Two other SciTools repositories support the CI tasks:
+
+* `iris-test-data`_ is a github project containing all the data to support the tests.
+* `iris-sample-data`_ is a github project containing all the data to support the gallery and examples.
+
+If new files are required by tests or code examples, they must be added to
+the appropriate supporting project via a suitable pull-request.  This pull
+request should be referenced in the main Iris pull request and must be
+accepted and merged before the Iris one can be.
+
+
 .. _testing_cla:
 
 `CLA Assistant`_
