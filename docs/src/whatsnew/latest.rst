@@ -93,7 +93,7 @@ This document explains the changes made to Iris for this release
    the datatables version from 2.3.2 to 2.3.8. (:pull:`7079`)
 
 #. `@tkknight`_ updated the documentation to generate summaries
-   that LLMs can understand, ``llms.txt`` and ``llms-full.txt``. (:pull:`7095`)
+   that LLMs can understand, `llms.txt` and `llms-full.txt`. (:pull:`7095`)
 
 
 💼 Internal
