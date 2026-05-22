@@ -28,7 +28,7 @@ or read the `Detail`_ section below for precise instructions.
     change. If you have not yet created the pull request, you can work out
     what the next PR number (i.e. your number) will be using this command::
 
-      $ curl -s "https://api.github.com/repos/SciTools/iris/issues?sort=created&direction=desc&per_page=1" | jq -r '.[0].number'
+      $ curl -s "https://api.github.com/repos/SciTools/iris/issues?sort=created&direction=desc&per_page=1" | jq -r '.[0].number + 1'
 
 Git Conflicts
 =============
