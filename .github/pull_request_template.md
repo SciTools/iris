@@ -7,6 +7,7 @@ _Please describe your awesome pull request_
 (In addition to a full set of [passing checks](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_ci_tests.html) :white_check_mark:)
 
 - [ ] Included a [**What's New**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/documenting/whats_new_contributions.html) entry
+- [ ] Incorporated [**type hints**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_code_formatting.html#type-hinting) in any changed code
 - [ ] Checked if [**tests**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_tests.html) need updating
 - [ ] Checked if [**benchmarks**](../benchmarks/README.md#writing-benchmarks) need updating
 - [ ] Checked if **documentation** needs updating
