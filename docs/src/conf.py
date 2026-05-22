@@ -170,7 +170,6 @@ extensions = [
     "sphinx_llms_txt",
     "sphinx_needs",
     "sphinx_reredirects",
-    "sphinx_sitemap",
     "user_manual_directives",
 ]
 
