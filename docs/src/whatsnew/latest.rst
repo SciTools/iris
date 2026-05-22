@@ -88,6 +88,10 @@ This document explains the changes made to Iris for this release
    sorted column or row as is uses the incorrect theme color (light). Also updated
    the datatables version from 2.3.2 to 2.3.8. (:pull:`7079`)
 
+#. `@trexfeathers`_ simplified the pull request checklist and moved it directly
+   into the GitHub pull request template (read more here: :ref:`pr_check`). Also
+   updated several associated pages of more detailed guidance. (:pull:`7096`)
+
 
 💼 Internal
 ===========

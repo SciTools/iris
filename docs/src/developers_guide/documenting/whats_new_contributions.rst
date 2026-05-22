@@ -6,6 +6,45 @@
 Contributing a "What's New" Entry
 =================================
 
+Please include a "What's New" contribution in
+``docs/src/whatsnew/latest.rst`` for **any** change that you make to Iris.
+**Even if it is not relevant to users** - the `Contribution categories`_
+include ``Internal`` for this - the page is read by contributors as well as
+users, and it reveals the work needed to keep a project going.
+
+See this docs section for all What's New pages: :ref:`iris_whatsnew`.
+
+What Should it Look Like?
+=========================
+
+It should describe your change in a few sentences, with particular focus on
+what the change means for users who might read this. For formatting guidance:
+hundreds of examples can be found in existing ``docs/src/whatsnew/`` files,
+or read the `Detail`_ section below for precise instructions.
+
+.. hint::
+
+    Our standard format includes the number of the pull request making the
+    change. If you have not yet created the pull request, you can work out
+    what the next PR number (i.e. your number) will be using this command::
+
+      $ curl -s "https://api.github.com/repos/SciTools/iris/issues?sort=created&direction=desc&per_page=1" | jq -r '.[0].number + 1'
+
+Git Conflicts
+=============
+
+Because every pull request includes a What's New entry, there are often
+conflicts for the ``latest.rst`` file. Thankfully What's New files are simple!
+GitHub's '`Resolve conflicts`_' button on the pull request provides an easy
+interface for fixing these. Or feel free to use a different approach if you
+prefer.
+
+**If you are unsure, say so in a comment on your pull request and the Iris
+development team will be happy to help.**
+
+Detail
+======
+
 Iris uses a file named ``latest.rst`` to keep a draft of upcoming development
 changes that will form the next stable release.  Contributions to the
 :ref:`iris_whatsnew` document are written by the developer most familiar
@@ -13,45 +52,10 @@ with the change made.  The contribution should be included as part of
 the Iris Pull Request that introduces the change.
 
 The ``latest.rst`` and the past release notes are kept in the
-``docs/src/whatsnew/`` directory. If you are writing the first contribution after
-an Iris release: **create the new** ``latest.rst`` by copying the content from
-``latest.rst.template`` in the same directory.
-
-Since the `Contribution categories`_ include Internal changes, **all** Iris
-Pull Requests should be accompanied by a "What's New" contribution.
-
-
-Git Conflicts
-=============
-
-If changes to ``latest.rst`` are being suggested in several simultaneous
-Iris Pull Requests, Git will likely encounter merge conflicts. If this
-situation is thought likely (large PR, high repo activity etc.):
-
-* PR author: Do not include a "What's New" entry. Mention in the PR text that a
-  "What's New" entry is pending
-
-* PR reviewer: Review the PR as normal. Once the PR is acceptable, ask that
-  a **new pull request** be created specifically for the "What's New" entry,
-  which references the main pull request and titled (e.g. for PR#9999):
-
-   What's New for #9999
-
-* PR author: create the "What's New" pull request
-
-* PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (this will fix any `Iris GitHub Actions`_ linkcheck errors where the links in the
-  "What's New" PR reference new features introduced in the main PR)
-
-* PR reviewer: review the "What's New" PR, merge once acceptable
-
-These measures should mean the suggested ``latest.rst`` changes are outstanding
-for the minimum time, minimising conflicts and minimising the need to rebase or
-merge from trunk.
-
+``docs/src/whatsnew/`` directory.
 
 Writing a Contribution
-======================
+----------------------
 
 A contribution is the short description of a change introduced to Iris
 which improved it in some way. As such, a single Iris Pull Request may
@@ -124,9 +128,8 @@ examine past what's :ref:`iris_whatsnew` entries.
           creating a pull request, however you can also manually
           :ref:`build <contributing.documentation.building>` the documentation.
 
-
 Contribution Categories
-=======================
+-----------------------
 
 The structure of the what's new release note should be easy to read by
 users.  To achieve this several categories may be used.
@@ -155,3 +158,15 @@ users.  To achieve this several categories may be used.
 **💼 Internal**
   Changes to any internal or development related topics, such as testing,
   environment dependencies etc.
+
+Making a File
+-------------
+
+This is usually handled as part of the :ref:`iris_development_releases` process.
+But if you are making the first contribution to a new minor or major release,
+and you find that no ``docs/src/whatsnew/latest.rst`` file exists:
+**create the new** ``latest.rst`` by copying the content from
+``latest.rst.template`` in the same directory.
+
+
+.. _Resolve conflicts: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-on-github
