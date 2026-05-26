@@ -56,7 +56,16 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. :user:`bjlittle` deprecated the :mod:`iris.analysis.calculus` module containing
+   the following public functions:
+
+   * :func:`~iris.analysis.calculus.cube_delta`
+   * :func:`~iris.analysis.calculus.curl`
+   * :func:`~iris.analysis.calculus.differentiate`
+   * :func:`~iris.analysis.calculus.spatial_vectors_with_phenom_name`
+
+   Native :class:`~iris.cube.Cube` calculus functionality will not be replace
+   and is scheduled for removal in ``Iris`` 4.0.0. (:issue:`6262`, :pull:`7102`)
 
 
 🔗 Dependencies
