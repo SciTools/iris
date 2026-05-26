@@ -59,6 +59,7 @@ dependencies:
   - pydata-sphinx-theme >=0.17.0
   - sphinx-needs
   - sphinx-reredirects
+  - sphinx-sitemap
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051
