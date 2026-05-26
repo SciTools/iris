@@ -65,11 +65,15 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
    PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
 
-#. `@tkknight`_ added a minimum pin for the PyData Sphinxc Theme as we use the
+#. `@tkknight`_ added a minimum pin for the PyData Sphinx Theme as we use the
    collapse sidebar feature introduced in 0.17.0. (:pull:`7060`)
 
 #. `@tkknight`_ updated a dependency in the Read The Docs configuration file to
    use the latest python. (:pull:`7084`)
+
+#. `@tkknight`_ added a dependency named sphinx-llms-txt to generate summaries
+   that LLMs can understand, `llms.txt` and `llms-full.txt`.  (:pull:`7095`)
+
 
 📚 Documentation
 ================
@@ -87,6 +91,9 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the voted table that uses datatables to not highlight the
    sorted column or row as is uses the incorrect theme color (light). Also updated
    the datatables version from 2.3.2 to 2.3.8. (:pull:`7079`)
+
+#. `@tkknight`_ updated the documentation to generate summaries
+   that LLMs can understand, `llms.txt` and `llms-full.txt`. (:pull:`7095`)
 
 
 💼 Internal
