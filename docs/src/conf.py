@@ -170,6 +170,7 @@ extensions = [
     "sphinx_llms_txt",
     "sphinx_needs",
     "sphinx_reredirects",
+    "sphinx_sitemap",
     "user_manual_directives",
 ]
 
@@ -178,6 +179,10 @@ if skip_api == "1":
 else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
+
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+html_baseurl = "https://scitools-iris.readthedocs.io/"
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
