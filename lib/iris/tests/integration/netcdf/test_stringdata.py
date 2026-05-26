@@ -250,7 +250,7 @@ class TestReadEncodings:
         return request.param
 
     def test_valid_encodings(
-        self, encoding, readtest_data: SamplefileDetails, readmode
+        self, encoding, readtest_data: SamplefileDetails, readmode, use_separate_dims
     ):
         (
             testfile_path,
@@ -267,6 +267,14 @@ class TestReadEncodings:
             readtest_data.stringcoord_bytes,
             readtest_data.numericcoord_data,
         )
+
+        if readmode == "bytes" and use_separate_dims == True:
+            msg = (
+                "Unsupported load combination : character coordinates with a non-cube "
+                "string dimension can't attach to the cube, when read as bytes."
+            )
+            pytest.skip(msg)
+
         as_strings = readmode == "strings"
         if as_strings:
             # Regular load
