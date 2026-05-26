@@ -50,7 +50,7 @@ All the load functions share very similar arguments:
 
     Filenames can contain `~` or `~user` abbreviations, and/or
     Unix shell-style wildcards (e.g. `*` and `?`). See the
-    standard library function :func:`os.path.expanduser` and
+    standard library function :func:`pathlib.Path(path).expanduser()` and
     module :mod:`fnmatch` for more details.
 
     .. warning::
@@ -101,7 +101,7 @@ All the load functions share very similar arguments:
 import contextlib
 import glob
 import importlib
-import os.path
+from pathlib import Path
 import threading
 from typing import Callable, Literal
 
@@ -340,8 +340,8 @@ def sample_data_path(*path_to_join):
         appropriate for general file access.
 
     """
-    target = os.path.join(*path_to_join)
-    if os.path.isabs(target):
+    target = Path(*path_to_join)
+    if target.is_absolute():
         raise ValueError(
             "Absolute paths, such as {!r}, are not supported.\n"
             "NB. This function is only for locating files in the "
@@ -349,7 +349,7 @@ def sample_data_path(*path_to_join):
             "appropriate for general file access.".format(target)
         )
     if iris_sample_data is not None:
-        target = os.path.join(iris_sample_data.path, target)
+        target = str(Path(iris_sample_data.path) / target)
     else:
         raise ImportError(
             "Please install the 'iris-sample-data' package to access sample data."

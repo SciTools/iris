@@ -79,13 +79,13 @@ if on_rtd:
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(os.path.abspath("sphinxext"))
+sys.path.append(str((Path("sphinxext").absolute())))
 
 # add some sample files from the developers guide..
-sys.path.append(os.path.abspath(os.path.join("developers_guide")))
+sys.path.append(str(Path("developers_guide").absolute()))
 
 # why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
@@ -318,7 +318,7 @@ html_theme = "pydata_sphinx_theme"
 html_sidebars = {
     "**": [
         "custom_sidebar_logo_version",
-        "search-field",
+        "sidebar-collapse",
         "sidebar-nav-bs",
         "sidebar-ethical-ads",
     ]
@@ -333,8 +333,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
-    # removes the search box from the top bar
-    "navbar_persistent": [],
+    "navbar_persistent": ["search-field"],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
@@ -513,7 +512,9 @@ def generate_carousel(
     :width: {width}
     :margin: {margin}
     :class-card: align-self-center
+    :class-body: d-none
 """
+    # :class-body: d-none = remove the text space, since we have no text.
 
     # TODO @bjlittle: use Path.walk when python >=3.12
     for root, _, files in os.walk(str(base)):

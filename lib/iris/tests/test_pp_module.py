@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 
 from copy import deepcopy
-import os
+from pathlib import Path
 from types import GeneratorType
 
 import cftime
@@ -68,7 +68,7 @@ class IrisPPTest:
         with np.printoptions(legacy=NP_PRINTOPTIONS_LEGACY):
             test_string = str(pp_fields)
         reference_path = _shared_utils.get_result_path(reference_filename)
-        if os.path.isfile(reference_path):
+        if Path(reference_path).is_file():
             with open(reference_path, "r") as reference_fh:
                 reference = "".join(reference_fh.readlines())
             _shared_utils._assert_str_same(
