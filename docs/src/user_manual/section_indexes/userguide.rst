@@ -38,6 +38,7 @@ they may serve as a useful reference for future exploration.
    ../how_to/navigating_a_cube
    ../tutorial/subsetting_a_cube
    ../explanation/real_and_lazy_data
+   ../explanation/temporal_coordinates
    ../tutorial/plotting_a_cube
    ../tutorial/interpolation_and_regridding
    ../tutorial/merge_and_concat
