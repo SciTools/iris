@@ -33,6 +33,11 @@ from iris.warnings import IrisUserWarning
 
 __all__ = ["DIRECTIONAL_NAMES", "cube_delta", "curl", "differentiate"]
 
+warn_deprecated(
+    "iris.analysis.calculus has been deprecated and will be removed without "
+    "replacement in 4.0.0."
+)
+
 
 def _construct_delta_coord(coord):
     """Return a coordinate of deltas between the given coordinate's points.
