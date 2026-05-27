@@ -42,7 +42,8 @@ N_CHARS_DIM = 64
 PERSIST_TESTFILES: str | None = None
 
 NO_ENCODING_STR = "<noencoding>"
-TEST_ENCODINGS = [NO_ENCODING_STR] + SUPPORTED_ENCODINGS
+ALIAS_UTF8_STR = "UTF8"  # an alternative acceptable form (should be written as-is)
+TEST_ENCODINGS = [NO_ENCODING_STR, ALIAS_UTF8_STR] + SUPPORTED_ENCODINGS
 
 
 #
@@ -223,7 +224,7 @@ class TestReadEncodings:
         else:
             filetag = encoding
         dimtag = "diffdims" if use_separate_dims else "samedims"
-        tempfile_path = tmp_path / f"sample_read_{filetag}_{dimtag}.nc"
+        tempfile_path = tmp_path / f"sample_stringdata_read_{filetag}_{dimtag}.nc"
         return tempfile_path
 
     @pytest.fixture
@@ -408,7 +409,7 @@ class TestWriteEncodings:
         return request.param == "dataAsBytes"
 
     @pytest.fixture
-    def writetest_path(self, encoding, write_bytes, tmp_path):
+    def writetest_path(self, encoding, write_bytes, lazy_data, tmp_path):
         """Create a suitable test cube, with either string or byte content."""
         if PERSIST_TESTFILES:
             tmp_path = Path(PERSIST_TESTFILES).expanduser()
@@ -417,7 +418,10 @@ class TestWriteEncodings:
         else:
             filetag = encoding
         datatag = "writebytes" if write_bytes else "writestrings"
-        tempfile_path = tmp_path / f"sample_write_{filetag}_{datatag}.nc"
+        lazytag = "alllazy" if lazy_data else "smallreal"
+        tempfile_path = (
+            tmp_path / f"sample_stringdata_write_{filetag}_{datatag}_{lazytag}.nc"
+        )
         return tempfile_path
 
     @pytest.fixture
@@ -440,11 +444,6 @@ class TestWriteEncodings:
     def test_valid_encodings(self, encoding, writetest_data, write_bytes):
         cube_info = writetest_data
         cube, path = cube_info.cube, cube_info.save_path
-        # TODO: not testing the "byte read/write" yet
-        # Make a quick check for cube equality : but the presentation depends on the read mode
-        # with DECODE_TO_STRINGS_ON_READ.context(not write_bytes):
-        # read_cube = iris.load_cube(path)
-        # assert read_cube == cube
 
         # N.B. file content should not depend on whether bytes or strings were written
         vararray, coordarray = cube_info.datavar_data, cube_info.stringcoord_data
