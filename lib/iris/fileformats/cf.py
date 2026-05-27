@@ -1345,7 +1345,11 @@ class CFReader:
 
         # Read the variables in the dataset only once to reduce runtime.
         # Turn off *any* automatic decoding in the underlying netCDF4 dataset
-        self._dataset._contained_instance.set_auto_chartostring(False)
+        ds = self._dataset
+        if isinstance(ds, _thread_safe_nc.DatasetWrapper):
+            ds._contained_instance.set_auto_chartostring(False)
+        else:
+            ds.set_auto_chartostring(False)
         variables = self._dataset.variables
         self._translate(variables)
         self._build_cf_groups(variables)
