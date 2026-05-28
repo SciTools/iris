@@ -19,6 +19,7 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+import iris.exceptions
 from iris.fileformats.netcdf import (
     DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,
@@ -44,6 +45,13 @@ PERSIST_TESTFILES: str | None = None
 NO_ENCODING_STR = "<noencoding>"
 ALIAS_UTF8_STR = "UTF8"  # an alternative acceptable form (should be written as-is)
 TEST_ENCODINGS = [NO_ENCODING_STR, ALIAS_UTF8_STR] + SUPPORTED_ENCODINGS
+
+
+# Common fixture to save with split-attrs ONLY in these tests
+@pytest.fixture(scope="module", autouse=True)
+def all_split_attrs():
+    with iris.FUTURE.context(save_split_attrs=True):
+        yield
 
 
 #
@@ -476,3 +484,119 @@ class TestWriteEncodings:
             )
         assert np.all(data_main == vararray)
         assert np.all(data_co == coordarray)
+
+
+class TestStringCubeBehaviour:
+    def test_create(self):
+        cube = Cube(["this", "that", "cliché"])
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == (3,)
+        assert cube.dtype == np.dtype("U6")
+
+    def test_scalar_extract(self):
+        cube = Cube(["one", "two", "thirteen"])
+        cube = cube[0]
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == ()
+        assert cube.dtype == np.dtype("U3")
+
+    def test_scalar_create(self):
+        cube = Cube("éclair")
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == ()
+        assert cube.dtype == np.dtype("U6")
+
+
+class TestWriteReadMixedEncodings:
+    """Check saving of different types of string data, in cubes.
+
+    Checks that encodings are preserved through save/load.
+    Checks that scalar cubes save.
+    Checks that multiple cubes with different encodings save correctly.
+    """
+
+    def test_mixed(self, tmp_path):
+        # Save a mixture of string + numeric cubes, 1-D and scalar
+        # Ensure that they save, and read back correctly.
+        c1 = Cube(["test-string"], var_name="c1")
+        c2 = Cube(["test=éclair"], var_name="c2", attributes={"_Encoding": "utf16"})
+        c3 = Cube(4.5, var_name="c3")
+        c4 = Cube(np.array("q"), var_name="c4")  # a SCALAR character-type cube
+        cubes = [c1, c2, c3, c4]
+        originals = [c.copy() for c in cubes]
+
+        # Check they save OK
+        filepath = tmp_path / "tst.nc"
+        iris.save(cubes, filepath)
+
+        # Check they also read back the same (except for Conventions attribute)
+        results = iris.load_cubes(filepath, ["c1", "c2", "c3", "c4"])
+        for cube in results:
+            cube.attributes.pop("Conventions", None)
+        assert all(orig == result for orig, result in zip(originals, results))
+
+
+class TestWriteReadScalarStringCubes:
+    """Check how scalar string-typed cubes are saved.
+    NB all these gain a string dimension, even when only a single byte character,
+    so they are not actually "scalar" in the file.
+    """
+
+    def test_save_scalar_ascii__ok(self, tmp_path):
+        # We can save a scalar cube containing a *single ascii character*
+        scalar_char_cube = Cube(
+            np.array("x"),
+            var_name="c1",
+            attributes={"_Encoding": "utf8"},  # NB no encoding is *needed* here.
+        )
+        assert scalar_char_cube.shape == ()
+        filepath = tmp_path / "tst.nc"
+        iris.save(scalar_char_cube, filepath)
+
+        # Check dims in file
+        ds = _thread_safe_nc.DatasetWrapper(filepath)
+        assert ds.variables["c1"].dimensions == ("string1",)
+        assert ds.dimensions["string1"].size == 1
+        ds.close()
+
+        # check read-back result
+        result = iris.load_cube(filepath)
+        result.attributes.pop("Conventions", None)
+        assert result == scalar_char_cube
+
+    def test_save_scalar_unicode__fail(self, tmp_path):
+        # You *can't* save a scalar cube containing a non-ascii character
+        # *without an explicitly lengthened dtype*,
+        # because it doesn't convert to a single "char".
+        scalar_char_bad = Cube(
+            np.array("ü"), var_name="c1", attributes={"_Encoding": "utf8"}
+        )
+        assert scalar_char_bad.shape == ()
+        filepath = tmp_path / "tst.nc"
+        msg = (
+            "String 'ü' written .* is 2 bytes long, "
+            "which exceeds the string dimension length"
+        )
+        with pytest.raises(iris.exceptions.TranslationError, match=msg):
+            iris.save(scalar_char_bad, filepath)
+
+    def test_save_single_unicode__okay(self, tmp_path):
+        # You *can* save a scalar cube containing a non-ascii character,
+        # *if* the dtype is extended to allow for multiple encoded bytes.
+        scalar_char_cube = Cube(
+            np.array("ü", dtype="U2"), var_name="c1", attributes={"_Encoding": "utf8"}
+        )
+        assert scalar_char_cube.shape == ()
+        filepath = tmp_path / "tst.nc"
+        iris.save(scalar_char_cube, filepath)
+
+        # Check dims in file
+        ds = _thread_safe_nc.DatasetWrapper(filepath)
+        assert ds.variables["c1"].dimensions == ("string2",)
+        assert ds.dimensions["string2"].size == 2
+        ds.close()
+
+        # check read-back result
+        result = iris.load_cube(filepath)
+        result.attributes.pop("Conventions", None)
+        assert result == scalar_char_cube
