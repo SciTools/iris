@@ -180,6 +180,20 @@ else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
 
+# -- sphinx-llms-txt ---------------------------------------------------------
+# See https://sphinx-llms-txt.readthedocs.io/en/latest/advanced-configuration.html
+llms_txt_exclude = [
+    "search.html",
+    "genindex.html",
+    "_modules/*",
+    "py-modindex.html",
+    "*/sg_execution_times.html",
+]
+
+source_suffix = {
+    ".rst": "restructuredtext",
+}
+
 # -- sphinx-sitemap ----------------------------------------------------------
 # See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
 html_baseurl = "https://scitools-iris.readthedocs.io/"
