@@ -167,7 +167,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "sphinx_llms_txt",
+    "sphinx_llm.txt",
     "sphinx_needs",
     "sphinx_reredirects",
     "user_manual_directives",
@@ -178,6 +178,14 @@ if skip_api == "1":
 else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
+
+# -- sphinx-llm ---------------------------------------------------------------
+# See https://github.com/NVIDIA/sphinx-llm
+llms_txt_enabled = True
+llms_txt_build_parallel = True
+llms_txt_suffix_mode = "auto"
+llms_txt_full_build = True
+llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -448,6 +456,8 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
+    # disable the computation reports
+    "write_computation_times": False,
 }
 
 # -----------------------------------------------------------------------------
