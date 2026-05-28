@@ -170,7 +170,6 @@ extensions = [
     "sphinx_llm.txt",
     "sphinx_needs",
     "sphinx_reredirects",
-    "sphinx_sitemap",
     "user_manual_directives",
 ]
 
@@ -191,10 +190,13 @@ llms_txt_description = "A powerful, format-agnostic, community-driven Python pac
 # -- sphinx-sitemap ----------------------------------------------------------
 # See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
 
-if on_rtd and rtd_version == "stable":
+if on_rtd and rtd_version in ["latest", "stable"]:
     extensions.append("sphinx_sitemap")
 
-    html_baseurl = "https://scitools-iris.readthedocs.io/en/stable/"
+    html_baseurl = f"https://scitools-iris.readthedocs.io/en/{rtd_version}/"
+    autolog(
+        "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
+    )
 
     sitemap_url_scheme = "{link}"
     sitemap_excludes = [
@@ -204,6 +206,13 @@ if on_rtd and rtd_version == "stable":
         "py-modindex.html",
         "*/sg_execution_times.html",
     ]
+else:
+    autolog(
+        (
+            "[sphinx_sitemap] Must be running on READTHEDOCS and version is "
+            "either 'latest' or 'stable', skipping sitemap creation."
+        )
+    )
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
