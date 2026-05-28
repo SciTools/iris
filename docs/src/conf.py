@@ -185,6 +185,7 @@ llms_txt_enabled = True
 llms_txt_build_parallel = True
 llms_txt_suffix_mode = "auto"
 llms_txt_full_build = True
+llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
