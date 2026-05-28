@@ -156,6 +156,20 @@ FORMAT_AGENT.add_spec(
 
 
 #
+# Zarr files.
+#
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "zarr",
+        FileExtension(requires_fh=False),
+        ".zarr#mode=nczarr,file",
+        netcdf.load_cubes,
+        priority=3,
+    )
+)
+
+
+#
 # UM Fieldsfiles.
 #
 FORMAT_AGENT.add_spec(

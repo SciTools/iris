@@ -97,6 +97,10 @@ def _generate_cubes(uris, callback, constraints):
             urls = [":".join(x) for x in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
+        elif scheme == "zarr":
+            urls = [x[1] for x in groups]
+            for cube in iris.io.load_http(urls, callback):
+                yield cube
         elif scheme == "data":
             data_objects = [x[1] for x in groups]
             for cube in iris.io.load_data_objects(data_objects, callback):
