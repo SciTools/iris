@@ -190,15 +190,20 @@ llms_txt_description = "A powerful, format-agnostic, community-driven Python pac
 
 # -- sphinx-sitemap ----------------------------------------------------------
 # See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
-html_baseurl = "https://scitools-iris.readthedocs.io/"
-sitemap_show_lastmod = True
-sitemap_excludes = [
-    "search.html",
-    "genindex.html",
-    "_modules/*",
-    "py-modindex.html",
-    "*/sg_execution_times.html",
-]
+
+if on_rtd and rtd_version == "stable":
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = "https://scitools-iris.readthedocs.io/en/stable/"
+
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
