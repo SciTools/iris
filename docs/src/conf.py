@@ -167,7 +167,7 @@ extensions = [
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
-    "sphinx_llms_txt",
+    "sphinx_llm.txt",
     "sphinx_needs",
     "sphinx_reredirects",
     "sphinx_sitemap",
@@ -180,19 +180,13 @@ else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
 
-# -- sphinx-llms-txt ---------------------------------------------------------
-# See https://sphinx-llms-txt.readthedocs.io/en/latest/advanced-configuration.html
-llms_txt_exclude = [
-    "search.html",
-    "genindex.html",
-    "_modules/*",
-    "py-modindex.html",
-    "*/sg_execution_times.html",
-]
-
-source_suffix = {
-    ".rst": "restructuredtext",
-}
+# -- sphinx-llm ---------------------------------------------------------------
+# See https://github.com/NVIDIA/sphinx-llm
+llms_txt_enabled = True
+llms_txt_build_parallel = True
+llms_txt_suffix_mode = "auto"
+llms_txt_full_build = True
+llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
 
 # -- sphinx-sitemap ----------------------------------------------------------
 # See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
@@ -205,6 +199,7 @@ sitemap_excludes = [
     "py-modindex.html",
     "*/sg_execution_times.html",
 ]
+
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 napoleon_google_docstring = True
@@ -474,6 +469,8 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
+    # disable the computation reports
+    "write_computation_times": False,
 }
 
 # -----------------------------------------------------------------------------

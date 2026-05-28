@@ -59,7 +59,7 @@ dependencies:
   - pydata-sphinx-theme >=0.17.0
   - sphinx-needs
   - sphinx-reredirects
-  - sphinx-llms-txt
+  - sphinx-llm
   - sphinx-sitemap
 
 # Temporary minimum pins.
