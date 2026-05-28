@@ -418,7 +418,11 @@ class Saver:
         else:
             # Given a filepath string/path : create a dataset from that
             try:
-                self.filepath = Path(filename).absolute()
+                filepath = Path(filename)
+                if ".zarr" not in filepath.suffix:
+                    self.filepath = filepath.absolute()
+                else:
+                    self.filepath = filepath
                 self._dataset = _thread_safe_nc.DatasetWrapper(
                     self.filepath, mode="w", format=netcdf_format
                 )
