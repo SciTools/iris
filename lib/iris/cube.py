@@ -1280,9 +1280,9 @@ class Cube(CFVariableMixin):
             ...                                  (longitude, 1)])
 
         """
-        # Temporary error while we transition the API.
-        if isinstance(data, str):
-            raise TypeError("Invalid data type: {!r}.".format(data))
+        # # Temporary error while we transition the API.
+        # if isinstance(data, str):
+        #     raise TypeError("Invalid data type: {!r}.".format(data))
 
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
