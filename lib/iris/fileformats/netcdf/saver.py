@@ -1719,20 +1719,23 @@ class Saver:
         if element.units.calendar:
             _setncattr(cf_var, "calendar", str(element.units.calendar))
 
+        # Take a copy so we can remove things
+        element_attrs = element.attributes.copy()
+
         # Note: when writing UGRID, "element" can be a Mesh which has no "dtype",
         # and for dataless cubes it will have a 'None' dtype.
         if getattr(element, "dtype", None) is not None:
             # Most attributes are dealt with later.  But _Encoding needs to be defined
             #  *before* we can write to a character variable.
-            if element.dtype.kind in "SU" and "_Encoding" in element.attributes:
-                encoding = element.attributes.pop("_Encoding")
+            if element.dtype.kind in "SU" and "_Encoding" in element_attrs:
+                encoding = element_attrs.pop("_Encoding")
                 _setncattr(cf_var, "_Encoding", encoding)
 
         if not isinstance(element, Cube):
             # Add any other custom coordinate attributes.
             # N.B. not Cube, which has specific handling in  _create_cf_data_variable
-            for name in sorted(element.attributes):
-                value = element.attributes[name]
+            for name in sorted(element_attrs):
+                value = element_attrs[name]
 
                 if name == "STASH":
                     # Adopting provisional Metadata Conventions for representing MO
