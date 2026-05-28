@@ -166,7 +166,7 @@ def cube_delta(cube, coord):
     .. deprecated:: 3.16.0
 
         :func:`iris.analysis.calculus.cube_delta` has been deprecated and will
-        be remove in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
+        be removed in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
         will no longer be supported. Subsequently, :mod:`iris.analysis.calculus`
         is deprecated and will be removed in ``Iris`` 4.0.0.
 

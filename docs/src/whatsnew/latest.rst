@@ -64,7 +64,7 @@ This document explains the changes made to Iris for this release
    * :func:`~iris.analysis.calculus.differentiate`
    * :func:`~iris.analysis.calculus.spatial_vectors_with_phenom_name`
 
-   Native :class:`~iris.cube.Cube` calculus functionality will not be replace
+   Native :class:`~iris.cube.Cube` calculus functionality will not be replaced
    and is scheduled for removal in ``Iris`` 4.0.0. (:issue:`6262`, :pull:`7102`)
 
 
