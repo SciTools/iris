@@ -14,4 +14,5 @@
  * UM Fieldsfile (FF) converted with ieee to 32 bit (priority 3)
  * UM Fieldsfile (FF) pre v3.1 (priority 3)
  * UM Post Processing file (PP) little-endian (priority 3)
+ * zarr (priority 3)
  * GRIB (priority 1)
