@@ -38,9 +38,6 @@ def all_lazy_auxcoords():
 
 N_XDIM = 3
 N_CHARS_DIM = 64
-# TODO: remove (debug)
-# PERSIST_TESTFILES: str | None = "~/chararray_testfiles"
-PERSIST_TESTFILES: str | None = None
 
 NO_ENCODING_STR = "<noencoding>"
 ALIAS_UTF8_STR = "UTF8"  # an alternative acceptable form (should be written as-is)
@@ -228,11 +225,6 @@ class TestReadEncodings:
         use_separate_dims,
     ) -> Iterable[SamplefileDetails]:
         """Create a suitable valid testfile, and return expected string content."""
-        match PERSIST_TESTFILES:
-            case str():
-                tmp_path = Path(PERSIST_TESTFILES).expanduser()
-            case _:
-                pass
         if encoding == "<noencoding>":
             filetag = "noencoding"
         else:
@@ -254,10 +246,6 @@ class TestReadEncodings:
             encoding_str=encoding,
             coords_on_separate_dim=use_separate_dims,
         )
-
-        # # TODO: temporary for debug -- TO REMOVE
-        # from iris.tests.integration.netcdf.test_chararrays import ncdump
-        # ncdump(str(tempfile_path))
         return testdata
 
     @pytest.fixture(params=["strings", "bytes"])
@@ -425,8 +413,6 @@ class TestWriteEncodings:
     @pytest.fixture
     def writetest_path(self, encoding, write_bytes, lazy_data, tmp_path):
         """Create a suitable test cube, with either string or byte content."""
-        if PERSIST_TESTFILES:
-            tmp_path = Path(PERSIST_TESTFILES).expanduser()
         if encoding == "<noencoding>":
             filetag = "noencoding"
         else:

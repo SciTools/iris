@@ -48,17 +48,9 @@ def encoding(request):
     return request.param
 
 
-# TODO: remove (debug)
-# PERSIST_TESTFILES: str | None = "~/chararray_testfiles"
-PERSIST_TESTFILES: str | None = None
-
-
 @pytest.fixture(scope="module")
 def tempdir(tmp_path_factory):
-    if PERSIST_TESTFILES:
-        path = Path(PERSIST_TESTFILES).expanduser()
-    else:
-        path = tmp_path_factory.mktemp("netcdf")
+    path = tmp_path_factory.mktemp("netcdf")
     return path
 
 
