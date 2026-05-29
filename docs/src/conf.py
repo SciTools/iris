@@ -191,6 +191,34 @@ if on_rtd:
     llms_txt_full_build = True
     llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
 
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+
+if on_rtd and rtd_version in ["latest", "stable"]:
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = f"https://scitools-iris.readthedocs.io/en/{rtd_version}/"
+    autolog(
+        "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
+    )
+
+    sitemap_show_lastmod = True
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
+else:
+    autolog(
+        (
+            "[sphinx_sitemap] Must be running on READTHEDOCS and version is "
+            "either 'latest' or 'stable', skipping sitemap creation."
+        )
+    )
+
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 napoleon_google_docstring = True

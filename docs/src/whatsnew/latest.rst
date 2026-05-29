@@ -83,6 +83,8 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a dependency named sphinx-llm to generate summaries
    that LLMs can understand, `llms.txt` and `llms-full.txt`.  (:pull:`7105`)
 
+#. `@tkknight`_ added a dependency named sphinx-sitemap to generate sitemap.xml for
+   the documentaiton. (:pull:`7100`)
 
 📚 Documentation
 ================
@@ -104,6 +106,8 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the documentation to generate summaries
    that LLMs can understand, `llms.txt` and `llms-full.txt`. (:pull:`7105`)
 
+#. `@tkknight`_ updated the documentation to generate a sitemap.xml files for the
+   stable version. (:pull:`7100`)
 
 💼 Internal
 ===========
