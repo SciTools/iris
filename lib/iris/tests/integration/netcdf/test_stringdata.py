@@ -692,3 +692,23 @@ class TestWriteParticularCases:
         )
         with pytest.raises(ValueError, match=msg):
             iris.save(cube, filepath)
+
+
+class TestSaveloadBadUnicodeAsBytes:
+    def test_save_load_bad_unicode(self, tmp_path):
+        filepath = tmp_path / "bad_unicode_utf8.nc"
+        test_string = "marré"
+        bytes_array = test_string.encode("utf8")
+        s1_array = np.array([bytes_array[i : i + 1] for i in range(len(bytes_array))])
+        s1_array_bad_utf8 = s1_array[:-1]  # invalid without the last byte
+        cube = Cube(s1_array_bad_utf8, attributes={"_Encoding": "utf8"})
+        iris.save(cube, filepath)
+        # First check for error when reading back *normally*
+        msg = "could not be decoded with the 'utf-8' encoding"
+        with pytest.raises(ValueError, match=msg):
+            iris.load(filepath)
+        # .. but OK in byte-reading mode
+        with iris.fileformats.netcdf.DECODE_TO_STRINGS_ON_READ.context(False):
+            readback_cube = iris.load_cube(filepath)
+        assert readback_cube.dtype == "S1"
+        assert np.all(readback_cube.data == s1_array_bad_utf8)
