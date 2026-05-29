@@ -3620,6 +3620,16 @@ class Test__eq__data:
         cube2 = Cube([True, True])
         assert cube1 != cube2
 
+    def test_data_string_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "c"])
+        assert cube1 == cube2
+
+    def test_data_string_not_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "d"])
+        assert cube1 != cube2
+
 
 class Test__eq__meta:
     def test_ancillary_fail(self):

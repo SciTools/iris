@@ -19,7 +19,12 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf import SUPPORTED_ENCODINGS, _thread_safe_nc
+import iris.exceptions
+from iris.fileformats.netcdf import (
+    DECODE_TO_STRINGS_ON_READ,
+    SUPPORTED_ENCODINGS,
+    _thread_safe_nc,
+)
 
 
 @pytest.fixture(scope="module")
@@ -33,12 +38,17 @@ def all_lazy_auxcoords():
 
 N_XDIM = 3
 N_CHARS_DIM = 64
-# TODO: remove (debug)
-# PERSIST_TESTFILES: str | None = "~/chararray_testfiles"
-PERSIST_TESTFILES: str | None = None
 
 NO_ENCODING_STR = "<noencoding>"
-TEST_ENCODINGS = [NO_ENCODING_STR] + SUPPORTED_ENCODINGS
+ALIAS_UTF8_STR = "UTF8"  # an alternative acceptable form (should be written as-is)
+TEST_ENCODINGS = [NO_ENCODING_STR, ALIAS_UTF8_STR] + SUPPORTED_ENCODINGS
+
+
+# Common fixture to save with split-attrs ONLY in these tests
+@pytest.fixture(scope="module", autouse=True)
+def all_split_attrs():
+    with iris.FUTURE.context(save_split_attrs=True):
+        yield
 
 
 #
@@ -87,14 +97,19 @@ class SamplefileDetails:
 
     filepath: Path
     datavar_data: ArrayLike
+    datavar_bytes: ArrayLike
     stringcoord_data: ArrayLike
+    stringcoord_bytes: ArrayLike
     numericcoord_data: ArrayLike
 
 
 def make_testfile(
     testfile_path: Path,
     encoding_str: str,
-    coords_on_separate_dim: bool,
+    coords_on_separate_dim: bool = False,
+    # If set, determines the "_Encoding" attrs content, including None --> no attr.
+    # Otherwise, they  follow 'encoding_str', including NO_ENCODING_STR --> no attr.
+    encoding_attr: str | None = "<as_encoding_str>",
 ) -> SamplefileDetails:
     """Create a test netcdf file.
 
@@ -104,6 +119,9 @@ def make_testfile(
         encoding = None
     else:
         encoding = encoding_str
+
+    if encoding_attr == "<as_encoding_str>":
+        encoding_attr = encoding
 
     data_is_ascii = encoding in (None, "ascii")
 
@@ -141,8 +159,8 @@ def make_testfile(
         )
         v_co[:] = coordvar_bytearray
 
-        if encoding is not None:
-            v_co._Encoding = encoding
+        if encoding_attr is not None:
+            v_co._Encoding = encoding_attr
 
         v_numeric = ds.createVariable(
             "v_numeric",
@@ -161,8 +179,8 @@ def make_testfile(
         )
         v_datavar[:] = datavar_bytearray
 
-        if encoding is not None:
-            v_datavar._Encoding = encoding
+        if encoding_attr is not None:
+            v_datavar._Encoding = encoding_attr
 
         v_datavar.coordinates = "v_co v_numeric"
     finally:
@@ -171,7 +189,9 @@ def make_testfile(
     return SamplefileDetails(
         filepath=testfile_path,
         datavar_data=datavar_strings,
+        datavar_bytes=datavar_bytearray,
         stringcoord_data=coordvar_strings,
+        stringcoord_bytes=coordvar_bytearray,
         numericcoord_data=numeric_values,
     )
 
@@ -205,17 +225,12 @@ class TestReadEncodings:
         use_separate_dims,
     ) -> Iterable[SamplefileDetails]:
         """Create a suitable valid testfile, and return expected string content."""
-        match PERSIST_TESTFILES:
-            case str():
-                tmp_path = Path(PERSIST_TESTFILES).expanduser()
-            case _:
-                pass
         if encoding == "<noencoding>":
             filetag = "noencoding"
         else:
             filetag = encoding
         dimtag = "diffdims" if use_separate_dims else "samedims"
-        tempfile_path = tmp_path / f"sample_read_{filetag}_{dimtag}.nc"
+        tempfile_path = tmp_path / f"sample_stringdata_read_{filetag}_{dimtag}.nc"
         return tempfile_path
 
     @pytest.fixture
@@ -231,35 +246,73 @@ class TestReadEncodings:
             encoding_str=encoding,
             coords_on_separate_dim=use_separate_dims,
         )
-
-        # # TODO: temporary for debug -- TO REMOVE
-        # from iris.tests.integration.netcdf.test_chararrays import ncdump
-        # ncdump(str(tempfile_path))
         return testdata
 
-    def test_valid_encodings(self, encoding, readtest_data: SamplefileDetails):
-        testfile_path, datavar_strings, coordvar_strings, numeric_data = (
+    @pytest.fixture(params=["strings", "bytes"])
+    def readmode(self, request):
+        return request.param
+
+    def test_valid_encodings(
+        self, encoding, readtest_data: SamplefileDetails, readmode, use_separate_dims
+    ):
+        (
+            testfile_path,
+            datavar_strings,
+            datavar_bytes,
+            coordvar_strings,
+            coordvar_bytes,
+            numeric_data,
+        ) = (
             readtest_data.filepath,
             readtest_data.datavar_data,
+            readtest_data.datavar_bytes,
             readtest_data.stringcoord_data,
+            readtest_data.stringcoord_bytes,
             readtest_data.numericcoord_data,
         )
-        cube = iris.load_cube(testfile_path)
-        assert load_problems_list() == []
-        assert cube.shape == (N_XDIM,)
 
-        if encoding == "utf-32":
-            expected_string_width = (N_CHARS_DIM // 4) - 1
-        elif encoding == "utf-16":
-            expected_string_width = (N_CHARS_DIM) // 2 - 1
+        if readmode == "bytes" and use_separate_dims == True:
+            msg = (
+                "Unsupported load combination : character coordinates with a non-cube "
+                "string dimension can't attach to the cube, when read as bytes."
+            )
+            pytest.skip(msg)
+
+        as_strings = readmode == "strings"
+        if as_strings:
+            # Regular load
+            cube = iris.load_cube(testfile_path)
+            expected_shape: tuple = (N_XDIM,)
         else:
-            expected_string_width = N_CHARS_DIM
-        assert cube.dtype == f"<U{expected_string_width}"
+            # Special NON-decoded read
+            with DECODE_TO_STRINGS_ON_READ.context(False):
+                cube = iris.load_cube(testfile_path)
+            expected_shape = (N_XDIM, N_CHARS_DIM)
+
+        assert load_problems_list() == []
+        assert cube.shape == expected_shape
+
+        if as_strings:
+            if encoding == "utf-32":
+                expected_string_width = (N_CHARS_DIM // 4) - 1
+            elif encoding == "utf-16":
+                expected_string_width = (N_CHARS_DIM) // 2 - 1
+            else:
+                expected_string_width = N_CHARS_DIM
+            expected_dtype = f"<U{expected_string_width}"
+        else:
+            expected_dtype = "S1"
+        assert cube.dtype == expected_dtype
+
         cube_data = cube.data
-        assert np.all(cube_data == datavar_strings)
+        expected_data = datavar_strings if as_strings else datavar_bytes
+        assert np.all(cube_data == expected_data)
+
         coord_var = cube.coord("v_co")
-        assert coord_var.dtype == f"<U{expected_string_width}"
-        assert np.all(coord_var.points == coordvar_strings)
+        assert coord_var.dtype == expected_dtype
+        expected_points = coordvar_strings if as_strings else coordvar_bytes
+        assert np.all(coord_var.points == expected_points)
+
         # Also check the numeric one.
         coord_var_2 = cube.coord("v_numeric")
         assert coord_var_2.dtype == np.float64
@@ -358,16 +411,17 @@ class TestWriteEncodings:
         return request.param == "dataAsBytes"
 
     @pytest.fixture
-    def writetest_path(self, encoding, write_bytes, tmp_path):
+    def writetest_path(self, encoding, write_bytes, lazy_data, tmp_path):
         """Create a suitable test cube, with either string or byte content."""
-        if PERSIST_TESTFILES:
-            tmp_path = Path(PERSIST_TESTFILES).expanduser()
         if encoding == "<noencoding>":
             filetag = "noencoding"
         else:
             filetag = encoding
         datatag = "writebytes" if write_bytes else "writestrings"
-        tempfile_path = tmp_path / f"sample_write_{filetag}_{datatag}.nc"
+        lazytag = "alllazy" if lazy_data else "smallreal"
+        tempfile_path = (
+            tmp_path / f"sample_stringdata_write_{filetag}_{datatag}_{lazytag}.nc"
+        )
         return tempfile_path
 
     @pytest.fixture
@@ -390,11 +444,6 @@ class TestWriteEncodings:
     def test_valid_encodings(self, encoding, writetest_data, write_bytes):
         cube_info = writetest_data
         cube, path = cube_info.cube, cube_info.save_path
-        # TODO: not testing the "byte read/write" yet
-        # Make a quick check for cube equality : but the presentation depends on the read mode
-        # with DECODE_TO_STRINGS_ON_READ.context(not write_bytes):
-        # read_cube = iris.load_cube(path)
-        # assert read_cube == cube
 
         # N.B. file content should not depend on whether bytes or strings were written
         vararray, coordarray = cube_info.datavar_data, cube_info.stringcoord_data
@@ -427,3 +476,225 @@ class TestWriteEncodings:
             )
         assert np.all(data_main == vararray)
         assert np.all(data_co == coordarray)
+
+
+class TestStringCubeBehaviour:
+    def test_create(self):
+        cube = Cube(["this", "that", "cliché"])
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == (3,)
+        assert cube.dtype == np.dtype("U6")
+
+    def test_scalar_extract(self):
+        cube = Cube(["one", "two", "thirteen"])
+        cube = cube[0]
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == ()
+        assert cube.dtype == np.dtype("U3")
+
+    def test_scalar_create(self):
+        cube = Cube("éclair")
+        assert isinstance(cube.core_data(), np.ndarray)
+        assert cube.shape == ()
+        assert cube.dtype == np.dtype("U6")
+
+
+class TestWriteReadMixedEncodings:
+    """Check saving of different types of string data, in cubes.
+
+    Checks that encodings are preserved through save/load.
+    Checks that scalar cubes save.
+    Checks that multiple cubes with different encodings save correctly.
+    """
+
+    def test_mixed(self, tmp_path):
+        # Save a mixture of string + numeric cubes, 1-D and scalar
+        # Ensure that they save, and read back correctly.
+        c1 = Cube(["test-string"], var_name="c1")
+        c2 = Cube(["test=éclair"], var_name="c2", attributes={"_Encoding": "utf16"})
+        c3 = Cube(4.5, var_name="c3")
+        c4 = Cube(np.array("q"), var_name="c4")  # a SCALAR character-type cube
+        cubes = [c1, c2, c3, c4]
+        originals = [c.copy() for c in cubes]
+
+        # Check they save OK
+        filepath = tmp_path / "tst.nc"
+        iris.save(cubes, filepath)
+
+        # Check they also read back the same (except for Conventions attribute)
+        results = iris.load_cubes(filepath, ["c1", "c2", "c3", "c4"])
+        for cube in results:
+            cube.attributes.pop("Conventions", None)
+        assert all(orig == result for orig, result in zip(originals, results))
+
+
+class TestWriteReadScalarStringCubes:
+    """Check how scalar string-typed cubes are saved.
+    NB all these gain a string dimension, even when only a single byte character,
+    so they are not actually "scalar" in the file.
+    """
+
+    def test_save_scalar_ascii__ok(self, tmp_path):
+        # We can save a scalar cube containing a *single ascii character*
+        scalar_char_cube = Cube(
+            np.array("x"),
+            var_name="c1",
+            attributes={"_Encoding": "utf8"},  # NB no encoding is *needed* here.
+        )
+        assert scalar_char_cube.shape == ()
+        filepath = tmp_path / "tst.nc"
+        iris.save(scalar_char_cube, filepath)
+
+        # Check dims in file
+        ds = _thread_safe_nc.DatasetWrapper(filepath)
+        assert ds.variables["c1"].dimensions == ("string1",)
+        assert ds.dimensions["string1"].size == 1
+        ds.close()
+
+        # check read-back result
+        result = iris.load_cube(filepath)
+        result.attributes.pop("Conventions", None)
+        assert result == scalar_char_cube
+
+    def test_save_scalar_unicode__fail(self, tmp_path):
+        # You *can't* save a scalar cube containing a non-ascii character
+        # *without an explicitly lengthened dtype*,
+        # because it doesn't convert to a single "char".
+        scalar_char_bad = Cube(
+            np.array("ü"), var_name="c1", attributes={"_Encoding": "utf8"}
+        )
+        assert scalar_char_bad.shape == ()
+        filepath = tmp_path / "tst.nc"
+        msg = (
+            "String 'ü' written .* is 2 bytes long, "
+            "which exceeds the string dimension length"
+        )
+        with pytest.raises(iris.exceptions.TranslationError, match=msg):
+            iris.save(scalar_char_bad, filepath)
+
+    def test_save_single_unicode__okay(self, tmp_path):
+        # You *can* save a scalar cube containing a non-ascii character,
+        # *if* the dtype is extended to allow for multiple encoded bytes.
+        scalar_char_cube = Cube(
+            np.array("ü", dtype="U2"), var_name="c1", attributes={"_Encoding": "utf8"}
+        )
+        assert scalar_char_cube.shape == ()
+        filepath = tmp_path / "tst.nc"
+        iris.save(scalar_char_cube, filepath)
+
+        # Check dims in file
+        ds = _thread_safe_nc.DatasetWrapper(filepath)
+        assert ds.variables["c1"].dimensions == ("string2",)
+        assert ds.dimensions["string2"].size == 2
+        ds.close()
+
+        # check read-back result
+        result = iris.load_cube(filepath)
+        result.attributes.pop("Conventions", None)
+        assert result == scalar_char_cube
+
+
+class TestReadParticularCases:
+    @pytest.mark.parametrize("data_encoding", ["utf8", "utf16", "utf32"])
+    def test_read_no_encoding(self, tmp_path, data_encoding):
+        # Check that we can read UTF-8 encoded data, even with no _Encoding attribute.
+        # This is a common case in the wild, and now accepted by CF as a default.
+        # However, other encodings will FAIL to decode.
+        filepath = tmp_path / "utf8_no_encoding.nc"
+        testdata = make_testfile(
+            testfile_path=filepath,
+            encoding_str=data_encoding,
+            encoding_attr=None,
+        )
+        cube = iris.load_cube(filepath)
+        assert "_Encoding" not in cube.attributes
+
+        if data_encoding == "utf8":
+            assert np.all(cube.data == testdata.datavar_data)
+        else:
+            msg = "Character data .* could not be decoded with the 'utf-8' encoding"
+            with pytest.raises(ValueError, match=msg):
+                cube.data
+
+    def test_read_wrong_encoding__fail(self, tmp_path):
+        filepath = tmp_path / "missing_encoding.nc"
+        testdata = make_testfile(
+            testfile_path=filepath,
+            encoding_str="utf-16",
+            encoding_attr="utf-8",
+        )
+        cube = iris.load_cube(filepath)
+        # NOTE: error only occurs when you attempt to fetch + translate the content.
+        msg = "Character data .* could not be decoded with the 'utf-8' encoding."
+        with pytest.raises(ValueError, match=msg):
+            data = cube.data
+
+
+class TestWriteParticularCases:
+    def test_write_unicode_no_encoding__fail(self, tmp_path):
+        cube = Cube(np.array("éclair"))
+        filepath = tmp_path / "write_unicode_no_encoding.nc"
+        msg = (
+            "String data written to netcdf character variable 'unknown' "
+            "could not be represented in encoding 'ascii'"
+        )
+        with pytest.raises(ValueError, match=msg):
+            iris.save(cube, filepath)
+
+    def test_write_encoded_overlength__fail(self, tmp_path):
+        cube = Cube(np.array("éclair"), attributes={"_Encoding": "utf8"})
+        filepath = tmp_path / "write_encoded_overlength.nc"
+        msg = (
+            "String 'éclair' written into netcdf variable 'unknown' "
+            "with encoding 'utf-8' is 7 bytes long, which exceeds the "
+            "string dimension length, 6. "
+            r"This can be fixed by converting the data to a \"wider\" string dtype, "
+            r"e.g. cube.data = cube.data.astype\(\"U7\"\)"
+        )
+        with pytest.raises(iris.exceptions.TranslationError, match=msg):
+            iris.save(cube, filepath)
+
+    def test_write_multibytes__fail(self, tmp_path):
+        encoded_bytes = "éclair".encode("utf8")
+        byte_array = np.array(encoded_bytes)
+        cube = Cube(byte_array, attributes={"_Encoding": "utf8"})
+        filepath = tmp_path / "write_multibyte_Sxx.nc"
+        msg = (
+            r"Variable 'unknown' has unexpected dtype, dtype\('S7'\)."
+            "Data content arrays must be numeric, or contain single-bytes "
+            r"\(dtype 'S1'\), or unicode strings \(dtype 'U<n>'\)."
+        )
+        with pytest.raises(ValueError, match=msg):
+            iris.save(cube, filepath)
+
+    def test_write_stringobjects__fail(self, tmp_path):
+        string_array = np.array(["one", "four"], dtype="O")
+        cube = Cube(string_array)
+        filepath = tmp_path / "write_stringobjects.nc"
+        msg = (
+            r"Variable 'unknown' has unexpected dtype, dtype\('O'\)."
+            "Data content arrays must be numeric, or contain single-bytes "
+            r"\(dtype 'S1'\), or unicode strings \(dtype 'U<n>'\)."
+        )
+        with pytest.raises(ValueError, match=msg):
+            iris.save(cube, filepath)
+
+
+class TestSaveloadBadUnicodeAsBytes:
+    def test_save_load_bad_unicode(self, tmp_path):
+        filepath = tmp_path / "bad_unicode_utf8.nc"
+        test_string = "marré"
+        bytes_array = test_string.encode("utf8")
+        s1_array = np.array([bytes_array[i : i + 1] for i in range(len(bytes_array))])
+        s1_array_bad_utf8 = s1_array[:-1]  # invalid without the last byte
+        cube = Cube(s1_array_bad_utf8, attributes={"_Encoding": "utf8"})
+        iris.save(cube, filepath)
+        # First check for error when reading back *normally*
+        msg = "could not be decoded with the 'utf-8' encoding"
+        with pytest.raises(ValueError, match=msg):
+            iris.load(filepath)
+        # .. but OK in byte-reading mode
+        with iris.fileformats.netcdf.DECODE_TO_STRINGS_ON_READ.context(False):
+            readback_cube = iris.load_cube(filepath)
+        assert readback_cube.dtype == "S1"
+        assert np.all(readback_cube.data == s1_array_bad_utf8)

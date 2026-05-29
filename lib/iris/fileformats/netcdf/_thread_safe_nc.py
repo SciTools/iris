@@ -160,7 +160,7 @@ class GroupWrapper(_ThreadSafeWrapper):
     # Note: will also accept a whole Dataset object, but that is OK.
     _DUCKTYPE_CHECK_PROPERTIES = ["createVariable"]
     # Class to use when creating variable wrappers (default=VariableWrapper).
-    # - needed to support _byte_encoded_data.EncodedDataset.
+    # - needed to support _bytecoding_datasets.EncodedDataset.
     VAR_WRAPPER_CLS = VariableWrapper
     GRP_WRAPPER_CLS: typing.Any | None = None  # self-reference : fill in later
 
