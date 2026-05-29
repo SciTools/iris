@@ -198,6 +198,7 @@ if on_rtd and rtd_version in ["latest", "stable"]:
         "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
     )
 
+    sitemap_show_lastmod = True
     sitemap_url_scheme = "{link}"
     sitemap_excludes = [
         "search.html",
