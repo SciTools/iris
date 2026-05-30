@@ -142,7 +142,7 @@ https://conda.anaconda.org/conda-forge/linux-64/glib-tools-2.88.1-hee1de02_2.con
 https://conda.anaconda.org/conda-forge/linux-64/gts-0.7.6-h977cf35_4.conda#4d8df0b0db060d33c9a702ada998a8fe
 https://conda.anaconda.org/conda-forge/noarch/hpack-4.1.0-pyhd8ed1ab_0.conda#0a802cb9888dd14eeefc611f05c40b6e
 https://conda.anaconda.org/conda-forge/noarch/hyperframe-6.1.0-pyhd8ed1ab_0.conda#8e6923fc12f1fe8f8c4e5c9f343256ac
-https://conda.anaconda.org/conda-forge/noarch/idna-3.15-pyhcf101f3_0.conda#1b9083b7f00609605d1483dbc6071a81
+https://conda.anaconda.org/conda-forge/noarch/idna-3.17-pyhcf101f3_0.conda#c75e517ebd7a5c5272fe111e8b162228
 https://conda.anaconda.org/conda-forge/noarch/imagesize-2.0.0-pyhd8ed1ab_0.conda#92617c2ba2847cca7a6ed813b6f4ab79
 https://conda.anaconda.org/conda-forge/noarch/iniconfig-2.3.0-pyhd8ed1ab_0.conda#9614359868482abba1bd15ce465e3c42
 https://conda.anaconda.org/conda-forge/noarch/iris-sample-data-2.5.2-pyhd8ed1ab_0.conda#895f6625dd8a246fece9279fcc12c1de
@@ -170,7 +170,7 @@ https://conda.anaconda.org/conda-forge/noarch/pygments-2.20.0-pyhd8ed1ab_0.conda
 https://conda.anaconda.org/conda-forge/noarch/pyparsing-3.3.2-pyhcf101f3_0.conda#3687cc0b82a8b4c17e1f0eb7e47163d5
 https://conda.anaconda.org/conda-forge/noarch/pyshp-3.0.9-pyhd8ed1ab_0.conda#d260a4aec1cb8c91e0803afc6224494c
 https://conda.anaconda.org/conda-forge/noarch/pysocks-1.7.1-pyha55dd90_7.conda#461219d1a5bd61342293efa2c0c90eac
-https://conda.anaconda.org/conda-forge/linux-64/python-xxhash-3.6.0-py314he82b845_1.conda#21dce7c80bbdb9785633011ad348e530
+https://conda.anaconda.org/conda-forge/linux-64/python-xxhash-3.7.0-py314he82b845_0.conda#b7b8156134373dd419399dfbf255daae
 https://conda.anaconda.org/conda-forge/linux-64/pyyaml-6.0.3-py314h67df5f8_1.conda#2035f68f96be30dc60a5dfd7452c7941
 https://conda.anaconda.org/conda-forge/noarch/setuptools-82.0.1-pyh332efcf_0.conda#8e194e7b992f99a5015edbd4ebd38efd
 https://conda.anaconda.org/conda-forge/noarch/six-1.17.0-pyhe01879c_1.conda#3339e3b65d58accf4ca4fb8748ab16b3
@@ -244,7 +244,7 @@ https://conda.anaconda.org/conda-forge/noarch/setuptools-scm-10.0.5-pyhcf101f3_0
 https://conda.anaconda.org/conda-forge/noarch/sphinxcontrib-apidoc-0.3.0-py_1.tar.bz2#855b087883443abb10f5faf6eef40860
 https://conda.anaconda.org/conda-forge/linux-64/ukkonen-1.1.0-py314h9891dd4_0.conda#5d3c008e54c7f49592fca9c32896a76f
 https://conda.anaconda.org/conda-forge/noarch/urllib3-2.7.0-pyhd8ed1ab_0.conda#cbb88288f74dbe6ada1c6c7d0a97223e
-https://conda.anaconda.org/conda-forge/noarch/virtualenv-21.3.3-pyhcf101f3_0.conda#a678237f7d0db44f8a20a21f03844613
+https://conda.anaconda.org/conda-forge/noarch/virtualenv-21.4.1-pyhcf101f3_0.conda#ddc725661513322f9acf3443ce94ce61
 https://conda.anaconda.org/conda-forge/linux-64/xorg-libxtst-1.2.5-hb9d3cd8_3.conda#7bbe9a0cc0df0ac5f5a8ad6d6a11af2f
 https://conda.anaconda.org/conda-forge/linux-64/at-spi2-core-2.40.3-h0630a04_0.tar.bz2#8cb2fc4cd6cc63f1369cfa318f581cc3
 https://conda.anaconda.org/conda-forge/linux-64/cftime-1.6.5-py314hc02f841_1.conda#552b5d9d8a2a4be882e1c638953e7281
