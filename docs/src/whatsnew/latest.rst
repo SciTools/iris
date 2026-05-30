@@ -30,7 +30,9 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. `@stephenworsley`_ introduced the function :func:`~iris.analysis.cartography.guess_2D_bounds`
+   for guessing the bounds of pairs of 2D coordinates.
+   (:pull:`6799`)
 
 
 🐛 Bugs Fixed

@@ -1036,7 +1036,7 @@ class Test_contiguous_bounds:
 
     def test_2d_coord_no_bounds_error(self):
         coord = AuxCoord(np.array([[0, 0], [5, 5]]), standard_name="latitude")
-        emsg = "Guessing bounds of 2D coords is not currently supported"
+        emsg = "Guessing bounds of 2D coords is not supported"
         with pytest.raises(ValueError, match=emsg):
             coord.contiguous_bounds()
 
