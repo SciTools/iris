@@ -1040,6 +1040,10 @@ def _create_cube(data, src, src_dims, tgt_coords, num_tgt_dims, regrid_callback)
     if num_tgt_dims == 1:
         grid_dim_x = grid_dim_y = min(src_dims)
     for tgt_coord, dim in zip(tgt_coords, (grid_dim_x, grid_dim_y)):
+        # Copy so that the result does not share coordinate objects with the
+        # target grid (mutating one would otherwise mutate the other). See
+        # #6844.
+        tgt_coord = tgt_coord.copy()
         if len(tgt_coord.shape) == 1:
             if isinstance(tgt_coord, DimCoord) and dim is not None:
                 result.add_dim_coord(tgt_coord, dim)

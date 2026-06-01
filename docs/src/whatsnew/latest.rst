@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed regridding so that the horizontal coordinates of the
+   result are copies of, rather than references to, the target grid's
+   coordinates. Previously, modifying a result coordinate would also modify the
+   target cube's coordinate (and vice versa). (:issue:`6844`)
 
 
 💣 Incompatible Changes
