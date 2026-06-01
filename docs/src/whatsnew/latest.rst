@@ -109,6 +109,10 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the documentation to generate a sitemap.xml files for the
    stable version. (:pull:`7100`)
 
+#. `@trexfeathers`_ and `@hdyson`_ clarified that
+   :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon 
+   coordinates on the input :class:`~iris.cube.Cube`. (:pull:`7118`)
+
 💼 Internal
 ===========
 
