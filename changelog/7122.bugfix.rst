@@ -1,0 +1,3 @@
+:user:`gaoflow` fixed coordinate summaries so that length-0 string and
+date-like coordinates print as empty arrays instead of raising
+``ValueError``. (:issue:`6531`)
