@@ -388,8 +388,10 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
     dimensions.
 
-    The cube must have two 1-dimensional coordinates: 'latitude' and
-    'longitude', each with bounds.
+    The cube must include a 1-dimensional coordinate with 'latitude' in its
+    :attr:`~iris.coord.Coord.name`, and another 1-dimensional coordinate with
+    'longitude' in its :attr:`~iris.coord.Coord.name`. Both of these coordinates must
+    have bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
