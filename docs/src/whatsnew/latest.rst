@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed :meth:`iris.coords.Coord.cell` so that a masked bound
+   is preserved as masked, instead of revealing the value stored underneath the
+   mask. This also corrects the cube/coordinate printout for such bounds.
+   (:issue:`5158`)
 
 
 💣 Incompatible Changes
