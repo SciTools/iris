@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed :func:`iris.cube.CubeList.concatenate` so that cubes
+   with string coordinates of differing width (e.g. dtypes ``<U1`` and ``<U5``)
+   can be concatenated, with the result promoted to the wider dtype.
+   (:issue:`6676`)
 
 
 💣 Incompatible Changes
