@@ -1086,6 +1086,22 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
+    def test_lazy_aux_coord(self):
+        # A lazy aux-coord paralleling the rolled dimension must not cause a
+        # failure, and should give the same result as a real one, staying lazy
+        # (see #6480).
+        self.cube.add_aux_coord(AuxCoord(da.arange(6), long_name="lazy_extra"), 0)
+        res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, 3)
+        result_coord = res_cube.coord("lazy_extra")
+        assert result_coord.has_lazy_points()
+        assert result_coord.has_lazy_bounds()
+        expected = AuxCoord(
+            np.array([1.0, 2.0, 3.0, 4.0]),
+            bounds=np.array([[0, 2], [1, 3], [2, 4], [3, 5]]),
+            long_name="lazy_extra",
+        )
+        assert result_coord == expected
+
     def test_ancillary_variables_and_cell_measures_kept(self, dataless):
         if dataless:
             self.cube.data = None
