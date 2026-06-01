@@ -708,13 +708,13 @@ def build_and_add_global_attributes(engine: Engine):
             ),
         )
         if problem is not None:
-            stack_notes = problem.stack_trace.__notes__
+            stack_notes = problem.stack_trace.__notes__  # type: ignore[attr-defined]
             if stack_notes is None:
                 stack_notes = []
             stack_notes.append(
                 f"Skipping disallowed global attribute '{attr_name}' (see above error)"
             )
-            problem.stack_trace.__notes__ = stack_notes
+            problem.stack_trace.__notes__ = stack_notes  # type: ignore[attr-defined]
 
 
 ################################################################################
@@ -1209,9 +1209,6 @@ def get_attr_units(cf_var, attributes, capture_invalid=False):
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
 
-    if np.issubdtype(cf_var.dtype, np.str_):
-        attr_units = NO_UNIT_STRING
-
     if any(
         hasattr(cf_var.cf_data, name)
         for name in ("flag_values", "flag_masks", "flag_meanings")
@@ -1536,14 +1533,14 @@ def build_and_add_dimension_coordinate(
     )
     if problem is not None:
         coord_var_name = str(cf_coord_var.cf_name)
-        stack_notes = problem.stack_trace.__notes__
+        stack_notes = problem.stack_trace.__notes__  # type: ignore[attr-defined]
         if stack_notes is None:
             stack_notes = []
         stack_notes.append(
             f"Failed to create {coord_var_name} dimension coordinate:\n"
             f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
         )
-        problem.stack_trace.__notes__ = stack_notes
+        problem.stack_trace.__notes__ = stack_notes  # type: ignore[attr-defined]
         problem.handled = True
 
         _ = _add_or_capture(
@@ -1574,11 +1571,7 @@ def _build_auxiliary_coordinate(
     # Get units
     attr_units = get_attr_units(cf_coord_var, attributes)
 
-    # Get any coordinate point data.
-    if isinstance(cf_coord_var, cf.CFLabelVariable):
-        points_data = cf_coord_var.cf_label_data(engine.cf_var)
-    else:
-        points_data = _get_cf_var_data(cf_coord_var)
+    points_data = _get_cf_var_data(cf_coord_var)
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
@@ -1643,9 +1636,13 @@ def _add_auxiliary_coordinate(
 
     # Determine the name of the dimension/s shared between the CF-netCDF data variable
     # and the coordinate being built.
-    common_dims = [
-        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
-    ]
+    coord_dims = cf_coord_var.dimensions
+    # if cf._is_str_dtype(cf_coord_var):
+    #     coord_dims = coord_dims[:-1]
+    datavar_dims = engine.cf_var.dimensions
+    # if cf._is_str_dtype(engine.cf_var):
+    #     datavar_dims = datavar_dims[:-1]
+    common_dims = [dim for dim in coord_dims if dim in datavar_dims]
     data_dims = None
     if common_dims:
         # Calculate the offset of each common dimension.

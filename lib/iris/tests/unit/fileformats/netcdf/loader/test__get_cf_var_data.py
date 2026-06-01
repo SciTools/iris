@@ -24,14 +24,15 @@ class Test__get_cf_var_data(MockerMixin):
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
     def _make(self, chunksizes=None, shape=None, dtype="i4", **extra_properties):
+        if shape is None:
+            shape = self.shape
         cf_data = self.mocker.MagicMock(
             _FillValue=None,
             __getitem__="<real-data>",
-            dimensions=["dim_" + str(x) for x in range(len(shape or "1"))],
+            dimensions=["dim_" + str(x) for x in range(len(shape))],
+            shape=shape,
         )
         cf_data.chunking = self.mocker.MagicMock(return_value=chunksizes)
-        if shape is None:
-            shape = self.shape
         if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
             dtype = np.dtype(dtype)
         cf_var = self.mocker.MagicMock(

@@ -25,6 +25,12 @@ logger: logging.Logger = iris.config.get_logger(__name__, propagate=True)
 
 # Note: these probably shouldn't be public, but for now they are.
 from .._nc_load_rules.helpers import UnknownCellMethodWarning, parse_cell_methods
+from ._bytecoding_datasets import (
+    DECODE_TO_STRINGS_ON_READ,
+    DEFAULT_READ_ENCODING,
+    DEFAULT_WRITE_ENCODING,
+    SUPPORTED_ENCODINGS,
+)
 from .loader import DEBUG, NetCDFDataProxy, load_cubes
 from .saver import (
     CF_CONVENTIONS_VERSION,
@@ -42,9 +48,13 @@ __all__ = (
     "CFNameCoordMap",
     "CF_CONVENTIONS_VERSION",
     "DEBUG",
+    "DECODE_TO_STRINGS_ON_READ",
+    "DEFAULT_READ_ENCODING",
+    "DEFAULT_WRITE_ENCODING",
     "MESH_ELEMENTS",
     "NetCDFDataProxy",
     "SPATIO_TEMPORAL_AXES",
+    "SUPPORTED_ENCODINGS",
     "Saver",
     "UnknownCellMethodWarning",
     "load_cubes",

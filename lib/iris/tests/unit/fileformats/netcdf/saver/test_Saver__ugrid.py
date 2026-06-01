@@ -398,12 +398,12 @@ class TestSaveUgrid__cube:
         # into the iris.fileformats.netcdf.saver. Also we want to check that the
         # compression kwargs are passed into the NetCDF4 createVariable method
         patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         # No need to patch this NetCDF4 variable to compensate for the previous patch
         # on createVariable, which doesn't actually create the variable.
         mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         cube = make_cube(var_name=(var_name := "a"))
         compression_kwargs = {
@@ -776,10 +776,10 @@ class TestSaveUgrid__mesh:
 
         """
         patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         mesh = make_mesh()
         compression_kwargs = {
