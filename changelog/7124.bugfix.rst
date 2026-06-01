@@ -1,0 +1,4 @@
+:user:`gaoflow` fixed regridding so that horizontal coordinates of the result
+cube are copies of, rather than references to, the target grid's coordinates.
+Previously, modifying a result coordinate also modified the target cube's
+coordinate, and vice versa. (:issue:`6844`)
