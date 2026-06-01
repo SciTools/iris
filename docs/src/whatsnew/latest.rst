@@ -36,7 +36,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed :meth:`iris.cube.Cube.rolling_window` so that it no
+   longer raises a ``TypeError`` when the cube has a lazy auxiliary coordinate
+   along the windowed dimension. (:issue:`6480`)
 
 
 💣 Incompatible Changes
