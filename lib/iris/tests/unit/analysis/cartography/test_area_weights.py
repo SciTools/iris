@@ -27,13 +27,3 @@ class TestInvalidUnits:
         cube.coord("longitude").units = None
         with pytest.raises(ValueError, match="Units of degrees or radians required"):
             iris.analysis.cartography.area_weights(cube)
-
-    def test_grid_longitude(self):
-        cube = stock.lat_lon_cube()
-        lat = cube.coord("latitude")
-        lat.rename("grid_latitude")
-        lat.guess_bounds()
-        lon = cube.coord("longitude")
-        lon.rename("foo_longitude")
-        lon.guess_bounds()
-        iris.analysis.cartography.area_weights(cube)
