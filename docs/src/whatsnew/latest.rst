@@ -36,7 +36,9 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed printing of a length-0 coordinate (e.g. a time
+   coordinate for an as-yet-unfilled unlimited dimension), which previously
+   raised a ``ValueError`` instead of producing a summary. (:issue:`6531`)
 
 
 💣 Incompatible Changes
