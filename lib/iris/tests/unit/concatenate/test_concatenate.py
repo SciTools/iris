@@ -389,6 +389,41 @@ class TestOrder:
         assert result1 == result2
 
 
+class TestStringAuxCoordWidths:
+    # Cubes with string auxiliary coordinates of differing width (dtype) should
+    # still concatenate, with the result promoted to the wider dtype (#6676).
+    def _make_cube(self, dim_points, string_points):
+        data = np.arange(len(dim_points))
+        cube = iris.cube.Cube(data, long_name="test")
+        cube.add_dim_coord(iris.coords.DimCoord(dim_points, long_name="dim"), 0)
+        cube.add_aux_coord(
+            iris.coords.AuxCoord(np.array(string_points), long_name="example"), 0
+        )
+        return cube
+
+    def test_different_widths(self):
+        cube_a = self._make_cube([0, 1], ["1", "2"])
+        cube_b = self._make_cube([10, 11, 12], ["1", "123", "12345"])
+        assert cube_a.coord("example").dtype != cube_b.coord("example").dtype
+
+        (result,) = concatenate([cube_a, cube_b])
+
+        coord = result.coord("example")
+        assert coord.dtype == np.dtype("<U5")
+        np.testing.assert_array_equal(coord.points, ["1", "2", "1", "123", "12345"])
+
+    def test_different_dtype_kind_still_rejected(self):
+        # A genuine dtype-kind difference (string vs integer) must still block
+        # concatenation.
+        cube_a = self._make_cube([0, 1], ["1", "2"])
+        cube_b = iris.cube.Cube(np.array([2, 3]), long_name="test")
+        cube_b.add_dim_coord(iris.coords.DimCoord([2, 3], long_name="dim"), 0)
+        cube_b.add_aux_coord(iris.coords.AuxCoord([1, 2], long_name="example"), 0)
+
+        with pytest.raises(ConcatenateError):
+            _ = concatenate([cube_a, cube_b], True)
+
+
 class TestConcatenate__dask:
     @pytest.fixture
     def sample_lazy_cubes(self):
