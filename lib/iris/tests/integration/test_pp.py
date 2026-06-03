@@ -19,7 +19,7 @@ import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
-from iris.loading import _CONCRETE_DERIVED_LOADING
+from iris.loading import _LAZY_DERIVED_LOADING
 from iris.tests import _shared_utils
 import iris.util
 from iris.warnings import IrisUserWarning
@@ -287,10 +287,10 @@ class TestVertical:
 
         assert data_cube.coord("surface_air_pressure").has_lazy_points()
 
-        # TODO: _CONCRETE_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
+        # TODO: _LAZY_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
         load = mocker.Mock(return_value=iter([pressure_field, data_field]))
         mocker.patch("iris.fileformats.pp.load", new=load)
-        with _CONCRETE_DERIVED_LOADING.context():
+        with _LAZY_DERIVED_LOADING.context():
             _, realised_data_cube = iris.fileformats.pp.load_cubes("DUMMY")
         assert not realised_data_cube.coord("surface_air_pressure").has_lazy_points()
 
