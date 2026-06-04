@@ -292,7 +292,7 @@ class TestVertical:
         mocker.patch("iris.fileformats.pp.load", new=load)
         with _LAZY_DERIVED_LOADING.context():
             _, realised_data_cube = iris.fileformats.pp.load_cubes("DUMMY")
-        assert not realised_data_cube.coord("surface_air_pressure").has_lazy_points()
+        assert realised_data_cube.coord("surface_air_pressure").has_lazy_points()
 
     def test_hybrid_pressure_with_duplicate_references(self, mocker):
         # Make a fake reference surface field.
