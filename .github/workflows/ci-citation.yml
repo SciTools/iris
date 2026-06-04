@@ -1,3 +1,7 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/citation-file-format/cffconvert-github-action
+
 name: ci-citation
 
 on:
