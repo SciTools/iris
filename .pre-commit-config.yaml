@@ -13,6 +13,7 @@ ci:
 # Alphabetised, for lack of a better order.
 files: |
     (?x)(
+        .github\/workflows\/.*|
         benchmarks\/.+\.py|
         docs\/.+\.py|
         lib\/.+\.py|
