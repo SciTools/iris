@@ -2,6 +2,13 @@
 # Separated for security:
 #  https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 
+# Reference
+#    - https://github.com/actions/github-script
+#    - https://github.com/actions/upload-artifact
+#    - https://github.com/actions/checkout
+#    - https://github.com/actions/download-artifact
+#    - https://github.com/actions/setup-python
+
 name: benchmarks-report
 run-name: Report benchmark results
 

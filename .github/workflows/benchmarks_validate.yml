@@ -1,3 +1,7 @@
+# Reference
+#    - https://github.com/actions/checkout
+#    - https://github.com/actions/cache
+
 name: benchmarks-validate
 run-name: Validate the benchmarking setup
 

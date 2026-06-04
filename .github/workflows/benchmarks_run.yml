@@ -2,6 +2,12 @@
 #  - In the last 24 hours' commits.
 #  - Introduced by this pull request.
 
+# Reference
+#    - https://github.com/actions/checkout
+#    - https://github.com/MarceloPrado/has-changed-path
+#    - https://github.com/actions/cache
+#    - https://github.com/actions/upload-artifact
+
 name: benchmarks-run
 run-name: Run benchmarks
 
