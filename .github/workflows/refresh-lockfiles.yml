@@ -7,12 +7,16 @@ name: Refresh Lockfiles
 on:
   workflow_dispatch:
   schedule:
-    # Run once a week on a Saturday night 
+    # Run once a week on a Saturday night
     # N.B. "should" be quoted, according to
     # https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#onschedule
     - cron: "1 0 * * 6"
 
+permissions: {}
+
 jobs:
   refresh_lockfiles:
-    uses: scitools/workflows/.github/workflows/refresh-lockfiles.yml@2026.05.0
-    secrets: inherit
+    uses: scitools/workflows/.github/workflows/refresh-lockfiles.yml@08acacbfc11a4f62d487480b248eaed602ffda23
+    secrets:
+      AUTH_APP_ID: ${{ secrets.AUTH_APP_ID }}
+      AUTH_APP_PRIVATE_KEY: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
