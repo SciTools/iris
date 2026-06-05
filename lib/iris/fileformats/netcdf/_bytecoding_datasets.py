@@ -304,20 +304,19 @@ def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
         except LookupError:
             pass
 
-        if result is not None:
-            if result not in SUPPORTED_ENCODINGS:
-                # Python "codecs" recognised it, but we don't support it.
-                result = None
+        if result and result not in SUPPORTED_ENCODINGS:
+            # Python "codecs" recognised it, but we don't support it.
+            result = None
 
-    if encoding is not None and result is None:
-        # Unrecognised encoding name : handle this as just a warning
-        msg = (
-            f"Ignoring unsupported encoding for netCDF variable {var_name!r}: "
-            f"_Encoding = {encoding!r}, is not recognised as one of the supported "
-            f"encodings, {SUPPORTED_ENCODINGS}."
-        )
-        warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
-        warnings.warn(msg, category=warntype)
+        if result is None:
+            # Unrecognised encoding name : handle this as just a warning
+            msg = (
+                f"Ignoring unsupported encoding for netCDF variable {var_name!r}: "
+                f"_Encoding = {encoding!r}, is not recognised as one of the supported "
+                f"encodings, {SUPPORTED_ENCODINGS}."
+            )
+            warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
+            warnings.warn(msg, category=warntype)
 
     if result is None:
         if writing:

@@ -225,13 +225,18 @@ class TestWriteStrings:
         with pytest.raises(ValueError, match=msg):
             v[:] = samples_3_nonascii
 
-    def test_write_badencoding_ignore(self, tempdir):
-        path = tempdir / "test_bytecoded_writestrings_badencoding_ignore.nc"
-        ds = make_encoded_dataset(path, strlen=5, encoding="unknown")
+    @pytest.mark.parametrize("mode", ["invalid", "unsupported"])
+    def test_write_badencoding_ignore(self, tempdir, mode):
+        if mode == "invalid":
+            encoding = "<unknown>"
+        else:
+            encoding = "latin1"  # "latin1" is a real thing
+        path = tempdir / f"test_bytecoded_writestrings_badencoding_{encoding}_ignore.nc"
+        ds = make_encoded_dataset(path, strlen=5, encoding=encoding)
         v = ds.variables["vxs"]
         msg = (
             r"Ignoring unsupported encoding for netCDF variable 'vxs': "
-            ".*'unknown', is not recognised as one of the supported encodings"
+            f".*'{encoding}', is not recognised as one of the supported encodings"
         )
         with pytest.warns(IrisCfSaveWarning, match=msg):
             v[:] = samples_3_ascii  # will work OK
@@ -465,10 +470,15 @@ class TestRead:
 
             assert np.all(result == test_utf8_bytes)
 
-    def test_read_badencoding_ignore(self, tempdir):
-        path = tempdir / f"test_bytecoded_read_badencoding_ignore.nc"
+    @pytest.mark.parametrize("mode", ["invalid", "unsupported"])
+    def test_read_badencoding_ignore(self, tempdir, mode):
+        if mode == "invalid":
+            encoding = "<unknown>"
+        else:
+            encoding = "latin1"  # "latin1" is a real thing
+        path = tempdir / f"test_bytecoded_read_badencoding_{encoding}_ignore.nc"
         strlen = 10
-        ds = make_encoded_dataset(path, strlen=strlen, encoding="unknown")
+        ds = make_encoded_dataset(path, strlen=strlen, encoding=encoding)
         v = ds.variables["vxs"]
         test_utf8_bytes = make_bytearray(
             samples_3_nonascii, bytewidth=strlen, encoding="utf-8"
@@ -477,7 +487,7 @@ class TestRead:
 
         msg = (
             r"Ignoring unsupported encoding for netCDF variable 'vxs': "
-            ".*'unknown', is not recognised as one of the supported encodings"
+            f".*'{encoding}', is not recognised as one of the supported encodings"
         )
         with pytest.warns(IrisCfLoadWarning, match=msg):
             # raises warning but succeeds, due to default read encoding of 'utf-8'
