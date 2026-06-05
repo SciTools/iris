@@ -12,7 +12,7 @@ permissions: {}
 
 jobs:
   prompt-share:
-    uses: scitools/workflows/.github/workflows/ci-template-check.yml@08acacbfc11a4f62d487480b248eaed602ffda23
+    uses: scitools/workflows/.github/workflows/ci-template-check.yml@1f2141422a63321a32575ddd186e53acff12550c
     secrets:
       AUTH_APP_ID: ${{ secrets.AUTH_APP_ID }}
       AUTH_APP_PRIVATE_KEY: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
