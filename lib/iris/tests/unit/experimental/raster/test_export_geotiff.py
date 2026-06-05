@@ -162,7 +162,7 @@ class TestProjection:
 
 @_shared_utils.skip_gdal
 class TestGeoTransform:
-    def test_(self, tmp_path):
+    def _cube(self):
         data = np.arange(12).reshape(3, 4).astype(np.uint8)
         cube = Cube(data, "air_pressure_anomaly")
         coord = DimCoord([30, 40, 50], "latitude", units="degrees")
@@ -171,7 +171,22 @@ class TestGeoTransform:
         coord = DimCoord([-10, -5, 0, 5], "longitude", units="degrees")
         coord.guess_bounds()
         cube.add_dim_coord(coord, 1)
+        return cube
+
+    def test_(self, tmp_path):
+        cube = self._cube()
         temp_filename = str(tmp_path / "tmp.tif")
         export_geotiff(cube, temp_filename)
         dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
         assert dataset.GetGeoTransform() == (-12.5, 5, 0, 55, 0, -10)
+
+    def test_scalar_transform_values(self, mocker, tmp_path):
+        # The geotransform values passed to GDAL must be Python scalars :
+        # numpy >= 2.4 no longer implicitly converts the 1-element arrays
+        # which were previously passed. See issue #7133.
+        write_array = mocker.patch("iris.experimental.raster._gdal_write_array")
+        export_geotiff(self._cube(), str(tmp_path / "tmp.tif"))
+        x_min, x_step, y_max, y_step = write_array.call_args.args[:4]
+        assert (x_min, x_step, y_max, y_step) == (-12.5, 5.0, 55.0, -10.0)
+        for value in (x_min, x_step, y_max, y_step):
+            assert isinstance(value, float)
