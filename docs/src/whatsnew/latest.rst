@@ -132,6 +132,10 @@ This document explains the changes made to Iris for this release
 
 #. `@SgtVarmint`_ migrated codebase from ``os.path`` to ``pathlib.Path`` where possible
    (:issue:`4523`, :pull:`7087`)
+
+#. `@bjlittle`_ and `@trexfeathers`_ added the `Zizmor`_ pre-commit hook to monitor for
+   security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
+   Zizmor's recommendations to harden the workflows. (:pull:`7138`)
    
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
@@ -143,3 +147,4 @@ This document explains the changes made to Iris for this release
 .. comment
     Whatsnew resources in alphabetical order:
 .. _cf-checker: https://github.com/cedadev/cf-checker
+.. _Zizmor: https://github.com/zizmorcore/zizmor

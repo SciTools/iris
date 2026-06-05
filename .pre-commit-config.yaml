@@ -13,6 +13,7 @@ ci:
 # Alphabetised, for lack of a better order.
 files: |
     (?x)(
+        .github\/workflows\/.*|
         benchmarks\/.+\.py|
         docs\/.+\.py|
         lib\/.+\.py|
@@ -113,3 +114,8 @@ repos:
     rev: "v0.24.1"
     hooks:
     - id: validate-pyproject
+
+-   repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.25.2
+    hooks:
+      - id: zizmor
