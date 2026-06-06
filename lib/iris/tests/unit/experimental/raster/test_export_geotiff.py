@@ -173,7 +173,7 @@ class TestGeoTransform:
         cube.add_dim_coord(coord, 1)
         return cube
 
-    def test_(self, tmp_path):
+    def test_geotransform(self, tmp_path):
         cube = self._cube()
         temp_filename = str(tmp_path / "tmp.tif")
         export_geotiff(cube, temp_filename)
@@ -189,4 +189,5 @@ class TestGeoTransform:
         x_min, x_step, y_max, y_step = write_array.call_args.args[:4]
         assert (x_min, x_step, y_max, y_step) == (-12.5, 5.0, 55.0, -10.0)
         for value in (x_min, x_step, y_max, y_step):
-            assert isinstance(value, float)
+            assert isinstance(value, (int, float))
+            assert not isinstance(value, np.generic)
