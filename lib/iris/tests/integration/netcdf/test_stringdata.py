@@ -612,6 +612,7 @@ class TestReadParticularCases:
         if data_encoding == "utf8":
             assert np.all(cube.data == testdata.datavar_data)
         else:
+            # NOTE: no error on loading, only when you fetch content + it decodes.
             msg = "Character data .* could not be decoded with the 'utf-8' encoding"
             with pytest.raises(ValueError, match=msg):
                 cube.data
@@ -624,7 +625,7 @@ class TestReadParticularCases:
             encoding_attr="utf-8",
         )
         cube = iris.load_cube(filepath)
-        # NOTE: error only occurs when you attempt to fetch + translate the content.
+        # NOTE: no error on loading, only when you fetch content + it decodes.
         msg = "Character data .* could not be decoded with the 'utf-8' encoding."
         with pytest.raises(ValueError, match=msg):
             data = cube.data

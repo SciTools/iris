@@ -1894,10 +1894,8 @@ class Saver:
                 # seriously limits the utility of DECODE_TO_STRINGS_ON_READ.
                 # TODO: also support netCDF variable-length strings ("string" type).
                 #  Currently hit a **write error here**, being numpy object dtype ("O").
-                if (
-                    data.dtype.kind not in "iufSU"
-                    or data.dtype.kind == "S"
-                    and data.dtype.itemsize != 1
+                if data.dtype.kind not in "iufSU" or (
+                    data.dtype.kind == "S" and data.dtype.itemsize != 1
                 ):
                     # This is a type of data we don't "understand".
                     # NB this includes "Sxx" types other than "S1" :  It seems that
