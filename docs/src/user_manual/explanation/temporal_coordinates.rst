@@ -126,8 +126,7 @@ Indexing
 --------
 
 :class:`Coordinates <iris.coords.Coord>` are *first-class-citizens* and may be
-indexed akin to other ``python`` objects such as `lists`_, `tuples`_ or
-:doc:`numpy <numpy:index>` arrays.
+indexed akin to other ``python`` built-in types such as `lists`_ or `tuples`_.
 
 As an example, let's index the **last** sample of the ``tcoord``::
 
@@ -207,8 +206,7 @@ Iteration
 
 Akin to :ref:`indexing <explanation-temporal-coordinates-indexing>`, we can also
 iterate over :class:`coordinates <iris.coords.Coord>` just as you would naturally
-with other ``python`` built-in types such as `lists`_, `tuples`_ or
-:doc:`numpy <numpy:index>` arrays.
+with other ``python`` built-in types such as `lists`_ or `tuples`_.
 
 For example, given our ``tcoord``::
 
