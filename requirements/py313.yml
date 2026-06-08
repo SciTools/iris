@@ -19,6 +19,7 @@ dependencies:
   - matplotlib-base >=3.5, !=3.9.1
   - netcdf4
   - numpy >=1.24, !=1.24.3
+  - pint
   - python-xxhash
   - pyproj
   - scipy
