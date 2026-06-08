@@ -1925,12 +1925,30 @@ class Coord(_DimensionalMetadata):
         super().convert_units(unit=unit)
 
     def cells(self):
-        """Return an iterable of Cell instances for this Coord.
+        """Generate a :class:`~iris.coords.Cell` for each coordinate index.
 
         For example::
 
-           for cell in self.cells():
+           for cell in coord.cells():
               ...
+
+        Yields
+        ------
+        :class:`~iris.coord.Cell`
+            Contains a single coordinate ``point``, or ``point`` and ``bound``.
+
+        Raises
+        ------
+        :class:`~iris.exceptions.CoordinateMultiDimError`
+            Does not support multi-dimensional coordinates.
+
+        Notes
+        -----
+        .. warning::
+
+            For **temporal** coordinates the ``point`` and ``bound`` of the
+            :class:`~iris.coords.Cell` will be a :mod:`cftime` object rather
+            than a native Python :class:`~datetime.datetime` object.
 
         """
         if self.ndim != 1:
@@ -2217,10 +2235,26 @@ class Coord(_DimensionalMetadata):
         return self._bounds_dm is not None
 
     def cell(self, index):
-        """Point/bound cell at the given coordinate index.
+        """Generate a :class:`~iris.coords.Cell` for the given coordinate `index`.
 
-        Return the single :class:`Cell` instance which results from slicing the
-        points/bounds with the given index.
+        Returns
+        -------
+        :class:`~iris.coord.Cell`
+            Contains the ``point``, or ``point`` and ``bound`` located at the
+            given coordinate `index`.
+
+        Raises
+        ------
+        IndexError
+            Does not support multi-dimensional coordinates.
+
+        Notes
+        -----
+        .. warning::
+
+            For **temporal** coordinates the ``point`` and ``bound`` of the
+            :class:`~iris.coords.Cell` will be a :mod:`cftime` object rather
+            than a native Python :class:`~datetime.datetime` object.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
