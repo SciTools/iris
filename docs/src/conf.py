@@ -204,7 +204,7 @@ autodoc_default_options = {
     "members": True,
     "member-order": "alphabetical",
     "undoc-members": True,
-    "private-members": False,
+    "private-members": "_MeshIndexSet",
     "special-members": False,
     "inherited-members": True,
     "show-inheritance": True,
