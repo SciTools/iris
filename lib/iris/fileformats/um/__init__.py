@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides iris loading support for UM Fieldsfile-like file types, and PP.
 
+.. z_reference:: iris.fileformats.um
+   :tags: topic_load_save
+
+   API reference
+
 At present, the only UM file types supported are true FieldsFiles and LBCs.
 Other types of UM file may fail to load correctly (or at all).
 

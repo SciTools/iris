@@ -9,11 +9,11 @@ Tests for rules activation relating to 'time' and 'time_period' coords.
 
 """
 
+import re
 from typing import ClassVar
 
-import iris.tests as tests  # isort: skip
-
 from iris.coords import AuxCoord, DimCoord
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -140,7 +140,7 @@ class Mixin__timecoords__common(Mixin__nc_load_actions):
         else:
             phenom_coords_string = " ".join(phenom_coords)
             phenom_coords_string = (
-                "            " f'phenom:coordinates = "{phenom_coords_string}" ; '
+                f'            phenom:coordinates = "{phenom_coords_string}" ; '
             )
 
         # Create a testcase with time dims + coords.
@@ -161,7 +161,9 @@ netcdf test {{
 """
         return cdl_string
 
-    def check_result(self, cube, time_is="dim", period_is="missing"):
+    def check_result(
+        self, cube, time_is="dim", period_is="missing", load_problems_regex=None
+    ):
         """Check presence of expected dim/aux-coords in the result cube.
 
         Both of 'time_is' and 'period_is' can take values 'dim', 'aux' or
@@ -184,35 +186,39 @@ netcdf test {{
         period_auxcos = cube.coords(period_name, dim_coords=False)
 
         if time_is == "dim":
-            self.assertEqual(len(time_dimcos), 1)
-            self.assertEqual(len(time_auxcos), 0)
+            assert len(time_dimcos) == 1
+            assert len(time_auxcos) == 0
         elif time_is == "aux":
-            self.assertEqual(len(time_dimcos), 0)
-            self.assertEqual(len(time_auxcos), 1)
+            assert len(time_dimcos) == 0
+            assert len(time_auxcos) == 1
         else:
-            self.assertEqual(len(time_dimcos), 0)
-            self.assertEqual(len(time_auxcos), 0)
+            assert len(time_dimcos) == 0
+            assert len(time_auxcos) == 0
 
         if period_is == "dim":
-            self.assertEqual(len(period_dimcos), 1)
-            self.assertEqual(len(period_auxcos), 0)
+            assert len(period_dimcos) == 1
+            assert len(period_auxcos) == 0
         elif period_is == "aux":
-            self.assertEqual(len(period_dimcos), 0)
-            self.assertEqual(len(period_auxcos), 1)
+            assert len(period_dimcos) == 0
+            assert len(period_auxcos) == 1
         else:
-            self.assertEqual(len(period_dimcos), 0)
-            self.assertEqual(len(period_auxcos), 0)
+            assert len(period_dimcos) == 0
+            assert len(period_auxcos) == 0
 
         # Also check expected built Coord types.
         if time_is == "dim":
-            self.assertIsInstance(time_dimcos[0], DimCoord)
+            assert isinstance(time_dimcos[0], DimCoord)
         elif time_is == "aux":
-            self.assertIsInstance(time_auxcos[0], AuxCoord)
+            assert isinstance(time_auxcos[0], AuxCoord)
 
         if period_is == "dim":
-            self.assertIsInstance(period_dimcos[0], DimCoord)
+            assert isinstance(period_dimcos[0], DimCoord)
         elif period_is == "aux":
-            self.assertIsInstance(period_auxcos[0], AuxCoord)
+            assert isinstance(period_auxcos[0], AuxCoord)
+
+        if load_problems_regex is not None:
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            assert re.search(load_problems_regex, str(load_problem.stack_trace))
 
 
 class Mixin__singlecoord__tests(Mixin__timecoords__common):
@@ -251,7 +257,7 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
 
         return result
 
-    def check_result(self, cube, coord_is="dim"):
+    def check_result(self, cube, coord_is="dim", load_problems_regex=None):
         """Specialise 'check_result' for single-coord 'time' or 'period' testing."""
         # Pass generic 'coord_is' option to parent as time/period options.
         which = self.which
@@ -264,7 +270,12 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
             period_is = coord_is
             time_is = "missing"
 
-        super().check_result(cube, time_is=time_is, period_is=period_is)
+        super().check_result(
+            cube,
+            time_is=time_is,
+            period_is=period_is,
+            load_problems_regex=load_problems_regex,
+        )
 
     #
     # Generic single-coordinate testcases.
@@ -302,9 +313,12 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         #     001 : fc_default
         #     002 : fc_provides_coordinate_(time[[_period]])
         #     003 : fc_build_coordinate_(time[[_period]])
-        msg = "Failed to create.* dimension coordinate"
-        result = self.run_testcase(values_all_zero=True, warning_regex=msg)
-        self.check_result(result, "aux")
+        msg = "must be.* monotonic"
+        result = self.run_testcase(
+            values_all_zero=True,
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(result, "aux", load_problems_regex=msg)
 
     def test_dim_fails_typeident(self):
         # Provide a coord variable, identified as a CFDimensionCoordinate by
@@ -381,43 +395,20 @@ class Mixin__singlecoord__tests(Mixin__timecoords__common):
         self.check_result(result, "aux")
 
 
-class Test__time(Mixin__singlecoord__tests, tests.IrisTest):
+class Test__time(Mixin__singlecoord__tests):
     # Run 'time' coord tests
     which = "time"
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Test__period(Mixin__singlecoord__tests, tests.IrisTest):
+class Test__period(Mixin__singlecoord__tests):
     # Run 'time_period' coord tests
     which = "period"
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-
-class Test__dualcoord(Mixin__timecoords__common, tests.IrisTest):
+class Test__dualcoord(Mixin__timecoords__common):
     # Coordinate tests for a combination of 'time' and 'time_period'.
     # Not strictly necessary, as handling is independent, but a handy check
     # on typical usage.
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_time_and_period(self):
         # Test case with both 'time' and 'period', with separate dims.
@@ -446,7 +437,3 @@ class Test__dualcoord(Mixin__timecoords__common, tests.IrisTest):
             ),
         )
         self.check_result(result, time_is="dim", period_is="aux")
-
-
-if __name__ == "__main__":
-    tests.main()

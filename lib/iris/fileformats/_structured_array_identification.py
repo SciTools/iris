@@ -111,7 +111,9 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
 
         result = NotImplemented
         if stride is not None or arr is not None:
-            result = stride == self.stride and np.all(self.unique_ordered_values == arr)
+            result = stride == self.stride and np.array_equal(
+                self.unique_ordered_values, arr
+            )
         return result
 
     def __ne__(self, other):
@@ -284,7 +286,7 @@ class ArrayStructure(namedtuple("ArrayStructure", ["stride", "unique_ordered_val
             # Do one last sanity check - does the array we've just described
             # actually compute the correct array?
             constructed_array = structure.construct_array(arr.size)
-            if not np.all(constructed_array == arr):
+            if not np.array_equal(constructed_array, arr):
                 structure = None
 
         return structure

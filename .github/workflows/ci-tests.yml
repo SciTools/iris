@@ -1,6 +1,7 @@
 # reference:
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
+#   - https://github.com/codecov/codecov-action
 #   - https://github.com/marketplace/actions/setup-miniconda
 
 name: ci-tests
@@ -21,6 +22,8 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   tests:
     name: "${{ matrix.session }} (py${{ matrix.python-version }} ${{ matrix.os }})"
@@ -35,27 +38,31 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-latest"]
-        python-version: ["3.12"]
-        session: ["doctest", "gallery", "linkcheck"]
+        python-version: ["3.14"]
+        session: ["doctest", "gallery"]
         include:
           - os: "ubuntu-latest"
-            python-version: "3.12"
+            python-version: "3.14"
             session: "tests"
             coverage: "--coverage"
           - os: "ubuntu-latest"
-            python-version: "3.11"
+            python-version: "3.13"
             session: "tests"
           - os: "ubuntu-latest"
-            python-version: "3.10"
+            python-version: "3.12"
             session: "tests"
 
     env:
-      IRIS_TEST_DATA_VERSION: "2.25"
+      # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
+      IRIS_TEST_DATA_VERSION: "2.28"
       ENV_NAME: "ci-tests"
 
     steps:
       - name: "checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: "environment configure"
         env:
@@ -68,30 +75,29 @@ jobs:
       - name: "data cache"
         uses: ./.github/workflows/composite/iris-data-cache
         with:
-          cache_build: 0
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           version: ${{ env.IRIS_TEST_DATA_VERSION }}
 
       - name: "conda package cache"
         uses: ./.github/workflows/composite/conda-pkg-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5
         with:
           miniforge-version: latest
-          channels: conda-forge,defaults
+          channels: conda-forge
           activate-environment: ${{ env.ENV_NAME }}
           auto-update-conda: false
-          use-only-tar-bz2: true
 
       - name: "conda environment cache"
         uses: ./.github/workflows/composite/conda-env-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
           install_packages: "cartopy nox pip"
@@ -104,14 +110,14 @@ jobs:
       - name: "cartopy cache"
         uses: ./.github/workflows/composite/cartopy-cache
         with:
-          cache_build: 0
+          cache_build: 6
           cache_period: ${{ env.CACHE_PERIOD }}
           env_name: ${{ env.ENV_NAME }}
 
       - name: "nox cache"
         uses: ./.github/workflows/composite/nox-cache
         with:
-          cache_build: 2
+          cache_build: 6
           env_name: ${{ env.ENV_NAME }}
           lock_file: ${{ env.LOCK_FILE }}
 
@@ -143,6 +149,6 @@ jobs:
 
       - name: "upload coverage report"
         if: ${{ matrix.coverage }}
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

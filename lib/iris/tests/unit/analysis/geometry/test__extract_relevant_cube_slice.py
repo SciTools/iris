@@ -4,17 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.analysis.geometry._extract_relevant_cube_slice`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-
-import iris.tests as tests  # isort:skip
 import shapely.geometry
 
 from iris.analysis.geometry import _extract_relevant_cube_slice
 import iris.tests.stock as stock
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_polygon_smaller_than_cube(self):
         cube = stock.lat_lon_cube()
         cube.dim_coords[0].guess_bounds()
@@ -27,7 +23,7 @@ class Test(tests.IrisTest):
             cube[1, 1].coords(axis="y")[0],
             (1, 1, 1, 1),
         )
-        self.assertEqual(target, actual)
+        assert target == actual
 
     def test_polygon_larger_than_cube(self):
         cube = stock.lat_lon_cube()
@@ -41,7 +37,7 @@ class Test(tests.IrisTest):
             cube[:, :3].coords(axis="y")[0],
             (0, 0, 2, 2),
         )
-        self.assertEqual(target, actual)
+        assert target == actual
 
     def test_polygon_on_cube_boundary(self):
         cube = stock.lat_lon_cube()
@@ -55,7 +51,7 @@ class Test(tests.IrisTest):
             cube[1, 1].coords(axis="y")[0],
             (1, 1, 1, 1),
         )
-        self.assertEqual(target, actual)
+        assert target == actual
 
     def test_rotated_polygon_on_cube_boundary(self):
         cube = stock.lat_lon_cube()
@@ -71,7 +67,7 @@ class Test(tests.IrisTest):
             cube[1, 1].coords(axis="y")[0],
             (1, 1, 1, 1),
         )
-        self.assertEqual(target, actual)
+        assert target == actual
 
     def test_rotated_polygon_larger_than_cube_boundary(self):
         cube = stock.lat_lon_cube()
@@ -87,8 +83,4 @@ class Test(tests.IrisTest):
             cube[:, :3].coords(axis="y")[0],
             (0, 0, 2, 2),
         )
-        self.assertEqual(target, actual)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert target == actual

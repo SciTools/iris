@@ -12,6 +12,7 @@ Typically the cube merge process is handled by
 from collections import OrderedDict, namedtuple
 from copy import deepcopy
 
+import dask.array as da
 import numpy as np
 
 from iris._lazy_data import (
@@ -388,7 +389,9 @@ class _CubeSignature(
                 diff_attrs = [
                     repr(key[1])
                     for key in attrs_1
-                    if np.all(attrs_1[key] != attrs_2[key])
+                    if not np.array_equal(
+                        np.array(attrs_1[key], ndmin=1), np.array(attrs_2[key], ndmin=1)
+                    )
                 ]
                 diff_attrs = ", ".join(sorted(diff_attrs))
                 msgs.append(
@@ -428,7 +431,13 @@ class _CubeSignature(
         if self.data_shape != other.data_shape:
             msg = "cube.shape differs: {} != {}"
             msgs.append(msg.format(self.data_shape, other.data_shape))
-        if self.data_type != other.data_type:
+        if (
+            self.data_type is not None
+            and other.data_type is not None
+            and self.data_type != other.data_type
+        ):
+            # N.B. allow "None" to match any other dtype: this means that dataless
+            # cubes can merge with 'dataful' ones.
             msg = "cube data dtype differs: {} != {}"
             msgs.append(msg.format(self.data_type, other.data_type))
         # Both cell_measures_and_dims and ancillary_variables_and_dims are
@@ -1236,7 +1245,10 @@ class ProtoCube:
             # their data loaded then at the end we convert the stack back
             # into a plain numpy array.
             stack = np.empty(self._stack_shape, "object")
-            all_have_data = True
+            all_have_real_data = True
+            some_are_dataless = False
+            part_shape: tuple = None
+            part_dtype: np.dtype = None
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known
                 # good source-cube
@@ -1245,18 +1257,45 @@ class ProtoCube:
                 data = self._skeletons[group[offset]].data
                 # Ensure the data is represented as a dask array and
                 # slot that array into the stack.
-                if is_lazy_data(data):
-                    all_have_data = False
+                if data is None:
+                    some_are_dataless = True
                 else:
-                    data = as_lazy_data(data)
+                    # We have (at least one) array content : Record the shape+dtype
+                    part_shape = data.shape
+                    part_dtype = data.dtype
+                    # ensure lazy (we make the result real, later, if all were real)
+                    if is_lazy_data(data):
+                        all_have_real_data = False
+                    else:
+                        data = as_lazy_data(data)
                 stack[nd_index] = data
 
-            merged_data = multidim_lazy_stack(stack)
-            if all_have_data:
-                # All inputs were concrete, so turn the result back into a
-                # normal array.
-                merged_data = as_concrete_data(merged_data)
-            merged_cube = self._get_cube(merged_data)
+            if part_shape is None:
+                # NO parts had data : the result will also be dataless
+                merged_data = None
+                merged_shape = self._shape
+            else:
+                # At least some inputs had data : the result will have a data array.
+                if some_are_dataless:
+                    # Some parts were dataless: fill these with a lazy all-missing array.
+                    missing_part = da.ma.masked_array(
+                        data=da.zeros(part_shape, dtype=part_dtype),
+                        mask=da.ones(part_shape, dtype=bool),
+                        dtype=part_dtype,
+                    )
+                    for inds in np.ndindex(stack.shape):
+                        if stack[inds] is None:
+                            stack[inds] = missing_part
+
+                # Make a single lazy merged result array
+                merged_data = multidim_lazy_stack(stack)
+                merged_shape = None
+                if all_have_real_data:
+                    # All inputs were concrete, so turn the result back into a
+                    # normal array.
+                    merged_data = as_concrete_data(merged_data)
+
+            merged_cube = self._get_cube(merged_data, shape=merged_shape)
             merged_cubes.append(merged_cube)
 
         return merged_cubes
@@ -1400,10 +1439,37 @@ class ProtoCube:
                     # TODO: Consider appropriate sort order (ascending,
                     # descending) i.e. use CF positive attribute.
                     cells = sorted(indexes[name])
-                    points = np.array(
-                        [cell.point for cell in cells],
-                        dtype=metadata[name].points_dtype,
-                    )
+                    points = [cell.point for cell in cells]
+
+                    # If any points are masked then create a masked array type,
+                    # otherwise create a standard ndarray.
+                    if np.ma.masked in points:
+                        dtype = metadata[name].points_dtype
+
+                        # Create a pre-filled array with all elements set to `fill_value` for dtype
+                        # This avoids the following problems when trying to do `np.ma.masked_array(points, dtype...)`:
+                        #   - Underlying data of masked elements is arbitrary
+                        #   - Can't convert a np.ma.masked to an integer type
+                        #   - For floating point arrays, numpy raises a warning about "converting masked elements to NaN"
+                        fill_value = np.trunc(
+                            np.ma.default_fill_value(dtype), dtype=dtype
+                        )  # truncation needed to deal with silly default fill values in Numpy
+
+                        # create array of fill values; ensures we have consistent data under mask
+                        arr_points = np.ma.repeat(dtype.type(fill_value), len(points))
+
+                        # get mask index and filtered data then store in new array:
+                        mask = np.array([p is np.ma.masked for p in points])
+                        arr_points.mask = mask
+
+                        # Need another list comprehension to avoid numpy warning "converting masked elements to NaN":
+                        arr_points[~mask] = np.array(
+                            [p for p in points if p is not np.ma.masked]
+                        )
+                        points = arr_points
+                    else:
+                        points = np.array(points, dtype=metadata[name].points_dtype)
+
                     if cells[0].bound is not None:
                         bounds = np.array(
                             [cell.bound for cell in cells],
@@ -1499,17 +1565,31 @@ class ProtoCube:
             tuple([dim + offset for dim in item.dims])
             for item in vector_aux_coords_and_dims
         ]
+        self._cell_measures_and_dims = [
+            (cm, tuple([dim + offset for dim in dims]))
+            for cm, dims in self._cell_measures_and_dims
+        ]
+        self._ancillary_variables_and_dims = [
+            (av, tuple([dim + offset for dim in dims]))
+            for av, dims in self._ancillary_variables_and_dims
+        ]
 
         # Now factor in the vector payload shape. Note that, for
         # deferred loading, this does NOT change the shape.
         self._shape.extend(signature.data_shape)
 
-    def _get_cube(self, data):
+    def _get_cube(self, data, shape=None):
         """Generate fully constructed cube.
 
         Return a fully constructed cube for the given data, containing
         all its coordinates and metadata.
 
+        Parameters
+        ----------
+        data : array_like
+            Cube data content.  If None, `shape` must be set and the result is dataless.
+        shape : tuple, optional
+            Cube data shape, only used if data is None.
         """
         signature = self._cube_signature
         dim_coords_and_dims = [
@@ -1532,6 +1612,7 @@ class ProtoCube:
             aux_coords_and_dims=aux_coords_and_dims,
             cell_measures_and_dims=cms_and_dims,
             ancillary_variables_and_dims=avs_and_dims,
+            shape=shape,
             **kwargs,
         )
 
@@ -1588,13 +1669,19 @@ class ProtoCube:
             # the bounds are not monotonic, so try building the coordinate,
             # and if it fails make the coordinate into an auxiliary coordinate.
             # This will ultimately make an anonymous dimension.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
+
+            # If the points contain masked values, if definitely cannot be built
+            # as a dim coord, so add it to the _aux_templates immediately
+            if np.ma.is_masked(template.points):
                 self._aux_templates.append(template)
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    self._aux_templates.append(template)
 
         # There is the potential that there are still anonymous dimensions.
         # Get a list of the dimensions which are not anonymous at this stage.
@@ -1603,26 +1690,34 @@ class ProtoCube:
         ]
 
         # Build the auxiliary coordinates.
+        def _build_aux_coord_from_template(template):
+            # kwarg not applicable to AuxCoord.
+            template.kwargs.pop("circular", None)
+            coord = iris.coords.AuxCoord(
+                template.points, bounds=template.bounds, **template.kwargs
+            )
+            aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+
         for template in self._aux_templates:
             # Attempt to build a DimCoord and add it to the cube. If this
             # fails e.g it's non-monontic or multi-dimensional or non-numeric,
             # then build an AuxCoord.
-            try:
-                coord = iris.coords.DimCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                if len(template.dims) == 1 and template.dims[0] not in covered_dims:
-                    dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-                    covered_dims.append(template.dims[0])
-                else:
-                    aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
-            except ValueError:
-                # kwarg not applicable to AuxCoord.
-                template.kwargs.pop("circular", None)
-                coord = iris.coords.AuxCoord(
-                    template.points, bounds=template.bounds, **template.kwargs
-                )
-                aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+
+            # Check here whether points are masked? If so then it has to be an AuxCoord
+            if np.ma.is_masked(template.points):
+                _build_aux_coord_from_template(template)
+            else:
+                try:
+                    coord = iris.coords.DimCoord(
+                        template.points, bounds=template.bounds, **template.kwargs
+                    )
+                    if len(template.dims) == 1 and template.dims[0] not in covered_dims:
+                        dim_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                        covered_dims.append(template.dims[0])
+                    else:
+                        aux_coords_and_dims.append(_CoordAndDims(coord, template.dims))
+                except ValueError:
+                    _build_aux_coord_from_template(template)
 
         # Mix in the vector coordinates.
         for item, dims in zip(

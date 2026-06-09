@@ -7,18 +7,13 @@ get_names`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import numpy as np
 
 from iris.fileformats._nc_load_rules.helpers import get_names
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestGetNames(tests.IrisTest):
+class TestGetNames(MockerMixin):
     """The tests included in this class cover all the variations of possible
     combinations of the following inputs:
     * standard_name = [None, 'projection_y_coordinate', 'latitude_coordinate']
@@ -32,16 +27,15 @@ class TestGetNames(tests.IrisTest):
 
     """
 
-    @staticmethod
-    def _make_cf_var(standard_name, long_name, cf_name):
-        cf_var = mock.Mock(
+    def _make_cf_var(self, standard_name, long_name, cf_name):
+        cf_var = self.mocker.Mock(
             cf_name=cf_name,
             standard_name=standard_name,
             long_name=long_name,
             units="degrees",
             dtype=np.float64,
             cell_methods=None,
-            cf_group=mock.Mock(global_attributes={}),
+            cf_group=self.mocker.Mock(global_attributes={}),
         )
         return cf_var
 
@@ -61,10 +55,10 @@ class TestGetNames(tests.IrisTest):
         )
 
         # Check the names and attributes are as expected.
-        self.assertEqual(res_standard_name, exp_std_name)
-        self.assertEqual(res_long_name, exp_long_name)
-        self.assertEqual(res_var_name, exp_var_name)
-        self.assertEqual(attributes, exp_attributes)
+        assert res_standard_name == exp_std_name
+        assert res_long_name == exp_long_name
+        assert res_var_name == exp_var_name
+        assert attributes == exp_attributes
 
     def test_var_name_valid(self):
         # Only var_name is set and it is set to a valid standard name.
@@ -283,7 +277,3 @@ class TestGetNames(tests.IrisTest):
             {"invalid_standard_name": "latitude_coord"},
         )
         self.check_names(inp, exp)
-
-
-if __name__ == "__main__":
-    tests.main()

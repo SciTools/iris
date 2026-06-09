@@ -25,7 +25,7 @@ N_POINTS: int = 10
 SCALE_FACTOR: int = 10
 
 
-METADATA = {
+METADATA: dict[str, str | bool | dict | None] = {
     "standard_name": "air_temperature",
     "long_name": "air temperature",
     "var_name": "atemp",

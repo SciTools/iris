@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Resolve metadata common between two cubes.
 
+.. z_reference:: iris.common.resolve
+   :tags: topic_data_model;topic_maths_stats
+
+   API reference
+
 Provides the infrastructure to support the analysis, identification and
 combination of metadata common between two :class:`~iris.cube.Cube`
 operands into a single resultant :class:`~iris.cube.Cube`, which will be
@@ -747,7 +752,8 @@ class Resolve:
             # Build a prepared-item to make a MeshCoord.
             # This case does *NOT* use points + bounds, so alternatives to the
             # coord content should not have been specified by the caller.
-            assert points is None and bounds is None
+            assert points is None
+            assert bounds is None
             mesh = coord.mesh
             location = coord.location
             axis = coord.axis
@@ -2358,16 +2364,16 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            124652160.0
+            np.float32(1.2465214e+08)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
-            0.0
+            np.float32(0.0)
             >>> result = resolver.cube(zeros, in_place=True)
             >>> result is cube1
             True
             >>> cube1.data.sum()
-            0.0
+            np.float32(0.0)
 
         """
         from iris.cube import Cube

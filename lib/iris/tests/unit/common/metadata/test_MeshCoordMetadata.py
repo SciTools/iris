@@ -4,30 +4,27 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.common.metadata.MeshCoordMetadata`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from copy import deepcopy
-import unittest.mock as mock
-from unittest.mock import sentinel
+
+import pytest
 
 from iris.common.lenient import _LENIENT, _qualname
 from iris.common.metadata import BaseMetadata, MeshCoordMetadata
 
 
-class Test__identity(tests.IrisTest):
-    def setUp(self):
-        self.standard_name = mock.sentinel.standard_name
-        self.long_name = mock.sentinel.long_name
-        self.var_name = mock.sentinel.var_name
-        self.units = mock.sentinel.units
-        self.attributes = mock.sentinel.attributes
-        self.location = mock.sentinel.location
-        self.axis = mock.sentinel.axis
+class Test__identity:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.standard_name = mocker.sentinel.standard_name
+        self.long_name = mocker.sentinel.long_name
+        self.var_name = mocker.sentinel.var_name
+        self.units = mocker.sentinel.units
+        self.attributes = mocker.sentinel.attributes
+        self.location = mocker.sentinel.location
+        self.axis = mocker.sentinel.axis
         self.cls = MeshCoordMetadata
 
-    def test_repr(self):
+    def test_repr(self, mocker):
         metadata = self.cls(
             standard_name=self.standard_name,
             long_name=self.long_name,
@@ -51,9 +48,9 @@ class Test__identity(tests.IrisTest):
             self.location,
             self.axis,
         )
-        self.assertEqual(expected, repr(metadata))
+        assert expected == repr(metadata)
 
-    def test__fields(self):
+    def test__fields(self, mocker):
         expected = (
             "standard_name",
             "long_name",
@@ -63,153 +60,153 @@ class Test__identity(tests.IrisTest):
             "location",
             "axis",
         )
-        self.assertEqual(self.cls._fields, expected)
+        assert self.cls._fields == expected
 
-    def test_bases(self):
-        self.assertTrue(issubclass(self.cls, BaseMetadata))
+    def test_bases(self, mocker):
+        assert issubclass(self.cls, BaseMetadata)
 
 
-class Test__eq__(tests.IrisTest):
-    def setUp(self):
+class Test__eq__:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.values = dict(
-            standard_name=sentinel.standard_name,
-            long_name=sentinel.long_name,
-            var_name=sentinel.var_name,
-            units=sentinel.units,
-            attributes=sentinel.attributes,
-            location=sentinel.location,
-            axis=sentinel.axis,
+            standard_name=mocker.sentinel.standard_name,
+            long_name=mocker.sentinel.long_name,
+            var_name=mocker.sentinel.var_name,
+            units=mocker.sentinel.units,
+            attributes=mocker.sentinel.attributes,
+            location=mocker.sentinel.location,
+            axis=mocker.sentinel.axis,
         )
-        self.dummy = sentinel.dummy
+        self.dummy = mocker.sentinel.dummy
         self.cls = MeshCoordMetadata
 
-    def test_wraps_docstring(self):
-        self.assertEqual(BaseMetadata.__eq__.__doc__, self.cls.__eq__.__doc__)
+    def test_wraps_docstring(self, mocker):
+        assert BaseMetadata.__eq__.__doc__ == self.cls.__eq__.__doc__
 
-    def test_lenient_service(self):
+    def test_lenient_service(self, mocker):
         qualname___eq__ = _qualname(self.cls.__eq__)
-        self.assertIn(qualname___eq__, _LENIENT)
-        self.assertTrue(_LENIENT[qualname___eq__])
-        self.assertTrue(_LENIENT[self.cls.__eq__])
+        assert qualname___eq__ in _LENIENT
+        assert _LENIENT[qualname___eq__]
+        assert _LENIENT[self.cls.__eq__]
 
-    def test_call(self):
-        other = sentinel.other
-        return_value = sentinel.return_value
+    def test_call(self, mocker):
+        other = mocker.sentinel.other
+        return_value = mocker.sentinel.return_value
         metadata = self.cls(*(None,) * len(self.cls._fields))
-        with mock.patch.object(
-            BaseMetadata, "__eq__", return_value=return_value
-        ) as mocker:
-            result = metadata.__eq__(other)
+        mocked = mocker.patch.object(BaseMetadata, "__eq__", return_value=return_value)
+        result = metadata.__eq__(other)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict() == kwargs
 
-    def test_op_lenient_same(self):
+    def test_op_lenient_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert lmetadata.__eq__(rmetadata)
+        assert rmetadata.__eq__(lmetadata)
 
-    def test_op_lenient_same_none_nonmember(self):
+    def test_op_lenient_same_none_nonmember(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert lmetadata.__eq__(rmetadata)
+        assert rmetadata.__eq__(lmetadata)
 
-    def test_op_lenient_same_members_none(self):
+    def test_op_lenient_same_members_none(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
             rmetadata = self.cls(**right)
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertFalse(lmetadata.__eq__(rmetadata))
-                self.assertFalse(rmetadata.__eq__(lmetadata))
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert not lmetadata.__eq__(rmetadata)
+            assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_lenient_different(self):
+    def test_op_lenient_different(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertFalse(lmetadata.__eq__(rmetadata))
-            self.assertFalse(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert not lmetadata.__eq__(rmetadata)
+        assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_lenient_different_members(self):
+    def test_op_lenient_different_members(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
             rmetadata = self.cls(**right)
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertFalse(lmetadata.__eq__(rmetadata))
-                self.assertFalse(rmetadata.__eq__(lmetadata))
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert not lmetadata.__eq__(rmetadata)
+            assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_strict_same(self):
+    def test_op_strict_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertTrue(lmetadata.__eq__(rmetadata))
-            self.assertTrue(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert lmetadata.__eq__(rmetadata)
+        assert rmetadata.__eq__(lmetadata)
 
-    def test_op_strict_different(self):
+    def test_op_strict_different(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = self.dummy
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertFalse(lmetadata.__eq__(rmetadata))
-            self.assertFalse(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert not lmetadata.__eq__(rmetadata)
+        assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_strict_different_members(self):
+    def test_op_strict_different_members(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = self.dummy
             rmetadata = self.cls(**right)
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertFalse(lmetadata.__eq__(rmetadata))
-                self.assertFalse(rmetadata.__eq__(lmetadata))
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert not lmetadata.__eq__(rmetadata)
+            assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_strict_different_none(self):
+    def test_op_strict_different_none(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertFalse(lmetadata.__eq__(rmetadata))
-            self.assertFalse(rmetadata.__eq__(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert not lmetadata.__eq__(rmetadata)
+        assert not rmetadata.__eq__(lmetadata)
 
-    def test_op_strict_different_members_none(self):
+    def test_op_strict_different_members_none(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
             right[member] = None
             rmetadata = self.cls(**right)
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertFalse(lmetadata.__eq__(rmetadata))
-                self.assertFalse(rmetadata.__eq__(lmetadata))
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert not lmetadata.__eq__(rmetadata)
+            assert not rmetadata.__eq__(lmetadata)
 
 
-class Test___lt__(tests.IrisTest):
-    def setUp(self):
+class Test___lt__:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cls = MeshCoordMetadata
         values = [1] * len(self.cls._fields)
         self.one = self.cls(*values)
@@ -226,103 +223,100 @@ class Test___lt__(tests.IrisTest):
         values_attrs[4] = 10
         self.attributes = self.cls(*values_attrs)
 
-    def test__ascending_lt(self):
+    def test__ascending_lt(self, mocker):
         result = self.one < self.two
-        self.assertTrue(result)
+        assert result
 
-    def test__descending_lt(self):
+    def test__descending_lt(self, mocker):
         result = self.two < self.one
-        self.assertFalse(result)
+        assert not result
 
-    def test__none_rhs_operand(self):
+    def test__none_rhs_operand(self, mocker):
         result = self.one < self.none
-        self.assertFalse(result)
+        assert not result
 
-    def test__none_lhs_operand(self):
+    def test__none_lhs_operand(self, mocker):
         result = self.none < self.one
-        self.assertTrue(result)
+        assert result
 
-    def test__ignore_attributes(self):
+    def test__ignore_attributes(self, mocker):
         result = self.one < self.attributes
-        self.assertFalse(result)
+        assert not result
         result = self.attributes < self.one
-        self.assertFalse(result)
+        assert not result
 
 
-class Test_combine(tests.IrisTest):
-    def setUp(self):
+class Test_combine:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cls = MeshCoordMetadata
         self.values = dict(
-            standard_name=sentinel.standard_name,
-            long_name=sentinel.long_name,
-            var_name=sentinel.var_name,
-            units=sentinel.units,
-            attributes=sentinel.attributes,
-            location=sentinel.location,
-            axis=sentinel.axis,
+            standard_name=mocker.sentinel.standard_name,
+            long_name=mocker.sentinel.long_name,
+            var_name=mocker.sentinel.var_name,
+            units=mocker.sentinel.units,
+            attributes=mocker.sentinel.attributes,
+            location=mocker.sentinel.location,
+            axis=mocker.sentinel.axis,
         )
-        self.dummy = sentinel.dummy
+        self.dummy = mocker.sentinel.dummy
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
-    def test_wraps_docstring(self):
-        self.assertEqual(BaseMetadata.combine.__doc__, self.cls.combine.__doc__)
+    def test_wraps_docstring(self, mocker):
+        assert BaseMetadata.combine.__doc__ == self.cls.combine.__doc__
 
-    def test_lenient_service(self):
+    def test_lenient_service(self, mocker):
         qualname_combine = _qualname(self.cls.combine)
-        self.assertIn(qualname_combine, _LENIENT)
-        self.assertTrue(_LENIENT[qualname_combine])
-        self.assertTrue(_LENIENT[self.cls.combine])
+        assert qualname_combine in _LENIENT
+        assert _LENIENT[qualname_combine]
+        assert _LENIENT[self.cls.combine]
 
-    def test_lenient_default(self):
-        other = sentinel.other
-        return_value = sentinel.return_value
-        with mock.patch.object(
-            BaseMetadata, "combine", return_value=return_value
-        ) as mocker:
-            result = self.none.combine(other)
+    def test_lenient_default(self, mocker):
+        other = mocker.sentinel.other
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(BaseMetadata, "combine", return_value=return_value)
+        result = self.none.combine(other)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=None), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=None) == kwargs
 
-    def test_lenient(self):
-        other = sentinel.other
-        lenient = sentinel.lenient
-        return_value = sentinel.return_value
-        with mock.patch.object(
-            BaseMetadata, "combine", return_value=return_value
-        ) as mocker:
-            result = self.none.combine(other, lenient=lenient)
+    def test_lenient(self, mocker):
+        other = mocker.sentinel.other
+        lenient = mocker.sentinel.lenient
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(BaseMetadata, "combine", return_value=return_value)
+        result = self.none.combine(other, lenient=lenient)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=lenient), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=lenient) == kwargs
 
-    def test_op_lenient_same(self):
+    def test_op_lenient_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
         expected = self.values
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_lenient_same_none(self):
+    def test_op_lenient_same_none(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = None
         rmetadata = self.cls(**right)
         expected = self.values
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_lenient_same_members_none(self):
+    def test_op_lenient_same_members_none(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
@@ -330,11 +324,11 @@ class Test_combine(tests.IrisTest):
             rmetadata = self.cls(**right)
             expected = right.copy()
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-                self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert expected == lmetadata.combine(rmetadata)._asdict()
+            assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_lenient_different(self):
+    def test_op_lenient_different(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = self.dummy
@@ -342,11 +336,11 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["long_name"] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_lenient_different_members(self):
+    def test_op_lenient_different_members(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
@@ -355,20 +349,20 @@ class Test_combine(tests.IrisTest):
             expected = self.values.copy()
             expected[member] = None
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-                self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert expected == lmetadata.combine(rmetadata)._asdict()
+            assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_strict_same(self):
+    def test_op_strict_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
         expected = self.values.copy()
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_strict_different(self):
+    def test_op_strict_different(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = self.dummy
@@ -376,11 +370,11 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["long_name"] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_strict_different_members(self):
+    def test_op_strict_different_members(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
@@ -389,11 +383,11 @@ class Test_combine(tests.IrisTest):
             expected = self.values.copy()
             expected[member] = None
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-                self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert expected == lmetadata.combine(rmetadata)._asdict()
+            assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_strict_different_none(self):
+    def test_op_strict_different_none(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = None
@@ -401,11 +395,11 @@ class Test_combine(tests.IrisTest):
         expected = self.values.copy()
         expected["long_name"] = None
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-            self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert expected == lmetadata.combine(rmetadata)._asdict()
+        assert expected == rmetadata.combine(lmetadata)._asdict()
 
-    def test_op_strict_different_members_none(self):
+    def test_op_strict_different_members_none(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             right = self.values.copy()
@@ -414,83 +408,84 @@ class Test_combine(tests.IrisTest):
             expected = self.values.copy()
             expected[member] = None
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertEqual(expected, lmetadata.combine(rmetadata)._asdict())
-                self.assertEqual(expected, rmetadata.combine(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert expected == lmetadata.combine(rmetadata)._asdict()
+            assert expected == rmetadata.combine(lmetadata)._asdict()
 
 
-class Test_difference(tests.IrisTest):
-    def setUp(self):
+class Test_difference:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cls = MeshCoordMetadata
         self.values = dict(
-            standard_name=sentinel.standard_name,
-            long_name=sentinel.long_name,
-            var_name=sentinel.var_name,
-            units=sentinel.units,
-            attributes=sentinel.attributes,
-            location=sentinel.location,
-            axis=sentinel.axis,
+            standard_name=mocker.sentinel.standard_name,
+            long_name=mocker.sentinel.long_name,
+            var_name=mocker.sentinel.var_name,
+            units=mocker.sentinel.units,
+            attributes=mocker.sentinel.attributes,
+            location=mocker.sentinel.location,
+            axis=mocker.sentinel.axis,
         )
-        self.dummy = sentinel.dummy
+        self.dummy = mocker.sentinel.dummy
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
-    def test_wraps_docstring(self):
-        self.assertEqual(BaseMetadata.difference.__doc__, self.cls.difference.__doc__)
+    def test_wraps_docstring(self, mocker):
+        assert BaseMetadata.difference.__doc__ == self.cls.difference.__doc__
 
-    def test_lenient_service(self):
+    def test_lenient_service(self, mocker):
         qualname_difference = _qualname(self.cls.difference)
-        self.assertIn(qualname_difference, _LENIENT)
-        self.assertTrue(_LENIENT[qualname_difference])
-        self.assertTrue(_LENIENT[self.cls.difference])
+        assert qualname_difference in _LENIENT
+        assert _LENIENT[qualname_difference]
+        assert _LENIENT[self.cls.difference]
 
-    def test_lenient_default(self):
-        other = sentinel.other
-        return_value = sentinel.return_value
-        with mock.patch.object(
+    def test_lenient_default(self, mocker):
+        other = mocker.sentinel.other
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(
             BaseMetadata, "difference", return_value=return_value
-        ) as mocker:
-            result = self.none.difference(other)
+        )
+        result = self.none.difference(other)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=None), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=None) == kwargs
 
-    def test_lenient(self):
-        other = sentinel.other
-        lenient = sentinel.lenient
-        return_value = sentinel.return_value
-        with mock.patch.object(
+    def test_lenient(self, mocker):
+        other = mocker.sentinel.other
+        lenient = mocker.sentinel.lenient
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(
             BaseMetadata, "difference", return_value=return_value
-        ) as mocker:
-            result = self.none.difference(other, lenient=lenient)
+        )
+        result = self.none.difference(other, lenient=lenient)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=lenient), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=lenient) == kwargs
 
-    def test_op_lenient_same(self):
+    def test_op_lenient_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert lmetadata.difference(rmetadata) is None
+        assert rmetadata.difference(lmetadata) is None
 
-    def test_op_lenient_same_none(self):
+    def test_op_lenient_same_none(self, mocker):
         lmetadata = self.cls(**self.values)
         right = self.values.copy()
         right["long_name"] = None
         rmetadata = self.cls(**right)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert lmetadata.difference(rmetadata) is None
+        assert rmetadata.difference(lmetadata) is None
 
-    def test_op_lenient_same_members_none(self):
+    def test_op_lenient_same_members_none(self, mocker):
         for member in self.cls._members:
             lmetadata = self.cls(**self.values)
             member_value = getattr(lmetadata, member)
@@ -502,11 +497,11 @@ class Test_difference(tests.IrisTest):
             rexpected = deepcopy(self.none)._asdict()
             rexpected[member] = (None, member_value)
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-                self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert lexpected == lmetadata.difference(rmetadata)._asdict()
+            assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_lenient_different(self):
+    def test_op_lenient_different(self, mocker):
         left = self.values.copy()
         lmetadata = self.cls(**left)
         right = self.values.copy()
@@ -517,11 +512,11 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["long_name"] = lexpected["long_name"][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-            self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-            self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+        assert lexpected == lmetadata.difference(rmetadata)._asdict()
+        assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_lenient_different_members(self):
+    def test_op_lenient_different_members(self, mocker):
         for member in self.cls._members:
             left = self.values.copy()
             lmetadata = self.cls(**left)
@@ -533,19 +528,19 @@ class Test_difference(tests.IrisTest):
             rexpected = deepcopy(self.none)._asdict()
             rexpected[member] = lexpected[member][::-1]
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=True):
-                self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-                self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=True)
+            assert lexpected == lmetadata.difference(rmetadata)._asdict()
+            assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_strict_same(self):
+    def test_op_strict_same(self, mocker):
         lmetadata = self.cls(**self.values)
         rmetadata = self.cls(**self.values)
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertIsNone(lmetadata.difference(rmetadata))
-            self.assertIsNone(rmetadata.difference(lmetadata))
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert lmetadata.difference(rmetadata) is None
+        assert rmetadata.difference(lmetadata) is None
 
-    def test_op_strict_different(self):
+    def test_op_strict_different(self, mocker):
         left = self.values.copy()
         lmetadata = self.cls(**left)
         right = self.values.copy()
@@ -556,11 +551,11 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["long_name"] = lexpected["long_name"][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-            self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert lexpected == lmetadata.difference(rmetadata)._asdict()
+        assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_strict_different_members(self):
+    def test_op_strict_different_members(self, mocker):
         for member in self.cls._members:
             left = self.values.copy()
             lmetadata = self.cls(**left)
@@ -572,11 +567,11 @@ class Test_difference(tests.IrisTest):
             rexpected = deepcopy(self.none)._asdict()
             rexpected[member] = lexpected[member][::-1]
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-                self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert lexpected == lmetadata.difference(rmetadata)._asdict()
+            assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_strict_different_none(self):
+    def test_op_strict_different_none(self, mocker):
         left = self.values.copy()
         lmetadata = self.cls(**left)
         right = self.values.copy()
@@ -587,11 +582,11 @@ class Test_difference(tests.IrisTest):
         rexpected = deepcopy(self.none)._asdict()
         rexpected["long_name"] = lexpected["long_name"][::-1]
 
-        with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-            self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-            self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+        mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+        assert lexpected == lmetadata.difference(rmetadata)._asdict()
+        assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
-    def test_op_strict_different_members_none(self):
+    def test_op_strict_different_members_none(self, mocker):
         for member in self.cls._members:
             left = self.values.copy()
             lmetadata = self.cls(**left)
@@ -603,54 +598,47 @@ class Test_difference(tests.IrisTest):
             rexpected = deepcopy(self.none)._asdict()
             rexpected[member] = lexpected[member][::-1]
 
-            with mock.patch("iris.common.metadata._LENIENT", return_value=False):
-                self.assertEqual(lexpected, lmetadata.difference(rmetadata)._asdict())
-                self.assertEqual(rexpected, rmetadata.difference(lmetadata)._asdict())
+            mocker.patch("iris.common.metadata._LENIENT", return_value=False)
+            assert lexpected == lmetadata.difference(rmetadata)._asdict()
+            assert rexpected == rmetadata.difference(lmetadata)._asdict()
 
 
-class Test_equal(tests.IrisTest):
-    def setUp(self):
+class Test_equal:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
         self.cls = MeshCoordMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
-    def test_wraps_docstring(self):
-        self.assertEqual(BaseMetadata.equal.__doc__, self.cls.equal.__doc__)
+    def test_wraps_docstring(self, mocker):
+        assert BaseMetadata.equal.__doc__ == self.cls.equal.__doc__
 
-    def test_lenient_service(self):
+    def test_lenient_service(self, mocker):
         qualname_equal = _qualname(self.cls.equal)
-        self.assertIn(qualname_equal, _LENIENT)
-        self.assertTrue(_LENIENT[qualname_equal])
-        self.assertTrue(_LENIENT[self.cls.equal])
+        assert qualname_equal in _LENIENT
+        assert _LENIENT[qualname_equal]
+        assert _LENIENT[self.cls.equal]
 
-    def test_lenient_default(self):
-        other = sentinel.other
-        return_value = sentinel.return_value
-        with mock.patch.object(
-            BaseMetadata, "equal", return_value=return_value
-        ) as mocker:
-            result = self.none.equal(other)
+    def test_lenient_default(self, mocker):
+        other = mocker.sentinel.other
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(BaseMetadata, "equal", return_value=return_value)
+        result = self.none.equal(other)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=None), kwargs)
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=None) == kwargs
 
-    def test_lenient(self):
-        other = sentinel.other
-        lenient = sentinel.lenient
-        return_value = sentinel.return_value
-        with mock.patch.object(
-            BaseMetadata, "equal", return_value=return_value
-        ) as mocker:
-            result = self.none.equal(other, lenient=lenient)
+    def test_lenient(self, mocker):
+        other = mocker.sentinel.other
+        lenient = mocker.sentinel.lenient
+        return_value = mocker.sentinel.return_value
+        mocked = mocker.patch.object(BaseMetadata, "equal", return_value=return_value)
+        result = self.none.equal(other, lenient=lenient)
 
-        self.assertEqual(return_value, result)
-        self.assertEqual(1, mocker.call_count)
-        (arg,), kwargs = mocker.call_args
-        self.assertEqual(other, arg)
-        self.assertEqual(dict(lenient=lenient), kwargs)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert return_value == result
+        assert 1 == mocked.call_count
+        (arg,), kwargs = mocked.call_args
+        assert other == arg
+        assert dict(lenient=lenient) == kwargs

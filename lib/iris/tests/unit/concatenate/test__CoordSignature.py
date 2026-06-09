@@ -59,7 +59,7 @@ def test_dim(order: int, coord_dtype, lazy: bool, with_bounds: bool) -> None:
     cube_signature = MockCubeSignature(
         dim_coords=[metadata.coord], dim_metadata=dim_metadata
     )
-    coord_signature = _CoordSignature(cube_signature)
+    coord_signature = _CoordSignature(cube_signature)  # type: ignore[arg-type]
     assert len(coord_signature.dim_extents) == 1
     (actual,) = coord_signature.dim_extents
     first, last = coord_dtype(0), coord_dtype((N_POINTS - 1) * SCALE_FACTOR)
@@ -102,7 +102,7 @@ def test_dim__scalar(coord_dtype, lazy: bool, with_bounds: bool) -> None:
     cube_signature = MockCubeSignature(
         dim_coords=[metadata.coord], dim_metadata=dim_metadata
     )
-    coord_signature = _CoordSignature(cube_signature)
+    coord_signature = _CoordSignature(cube_signature)  # type: ignore[arg-type]
     assert len(coord_signature.dim_extents) == 1
     (actual,) = coord_signature.dim_extents
     point = coord_dtype(1)

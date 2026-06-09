@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides access to Iris-specific configuration values.
 
+.. z_reference:: iris.config
+   :tags: topic_customisation
+
+   API reference
+
 The default configuration values can be overridden by creating the file
 ``iris/etc/site.cfg``. If it exists, this file must conform to the format
 defined by :mod:`configparser`.
@@ -28,7 +33,8 @@ defined by :mod:`configparser`.
 import configparser
 import contextlib
 import logging
-import os.path
+import os
+from pathlib import Path
 import warnings
 
 import iris.warnings
@@ -130,7 +136,7 @@ def get_dir_option(section, option, default=None):
     path = default
     if config.has_option(section, option):
         c_path = config.get(section, option)
-        if os.path.isdir(c_path):
+        if Path(c_path).is_dir():
             path = c_path
         else:
             msg = (
@@ -145,14 +151,14 @@ def get_dir_option(section, option, default=None):
 
 
 # Figure out the full path to the "iris" package.
-ROOT_PATH = os.path.abspath(os.path.dirname(__file__))
+ROOT_PATH = Path(__file__).parent.absolute()
 
 # The full path to the configuration directory of the active Iris instance.
-CONFIG_PATH = os.path.join(ROOT_PATH, "etc")
+CONFIG_PATH = ROOT_PATH / "etc"
 
 # Load the optional "site.cfg" file if it exists.
 config = configparser.ConfigParser()
-config.read([os.path.join(CONFIG_PATH, "site.cfg")])
+config.read([CONFIG_PATH / "site.cfg"])
 
 ##################
 # Resource options
@@ -162,7 +168,7 @@ _RESOURCE_SECTION = "Resources"
 TEST_DATA_DIR = get_dir_option(
     _RESOURCE_SECTION,
     "test_data_dir",
-    default=os.path.join(os.path.dirname(__file__), "test_data"),
+    default=str(Path(__file__) / "test_data"),
 )
 
 # Override the data repository if the appropriate environment variable
@@ -170,11 +176,11 @@ TEST_DATA_DIR = get_dir_option(
 override = os.environ.get("OVERRIDE_TEST_DATA_REPOSITORY")
 if override:
     TEST_DATA_DIR = None
-    if os.path.isdir(os.path.expanduser(override)):
-        TEST_DATA_DIR = os.path.abspath(override)
+    if Path(override).expanduser().is_dir():
+        TEST_DATA_DIR = str(Path(override).absolute())
 
 PALETTE_PATH = get_dir_option(
-    _RESOURCE_SECTION, "palette_path", os.path.join(CONFIG_PATH, "palette")
+    _RESOURCE_SECTION, "palette_path", CONFIG_PATH / "palette"
 )
 
 # Runtime options

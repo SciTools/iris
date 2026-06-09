@@ -5,6 +5,8 @@
 Voted Issues
 ============
 
+.. todo:: https://github.com/SciTools/iris/issues/6867 - this page belongs in 'Get Involved'.
+
 You can help us to prioritise development of new features by leaving a 👍
 reaction on the header (not subsequent comments) of any issue.
 
@@ -22,8 +24,8 @@ the below table.
 
    <!-- Must import jquery before the datatables css and js files. -->
    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.3/css/dataTables.dataTables.min.css">
-   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.0.3/js/dataTables.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.3.8/css/dataTables.dataTables.min.css">
+   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
 
 
    <table id="voted_issues_table" class="hover row-border order-column" style="width:100%">
@@ -46,9 +48,11 @@ the below table.
            $('#voted_issues_table').DataTable( {
               <!-- "ajax": 'voted-issues.json', -->
               "ajax": 'https://raw.githubusercontent.com/scitools/voted_issues/main/voted-issues.json',
+              // docs: https://datatables.net/reference/option/
               "lengthMenu": [10, 25, 50, 100],
               "pageLength": 10,
               "order": [[ 0, "desc" ]],
+              "orderClasses": false,
               "bJQueryUI": true,
            } );
         } );
@@ -56,6 +60,6 @@ the below table.
    <p></p>
 
 
-.. note:: The data in this table is updated every 30 minutes and is sourced
-          from `voted-issues.json`_.
-          For the latest data please see the `issues on GitHub`_.
+.. note:: The data in this table is sourced from `voted-issues.json`_ and is updated
+          via a scheduled GitHub Action.  For the latest data please see
+          the `issues on GitHub`_.

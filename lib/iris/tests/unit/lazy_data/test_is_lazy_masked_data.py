@@ -19,7 +19,7 @@ lazy_arrays = [da.from_array(arr) for arr in real_arrays]
 
 
 @pytest.mark.parametrize(
-    "arr, expected", zip(real_arrays + lazy_arrays, [False] * 4 + [True] * 2)
+    ("arr", "expected"), zip(real_arrays + lazy_arrays, [False] * 4 + [True] * 2)
 )
 def test_is_lazy_masked_data(arr, expected):
     result = is_lazy_masked_data(arr)

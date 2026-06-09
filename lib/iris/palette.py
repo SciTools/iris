@@ -4,13 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Color map pallettes management.
 
+.. z_reference:: iris.palette
+   :tags: topic_plotting
+
+   API reference
+
 Load, configure and register color map palettes and initialise
 color map meta-data mappings.
 """
 
 from functools import wraps
 import os
-import os.path
+from pathlib import Path
 import re
 
 import cf_units
@@ -128,7 +133,7 @@ def cmap_norm(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     args, kwargs = _default_cmap_norm((cube,), {})
@@ -227,7 +232,7 @@ def _load_palette():
 
     """
     # Reference these module level namespace variables.
-    global CMAP_BREWER, _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
+    global _CMAP_BY_SCHEME, _CMAP_BY_KEYWORD, _CMAP_BY_STD_NAME
 
     _CMAP_BY_SCHEME = {}
     _CMAP_BY_KEYWORD = {}
@@ -243,15 +248,15 @@ def _load_palette():
         # Identify any target .txt color map palette files.
         filenames.extend(
             [
-                os.path.join(root, filename)
+                str(Path(root) / filename)
                 for filename in files
-                if os.path.splitext(filename)[1] == ".txt"
+                if Path(filename).suffix == ".txt"
             ]
         )
 
     for filename in filenames:
         # Default color map name based on the file base-name (case-SENSITIVE).
-        cmap_name = os.path.splitext(os.path.basename(filename))[0]
+        cmap_name = Path(filename).stem
         cmap_scheme = None
         cmap_keywords = []
         cmap_std_names = []

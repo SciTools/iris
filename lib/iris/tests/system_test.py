@@ -9,21 +9,19 @@
 System test module is useful to identify if some of the key components required for
 Iris are available.
 
-The system tests can be run with ``python setup.py test --system-tests``.
+The system tests can be run with ``pytest lib/iris/tests/system_test.py``.
 
 """
-
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
 
 import cf_units
 import numpy as np
 
 import iris
+from iris.tests import _shared_utils
 
 
-class TestSystemInitial(tests.IrisTest):
-    def test_supported_filetypes(self):
+class TestSystemInitial:
+    def test_supported_filetypes(self, request, tmp_path):
         nx, ny = 60, 60
         data = np.arange(nx * ny, dtype=">f4").reshape(nx, ny)
 
@@ -61,17 +59,15 @@ class TestSystemInitial(tests.IrisTest):
 
         filetypes = (".nc", ".pp")
         for filetype in filetypes:
-            saved_tmpfile = iris.util.create_temp_filename(suffix=filetype)
+            saved_tmpfile = tmp_path / f"tmp{filetype}"
             iris.save(cm, saved_tmpfile)
 
             new_cube = iris.load_cube(saved_tmpfile)
-            self.assertCML(new_cube, ("system", "supported_filetype_%s.cml" % filetype))
+            _shared_utils.assert_CML(
+                request, new_cube, ("system", "supported_filetype_%s.cml" % filetype)
+            )
 
     def test_imports_general(self):
-        if tests.MPL_AVAILABLE:
+        if _shared_utils.MPL_AVAILABLE:
             import matplotlib  # noqa
         import netCDF4  # noqa
-
-
-if __name__ == "__main__":
-    tests.main()

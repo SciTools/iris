@@ -9,15 +9,21 @@ import warnings
 from cf_units import Unit
 import dask.array as da
 import dask.config
-from dask.delayed import Delayed
 import distributed
 import numpy as np
 import pytest
 
 import iris
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
-import iris.tests
+from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
+
+
+def are_dask_collections(obj):
+    result = dask.is_dask_collection(obj)
+    if not result and hasattr(obj, "__len__"):
+        result = all([dask.is_dask_collection(item) for item in obj])
+    return result
 
 
 class Test__lazy_stream_data:
@@ -32,7 +38,7 @@ class Test__lazy_stream_data:
     def output_path(self, tmp_path):
         # A temporary output netcdf-file path, **unique to each test call**.
         self.temp_output_filepath = tmp_path / "tmp.nc"
-        yield self.temp_output_filepath
+        return self.temp_output_filepath
 
     @pytest.fixture(autouse=True, scope="module")
     def all_vars_lazy(self):
@@ -112,8 +118,8 @@ class Test__lazy_stream_data:
             cube.add_cell_measure(cm, cm_dims)
         return cube
 
-    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path):
-        input_filepath = iris.tests.get_data_path(
+    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path, request):
+        input_filepath = _shared_utils.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         original_cubes = iris.load(input_filepath)
@@ -130,14 +136,14 @@ class Test__lazy_stream_data:
         result = iris.save(original_cubes, output_path, compute=not save_is_delayed)
         if save_is_delayed:
             # In this case, must also "complete" the save.
-            result.compute()
+            dask.compute(result)
         reloaded_cubes = iris.load(output_path)
         reloaded_cubes = sorted(reloaded_cubes, key=lambda cube: cube.name())
         assert reloaded_cubes == original_cubes
         # NOTE: it might be nicer to use assertCDL, but unfortunately importing
         # unittest.TestCase seems to lose us the ability to use fixtures.
 
-    @classmethod
+    @staticmethod
     @pytest.fixture(
         params=[
             "ThreadedScheduler",
@@ -145,7 +151,7 @@ class Test__lazy_stream_data:
             "SingleThreadScheduler",
         ]
     )
-    def scheduler_type(cls, request):
+    def scheduler_type(request):
         sched_typename = request.param
         if sched_typename == "ThreadedScheduler":
             config_name = "threads"
@@ -188,7 +194,7 @@ class Test__lazy_stream_data:
         if not save_is_delayed:
             assert result is None
         else:
-            assert isinstance(result, Delayed)
+            assert are_dask_collections(result)
 
     def test_time_of_writing(self, save_is_delayed, output_path, scheduler_type):
         # Check when lazy data is *actually* written :
@@ -251,7 +257,7 @@ class Test__lazy_stream_data:
 
         if save_is_delayed:
             # Complete the write.
-            result.compute()
+            dask.compute(result)
 
             # Re-fetch the lazy arrays.  The data should now **not be masked**.
             data_mask, coord_mask, ancil_mask, cm_mask = fetch_masks()
@@ -267,4 +273,4 @@ class Test__lazy_stream_data:
         cube = self.make_testcube(include_lazy_content=False)
         warnings.simplefilter("error")
         result = iris.save(cube, output_path, compute=False)
-        assert isinstance(result, Delayed)
+        assert are_dask_collections(result)

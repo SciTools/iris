@@ -2,6 +2,12 @@
 #  - In the last 24 hours' commits.
 #  - Introduced by this pull request.
 
+# Reference
+#    - https://github.com/actions/checkout
+#    - https://github.com/MarceloPrado/has-changed-path
+#    - https://github.com/actions/cache
+#    - https://github.com/actions/upload-artifact
+
 name: benchmarks-run
 run-name: Run benchmarks
 
@@ -19,26 +25,33 @@ on:
     # Add the `labeled` type to the default list.
     types: [labeled, opened, synchronize, reopened]
 
+permissions: {}
+
 jobs:
   pre-checks:
+    # This workflow supports two different scenarios (overnight and branch).
+    #  The pre-checks job determines which scenario is being run.
     runs-on: ubuntu-latest
     if: github.repository == 'SciTools/iris'
     outputs:
       overnight: ${{ steps.overnight.outputs.check }}
       branch: ${{ steps.branch.outputs.check }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 2
+          persist-credentials: false
       - id: files-changed
         uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
         with:
           # SEE ALSO .github/labeler.yml .
-          paths: requirements/locks/*.lock setup.py
+          paths: requirements/locks/*.lock
       - id: overnight
+        name: Check overnight scenario
         if: github.event_name != 'pull_request'
         run: echo "check=true" >> "$GITHUB_OUTPUT"
       - id: branch
+        name: Check branch scenario
         if: >
           github.event_name == 'pull_request'
           &&
@@ -60,24 +73,25 @@ jobs:
     env:
       IRIS_TEST_DATA_LOC_PATH: benchmarks
       IRIS_TEST_DATA_PATH: benchmarks/iris-test-data
-      IRIS_TEST_DATA_VERSION: "2.22"
+      IRIS_TEST_DATA_VERSION: "2.28"
       # Lets us manually bump the cache to rebuild
-      ENV_CACHE_BUILD: "0"
+      ENV_CACHE_BUILD: "1"
       TEST_DATA_CACHE_BUILD: "2"
 
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
+          persist-credentials: false
 
-      - name: Install Nox
-        run: |
-          pip install nox
+      - name: Install run dependencies
+        run: pip install asv nox!=2025.05.01
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             .nox
@@ -87,7 +101,7 @@ jobs:
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
@@ -107,31 +121,41 @@ jobs:
           echo "OVERRIDE_TEST_DATA_REPOSITORY=${GITHUB_WORKSPACE}/${IRIS_TEST_DATA_PATH}/test_data" >> $GITHUB_ENV
 
       - name: Benchmark this pull request
+        # If the 'branch' condition(s) are met: use the bm_runner to compare
+        #  the proposed merge with the base branch.
         if: needs.pre-checks.outputs.branch == 'true'
         env:
+          BASE_REF: ${{ github.base_ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          nox -s benchmarks -- branch origin/${{ github.base_ref }}
+          nox -s benchmarks -- branch origin/${BASE_REF}
 
       - name: Run overnight benchmarks
+        # If the 'overnight' condition(s) are met: use the bm_runner to compare
+        #  each of the last 24 hours' commits to their parents.
         id: overnight
         if: needs.pre-checks.outputs.overnight == 'true'
         env:
+          FIRST_COMMIT: ${{ inputs.first_commit }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # The first_commit argument allows a custom starting point - useful
+        #  for manual re-running.
         run: |
-          first_commit=${{ inputs.first_commit }}
+          first_commit=${FIRST_COMMIT}
           if [ "$first_commit" == "" ]
           then
             first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
           fi
-          
+
           if [ "$first_commit" != "" ]
           then
             nox -s benchmarks -- overnight $first_commit
           fi
 
       - name: Warn of failure
+        # The overnight run is not on a pull request, so a failure could go
+        #  unnoticed without being actively advertised.
         if: >
           failure() &&
           steps.overnight.outcome == 'failure'
@@ -143,15 +167,17 @@ jobs:
           gh issue create --title "$title" --body "$body" --label "Bot" --label "Type: Performance" --repo $GITHUB_REPOSITORY
 
       - name: Upload any benchmark reports
+        # Uploading enables more downstream processing e.g. posting a PR comment.
         if: success() || steps.overnight.outcome == 'failure'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
 
       - name: Archive asv results
+        # Store the raw ASV database(s) to help manual investigations.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: asv-raw-results
           path: benchmarks/.asv/results

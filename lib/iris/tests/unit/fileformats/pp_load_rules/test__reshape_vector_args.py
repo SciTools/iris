@@ -7,26 +7,24 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.fileformats.pp_load_rules import _reshape_vector_args
+from iris.tests._shared_utils import assert_array_equal
 
 
-class TestEmpty(tests.IrisTest):
+class TestEmpty:
     def test(self):
         result = _reshape_vector_args([])
-        self.assertEqual(result, [])
+        assert result == []
 
 
-class TestSingleArg(tests.IrisTest):
+class TestSingleArg:
     def _check(self, result, expected):
-        self.assertEqual(len(result), len(expected))
+        assert len(result) == len(expected)
         for result_arr, expected_arr in zip(result, expected):
-            self.assertArrayEqual(result_arr, expected_arr)
+            assert_array_equal(result_arr, expected_arr)
 
     def test_nochange(self):
         points = np.array([[1, 2, 3], [4, 5, 6]])
@@ -36,7 +34,7 @@ class TestSingleArg(tests.IrisTest):
 
     def test_bad_dimensions(self):
         points = np.array([[1, 2, 3], [4, 5, 6]])
-        with self.assertRaisesRegex(ValueError, "Length"):
+        with pytest.raises(ValueError, match="Length"):
             _reshape_vector_args([(points, (0, 1, 2))])
 
     def test_scalar(self):
@@ -64,11 +62,11 @@ class TestSingleArg(tests.IrisTest):
         self._check(result, expected)
 
 
-class TestMultipleArgs(tests.IrisTest):
+class TestMultipleArgs:
     def _check(self, result, expected):
-        self.assertEqual(len(result), len(expected))
+        assert len(result) == len(expected)
         for result_arr, expected_arr in zip(result, expected):
-            self.assertArrayEqual(result_arr, expected_arr)
+            assert_array_equal(result_arr, expected_arr)
 
     def test_nochange(self):
         a1 = np.array([[1, 2, 3], [4, 5, 6]])
@@ -131,7 +129,3 @@ class TestMultipleArgs(tests.IrisTest):
             a3.reshape(1, 1, 1),
         ]
         self._check(result, expected)
-
-
-if __name__ == "__main__":
-    tests.main()

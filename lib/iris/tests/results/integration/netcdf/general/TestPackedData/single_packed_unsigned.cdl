@@ -4,7 +4,7 @@ dimensions:
 	longitude = 96 ;
 variables:
 	ubyte air_temperature(latitude, longitude) ;
-		air_temperature:scale_factor = 0.30790345435049 ;
+		air_temperature:scale_factor = 0.3079035f ;
 		air_temperature:add_offset = 228.1423f ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;

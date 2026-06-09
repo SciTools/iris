@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provides ABF (and ABL) file format capabilities.
 
+.. z_reference:: iris.fileformats.abf
+   :tags: topic_load_save
+
+   API reference
+
 ABF and ABL files are satellite file formats defined by Boston University.
 Including this module adds ABF and ABL loading to the session's capabilities.
 
@@ -15,7 +20,7 @@ The documentation for this file format can be found
 import calendar
 import datetime
 import glob
-import os.path
+from pathlib import Path
 
 import numpy as np
 import numpy.ma as ma
@@ -77,7 +82,7 @@ class ABFField:
             field = ABFField("AVHRRBUVI01.1985feba.abl")
 
         """
-        basename = os.path.basename(filename)
+        basename = Path(filename).name
         if len(basename) != 24:
             raise ValueError(
                 "ABFField expects a filename of 24 characters: {}".format(basename)
@@ -95,7 +100,7 @@ class ABFField:
 
     def _read(self):
         """Read the field from the given filename."""
-        basename = os.path.basename(self._filename)
+        basename = Path(self._filename).name
         self.version = int(basename[9:11])
         self.year = int(basename[12:16])
         self.month = basename[16:19]

@@ -2,6 +2,11 @@
 Oceanographic Profiles and T-S Diagrams
 =======================================
 
+.. how-to:: Oceanographic Profiles and T-S Diagrams
+   :tags: topic_plotting;topic_slice_combine
+
+   How to use Iris' for visualising oceanographic profile data, including scatter plotting.
+
 This example demonstrates how to plot vertical profiles of different
 variables in the same axes, and how to make a scatter plot of two
 variables. There is an oceanographic theme but the same techniques are

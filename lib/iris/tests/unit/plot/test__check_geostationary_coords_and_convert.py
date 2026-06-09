@@ -6,20 +6,19 @@
 function.
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest.mock import Mock
-
 from cartopy.crs import Geostationary, NearsidePerspective
 import numpy as np
+import pytest
 
 from iris.plot import _check_geostationary_coords_and_convert
+from iris.tests import _shared_utils
 
 
-class Test__check_geostationary_coords_and_convert(tests.IrisTest):
-    def setUp(self):
+class Test__check_geostationary_coords_and_convert:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.mocker = mocker
+
         geostationary_altitude = 35785831.0
         # proj4_params is the one attribute of the Geostationary class that
         # is needed for the function.
@@ -46,7 +45,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
             projection_spec = NearsidePerspective
             target_tuple = (self.x_original, self.y_original)
 
-        projection = Mock(spec=projection_spec)
+        projection = self.mocker.Mock(spec=projection_spec)
         projection.proj4_params = self.proj4_params
         # Projection is looked for within a dictionary called kwargs.
         kwargs = {"transform": projection}
@@ -54,7 +53,7 @@ class Test__check_geostationary_coords_and_convert(tests.IrisTest):
         x, y = _check_geostationary_coords_and_convert(
             self.x_original, self.y_original, kwargs
         )
-        self.assertArrayEqual((x, y), target_tuple)
+        _shared_utils.assert_array_equal((x, y), target_tuple)
 
     def test_geostationary_present(self):
         self._test(geostationary=True)

@@ -4,15 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for the `iris.experimental.geovista.cube_to_polydata` function."""
 
-import numpy as np
-
 from iris import load_cube
 from iris.experimental.geovista import cube_to_polydata
-from iris.tests import get_data_path
+from iris.tests import _shared_utils
 
 
 def test_integration_2d():
-    file_path = get_data_path(
+    file_path = _shared_utils.get_data_path(
         [
             "NetCDF",
             "ORCA2",
@@ -26,11 +24,13 @@ def test_integration_2d():
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 26640
     assert polydata.GetNumberOfPoints() == 26969
-    np.testing.assert_array_equal(cube[0, 1, :].data.flatten(), polydata.active_scalars)
+    _shared_utils.assert_array_equal(
+        cube[0, 1, :].data.flatten(), polydata.active_scalars
+    )
 
 
 def test_integration_1d():
-    file_path = get_data_path(
+    file_path = _shared_utils.get_data_path(
         [
             "NetCDF",
             "global",
@@ -44,11 +44,11 @@ def test_integration_1d():
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 51200
     assert polydata.GetNumberOfPoints() == 51681
-    np.testing.assert_array_equal(cube[0, :].data.flatten(), polydata.active_scalars)
+    _shared_utils.assert_array_equal(cube[0, :].data.flatten(), polydata.active_scalars)
 
 
 def test_integration_mesh():
-    file_path = get_data_path(
+    file_path = _shared_utils.get_data_path(
         [
             "NetCDF",
             "unstructured_grid",
@@ -62,4 +62,4 @@ def test_integration_mesh():
     # This is a known good output, we have plotted the result and checked it.
     assert polydata.GetNumberOfCells() == 864
     assert polydata.GetNumberOfPoints() == 866
-    np.testing.assert_array_equal(polydata.active_scalars, cube[0, :].data)
+    _shared_utils.assert_array_equal(polydata.active_scalars, cube[0, :].data)

@@ -3,16 +3,16 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import os
 import tempfile
+
+import pytest
 
 import iris
 import iris.coords
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.fileformats.pp import STASH
+from iris.tests import _shared_utils
 import iris.util
 
 
@@ -62,9 +62,13 @@ def callback_aaxzc_n10r13xy_b_pp(cube, field, filename):
     cube.add_aux_coord(height_coord)
 
 
-@tests.skip_data
-class TestAll(tests.IrisTest, tests.PPTest):
+@_shared_utils.skip_data
+class TestAll:
     _ref_dir = ("usecases", "pp_to_cf_conversion")
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
 
     def _test_file(self, name):
         """Main test routine that is called for each of the files listed below."""
@@ -80,7 +84,9 @@ class TestAll(tests.IrisTest, tests.PPTest):
         else:
             fname_name = name
 
-        self.assertCML(cubes, self._ref_dir + ("from_pp", fname_name + ".cml"))
+        _shared_utils.assert_CML(
+            self.request, cubes, self._ref_dir + ("from_pp", fname_name + ".cml")
+        )
 
         # 2) Save the Cube and check the netCDF
         nc_filenames = []
@@ -99,7 +105,8 @@ class TestAll(tests.IrisTest, tests.PPTest):
             )
 
             # Check the netCDF file against CDL expected output.
-            self.assertCDL(
+            _shared_utils.assert_CDL(
+                self.request,
                 file_nc,
                 self._ref_dir + ("to_netcdf", "%s_%d.cdl" % (fname_name, index)),
             )
@@ -109,7 +116,8 @@ class TestAll(tests.IrisTest, tests.PPTest):
         for index, nc_filename in enumerate(nc_filenames):
             # Read netCDF to Cube.
             cube = iris.load_cube(nc_filename)
-            self.assertCML(
+            _shared_utils.assert_CML(
+                self.request,
                 cube,
                 self._ref_dir + ("from_netcdf", "%s_%d.cml" % (fname_name, index)),
             )
@@ -122,15 +130,15 @@ class TestAll(tests.IrisTest, tests.PPTest):
             self._test_pp_save(cubes, name)
 
     def _src_pp_path(self, name):
-        return tests.get_data_path(("PP", "cf_processing", name))
+        return _shared_utils.get_data_path(("PP", "cf_processing", name))
 
     def _test_pp_save(self, cubes, name):
         # If there's no existing reference file then make it from the *source* data
-        reference_txt_path = tests.get_result_path(
+        reference_txt_path = _shared_utils.get_result_path(
             self._ref_dir + ("to_pp", name + ".txt")
         )
         reference_pp_path = self._src_pp_path(name)
-        with self.cube_save_test(
+        with _shared_utils.pp_cube_save_test(
             reference_txt_path, reference_pp_path=reference_pp_path
         ) as temp_pp_path:
             iris.save(cubes, temp_pp_path)
@@ -187,7 +195,3 @@ def attach_tests():
 
 
 attach_tests()
-
-
-if __name__ == "__main__":
-    tests.main()

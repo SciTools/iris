@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A package providing :class:`iris.cube.Cube` analysis support.
 
+.. z_reference:: iris.analysis
+   :tags: topic_maths_stats;topic_regrid
+
+   API reference
+
 This module defines a suite of :class:`~iris.analysis.Aggregator` instances,
 which are used to specify the statistical measure to calculate over a
 :class:`~iris.cube.Cube`, using methods such as
@@ -35,13 +40,13 @@ The gallery contains several interesting worked examples of how an
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 import functools
 from functools import wraps
 from inspect import getfullargspec
 import itertools
 from numbers import Number
-from typing import Optional, Union
+from typing import Optional, Protocol, Union
 import warnings
 
 from cf_units import Unit
@@ -56,7 +61,7 @@ from iris.analysis._area_weighted import AreaWeightedRegridder
 from iris.analysis._interpolation import EXTRAPOLATION_MODES, RectilinearInterpolator
 from iris.analysis._regrid import CurvilinearRegridder, RectilinearRegridder
 import iris.coords
-from iris.coords import _DimensionalMetadata
+from iris.coords import AuxCoord, DimCoord, _DimensionalMetadata
 from iris.exceptions import LazyAggregatorError
 import iris.util
 
@@ -1198,10 +1203,15 @@ class _Weights:
             dim_metadata = cube._dimensional_metadata(weights)
             derived_array = dim_metadata._core_values()
             if dim_metadata.shape != cube.shape:
+                if isinstance(derived_array, da.Array):
+                    chunks = cube.lazy_data().chunks
+                else:
+                    chunks = None
                 derived_array = iris.util.broadcast_to_shape(
                     derived_array,
                     cube.shape,
                     dim_metadata.cube_dims(cube),
+                    chunks=chunks,
                 )
             derived_units = dim_metadata.units
 
@@ -1390,9 +1400,10 @@ def _percentile(data, percent, fast_percentile_method=False, **kwargs):
 
     result = iris._lazy_data.map_complete_blocks(
         data,
-        _calc_percentile,
-        (-1,),
-        percent.shape,
+        func=_calc_percentile,
+        dims=(-1,),
+        out_sizes=percent.shape,
+        dtype=np.float64,
         percent=percent,
         fast_percentile_method=fast_percentile_method,
         **kwargs,
@@ -1609,6 +1620,19 @@ def _lazy_max_run(array, axis=-1, **kwargs):
         result = da.squeeze(result)
 
     return result
+
+
+def _lazy_median(data, axis=None, **kwargs):
+    """Calculate the lazy median, with support for masked arrays."""
+    # Dask median requires the axes to be explicitly listed.
+    axis = range(data.ndim) if axis is None else axis
+
+    if np.issubdtype(data, np.integer):
+        data = data.astype(float)
+    filled = da.ma.filled(data, np.nan)
+    result = da.nanmedian(filled, axis=axis, **kwargs)
+    result_masked = da.ma.fix_invalid(result)
+    return result_masked
 
 
 def _rms(array, axis, **kwargs):
@@ -1939,7 +1963,9 @@ This aggregator handles masked data.
 """
 
 
-MEDIAN = Aggregator("median", ma.median)
+MEDIAN = Aggregator(
+    "median", ma.median, lazy_func=_build_dask_mdtol_function(_lazy_median)
+)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates
 the median over a :class:`~iris.cube.Cube`, as computed by
@@ -1952,8 +1978,7 @@ To compute zonal medians over the *longitude* axis of a cube::
     result = cube.collapsed('longitude', iris.analysis.MEDIAN)
 
 
-This aggregator handles masked data, but NOT lazy data.  For lazy aggregation,
-please try :obj:`~.PERCENTILE`.
+This aggregator handles masked data and lazy data.
 
 """
 
@@ -2261,7 +2286,7 @@ kind : str or int, optional
 Notes
 ------
 This function does not maintain laziness when called; it realises data.
-See more at :doc:`/userguide/real_and_lazy_data`.
+See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 """
 
@@ -2288,8 +2313,8 @@ class _Groupby:
 
     def __init__(
         self,
-        groupby_coords: list[iris.coords.Coord],
-        shared_coords: Optional[list[tuple[iris.coords.Coord, int]]] = None,
+        groupby_coords: Iterable[AuxCoord | DimCoord],
+        shared_coords: Optional[Iterable[tuple[AuxCoord | DimCoord, int]]] = None,
         climatological: bool = False,
     ) -> None:
         """Determine the group slices over the group-by coordinates.
@@ -2310,11 +2335,11 @@ class _Groupby:
 
         """
         #: Group-by and shared coordinates that have been grouped.
-        self.coords: list[iris.coords.Coord] = []
-        self._groupby_coords: list[iris.coords.Coord] = []
-        self._shared_coords: list[tuple[iris.coords.Coord, int]] = []
+        self.coords: list[AuxCoord | DimCoord] = []
+        self._groupby_coords: list[AuxCoord | DimCoord] = []
+        self._shared_coords: list[tuple[AuxCoord | DimCoord, int]] = []
         self._groupby_indices: list[tuple[int, ...]] = []
-        self._stop = None
+        self._stop: Optional[int] = None
         # Ensure group-by coordinates are iterable.
         if not isinstance(groupby_coords, Iterable):
             raise TypeError("groupby_coords must be a `collections.Iterable` type.")
@@ -2338,10 +2363,10 @@ class _Groupby:
         # Stores mapping from original cube coords to new ones, as metadata may
         # not match
         self.coord_replacement_mapping: list[
-            tuple[iris.coords.Coord, iris.coords.Coord]
+            tuple[AuxCoord | DimCoord, AuxCoord | DimCoord]
         ] = []
 
-    def _add_groupby_coord(self, coord: iris.coords.Coord) -> None:
+    def _add_groupby_coord(self, coord: AuxCoord | DimCoord) -> None:
         if coord.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
         if self._stop is None:
@@ -2350,7 +2375,7 @@ class _Groupby:
             raise ValueError("Group-by coordinates have different lengths.")
         self._groupby_coords.append(coord)
 
-    def _add_shared_coord(self, coord: iris.coords.Coord, dim: int) -> None:
+    def _add_shared_coord(self, coord: AuxCoord | DimCoord, dim: int) -> None:
         if coord.shape[dim] != self._stop and self._stop is not None:
             raise ValueError("Shared coordinates have different lengths.")
         self._shared_coords.append((coord, dim))
@@ -2470,8 +2495,8 @@ class _Groupby:
                     # Derive new coord's bounds from bounds.
                     item = coord.bounds
                     maxmin_axis: Union[int, tuple[int, int]] = (dim, -1)
-                    first_choices = coord.bounds.take(0, -1)
-                    last_choices = coord.bounds.take(1, -1)
+                    first_choices = coord.bounds.take(0, axis=-1)
+                    last_choices = coord.bounds.take(1, axis=-1)
 
                 else:
                     # Derive new coord's bounds from points.
@@ -2480,7 +2505,7 @@ class _Groupby:
                     first_choices = last_choices = coord.points
 
                 # Check whether item is monotonic along the dimension of interest.
-                deltas = np.diff(item, 1, dim)
+                deltas = np.diff(item, n=1, axis=dim)
                 monotonic = np.all(deltas >= 0) or np.all(deltas <= 0)
 
                 # Construct list of coordinate group boundary pairs.
@@ -2494,32 +2519,43 @@ class _Groupby:
                         ):
                             new_bounds_list.append(
                                 [
-                                    first_choices.take(start, dim),
-                                    first_choices.take(0, dim) + coord.units.modulus,
+                                    first_choices.take(start, axis=dim),
+                                    first_choices.take(0, axis=dim)
+                                    + coord.units.modulus,
                                 ]
                             )
                         else:
                             new_bounds_list.append(
                                 [
-                                    first_choices.take(start, dim),
-                                    last_choices.take(stop, dim),
+                                    first_choices.take(start, axis=dim),
+                                    last_choices.take(stop, axis=dim),
                                 ]
                             )
+                    new_bounds_array = np.array(new_bounds_list)
                 else:
                     # Use min and max bound or point for new bounds.
                     for indices in self._groupby_indices:
-                        item_slice = item.take(indices, dim)
-                        new_bounds_list.append(
+                        item_slice = item.take(indices, axis=dim)
+
+                        sample = ma.array(
                             [
                                 item_slice.min(axis=maxmin_axis),
                                 item_slice.max(axis=maxmin_axis),
                             ]
                         )
 
+                        new_bounds_list.append(sample)
+
+                    # Construct resultant array.
+                    new_bounds_array = ma.array(new_bounds_list)
+
                 # Bounds needs to be an array with the length 2 start-stop
                 # dimension last, and the aggregated dimension back in its
                 # original position.
-                new_bounds = np.moveaxis(np.array(new_bounds_list), (0, 1), (dim, -1))
+                new_bounds = np.moveaxis(new_bounds_array, (0, 1), (dim, -1))
+
+                if ma.isMaskedArray(new_bounds) and not np.any(new_bounds.mask):
+                    new_bounds = new_bounds.data
 
                 # Now create the new bounded group shared coordinate.
                 try:
@@ -2568,7 +2604,7 @@ def clear_phenomenon_identity(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     cube.rename(None)
@@ -2581,6 +2617,37 @@ def clear_phenomenon_identity(cube):
 # Interpolation API
 #
 ###############################################################################
+
+
+class Interpolator(Protocol):
+    def __call__(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        sample_points: Sequence[np.typing.ArrayLike],
+        collapse_scalar: bool,
+    ) -> iris.cube.Cube: ...
+
+
+class InterpolationScheme(Protocol):
+    def interpolator(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        cube: iris.cube.Cube,
+        coords: AuxCoord | DimCoord | str,
+    ) -> Interpolator: ...
+
+
+class Regridder(Protocol):
+    def __call__(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        src: iris.cube.Cube,
+    ) -> iris.cube.Cube: ...
+
+
+class RegriddingScheme(Protocol):
+    def regridder(  # noqa: E704  # ruff formatting conflicts with flake8
+        self,
+        src_grid: iris.cube.Cube,
+        target_grid: iris.cube.Cube,
+    ) -> Regridder: ...
 
 
 class Linear:
@@ -2641,9 +2708,7 @@ class Linear:
         the given coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------
@@ -2844,9 +2909,7 @@ class Nearest:
         by the dimensions of the specified coordinates.
 
         Typically you should use :meth:`iris.cube.Cube.interpolate` for
-        interpolating a cube. There are, however, some situations when
-        constructing your own interpolator is preferable. These are detailed
-        in the :ref:`user guide <caching_an_interpolator>`.
+        interpolating a cube.
 
         Parameters
         ----------

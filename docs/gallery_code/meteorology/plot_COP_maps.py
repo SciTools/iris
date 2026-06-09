@@ -2,6 +2,11 @@
 Global Average Annual Temperature Maps
 ======================================
 
+.. how-to:: Global Average Annual Temperature Maps
+   :tags: topic_plotting
+
+   How to produce comparative maps of two files with a shared colour bar.
+
 Produces maps of global temperature forecasts from the A1B and E1 scenarios.
 
 The data used comes from the HadGEM2-AO model simulations for the A1B and E1
@@ -21,7 +26,7 @@ References
 
 """  # noqa: D205, D212, D400
 
-import os.path
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -35,7 +40,7 @@ def cop_metadata_callback(cube, field, filename):
     """Add an "Experiment" coordinate which comes from the filename."""
     # Extract the experiment name (such as A1B or E1) from the filename (in
     # this case it is just the start of the file name, before the first ".").
-    fname = os.path.basename(filename)  # filename without path.
+    fname = Path(filename).name  # filename without path.
     experiment_label = fname.split(".")[0]
 
     # Create a coordinate with the experiment label in it...

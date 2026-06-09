@@ -491,7 +491,7 @@ def list_of_constraints(constraints):
     return [as_constraint(constraint) for constraint in constraints]
 
 
-def as_constraint(thing):
+def as_constraint(thing: Constraint | str | None) -> Constraint:
     """Cast an object into a cube constraint where possible.
 
     Cast an object into a cube constraint where possible, otherwise
@@ -531,6 +531,8 @@ class AttributeConstraint(Constraint):
         super().__init__(cube_func=self._cube_func)
 
     def __eq__(self, other):
+        # Note: equality means that NumPy arrays are not supported for
+        #  AttributeConstraints (get the truth ambiguity error).
         eq = (
             isinstance(other, AttributeConstraint)
             and self._attributes == other._attributes
@@ -553,6 +555,8 @@ class AttributeConstraint(Constraint):
                         match = False
                         break
                 else:
+                    # Note: equality means that NumPy arrays are not supported
+                    #  for AttributeConstraints (get the truth ambiguity error).
                     if cube_attr != value:
                         match = False
                         break

@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Exceptions specific to the Iris package."""
+"""Exceptions specific to the Iris package.
+
+.. z_reference:: iris.exceptions
+   :tags: topic_troubleshooting
+
+   API reference
+"""
 
 
 class IrisError(Exception):
@@ -17,19 +23,25 @@ class CoordinateCollapseError(IrisError):
     pass
 
 
-class CoordinateNotFoundError(KeyError):
+class CubeComponentNotFoundError(KeyError):
+    """Raised when a search yields no cube components."""
+
+    pass
+
+
+class CoordinateNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no coordinates."""
 
     pass
 
 
-class CellMeasureNotFoundError(KeyError):
+class CellMeasureNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no cell measures."""
 
     pass
 
 
-class AncillaryVariableNotFoundError(KeyError):
+class AncillaryVariableNotFoundError(CubeComponentNotFoundError):
     """Raised when a search yields no ancillary variables."""
 
     pass
@@ -159,6 +171,18 @@ class UnitConversionError(IrisError):
 
 class CannotAddError(ValueError):
     """Raised when an object (e.g. coord) cannot be added to a :class:`~iris.cube.Cube`."""
+
+    pass
+
+
+class DatalessError(ValueError):
+    """Raised when a method cannot be performed on a dataless :class:`~iris.cube.Cube`."""
+
+    pass
+
+
+class CFParseError(IrisError):
+    """Raised when a string associated with a CF defined syntax could not be parsed."""
 
     pass
 

@@ -3,28 +3,13 @@
   <cube dtype="float64" long_name="u curl of wind" units="0.277777777777778 Hz">
     <coords>
       <coord datadims="[2]">
-        <dimCoord id="a2e1fbc2" points="[  3.105   ,   5.315   ,   7.525   ,   9.735001,
-  11.945   ,  14.155001,  16.365002,  18.575   ,
-  20.785   ,  22.994999,  25.205002,  27.415   ,
-  29.625   ,  31.835001,  34.045002,  36.255   ,
-  38.465   ,  40.675   ,  42.885002,  45.095   ,
-  47.305   ,  49.515   ,  51.725002,  53.935   ,
-  56.145   ,  58.355   ,  60.565002,  62.775   ,
-  64.985   ,  67.19501 ,  69.405   ,  71.615005,
-  73.825   ,  76.035   ,  78.244995,  80.455   ,
-  82.665   ,  84.875   ,  87.08501 ,  89.295   ,
-  91.505005,  93.715   ,  95.925   ,  98.135   ,
- 100.345   , 102.55501 , 104.765   , 106.975006,
- 109.185   ]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x613b0aa9" id="a2e1fbc2" points="[3.10500002, 5.31500006, 7.5250001, ..., 104.76499939, 106.9750061, 109.18499756]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="45fc5d55" points="[-50., -25.,   0.,  25.,  50.,  75., 100., 125.,
- 150., 175., 200., 225., 250., 275., 300., 325.,
- 350., 375., 400., 425., 450., 475., 500., 525.,
- 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x1d90d9ae" id="45fc5d55" points="[-50., -25., 0., ..., 500., 525., 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="27a12655" long_name="z" points="[ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
+        <dimCoord checksum="0x8caa335d" id="27a12655" long_name="z" points="[0., 2., 4., ..., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -37,28 +22,13 @@
   <cube dtype="float64" long_name="v curl of wind" units="0.277777777777778 Hz">
     <coords>
       <coord datadims="[2]">
-        <dimCoord id="a2e1fbc2" points="[  3.105   ,   5.315   ,   7.525   ,   9.735001,
-  11.945   ,  14.155001,  16.365002,  18.575   ,
-  20.785   ,  22.994999,  25.205002,  27.415   ,
-  29.625   ,  31.835001,  34.045002,  36.255   ,
-  38.465   ,  40.675   ,  42.885002,  45.095   ,
-  47.305   ,  49.515   ,  51.725002,  53.935   ,
-  56.145   ,  58.355   ,  60.565002,  62.775   ,
-  64.985   ,  67.19501 ,  69.405   ,  71.615005,
-  73.825   ,  76.035   ,  78.244995,  80.455   ,
-  82.665   ,  84.875   ,  87.08501 ,  89.295   ,
-  91.505005,  93.715   ,  95.925   ,  98.135   ,
- 100.345   , 102.55501 , 104.765   , 106.975006,
- 109.185   ]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x613b0aa9" id="a2e1fbc2" points="[3.10500002, 5.31500006, 7.5250001, ..., 104.76499939, 106.9750061, 109.18499756]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="45fc5d55" points="[-50., -25.,   0.,  25.,  50.,  75., 100., 125.,
- 150., 175., 200., 225., 250., 275., 300., 325.,
- 350., 375., 400., 425., 450., 475., 500., 525.,
- 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x1d90d9ae" id="45fc5d55" points="[-50., -25., 0., ..., 500., 525., 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="27a12655" long_name="z" points="[ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
+        <dimCoord checksum="0x8caa335d" id="27a12655" long_name="z" points="[0., 2., 4., ..., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
@@ -71,28 +41,13 @@
   <cube dtype="float64" long_name="w curl of wind" units="0.277777777777778 Hz">
     <coords>
       <coord datadims="[2]">
-        <dimCoord id="a2e1fbc2" points="[  3.105   ,   5.315   ,   7.525   ,   9.735001,
-  11.945   ,  14.155001,  16.365002,  18.575   ,
-  20.785   ,  22.994999,  25.205002,  27.415   ,
-  29.625   ,  31.835001,  34.045002,  36.255   ,
-  38.465   ,  40.675   ,  42.885002,  45.095   ,
-  47.305   ,  49.515   ,  51.725002,  53.935   ,
-  56.145   ,  58.355   ,  60.565002,  62.775   ,
-  64.985   ,  67.19501 ,  69.405   ,  71.615005,
-  73.825   ,  76.035   ,  78.244995,  80.455   ,
-  82.665   ,  84.875   ,  87.08501 ,  89.295   ,
-  91.505005,  93.715   ,  95.925   ,  98.135   ,
- 100.345   , 102.55501 , 104.765   , 106.975006,
- 109.185   ]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x613b0aa9" id="a2e1fbc2" points="[3.10500002, 5.31500006, 7.5250001, ..., 104.76499939, 106.9750061, 109.18499756]" shape="(49,)" standard_name="projection_x_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="45fc5d55" points="[-50., -25.,   0.,  25.,  50.,  75., 100., 125.,
- 150., 175., 200., 225., 250., 275., 300., 325.,
- 350., 375., 400., 425., 450., 475., 500., 525.,
- 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
+        <dimCoord checksum="0x1d90d9ae" id="45fc5d55" points="[-50., -25., 0., ..., 500., 525., 550.]" shape="(25,)" standard_name="projection_y_coordinate" units="Unit('meters')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="27a12655" long_name="z" points="[ 0.,  2.,  4.,  6.,  8., 10., 12., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
+        <dimCoord checksum="0x8caa335d" id="27a12655" long_name="z" points="[0., 2., 4., ..., 14., 16., 18.]" shape="(10,)" units="Unit('meters')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>

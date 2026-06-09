@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Regridding functions.
 
+.. z_reference:: iris.experimental.regrid
+   :tags: topic_experimental;topic_regrid
+
+   API reference
+
 Notes
 -----
 .. deprecated:: 3.2.0
@@ -284,8 +289,7 @@ class _ProjectedUnstructuredRegridder:
             )
         if src_x_coord.coord_system is None:
             raise ValueError(
-                "'src_cube' lateral geographic coordinates have "
-                "no coordinate system."
+                "'src_cube' lateral geographic coordinates have no coordinate system."
             )
         tgt_x_coord, tgt_y_coord = get_xy_dim_coords(tgt_grid_cube)
         if tgt_x_coord.coord_system != tgt_y_coord.coord_system:

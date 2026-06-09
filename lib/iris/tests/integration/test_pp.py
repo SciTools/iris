@@ -4,15 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving PP files."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-import os
-from unittest import mock
+import re
 
 from cf_units import Unit
+import dask.array as da
 import numpy as np
+import pytest
 
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, CellMethod, DimCoord
@@ -22,52 +19,52 @@ import iris.fileformats.pp
 from iris.fileformats.pp import load_pairs_from_fields
 import iris.fileformats.pp_load_rules
 from iris.fileformats.pp_save_rules import verify
+from iris.loading import _CONCRETE_DERIVED_LOADING
+from iris.tests import _shared_utils
 import iris.util
 from iris.warnings import IrisUserWarning
 
 
-class TestVertical(tests.IrisTest):
+class TestVertical:
     def _test_coord(self, cube, point, bounds=None, **kwargs):
         coords = cube.coords(**kwargs)
-        self.assertEqual(
-            len(coords),
-            1,
-            "failed to find exactly one coord using: {}".format(kwargs),
+        assert len(coords) == 1, "failed to find exactly one coord using: {}".format(
+            kwargs
         )
-        self.assertEqual(coords[0].points, point)
+        assert coords[0].points == point
         if bounds is not None:
-            self.assertArrayEqual(coords[0].bounds, [bounds])
+            _shared_utils.assert_array_equal(coords[0].bounds, [bounds])
 
     @staticmethod
-    def _mock_field(**kwargs):
+    def _mock_field(mocker, **kwargs):
         mock_data = np.zeros(1)
-        mock_core_data = mock.MagicMock(return_value=mock_data)
-        field = mock.MagicMock(
+        mock_core_data = mocker.MagicMock(return_value=mock_data)
+        field = mocker.MagicMock(
             lbuser=[0] * 7,
             lbrsvd=[0] * 4,
             brsvd=[0] * 4,
             brlev=0,
-            t1=mock.MagicMock(year=1990, month=1, day=3),
-            t2=mock.MagicMock(year=1990, month=1, day=3),
+            t1=mocker.MagicMock(year=1990, month=1, day=3),
+            t2=mocker.MagicMock(year=1990, month=1, day=3),
             core_data=mock_core_data,
             realised_dtype=mock_data.dtype,
         )
         field.configure_mock(**kwargs)
         return field
 
-    def test_soil_level_round_trip(self):
+    def test_soil_level_round_trip(self, mocker):
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         soil_level = 1234
         field = self._mock_field(
-            lbvc=6, lblev=soil_level, stash=iris.fileformats.pp.STASH(1, 0, 9)
+            mocker, lbvc=6, lblev=soil_level, stash=iris.fileformats.pp.STASH(1, 0, 9)
         )
-        load = mock.Mock(return_value=iter([field]))
-        with mock.patch("iris.fileformats.pp.load", new=load) as load:
-            cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
+        load = mocker.Mock(return_value=iter([field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
 
-        self.assertIn("soil", cube.standard_name)
+        assert "soil" in cube.standard_name
         self._test_coord(cube, soil_level, long_name="soil_model_level_number")
 
         # Now use the save rules to convert the Cube back into a PPField.
@@ -79,30 +76,31 @@ class TestVertical(tests.IrisTest):
         field = verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
-        self.assertEqual(field.lbvc, 6)
-        self.assertEqual(field.lblev, soil_level)
-        self.assertEqual(field.blev, soil_level)
-        self.assertEqual(field.brsvd[0], 0)
-        self.assertEqual(field.brlev, 0)
+        assert field.lbvc == 6
+        assert field.lblev == soil_level
+        assert field.blev == soil_level
+        assert field.brsvd[0] == 0
+        assert field.brlev == 0
 
-    def test_soil_depth_round_trip(self):
+    def test_soil_depth_round_trip(self, mocker):
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         lower, point, upper = 1.2, 3.4, 5.6
         brsvd = [lower, 0, 0, 0]
         field = self._mock_field(
+            mocker,
             lbvc=6,
             blev=point,
             brsvd=brsvd,
             brlev=upper,
             stash=iris.fileformats.pp.STASH(1, 0, 9),
         )
-        load = mock.Mock(return_value=iter([field]))
-        with mock.patch("iris.fileformats.pp.load", new=load) as load:
-            cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
+        load = mocker.Mock(return_value=iter([field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
 
-        self.assertIn("soil", cube.standard_name)
+        assert "soil" in cube.standard_name
         self._test_coord(cube, point, bounds=[lower, upper], standard_name="depth")
 
         # Now use the save rules to convert the Cube back into a PPField.
@@ -114,22 +112,22 @@ class TestVertical(tests.IrisTest):
         field = verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
-        self.assertEqual(field.lbvc, 6)
-        self.assertEqual(field.blev, point)
-        self.assertEqual(field.brsvd[0], lower)
-        self.assertEqual(field.brlev, upper)
+        assert field.lbvc == 6
+        assert field.blev == point
+        assert field.brsvd[0] == lower
+        assert field.brlev == upper
 
-    def test_potential_temperature_level_round_trip(self):
+    def test_potential_temperature_level_round_trip(self, mocker):
         # Check save+load for data on 'potential temperature' levels.
 
         # Use pp.load_cubes() to convert a fake PPField into a Cube.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
         potm_value = 22.5
-        field = self._mock_field(lbvc=19, blev=potm_value)
-        load = mock.Mock(return_value=iter([field]))
-        with mock.patch("iris.fileformats.pp.load", new=load):
-            cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
+        field = self._mock_field(mocker, lbvc=19, blev=potm_value)
+        load = mocker.Mock(return_value=iter([field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        cube = next(iris.fileformats.pp.load_cubes("DUMMY"))
 
         self._test_coord(cube, potm_value, standard_name="air_potential_temperature")
 
@@ -140,15 +138,18 @@ class TestVertical(tests.IrisTest):
         field = verify(cube, field)
 
         # Check the vertical coordinate is as originally specified.
-        self.assertEqual(field.lbvc, 19)
-        self.assertEqual(field.blev, potm_value)
+        assert field.lbvc == 19
+        assert field.blev == potm_value
 
     @staticmethod
-    def _field_with_data(scale=1, **kwargs):
+    def _field_with_data(mocker, scale=1, lazy=False, **kwargs):
         x, y = 40, 30
-        mock_data = np.arange(1200).reshape(y, x) * scale
-        mock_core_data = mock.MagicMock(return_value=mock_data)
-        field = mock.MagicMock(
+        if lazy:
+            mock_data = da.arange(1200).reshape(y, x) * scale
+        else:
+            mock_data = np.arange(1200).reshape(y, x) * scale
+        mock_core_data = mocker.MagicMock(return_value=mock_data)
+        field = mocker.MagicMock(
             core_data=mock_core_data,
             realised_dtype=mock_data.dtype,
             lbcode=[1],
@@ -160,8 +161,8 @@ class TestVertical(tests.IrisTest):
             bdy=1.5,
             lbuser=[0] * 7,
             lbrsvd=[0] * 4,
-            t1=mock.MagicMock(year=1990, month=1, day=3),
-            t2=mock.MagicMock(year=1990, month=1, day=3),
+            t1=mocker.MagicMock(year=1990, month=1, day=3),
+            t2=mocker.MagicMock(year=1990, month=1, day=3),
         )
 
         field._x_coord_name = lambda: "longitude"
@@ -170,13 +171,14 @@ class TestVertical(tests.IrisTest):
         field.configure_mock(**kwargs)
         return field
 
-    def test_hybrid_pressure_round_trip(self):
+    def test_hybrid_pressure_round_trip(self, mocker):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
 
         # Make a fake reference surface field.
         pressure_field = self._field_with_data(
+            mocker,
             10,
             stash=iris.fileformats.pp.STASH(1, 0, 409),
             lbuser=[0, 0, 0, 409, 0, 0, 0],
@@ -187,6 +189,7 @@ class TestVertical(tests.IrisTest):
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = self._field_with_data(
+            mocker,
             lbvc=9,
             lblev=model_level,
             bhlev=delta,
@@ -197,13 +200,13 @@ class TestVertical(tests.IrisTest):
         )
 
         # Convert both fields to cubes.
-        load = mock.Mock(return_value=iter([pressure_field, data_field]))
-        with mock.patch("iris.fileformats.pp.load", new=load) as load:
-            pressure_cube, data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+        load = mocker.Mock(return_value=iter([pressure_field, data_field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        pressure_cube, data_cube = iris.fileformats.pp.load_cubes("DUMMY")
 
         # Check the reference surface cube looks OK.
-        self.assertEqual(pressure_cube.standard_name, "surface_air_pressure")
-        self.assertEqual(pressure_cube.units, "Pa")
+        assert pressure_cube.standard_name == "surface_air_pressure"
+        assert pressure_cube.units == "Pa"
 
         # Check the data cube is set up to use hybrid-pressure.
         self._test_coord(data_cube, model_level, standard_name="model_level_number")
@@ -217,9 +220,9 @@ class TestVertical(tests.IrisTest):
             data_cube, sigma, [sigma_lower, sigma_upper], long_name="sigma"
         )
         aux_factories = data_cube.aux_factories
-        self.assertEqual(len(aux_factories), 1)
+        assert len(aux_factories) == 1
         surface_coord = aux_factories[0].dependencies["surface_air_pressure"]
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             surface_coord.points, np.arange(12000, step=10).reshape(30, 40)
         )
 
@@ -239,24 +242,25 @@ class TestVertical(tests.IrisTest):
         data_field = verify(data_cube, data_field)
 
         # The reference surface field should have STASH=409
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             pressure_field.lbuser, [None, None, None, 409, None, None, 1]
         )
 
         # Check the data field has the vertical coordinate as originally
         # specified.
-        self.assertEqual(data_field.lbvc, 9)
-        self.assertEqual(data_field.lblev, model_level)
-        self.assertEqual(data_field.bhlev, delta)
-        self.assertEqual(data_field.bhrlev, delta_lower)
-        self.assertEqual(data_field.blev, sigma)
-        self.assertEqual(data_field.brlev, sigma_lower)
-        self.assertEqual(data_field.brsvd, [sigma_upper, delta_upper])
+        assert data_field.lbvc == 9
+        assert data_field.lblev == model_level
+        assert data_field.bhlev == delta
+        assert data_field.bhrlev == delta_lower
+        assert data_field.blev == sigma
+        assert data_field.brlev == sigma_lower
+        assert data_field.brsvd == [sigma_upper, delta_upper]
 
-    def test_hybrid_pressure_with_duplicate_references(self):
-        # Make a fake reference surface field.
+    def test_hybrid_pressure_lazy_load(self, mocker):
         pressure_field = self._field_with_data(
+            mocker,
             10,
+            lazy=True,
             stash=iris.fileformats.pp.STASH(1, 0, 409),
             lbuser=[0, 0, 0, 409, 0, 0, 0],
         )
@@ -266,6 +270,7 @@ class TestVertical(tests.IrisTest):
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = self._field_with_data(
+            mocker,
             lbvc=9,
             lblev=model_level,
             bhlev=delta,
@@ -276,16 +281,51 @@ class TestVertical(tests.IrisTest):
         )
 
         # Convert both fields to cubes.
-        load = mock.Mock(
+        load = mocker.Mock(return_value=iter([pressure_field, data_field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        pressure_cube, data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+
+        assert data_cube.coord("surface_air_pressure").has_lazy_points()
+
+        # TODO: _CONCRETE_DERIVED_LOADING is a temporary fix, remove from test when a permanent fix exists
+        load = mocker.Mock(return_value=iter([pressure_field, data_field]))
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        with _CONCRETE_DERIVED_LOADING.context():
+            _, realised_data_cube = iris.fileformats.pp.load_cubes("DUMMY")
+        assert not realised_data_cube.coord("surface_air_pressure").has_lazy_points()
+
+    def test_hybrid_pressure_with_duplicate_references(self, mocker):
+        # Make a fake reference surface field.
+        pressure_field = self._field_with_data(
+            mocker,
+            10,
+            stash=iris.fileformats.pp.STASH(1, 0, 409),
+            lbuser=[0, 0, 0, 409, 0, 0, 0],
+        )
+
+        # Make a fake data field which needs the reference surface.
+        model_level = 5678
+        sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
+        delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
+        data_field = self._field_with_data(
+            mocker,
+            lbvc=9,
+            lblev=model_level,
+            bhlev=delta,
+            bhrlev=delta_lower,
+            blev=sigma,
+            brlev=sigma_lower,
+            brsvd=[sigma_upper, delta_upper],
+        )
+
+        # Convert both fields to cubes.
+        load = mocker.Mock(
             return_value=iter([data_field, pressure_field, pressure_field])
         )
         msg = "Multiple reference cubes for surface_air_pressure"
-        with (
-            mock.patch("iris.fileformats.pp.load", new=load) as load,
-            mock.patch("warnings.warn") as warn,
-        ):
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        with pytest.warns(IrisUserWarning, match=re.escape(msg)):
             _, _, _ = iris.fileformats.pp.load_cubes("DUMMY")
-            warn.assert_called_with(msg, category=IrisUserWarning)
 
     def test_hybrid_height_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -326,11 +366,11 @@ class TestVertical(tests.IrisTest):
         field.lbuser = [None] * 7
         field = verify(cube, field)
 
-        self.assertEqual(field.blev, delta)
-        self.assertEqual(field.brlev, delta_lower)
-        self.assertEqual(field.bhlev, sigma)
-        self.assertEqual(field.bhrlev, sigma_lower)
-        self.assertEqual(field.brsvd, [delta_upper, sigma_upper])
+        assert field.blev == delta
+        assert field.brlev == delta_lower
+        assert field.bhlev == sigma
+        assert field.bhrlev == sigma_lower
+        assert field.brsvd == [delta_upper, sigma_upper]
 
     def test_hybrid_pressure_with_non_standard_coords(self):
         # Check the save rules are using the AuxFactory to find the
@@ -371,13 +411,13 @@ class TestVertical(tests.IrisTest):
         field.lbuser = [None] * 7
         field = verify(cube, field)
 
-        self.assertEqual(field.bhlev, delta)
-        self.assertEqual(field.bhrlev, delta_lower)
-        self.assertEqual(field.blev, sigma)
-        self.assertEqual(field.brlev, sigma_lower)
-        self.assertEqual(field.brsvd, [sigma_upper, delta_upper])
+        assert field.bhlev == delta
+        assert field.bhrlev == delta_lower
+        assert field.blev == sigma
+        assert field.brlev == sigma_lower
+        assert field.brsvd == [sigma_upper, delta_upper]
 
-    def test_hybrid_height_round_trip_no_reference(self):
+    def test_hybrid_height_round_trip_no_reference(self, mocker):
         # Use pp.load_cubes() to convert fake PPFields into Cubes.
         # NB. Use MagicMock so that SplittableInt header items, such as
         # LBCODE, support len().
@@ -386,6 +426,7 @@ class TestVertical(tests.IrisTest):
         sigma_lower, sigma, sigma_upper = 0.85, 0.9, 0.95
         delta_lower, delta, delta_upper = 0.05, 0.1, 0.15
         data_field = self._field_with_data(
+            mocker,
             lbvc=65,
             lblev=model_level,
             bhlev=sigma,
@@ -396,18 +437,14 @@ class TestVertical(tests.IrisTest):
         )
 
         # Convert field to a cube.
-        load = mock.Mock(return_value=iter([data_field]))
-        with (
-            mock.patch("iris.fileformats.pp.load", new=load) as load,
-            mock.patch("warnings.warn") as warn,
-        ):
-            (data_cube,) = iris.fileformats.pp.load_cubes("DUMMY")
-
+        load = mocker.Mock(return_value=iter([data_field]))
         msg = (
             "Unable to create instance of HybridHeightFactory. "
             "The source data contains no field(s) for 'orography'."
         )
-        warn.assert_called_with(msg, category=IrisUserWarning)
+        mocker.patch("iris.fileformats.pp.load", new=load)
+        with pytest.warns(IrisUserWarning, match=re.escape(msg)):
+            (data_cube,) = iris.fileformats.pp.load_cubes("DUMMY")
 
         # Check the data cube is set up to use hybrid height.
         self._test_coord(data_cube, model_level, standard_name="model_level_number")
@@ -423,7 +460,7 @@ class TestVertical(tests.IrisTest):
         # Check that no aux factory is created (due to missing
         # reference surface).
         aux_factories = data_cube.aux_factories
-        self.assertEqual(len(aux_factories), 0)
+        assert len(aux_factories) == 0
 
         # Now use the save rules to convert the Cube back into a PPField.
         data_field = iris.fileformats.pp.PPField3()
@@ -435,17 +472,18 @@ class TestVertical(tests.IrisTest):
 
         # Check the data field has the vertical coordinate as originally
         # specified.
-        self.assertEqual(data_field.lbvc, 65)
-        self.assertEqual(data_field.lblev, model_level)
-        self.assertEqual(data_field.bhlev, sigma)
-        self.assertEqual(data_field.bhrlev, sigma_lower)
-        self.assertEqual(data_field.blev, delta)
-        self.assertEqual(data_field.brlev, delta_lower)
-        self.assertEqual(data_field.brsvd, [delta_upper, sigma_upper])
+        assert data_field.lbvc == 65
+        assert data_field.lblev == model_level
+        assert data_field.bhlev == sigma
+        assert data_field.bhrlev == sigma_lower
+        assert data_field.blev == delta
+        assert data_field.brlev == delta_lower
+        assert data_field.brsvd == [delta_upper, sigma_upper]
 
 
-class TestSaveLBFT(tests.IrisTest):
-    def setUp(self):
+class TestSaveLBFT:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         delta_start = 24
         delta_mid = 36
         self.delta_end = 369 * 24
@@ -487,7 +525,7 @@ class TestSaveLBFT(tests.IrisTest):
     def test_time_mean_from_forecast_period(self):
         cube = self.create_cube(24, 36, 48, 72)
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 48)
+        assert field.lbft == 48
 
     def test_time_mean_from_forecast_reference_time(self):
         cube = Cube(np.zeros((3, 4)))
@@ -507,7 +545,7 @@ class TestSaveLBFT(tests.IrisTest):
             )
         )
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 48)
+        assert field.lbft == 48
 
     def test_climatological_mean_single_year(self):
         cube = Cube(np.zeros((3, 4)))
@@ -530,31 +568,31 @@ class TestSaveLBFT(tests.IrisTest):
         cube.add_aux_coord(AuxCoord(long_name="clim_season", points="DUMMY"))
         cube.add_cell_method(CellMethod("DUMMY", "clim_season"))
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, 4 * 24)
+        assert field.lbft == 4 * 24
 
     def test_climatological_mean_multi_year_djf(self):
         cube = self.create_cube(*self.args, season="djf")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, self.delta_end)
+        assert field.lbft == self.delta_end
 
     def test_climatological_mean_multi_year_mam(self):
         cube = self.create_cube(*self.args, season="mam")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, self.delta_end)
+        assert field.lbft == self.delta_end
 
     def test_climatological_mean_multi_year_jja(self):
         cube = self.create_cube(*self.args, season="jja")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, self.delta_end)
+        assert field.lbft == self.delta_end
 
     def test_climatological_mean_multi_year_son(self):
         cube = self.create_cube(*self.args, season="son")
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(field.lbft, self.delta_end)
+        assert field.lbft == self.delta_end
 
 
-class TestCoordinateForms(tests.IrisTest):
-    def _common(self, x_coord):
+class TestCoordinateForms:
+    def _common(self, x_coord, tmp_path):
         nx = len(x_coord.points)
         ny = 2
         data = np.zeros((ny, nx), dtype=np.float32)
@@ -571,13 +609,13 @@ class TestCoordinateForms(tests.IrisTest):
         test_cube.add_dim_coord(x_coord, 1)
         test_cube.add_dim_coord(y_coord, 0)
         # Write to a temporary PP file and read it back as a PPField
-        with self.temp_filename(".pp") as pp_filepath:
-            iris.save(test_cube, pp_filepath)
-            pp_loader = iris.fileformats.pp.load(pp_filepath)
-            pp_field = next(pp_loader)
+        pp_filepath = tmp_path / "test.pp"
+        iris.save(test_cube, pp_filepath)
+        pp_loader = iris.fileformats.pp.load(pp_filepath)
+        pp_field = next(pp_loader)
         return pp_field
 
-    def test_save_awkward_case_is_regular(self):
+    def test_save_awkward_case_is_regular(self, tmp_path):
         # Check that specific "awkward" values still save in a regular form.
         nx = 3
         x0 = np.float32(355.626)
@@ -589,39 +627,41 @@ class TestCoordinateForms(tests.IrisTest):
             standard_name="longitude",
             units="degrees_east",
         )
-        pp_field = self._common(x_coord)
+        pp_field = self._common(x_coord, tmp_path)
         # Check that the result has the regular coordinates as expected.
-        self.assertEqual(pp_field.bzx, x0)
-        self.assertEqual(pp_field.bdx, dx)
-        self.assertEqual(pp_field.lbnpt, nx)
+        assert pp_field.bzx == x0
+        assert pp_field.bdx == dx
+        assert pp_field.lbnpt == nx
 
-    def test_save_irregular(self):
+    def test_save_irregular(self, tmp_path):
         # Check that a non-regular coordinate saves as expected.
         nx = 3
         x_values = [0.0, 1.1, 2.0]
         x_coord = iris.coords.DimCoord(
             x_values, standard_name="longitude", units="degrees_east"
         )
-        pp_field = self._common(x_coord)
+        pp_field = self._common(x_coord, tmp_path)
         # Check that the result has the regular/irregular Y and X as expected.
-        self.assertEqual(pp_field.bdx, 0.0)
-        self.assertArrayAllClose(pp_field.x, x_values)
-        self.assertEqual(pp_field.lbnpt, nx)
+        assert pp_field.bdx == 0.0
+        _shared_utils.assert_array_all_close(pp_field.x, x_values)
+        assert pp_field.lbnpt == nx
 
 
-@tests.skip_data
-class TestLoadLittleendian(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoadLittleendian:
     def test_load_sample(self):
-        file_path = tests.get_data_path(("PP", "little_endian", "qrparm.orog.pp"))
+        file_path = _shared_utils.get_data_path(
+            ("PP", "little_endian", "qrparm.orog.pp")
+        )
         # Ensure it just loads.
         cube = iris.load_cube(file_path, "surface_altitude")
-        self.assertEqual(cube.shape, (110, 160))
+        assert cube.shape == (110, 160)
 
         # Check for sensible floating point numbers.
         def check_minmax(array, expect_min, expect_max):
             found = np.array([np.min(array), np.max(array)])
             expected = np.array([expect_min, expect_max])
-            self.assertArrayAlmostEqual(found, expected, decimal=2)
+            _shared_utils.assert_array_almost_equal(found, expected, decimal=2)
 
         lons = cube.coord("grid_longitude").points
         lats = cube.coord("grid_latitude").points
@@ -631,10 +671,13 @@ class TestLoadLittleendian(tests.IrisTest):
         check_minmax(data, -30.48, 6029.1)
 
 
-@tests.skip_data
-class TestAsCubes(tests.IrisTest):
-    def setUp(self):
-        dpath = tests.get_data_path(["PP", "meanMaxMin", "200806081200__qwpb.T24.pp"])
+@_shared_utils.skip_data
+class TestAsCubes:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        dpath = _shared_utils.get_data_path(
+            ["PP", "meanMaxMin", "200806081200__qwpb.T24.pp"]
+        )
         self.ppfs = iris.fileformats.pp.load(dpath)
 
     def test_pseudo_level_filter(self):
@@ -643,7 +686,7 @@ class TestAsCubes(tests.IrisTest):
             if ppf.lbuser[4] == 3:
                 chosen_ppfs.append(ppf)
         cubes_fields = list(load_pairs_from_fields(chosen_ppfs))
-        self.assertEqual(len(cubes_fields), 8)
+        assert len(cubes_fields) == 8
 
     def test_pseudo_level_filter_none(self):
         chosen_ppfs = []
@@ -651,7 +694,7 @@ class TestAsCubes(tests.IrisTest):
             if ppf.lbuser[4] == 30:
                 chosen_ppfs.append(ppf)
         cubes = list(load_pairs_from_fields(chosen_ppfs))
-        self.assertEqual(len(cubes), 0)
+        assert len(cubes) == 0
 
     def test_as_pairs(self):
         cube_ppf_pairs = load_pairs_from_fields(self.ppfs)
@@ -661,10 +704,10 @@ class TestAsCubes(tests.IrisTest):
                 cube.attributes["pseudo level"] = ppf.lbuser[4]
                 cubes.append(cube)
         for cube in cubes:
-            self.assertEqual(cube.attributes["pseudo level"], 3)
+            assert cube.attributes["pseudo level"] == 3
 
 
-class TestSaveLBPROC(tests.IrisTest):
+class TestSaveLBPROC:
     def create_cube(self, longitude_coord="longitude"):
         cube = Cube(np.zeros((2, 3, 4)))
         tunit = Unit("days since epoch", calendar="standard")
@@ -685,31 +728,32 @@ class TestSaveLBPROC(tests.IrisTest):
         cube = self.create_cube()
         cube.add_cell_method(CellMethod(method="mean", coords="time"))
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(int(field.lbproc), 128)
+        assert int(field.lbproc) == 128
 
     def test_longitudinal_mean_only(self):
         cube = self.create_cube()
         cube.add_cell_method(CellMethod(method="mean", coords="longitude"))
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(int(field.lbproc), 64)
+        assert int(field.lbproc) == 64
 
     def test_grid_longitudinal_mean_only(self):
         cube = self.create_cube(longitude_coord="grid_longitude")
         cube.add_cell_method(CellMethod(method="mean", coords="grid_longitude"))
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(int(field.lbproc), 64)
+        assert int(field.lbproc) == 64
 
     def test_time_mean_and_zonal_mean(self):
         cube = self.create_cube()
         cube.add_cell_method(CellMethod(method="mean", coords="time"))
         cube.add_cell_method(CellMethod(method="mean", coords="longitude"))
         field = self.convert_cube_to_field(cube)
-        self.assertEqual(int(field.lbproc), 192)
+        assert int(field.lbproc) == 192
 
 
-@tests.skip_data
-class TestCallbackLoad(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestCallbackLoad:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.pass_name = "air_potential_temperature"
 
     def callback_wrapper(self):
@@ -721,55 +765,53 @@ class TestCallbackLoad(tests.IrisTest):
         return callback_ignore_cube_exception
 
     def test_ignore_cube_callback(self):
-        test_dataset = tests.get_data_path(["PP", "globClim1", "dec_subset.pp"])
+        test_dataset = _shared_utils.get_data_path(["PP", "globClim1", "dec_subset.pp"])
         exception_callback = self.callback_wrapper()
         result_cubes = iris.load(test_dataset, callback=exception_callback)
         n_result_cubes = len(result_cubes)
         # We ignore all but one cube (the `air_potential_temperature` cube).
-        self.assertEqual(n_result_cubes, 1)
-        self.assertEqual(result_cubes[0].name(), self.pass_name)
+        assert n_result_cubes == 1
+        assert result_cubes[0].name() == self.pass_name
 
 
-@tests.skip_data
-class TestZonalMeanBounds(tests.IrisTest):
-    def test_mulitple_longitude(self):
+@_shared_utils.skip_data
+class TestZonalMeanBounds:
+    def test_mulitple_longitude(self, tmp_path):
         # test that bounds are set for a zonal mean file with many longitude
         # values
-        orig_file = tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+        orig_file = _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
 
         f = next(iris.fileformats.pp.load(orig_file))
         f.lbproc = 192  # time and zonal mean
 
         # Write out pp file
-        temp_filename = iris.util.create_temp_filename(".pp")
+        temp_filename = tmp_path / "test.pp"
         with open(temp_filename, "wb") as temp_fh:
             f.save(temp_fh)
 
         # Load pp file
         cube = iris.load_cube(temp_filename)
 
-        self.assertTrue(cube.coord("longitude").has_bounds())
-
-        os.remove(temp_filename)
+        assert cube.coord("longitude").has_bounds()
 
     def test_singular_longitude(self):
         # test that bounds are set for a zonal mean file with a single
         # longitude value
 
-        pp_file = tests.get_data_path(("PP", "zonal_mean", "zonal_mean.pp"))
+        pp_file = _shared_utils.get_data_path(("PP", "zonal_mean", "zonal_mean.pp"))
 
         # Load pp file
         cube = iris.load_cube(pp_file)
 
-        self.assertTrue(cube.coord("longitude").has_bounds())
+        assert cube.coord("longitude").has_bounds()
 
 
-@tests.skip_data
-class TestLoadPartialMask(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoadPartialMask:
     def test_data(self):
         # Ensure that fields merge correctly where one has a mask and one
         # doesn't.
-        filename = tests.get_data_path(["PP", "simple_pp", "partial_mask.pp"])
+        filename = _shared_utils.get_data_path(["PP", "simple_pp", "partial_mask.pp"])
 
         expected_data = np.ma.masked_array(
             [[[0, 1], [11, 12]], [[99, 100], [-1, -1]]],
@@ -778,9 +820,5 @@ class TestLoadPartialMask(tests.IrisTest):
         )
         cube = iris.load_cube(filename)
 
-        self.assertEqual(expected_data.dtype, cube.data.dtype)
-        self.assertMaskedArrayEqual(expected_data, cube.data, strict=False)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert expected_data.dtype == cube.data.dtype
+        _shared_utils.assert_masked_array_equal(expected_data, cube.data, strict=False)

@@ -4,23 +4,19 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris._merge.ProtoCube` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-from typing import ClassVar
-
-import iris.tests as tests  # isort:skip
-
 from abc import ABCMeta, abstractmethod
-from unittest import mock
+from typing import ClassVar
 
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 from iris._merge import ProtoCube
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
 from iris.coords import AuxCoord, DimCoord
 from iris.exceptions import MergeError
+from iris.tests import _shared_utils
 
 
 def example_cube():
@@ -54,31 +50,31 @@ class Mixin_register(metaclass=ABCMeta):
         #   ProtoCube.register(cube)
         proto_cube = ProtoCube(self.cube1)
         result = proto_cube.register(self.cube2)
-        self.assertEqual(result, not self.fragments)
+        assert result != self.fragments
 
     def test_no_error(self):
         # Test what happens when we call:
         #   ProtoCube.register(cube, error_on_mismatch=False)
         proto_cube = ProtoCube(self.cube1)
         result = proto_cube.register(self.cube2, error_on_mismatch=False)
-        self.assertEqual(result, not self.fragments)
+        assert result != self.fragments
 
     def test_error(self):
         # Test what happens when we call:
         #   ProtoCube.register(cube, error_on_mismatch=True)
         proto_cube = ProtoCube(self.cube1)
         if self.fragments:
-            with self.assertRaises(iris.exceptions.MergeError) as cm:
+            with pytest.raises(iris.exceptions.MergeError) as cm:
                 proto_cube.register(self.cube2, error_on_mismatch=True)
-            error_message = str(cm.exception)
+            error_message = str(cm.value)
             for substr in self.fragments:
-                self.assertIn(substr, error_message)
+                assert substr in error_message
         else:
             result = proto_cube.register(self.cube2, error_on_mismatch=True)
-            self.assertTrue(result)
+            assert result
 
 
-class Test_register__match(Mixin_register, tests.IrisTest):
+class Test_register__match(Mixin_register):
     @property
     def fragments(self):
         return []
@@ -88,7 +84,7 @@ class Test_register__match(Mixin_register, tests.IrisTest):
         return example_cube()
 
 
-class Test_register__standard_name(Mixin_register, tests.IrisTest):
+class Test_register__standard_name(Mixin_register):
     @property
     def fragments(self):
         return ["cube.standard_name", "air_temperature", "air_density"]
@@ -100,7 +96,7 @@ class Test_register__standard_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__long_name(Mixin_register, tests.IrisTest):
+class Test_register__long_name(Mixin_register):
     @property
     def fragments(self):
         return ["cube.long_name", "screen_air_temp", "Belling"]
@@ -112,7 +108,7 @@ class Test_register__long_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__var_name(Mixin_register, tests.IrisTest):
+class Test_register__var_name(Mixin_register):
     @property
     def fragments(self):
         return ["cube.var_name", "'airtemp'", "'airtemp2'"]
@@ -124,7 +120,7 @@ class Test_register__var_name(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__units(Mixin_register, tests.IrisTest):
+class Test_register__units(Mixin_register):
     @property
     def fragments(self):
         return ["cube.units", "'K'", "'C'"]
@@ -136,7 +132,7 @@ class Test_register__units(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
+class Test_register__attributes_unequal(Mixin_register):
     @property
     def fragments(self):
         return ["cube.attributes", "'mint'"]
@@ -148,7 +144,7 @@ class Test_register__attributes_unequal(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
+class Test_register__attributes_unequal_array(Mixin_register):
     @property
     def fragments(self):
         return ["cube.attributes", "'mint'"]
@@ -166,7 +162,7 @@ class Test_register__attributes_unequal_array(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
+class Test_register__attributes_superset(Mixin_register):
     @property
     def fragments(self):
         return ["cube.attributes", "'stuffed'"]
@@ -178,7 +174,7 @@ class Test_register__attributes_superset(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
+class Test_register__attributes_multi_diff(Mixin_register):
     @property
     def fragments(self):
         return ["cube.attributes", "'sam'", "'mint'"]
@@ -201,7 +197,7 @@ class Test_register__attributes_multi_diff(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__cell_method(Mixin_register, tests.IrisTest):
+class Test_register__cell_method(Mixin_register):
     @property
     def fragments(self):
         return ["cube.cell_methods"]
@@ -213,7 +209,7 @@ class Test_register__cell_method(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__data_shape(Mixin_register, tests.IrisTest):
+class Test_register__data_shape(Mixin_register):
     @property
     def fragments(self):
         return ["cube.shape", "(2,)", "(3,)"]
@@ -225,7 +221,7 @@ class Test_register__data_shape(Mixin_register, tests.IrisTest):
         return cube
 
 
-class Test_register__data_dtype(Mixin_register, tests.IrisTest):
+class Test_register__data_dtype(Mixin_register):
     @property
     def fragments(self):
         return ["cube data dtype", "int32", "int8"]
@@ -245,24 +241,25 @@ class _MergeTest:
 
     def check_merge_fails_with_message(self):
         proto_cube = iris._merge.ProtoCube(self.cube1)
-        with self.assertRaises(MergeError) as arc:
+        with pytest.raises(MergeError) as arc:
             proto_cube.register(self.cube2, error_on_mismatch=True)
-        return str(arc.exception)
+        return str(arc.value)
 
     def check_fail(self, *substrs):
         if isinstance(substrs, str):
             substrs = [substrs]
         msg = self.check_merge_fails_with_message()
         for substr in substrs:
-            self.assertIn(substr, msg)
+            assert substr in msg
 
 
-class Test_register__CubeSig(_MergeTest, tests.IrisTest):
+class Test_register__CubeSig(_MergeTest):
     # Test potential registration failures.
 
     _mergetest_type = "cube"
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(
             [1, 2, 3],
             standard_name="air_temperature",
@@ -271,7 +268,7 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         )
         self.cube2 = self.cube1.copy()
 
-    def test_noise(self):
+    def test_noise(self, request):
         # Test a massive set of all defn diffs to make sure it's not noise.
         self.cube1.var_name = "Arthur"
         cube2 = self.cube1[1:]
@@ -286,13 +283,16 @@ class Test_register__CubeSig(_MergeTest, tests.IrisTest):
         # Check the actual message, so we've got a readable reference text.
         self.cube2 = cube2
         msg = self.check_merge_fails_with_message()
-        self.assertString(msg, self.result_path(ext="txt"))
+        _shared_utils.assert_string(
+            request, msg, _shared_utils.result_path(request, ext="txt")
+        )
 
 
-class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
+class Test_register__CoordSig_general(_MergeTest):
     _mergetest_type = "coord"
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(np.zeros((3, 3, 3)))
         self.cube2 = self.cube1.copy()
 
@@ -323,24 +323,24 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         self.cube1.add_aux_coord(DimCoord([1, 2, 3], standard_name="longitude"), 0)
         self.check_fail("aux_coords (non-scalar)", "latitude", "longitude")
 
-    def test_factory_defns_one_extra(self):
-        self.cube2.add_aux_factory(mock.MagicMock(spec=HybridHeightFactory))
+    def test_factory_defns_one_extra(self, mocker):
+        self.cube2.add_aux_factory(mocker.MagicMock(spec=HybridHeightFactory))
         self.check_fail("cube.aux_factories", "differ")
 
-    def test_factory_defns_both_extra(self):
-        self.cube2.add_aux_factory(mock.MagicMock(spec=HybridHeightFactory))
-        self.cube1.add_aux_factory(mock.MagicMock(spec=HybridPressureFactory))
+    def test_factory_defns_both_extra(self, mocker):
+        self.cube2.add_aux_factory(mocker.MagicMock(spec=HybridHeightFactory))
+        self.cube1.add_aux_factory(mocker.MagicMock(spec=HybridPressureFactory))
         self.check_fail("cube.aux_factories", "differ")
 
-    def test_factory_defns_one_missing_term(self):
-        self.cube1.add_aux_factory(mock.MagicMock(spec=HybridPressureFactory))
-        no_delta_factory = mock.MagicMock(spec=HybridPressureFactory)
+    def test_factory_defns_one_missing_term(self, mocker):
+        self.cube1.add_aux_factory(mocker.MagicMock(spec=HybridPressureFactory))
+        no_delta_factory = mocker.MagicMock(spec=HybridPressureFactory)
         no_delta_factory.delta = None
         self.cube2.add_aux_factory(no_delta_factory)
 
         self.check_fail("cube.aux_factories", "differ")
 
-    def test_noise(self):
+    def test_noise(self, request, mocker):
         cube2 = self.cube2
 
         # scalar
@@ -371,13 +371,15 @@ class Test_register__CoordSig_general(_MergeTest, tests.IrisTest):
         self.cube1.add_aux_coord(DimCoord([1, 2, 3], long_name="cee"), 2)
 
         # factory
-        cube2.add_aux_factory(mock.MagicMock(spec=HybridHeightFactory))
-        self.cube1.add_aux_factory(mock.MagicMock(spec=HybridPressureFactory))
+        cube2.add_aux_factory(mocker.MagicMock(spec=HybridHeightFactory))
+        self.cube1.add_aux_factory(mocker.MagicMock(spec=HybridPressureFactory))
 
         # Check the actual message, so we've got a readable reference text.
         self.cube2 = cube2
         msg = self.check_merge_fails_with_message()
-        self.assertString(msg, self.result_path(ext="txt"))
+        _shared_utils.assert_string(
+            request, msg, _shared_utils.result_path(request, ext="txt")
+        )
 
 
 class _MergeTest_coordprops(_MergeTest):
@@ -418,15 +420,16 @@ class _MergeTest_coordprops(_MergeTest):
         self.coord_to_change.attributes["att_extra"] = 101
         self._props_fail("air_temperature")
 
-    def test_coord_system(self):
-        self.coord_to_change.coord_system = mock.Mock()
+    def test_coord_system(self, mocker):
+        self.coord_to_change.coord_system = mocker.Mock()
         self._props_fail("air_temperature")
 
 
-class Test_register__CoordSig_scalar(_MergeTest_coordprops, tests.IrisTest):
+class Test_register__CoordSig_scalar(_MergeTest_coordprops):
     _mergetest_type = "aux_coords (scalar)"
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(np.zeros((3, 3, 3)))
         self.cube1.add_aux_coord(
             DimCoord(
@@ -464,11 +467,12 @@ class _MergeTest_coordprops_vect(_MergeTest_coordprops):
         self.check_fail(self._mergetest_type, "mapping")
 
 
-class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
+class Test_register__CoordSig_dim(_MergeTest_coordprops_vect):
     _mergetest_type = "dim_coords"
     _coord_typename = "dim_coord"
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(np.zeros((3, 3)))
         self.cube1.add_dim_coord(
             DimCoord(
@@ -492,11 +496,12 @@ class Test_register__CoordSig_dim(_MergeTest_coordprops_vect, tests.IrisTest):
         self.check_fail(self._mergetest_type, "air_temperature")
 
 
-class Test_register__CoordSig_aux(_MergeTest_coordprops_vect, tests.IrisTest):
+class Test_register__CoordSig_aux(_MergeTest_coordprops_vect):
     _mergetest_type = "aux_coords (non-scalar)"
     _coord_typename = "aux_coord"
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube1 = iris.cube.Cube(np.zeros((3, 3)))
         self.cube1.add_aux_coord(
             AuxCoord(
@@ -513,7 +518,3 @@ class Test_register__CoordSig_aux(_MergeTest_coordprops_vect, tests.IrisTest):
         )
         self.coord_to_change = self.cube1.coord("air_temperature")
         self.cube2 = self.cube1.copy()
-
-
-if __name__ == "__main__":
-    tests.main()

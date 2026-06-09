@@ -47,7 +47,7 @@ def import_patches(monkeypatch):
         if example_dir.is_dir():
             monkeypatch.syspath_prepend(example_dir)
 
-    yield
+    return
 
 
 @pytest.fixture

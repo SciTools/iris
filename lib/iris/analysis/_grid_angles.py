@@ -207,8 +207,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
     # Now should have either 2 coords or 2 arrays.
     if not hasattr(x, "shape") or not hasattr(y, "shape"):
         msg = (
-            "Inputs (x,y) must have array shape property."
-            "Got type(x)={} and type(y)={}."
+            "Inputs (x,y) must have array shape property.Got type(x)={} and type(y)={}."
         )
         raise ValueError(msg.format(type(x), type(y)))
 
@@ -349,7 +348,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
             lhs_xyz = 0.5 * (xyz[..., 0] + xyz[..., 3])
             rhs_xyz = 0.5 * (xyz[..., 1] + xyz[..., 2])
         else:
-            msg = 'unrecognised cell_angle_boundpoints of "{}", ' "must be one of {}"
+            msg = 'unrecognised cell_angle_boundpoints of "{}", must be one of {}'
             raise ValueError(
                 msg.format(cell_angle_boundpoints, list(angle_boundpoints_vals.keys()))
             )
@@ -431,7 +430,7 @@ def rotate_grid_vectors(u_cube, v_cube, grid_angles_cube=None, grid_angles_kwarg
     Vector magnitudes will always be the same as the inputs.
 
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     u_out, v_out = (cube.copy() for cube in (u_cube, v_cube))

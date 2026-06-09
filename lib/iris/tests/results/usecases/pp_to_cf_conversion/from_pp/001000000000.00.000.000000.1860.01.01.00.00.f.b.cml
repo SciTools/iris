@@ -3,25 +3,23 @@
   <cube dtype="float32" standard_name="sea_surface_height_above_geoid" units="m">
     <coords>
       <coord>
-        <dimCoord bounds="[[-86400.,      0.]]" id="1d45e087" points="[-43200.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+        <dimCoord bounds="[-86400., 0.]" checksum="0xcf7ae8b8" id="1d45e087" points="[-43200.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
       </coord>
       <coord>
-        <dimCoord id="9c8bdf81" points="[-864000.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <dimCoord checksum="0x8008e2dd" id="9c8bdf81" points="[-864000.]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="77a50eb5" points="[-82.31327 , -79.52525 , -76.73672 , ...,
-  82.312   ,  85.09244 ,  87.867874]" shape="(94,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord checksum="0xd8d71c21" id="77a50eb5" points="[-82.31327057, -79.5252533, -76.73671722, ..., 82.31199646, 85.09243774, 87.86787415]" shape="(94,)" standard_name="latitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="f913a8b3" points="[7.1525574e-07, 2.8125021e+00, 5.6250033e+00, ...,
- 3.5156250e+02, 3.5437500e+02, 3.5718750e+02]" shape="(128,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
+        <dimCoord checksum="0xeb3eb688" id="f913a8b3" points="[7.15255737E-07, 2.81250215E+, 5.62500334E+, ..., 3.51562500E+02, 3.54375000E+02, 3.57187500E+02]" shape="(128,)" standard_name="longitude" units="Unit('degrees')" value_type="float32">
           <geogCS earth_radius="6371229.0"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[-950400., -864000.]]" id="cb784457" points="[-907200.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
+        <dimCoord bounds="[-950400., -864000.]" checksum="0xc04c7c40" id="cb784457" points="[-907200.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='360_day')" value_type="float64"/>
       </coord>
     </coords>
     <cellMethods/>

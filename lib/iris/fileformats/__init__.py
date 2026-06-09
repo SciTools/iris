@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""A package for converting cubes to and from specific file formats."""
+"""A package for converting cubes to and from specific file formats.
+
+.. z_reference:: iris.fileformats
+   :tags: topic_load_save
+
+   API reference
+"""
 
 from iris.io.format_picker import (
     DataSourceObjectProtocol,
@@ -62,7 +68,7 @@ def _load_grib(*args, **kwargs):
         from iris_grib import load_cubes
     except ImportError:
         raise RuntimeError(
-            "Unable to load GRIB file - " '"iris_grib" package is not installed.'
+            'Unable to load GRIB file - "iris_grib" package is not installed.'
         )
 
     return load_cubes(*args, **kwargs)

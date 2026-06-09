@@ -2,349 +2,152 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""ASV plug-in providing an alternative :class:`asv.environments.Environment` subclass.
+"""Repository-specific adaptation of :mod:`_asv_delegated_abc`."""
 
-Preps an environment via custom user scripts, then uses that as the
-benchmarking environment.
-
-"""
-
-from contextlib import contextmanager, suppress
+import ast
+import enum
 from os import environ
 from os.path import getmtime
 from pathlib import Path
-import sys
+import re
 
 from asv import util as asv_util
-from asv.console import log
-from asv.environment import Environment, EnvironmentUnavailable
-from asv.repo import Repo
-from asv.util import ProcessError
+
+from _asv_delegated_abc import _DelegatedABC
 
 
-class EnvPrepCommands:
-    """A container for the environment preparation commands for a given commit.
-
-    Designed to read a value from the `delegated_env_commands` in the ASV
-    config, and validate that the command(s) are structured correctly.
-    """
-
-    ENV_PARENT_VAR = "ENV_PARENT"
-    env_parent: Path
-    commands: list[str]
-
-    def __init__(self, environment: Environment, raw_commands: tuple[str]):
-        env_var = self.ENV_PARENT_VAR
-        raw_commands_list = list(raw_commands)
-
-        (first_command,) = environment._interpolate_commands(raw_commands_list[0])
-        env: dict
-        command, env, return_codes, cwd = first_command
-
-        valid = command == []
-        valid = valid and return_codes == {0}
-        valid = valid and cwd is None
-        valid = valid and list(env.keys()) == [env_var]
-        if not valid:
-            message = (
-                "First command MUST ONLY "
-                f"define the {env_var} env var, with no command e.g: "
-                f"`{env_var}=foo/`. Got: \n {raw_commands_list[0]}"
-            )
-            raise ValueError(message)
-
-        self.env_parent = Path(env[env_var]).resolve()
-        self.commands = raw_commands_list[1:]
-
-
-class CommitFinder(dict[str, EnvPrepCommands]):
-    """A specialised dict for finding the appropriate env prep script for a commit."""
-
-    def __call__(self, repo: Repo, commit_hash: str):
-        """Return the latest env prep script that is earlier than the given commit."""
-
-        def validate_commit(commit: str, is_lookup: bool) -> None:
-            try:
-                _ = repo.get_date(commit)
-            except ProcessError:
-                if is_lookup:
-                    message_start = "Lookup commit"
-                else:
-                    message_start = "Requested commit"
-                repo_path = getattr(repo, "_path", "unknown")
-                message = f"{message_start}: {commit} not found in repo: {repo_path}"
-                raise KeyError(message)
-
-        for lookup in self.keys():
-            validate_commit(lookup, is_lookup=True)
-        validate_commit(commit_hash, is_lookup=False)
-
-        def parent_distance(parent_hash: str) -> int:
-            range_spec = repo.get_range_spec(parent_hash, commit_hash)
-            parents = repo.get_hashes_from_range(range_spec)
-
-            if parent_hash[:8] == commit_hash[:8]:
-                distance = 0
-            elif len(parents) == 0:
-                distance = -1
-            else:
-                distance = len(parents)
-            return distance
-
-        parentage = {commit: parent_distance(commit) for commit in self.keys()}
-        parentage = {k: v for k, v in parentage.items() if v >= 0}
-        if len(parentage) == 0:
-            message = f"No env prep script available for commit: {commit_hash} ."
-            raise KeyError(message)
-        else:
-            parentage = dict(sorted(parentage.items(), key=lambda item: item[1]))
-            commit = next(iter(parentage))
-            content = self[commit]
-            return content
-
-
-class Delegated(Environment):
-    """Manage a benchmark environment using custom user scripts, run at each commit.
-
-    Ignores user input variations - ``matrix`` / ``pythons`` /
-    ``exclude``, since environment is being managed outside ASV.
-
-    A vanilla :class:`asv.environment.Environment` is created for containing
-    the expected ASV configuration files and checked-out project. The actual
-    'functional' environment is created/updated using the command(s) specified
-    in the config ``delegated_env_commands``, then the location is recorded via
-    a symlink within the ASV environment. The symlink is used as the
-    environment path used for any executable calls (e.g.
-    ``python my_script.py``).
-
-    """
+class Delegated(_DelegatedABC):
+    """Specialism of :class:`_DelegatedABC` for benchmarking this repo."""
 
     tool_name = "delegated"
-    """Required by ASV as a unique identifier of the environment type."""
 
-    DELEGATED_LINK_NAME = "delegated_env"
-    """The name of the symlink to the delegated environment."""
+    def _prep_env_override(self, env_parent_dir: Path) -> Path:
+        """Environment preparation specialised for this repo.
 
-    COMMIT_ENVS_VAR = "ASV_COMMIT_ENVS"
-    """Env var that instructs a dedicated environment be created per commit."""
-
-    def __init__(self, conf, python, requirements, tagged_env_vars):
-        """Get a 'delegated' environment based on the given ASV config object.
+        Scans the checked-out commit of Iris to work out the appropriate
+        preparation command, including gathering any extra information that said
+        command needs.
 
         Parameters
         ----------
-        conf : dict
-            ASV configuration object.
+        env_parent_dir : Path
+            The directory that the prepared environment should be placed in.
 
-        python : str
-            Ignored - environment management is delegated. The value is always
-            ``DELEGATED``.
-
-        requirements : dict (str -> str)
-            Ignored - environment management is delegated. The value is always
-            an empty dict.
-
-        tagged_env_vars : dict (tag, key) -> value
-            Ignored - environment management is delegated. The value is always
-            an empty dict.
-
-        Raises
-        ------
-        EnvironmentUnavailable
-            The original environment or delegated environment cannot be created.
-
+        Returns
+        -------
+        Path
+            The path to the prepared environment.
         """
-        ignored = []
-        if python:
-            ignored.append(f"{python=}")
-        if requirements:
-            ignored.append(f"{requirements=}")
-        if tagged_env_vars:
-            ignored.append(f"{tagged_env_vars=}")
-        message = (
-            f"Ignoring ASV setting(s): {', '.join(ignored)}. Benchmark "
-            "environment management is delegated to third party script(s)."
-        )
-        log.warning(message)
-        self._python = "DELEGATED"
-        self._requirements = {}
-        self._tagged_env_vars = {}
-        super().__init__(
-            conf,
-            self._python,
-            self._requirements,
-            self._tagged_env_vars,
-        )
-
-        self._path_undelegated = Path(self._path)
-        """Preserves the 'true' path of the environment so that self._path can
-        be safely modified and restored."""
-
-        env_commands = getattr(conf, "delegated_env_commands")
-        try:
-            env_prep_commands = {
-                commit: EnvPrepCommands(self, commands)
-                for commit, commands in env_commands.items()
-            }
-        except ValueError as err:
-            message = f"Problem handling `delegated_env_commands`:\n{err}"
-            log.error(message)
-            raise EnvironmentUnavailable(message)
-        self._env_prep_lookup = CommitFinder(**env_prep_commands)
-        """An object that can be called downstream to get the appropriate
-        env prep script for a given repo and commit."""
-
-    @property
-    def _path_delegated(self) -> Path:
-        """The path of the symlink to the delegated environment."""
-        return self._path_undelegated / self.DELEGATED_LINK_NAME
-
-    @property
-    def _delegated_found(self) -> bool:
-        """Whether self._path_delegated successfully resolves to a directory."""
-        resolved = None
-        with suppress(FileNotFoundError):
-            resolved = self._path_delegated.resolve(strict=True)
-        result = resolved is not None and resolved.is_dir()
-        return result
-
-    def _symlink_to_delegated(self, delegated_env_path: Path) -> None:
-        """Create the symlink to the delegated environment."""
-        self._path_delegated.unlink(missing_ok=True)
-        self._path_delegated.parent.mkdir(parents=True, exist_ok=True)
-        self._path_delegated.symlink_to(delegated_env_path, target_is_directory=True)
-        assert self._delegated_found
-
-    def _setup(self):
-        """Temporarily try to set the user's active env as the delegated env.
-
-        Environment prep will be run anyway once ASV starts checking out
-        commits, but this step tries to provide a usable environment (with
-        python, etc.) at the moment that ASV expects it.
-
-        """
-        current_env = Path(sys.executable).parents[1]
-        message = (
-            "Temporarily using user's active environment as benchmarking "
-            f"environment: {current_env} . "
-        )
-        try:
-            self._symlink_to_delegated(current_env)
-            _ = self.find_executable("python")
-        except Exception:
-            message = (
-                f"Delegated environment {self.name} not yet set up (unable to "
-                "determine current environment)."
-            )
-            self._path_delegated.unlink(missing_ok=True)
-
-        message += "Correct environment will be set up at the first commit checkout."
-        log.warning(message)
-
-    def _prep_env(self, repo: Repo, commit_hash: str) -> None:
-        """Prepare the delegated environment for the given commit hash."""
-        message = (
-            f"Running delegated environment management for: {self.name} "
-            f"at commit: {commit_hash[:8]}"
-        )
-        log.info(message)
-
-        env_prep: EnvPrepCommands
-        try:
-            env_prep = self._env_prep_lookup(repo, commit_hash)
-        except KeyError as err:
-            message = f"Problem finding env prep commands: {err}"
-            log.error(message)
-            raise EnvironmentUnavailable(message)
-
-        new_env_per_commit = self.COMMIT_ENVS_VAR in environ
-        if new_env_per_commit:
-            env_parent = env_prep.env_parent / commit_hash[:8]
-        else:
-            env_parent = env_prep.env_parent
-
-        # See :meth:`Environment._interpolate_commands`.
-        #  All ASV-namespaced env vars are available in the below format when
-        #  interpolating commands:
-        #   ASV_FOO_BAR = {foo_bar}
-        # We want the env parent path to be one of those available.
-        global_key = f"ASV_{EnvPrepCommands.ENV_PARENT_VAR}"
-        self._global_env_vars[global_key] = str(env_parent)
-
         # The project checkout.
         build_dir = Path(self._build_root) / self._repo_subdir
 
-        # Run the script(s) for delegated environment creation/updating.
-        # (An adaptation of :meth:`Environment._interpolate_and_run_commands`).
-        for command, env, return_codes, cwd in self._interpolate_commands(
-            env_prep.commands
-        ):
-            local_envs = dict(environ)
-            local_envs.update(env)
-            if cwd is None:
-                cwd = str(build_dir)
-            _ = asv_util.check_output(
-                command,
-                timeout=self._install_timeout,
-                cwd=cwd,
-                env=local_envs,
-                valid_return_codes=return_codes,
+        # Older iterations of setup.py are incompatible with setuptools>=80.
+        #  (Most dependencies are protected by lock-files, but build
+        #   dependencies in pyproject.toml are independent).
+        setup_py = build_dir / "setup.py"
+        pyproject = build_dir / "pyproject.toml"
+        if setup_py.is_file() and "setuptools.command.develop" in setup_py.read_text():
+            with pyproject.open("r+") as file_write:
+                lines = file_write.readlines()
+                for i, line in enumerate(lines):
+                    if line == "requires = [\n":
+                        next_line = lines[i + 1]
+                        indent = next_line[: len(next_line) - len(next_line.lstrip())]
+
+                        lines.insert(i + 1, f'{indent}"setuptools<80",\n')
+                        break
+                file_write.seek(0)
+                file_write.writelines(lines)
+
+        class Mode(enum.Enum):
+            """The scenarios where the correct env setup script is known."""
+
+            NOX = enum.auto()
+            """``PY_VER=x.xx nox --session=tests --install-only`` is supported."""
+
+        mode = None
+
+        noxfile = build_dir / "noxfile.py"
+        if noxfile.is_file():
+            # Our noxfile originally did not support `--install-only` - you
+            #  could either run the tests, or run nothing at all. Adding
+            #  `run_always` to `prepare_venv` enabled environment setup without
+            #  running tests.
+            noxfile_tree = ast.parse(source=noxfile.read_text())
+            prep_session = next(
+                filter(
+                    lambda node: getattr(node, "name", "") == "prepare_venv",
+                    ast.walk(noxfile_tree),
+                )
             )
+            prep_session_code = ast.unparse(prep_session)
+            if (
+                "session.run(" not in prep_session_code
+                and "session.run_always(" in prep_session_code
+            ):
+                mode = Mode.NOX
 
-        # Find the environment created/updated by running env_prep.commands.
-        #  The most recently updated directory in env_parent.
-        delegated_env_path = sorted(
-            env_parent.glob("*"),
-            key=getmtime,
-            reverse=True,
-        )[0]
-        # Record the environment's path via a symlink within this environment.
-        self._symlink_to_delegated(delegated_env_path)
+        match mode:
+            # Just NOX for now but the architecture is here for future cases.
+            case Mode.NOX:
+                # Need to determine a single Python version to run with.
+                req_dir = build_dir / "requirements"
+                lockfile_dir = req_dir / "locks"
+                if not lockfile_dir.is_dir():
+                    lockfile_dir = req_dir / "ci" / "nox.lock"
 
-        message = f"Environment {self.name} updated to spec at {commit_hash[:8]}"
-        log.info(message)
+                if not lockfile_dir.is_dir():
+                    message = "No lockfile directory found in the expected locations."
+                    raise FileNotFoundError(message)
 
-    def checkout_project(self, repo: Repo, commit_hash: str) -> None:
-        """Check out the working tree of the project at given commit hash."""
-        super().checkout_project(repo, commit_hash)
-        self._prep_env(repo, commit_hash)
+                def py_ver_from_lockfiles(lockfile: Path) -> str:
+                    pattern = re.compile(r"py(\d+)-")
+                    search = pattern.search(lockfile.name)
+                    assert search is not None
+                    version = search.group(1)
+                    return f"{version[0]}.{version[1:]}"
 
-    @contextmanager
-    def _delegate_path(self):
-        """Context manager to use the delegated env path as this env's path."""
-        if not self._delegated_found:
-            message = f"Delegated environment not found at: {self._path_delegated}"
-            log.error(message)
-            raise EnvironmentUnavailable(message)
+                python_versions = [
+                    py_ver_from_lockfiles(lockfile)
+                    for lockfile in lockfile_dir.glob("*.lock")
+                ]
+                python_version = max(python_versions)
 
-        try:
-            self._path = str(self._path_delegated)
-            yield
-        finally:
-            self._path = str(self._path_undelegated)
+                # Construct and run the environment preparation command.
+                local_envs = dict(environ)
+                local_envs["PY_VER"] = python_version
+                # Prevent Nox re-using env with wrong Python version.
+                env_parent_dir = (
+                    env_parent_dir / f"nox{python_version.replace('.', '')}"
+                )
+                env_command = [
+                    "nox",
+                    f"--envdir={env_parent_dir}",
+                    "--session=tests",
+                    "--install-only",
+                    "--no-error-on-external-run",
+                    "--verbose",
+                ]
+                _ = asv_util.check_output(
+                    env_command,
+                    timeout=self._install_timeout,
+                    cwd=build_dir,
+                    env=local_envs,
+                )
 
-    def find_executable(self, executable):
-        """Find an executable (e.g. python, pip) in the DELEGATED environment.
+                env_parent_contents = list(env_parent_dir.iterdir())
+                env_parent_dirs = [p for p in env_parent_contents if p.is_dir()]
+                if len(env_parent_dirs) != 1:
+                    message = (
+                        f"{env_parent_dir} contains {len(env_parent_dirs)} "
+                        "directories, expected 1. Cannot determine the environment "
+                        "directory."
+                    )
+                    raise FileNotFoundError(message)
+                (delegated_env_path,) = env_parent_dirs
 
-        Raises
-        ------
-        OSError
-            If the executable is not found in the environment.
-        """
-        if not self._delegated_found:
-            # Required during environment setup. OSError expected if executable
-            #  not found.
-            raise OSError
+            case _:
+                message = "No environment setup is known for this commit of Iris."
+                raise NotImplementedError(message)
 
-        with self._delegate_path():
-            return super().find_executable(executable)
-
-    def run_executable(self, executable, args, **kwargs):
-        """Run a given executable (e.g. python, pip) in the DELEGATED environment."""
-        with self._delegate_path():
-            return super().run_executable(executable, args, **kwargs)
-
-    def run(self, args, **kwargs):
-        # This is not a specialisation - just implementing the abstract method.
-        log.debug(f"Running '{' '.join(args)}' in {self.name}")
-        return self.run_executable("python", args, **kwargs)
+        return delegated_env_path

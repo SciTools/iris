@@ -3,26 +3,22 @@
   <cube dtype="float32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[1, 2]">
-        <auxCoord id="434cbbd8" long_name="bar" points="[[ 2.5,  7.5],
- [10. , 17.5],
- [15. , 22.5]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+        <auxCoord checksum="0xaf219799" id="434cbbd8" long_name="bar" points="[2.5, 7.5, 10., 17.5, 15., 22.5]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="b0d35dcf" long_name="foo" points="[[ -7.5,   7.5],
- [-12.5,   4. ],
- [  2.5,  14. ]]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
+        <auxCoord checksum="0x827c875b" id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, -12.5, 4., 2.5, 14.]" shape="(3, 2)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="4252ba3a" points="[0, 1, 1]" shape="(3,)" standard_name="height" units="Unit('1')" value_type="int64"/>
+        <auxCoord checksum="0xc1035b2f" id="4252ba3a" points="[0, 1, 1]" shape="(3,)" standard_name="height" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="d7a60179" points="[0, 1, 2]" shape="(3,)" standard_name="latitude" units="Unit('1')" value_type="int64"/>
+        <dimCoord checksum="0x4f8c5ccc" id="d7a60179" points="[0, 1, 2]" shape="(3,)" standard_name="latitude" units="Unit('1')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="0a0f475b" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('1')" value_type="int32"/>
+        <dimCoord checksum="0xdd9eb80c" id="0a0f475b" points="[0, 1]" shape="(2,)" standard_name="longitude" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="10b8e1fc" long_name="wibble" points="[10., 30., 30.]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0x98072aa0" id="10b8e1fc" long_name="wibble" points="[10., 30., 30.]" shape="(3,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

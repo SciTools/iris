@@ -3,12 +3,17 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Provides an interface to manage URI scheme support in iris."""
+"""Provides an interface to manage URI scheme support in iris.
+
+.. z_reference:: iris.io
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import collections
 from collections import OrderedDict
 import glob
-import os.path
 import pathlib
 import re
 
@@ -54,7 +59,7 @@ def run_callback(callback, cube, field, filename):
     the caller of this function should handle this case.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -162,7 +167,7 @@ def expand_filespecs(file_specs, files_expected=True):
     """
     # Remove any hostname component - currently unused
     filenames = [
-        os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith("//") else fn))
+        str(pathlib.Path(fn.removeprefix("//")).expanduser().absolute())
         for fn in file_specs
     ]
 
@@ -209,7 +214,7 @@ def load_files(filenames, callback, constraints=None):
     handler_map = collections.defaultdict(list)
     for fn in all_file_paths:
         with open(fn, "rb") as fh:
-            handling_format_spec = FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
+            handling_format_spec = FORMAT_AGENT.get_spec(pathlib.Path(fn).name, fh)
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the appropriate filenames
@@ -301,7 +306,7 @@ def _grib_save(cube, target, append=False, **kwargs):
         from iris_grib import save_grib2
     except ImportError:
         raise RuntimeError(
-            "Unable to save GRIB file - " '"iris_grib" package is not installed.'
+            'Unable to save GRIB file - "iris_grib" package is not installed.'
         )
 
     save_grib2(cube, target, append, **kwargs)
@@ -453,7 +458,7 @@ def save(source, target, saver=None, **kwargs):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube, CubeList

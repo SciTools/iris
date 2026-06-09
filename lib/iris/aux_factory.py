@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of derived coordinates."""
+"""Definitions of derived coordinates.
+
+.. z_reference:: iris.aux_factory
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 import warnings
@@ -11,7 +17,7 @@ import cf_units
 import dask.array as da
 import numpy as np
 
-from iris._lazy_data import concatenate
+from iris._lazy_data import _optimum_chunksize, concatenate, is_lazy_data
 from iris.common import CFVariableMixin, CoordMetadata, metadata_manager_factory
 import iris.coords
 from iris.warnings import IrisIgnoringBoundsWarning
@@ -75,6 +81,98 @@ class AuxCoordFactory(CFVariableMixin, metaclass=ABCMeta):
         the corresponding coordinates.
 
         """
+
+    @abstractmethod
+    def _calculate_array(self, *dep_arrays, **other_args):
+        """Make a coordinate array from a complete set of dependency arrays.
+
+        Parameters
+        ----------
+        * dep_arrays : tuple of array-like
+            Arrays of data for each dependency.
+            Must match the number of declared dependencies, in the standard order.
+            All are aligned with the leading result dimensions, but may have fewer
+            than the full number of dimensions.  They can be lazy or real data.
+
+        * other_args
+            Dict of keys providing class-specific additional arguments.
+
+        Returns
+        -------
+        array-like
+            The lazy result array.
+
+        This is the basic derived calculation, defined by each hybrid class, which
+        defines how the dependency values are combined to make the derived result.
+        """
+        pass
+
+    def _derive_array(self, *dep_arrays, **other_args):
+        """Build an array of coordinate values.
+
+        Call arguments as for :meth:`_calculate_array`.
+
+        This routine calls :meth:`_calculate_array` to construct a derived result array.
+
+        It then checks the chunk size of the result and, if this exceeds the current
+        Dask chunksize, it will then re-chunk some of the input arrays and re-calculate
+        the result to reduce the memory cost.
+
+        This routine is itself usually called once by :meth:`make_coord`, to make a
+        points array, and then again to make the bounds.
+        """
+        # Make an initial result calculation.
+        # First make all dependencies (args) lazy, to ensure a lazy result calculation
+        #  and so avoid a greedy use of time + memory.
+        lazy_deps = [
+            # Note: wrap real deps as single chunks here, no attempt at clever chunking.
+            #  If better is needed, this appears as too-big result chunks, which get
+            #  rechunked later.  For now, single chunks minimise the initial graph size.
+            dep if is_lazy_data(dep) else da.from_array(dep, chunks=-1)
+            for dep in dep_arrays
+        ]
+        result = self._calculate_array(*lazy_deps, **other_args)
+
+        # Now check if we need to improve on the chunking of the result.
+        adjusted_chunks = _optimum_chunksize(
+            chunks=result.chunksize,
+            shape=result.shape,
+            dtype=result.dtype,
+        )
+
+        # Does optimum_chunksize say we should have smaller chunks in some dimensions?
+        if not all(a >= b for a, b in zip(adjusted_chunks, result.chunksize)):
+            # Re-do the result calculation, but first re-chunking each dep in the
+            #  dimensions which it is suggested to reduce.
+            new_deps = []
+            for dep, original_dep in zip(lazy_deps, dep_arrays):
+                # For each dependency, reduce chunksize in each dim to the new result
+                #  chunksize, if smaller.
+                new_chunks = []
+                for dim_chunks, dim_max in zip(dep.chunks, adjusted_chunks):
+                    # N.B. dim_chunks is a list of the dep chunks in this dim, whereas
+                    #  dim_maxchunk is a single number (part of a chunksize).
+                    if max(dim_chunks) <= dim_max:
+                        dim_chunks = dim_chunks
+                    else:
+                        dim_chunks = dim_max  # do re-chunk in this dim
+                    new_chunks.append(dim_chunks)
+
+                if any(new_chunks):
+                    # When dep chunksize needs to change, produce a rechunked version.
+                    if is_lazy_data(original_dep):
+                        dep = original_dep.rechunk(new_chunks)
+                    else:
+                        # Make new lazy array from real original, rather than re-chunk.
+                        dep = da.from_array(original_dep, chunks=new_chunks)
+
+                new_deps.append(dep)
+
+            # Finally, re-do the calculation, which hopefully results in a better
+            #  overall chunksize for the result
+            result = self._calculate_array(*new_deps, **other_args)
+
+        return result
 
     @abstractmethod
     def make_coord(self, coord_dims_func):
@@ -427,8 +525,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         for coord in (pressure_at_top, surface_air_pressure):
             if coord.nbounds:
                 msg = (
-                    f"Coordinate '{coord.name()}' has bounds. These will "
-                    "be disregarded"
+                    f"Coordinate '{coord.name()}' has bounds. These will be disregarded"
                 )
                 warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacklevel=2)
 
@@ -438,7 +535,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
             sigma.units = cf_units.Unit("1")
         if not sigma.units.is_dimensionless():
             raise ValueError(
-                f"Invalid units: 'sigma' must be dimensionless, got " f"'{sigma.units}'"
+                f"Invalid units: 'sigma' must be dimensionless, got '{sigma.units}'"
             )
         if pressure_at_top.units != surface_air_pressure.units:
             raise ValueError(
@@ -464,7 +561,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
         return dependencies
 
     @staticmethod
-    def _derive(pressure_at_top, sigma, surface_air_pressure):
+    def _calculate_array(pressure_at_top, sigma, surface_air_pressure):
         """Derive coordinate."""
         return pressure_at_top + sigma * (surface_air_pressure - pressure_at_top)
 
@@ -486,7 +583,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
 
         # Build the points array
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["pressure_at_top"],
             nd_points_by_key["sigma"],
             nd_points_by_key["surface_air_pressure"],
@@ -520,7 +617,7 @@ class AtmosphereSigmaFactory(AuxCoordFactory):
                 surface_air_pressure_pts = nd_points_by_key["surface_air_pressure"]
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]
                 surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
-            bounds = self._derive(pressure_at_top, sigma, surface_air_pressure)
+            bounds = self._derive_array(pressure_at_top, sigma, surface_air_pressure)
 
         # Create coordinate
         return iris.coords.AuxCoord(
@@ -609,7 +706,7 @@ class HybridHeightFactory(AuxCoordFactory):
             "orography": self.orography,
         }
 
-    def _derive(self, delta, sigma, orography):
+    def _calculate_array(self, delta, sigma, orography):
         return delta + sigma * orography
 
     def make_coord(self, coord_dims_func):
@@ -630,7 +727,7 @@ class HybridHeightFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["delta"],
             nd_points_by_key["sigma"],
             nd_points_by_key["orography"],
@@ -658,7 +755,7 @@ class HybridHeightFactory(AuxCoordFactory):
                 bds_shape = list(orography_pts.shape) + [1]
                 orography = orography_pts.reshape(bds_shape)
 
-            bounds = self._derive(delta, sigma, orography)
+            bounds = self._derive_array(delta, sigma, orography)
 
         hybrid_height = iris.coords.AuxCoord(
             points,
@@ -815,7 +912,7 @@ class HybridPressureFactory(AuxCoordFactory):
             "surface_air_pressure": self.surface_air_pressure,
         }
 
-    def _derive(self, delta, sigma, surface_air_pressure):
+    def _calculate_array(self, delta, sigma, surface_air_pressure):
         return delta + sigma * surface_air_pressure
 
     def make_coord(self, coord_dims_func):
@@ -836,7 +933,7 @@ class HybridPressureFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["delta"],
             nd_points_by_key["sigma"],
             nd_points_by_key["surface_air_pressure"],
@@ -864,7 +961,7 @@ class HybridPressureFactory(AuxCoordFactory):
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]
                 surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
 
-            bounds = self._derive(delta, sigma, surface_air_pressure)
+            bounds = self._derive_array(delta, sigma, surface_air_pressure)
 
         hybrid_pressure = iris.coords.AuxCoord(
             points,
@@ -1023,7 +1120,9 @@ class OceanSigmaZFactory(AuxCoordFactory):
             zlev=self.zlev,
         )
 
-    def _derive(self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func):
+    def _calculate_array(
+        self, sigma, eta, depth, depth_c, zlev, nsigma, coord_dims_func
+    ):
         # Calculate the index of the 'z' dimension in the input arrays.
         # First find the cube 'z' dimension ...
         [cube_z_dim] = coord_dims_func(self.dependencies["zlev"])
@@ -1098,14 +1197,14 @@ class OceanSigmaZFactory(AuxCoordFactory):
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
 
         [nsigma] = nd_points_by_key["nsigma"]
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["sigma"],
             nd_points_by_key["eta"],
             nd_points_by_key["depth"],
             nd_points_by_key["depth_c"],
             nd_points_by_key["zlev"],
             nsigma,
-            coord_dims_func,
+            coord_dims_func=coord_dims_func,
         )
 
         bounds = None
@@ -1132,14 +1231,14 @@ class OceanSigmaZFactory(AuxCoordFactory):
                     bounds = nd_points_by_key[key].reshape(bds_shape)
                     nd_values_by_key[key] = bounds
 
-            bounds = self._derive(
+            bounds = self._derive_array(
                 nd_values_by_key["sigma"],
                 nd_values_by_key["eta"],
                 nd_values_by_key["depth"],
                 nd_values_by_key["depth_c"],
                 nd_values_by_key["zlev"],
                 nsigma,
-                coord_dims_func,
+                coord_dims_func=coord_dims_func,
             )
 
         coord = iris.coords.AuxCoord(
@@ -1239,7 +1338,7 @@ class OceanSigmaFactory(AuxCoordFactory):
         """
         return dict(sigma=self.sigma, eta=self.eta, depth=self.depth)
 
-    def _derive(self, sigma, eta, depth):
+    def _calculate_array(self, sigma, eta, depth):
         return eta + sigma * (depth + eta)
 
     def make_coord(self, coord_dims_func):
@@ -1258,7 +1357,7 @@ class OceanSigmaFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["sigma"],
             nd_points_by_key["eta"],
             nd_points_by_key["depth"],
@@ -1288,7 +1387,7 @@ class OceanSigmaFactory(AuxCoordFactory):
                     bounds = nd_points_by_key[key].reshape(bds_shape)
                     nd_values_by_key[key] = bounds
 
-            bounds = self._derive(
+            bounds = self._derive_array(
                 nd_values_by_key["sigma"],
                 nd_values_by_key["eta"],
                 nd_values_by_key["depth"],
@@ -1389,9 +1488,8 @@ class OceanSg1Factory(AuxCoordFactory):
                 coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
-                msg = (
-                    "Invalid units: {} coordinate {!r} "
-                    "must be dimensionless.".format(term, coord.name())
+                msg = "Invalid units: {} coordinate {!r} must be dimensionless.".format(
+                    term, coord.name()
                 )
                 raise ValueError(msg)
 
@@ -1421,7 +1519,7 @@ class OceanSg1Factory(AuxCoordFactory):
             depth_c=self.depth_c,
         )
 
-    def _derive(self, s, c, eta, depth, depth_c):
+    def _calculate_array(self, s, c, eta, depth, depth_c):
         S = depth_c * s + (depth - depth_c) * c
         return S + eta * (1 + S / depth)
 
@@ -1441,7 +1539,7 @@ class OceanSg1Factory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["s"],
             nd_points_by_key["c"],
             nd_points_by_key["eta"],
@@ -1473,7 +1571,7 @@ class OceanSg1Factory(AuxCoordFactory):
                     bounds = nd_points_by_key[key].reshape(bds_shape)
                     nd_values_by_key[key] = bounds
 
-            bounds = self._derive(
+            bounds = self._derive_array(
                 nd_values_by_key["s"],
                 nd_values_by_key["c"],
                 nd_values_by_key["eta"],
@@ -1610,7 +1708,7 @@ class OceanSFactory(AuxCoordFactory):
             depth_c=self.depth_c,
         )
 
-    def _derive(self, s, eta, depth, a, b, depth_c):
+    def _calculate_array(self, s, eta, depth, a, b, depth_c):
         c = (1 - b) * da.sinh(a * s) / da.sinh(a) + b * (
             da.tanh(a * (s + 0.5)) / (2 * da.tanh(0.5 * a)) - 0.5
         )
@@ -1632,7 +1730,7 @@ class OceanSFactory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["s"],
             nd_points_by_key["eta"],
             nd_points_by_key["depth"],
@@ -1665,7 +1763,7 @@ class OceanSFactory(AuxCoordFactory):
                     bounds = nd_points_by_key[key].reshape(bds_shape)
                     nd_values_by_key[key] = bounds
 
-            bounds = self._derive(
+            bounds = self._derive_array(
                 nd_values_by_key["s"],
                 nd_values_by_key["eta"],
                 nd_values_by_key["depth"],
@@ -1770,9 +1868,8 @@ class OceanSg2Factory(AuxCoordFactory):
                 coord.units = cf_units.Unit("1")
 
             if coord is not None and not coord.units.is_dimensionless():
-                msg = (
-                    "Invalid units: {} coordinate {!r} "
-                    "must be dimensionless.".format(term, coord.name())
+                msg = "Invalid units: {} coordinate {!r} must be dimensionless.".format(
+                    term, coord.name()
                 )
                 raise ValueError(msg)
 
@@ -1802,7 +1899,7 @@ class OceanSg2Factory(AuxCoordFactory):
             depth_c=self.depth_c,
         )
 
-    def _derive(self, s, c, eta, depth, depth_c):
+    def _calculate_array(self, s, c, eta, depth, depth_c):
         S = (depth_c * s + depth * c) / (depth_c + depth)
         return eta + (eta + depth) * S
 
@@ -1822,7 +1919,7 @@ class OceanSg2Factory(AuxCoordFactory):
 
         # Build the points array.
         nd_points_by_key = self._remap(dependency_dims, derived_dims)
-        points = self._derive(
+        points = self._derive_array(
             nd_points_by_key["s"],
             nd_points_by_key["c"],
             nd_points_by_key["eta"],
@@ -1854,7 +1951,7 @@ class OceanSg2Factory(AuxCoordFactory):
                     bounds = nd_points_by_key[key].reshape(bds_shape)
                     nd_values_by_key[key] = bounds
 
-            bounds = self._derive(
+            bounds = self._derive_array(
                 nd_values_by_key["s"],
                 nd_values_by_key["c"],
                 nd_values_by_key["eta"],

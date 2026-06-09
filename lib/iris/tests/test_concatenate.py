@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the cube concatenate mechanism."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import dask.array as da
 import numpy as np
 import numpy.ma as ma
@@ -16,6 +12,7 @@ import pytest
 from iris.aux_factory import HybridHeightFactory
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 import iris.cube
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.warnings import IrisUserWarning
 
@@ -267,22 +264,22 @@ def concatenate(cubes, order=None):
     return result
 
 
-class TestSimple(tests.IrisTest):
+class TestSimple:
     def test_empty(self):
         cubes = iris.cube.CubeList()
-        self.assertEqual(concatenate(cubes), iris.cube.CubeList())
+        assert concatenate(cubes) == iris.cube.CubeList()
 
     def test_single(self):
         cubes = [stock.simple_2d()]
-        self.assertEqual(concatenate(cubes), cubes)
+        assert concatenate(cubes) == cubes
 
     def test_multi_equal(self):
         cubes = [stock.simple_2d()] * 2
-        self.assertEqual(concatenate(cubes), cubes)
+        assert concatenate(cubes) == cubes
 
 
-class TestNoConcat(tests.IrisTest):
-    def test_one_cube_has_anon_dim(self):
+class TestNoConcat:
+    def test_one_cube_has_anon_dim(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1))
@@ -291,10 +288,12 @@ class TestNoConcat(tests.IrisTest):
         cube.remove_coord("x")
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_anonymous.cml"))
-        self.assertEqual(len(result), 2)
-        self.assertEqual(result[0].shape, (2, 4))
-        self.assertEqual(result[1].shape, (2, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_anonymous.cml")
+        )
+        assert len(result) == 2
+        assert result[0].shape == (2, 4)
+        assert result[1].shape == (2, 2)
 
     def test_points_overlap_increasing(self):
         cubes = []
@@ -306,7 +305,7 @@ class TestNoConcat(tests.IrisTest):
             match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_points_overlap_decreasing(self):
         cubes = []
@@ -318,7 +317,7 @@ class TestNoConcat(tests.IrisTest):
             match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_bounds_overlap_increasing(self):
         cubes = []
@@ -332,7 +331,7 @@ class TestNoConcat(tests.IrisTest):
             match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_bounds_overlap_decreasing(self):
         cubes = []
@@ -346,7 +345,7 @@ class TestNoConcat(tests.IrisTest):
             match="Found cubes with overlap on concatenate axis",
         ):
             result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_scalar_difference(self):
         cubes = []
@@ -354,14 +353,14 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1, scalar=10))
         cubes.append(_make_cube((2, 4), y, 2, scalar=20))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_uncommon(self):
         cubes = []
         cubes.append(_make_cube((0, 2), (0, 2), 1))
         cubes.append(_make_cube((2, 4), (2, 4), 2))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_order_difference(self):
         cubes = []
@@ -369,7 +368,7 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1))
         cubes.append(_make_cube((6, 1, -1), y, 2))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_cell_measure_missing(self):
         cubes = []
@@ -377,7 +376,7 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1, cell_measure="x"))
         cubes.append(_make_cube((2, 4), y, 2))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_ancil_missing(self):
         cubes = []
@@ -385,7 +384,7 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1, ancil="x"))
         cubes.append(_make_cube((2, 4), y, 2))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
     def test_derived_coord_missing(self):
         cubes = []
@@ -393,10 +392,10 @@ class TestNoConcat(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 1, derived="x"))
         cubes.append(_make_cube((2, 4), y, 2))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 2)
+        assert len(result) == 2
 
 
-class Test2D(tests.IrisTest):
+class Test2D:
     def test_masked_and_unmasked(self):
         cubes = []
         y = (0, 2)
@@ -405,7 +404,7 @@ class Test2D(tests.IrisTest):
         cubes.append(cube)
         cubes.append(_make_cube((0, 2), y, 1))
         result = concatenate(cubes)
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_unmasked_and_masked(self):
         cubes = []
@@ -415,7 +414,7 @@ class Test2D(tests.IrisTest):
         cube.data = ma.asarray(cube.data)
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
     def test_masked_fill_value(self):
         cubes = []
@@ -429,9 +428,9 @@ class Test2D(tests.IrisTest):
         cube.data.fill_value = 20
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertEqual(len(result), 1)
+        assert len(result) == 1
 
-    def test_concat_masked_2x2d(self):
+    def test_concat_masked_2x2d(self, request):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 2), y, 1)
@@ -443,16 +442,18 @@ class Test2D(tests.IrisTest):
         cube.data[(0, 1), (1, 0)] = ma.masked
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_masked_2x2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_masked_2x2d.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 4)
         mask = np.array(
             [[True, False, False, True], [False, True, True, False]],
             dtype=np.bool_,
         )
-        self.assertArrayEqual(result[0].data.mask, mask)
+        _shared_utils.assert_array_equal(result[0].data.mask, mask)
 
-    def test_concat_masked_2y2d(self):
+    def test_concat_masked_2y2d(self, request):
         cubes = []
         x = (0, 2)
         cube = _make_cube(x, (0, 2), 1)
@@ -464,16 +465,18 @@ class Test2D(tests.IrisTest):
         cube.data[(0, 1), (1, 0)] = ma.masked
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_masked_2y2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_masked_2y2d.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
             dtype=np.bool_,
         )
-        self.assertArrayEqual(result[0].data.mask, mask)
+        _shared_utils.assert_array_equal(result[0].data.mask, mask)
 
-    def test_concat_masked_2y2d_with_concrete_and_lazy(self):
+    def test_concat_masked_2y2d_with_concrete_and_lazy(self, request):
         cubes = []
         x = (0, 2)
         cube = _make_cube(x, (0, 2), 1)
@@ -486,16 +489,18 @@ class Test2D(tests.IrisTest):
         cube.data = cube.lazy_data()
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_masked_2y2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_masked_2y2d.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
             dtype=np.bool_,
         )
-        self.assertArrayEqual(result[0].data.mask, mask)
+        _shared_utils.assert_array_equal(result[0].data.mask, mask)
 
-    def test_concat_masked_2y2d_with_lazy_and_concrete(self):
+    def test_concat_masked_2y2d_with_lazy_and_concrete(self, request):
         cubes = []
         x = (0, 2)
         cube = _make_cube(x, (0, 2), 1)
@@ -508,176 +513,206 @@ class Test2D(tests.IrisTest):
         cube.data[(0, 1), (1, 0)] = ma.masked
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_masked_2y2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_masked_2y2d.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 2)
         mask = np.array(
             [[True, False], [False, True], [False, True], [True, False]],
             dtype=np.bool_,
         )
-        self.assertArrayEqual(result[0].data.mask, mask)
+        _shared_utils.assert_array_equal(result[0].data.mask, mask)
 
-    def test_concat_2x2d(self):
+    def test_concat_2x2d(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1))
         cubes.append(_make_cube((4, 6), y, 2))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(request, result, ("concatenate", "concat_2x2d.cml"))
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d(self):
+    def test_concat_2y2d(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1))
         cubes.append(_make_cube(x, (4, 6), 2))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(request, result, ("concatenate", "concat_2y2d.cml"))
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_x(self):
+    def test_concat_2x2d_aux_x(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="x"))
         cubes.append(_make_cube((4, 6), y, 2, aux="x"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_x.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_x.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_x(self):
+    def test_concat_2y2d_aux_x(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="x"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="x"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_x.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_x.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_y(self):
+    def test_concat_2x2d_aux_y(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="y"))
         cubes.append(_make_cube((4, 6), y, 2, aux="y"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_y.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_y.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_y(self):
+    def test_concat_2y2d_aux_y(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="y"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="y"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_y.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_y.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_x_y(self):
+    def test_concat_2x2d_aux_x_y(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="x,y"))
         cubes.append(_make_cube((4, 6), y, 2, aux="x,y"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_x_y.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_x_y.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_x_y(self):
+    def test_concat_2y2d_aux_x_y(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="x,y"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="x,y"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_x_y.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_x_y.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_xy(self):
+    def test_concat_2x2d_aux_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="xy"))
         cubes.append(_make_cube((4, 6), y, 2, aux="xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_xy(self):
+    def test_concat_2y2d_aux_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="xy"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_x_xy(self):
+    def test_concat_2x2d_aux_x_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="x,xy"))
         cubes.append(_make_cube((4, 6), y, 2, aux="x,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_x_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_x_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_x_xy(self):
+    def test_concat_2y2d_aux_x_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="x,xy"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="x,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_x_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_x_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_y_xy(self):
+    def test_concat_2x2d_aux_y_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="y,xy"))
         cubes.append(_make_cube((4, 6), y, 2, aux="y,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_y_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_y_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_y_xy(self):
+    def test_concat_2y2d_aux_y_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="y,xy"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="y,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_y_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_y_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_x_y_xy(self):
+    def test_concat_2x2d_aux_x_y_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 4), y, 1, aux="x,y,xy"))
         cubes.append(_make_cube((4, 6), y, 2, aux="x,y,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_x_y_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_x_y_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2y2d_aux_x_y_xy(self):
+    def test_concat_2y2d_aux_x_y_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 4), 1, aux="x,y,xy"))
         cubes.append(_make_cube(x, (4, 6), 2, aux="x,y,xy"))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2y2d_aux_x_y_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2y2d_aux_x_y_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
 
-    def test_concat_2x2d_aux_x_bounds(self):
+    def test_concat_2x2d_aux_x_bounds(self, request):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 4), y, 1, aux="x")
@@ -687,11 +722,13 @@ class Test2D(tests.IrisTest):
         cube.coord("x-aux").guess_bounds()
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_x_bounds.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_x_bounds.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 6)
 
-    def test_concat_2x2d_aux_xy_bounds(self):
+    def test_concat_2x2d_aux_xy_bounds(self, request):
         cubes = []
         y = (0, 2)
         cube = _make_cube((0, 2), y, 1, aux="xy", offset=1)
@@ -741,9 +778,11 @@ class Test2D(tests.IrisTest):
         ).reshape(2, 2, 4)
         cubes.append(cube)
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_2x2d_aux_xy_bounds.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_2x2d_aux_xy_bounds.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 4)
 
     def test_concat_2y2d_cell_measure_x_y_xy(self):
         cubes = []
@@ -752,9 +791,9 @@ class Test2D(tests.IrisTest):
         cubes.append(_make_cube(x, (4, 6), 1, cell_measure="x,y,xy"))
         result = concatenate(cubes)
         com = _make_cube(x, (0, 6), 1, cell_measure="x,y,xy")
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
-        self.assertEqual(result[0], com)
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
+        assert result[0] == com
 
     def test_concat_2y2d_ancil_x_y_xy(self):
         cubes = []
@@ -763,9 +802,9 @@ class Test2D(tests.IrisTest):
         cubes.append(_make_cube(x, (4, 6), 1, ancil="x,y,xy"))
         result = concatenate(cubes)
         com = _make_cube(x, (0, 6), 1, ancil="x,y,xy")
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
-        self.assertEqual(result[0], com)
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
+        assert result[0] == com
 
     def test_concat_2y2d_derived_x_y_xy(self):
         cubes = []
@@ -774,9 +813,9 @@ class Test2D(tests.IrisTest):
         cubes.append(_make_cube(x, (4, 6), 1, derived="x,y,xy"))
         result = concatenate(cubes)
         com = _make_cube(x, (0, 6), 1, derived="x,y,xy")
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 2))
-        self.assertEqual(result[0], com)
+        assert len(result) == 1
+        assert result[0].shape == (6, 2)
+        assert result[0] == com
 
     def test_concat_lazy_aux_coords(self):
         cubes = []
@@ -793,18 +832,18 @@ class Test2D(tests.IrisTest):
             cube.coord("xy-aux").bounds = bounds
         result = concatenate(cubes)
 
-        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_points())
-        self.assertTrue(cubes[0].coord("xy-aux").has_lazy_bounds())
+        assert cubes[0].coord("xy-aux").has_lazy_points()
+        assert cubes[0].coord("xy-aux").has_lazy_bounds()
 
-        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_points())
-        self.assertTrue(cubes[1].coord("xy-aux").has_lazy_bounds())
+        assert cubes[1].coord("xy-aux").has_lazy_points()
+        assert cubes[1].coord("xy-aux").has_lazy_bounds()
 
-        self.assertTrue(result[0].coord("xy-aux").has_lazy_points())
-        self.assertTrue(result[0].coord("xy-aux").has_lazy_bounds())
+        assert result[0].coord("xy-aux").has_lazy_points()
+        assert result[0].coord("xy-aux").has_lazy_bounds()
 
 
-class TestMulti2D(tests.IrisTest):
-    def test_concat_4x2d_aux_xy(self):
+class TestMulti2D:
+    def test_concat_4x2d_aux_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1, aux="xy", offset=1))
@@ -813,11 +852,13 @@ class TestMulti2D(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 3, aux="xy", offset=3))
         cubes.append(_make_cube((2, 4), y, 4, aux="xy", offset=4))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_4x2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_4x2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 4)
 
-    def test_concat_4y2d_aux_xy(self):
+    def test_concat_4y2d_aux_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 2), 1, aux="xy", offset=1))
@@ -826,22 +867,26 @@ class TestMulti2D(tests.IrisTest):
         cubes.append(_make_cube(x, (0, 2), 3, aux="xy", offset=3))
         cubes.append(_make_cube(x, (2, 4), 4, aux="xy", offset=4))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_4y2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_4y2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 4)
 
-    def test_concat_4mix2d_aux_xy(self):
+    def test_concat_4mix2d_aux_xy(self, request):
         cubes = []
         cubes.append(_make_cube((0, 2), (0, 2), 1, aux="xy", offset=1))
         cubes.append(_make_cube((2, 4), (2, 4), 2, aux="xy", offset=2))
         cubes.append(_make_cube((2, 4), (0, 2), 3, aux="xy", offset=3))
         cubes.append(_make_cube((0, 2), (2, 4), 4, aux="xy", offset=4))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_4mix2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_4mix2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 4)
 
-    def test_concat_9x2d_aux_xy(self):
+    def test_concat_9x2d_aux_xy(self, request):
         cubes = []
         y = (0, 2)
         cubes.append(_make_cube((0, 2), y, 1, aux="xy", offset=1))
@@ -856,11 +901,13 @@ class TestMulti2D(tests.IrisTest):
         cubes.append(_make_cube((2, 4), y, 8, aux="xy", offset=8))
         cubes.append(_make_cube((4, 6), y, 9, aux="xy", offset=9))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_9x2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_9x2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 6)
 
-    def test_concat_9y2d_aux_xy(self):
+    def test_concat_9y2d_aux_xy(self, request):
         cubes = []
         x = (0, 2)
         cubes.append(_make_cube(x, (0, 2), 1, aux="xy", offset=1))
@@ -875,11 +922,13 @@ class TestMulti2D(tests.IrisTest):
         cubes.append(_make_cube(x, (2, 4), 8, aux="xy", offset=8))
         cubes.append(_make_cube(x, (4, 6), 9, aux="xy", offset=9))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_9y2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_9y2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 6)
 
-    def test_concat_9mix2d_aux_xy(self):
+    def test_concat_9mix2d_aux_xy(self, request):
         cubes = []
         cubes.append(_make_cube((0, 2), (0, 2), 1, aux="xy", offset=1))
         cubes.append(_make_cube((2, 4), (2, 4), 2, aux="xy", offset=2))
@@ -891,13 +940,15 @@ class TestMulti2D(tests.IrisTest):
         cubes.append(_make_cube((4, 6), (2, 4), 8, aux="xy", offset=8))
         cubes.append(_make_cube((2, 4), (4, 6), 9, aux="xy", offset=9))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_9mix2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (6, 6))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_9mix2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (6, 6)
 
 
-class TestMulti2DScalar(tests.IrisTest):
-    def test_concat_scalar_4x2d_aux_xy(self):
+class TestMulti2DScalar:
+    def test_concat_scalar_4x2d_aux_xy(self, request):
         cubes = iris.cube.CubeList()
         # Level 1.
         y = (0, 2)
@@ -914,29 +965,35 @@ class TestMulti2DScalar(tests.IrisTest):
         cubes.append(_make_cube((0, 2), y, 7, aux="xy", offset=3, scalar=20))
         cubes.append(_make_cube((2, 4), y, 8, aux="xy", offset=4, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_scalar_4x2d_aux_xy.cml"))
-        self.assertEqual(len(result), 2)
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_scalar_4x2d_aux_xy.cml")
+        )
+        assert len(result) == 2
         for cube in result:
-            self.assertEqual(cube.shape, (4, 4))
+            assert cube.shape == (4, 4)
 
         merged = result.merge()
-        self.assertCML(merged, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml"))
-        self.assertEqual(len(merged), 1)
-        self.assertEqual(merged[0].shape, (2, 4, 4))
+        _shared_utils.assert_CML(
+            request, merged, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml")
+        )
+        assert len(merged) == 1
+        assert merged[0].shape == (2, 4, 4)
 
         # Test concatenate and merge are commutative operations.
         merged = cubes.merge()
-        self.assertCML(
-            merged, ("concatenate", "concat_pre_merged_scalar_4x2_aux_xy.cml")
+        _shared_utils.assert_CML(
+            request, merged, ("concatenate", "concat_pre_merged_scalar_4x2_aux_xy.cml")
         )
-        self.assertEqual(len(merged), 4)
+        assert len(merged) == 4
 
         result = concatenate(merged)
-        self.assertCML(result, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 4, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_merged_scalar_4x2d_aux_xy.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (2, 4, 4)
 
-    def test_concat_scalar_4y2d_aux_xy(self):
+    def test_concat_scalar_4y2d_aux_xy(self, request):
         cubes = iris.cube.CubeList()
         # Level 1.
         x = (0, 2)
@@ -953,29 +1010,35 @@ class TestMulti2DScalar(tests.IrisTest):
         cubes.append(_make_cube(x, (0, 2), 7, aux="xy", offset=3, scalar=20))
         cubes.append(_make_cube(x, (2, 4), 8, aux="xy", offset=4, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_scalar_4y2d_aux_xy.cml"))
-        self.assertEqual(len(result), 2)
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_scalar_4y2d_aux_xy.cml")
+        )
+        assert len(result) == 2
         for cube in result:
-            self.assertEqual(cube.shape, (4, 4))
+            assert cube.shape == (4, 4)
 
         merged = result.merge()
-        self.assertCML(merged, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml"))
-        self.assertEqual(len(merged), 1)
-        self.assertEqual(merged[0].shape, (2, 4, 4))
+        _shared_utils.assert_CML(
+            request, merged, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml")
+        )
+        assert len(merged) == 1
+        assert merged[0].shape == (2, 4, 4)
 
         # Test concatenate and merge are commutative operations.
         merged = cubes.merge()
-        self.assertCML(
-            merged, ("concatenate", "concat_pre_merged_scalar_4y2d_aux_xy.cml")
+        _shared_utils.assert_CML(
+            request, merged, ("concatenate", "concat_pre_merged_scalar_4y2d_aux_xy.cml")
         )
-        self.assertEqual(len(merged), 4)
+        assert len(merged) == 4
 
         result = concatenate(merged)
-        self.assertEqual(len(result), 1)
-        self.assertCML(result, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml"))
-        self.assertEqual(result[0].shape, (2, 4, 4))
+        assert len(result) == 1
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_merged_scalar_4y2d_aux_xy.cml")
+        )
+        assert result[0].shape == (2, 4, 4)
 
-    def test_concat_scalar_4mix2d_aux_xy(self):
+    def test_concat_scalar_4mix2d_aux_xy(self, request):
         cubes = iris.cube.CubeList()
         cubes.append(_make_cube((0, 2), (0, 2), 1, aux="xy", offset=1, scalar=10))
         cubes.append(_make_cube((2, 4), (2, 4), 8, aux="xy", offset=4, scalar=20))
@@ -986,35 +1049,38 @@ class TestMulti2DScalar(tests.IrisTest):
         cubes.append(_make_cube((2, 4), (2, 4), 4, aux="xy", offset=4, scalar=10))
         cubes.append(_make_cube((2, 4), (0, 2), 6, aux="xy", offset=2, scalar=20))
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_scalar_4mix2d_aux_xy.cml"))
-        self.assertEqual(len(result), 2)
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_scalar_4mix2d_aux_xy.cml")
+        )
+        assert len(result) == 2
         for cube in result:
-            self.assertEqual(cube.shape, (4, 4))
+            assert cube.shape == (4, 4)
 
         merged = result.merge()
-        self.assertCML(
-            merged, ("concatenate", "concat_merged_scalar_4mix2d_aux_xy.cml")
+        _shared_utils.assert_CML(
+            request, merged, ("concatenate", "concat_merged_scalar_4mix2d_aux_xy.cml")
         )
-        self.assertEqual(len(merged), 1)
-        self.assertEqual(merged[0].shape, (2, 4, 4))
+        assert len(merged) == 1
+        assert merged[0].shape == (2, 4, 4)
 
         # Test concatenate and merge are commutative operations.
         merged = cubes.merge()
-        self.assertCML(
+        _shared_utils.assert_CML(
+            request,
             merged,
             ("concatenate", "concat_pre_merged_scalar_4mix2d_aux_xy.cml"),
         )
-        self.assertEqual(len(merged), 4)
+        assert len(merged) == 4
 
         result = concatenate(merged)
-        self.assertCML(
-            result, ("concatenate", "concat_merged_scalar_4mix2d_aux_xy.cml")
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_merged_scalar_4mix2d_aux_xy.cml")
         )
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (2, 4, 4))
+        assert len(result) == 1
+        assert result[0].shape == (2, 4, 4)
 
 
-class Test3D(tests.IrisTest):
+class Test3D:
     def _make_group(self, xoff=0, yoff=0, zoff=0, doff=0):
         xoff *= 4
         yoff *= 4
@@ -1097,12 +1163,14 @@ class Test3D(tests.IrisTest):
 
         return cubes
 
-    def test_concat_3d_simple(self):
+    def test_concat_3d_simple(self, request):
         cubes = self._make_group()
         result = concatenate(cubes)
-        self.assertCML(result, ("concatenate", "concat_3d_simple.cml"))
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (4, 4, 4))
+        _shared_utils.assert_CML(
+            request, result, ("concatenate", "concat_3d_simple.cml")
+        )
+        assert len(result) == 1
+        assert result[0].shape == (4, 4, 4)
 
     def test_concat_3d_mega(self):
         cubes = []
@@ -1117,9 +1185,5 @@ class Test3D(tests.IrisTest):
         cubes.extend(self._make_group(xoff=1, yoff=1, zoff=1, doff=7))
         result = concatenate(cubes)
 
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0].shape, (8, 8, 8))
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert len(result) == 1
+        assert result[0].shape == (8, 8, 8)

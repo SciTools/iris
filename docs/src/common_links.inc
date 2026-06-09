@@ -5,6 +5,7 @@
 .. _cartopy: https://github.com/SciTools/cartopy
 .. _flake8: https://flake8.pycqa.org/en/stable/
 .. _.flake8.yml: https://github.com/SciTools/iris/blob/main/.flake8
+.. _cftime: https://github.com/Unidata/cftime
 .. _cirrus-ci: https://cirrus-ci.com/github/SciTools/iris
 .. _codespell: https://github.com/codespell-project/codespell
 .. _conda: https://docs.conda.io/en/latest/
@@ -25,6 +26,7 @@
 .. _legacy documentation: https://github.com/SciTools/scitools.org.uk/tree/master/iris/docs/archive
 .. _matplotlib: https://matplotlib.org/stable/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
+.. _nc-time-axis: https://github.com/SciTools/nc-time-axis
 .. _nox: https://nox.thea.codes/en/stable/
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pre-commit: https://pre-commit.com/
@@ -47,6 +49,8 @@
 .. _iris-esmf-regrid: https://github.com/SciTools-incubator/iris-esmf-regrid
 .. _netCDF4: https://github.com/Unidata/netcdf4-python
 .. _SciTools Contributor's License Agreement (CLA): https://cla-assistant.io/SciTools/
+.. _extlinks: https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
+.. _Diataxis: https://diataxis.fr/
 
 
 .. comment
@@ -67,6 +71,7 @@
 .. _@HGWright: https://github.com/HGWright
 .. _@jamesp: https://github.com/jamesp
 .. _@jonseddon: https://github.com/jonseddon
+.. _@jrackham-mo: https://github.com/jrackham-mo
 .. _@jvegasbsc: https://github.com/jvegasbsc
 .. _@lbdreyer: https://github.com/lbdreyer
 .. _@marqh: https://github.com/marqh
@@ -79,5 +84,8 @@
 .. _@stephenworsley: https://github.com/stephenworsley
 .. _@tkknight: https://github.com/tkknight
 .. _@trexfeathers: https://github.com/trexfeathers
+.. _@ukmo-ccbunney: https://github.com/ukmo-ccbunney
+.. _@vsherratt: https://github.com/vsherratt
 .. _@wjbenfold: https://github.com/wjbenfold
 .. _@zklaus: https://github.com/zklaus
+.. _@SgtVarmint: https://github.com/SgtVarmint

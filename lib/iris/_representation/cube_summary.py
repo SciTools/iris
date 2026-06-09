@@ -47,6 +47,8 @@ class FullHeader:
 
 def string_repr(text, quote_strings=False, clip_strings=False):
     """Produce a one-line printable form of a text string."""
+    # Convert any np.str_ instances to plain strings.
+    text = str(text)
     force_quoted = re.findall("[\n\t]", text) or quote_strings
     if force_quoted:
         # Replace the string with its repr (including quotes).
@@ -79,7 +81,8 @@ def array_repr(arr):
 
 def value_repr(value, quote_strings=False, clip_strings=False):
     """Produce a single-line printable version of an attribute or scalar value."""
-    if hasattr(value, "dtype"):
+    if hasattr(value, "dtype") and hasattr(value, "shape") and len(value.shape) > 0:
+        # Only format as array if value is not a scalar.
         value = array_repr(value)
     elif isinstance(value, str):
         value = string_repr(

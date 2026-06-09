@@ -16,15 +16,15 @@ import pytest
 import iris
 import iris.analysis
 import iris.iterate
-import iris.tests
+from iris.tests import _shared_utils
 import iris.tests.stock
 from iris.warnings import IrisUserWarning
 
 
-@iris.tests.skip_data
+@_shared_utils.skip_data
 class TestIterateFunctions:
     @pytest.fixture(autouse=True)
-    def setUp(self):
+    def _setup(self):
         self.cube_a = iris.tests.stock.realistic_4d()[0, :2, :4, :3]
         self.cube_b = iris.tests.stock.realistic_4d()[1, :2, :4, :3]
         self.coord_names = ["grid_latitude", "grid_longitude"]
@@ -60,7 +60,7 @@ class TestIterateFunctions:
             # Raises an exception if arg is not iterable
             iter(iris.iterate.izip(self.cube_a, coords=self.coord_names))
         except TypeError:
-            assert False, "iris.iterate.izip is not returning an iterable"
+            pytest.fail("iris.iterate.izip is not returning an iterable")
 
     def test_izip_unequal_slice_coords(self):
         # Create a cube with grid_latitude and grid_longitude coords
@@ -79,7 +79,9 @@ class TestIterateFunctions:
         assert i == nslices
         # Attempting to iterate over these incompatible coords should
         # raise an exception
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Unable to iterate over this coordinate in step"
+        ):
             iris.iterate.izip(self.cube_a, other_cube)
 
     def test_izip_missing_slice_coords(self):
@@ -320,7 +322,9 @@ class TestIterateFunctions:
     def test_izip_different_shaped_coords(self):
         other = self.cube_b[0:-1]
         # Different 'z' coord shape - expect a ValueError
-        with pytest.raises(ValueError):
+        with pytest.raises(
+            ValueError, match="Unable to iterate over this coordinate in step"
+        ):
             iris.iterate.izip(self.cube_a, other, coords=self.coord_names)
 
     def test_izip_different_valued_coords(self):
@@ -332,15 +336,11 @@ class TestIterateFunctions:
         latitude = self.cube_b.coord("grid_latitude")
         longitude = self.cube_b.coord("grid_longitude")
         # Same coord metadata and shape, but different values - check it produces a warning
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")  # Cause all warnings to raise Exceptions
-            with pytest.raises(IrisUserWarning):
-                iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
-            # Call with coordinates, rather than names
-            with pytest.raises(IrisUserWarning):
-                iris.iterate.izip(
-                    self.cube_a, self.cube_b, coords=[latitude, longitude]
-                )
+        with pytest.warns(IrisUserWarning):
+            iris.iterate.izip(self.cube_a, self.cube_b, coords=self.coord_names)
+        # Call with coordinates, rather than names
+        with pytest.warns(IrisUserWarning):
+            iris.iterate.izip(self.cube_a, self.cube_b, coords=[latitude, longitude])
         # Check it still iterates through as expected
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -434,10 +434,10 @@ class TestIterateFunctions:
         cube2 = cube1.copy()
 
         # The two coords are not orthogonal so we cannot use them with izip
-        with pytest.raises(ValueError):
+        with pytest.raises(ValueError, match="are not orthogonal"):
             iris.iterate.izip(cube1, cube2, coords=["y", "x"])
 
-    def test_izip_nd_ortho(self):
+    def test_izip_nd_ortho(self, request):
         cube1 = iris.cube.Cube(np.zeros((5, 5, 5, 5, 5), dtype="f8"))
         cube1.add_dim_coord(
             iris.coords.DimCoord(np.arange(5, dtype="i8"), long_name="z", units="1"),
@@ -464,7 +464,7 @@ class TestIterateFunctions:
         # The two coords are orthogonal so we can use them with izip
         it = iris.iterate.izip(cube1, cube2, coords=["y", "x"])
         cubes = list(np.array(list(it)).flatten())
-        iris.tests.assert_cml(cubes, ("iterate", "izip_nd_ortho.cml"))
+        _shared_utils.assert_CML(request, cubes, ("iterate", "izip_nd_ortho.cml"))
 
     def _check_2d_slices(self):
         # Helper method to verify slices from izip match those from

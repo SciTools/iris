@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support loading and saving NetCDF files using CF conventions for metadata interpretation.
 
+.. z_reference:: iris.fileformats.netcdf
+   :tags: topic_load_save
+
+   API reference
+
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 
@@ -16,7 +21,7 @@ import logging
 import iris.config
 
 # Note: *must* be done before importing from submodules, as they also use this !
-logger: logging.Logger = iris.config.get_logger(__name__)
+logger: logging.Logger = iris.config.get_logger(__name__, propagate=True)
 
 # Note: these probably shouldn't be public, but for now they are.
 from .._nc_load_rules.helpers import UnknownCellMethodWarning, parse_cell_methods

@@ -4,25 +4,25 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the file saving mechanism."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 from io import StringIO
-import os
 import pathlib
-import unittest
+
+import pytest
 
 import iris
 import iris.cube
 import iris.fileformats.dot as dot
 import iris.fileformats.pp as pp
+from iris.tests import _shared_utils
 import iris.util
 
 # Make a test skip decorator, for when DOT not available
-skip_dotpng = unittest.skipIf(
+skip_dotpng = pytest.mark.skipif(
     not dot.DOT_AVAILABLE,
-    'Test(s) require the "dot" executable, which was not found. '
-    "Check the dot_path setting in site.cfg.",
+    reason=(
+        'Test(s) require the "dot" executable, which was not found. '
+        "Check the dot_path setting in site.cfg."
+    ),
 )
 
 CHKSUM_ERR = "Mismatch between checksum of iris.save and {}.save."
@@ -52,26 +52,24 @@ def save_by_filehandle(filehandle1, filehandle2, cube, fn_saver, binary_mode=Tru
         iris.save(cube, outfile)
 
 
-@tests.skip_data
-class TestSaveMethods(tests.IrisTest):
+@_shared_utils.skip_data
+class TestSaveMethods:
     """Base class for file saving tests. Loads data and creates/deletes tempfiles."""
 
-    def setUp(self):
+    ext: str
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, tmp_path):
         self.cube1 = iris.load_cube(
-            tests.get_data_path(("PP", "aPPglob1", "global.pp"))
+            _shared_utils.get_data_path(("PP", "aPPglob1", "global.pp"))
         )
         self.cube2 = iris.load_cube(
-            tests.get_data_path(("PP", "aPPglob1", "global_t_forecast.pp"))
+            _shared_utils.get_data_path(("PP", "aPPglob1", "global_t_forecast.pp"))
         )
-        self.temp_filename1 = iris.util.create_temp_filename(self.ext)
-        self.temp_filename2 = iris.util.create_temp_filename(self.ext)
-
-    def tearDown(self):
-        for tempfile in (self.temp_filename1, self.temp_filename2):
-            try:
-                os.remove(tempfile)
-            except Exception:
-                pass
+        temp_file1 = (tmp_path / "temp_filename1").with_suffix(self.ext)
+        temp_file2 = (tmp_path / "temp_filename2").with_suffix(self.ext)
+        self.temp_filename1 = str(temp_file1)
+        self.temp_filename2 = str(temp_file2)
 
 
 class TestSavePP(TestSaveMethods):
@@ -84,10 +82,10 @@ class TestSavePP(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, pp.save)
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     def test_filename_path_object(self):
@@ -101,10 +99,10 @@ class TestSavePP(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     def test_filehandle(self):
@@ -118,14 +116,14 @@ class TestSavePP(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
         # Check we can't save when file handle is not binary
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match="Target not binary"):
             save_by_filehandle(
                 self.temp_filename1,
                 self.temp_filename2,
@@ -145,10 +143,10 @@ class TestSaveDot(TestSaveMethods):
         save_by_filename(self.temp_filename1, self.temp_filename2, self.cube1, dot.save)
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     def test_filehandle(self):
@@ -162,14 +160,14 @@ class TestSaveDot(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
         # Check we can't save when file handle is binary
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match="Target is binary"):
             save_by_filehandle(
                 self.temp_filename1,
                 self.temp_filename2,
@@ -191,10 +189,8 @@ class TestSaveDot(TestSaveMethods):
             data = infile.read()
 
         # Compare files
-        self.assertEqual(
-            data,
-            sio.getvalue(),
-            "Mismatch in data when comparing iris bytesio save and dot.save.",
+        assert data == sio.getvalue(), (
+            "Mismatch in data when comparing iris bytesio save and dot.save."
         )
 
 
@@ -211,10 +207,10 @@ class TestSavePng(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     def test_filehandle(self):
@@ -228,14 +224,14 @@ class TestSavePng(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
         # Check we can't save when file handle is not binary
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match="Target not binary"):
             save_by_filehandle(
                 self.temp_filename1,
                 self.temp_filename2,
@@ -262,10 +258,10 @@ class TestSaver(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     def test_dot(self):
@@ -280,10 +276,10 @@ class TestSaver(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
     @skip_dotpng
@@ -299,10 +295,10 @@ class TestSaver(TestSaveMethods):
         )
 
         # Compare files
-        self.assertEqual(
-            self.file_checksum(self.temp_filename2),
-            self.file_checksum(self.temp_filename1),
-            CHKSUM_ERR.format(self.ext),
+        assert _shared_utils.file_checksum(
+            self.temp_filename2
+        ) == _shared_utils.file_checksum(self.temp_filename1), CHKSUM_ERR.format(
+            self.ext
         )
 
 
@@ -313,9 +309,5 @@ class TestSaveInvalid(TestSaveMethods):
 
     def test_filename(self):
         # Check we can't save a file with an unhandled extension
-        with self.assertRaises(ValueError):
+        with pytest.raises(ValueError, match="no saver"):
             iris.save(self.cube1, self.temp_filename2)
-
-
-if __name__ == "__main__":
-    tests.main()

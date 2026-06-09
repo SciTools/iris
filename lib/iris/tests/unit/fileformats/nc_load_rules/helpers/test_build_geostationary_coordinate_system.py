@@ -7,20 +7,15 @@ build_geostationary_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import Geostationary
 from iris.fileformats._nc_load_rules.helpers import (
     build_geostationary_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
+class TestBuildGeostationaryCoordinateSystem(MockerMixin):
     def _test(self, inverse_flattening=False, replace_props=None, remove_props=None):
         """Generic test that can check vertical perspective validity with or
         without inverse flattening.
@@ -54,11 +49,11 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
 
         cf_grid_var_kwargs = non_ellipsoid_kwargs.copy()
         cf_grid_var_kwargs.update(ellipsoid_kwargs)
-        cf_grid_var = mock.Mock(spec=[], **cf_grid_var_kwargs)
+        cf_grid_var = self.mocker.Mock(spec=[], **cf_grid_var_kwargs)
         cs = build_geostationary_coordinate_system(None, cf_grid_var)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
         expected = Geostationary(ellipsoid=ellipsoid, **non_ellipsoid_kwargs)
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
     def test_valid(self):
         self._test(inverse_flattening=False)
@@ -71,7 +66,3 @@ class TestBuildGeostationaryCoordinateSystem(tests.IrisTest):
 
     def test_false_offsets_none(self):
         self._test(replace_props={"false_easting": None, "false_northing": None})
-
-
-if __name__ == "__main__":
-    tests.main()

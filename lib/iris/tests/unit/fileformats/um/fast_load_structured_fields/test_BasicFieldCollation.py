@@ -7,29 +7,27 @@
 
 """
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 from cftime import datetime
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_lazy_data
 import iris.fileformats.pp
 from iris.fileformats.um._fast_load_structured_fields import BasicFieldCollation
+from iris.tests import _shared_utils
 
 
-class Test___init__(tests.IrisTest):
+class Test___init__:
     def test_no_fields(self):
-        with self.assertRaises(AssertionError):
+        with pytest.raises(AssertionError):
             BasicFieldCollation([])
 
 
-class Test_fields(tests.IrisTest):
+class Test_fields:
     def test_preserve_members(self):
         fields = ("foo", "bar", "wibble")
         collation = BasicFieldCollation(fields)
-        self.assertEqual(collation.fields, fields)
+        assert collation.fields == fields
 
 
 def _make_field(lbyr=None, lbyrd=None, lbft=None, blev=None, bhlev=None, data=None):
@@ -60,7 +58,7 @@ def _make_data(fill_value):
     return as_lazy_data(np.ones(shape) * fill_value)
 
 
-class Test_data(tests.IrisTest):
+class Test_data:
     # Test order of the data attribute when fastest-varying element is changed.
     def test_t1_varies_faster(self):
         collation = BasicFieldCollation(
@@ -75,7 +73,7 @@ class Test_data(tests.IrisTest):
         )
         result = collation.data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
     def test_t2_varies_faster(self):
         collation = BasicFieldCollation(
@@ -90,24 +88,26 @@ class Test_data(tests.IrisTest):
         )
         result = collation.data[:, :, 0, 0]
         expected = [[0, 1, 2], [3, 4, 5]]
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
 
-class Test_element_arrays_and_dims(tests.IrisTest):
+class Test_element_arrays_and_dims:
     def test_single_field(self):
         field = _make_field(2013)
         collation = BasicFieldCollation([field])
-        self.assertEqual(collation.element_arrays_and_dims, {})
+        assert collation.element_arrays_and_dims == {}
 
     def test_t1(self):
         collation = BasicFieldCollation(
             [_make_field(lbyr=2013), _make_field(lbyr=2014)]
         )
         result = collation.element_arrays_and_dims
-        self.assertEqual(list(result.keys()), ["t1"])
+        assert list(result.keys()) == ["t1"]
         values, dims = result["t1"]
-        self.assertArrayEqual(values, [datetime(2013, 1, 1), datetime(2014, 1, 1)])
-        self.assertEqual(dims, (0,))
+        _shared_utils.assert_array_equal(
+            values, [datetime(2013, 1, 1), datetime(2014, 1, 1)]
+        )
+        assert dims == (0,)
 
     def test_t1_and_t2(self):
         collation = BasicFieldCollation(
@@ -118,19 +118,19 @@ class Test_element_arrays_and_dims(tests.IrisTest):
             ]
         )
         result = collation.element_arrays_and_dims
-        self.assertEqual(set(result.keys()), set(["t1", "t2"]))
+        assert set(result.keys()) == set(["t1", "t2"])
         values, dims = result["t1"]
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             values,
             [datetime(2013, 1, 1), datetime(2014, 1, 1), datetime(2015, 1, 1)],
         )
-        self.assertEqual(dims, (0,))
+        assert dims == (0,)
         values, dims = result["t2"]
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             values,
             [datetime(2000, 1, 1), datetime(2001, 1, 1), datetime(2002, 1, 1)],
         )
-        self.assertEqual(dims, (0,))
+        assert dims == (0,)
 
     def test_t1_and_t2_and_lbft(self):
         collation = BasicFieldCollation(
@@ -142,31 +142,33 @@ class Test_element_arrays_and_dims(tests.IrisTest):
             ]
         )
         result = collation.element_arrays_and_dims
-        self.assertEqual(set(result.keys()), set(["t1", "t2", "lbft"]))
+        assert set(result.keys()) == set(["t1", "t2", "lbft"])
         values, dims = result["t1"]
-        self.assertArrayEqual(values, [datetime(1, 1, 1), datetime(11, 1, 1)])
-        self.assertEqual(dims, (0,))
+        _shared_utils.assert_array_equal(
+            values, [datetime(1, 1, 1), datetime(11, 1, 1)]
+        )
+        assert dims == (0,)
         values, dims = result["t2"]
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             values,
             [
                 [datetime(15, 1, 1), datetime(16, 1, 1)],
                 [datetime(25, 1, 1), datetime(26, 1, 1)],
             ],
         )
-        self.assertEqual(dims, (0, 1))
+        assert dims == (0, 1)
         values, dims = result["lbft"]
-        self.assertArrayEqual(values, [6, 9])
-        self.assertEqual(dims, (1,))
+        _shared_utils.assert_array_equal(values, [6, 9])
+        assert dims == (1,)
 
     def test_blev(self):
         collation = BasicFieldCollation([_make_field(blev=1), _make_field(blev=2)])
         result = collation.element_arrays_and_dims
         keys = set(["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"])
-        self.assertEqual(set(result.keys()), keys)
+        assert set(result.keys()) == keys
         values, dims = result["blev"]
-        self.assertArrayEqual(values, [1, 2])
-        self.assertEqual(dims, (0,))
+        _shared_utils.assert_array_equal(values, [1, 2])
+        assert dims == (0,)
 
     def test_bhlev(self):
         collation = BasicFieldCollation(
@@ -174,13 +176,13 @@ class Test_element_arrays_and_dims(tests.IrisTest):
         )
         result = collation.element_arrays_and_dims
         keys = set(["blev", "brsvd1", "brsvd2", "brlev", "bhrlev", "lblev", "bhlev"])
-        self.assertEqual(set(result.keys()), keys)
+        assert set(result.keys()) == keys
         values, dims = result["bhlev"]
-        self.assertArrayEqual(values, [1, 2])
-        self.assertEqual(dims, (0,))
+        _shared_utils.assert_array_equal(values, [1, 2])
+        assert dims == (0,)
 
 
-class Test__time_comparable_int(tests.IrisTest):
+class Test__time_comparable_int:
     def test(self):
         # Define a list of date-time tuples, which should remain both all
         # distinct and in ascending order when converted...
@@ -208,10 +210,6 @@ class Test__time_comparable_int(tests.IrisTest):
             for test_tuple in test_date_tuples
         ]
         # Check all values are distinct.
-        self.assertEqual(len(test_date_ints), len(set(test_date_ints)))
+        assert len(test_date_ints) == len(set(test_date_ints))
         # Check all values are in order.
-        self.assertEqual(test_date_ints, sorted(test_date_ints))
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert test_date_ints == sorted(test_date_ints)

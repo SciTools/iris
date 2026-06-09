@@ -4,19 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test coordinate categorisation function add_hour."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import cf_units
 import numpy as np
+import pytest
 
 import iris
 import iris.coord_categorisation as ccat
 
 
-class Test_add_hour(tests.IrisTest):
-    def setUp(self):
+class Test_add_hour:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # make a series of 'hour numbers' for the time
         hour_numbers = np.arange(0, 200, 5, dtype=np.int32)
 
@@ -36,7 +34,7 @@ class Test_add_hour(tests.IrisTest):
         self.time_coord = time_coord
 
     def test_bad_coord(self):
-        with self.assertRaises(iris.exceptions.CoordinateNotFoundError):
+        with pytest.raises(iris.exceptions.CoordinateNotFoundError):
             ccat.add_hour(self.cube, "DOES NOT EXIST", name="my_hour")
 
     def test_explicit_result_name_specify_coord_by_name(self):
@@ -47,7 +45,7 @@ class Test_add_hour(tests.IrisTest):
         cube = self.cube
         ccat.add_hour(cube, "time", name=coord_name)
         result_coords = cube.coords(coord_name)
-        self.assertEqual(len(result_coords), 1, msg)
+        assert len(result_coords) == 1, msg
 
     def test_explicit_result_name_specify_coord_by_reference(self):
         coord_name = "my_hour"
@@ -58,7 +56,7 @@ class Test_add_hour(tests.IrisTest):
         time = cube.coord("time")
         ccat.add_hour(cube, time, name=coord_name)
         result_coords = cube.coords(coord_name)
-        self.assertEqual(len(result_coords), 1, msg)
+        assert len(result_coords) == 1, msg
 
     def test_basic(self):
         coord_name = "my_hour"
@@ -70,8 +68,4 @@ class Test_add_hour(tests.IrisTest):
 
         ccat.add_hour(cube, time_coord, coord_name)
 
-        self.assertEqual(cube.coord(coord_name), expected_coord)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert cube.coord(coord_name) == expected_coord

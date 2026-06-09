@@ -10,11 +10,14 @@ rotated and non-rotated.
 
 """
 
+import re
 from typing import Literal
 
-import iris.tests as tests  # isort: skip
+import pytest
 
+from iris.common import LimitedAttributeDict
 from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -25,14 +28,17 @@ class Mixin_latlon_dimcoords(Mixin__nc_load_actions):
     # Set by inheritor classes, which are actual TestCases.
     lat_1_or_lon_0: Literal[0, 1]
 
-    def setUp(self):
-        super().setUp()
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Generate some useful settings : just to generalise operation over
         # both latitude and longitude.
         islat = self.lat_1_or_lon_0
         assert islat in (0, 1)
         self.unrotated_name = "latitude" if islat else "longitude"
         self.rotated_name = "grid_latitude" if islat else "grid_longitude"
+        self.projected_name = (
+            "projection_y_coordinate" if islat else "projection_x_coordinate"
+        )
         self.unrotated_units = "degrees_north" if islat else "degrees_east"
         # Note: there are many alternative valid forms for the rotated units,
         # but we are not testing that here.
@@ -128,29 +134,37 @@ netcdf test {{
         # affect the results here, in some cases.
         coords = cube.coords()
         # There should be one and only one coord.
-        self.assertEqual(1, len(coords))
+        assert 1 == len(coords)
         # It should also be a dim-coord
-        self.assertEqual(1, len(cube.coords(dim_coords=True)))
+        assert 1 == len(cube.coords(dim_coords=True))
         (coord,) = coords
         if self.debug_info:
-            print("")
+            print()
             print("DEBUG : result coord =", coord)
-            print("")
+            print()
 
         coord_stdname, coord_longname, coord_units, coord_crs = [
             getattr(coord, name)
             for name in ("standard_name", "long_name", "units", "coord_system")
         ]
-        self.assertEqual(standard_name, coord_stdname, context_message)
-        self.assertEqual(long_name, coord_longname, context_message)
-        self.assertEqual(units, coord_units, context_message)
+        assert standard_name == coord_stdname, context_message
+        assert long_name == coord_longname, context_message
+        assert units == coord_units, context_message
         assert crs in (None, "latlon", "rotated")
         if crs is None:
-            self.assertEqual(None, coord_crs, context_message)
+            assert None is coord_crs, context_message
         elif crs == "latlon":
-            self.assertIsInstance(coord_crs, GeogCS, context_message)
+            assert isinstance(coord_crs, GeogCS), context_message
         elif crs == "rotated":
-            self.assertIsInstance(coord_crs, RotatedGeogCS, context_message)
+            assert isinstance(coord_crs, RotatedGeogCS), context_message
+
+    def check_load_problem(self, setup_kwargs, expected_msg):
+        # Check that the expected load problem is stored.
+        _ = self.run_testcase(**setup_kwargs)
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        attributes = load_problem.loaded.attributes[LimitedAttributeDict.IRIS_RAW]
+        assert attributes["standard_name"] == setup_kwargs["standard_name"]
+        assert re.search(expected_msg, "".join(load_problem.stack_trace.format()))
 
     #
     # Testcase routines
@@ -287,36 +301,39 @@ netcdf test {{
         )
         self.check_result(result, self.rotated_name, None, None, "rotated")
 
+    def test_fail_latlon(self):
+        self.check_load_problem(
+            dict(
+                standard_name=self.unrotated_name,
+                grid_mapping="rotated",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
+            "FAILED : latlon coord with rotated cs",
+        )
 
-class Test__longitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+    def test_fail_rotated(self):
+        self.check_load_problem(
+            dict(
+                standard_name=self.rotated_name,
+                grid_mapping="latlon",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
+            "FAILED rotated coord with latlon cs",
+        )
+
+    def test_fail_projected(self):
+        self.check_load_problem(
+            dict(
+                standard_name="projection_x_coordinate",
+                warning_regex="Not all file objects were parsed correctly.",
+            ),
+            "FAILED projected coord with non-projected cs",
+        )
+
+
+class Test__longitude_coords(Mixin_latlon_dimcoords):
     lat_1_or_lon_0 = 0
 
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-    def setUp(self):
-        super().setUp()
-
-
-class Test__latitude_coords(Mixin_latlon_dimcoords, tests.IrisTest):
+class Test__latitude_coords(Mixin_latlon_dimcoords):
     lat_1_or_lon_0 = 1
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-
-    def setUp(self):
-        super().setUp()
-
-
-if __name__ == "__main__":
-    tests.main()

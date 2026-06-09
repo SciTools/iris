@@ -5,6 +5,11 @@
 
 """Infra-structure for unstructured mesh support.
 
+.. z_reference:: iris.mesh
+   :tags: topic_data_model;topic_mesh
+
+   API reference
+
 Based on CF UGRID Conventions (v1.0), https://ugrid-conventions.github.io/ugrid-conventions/.
 """
 
@@ -26,4 +31,6 @@ __all__ = [
 ]
 
 # Configure the logger as a root logger.
-logger = get_logger(__name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET")
+logger = get_logger(
+    __name__, fmt="[%(cls)s.%(funcName)s]", level="NOTSET", propagate=True
+)

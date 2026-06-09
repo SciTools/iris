@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides UK Met Office Post Process (PP) format specific capabilities."""
+"""Provides UK Met Office Post Process (PP) format specific capabilities.
+
+.. z_reference:: iris.fileformats.pp
+   :tags: topic_load_save
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 import collections
@@ -11,6 +17,7 @@ import operator
 import os
 import re
 import struct
+from typing import Any
 import warnings
 
 import cf_units
@@ -53,7 +60,7 @@ __all__ = [
     "save_pairs_from_cube",
 ]
 
-
+#: Standard spherical earth radius, as defined for MetOffice Unified Model.
 EARTH_RADIUS = 6371229.0
 
 
@@ -303,7 +310,7 @@ class STASH(collections.namedtuple("STASH", "model section item")):
 
         if msi_match is None:
             raise ValueError(
-                'Expected STASH code MSI string "mXXsXXiXXX", ' "got %r" % (msi,)
+                'Expected STASH code MSI string "mXXsXXiXXX", got %r' % (msi,)
             )
 
         return STASH(*msi_match.groups())
@@ -950,6 +957,21 @@ class PPField(metaclass=ABCMeta):
 
     def __repr__(self):
         """Return a string representation of the PP field."""
+
+        def _str_tuple(to_print: Any):
+            """Print NumPy scalars within tuples as numbers, not np objects.
+
+            E.g. ``lbuser`` is a tuple of NumPy scalars.
+
+            NumPy v2 by default prints ``np.int32(1)`` instead of ``1`` when
+            printing an iterable of scalars.
+            """
+            if isinstance(to_print, tuple):
+                result = "(" + ", ".join([str(i) for i in to_print]) + ")"
+            else:
+                result = str(to_print)
+            return result
+
         # Define an ordering on the basic header names
         attribute_priority_lookup = {name: loc[0] for name, loc in self.HEADER_DEFN}
 
@@ -975,9 +997,8 @@ class PPField(metaclass=ABCMeta):
             ),
         )
 
-        return (
-            "PP Field" + "".join(["\n   %s: %s" % (k, v) for k, v in attributes]) + "\n"
-        )
+        contents = "".join([f"\n   {k}: {_str_tuple(v)}" for k, v in attributes])
+        return f"PP Field{contents}\n"
 
     @property
     def stash(self):
@@ -1178,7 +1199,7 @@ class PPField(metaclass=ABCMeta):
             data.dtype = data.dtype.newbyteorder(">")
 
         # Create the arrays which will hold the header information
-        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">u%d" % PP_WORD_DEPTH))
+        lb = np.empty(shape=NUM_LONG_HEADERS, dtype=np.dtype(">i%d" % PP_WORD_DEPTH))
         b = np.empty(shape=NUM_FLOAT_HEADERS, dtype=np.dtype(">f%d" % PP_WORD_DEPTH))
 
         # Fill in the header elements from the PPField
@@ -1849,19 +1870,32 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
         pp_file_read = pp_file.read
 
         field_count = 0
+        # Total bytes for the full header record:
+        #   leading length word + long headers + float headers + trailing length word
+        _HEADER_BYTES = PP_WORD_DEPTH * (1 + NUM_LONG_HEADERS + NUM_FLOAT_HEADERS + 1)
+        _LONGS_OFFSET = PP_WORD_DEPTH  # bytes: skip leading length word
+        _FLOATS_OFFSET = _LONGS_OFFSET + NUM_LONG_HEADERS * PP_WORD_DEPTH
+        dtype_longs = np.dtype("%ci%d" % (dtype_endian_char, PP_WORD_DEPTH))
+        dtype_floats = np.dtype("%cf%d" % (dtype_endian_char, PP_WORD_DEPTH))
         # Keep reading until we reach the end of file
         while True:
-            # Move past the leading header length word
-            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-            # Get the LONG header entries
-            dtype = "%ci%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_longs = np.fromfile(pp_file, dtype=dtype, count=NUM_LONG_HEADERS)
+            # Read the entire header record in one go
+            header_buf = pp_file_read(_HEADER_BYTES)
             # Nothing returned => EOF
-            if len(header_longs) == 0:
+            if len(header_buf) == 0:
                 break
-            # Get the FLOAT header entries
-            dtype = "%cf%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_floats = np.fromfile(pp_file, dtype=dtype, count=NUM_FLOAT_HEADERS)
+            header_longs = np.frombuffer(
+                header_buf,
+                dtype=dtype_longs,
+                count=NUM_LONG_HEADERS,
+                offset=_LONGS_OFFSET,
+            )
+            header_floats = np.frombuffer(
+                header_buf,
+                dtype=dtype_floats,
+                count=NUM_FLOAT_HEADERS,
+                offset=_FLOATS_OFFSET,
+            )
             header = tuple(header_longs) + tuple(header_floats)
 
             # Make a PPField of the appropriate sub-class (depends on header
@@ -1878,9 +1912,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     category=_WarnComboIgnoringLoad,
                 )
                 break
-
-            # Skip the trailing 4-byte word containing the header length
-            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
 
             # Read the word telling me how long the data + extra data is
             # This value is # of bytes
@@ -2156,7 +2187,7 @@ def _load_cubes_variable_loader(
     return result
 
 
-def save(cube, target, append=False, field_coords=None):
+def save(cube, target, append=False, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules (and any user rules) to save a cube to a PP file.
 
     Parameters
@@ -2177,6 +2208,11 @@ def save(cube, target, append=False, field_coords=None):
         coordinates of the resulting fields.
         If None, the final two  dimensions are chosen
         for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     Notes
     -----
@@ -2185,11 +2221,11 @@ def save(cube, target, append=False, field_coords=None):
     of cubes to be saved to a PP file.
 
     """
-    fields = as_fields(cube, field_coords)
+    fields = as_fields(cube, field_coords, label_surface_fields=label_surface_fields)
     save_fields(fields, target, append=append)
 
 
-def save_pairs_from_cube(cube, field_coords=None):
+def save_pairs_from_cube(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to generate (2D cube, PP field) pairs from a cube.
 
     Parameters
@@ -2301,12 +2337,12 @@ def save_pairs_from_cube(cube, field_coords=None):
 
         # Run the PP save rules on the slice2D, to fill the PPField,
         # recording the rules that were used
-        pp_field = verify(slice2D, pp_field)
+        pp_field = verify(slice2D, pp_field, label_surface_fields=label_surface_fields)
 
         yield (slice2D, pp_field)
 
 
-def as_fields(cube, field_coords=None):
+def as_fields(cube, field_coords=None, label_surface_fields=False):
     """Use the PP saving rules to convert a cube to an iterable of PP fields.
 
     Use the PP saving rules (and any user rules) to convert a cube to
@@ -2320,9 +2356,19 @@ def as_fields(cube, field_coords=None):
         reducing the given cube into 2d slices, which will ultimately
         determine the x and y coordinates of the resulting fields.
         If None, the final two  dimensions are chosen for slicing.
+    label_surface_fields : bool, default=False
+        Whether you wish pp_save_rules to recognise surface fields or not.
+        When true, if surface fields are encountered,  LBLEV will be set to 9999
+        and LBVC to 129.
+        Default is False.
 
     """
-    return (field for _, field in save_pairs_from_cube(cube, field_coords=field_coords))
+    return (
+        field
+        for _, field in save_pairs_from_cube(
+            cube, field_coords=field_coords, label_surface_fields=label_surface_fields
+        )
+    )
 
 
 def save_fields(fields, target, append: bool = False):

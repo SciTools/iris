@@ -7,14 +7,11 @@
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import copy
 
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 from iris.coord_systems import GeogCS, LambertConformal
@@ -25,12 +22,14 @@ from iris.experimental.regrid import (
     regrid_weighted_curvilinear_to_rectilinear as regrid,
 )
 from iris.fileformats.pp import EARTH_RADIUS
+from iris.tests import _shared_utils
 
 PLAIN_LATLON_CS = GeogCS(EARTH_RADIUS)
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Source cube.
         self.test_src_name = "air_temperature"
         self.test_src_units = "K"
@@ -170,9 +169,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[True, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_non_latlon(self):
         odd_coord_system = LambertConformal()
@@ -216,9 +215,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[True, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_src_xy_not_2d(self):
         new_shape = (2, 2, 3)
@@ -256,9 +255,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[True, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_aligned_src_x_mask(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -276,9 +275,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[True, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_aligned_src_x_zero_weights(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -290,9 +289,9 @@ class Test(tests.IrisTest):
         result = regrid(self.src, self.weights, self.grid)
         data = np.array([0, 0, 0, self._weighted_mean([9, 10])]).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[True, True], [True, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_aligned_tgt_dec(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -309,9 +308,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[False, False], [False, True]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_misaligned_src_x_negative(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -328,9 +327,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[False, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_misaligned_src_x_negative_mask(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -348,9 +347,9 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[False, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
+        _shared_utils.assert_array_equal(result.data.mask, mask)
 
     def test_misaligned_tgt_dec(self):
         self.src.add_aux_coord(self.src_y, (0, 1))
@@ -367,10 +366,6 @@ class Test(tests.IrisTest):
             ]
         ).reshape(2, 2)
         expected = self._expected_cube(data)
-        self.assertEqual(result, expected)
+        assert result == expected
         mask = np.array([[False, False], [False, False]])
-        self.assertArrayEqual(result.data.mask, mask)
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_equal(result.data.mask, mask)

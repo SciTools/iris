@@ -11,7 +11,7 @@ from iris.util import guess_coord_axis
 
 class TestGuessCoord:
     @pytest.mark.parametrize(
-        "coordinate, axis",
+        ("coordinate", "axis"),
         [
             ("longitude", "X"),
             ("grid_longitude", "X"),
@@ -26,7 +26,7 @@ class TestGuessCoord:
         assert guess_coord_axis(sample_coord) == axis
 
     @pytest.mark.parametrize(
-        "units, axis",
+        ("units", "axis"),
         [
             ("hPa", "Z"),
             ("days since 1970-01-01 00:00:00", "T"),
@@ -37,7 +37,7 @@ class TestGuessCoord:
         assert guess_coord_axis(sample_coord) == axis
 
     @pytest.mark.parametrize(
-        "ignore_axis, result",
+        ("ignore_axis", "result"),
         [
             (True, None),
             (False, "X"),

@@ -4,18 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-from types import ModuleType
-
-import iris.tests as tests  # isort:skip
-
 import collections
 from contextlib import contextmanager
-from unittest import mock
+from types import ModuleType
 
 import numpy as np
 from numpy import ma
+import pytest
 
 import iris
 from iris.coord_systems import (
@@ -32,13 +27,16 @@ from iris.coord_systems import (
     TransverseMercator,
     VerticalPerspective,
 )
-from iris.coords import AuxCoord, DimCoord
+from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.tests import _shared_utils
+from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
+from iris.tests.unit.fileformats import MockerMixin
 
 
-class Test_write(tests.IrisTest):
+class Test_write:
     # -------------------------------------------------------------------------
     # It is not considered necessary to have integration tests for saving
     # EVERY coordinate system. A subset are tested below.
@@ -117,64 +115,76 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 1)
         return cube
 
-    def test_transverse_mercator(self):
+    def test_transverse_mercator(self, request, tmp_path):
         # Create a Cube with a transverse Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._transverse_mercator_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_transverse_mercator_no_ellipsoid(self):
+    def test_transverse_mercator_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a transverse Mercator coordinate system.
         cube = self._transverse_mercator_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_mercator(self):
+    def test_mercator(self, request, tmp_path):
         # Create a Cube with a Mercator coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._mercator_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic(self):
+    def test_stereographic(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         ellipsoid = GeogCS(6377563.396, 6356256.909)
         cube = self._stereo_cube(ellipsoid)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_mercator_no_ellipsoid(self):
+    def test_mercator_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a Mercator coordinate system.
         cube = self._mercator_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic_no_ellipsoid(self):
+    def test_stereographic_no_ellipsoid(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         cube = self._stereo_cube()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_stereographic_scale_factor(self):
+    def test_stereographic_scale_factor(self, request, tmp_path):
         # Create a Cube with a stereographic coordinate system.
         cube = self._stereo_cube(scale_factor=1.3)
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
+
+    @staticmethod
+    def _filter_compression_calls(patch, compression_kwargs, mismatch=False):
+        result = []
+        for call in patch.call_args_list:
+            kwargs = call.kwargs
+            if all(kwargs.get(k) == v for k, v in compression_kwargs.items()):
+                if not mismatch:
+                    result.append(call.args[0])
+            elif mismatch:
+                result.append(call.args[0])
+        return result
 
     def _simple_cube(self, dtype):
         data = self.array_lib.arange(12, dtype=dtype).reshape(3, 4)
@@ -185,27 +195,27 @@ class Test_write(tests.IrisTest):
         cube.add_dim_coord(coord, 0)
         return cube
 
-    def test_little_endian(self):
+    def test_little_endian(self, request, tmp_path):
         # Create a Cube with little-endian data.
         cube = self._simple_cube("<f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            result_path = self.result_path("endian", "cdl")
-            self.assertCDL(nc_path, result_path, flags="")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        result_path = _shared_utils.result_path(request, "endian", "cdl")
+        _shared_utils.assert_CDL(request, nc_path, result_path, flags="")
 
-    def test_big_endian(self):
+    def test_big_endian(self, request, tmp_path):
         # Create a Cube with big-endian data.
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            result_path = self.result_path("endian", "cdl")
-            self.assertCDL(nc_path, result_path, flags="")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        result_path = _shared_utils.result_path(request, "endian", "cdl")
+        _shared_utils.assert_CDL(request, nc_path, result_path, flags="")
 
-    def test_zlib(self):
+    def test_zlib(self, mocker):
         cube = self._simple_cube(">f4")
-        api = self.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
+        api = mocker.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         # Mock the apparent dtype of mocked variables, to avoid an error.
@@ -217,7 +227,7 @@ class Test_write(tests.IrisTest):
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
         dataset = api.DatasetWrapper.return_value
-        create_var_call = mock.call(
+        create_var_call = mocker.call(
             "air_pressure_anomaly",
             np.dtype("float32"),
             ["dim0", "dim1"],
@@ -231,9 +241,114 @@ class Test_write(tests.IrisTest):
             complevel=4,
             chunksizes=None,
         )
-        self.assertIn(create_var_call, dataset.createVariable.call_args_list)
+        assert create_var_call in dataset.createVariable.call_args_list
 
-    def test_least_significant_digit(self):
+    def test_compression(self, mocker, tmp_path):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = range(cube.ndim), cube.shape
+
+        # add an auxiliary coordinate to test compression
+        aux_coord = AuxCoord(np.zeros(shape), var_name="compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims)
+
+        # add an ancillary variable to test compression
+        anc_coord = AncillaryVariable(
+            np.zeros(shape), var_name="compress_anc", units="1"
+        )
+        cube.add_ancillary_variable(anc_coord, data_dims=data_dims)
+
+        patch = mocker.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
+
+        assert 5 == patch.call_count
+        result = self._filter_compression_calls(patch, compression_kwargs)
+        assert 3 == len(result)
+        assert {cube.name(), aux_coord.name(), anc_coord.name()} == set(result)
+
+    def test_non_compression__shape(self, mocker, tmp_path):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = (0, 1), cube.shape
+
+        # add an auxiliary coordinate to test non-compression (shape)
+        aux_coord = AuxCoord(np.zeros(shape[0]), var_name="non_compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims[0])
+
+        # add an ancillary variable to test non-compression (shape)
+        anc_coord = AncillaryVariable(
+            np.zeros(shape[1]), var_name="non_compress_anc", units="1"
+        )
+        cube.add_ancillary_variable(anc_coord, data_dims=data_dims[1])
+
+        patch = mocker.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
+
+        assert 5 == patch.call_count
+        result = self._filter_compression_calls(
+            patch, compression_kwargs, mismatch=True
+        )
+        assert 4 == len(result)
+        # the aux coord and ancil variable are not compressed due to shape, and
+        # the dim coord and its associated bounds are also not compressed
+        expected = {aux_coord.name(), anc_coord.name(), "dim0", "dim0_bnds"}
+        assert expected == set(result)
+
+    def test_non_compression__dtype(self, mocker, tmp_path):
+        cube = self._simple_cube(">f4")
+        data_dims, shape = (0, 1), cube.shape
+
+        # add an auxiliary coordinate to test non-compression (dtype)
+        data = np.array(["."] * np.prod(shape)).reshape(shape)
+        aux_coord = AuxCoord(data, var_name="non_compress_aux", units="1")
+        cube.add_aux_coord(aux_coord, data_dims=data_dims)
+
+        patch = mocker.patch(
+            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
+        )
+        patch.return_value = mocker.MagicMock(dtype=np.dtype("S1"))
+        compression_kwargs = {
+            "complevel": 9,
+            "fletcher32": True,
+            "shuffle": True,
+            "zlib": True,
+        }
+
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            saver.write(cube, **compression_kwargs)
+
+        assert 4 == patch.call_count
+        result = self._filter_compression_calls(
+            patch, compression_kwargs, mismatch=True
+        )
+        assert 3 == len(result)
+        # the aux coord is not compressed due to its string dtype, and
+        # the dim coord and its associated bounds are also not compressed
+        expected = {aux_coord.name(), "dim0", "dim0_bnds"}
+        assert expected == set(result)
+
+    def test_least_significant_digit(self, tmp_path):
         cube = Cube(
             self.array_lib.array([1.23, 4.56, 7.89]),
             standard_name="surface_temperature",
@@ -241,102 +356,102 @@ class Test_write(tests.IrisTest):
             var_name="temp",
             units="K",
         )
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, least_significant_digit=1)
-            cube_saved = iris.load_cube(nc_path)
-            self.assertEqual(cube_saved.attributes["least_significant_digit"], 1)
-            self.assertFalse(np.all(cube.data == cube_saved.data))
-            self.assertArrayAllClose(cube.data, cube_saved.data, 0.1)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, least_significant_digit=1)
+        cube_saved = iris.load_cube(nc_path)
+        assert cube_saved.attributes["least_significant_digit"] == 1
+        assert not np.all(cube.data == cube_saved.data)
+        _shared_utils.assert_array_all_close(cube.data, cube_saved.data, 0.1)
 
-    def test_default_unlimited_dimensions(self):
+    def test_default_unlimited_dimensions(self, tmp_path):
         # Default is no unlimited dimensions.
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertFalse(ds.dimensions["dim0"].isunlimited())
-            self.assertFalse(ds.dimensions["dim1"].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        assert not ds.dimensions["dim0"].isunlimited()
+        assert not ds.dimensions["dim1"].isunlimited()
+        ds.close()
 
-    def test_no_unlimited_dimensions(self):
+    def test_no_unlimited_dimensions(self, tmp_path):
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=None)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in ds.dimensions.values():
-                self.assertFalse(dim.isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=None)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in ds.dimensions.values():
+            assert not dim.isunlimited()
+        ds.close()
 
-    def test_invalid_unlimited_dimensions(self):
+    def test_invalid_unlimited_dimensions(self, tmp_path):
         cube = self._simple_cube(">f4")
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                # should not raise an exception
-                saver.write(cube, unlimited_dimensions=["not_found"])
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            # should not raise an exception
+            saver.write(cube, unlimited_dimensions=["not_found"])
 
-    def test_custom_unlimited_dimensions(self):
+    def test_custom_unlimited_dimensions(self, tmp_path):
         cube = self._transverse_mercator_cube()
         unlimited_dimensions = [
             "projection_y_coordinate",
             "projection_x_coordinate",
         ]
         # test coordinates by name
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=unlimited_dimensions)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in unlimited_dimensions:
-                self.assertTrue(ds.dimensions[dim].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=unlimited_dimensions)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in unlimited_dimensions:
+            assert ds.dimensions[dim].isunlimited()
+        ds.close()
         # test coordinate arguments
-        with self.temp_filename(".nc") as nc_path:
-            coords = [cube.coord(dim) for dim in unlimited_dimensions]
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=coords)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            for dim in unlimited_dimensions:
-                self.assertTrue(ds.dimensions[dim].isunlimited())
-            ds.close()
+        nc_path = tmp_path / "temp2.nc"
+        coords = [cube.coord(dim) for dim in unlimited_dimensions]
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=coords)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        for dim in unlimited_dimensions:
+            assert ds.dimensions[dim].isunlimited()
+        ds.close()
 
-    def test_reserved_attributes(self):
+    def test_reserved_attributes(self, tmp_path):
         cube = self._simple_cube(">f4")
         cube.attributes["dimensions"] = "something something_else"
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            res = ds.getncattr("dimensions")
-            ds.close()
-            self.assertEqual(res, "something something_else")
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        res = ds.getncattr("dimensions")
+        ds.close()
+        assert res == "something something_else"
 
-    def test_with_climatology(self):
+    def test_with_climatology(self, request, tmp_path):
         cube = stock.climatology_3d()
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            self.assertCDL(nc_path)
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        _shared_utils.assert_CDL(request, nc_path)
 
-    def test_dimensional_to_scalar(self):
+    def test_dimensional_to_scalar(self, tmp_path):
         # Bounds for 1 point are still in a 2D array.
         scalar_bounds = self.array_lib.arange(2).reshape(1, 2)
         scalar_point = scalar_bounds.mean()
         scalar_data = self.array_lib.zeros(1)
         scalar_coord = AuxCoord(points=scalar_point, bounds=scalar_bounds)
         cube = Cube(scalar_data, aux_coords_and_dims=[(scalar_coord, 0)])[0]
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            # Confirm that the only dimension is the one denoting the number
-            #  of bounds - have successfully saved the 2D bounds array into 1D.
-            self.assertEqual(["bnds"], list(ds.dimensions.keys()))
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        # Confirm that the only dimension is the one denoting the number
+        #  of bounds - have successfully saved the 2D bounds array into 1D.
+        assert ["bnds"] == list(ds.dimensions.keys())
+        ds.close()
 
 
-class Test__create_cf_bounds(tests.IrisTest):
+class Test__create_cf_bounds(MockerMixin):
     # Method is substituted in test_Saver__lazy.
     @staticmethod
     def climatology_3d():
@@ -359,34 +474,34 @@ class Test__create_cf_bounds(tests.IrisTest):
         boundsvar_name = "time_" + varname_extra
 
         # Set up arguments for testing _create_cf_bounds.
-        saver = mock.MagicMock(spec=Saver)
+        saver = self.mocker.MagicMock(spec=Saver)
         # NOTE: 'saver' must have spec=Saver to fake isinstance(save, Saver),
         # so it can pass as 'self' in the call to _create_cf_cbounds.
         # Mock a '_dataset' property; not automatic because 'spec=Saver'.
-        saver._dataset = mock.MagicMock()
+        saver._dataset = self.mocker.MagicMock()
         # Mock the '_ensure_valid_dtype' method to return an object with a
         # suitable 'shape' and 'dtype'.
-        saver._ensure_valid_dtype.return_value = mock.Mock(
+        saver._ensure_valid_dtype.return_value = self.mocker.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = mock.MagicMock(spec=_thread_safe_nc.VariableWrapper)
+        var = self.mocker.MagicMock(spec=_thread_safe_nc.VariableWrapper)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
 
         # Test the call of _setncattr in _create_cf_bounds.
-        setncattr_call = mock.call(
+        setncattr_call = self.mocker.call(
             property_name, boundsvar_name.encode(encoding="ascii")
         )
-        self.assertEqual(setncattr_call, var.setncattr.call_args)
+        assert setncattr_call == var.setncattr.call_args
 
         # Test the call of createVariable in _create_cf_bounds.
         dataset = saver._dataset
         expected_dimensions = var.dimensions + ("bnds",)
-        create_var_call = mock.call(
+        create_var_call = self.mocker.call(
             boundsvar_name, coord.bounds.dtype, expected_dimensions
         )
-        self.assertEqual(create_var_call, dataset.createVariable.call_args)
+        assert create_var_call == dataset.createVariable.call_args
 
     def test_set_bounds_default(self):
         self._check_bounds_setting(climatological=False)
@@ -395,95 +510,95 @@ class Test__create_cf_bounds(tests.IrisTest):
         self._check_bounds_setting(climatological=True)
 
 
-class Test_write__valid_x_cube_attributes(tests.IrisTest):
+class Test_write__valid_x_cube_attributes:
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def test_valid_range_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_range_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.attributes["valid_range"] = vrange
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_range, vrange)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_range, vrange)
+        ds.close()
 
-    def test_valid_min_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_min_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.attributes["valid_min"] = 1
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_min, 1)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_min, 1)
+        ds.close()
 
-    def test_valid_max_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_max_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.attributes["valid_max"] = 2
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.valid_max, 2)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.valid_max, 2)
+        ds.close()
 
 
-class Test_write__valid_x_coord_attributes(tests.IrisTest):
+class Test_write__valid_x_coord_attributes:
     """Testing valid_range, valid_min and valid_max attributes."""
 
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def test_valid_range_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_range_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         vrange = self.array_lib.array([1, 2], dtype="int32")
         cube.coord(axis="x").attributes["valid_range"] = vrange
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_range, vrange)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_range, vrange)
+        ds.close()
 
-    def test_valid_min_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_min_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.coord(axis="x").attributes["valid_min"] = 1
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_min, 1)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_min, 1)
+        ds.close()
 
-    def test_valid_max_saved(self):
-        cube = tests.stock.lat_lon_cube()
+    def test_valid_max_saved(self, tmp_path):
+        cube = stock.lat_lon_cube()
         cube.data = cube.data.astype("int32")
 
         cube.coord(axis="x").attributes["valid_max"] = 2
-        with self.temp_filename(".nc") as nc_path:
-            with Saver(nc_path, "NETCDF4") as saver:
-                saver.write(cube, unlimited_dimensions=[])
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
-            self.assertArrayEqual(ds.variables["longitude"].valid_max, 2)
-            ds.close()
+        nc_path = tmp_path / "temp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube, unlimited_dimensions=[])
+        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        _shared_utils.assert_array_equal(ds.variables["longitude"].valid_max, 2)
+        ds.close()
 
 
-class Test_write_fill_value(tests.IrisTest):
+class Test_write_fill_value:
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
@@ -503,11 +618,13 @@ class Test_write_fill_value(tests.IrisTest):
             dim_coords_and_dims=[(lat, 0), (lon, 1)],
         )
 
-    @contextmanager
-    def _netCDF_var(self, cube, **kwargs):
-        # Get the netCDF4 Variable for a cube from a temp file
-        standard_name = cube.standard_name
-        with self.temp_filename(".nc") as nc_path:
+    @pytest.fixture
+    def _netCDF_var(self, tmp_path):
+        @contextmanager
+        def netCDF_var(cube, **kwargs):
+            # Get the netCDF4 Variable for a cube from a temp file
+            standard_name = cube.standard_name
+            nc_path = tmp_path / "temp.nc"
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, **kwargs)
             ds = _thread_safe_nc.DatasetWrapper(nc_path)
@@ -518,98 +635,97 @@ class Test_write_fill_value(tests.IrisTest):
             ]
             yield var
 
-    def test_fill_value(self):
+        return netCDF_var
+
+    def test_fill_value(self, _netCDF_var):
         # Test that a passed fill value is saved as a _FillValue attribute.
         cube = self._make_cube(">f4")
         fill_value = 12345.0
-        with self._netCDF_var(cube, fill_value=fill_value) as var:
-            self.assertEqual(fill_value, var._FillValue)
+        with _netCDF_var(cube, fill_value=fill_value) as var:
+            assert fill_value == var._FillValue
 
-    def test_default_fill_value(self):
+    def test_default_fill_value(self, _netCDF_var):
         # Test that if no fill value is passed then there is no _FillValue.
         # attribute.
         cube = self._make_cube(">f4")
-        with self._netCDF_var(cube) as var:
-            self.assertNotIn("_FillValue", var.ncattrs())
+        with _netCDF_var(cube) as var:
+            assert "_FillValue" not in var.ncattrs()
 
-    def test_mask_fill_value(self):
+    def test_mask_fill_value(self, _netCDF_var):
         # Test that masked data saves correctly when given a fill value.
         index = (1, 1)
         fill_value = 12345.0
         cube = self._make_cube(">f4", masked_index=index)
-        with self._netCDF_var(cube, fill_value=fill_value) as var:
-            self.assertEqual(fill_value, var._FillValue)
-            self.assertTrue(var[index].mask)
+        with _netCDF_var(cube, fill_value=fill_value) as var:
+            assert fill_value == var._FillValue
+            assert var[index].mask
 
-    def test_mask_default_fill_value(self):
+    def test_mask_default_fill_value(self, _netCDF_var):
         # Test that masked data saves correctly using the default fill value.
         index = (1, 1)
         cube = self._make_cube(">f4", masked_index=index)
-        with self._netCDF_var(cube) as var:
-            self.assertNotIn("_FillValue", var.ncattrs())
-            self.assertTrue(var[index].mask)
+        with _netCDF_var(cube) as var:
+            assert "_FillValue" not in var.ncattrs()
+            assert var[index].mask
 
 
-class Test_cf_valid_var_name(tests.IrisTest):
+class Test_cf_valid_var_name:
     def test_no_replacement(self):
-        self.assertEqual(Saver.cf_valid_var_name("valid_Nam3"), "valid_Nam3")
+        assert Saver.cf_valid_var_name("valid_Nam3") == "valid_Nam3"
 
     def test_special_chars(self):
-        self.assertEqual(Saver.cf_valid_var_name("inv?alid"), "inv_alid")
+        assert Saver.cf_valid_var_name("inv?alid") == "inv_alid"
 
     def test_leading_underscore(self):
-        self.assertEqual(Saver.cf_valid_var_name("_invalid"), "var__invalid")
+        assert Saver.cf_valid_var_name("_invalid") == "var__invalid"
 
     def test_leading_number(self):
-        self.assertEqual(Saver.cf_valid_var_name("2invalid"), "var_2invalid")
+        assert Saver.cf_valid_var_name("2invalid") == "var_2invalid"
 
     def test_leading_invalid(self):
-        self.assertEqual(Saver.cf_valid_var_name("?invalid"), "var__invalid")
+        assert Saver.cf_valid_var_name("?invalid") == "var__invalid"
 
     def test_no_hyphen(self):
         # CF explicitly prohibits hyphen, even though it is fine in NetCDF.
-        self.assertEqual(Saver.cf_valid_var_name("valid-netcdf"), "valid_netcdf")
+        assert Saver.cf_valid_var_name("valid-netcdf") == "valid_netcdf"
 
 
 class _Common__check_attribute_compliance:
     # Attribute is substituted in test_Saver__lazy.
     array_lib: ModuleType = np
 
-    def setUp(self):
-        self.container = mock.Mock(name="container", attributes={})
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.container = mocker.Mock(name="container", attributes={})
         self.data_dtype = np.dtype("int32")
 
         # We need to create mock datasets which look like they are closed.
-        dataset_class = mock.Mock(
-            return_value=mock.Mock(
+        dataset_class = mocker.Mock(
+            return_value=mocker.Mock(
                 # Mock dataset : the isopen() call should return 0.
-                isopen=mock.Mock(return_value=0)
+                isopen=mocker.Mock(return_value=0)
             )
         )
-        patch = mock.patch(
+        _ = mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             dataset_class,
         )
-        _ = patch.start()
-        self.addCleanup(patch.stop)
 
     def set_attribute(self, value):
         self.container.attributes[self.attribute] = value
 
-    def assertAttribute(self, value):
-        self.assertEqual(
-            np.asarray(self.container.attributes[self.attribute]).dtype, value
-        )
+    def assert_attribute(self, value):
+        assert np.asarray(self.container.attributes[self.attribute]).dtype == value
 
-    def check_attribute_compliance_call(self, value):
+    def check_attribute_compliance_call(self, value, file_type="NETCDF4"):
         self.set_attribute(value)
-        with Saver("nonexistent test file", "NETCDF4") as saver:
+        with Saver("nonexistent test file", file_type) as saver:
+            # Get the Mock to work properly.
+            saver._dataset.file_format = file_type
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
-class Test_check_attribute_compliance__valid_range(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_range(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_range"
@@ -617,18 +733,18 @@ class Test_check_attribute_compliance__valid_range(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array([1, 2], dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array([1, 2], dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array([1.5, 2.5], dtype="float64")
         msg = '"valid_range" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -636,12 +752,16 @@ class Test_check_attribute_compliance__valid_range(
         self.data_dtype = np.dtype("int8")
         value = [1, 2]
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
+
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = [0, np.iinfo(self.data_dtype).max]
+        with pytest.raises(ValueError, match="cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
-class Test_check_attribute_compliance__valid_min(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_min(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_min"
@@ -649,18 +769,18 @@ class Test_check_attribute_compliance__valid_min(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(1, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(1, dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array(1.5, dtype="float64")
         msg = '"valid_min" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -668,12 +788,16 @@ class Test_check_attribute_compliance__valid_min(
         self.data_dtype = np.dtype("int8")
         value = 1
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
+
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = np.iinfo(self.data_dtype).min
+        with pytest.raises(ValueError, match="cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
-class Test_check_attribute_compliance__valid_max(
-    _Common__check_attribute_compliance, tests.IrisTest
-):
+class Test_check_attribute_compliance__valid_max(_Common__check_attribute_compliance):
     @property
     def attribute(self):
         return "valid_max"
@@ -681,18 +805,18 @@ class Test_check_attribute_compliance__valid_max(
     def test_valid_range_type_coerce(self):
         value = self.array_lib.array(2, dtype="float")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(self.data_dtype)
+        self.assert_attribute(self.data_dtype)
 
     def test_valid_range_unsigned_int8_data_signed_range(self):
         self.data_dtype = np.dtype("uint8")
         value = self.array_lib.array(2, dtype="int8")
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(value.dtype)
+        self.assert_attribute(value.dtype)
 
     def test_valid_range_cannot_coerce(self):
         value = self.array_lib.array(2.5, dtype="float64")
         msg = '"valid_max" is not of a suitable value'
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             self.check_attribute_compliance_call(value)
 
     def test_valid_range_not_numpy_array(self):
@@ -700,11 +824,17 @@ class Test_check_attribute_compliance__valid_max(
         self.data_dtype = np.dtype("int8")
         value = 2
         self.check_attribute_compliance_call(value)
-        self.assertAttribute(np.int64)
+        self.assert_attribute(np.int64)
+
+    def test_uncastable_dtype(self):
+        self.data_dtype = np.dtype("int64")
+        value = np.iinfo(self.data_dtype).max
+        with pytest.raises(ValueError, match="cannot be safely cast"):
+            self.check_attribute_compliance_call(value, file_type="NETCDF4_CLASSIC")
 
 
 class Test_check_attribute_compliance__exception_handling(
-    _Common__check_attribute_compliance, tests.IrisTest
+    _Common__check_attribute_compliance
 ):
     def test_valid_range_and_valid_min_valid_max_provided(self):
         # Conflicting attributes should raise a suitable exception.
@@ -713,17 +843,17 @@ class Test_check_attribute_compliance__exception_handling(
         self.container.attributes["valid_min"] = [1]
         msg = 'Both "valid_range" and "valid_min"'
         with Saver("nonexistent test file", "NETCDF4") as saver:
-            with self.assertRaisesRegex(ValueError, msg):
+            with pytest.raises(ValueError, match=msg):
                 saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
-class Test__cf_coord_identity(tests.IrisTest):
+class Test__cf_coord_identity:
     def check_call(self, coord_name, coord_system, units, expected_units):
         coord = iris.coords.DimCoord(
             [30, 45], coord_name, units=units, coord_system=coord_system
         )
         result = Saver._cf_coord_standardised_units(coord)
-        self.assertEqual(result, expected_units)
+        assert result == expected_units
 
     def test_geogcs_latitude(self):
         crs = iris.coord_systems.GeogCS(60, 30)
@@ -769,12 +899,122 @@ class Test__cf_coord_identity(tests.IrisTest):
         )
 
 
-class Test__create_cf_grid_mapping(tests.IrisTest):
+@pytest.fixture
+def transverse_mercator_cube_multi_cs():
+    """A transverse mercator cube with an auxiliary GeogGS coordinate system."""
+    data = np.arange(12).reshape(3, 4)
+    cube = Cube(data, "air_pressure_anomaly")
+    cube.extended_grid_mapping = True
+
+    geog_cs = GeogCS(6377563.396, 6356256.909)
+    trans_merc = TransverseMercator(
+        49.0, -2.0, -400000.0, 100000.0, 0.9996012717, geog_cs
+    )
+    coord = DimCoord(
+        np.arange(3),
+        "projection_y_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 0)
+    coord = DimCoord(
+        np.arange(4),
+        "projection_x_coordinate",
+        units="m",
+        coord_system=trans_merc,
+    )
+    cube.add_dim_coord(coord, 1)
+
+    # Add auxiliary lat/lon coords with a GeogCS coord system
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "longitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    coord = AuxCoord(
+        np.arange(3 * 4).reshape((3, 4)),
+        "latitude",
+        units="degrees",
+        coord_system=geog_cs,
+    )
+    cube.add_aux_coord(coord, (0, 1))
+
+    return cube
+
+
+class Test_write_extended_grid_mapping:
+    def test_multi_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test writing a cube with multiple coordinate systems.
+        Should generate a grid mapping using extended syntax that references
+        both coordinate systems and the coords.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_aux_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test when DimCoords have coord system, but AuxCoords do not.
+        Should write extended grid mapping for just DimCoords.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        cube.coord("latitude").coord_system = None
+        cube.coord("longitude").coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_multi_cs_missing_coord(
+        self, transverse_mercator_cube_multi_cs, tmp_path, request
+    ):
+        """Test when we have a missing coordinate.
+        Grid mapping will fall back to simple mapping to DimCoord CS (no coords referenced).
+        """
+        cube = transverse_mercator_cube_multi_cs
+        cube.remove_coord("latitude")
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+    def test_no_cs(self, transverse_mercator_cube_multi_cs, tmp_path, request):
+        """Test when no coordinate systems associated with cube coords.
+        Grid mapping will not be generated at all.
+        """
+        cube = transverse_mercator_cube_multi_cs
+        for coord in cube.coords():
+            coord.coord_system = None
+
+        nc_path = tmp_path / "tmp.nc"
+        with Saver(nc_path, "NETCDF4") as saver:
+            saver.write(cube)
+        assert_CDL(request, nc_path)
+
+
+class Test_create_cf_grid_mapping(MockerMixin):
+    """Tests correct generation of CF grid_mapping variable attributes.
+
+    Note: The first 3 tests are run with the "extended grid" mapping
+    both enabled (the default for all these tests) and disabled. This
+    controls the output of the WKT attribute.
+    """
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self._extended_grid_mapping = True  # forces WKT strings to be written
+
     def _cube_with_cs(self, coord_system):
         """Return a simple 2D cube that uses the given coordinate system."""
         cube = stock.lat_lon_cube()
         x, y = cube.coord("longitude"), cube.coord("latitude")
         x.coord_system = y.coord_system = coord_system
+        cube.extended_grid_mapping = self._extended_grid_mapping
         return cube
 
     def _grid_mapping_variable(self, coord_system):
@@ -784,23 +1024,24 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         """
         cube = self._cube_with_cs(coord_system)
 
-        class NCMock(mock.Mock):
+        class NCMock(self.mocker.Mock):
             def setncattr(self, name, attr):
                 setattr(self, name, attr)
 
         # Calls the actual NetCDF saver with appropriate mocking, returning
         # the grid variable that gets created.
         grid_variable = NCMock(name="NetCDFVariable")
-        create_var_fn = mock.Mock(side_effect=[grid_variable])
-        dataset = mock.Mock(variables=[], createVariable=create_var_fn)
-        saver = mock.Mock(spec=Saver, _coord_systems=[], _dataset=dataset)
+        create_var_fn = self.mocker.Mock(side_effect=[grid_variable])
+        dataset = self.mocker.Mock(variables=[], createVariable=create_var_fn)
         variable = NCMock()
 
-        # This is the method we're actually testing!
-        Saver._create_cf_grid_mapping(saver, cube, variable)
+        saver = Saver(dataset, "NETCDF4", compute=False)
 
-        self.assertEqual(create_var_fn.call_count, 1)
-        self.assertEqual(variable.grid_mapping, grid_variable.grid_mapping_name)
+        # The method we want to test:
+        saver._create_cf_grid_mapping(cube, variable)
+
+        assert create_var_fn.call_count == 1
+        assert variable.grid_mapping, grid_variable.grid_mapping_name
         return grid_variable
 
     def _variable_attributes(self, coord_system):
@@ -820,12 +1061,14 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         actual = self._variable_attributes(coord_system)
 
         # To see obvious differences, check that they keys are the same.
-        self.assertEqual(sorted(actual.keys()), sorted(expected.keys()))
+        assert sorted(actual.keys()) == sorted(expected.keys())
         # Now check that the values are equivalent.
-        self.assertEqual(actual, expected)
+        assert actual == expected
 
-    def test_rotated_geog_cs(self):
+    def test_rotated_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
         coord_system = RotatedGeogCS(37.5, 177.5, ellipsoid=GeogCS(6371229.0))
+
         expected = {
             "grid_mapping_name": b"rotated_latitude_longitude",
             "north_pole_grid_longitude": 0.0,
@@ -834,18 +1077,47 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             "longitude_of_prime_meridian": 0.0,
             "earth_radius": 6371229.0,
         }
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
+                'GEOGCRS["unnamed",BASEGEOGCRS["unknown",DATUM["unknown",'
+                'ELLIPSOID["unknown",6371229,0,LENGTHUNIT["metre",1,ID['
+                '"EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8901]]],DERIVINGCONVERSION['
+                '"unknown",METHOD["PROJ ob_tran o_proj=latlon"],PARAMETER['
+                '"o_lon_p",0,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG"'
+                ',9122]]],PARAMETER["o_lat_p",37.5,ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],PARAMETER["lon_0",357.5'
+                ',ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9122]]]],CS['
+                'ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT['
+                '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
+                ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
+                '"EPSG",9122]]]]'
+            )
+
         self._test(coord_system, expected)
 
-    def test_spherical_geog_cs(self):
+    def test_spherical_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
         coord_system = GeogCS(6371229.0)
         expected = {
             "grid_mapping_name": b"latitude_longitude",
             "longitude_of_prime_meridian": 0.0,
             "earth_radius": 6371229.0,
         }
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
+                'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",6371229'
+                ',0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PRIMEM["Greenwich"'
+                ',0,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8901]],CS'
+                '[ellipsoidal,2],AXIS["longitude",east,ORDER[1],ANGLEUNIT['
+                '"degree",0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude"'
+                ',north,ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID['
+                '"EPSG",9122]]]]'
+            )
         self._test(coord_system, expected)
 
-    def test_elliptic_geog_cs(self):
+    def test_elliptic_geog_cs(self, extended_grid_mapping):
+        self._extended_grid_mapping = extended_grid_mapping
         coord_system = GeogCS(637, 600)
         expected = {
             "grid_mapping_name": b"latitude_longitude",
@@ -853,6 +1125,17 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             "semi_minor_axis": 600.0,
             "semi_major_axis": 637.0,
         }
+        if extended_grid_mapping:
+            expected["crs_wkt"] = (
+                'GEOGCRS["unknown",DATUM["unknown",ELLIPSOID["unknown",637,'
+                '17.2162162162162,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],'
+                'PRIMEM["Reference meridian",0,ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],CS[ellipsoidal,2],AXIS'
+                '["longitude",east,ORDER[1],ANGLEUNIT["degree",'
+                '0.0174532925199433,ID["EPSG",9122]]],AXIS["latitude",north,'
+                'ORDER[2],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",'
+                "9122]]]]"
+            )
         self._test(coord_system, expected)
 
     def test_lambert_conformal(self):
@@ -865,6 +1148,25 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6371000),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",'
+                'ELLIPSOID["unknown",6371000,0,LENGTHUNIT["metre",1,ID["EPSG"'
+                ',9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Lambert Conic Conformal (2SP)",ID["EPSG",9802]],'
+                'PARAMETER["Latitude of false origin",44,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8821]],PARAMETER["Longitude of '
+                'false origin",2,ANGLEUNIT["degree",0.0174532925199433],ID['
+                '"EPSG",8822]],PARAMETER["Latitude of 1st standard parallel",'
+                '38,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8823]],'
+                'PARAMETER["Latitude of 2nd standard parallel",50,ANGLEUNIT'
+                '["degree",0.0174532925199433],ID["EPSG",8824]],PARAMETER['
+                '"Easting at false origin",-2,LENGTHUNIT["metre",1],ID["EPSG",'
+                '8826]],PARAMETER["Northing at false origin",-5,LENGTHUNIT['
+                '"metre",1],ID["EPSG",8827]]],CS[Cartesian,2],AXIS["(E)",east,'
+                'ORDER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],AXIS["(N)",'
+                'north,ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"lambert_conformal_conic",
             "latitude_of_projection_origin": 44,
             "longitude_of_central_meridian": 2,
@@ -885,6 +1187,21 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6377563.396, 6356256.909),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Lambert Azimuthal Equal Area",ID["EPSG",9820]],PARAME'
+                'TER["Latitude of natural origin",52,ANGLEUNIT["degree",0.0174'
+                '532925199433],ID["EPSG",8801]],PARAMETER["Longitude of natura'
+                'l origin",10,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG"'
+                ',8802]],PARAMETER["False easting",100,LENGTHUNIT["metre",1],I'
+                'D["EPSG",8806]],PARAMETER["False northing",200,LENGTHUNIT["me'
+                'tre",1],ID["EPSG",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORD'
+                'ER[1],LENGTHUNIT["metre",1,ID["EPSG",9001]]],AXIS["(N)",north'
+                ',ORDER[2],LENGTHUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"lambert_azimuthal_equal_area",
             "latitude_of_projection_origin": 52,
             "longitude_of_projection_origin": 10,
@@ -906,6 +1223,25 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=GeogCS(6377563.396, 6356256.909),
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Albers Equal Area",ID["EPSG",9822]],PARAMETER["Latitu'
+                'de of false origin",52,ANGLEUNIT["degree",0.0174532925199433]'
+                ',ID["EPSG",8821]],PARAMETER["Longitude of false origin",10,AN'
+                'GLEUNIT["degree",0.0174532925199433],ID["EPSG",8822]],PARAMET'
+                'ER["Latitude of 1st standard parallel",38,ANGLEUNIT["degree",'
+                '0.0174532925199433],ID["EPSG",8823]],PARAMETER["Latitude of 2'
+                'nd standard parallel",50,ANGLEUNIT["degree",0.017453292519943'
+                '3],ID["EPSG",8824]],PARAMETER["Easting at false origin",100,L'
+                'ENGTHUNIT["metre",1],ID["EPSG",8826]],PARAMETER["Northing at '
+                'false origin",200,LENGTHUNIT["metre",1],ID["EPSG",8827]]],CS['
+                'Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1,ID'
+                '["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",'
+                '1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"albers_conical_equal_area",
             "latitude_of_projection_origin": 52,
             "longitude_of_central_meridian": 10,
@@ -938,6 +1274,24 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=ellipsoid,
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Vertical Perspective",ID["EPSG",9838]],PARAMETER["Lat'
+                'itude of topocentric origin",1,ANGLEUNIT["degree",0.017453292'
+                '5199433],ID["EPSG",8834]],PARAMETER["Longitude of topocentric'
+                ' origin",2,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",8'
+                '835]],PARAMETER["Ellipsoidal height of topocentric origin",0,'
+                'LENGTHUNIT["metre",1],ID["EPSG",8836]],PARAMETER["Viewpoint h'
+                'eight",2000000,LENGTHUNIT["metre",1],ID["EPSG",8840]],PARAMET'
+                'ER["False easting",100,LENGTHUNIT["metre",1],ID["EPSG",8806]]'
+                ',PARAMETER["False northing",200,LENGTHUNIT["metre",1],ID["EPS'
+                'G",8807]]],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNI'
+                'T["metre",1,ID["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGT'
+                'HUNIT["metre",1,ID["EPSG",9001]]]]'
+            ),
             "grid_mapping_name": b"vertical_perspective",
             "latitude_of_projection_origin": latitude_of_projection_origin,
             "longitude_of_projection_origin": longitude_of_projection_origin,
@@ -972,6 +1326,23 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             ellipsoid=ellipsoid,
         )
         expected = {
+            "crs_wkt": (
+                'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+                'SOID["unknown",6377563.396,299.324961266495,LENGTHUNIT["metre'
+                '",1,ID["EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree'
+                '",0.0174532925199433],ID["EPSG",8901]]],CONVERSION["unknown",'
+                'METHOD["Geostationary Satellite (Sweep X)"],PARAMETER["Longit'
+                'ude of natural origin",2,ANGLEUNIT["degree",0.017453292519943'
+                '3],ID["EPSG",8802]],PARAMETER["Satellite Height",2000000,LENG'
+                'THUNIT["metre",1,ID["EPSG",9001]]],PARAMETER["False easting",'
+                '100,LENGTHUNIT["metre",1],ID["EPSG",8806]],PARAMETER["False n'
+                'orthing",200,LENGTHUNIT["metre",1],ID["EPSG",8807]]],CS[Carte'
+                'sian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre",1,ID["EPS'
+                'G",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["metre",1,ID['
+                '"EPSG",9001]]],REMARK["PROJ CRS string: +proj=geos +a=6377563'
+                ".396 +b=6356256.909 +lon_0=2.0 +lat_0=0.0 +h=2000000.0 +x_0=1"
+                '00.0 +y_0=200.0 +units=m +sweep=x +no_defs"]]'
+            ),
             "grid_mapping_name": b"geostationary",
             "latitude_of_projection_origin": latitude_of_projection_origin,
             "longitude_of_projection_origin": longitude_of_projection_origin,
@@ -989,8 +1360,30 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         # Some none-default settings to confirm all parameters are being
         #  handled.
 
+        wkt_template = (
+            'PROJCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",ELLIP'
+            'SOID["unknown",1,0,LENGTHUNIT["metre",1,ID["EPSG",9001]]]],PR'
+            'IMEM["Reference meridian",0,ANGLEUNIT["degree",0.017453292519'
+            '9433,ID["EPSG",9122]]]],CONVERSION["unknown",METHOD["Hotine O'
+            'blique Mercator (variant B)",ID["EPSG",9815]],PARAMETER["Lati'
+            'tude of projection centre",89.9,ANGLEUNIT["degree",0.01745329'
+            '25199433],ID["EPSG",8811]],PARAMETER["Longitude of projection'
+            ' centre",45,ANGLEUNIT["degree",0.0174532925199433],ID["EPSG",'
+            '8812]],PARAMETER["Azimuth at projection centre",{angle},ANGLEUNIT['
+            '"degree",0.0174532925199433],ID["EPSG",8813]],PARAMETER["Angl'
+            'e from Rectified to Skew Grid",{angle},ANGLEUNIT["degree",0.017453'
+            '2925199433],ID["EPSG",8814]],PARAMETER["Scale factor at proje'
+            'ction centre",0.939692620786,SCALEUNIT["unity",1],ID["EPSG",8'
+            '815]],PARAMETER["Easting at projection centre",1000000,LENGTH'
+            'UNIT["metre",1],ID["EPSG",8816]],PARAMETER["Northing at proje'
+            'ction centre",-2000000,LENGTHUNIT["metre",1],ID["EPSG",8817]]'
+            '],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["metre"'
+            ',1,ID["EPSG",9001]]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["me'
+            'tre",1,ID["EPSG",9001]]]]'
+        )
+
         kwargs_rotated = dict(
-            latitude_of_projection_origin=90.0,
+            latitude_of_projection_origin=89.9,
             longitude_of_projection_origin=45.0,
             false_easting=1000000.0,
             false_northing=-2000000.0,
@@ -1005,8 +1398,9 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
         expected_rotated = dict(
             # Automatically converted to oblique_mercator in line with CF 1.11 .
             grid_mapping_name=b"oblique_mercator",
-            # Azimuth should be automatically populated.
+            # Azimuth and crs_wkt should be automatically populated.
             azimuth_of_central_line=90.0,
+            crs_wkt=wkt_template.format(angle="89.999"),
             **kwargs_rotated,
         )
         # Convert the ellipsoid
@@ -1019,6 +1413,7 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
 
         # Same as rotated, but different azimuth.
         expected_oblique = dict(expected_rotated, **oblique_azimuth)
+        expected_oblique["crs_wkt"] = wkt_template.format(angle="45")
 
         oblique = ObliqueMercator(**kwargs_oblique)
         rotated = RotatedMercator(**kwargs_rotated)
@@ -1030,5 +1425,12 @@ class Test__create_cf_grid_mapping(tests.IrisTest):
             self._test(coord_system, expected)
 
 
-if __name__ == "__main__":
-    tests.main()
+@pytest.fixture(
+    params=[
+        pytest.param(True, id="extended_grid_mapping"),
+        pytest.param(False, id="no_extended_grid_mapping"),
+    ]
+)
+def extended_grid_mapping(request):
+    """Fixture for enabling/disabling extended grid mapping."""
+    return request.param

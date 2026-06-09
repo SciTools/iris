@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :meth:`iris.analysis.trajectory.interpolate`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from collections import namedtuple
 
 import numpy as np
@@ -15,16 +11,17 @@ import pytest
 
 from iris.analysis.trajectory import interpolate
 from iris.coords import AuxCoord, DimCoord
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
-class TestFailCases(tests.IrisTest):
-    @tests.skip_data
+class TestFailCases:
+    @_shared_utils.skip_data
     def test_derived_coord(self):
         cube = iris.tests.stock.realistic_4d()
         sample_pts = [("altitude", [0, 10, 50])]
         msg = "'altitude'.*derived coordinates are not allowed"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             interpolate(cube, sample_pts, "nearest")
 
         # Try to request unknown interpolation method.
@@ -33,7 +30,7 @@ class TestFailCases(tests.IrisTest):
         cube = iris.tests.stock.simple_2d()
         sample_point = [("x", 2.8)]
         msg = "Unhandled interpolation.*linekar"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             interpolate(cube, sample_point, method="linekar")
 
 
@@ -42,7 +39,7 @@ class TestNearest:
     # This is basically a wrapper to the routine:
     #   'analysis._interpolate_private._nearest_neighbour_indices_ndcoords'.
     # That has its own test, so we don't test the basic calculation
-    # exhaustively here.  Instead we check the way it handles the source and
+    # exhaustively here.  Instead, we check the way it handles the source and
     # result cubes (especially coordinates).
     @pytest.fixture
     def src_cube(self):
@@ -127,7 +124,9 @@ class TestNearest:
 
         result = interpolate(src_cube, multi_sample_points, method="nearest")
         assert result == expected_multipoint_cube
-        assert np.allclose(result.data.mask, expected_multipoint_cube.data.mask)
+        _shared_utils.assert_array_all_close(
+            result.data.mask, expected_multipoint_cube.data.mask
+        )
 
     def test_dtype_preserved(
         self, src_cube, multi_sample_points, expected_multipoint_cube
@@ -136,7 +135,7 @@ class TestNearest:
 
         result = interpolate(src_cube, multi_sample_points, method="nearest")
         assert result == expected_multipoint_cube
-        assert np.allclose(result.data, expected_multipoint_cube.data)
+        _shared_utils.assert_array_all_close(result.data, expected_multipoint_cube.data)
         assert result.data.dtype == np.int16
 
     def test_aux_coord_noninterpolation_dim(self, src_cube, single_point):
@@ -209,14 +208,15 @@ class TestNearest:
         assert result == expected
 
 
-class TestLinear(tests.IrisTest):
+class TestLinear:
     # Test interpolation with 'linear' method.
     #   This is basically a wrapper to 'analysis._scipy_interpolate''s
     #   _RegulardGridInterpolator. That has its own test, so we don't test the
-    #   basic calculation exhaustively here.  Instead we check the way it
+    #   basic calculation exhaustively here.  Instead, we check the way it
     #   handles the source and result cubes (especially coordinates).
 
-    def setUp(self):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         cube = iris.tests.stock.simple_3d()
         # Actually, this cube *isn't* terribly realistic, as the lat+lon coords
         # have integer type, which in this case produces some peculiar results.
@@ -244,8 +244,8 @@ class TestLinear(tests.IrisTest):
         result = interpolate(cube, self.single_sample_point, method="linear")
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
-        self.assertEqual(result.shape[-1], 1)
-        self.assertArrayAllClose(result.data, self.single_sample_result)
+        assert result.shape[-1] == 1
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_multi_point_same_cube(self):
         # Check an exact result for multiple points.
@@ -268,7 +268,7 @@ class TestLinear(tests.IrisTest):
         expected.remove_coord("latitude")
         co_y = AuxCoord([0, 0, 0, 0], standard_name="latitude", units="degrees")
         expected.add_aux_coord(co_y, 1)
-        self.assertEqual(result, expected)
+        assert result == expected
 
     def test_aux_coord_noninterpolation_dim(self):
         # Check exact result with an aux-coord mapped to an uninterpolated dim.
@@ -277,8 +277,8 @@ class TestLinear(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
-        self.assertEqual(result.shape[-1], 1)
-        self.assertArrayAllClose(result.data, self.single_sample_result)
+        assert result.shape[-1] == 1
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_one_interp_dim(self):
         # Check exact result with an aux-coord over one interpolation dims.
@@ -287,8 +287,8 @@ class TestLinear(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
-        self.assertEqual(result.shape[-1], 1)
-        self.assertArrayAllClose(result.data, self.single_sample_result)
+        assert result.shape[-1] == 1
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_both_interp_dims(self):
         # Check exact result with an aux-coord over both interpolation dims.
@@ -303,8 +303,8 @@ class TestLinear(tests.IrisTest):
 
         # The result cube should exactly equal a single source point.
         result = interpolate(cube, self.single_sample_point, method="linear")
-        self.assertEqual(result.shape[-1], 1)
-        self.assertArrayAllClose(result.data, self.single_sample_result)
+        assert result.shape[-1] == 1
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)
 
     def test_aux_coord_fail_mixed_dims(self):
         # Check behaviour with an aux-coord mapped over both interpolation and
@@ -318,7 +318,7 @@ class TestLinear(tests.IrisTest):
             (0, 2),
         )
         msg = "Coord aux_0x was expected to have new points of shape .*\\. Found shape of .*\\."
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             interpolate(cube, self.single_sample_point, method="linear")
 
     def test_metadata(self):
@@ -330,9 +330,5 @@ class TestLinear(tests.IrisTest):
         result = interpolate(cube, self.single_sample_point, method="linear")
         # Check that the result is a single trajectory point, exactly equal to
         # the expected part of the original data.
-        self.assertEqual(result.shape[-1], 1)
-        self.assertArrayAllClose(result.data, self.single_sample_result)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert result.shape[-1] == 1
+        _shared_utils.assert_array_all_close(result.data, self.single_sample_result)

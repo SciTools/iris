@@ -3,18 +3,15 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 import numpy.ma as ma
 
 import iris.analysis
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
-class TestPeakAggregator(tests.IrisTest):
+class TestPeakAggregator:
     def test_peak_coord_length_1(self):
         # Coordinate contains a single point.
         latitude = iris.coords.DimCoord(
@@ -26,7 +23,7 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([1], dtype=np.float32)
         )
 
@@ -41,7 +38,7 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([2], dtype=np.float32)
         )
 
@@ -58,7 +55,7 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([2], dtype=np.float32)
         )
 
@@ -75,7 +72,7 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([6], dtype=np.float32)
         )
 
@@ -92,12 +89,12 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([3], dtype=np.float32)
         )
 
         collapsed_cube = cube.collapsed(("latitude", "latitude"), iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([3], dtype=np.float32)
         )
 
@@ -119,23 +116,23 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(longitude, 1)
 
         collapsed_cube = cube.collapsed("longitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([3, 7.024054, 4], dtype=np.float32)
         )
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data,
             np.array([4.024977, 5.024977, 7.017852, 4.024977], dtype=np.float32),
         )
 
         collapsed_cube = cube.collapsed(("longitude", "latitude"), iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([7.041787], dtype=np.float32)
         )
 
         collapsed_cube = cube.collapsed(("latitude", "longitude"), iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([7.041629], dtype=np.float32)
         )
 
@@ -152,7 +149,7 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([1], dtype=np.float32)
         )
 
@@ -171,17 +168,17 @@ class TestPeakAggregator(tests.IrisTest):
         cube.data[3] = np.nan
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([4.024977], dtype=np.float32)
         )
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert collapsed_cube.data.shape == (1,)
 
         # Only nans in column.
         cube.data[:] = np.nan
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertTrue(np.isnan(collapsed_cube.data).all())
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert np.isnan(collapsed_cube.data).all()
+        assert collapsed_cube.data.shape == (1,)
 
     def test_peak_with_mask(self):
         # Single value in column masked.
@@ -198,20 +195,20 @@ class TestPeakAggregator(tests.IrisTest):
         cube.data[3] = ma.masked
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([4.024977], dtype=np.float32)
         )
-        self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert ma.isMaskedArray(collapsed_cube.data)
+        assert collapsed_cube.data.shape == (1,)
 
         # Whole column masked.
         cube.data[:] = ma.masked
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
         masked_array = ma.array(ma.masked)
-        self.assertTrue(ma.allequal(collapsed_cube.data, masked_array))
-        self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert ma.allequal(collapsed_cube.data, masked_array)
+        assert ma.isMaskedArray(collapsed_cube.data)
+        assert collapsed_cube.data.shape == (1,)
 
     def test_peak_with_nan_and_mask(self):
         # Single nan in column with single value masked.
@@ -229,19 +226,19 @@ class TestPeakAggregator(tests.IrisTest):
         cube.data[4] = ma.masked
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([4.024977], dtype=np.float32)
         )
-        self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert ma.isMaskedArray(collapsed_cube.data)
+        assert collapsed_cube.data.shape == (1,)
 
         # Only nans in column where values not masked.
         cube.data[0:3] = np.nan
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertTrue(np.isnan(collapsed_cube.data).all())
-        self.assertTrue(ma.isMaskedArray(collapsed_cube.data))
-        self.assertEqual(collapsed_cube.data.shape, (1,))
+        assert np.isnan(collapsed_cube.data).all()
+        assert ma.isMaskedArray(collapsed_cube.data)
+        assert collapsed_cube.data.shape == (1,)
 
     def test_peak_against_max(self):
         # Cube with data that infers a peak value greater than the column max.
@@ -256,15 +253,11 @@ class TestPeakAggregator(tests.IrisTest):
         cube.add_dim_coord(latitude, 0)
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.PEAK)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([7.630991], dtype=np.float32)
         )
 
         collapsed_cube = cube.collapsed("latitude", iris.analysis.MAX)
-        self.assertArrayAlmostEqual(
+        _shared_utils.assert_array_almost_equal(
             collapsed_cube.data, np.array([7], dtype=np.float32)
         )
-
-
-if __name__ == "__main__":
-    tests.main()

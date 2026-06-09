@@ -11,52 +11,23 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="40865429" long_name="rotated latitude" points="[-20.68, -20.46, -20.24, ...,  20.46,  20.68,
-  20.9 ]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32" var_name="rlat">
+        <dimCoord checksum="0x33d2cdb0" id="40865429" long_name="rotated latitude" points="[-20.68000031, -20.45999908, -20.23999977, ..., 20.45999908, 20.68000031, 20.89999962]" shape="(190,)" standard_name="grid_latitude" units="Unit('degrees')" value_type="float32" var_name="rlat">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="4c47e591" long_name="rotated longitude" points="[-22.16, -21.94, -21.72, ...,  15.46,  15.68,
-  15.9 ]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32" var_name="rlon">
+        <dimCoord checksum="0x93b10efb" id="4c47e591" long_name="rotated longitude" points="[-22.15999985, -21.94000053, -21.71999931, ..., 15.46000004, 15.68000031, 15.89999962]" shape="(174,)" standard_name="grid_longitude" units="Unit('degrees')" value_type="float32" var_name="rlon">
           <rotatedGeogCS grid_north_pole_latitude="18.0" grid_north_pole_longitude="-140.75"/>
         </dimCoord>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="dab47bb1" long_name="latitude" points="[[26.5861 , 26.65303, 26.71937, ..., 28.34913,
-  28.30053, 28.25128],
- [26.79401, 26.86116, 26.92771, ..., 28.56298,
-  28.51421, 28.46479],
- [27.00187, 27.06924, 27.13601, ..., 28.77681,
-  28.72787, 28.67828],
- ...,
- [63.26704, 63.40056, 63.53343, ..., 66.99241,
-  66.88303, 66.77266],
- [63.43399, 63.5681 , 63.70156, ..., 67.17894,
-  67.06889, 66.95782],
- [63.60022, 63.73492, 63.86898, ..., 67.36491,
-  67.25417, 67.14241]]" shape="(190, 174)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
+        <auxCoord checksum="0xfd8466c7" id="dab47bb1" long_name="latitude" mask_checksum="no-masked-elements" points="[26.58609962, 26.6530304, 26.71936989, ..., 67.36490631, 67.25417328, 67.14241028]" shape="(190, 174)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="lat"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="c15a8e5b" long_name="longitude" points="[[ -5.242045,  -5.02433 ,  -4.806258, ...,
-   34.46174 ,  34.68895 ,  34.91587 ],
- [ -5.322548,  -5.104167,  -4.885427, ...,
-   34.5205  ,  34.74847 ,  34.97615 ],
- [ -5.403346,  -5.184298,  -4.964888, ...,
-   34.57949 ,  34.80822 ,  35.03666 ],
- ...,
- [-33.77845 , -33.42855 , -33.0758  , ...,
-   57.71626 ,  58.16225 ,  58.60464 ],
- [-34.09787 , -33.74793 , -33.3951  , ...,
-   58.01583 ,  58.46326 ,  58.907   ],
- [-34.42104 , -34.07108 , -33.71821 , ...,
-   58.32007 ,  58.7689  ,  59.21399 ]]" shape="(190, 174)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
+        <auxCoord checksum="0xad7abd88" id="c15a8e5b" long_name="longitude" mask_checksum="no-masked-elements" points="[-5.24204493, -5.02433014, -4.8062582, ..., 58.32006836, 58.76890182, 59.21398926]" shape="(190, 174)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="lon"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[2922.5, 2923.5],
- [2923.5, 2924.5],
- [2924.5, 2925.5],
- [2925.5, 2926.5]]" id="2306ff47" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='standard')" value_type="float32" var_name="time"/>
+        <dimCoord bounds="[2922.5, 2923.5, 2923.5, ..., 2925.5, 2925.5, 2926.5]" checksum="0xb394ed3b" id="2306ff47" long_name="Julian Day" points="[2922.5, 2923.5, 2924.5, 2925.5]" shape="(4,)" standard_name="time" units="Unit('days since 1950-01-01 00:00:00.0', calendar='standard')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

@@ -24,19 +24,17 @@
     </attributes>
     <coords>
       <coord datadims="[1]">
-        <dimCoord id="4a6c092a" points="[-2281878. , -2246394.2, -2210911.2, ...,
-  6695437. ,  6730919.5,  6766404. ]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
+        <dimCoord checksum="0xd0426c97" id="4a6c092a" points="[-2281878., -2246394.25, -2210911.25, ..., 6695437., 6730919.5, 6766404.]" shape="(256,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32" var_name="x">
           <polarStereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="40a8d3c7" points="[ -981693.3 , -1017193.44, -1052694.1 , ...,
- -6555247.  , -6590747.  , -6626247.  ]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
+        <dimCoord checksum="0xbff93251" id="40a8d3c7" points="[-981693.3125, -1017193.4375, -1052694.125, ..., -6555247., -6590747., -6626247.]" shape="(160,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32" var_name="y">
           <polarStereographic central_lat="90.0" central_lon="-35.0" ellipsoid="GeogCS(6378169.0)" false_easting="0.0" false_northing="0.0" scale_factor_at_projection_origin="1.0" true_scale_lat="None"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="cb784457" points="[406500.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float32" var_name="time"/>
+        <dimCoord checksum="0x74514179" id="cb784457" points="[406500.]" shape="(1,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods/>

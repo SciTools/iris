@@ -4,32 +4,31 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the Fieldsfile file loading plugin and FFHeader."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import collections
 
 import numpy as np
+import pytest
 
 import iris
 import iris.fileformats._ff as ff
 import iris.fileformats.pp as pp
+from iris.tests import _shared_utils
 
 
-class TestFF_HEADER(tests.IrisTest):
+class TestFF_HEADER:
     def test_initialisation(self):
-        self.assertEqual(ff.FF_HEADER[0], ("data_set_format_version", (0,)))
-        self.assertEqual(ff.FF_HEADER[17], ("integer_constants", (99, 100)))
+        assert ff.FF_HEADER[0] == ("data_set_format_version", (0,))
+        assert ff.FF_HEADER[17] == ("integer_constants", (99, 100))
 
     def test_size(self):
-        self.assertEqual(len(ff.FF_HEADER), 31)
+        assert len(ff.FF_HEADER) == 31
 
 
-@tests.skip_data
-class TestFFHeader(tests.IrisTest):
-    def setUp(self):
-        self.filename = tests.get_data_path(("FF", "n48_multi_field"))
+@_shared_utils.skip_data
+class TestFFHeader:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.filename = _shared_utils.get_data_path(("FF", "n48_multi_field"))
         self.ff_header = ff.FFHeader(self.filename)
         self.valid_headers = (
             "integer_constants",
@@ -51,62 +50,58 @@ class TestFFHeader(tests.IrisTest):
 
     def test_constructor(self):
         # Test FieldsFile header attribute lookup.
-        self.assertEqual(self.ff_header.data_set_format_version, 20)
-        self.assertEqual(self.ff_header.sub_model, 1)
-        self.assertEqual(self.ff_header.vert_coord_type, 5)
-        self.assertEqual(self.ff_header.horiz_grid_type, 0)
-        self.assertEqual(self.ff_header.dataset_type, 3)
-        self.assertEqual(self.ff_header.run_identifier, 0)
-        self.assertEqual(self.ff_header.experiment_number, -32768)
-        self.assertEqual(self.ff_header.calendar, 1)
-        self.assertEqual(self.ff_header.grid_staggering, 3)
-        self.assertEqual(self.ff_header.time_type, -32768)
-        self.assertEqual(self.ff_header.projection_number, -32768)
-        self.assertEqual(self.ff_header.model_version, 802)
-        self.assertEqual(self.ff_header.obs_file_type, -32768)
-        self.assertEqual(self.ff_header.last_fieldop_type, -32768)
-        self.assertEqual(
-            self.ff_header.first_validity_time, (2011, 7, 10, 18, 0, 0, 191)
-        )
-        self.assertEqual(
-            self.ff_header.last_validity_time, (2011, 7, 10, 21, 0, 0, 191)
-        )
-        self.assertEqual(
-            self.ff_header.misc_validity_time,
-            (2012, 4, 30, 18, 12, 13, -32768),
-        )
-        self.assertEqual(self.ff_header.integer_constants.shape, (46,))
-        self.assertEqual(self.ff_header.real_constants.shape, (38,))
-        self.assertEqual(self.ff_header.level_dependent_constants.shape, (71, 8))
-        self.assertIsNone(self.ff_header.row_dependent_constants)
-        self.assertIsNone(self.ff_header.column_dependent_constants)
-        self.assertIsNone(self.ff_header.fields_of_constants)
-        self.assertIsNone(self.ff_header.extra_constants)
-        self.assertIsNone(self.ff_header.temp_historyfile)
-        self.assertIsNone(self.ff_header.compressed_field_index1)
-        self.assertIsNone(self.ff_header.compressed_field_index2)
-        self.assertIsNone(self.ff_header.compressed_field_index3)
-        self.assertEqual(self.ff_header.lookup_table, (909, 64, 5))
-        self.assertEqual(self.ff_header.total_prognostic_fields, 3119)
-        self.assertEqual(self.ff_header.data, (2049, 2961, -32768))
+        assert self.ff_header.data_set_format_version == 20
+        assert self.ff_header.sub_model == 1
+        assert self.ff_header.vert_coord_type == 5
+        assert self.ff_header.horiz_grid_type == 0
+        assert self.ff_header.dataset_type == 3
+        assert self.ff_header.run_identifier == 0
+        assert self.ff_header.experiment_number == -32768
+        assert self.ff_header.calendar == 1
+        assert self.ff_header.grid_staggering == 3
+        assert self.ff_header.time_type == -32768
+        assert self.ff_header.projection_number == -32768
+        assert self.ff_header.model_version == 802
+        assert self.ff_header.obs_file_type == -32768
+        assert self.ff_header.last_fieldop_type == -32768
+        assert self.ff_header.first_validity_time == (2011, 7, 10, 18, 0, 0, 191)
+        assert self.ff_header.last_validity_time == (2011, 7, 10, 21, 0, 0, 191)
+        assert self.ff_header.misc_validity_time == (2012, 4, 30, 18, 12, 13, -32768)
+        assert self.ff_header.integer_constants.shape == (46,)
+        assert self.ff_header.real_constants.shape == (38,)
+        assert self.ff_header.level_dependent_constants.shape == (71, 8)
+        assert self.ff_header.row_dependent_constants is None
+        assert self.ff_header.column_dependent_constants is None
+        assert self.ff_header.fields_of_constants is None
+        assert self.ff_header.extra_constants is None
+        assert self.ff_header.temp_historyfile is None
+        assert self.ff_header.compressed_field_index1 is None
+        assert self.ff_header.compressed_field_index2 is None
+        assert self.ff_header.compressed_field_index3 is None
+        assert self.ff_header.lookup_table == (909, 64, 5)
+        assert self.ff_header.total_prognostic_fields == 3119
+        assert self.ff_header.data == (2049, 2961, -32768)
 
-    def test_str(self):
-        self.assertString(str(self.ff_header), ("FF", "ffheader.txt"))
+    def test_str(self, request):
+        _shared_utils.assert_string(
+            request, str(self.ff_header), ("FF", "ffheader.txt")
+        )
 
     def test_repr(self):
         target = "FFHeader('" + self.filename + "')"
-        self.assertEqual(repr(self.ff_header), target)
+        assert repr(self.ff_header) == target
 
     def test_shape(self):
-        self.assertEqual(self.ff_header.shape("data"), (2961, -32768))
+        assert self.ff_header.shape("data") == (2961, -32768)
 
 
-@tests.skip_data
-class TestFF2PP2Cube(tests.IrisTest):
-    def setUp(self):
-        self.filename = tests.get_data_path(("FF", "n48_multi_field"))
+@_shared_utils.skip_data
+class TestFF2PP2Cube:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.filename = _shared_utils.get_data_path(("FF", "n48_multi_field"))
 
-    def test_unit_pass_0(self):
+    def test_unit_pass_0(self, request):
         # Test FieldsFile to PPFields cube load.
         cube_by_name = collections.defaultdict(int)
         cubes = iris.load(self.filename)
@@ -115,21 +110,21 @@ class TestFF2PP2Cube(tests.IrisTest):
             standard_name = cube.standard_name
             cube_by_name[standard_name] += 1
             filename = "{}_{}.cml".format(standard_name, cube_by_name[standard_name])
-            self.assertCML(cube, ("FF", filename))
+            _shared_utils.assert_CML(request, cube, ("FF", filename))
 
     def test_raw_to_table_count(self):
-        filename = tests.get_data_path(("FF", "n48_multi_field_table_count"))
+        filename = _shared_utils.get_data_path(("FF", "n48_multi_field_table_count"))
         cubes = iris.load_raw(filename)
         ff_header = ff.FFHeader(filename)
         table_count = ff_header.lookup_table[2]
-        self.assertEqual(len(cubes), table_count)
+        assert len(cubes) == table_count
 
 
-@tests.skip_data
-class TestFFieee32(tests.IrisTest):
+@_shared_utils.skip_data
+class TestFFieee32:
     def test_iris_loading(self):
-        ff32_fname = tests.get_data_path(("FF", "n48_multi_field.ieee32"))
-        ff64_fname = tests.get_data_path(("FF", "n48_multi_field"))
+        ff32_fname = _shared_utils.get_data_path(("FF", "n48_multi_field.ieee32"))
+        ff64_fname = _shared_utils.get_data_path(("FF", "n48_multi_field"))
 
         ff32_cubes = iris.load(ff32_fname)
         ff64_cubes = iris.load(ff64_fname)
@@ -137,13 +132,14 @@ class TestFFieee32(tests.IrisTest):
         for ff32, ff64 in zip(ff32_cubes, ff64_cubes):
             # load the data
             _, _ = ff32.data, ff64.data
-            self.assertEqual(ff32, ff64)
+            assert ff32 == ff64
 
 
-@tests.skip_data
-class TestFFVariableResolutionGrid(tests.IrisTest):
-    def setUp(self):
-        self.filename = tests.get_data_path(("FF", "n48_multi_field"))
+@_shared_utils.skip_data
+class TestFFVariableResolutionGrid:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.filename = _shared_utils.get_data_path(("FF", "n48_multi_field"))
 
         self.ff2pp = ff.FF2PP(self.filename)
         self.ff_header = self.ff2pp._ff_header
@@ -179,18 +175,18 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
         # this gets called in PP2FF.
         pp.make_pp_field = new_make_pp_field
 
-    def tearDown(self):
+    def teardown_method(self):
         pp.make_pp_field = self.orig_make_pp_field
 
     def _check_stash(self, stash, x_coord, y_coord):
         self.ff2pp._custom_stash = stash
         field = next(iter(self.ff2pp))
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             x_coord,
             field.x,
             ("x_coord was incorrect for stash {}".format(stash)),
         )
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             y_coord,
             field.y,
             ("y_coord was incorrect for stash {}".format(stash)),
@@ -204,7 +200,3 @@ class TestFFVariableResolutionGrid(tests.IrisTest):
 
     def test_v(self):
         self._check_stash("m01s00i003", self.P_grid_x, self.V_grid_y)
-
-
-if __name__ == "__main__":
-    tests.main()

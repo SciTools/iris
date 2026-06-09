@@ -1,0 +1,22 @@
+dimensions:
+	projection_x_coordinate = 4 ;
+	projection_y_coordinate = 3 ;
+variables:
+	int64 air_pressure_anomaly(projection_y_coordinate, projection_x_coordinate) ;
+		air_pressure_anomaly:standard_name = "air_pressure_anomaly" ;
+		air_pressure_anomaly:coordinates = "latitude longitude" ;
+	int64 projection_y_coordinate(projection_y_coordinate) ;
+		projection_y_coordinate:axis = "Y" ;
+		projection_y_coordinate:units = "m" ;
+		projection_y_coordinate:standard_name = "projection_y_coordinate" ;
+	int64 projection_x_coordinate(projection_x_coordinate) ;
+		projection_x_coordinate:axis = "X" ;
+		projection_x_coordinate:units = "m" ;
+		projection_x_coordinate:standard_name = "projection_x_coordinate" ;
+	int64 latitude(projection_y_coordinate, projection_x_coordinate) ;
+		latitude:units = "degrees_north" ;
+		latitude:standard_name = "latitude" ;
+	int64 longitude(projection_y_coordinate, projection_x_coordinate) ;
+		longitude:units = "degrees_east" ;
+		longitude:standard_name = "longitude" ;
+}

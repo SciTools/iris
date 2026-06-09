@@ -5,7 +5,6 @@
 """Test function :func:`iris.fileformats._nc_load_rules.helpers.build_oblique_mercator_coordinate_system`."""
 
 from typing import List, NamedTuple, Type
-from unittest import mock
 
 import pytest
 
@@ -148,22 +147,22 @@ class TestAttributes:
 
         self.coord_system_args_expected = list(coord_system_kwargs_expected.values())
 
-    def test_attributes(self):
-        cf_var_mock = mock.Mock(spec=[], **self.nc_attributes)
-        coord_system_mock = mock.Mock(spec=self.expected_class)
+    def test_attributes(self, mocker):
+        cf_var_mock = mocker.Mock(spec=[], **self.nc_attributes)
+        coord_system_mock = mocker.Mock(spec=self.expected_class)
         setattr(coord_systems, self.expected_class.__name__, coord_system_mock)
 
         _ = build_oblique_mercator_coordinate_system(None, cf_var_mock)
         coord_system_mock.assert_called_with(*self.coord_system_args_expected)
 
 
-def test_deprecation():
+def test_deprecation(mocker):
     nc_attributes = dict(
         grid_mapping_name="rotated_mercator",
         latitude_of_projection_origin=0.0,
         longitude_of_projection_origin=0.0,
         scale_factor_at_projection_origin=1.0,
     )
-    cf_var_mock = mock.Mock(spec=[], **nc_attributes)
+    cf_var_mock = mocker.Mock(spec=[], **nc_attributes)
     with pytest.warns(IrisDeprecation, match="azimuth_of_central_line = 90"):
         _ = build_oblique_mercator_coordinate_system(None, cf_var_mock)

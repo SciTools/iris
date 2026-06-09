@@ -4,50 +4,52 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for area weighted regridding."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
 
 import iris
 from iris.analysis import AreaWeighted
+from iris.tests import _shared_utils
 
 
-@tests.skip_data
-class AreaWeightedTests(tests.IrisTest):
-    def setUp(self):
+@_shared_utils.skip_data
+class TestAreaWeighted:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Prepare a cube and a template
 
-        cube_file_path = tests.get_data_path(["NetCDF", "regrid", "regrid_xyt.nc"])
+        cube_file_path = _shared_utils.get_data_path(
+            ["NetCDF", "regrid", "regrid_xyt.nc"]
+        )
         self.cube = iris.load_cube(cube_file_path)
 
-        template_file_path = tests.get_data_path(
+        template_file_path = _shared_utils.get_data_path(
             ["NetCDF", "regrid", "regrid_template_global_latlon.nc"]
         )
         self.template_cube = iris.load_cube(template_file_path)
 
-    def test_regrid_area_w_lazy(self):
+    def test_regrid_area_w_lazy(self, tmp_path):
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, AreaWeighted())
         # Check data is still lazy
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(out.has_lazy_data())
+        assert self.cube.has_lazy_data()
+        assert out.has_lazy_data()
         # Save the data
-        with self.temp_filename(suffix=".nc") as fname:
-            iris.save(out, fname)
+        fname = tmp_path / "test.nc"
+        iris.save(out, fname)
 
-    def test_regrid_area_w_lazy_chunked(self):
+    def test_regrid_area_w_lazy_chunked(self, tmp_path):
         # Chunked data makes the regridder run repeatedly
         self.cube.data = self.cube.lazy_data().rechunk((1, -1, -1))
         # Regrid the cube onto the template.
         out = self.cube.regrid(self.template_cube, AreaWeighted())
         # Check data is still lazy
-        self.assertTrue(self.cube.has_lazy_data())
-        self.assertTrue(out.has_lazy_data())
+        assert self.cube.has_lazy_data()
+        assert out.has_lazy_data()
         # Save the data
-        with self.temp_filename(suffix=".nc") as fname:
-            iris.save(out, fname)
+        fname = tmp_path / "test.nc"
+        iris.save(out, fname)
 
-    def test_regrid_area_w_real_save(self):
+    def test_regrid_area_w_real_save(self, tmp_path):
         real_cube = self.cube.copy()
         real_cube.data
         # Regrid the cube onto the template.
@@ -55,18 +57,14 @@ class AreaWeightedTests(tests.IrisTest):
         # Realise the data
         out.data
         # Save the data
-        with self.temp_filename(suffix=".nc") as fname:
-            iris.save(out, fname)
+        fname = tmp_path / "test.nc"
+        iris.save(out, fname)
 
-    def test_regrid_area_w_real_start(self):
+    def test_regrid_area_w_real_start(self, tmp_path):
         real_cube = self.cube.copy()
         real_cube.data
         # Regrid the cube onto the template.
         out = real_cube.regrid(self.template_cube, AreaWeighted())
         # Save the data
-        with self.temp_filename(suffix=".nc") as fname:
-            iris.save(out, fname)
-
-
-if __name__ == "__main__":
-    tests.main()
+        fname = tmp_path / "test.nc"
+        iris.save(out, fname)

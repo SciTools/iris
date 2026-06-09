@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Perform test automation with nox.
 
 For further details, see https://nox.thea.codes/en/stable/#
@@ -11,11 +12,16 @@ from pathlib import Path
 import nox
 from nox.logger import logger
 
+nox.options.default_venv_backend = "conda"
+nox.needs_version = ">=2022.1.7"
 #: Default to reusing any pre-existing nox environments.
 nox.options.reuse_existing_virtualenvs = True
+# /// script
+# dependencies = ["nox"]
+# ///
 
 #: Python versions we can run sessions under
-_PY_VERSIONS_ALL = ["3.10", "3.11", "3.12"]
+_PY_VERSIONS_ALL = ["3.12", "3.13", "3.14"]
 _PY_VERSION_LATEST = _PY_VERSIONS_ALL[-1]
 
 #: One specific python version for docs builds
@@ -180,12 +186,14 @@ def tests(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    session.install("git+https://github.com/SciTools-incubator/nothing.git")
     session.env.update(ENV)
     run_args = [
         "pytest",
         "-n",
         "auto",
         "lib/iris/tests",
+        "tools",
     ]
     if "-c" in session.posargs or "--coverage" in session.posargs:
         run_args[-1:-1] = ["--cov=lib/iris", "--cov-report=xml"]
@@ -240,32 +248,6 @@ def gallery(session: nox.sessions.Session):
     )
 
 
-@nox.session(python=_PY_VERSION_DOCSBUILD, venv_backend="conda")
-def linkcheck(session: nox.sessions.Session):
-    """Perform iris doc link check.
-
-    Parameters
-    ----------
-    session : object
-        A `nox.sessions.Session` object.
-
-    """
-    prepare_venv(session)
-    session.install("--no-deps", "--editable", ".")
-    session.cd("docs")
-    session.run(
-        "make",
-        "clean",
-        "html",
-        external=True,
-    )
-    session.run(
-        "make",
-        "linkcheck",
-        external=True,
-    )
-
-
 @nox.session(python=PY_VER, venv_backend="conda")
 def wheel(session: nox.sessions.Session):
     """Perform iris local wheel install and import test.
@@ -315,3 +297,7 @@ def benchmarks(session: nox.sessions.Session):
     session.install("asv", "nox")
     bm_runner_path = Path(__file__).parent / "benchmarks" / "bm_runner.py"
     session.run("python", bm_runner_path, *session.posargs)
+
+
+if __name__ == "__main__":
+    nox.main()

@@ -8,8 +8,6 @@ import iris
 from iris.analysis.stats import pearsonr
 import iris.tests
 
-from . import TrackAddedMemoryAllocation
-
 
 class PearsonR:
     def setup(self):
@@ -32,9 +30,10 @@ class PearsonR:
     def time_real(self):
         pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
-    @TrackAddedMemoryAllocation.decorator_repeating()
-    def track_real(self):
+    def tracemalloc_real(self):
         pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+
+    tracemalloc_real.number = 3  # type: ignore[attr-defined]
 
     def time_lazy(self):
         for cube in self.cube_a, self.cube_b:
@@ -43,10 +42,11 @@ class PearsonR:
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
         result.data
 
-    @TrackAddedMemoryAllocation.decorator_repeating()
-    def track_lazy(self):
+    def tracemalloc_lazy(self):
         for cube in self.cube_a, self.cube_b:
             cube.data = cube.lazy_data()
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
         result.data
+
+    tracemalloc_lazy.number = 3  # type: ignore[attr-defined]

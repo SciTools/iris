@@ -16,7 +16,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v3
+    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       with:
         path: ~/conda_pkgs_dir
         key: ${{ runner.os }}-conda-pkgs-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}

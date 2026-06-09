@@ -3,43 +3,13 @@
   <cube dtype="int32" long_name="thingness" units="1">
     <coords>
       <coord datadims="[1, 2]">
-        <auxCoord bounds="[[[ 0,  5],
-  [ 5, 10],
-  [10, 15],
-  [15, 20]],
-
- [[ 5, 15],
-  [15, 20],
-  [20, 35],
-  [35, 50]],
-
- [[10, 20],
-  [20, 25],
-  [25, 40],
-  [40, 60]]]" id="434cbbd8" long_name="bar" points="[[ 2.5,  7.5, 12.5, 17.5],
- [10. , 17.5, 27.5, 42.5],
- [15. , 22.5, 32.5, 50. ]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[0, 5, 5, ..., 40, 40, 60]" checksum="0x9059a994" id="434cbbd8" long_name="bar" points="[2.5, 7.5, 12.5, ..., 22.5, 32.5, 50.]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord bounds="[[[-15,   0],
-  [  0,  15],
-  [ 15,  30],
-  [ 30,  45]],
-
- [[-25,   0],
-  [  0,   8],
-  [  8,  45],
-  [ 45,  50]],
-
- [[ -5,  10],
-  [ 10,  18],
-  [ 18,  55],
-  [ 18,  70]]]" id="b0d35dcf" long_name="foo" points="[[ -7.5,   7.5,  22.5,  37.5],
- [-12.5,   4. ,  26.5,  47.5],
- [  2.5,  14. ,  36.5,  44. ]]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
+        <auxCoord bounds="[-15, 0, 0, ..., 55, 18, 70]" checksum="0x3f9c83ae" id="b0d35dcf" long_name="foo" points="[-7.5, 7.5, 22.5, ..., 14., 36.5, 44.]" shape="(3, 4)" units="Unit('1')" value_type="float64"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="302bf438" long_name="pressure" points="[10, 11]" shape="(2,)" units="Unit('Pa')" value_type="int32"/>
+        <dimCoord checksum="0x23e344a0" id="302bf438" long_name="pressure" points="[10, 11]" shape="(2,)" units="Unit('Pa')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

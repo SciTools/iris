@@ -16,8 +16,10 @@ build routines, and which it does not use.
 
 from __future__ import annotations
 
+import contextlib
+from functools import partial
 import re
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 import warnings
 
 import cf_units
@@ -28,13 +30,15 @@ import pyproj
 import iris
 from iris._deprecation import warn_deprecated
 import iris.aux_factory
-from iris.common.mixin import _get_valid_standard_name
+from iris.common.mixin import LimitedAttributeDict, _get_valid_standard_name
 import iris.coord_systems
 import iris.coords
+from iris.cube import Cube
 import iris.exceptions
 import iris.fileformats.cf as cf
 import iris.fileformats.netcdf
 from iris.fileformats.netcdf.loader import _get_cf_var_data
+from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.std_names
 import iris.util
 import iris.warnings
@@ -43,6 +47,8 @@ if TYPE_CHECKING:
     from numpy.ma import MaskedArray
 
     from iris.fileformats.cf import CFBoundaryVariable
+
+    from .engine import Engine
 
 # TODO: should un-addable coords / cell measures / etcetera be skipped? iris#5068.
 
@@ -138,6 +144,46 @@ CF_GRID_MAPPING_OBLIQUE = "oblique_mercator"
 CF_GRID_MAPPING_ROTATED_MERCATOR = "rotated_mercator"
 
 #
+# Regex for parsing grid_mapping (extended format)
+# Link to online regex101 playground: https://regex101.com/r/NcKzkQ/1
+#
+#   (\w+):                # Matches '<word>:' and stores in CAPTURE GROUP 1
+#   (                     # CAPTURE GROUP 2 for capturing multiple coords
+#       (?:               #  Non-capturing group for composing match
+#           \s+           #   Matches one or more blank characters
+#           (?!\w+:)      #   Negative look-ahead: don't match <word> followed by colon
+#           \w+           #   Matches a <word>
+#       )+                #  Repeats non-capturing group at least once.
+#   )                     # End of CAPTURE GROUP 2
+_GRID_MAPPING_PARSE_EXTENDED = re.compile(
+    r"""
+        (\w+):
+        (
+            (?:
+                \s+
+                (?!\w+:)
+                \w+
+            )+
+        )+
+    """,
+    re.VERBOSE,
+)
+_GRID_MAPPING_PARSE_SIMPLE = re.compile(r"^\w+$")
+_GRID_MAPPING_VALIDATORS = (  # fmt: skip
+    (
+        re.compile(r"\w+: +\w+:"),
+        "`<coord_system>:` identifier followed immediately by another `<coord_system>:` identifier",
+    ),
+    (
+        re.compile(r"\w+: *$"),
+        "`<coord_system>:` is empty - missing coordinate list",
+    ),
+    (
+        re.compile(r"^\w+ +\w+"),
+        "Multiple coordinates found without `<coord_system>:` identifier",
+    ),
+)
+#
 # CF Attribute Names.
 #
 CF_ATTR_AXIS = "axis"
@@ -202,11 +248,11 @@ _CM_EXTRA = "extra"
 _CM_INTERVAL = "interval"
 _CM_METHOD = "method"
 _CM_NAME = "name"
-_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s+)+")
+_CM_PARSE_NAME = re.compile(r"([\w_]+\s*?:\s*)+")
 _CM_PARSE = re.compile(
     r"""
-                           (?P<name>([\w_]+\s*?:\s+)+)
-                           (?P<method>[\w_\s]+(?![\w_]*\s*?:))\s*
+                           (?P<name>([\w_]+\s*?:\s*)+)
+                           (?P<method>[^\s][\w_\s]+(?![\w_]*\s*?:))\s*
                            (?:
                                \(\s*
                                (?P<extra>.+)
@@ -296,6 +342,12 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
     for m in _CM_PARSE_NAME.finditer(nc_cell_methods):
         name_start_inds.append(m.start())
 
+    # No matches? Must be malformed cell_method string; warn and return
+    if not name_start_inds:
+        msg = f"Failed to parse cell method string: {nc_cell_methods}"
+        warnings.warn(msg, category=iris.warnings.IrisCfLoadWarning, stacklevel=2)
+        return []
+
     # Remove those that fall inside brackets
     bracket_depth = 0
     for ind, cha in enumerate(nc_cell_methods):
@@ -305,8 +357,7 @@ def _split_cell_methods(nc_cell_methods: str) -> List[re.Match]:
             bracket_depth -= 1
             if bracket_depth < 0:
                 msg = (
-                    "Cell methods may be incorrectly parsed due to mismatched "
-                    "brackets"
+                    "Cell methods may be incorrectly parsed due to mismatched brackets"
                 )
                 warnings.warn(
                     msg,
@@ -448,45 +499,268 @@ def parse_cell_methods(nc_cell_methods, cf_name=None):
     return tuple(cell_methods)
 
 
-################################################################################
-def build_cube_metadata(engine):
-    """Add the standard meta data to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
+def _add_or_capture(
+    build_func: partial,
+    add_method: partial,
+    cf_var: iris.fileformats.cf.CFVariable,
+    destination: LoadProblems.Problem.Destination,
+    attr_key: Optional[str] = None,
+) -> Optional[LoadProblems.Problem]:
+    """Build & add objects to the Cube, capturing problem objects - common code.
 
-    # Determine the cube's name attributes
-    cube.var_name = cf_var.cf_name
-    standard_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
-    long_name = getattr(cf_var, CF_ATTR_LONG_NAME, None)
-    cube.long_name = long_name
+    Problems are captured in :const:`iris.loading.LOAD_PROBLEMS`.
 
-    if standard_name is not None:
+    Parameters
+    ----------
+    build_func : ``functools.partial``
+        A function that builds the object-to-be-added. Passed as a
+        :class:`~functools.partial` instance so
+        that argument complexities can be handled by the caller, while execution
+        is deferred until the appropriate time within :func:`_add_or_capture`.
+        The passed :class:`~functools.partial` instance must have ALL arguments
+        already bound, and when called it must return the object that will be
+        added to the Cube.
+    add_method : ``functools.partial``
+        A function that takes the object returned by `build_func` and adds it to
+        the Cube. Passed as a :class:`~functools.partial` instance to allow
+        further arguments to be bound by the caller.
+    cf_var : iris.fileformats.cf.CFVariable
+        The CFVariable object that provides the info for building the
+        object-to-be-added. Used in case of an error, to build the most basic
+        :class:`~iris.cube.Cube` possible - for adding to
+        :const:`iris.loading.LOAD_PROBLEMS`.
+    destination : LoadProblems.Problem.Destination
+        Info about where the object will be added, e.g. a ``standard_name``
+        might be added to :class:`~iris.cube.Cube`,
+        :class:`~iris.coords.DimCoord`, etcetera. Used to provide the maximum
+        information if a problem gets captured.
+    attr_key : str, optional
+        The attribute-of-interest on `cf_var`, if applicable. For example: in
+        some cases we are building a coordinate using the entire of `cf_var` -
+        no `attr_key` needed - but in other cases we are 'building' a
+        standard_name by getting this key from `cf_var`.
+
+    Returns
+    -------
+    iris.loading.LoadProblems.Problem or None
+        The captured problem, if any; the same object that is added to
+        :const:`iris.loading.LOAD_PROBLEMS`.
+
+    See Also
+    --------
+    iris.loading.LoadProblems.Problem: The type of the returned object.
+    iris.loading.LOAD_PROBLEMS: The destination for captured problems.
+    """
+    captured: Cube | dict[str, Any] | None = None
+    load_problems_entry: LoadProblems.Problem | None = None
+
+    try:
+        built = build_func()
+
+    except Exception as exc_build:
+        # Problems CREATING the desired object.
+        # Fully suppress further problems since we're just trying to do our
+        #  best to capture objects IF possible.
+        if attr_key is not None:
+            captured_attr = None
+            with contextlib.suppress(AttributeError):
+                captured_attr = getattr(cf_var, attr_key)
+            captured = {attr_key: captured_attr}
+        else:
+            with contextlib.suppress(Exception):
+                captured = build_raw_cube(cf_var)
+
+        load_problems_entry = LOAD_PROBLEMS.record(
+            filename=cf_var.filename,
+            loaded=captured,
+            exception=exc_build,
+            destination=destination,
+            handled=False,
+        )
+
+    else:
         try:
-            cube.standard_name = _get_valid_standard_name(standard_name)
-        except ValueError:
-            if cube.long_name is not None:
-                cube.attributes["invalid_standard_name"] = standard_name
+            add_method(built)
+        except Exception as exc_add:
+            # Problems ADDING the built object to the Cube.
+            if attr_key is not None:
+                captured = {attr_key: built}
             else:
-                cube.long_name = standard_name
+                captured = built
 
-    # Determine the cube units.
-    attr_units = get_attr_units(cf_var, cube.attributes)
-    cube.units = attr_units
-
-    # Incorporate cell methods
-    nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
-    cube.cell_methods = parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
-
-    # Set the cube global attributes.
-    for attr_name, attr_value in cf_var.cf_group.global_attributes.items():
-        try:
-            cube.attributes.globals[str(attr_name)] = attr_value
-        except ValueError as e:
-            msg = "Skipping disallowed global attribute {!r}: {}"
-            warnings.warn(
-                msg.format(attr_name, str(e)),
-                category=_WarnComboIgnoringLoad,
+            load_problems_entry = LOAD_PROBLEMS.record(
+                filename=cf_var.filename,
+                loaded=captured,
+                exception=exc_add,
+                destination=destination,
+                handled=False,
             )
+
+    return load_problems_entry
+
+
+################################################################################
+def build_raw_cube(cf_var: cf.CFVariable) -> Cube:
+    """Build the most basic Cube possible - used as a 'last resort' fallback."""
+    # TODO: dataless Cubes might be an opportunity for _get_cf_var_data() to return None?
+    data = _get_cf_var_data(cf_var)
+    raw_attributes = {key: value for key, value in cf_var.cf_attrs()}
+    # Not a real attribute, but this is 'Iris language'.
+    raw_attributes["var_name"] = cf_var.cf_name
+    attributes = {LimitedAttributeDict.IRIS_RAW: raw_attributes}
+    return Cube(data=data, attributes=attributes)
+
+
+################################################################################
+def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
+    value = getattr(cf_var, CF_ATTR_STD_NAME, None)
+    if value is not None:
+        standard_name = _get_valid_standard_name(value)
+    else:
+        standard_name = value
+    return standard_name
+
+
+def _build_name_long(cf_var: cf.CFVariable) -> str | None:
+    return getattr(cf_var, CF_ATTR_LONG_NAME, None)
+
+
+def _build_name_var(cf_var: cf.CFVariable) -> str | None:
+    return cf_var.cf_name
+
+
+def build_and_add_names(engine: Engine) -> None:
+    """Add standard_, long_, var_name to the Cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
+
+    def setter(attr_name):
+        return partial(setattr, engine.cube, attr_name)
+
+    problem = _add_or_capture(
+        build_func=partial(_build_name_standard, engine.cf_var),
+        add_method=setter("standard_name"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_STD_NAME,
+        destination=destination,
+    )
+    if problem is not None and hasattr(problem.loaded, "get"):
+        assert isinstance(problem.loaded, dict)
+        invalid_std_name = problem.loaded.get(CF_ATTR_STD_NAME)
+        problem.handled = True
+    else:
+        invalid_std_name = None
+
+    long_name_kwargs = dict(
+        add_method=setter("long_name"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_LONG_NAME,
+        destination=destination,
+    )
+    _ = _add_or_capture(
+        build_func=partial(_build_name_long, engine.cf_var),
+        **long_name_kwargs,
+    )
+
+    # Store as long_name is there is space, or as attribute if not.
+    if invalid_std_name is not None:
+        if engine.cube.long_name is None:
+            _ = _add_or_capture(
+                build_func=partial(lambda: invalid_std_name),
+                **long_name_kwargs,
+            )
+        else:
+            engine.cube.attributes["invalid_standard_name"] = invalid_std_name
+
+    _ = _add_or_capture(
+        build_func=partial(_build_name_var, engine.cf_var),
+        add_method=setter("var_name"),
+        cf_var=engine.cf_var,
+        attr_key="cf_name",
+        destination=destination,
+    )
+
+
+################################################################################
+def _add_global_attribute(cube: Cube, attr_name: Any, attr_value: Any):
+    cube.attributes.globals[str(attr_name)] = attr_value
+
+
+def build_and_add_global_attributes(engine: Engine):
+    """Create global attributes for the Cube then add them to the Cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    for attr_name, attr_value in engine.cf_var.cf_group.global_attributes.items():
+        problem = _add_or_capture(
+            build_func=partial(lambda: attr_value),
+            add_method=partial(_add_global_attribute, engine.cube, attr_name),
+            cf_var=engine.cf_var,
+            attr_key=attr_name,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=Cube,
+                identifier=engine.cf_var.cf_name,
+            ),
+        )
+        if problem is not None:
+            stack_notes = problem.stack_trace.__notes__
+            if stack_notes is None:
+                stack_notes = []
+            stack_notes.append(
+                f"Skipping disallowed global attribute '{attr_name}' (see above error)"
+            )
+            problem.stack_trace.__notes__ = stack_notes
+
+
+################################################################################
+def build_and_add_units(engine: Engine):
+    """Create a Units instance and add it to the Cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    _ = _add_or_capture(
+        build_func=partial(
+            get_attr_units,
+            engine.cf_var,
+            getattr(engine.cube, "attributes", None),
+            capture_invalid=True,
+        ),
+        add_method=partial(setattr, engine.cube, "units"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_UNITS,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
+
+
+################################################################################
+def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMethod]:
+    nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
+    return parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
+
+
+def build_and_add_cell_methods(engine: Engine):
+    """Create CellMethod instances and add them to the Cube."""
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+
+    _ = _add_or_capture(
+        build_func=partial(_build_cell_methods, engine.cf_var),
+        add_method=partial(setattr, engine.cube, "cell_methods"),
+        cf_var=engine.cf_var,
+        attr_key=CF_ATTR_CELL_METHODS,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
@@ -891,7 +1165,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
 
 
 ################################################################################
-def get_attr_units(cf_var, attributes):
+def get_attr_units(cf_var, attributes, capture_invalid=False):
     attr_units = getattr(cf_var, CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
     if not attr_units:
         attr_units = UNKNOWN_UNIT_STRING
@@ -901,18 +1175,37 @@ def get_attr_units(cf_var, attributes):
         attr_units = "degrees"
 
     # Graceful loading of invalid units.
+    invalid_units_message = (
+        f"{{prefix}} units '{attr_units}' on netCDF variable '{cf_var.cf_name}'."
+    )
     try:
         cf_units.as_unit(attr_units)
-    except ValueError:
-        # Using converted unicode message. Can be reverted with Python 3.
-        msg = (
-            f"Ignoring invalid units {attr_units!r} on netCDF variable "
-            f"{cf_var.cf_name!r}."
-        )
-        warnings.warn(
-            msg,
-            category=_WarnComboIgnoringCfLoad,
-        )
+    except ValueError as invalid_units_error:
+        if capture_invalid:
+            # This block is only expected when getting Cube units.
+            assert isinstance(cf_var, cf.CFDataVariable)
+            try:
+                raise invalid_units_error.__class__(
+                    invalid_units_message.format(prefix="Invalid")
+                ) from invalid_units_error
+            except invalid_units_error.__class__ as error:
+                _ = LOAD_PROBLEMS.record(
+                    filename=cf_var.filename,
+                    loaded={CF_ATTR_UNITS: attr_units},
+                    exception=error,
+                    destination=LoadProblems.Problem.Destination(
+                        iris_class=Cube,
+                        identifier=cf_var.cf_name,
+                    ),
+                    handled=True,
+                )
+
+        else:
+            warnings.warn(
+                invalid_units_message.format(prefix="Ignoring invalid"),
+                category=_WarnComboIgnoringCfLoad,
+            )
+
         attributes["invalid_units"] = attr_units
         attr_units = UNKNOWN_UNIT_STRING
 
@@ -1089,13 +1382,12 @@ def _normalise_bounds_units(
 
 
 ################################################################################
-def build_dimension_coordinate(
-    engine, cf_coord_var, coord_name=None, coord_system=None
-):
-    """Create a dimension coordinate (DimCoord) and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_dimension_coordinate(
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+) -> iris.coords.Coord:
+    attributes: dict[str, Any] = {}
 
     attr_units = get_attr_units(cf_coord_var, attributes)
     points_data = cf_coord_var[:]
@@ -1143,106 +1435,155 @@ def build_dimension_coordinate(
             points_data, modulus_value, bounds=bounds_data
         )
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_coord_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
-
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
-    coord_skipped_msg = f"{cf_coord_var.cf_name} coordinate not added to Cube: "
-    coord_skipped_msg += "{error}"
-    coord_skipped = False
+    coord = iris.coords.DimCoord(
+        points_data,
+        standard_name=standard_name,
+        long_name=long_name,
+        var_name=var_name,
+        units=attr_units,
+        bounds=bounds_data,
+        attributes=attributes,
+        circular=circular,
+        climatological=climatological,
+    )
 
-    # Create the coordinate.
-    try:
-        coord = iris.coords.DimCoord(
-            points_data,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            units=attr_units,
-            bounds=bounds_data,
-            attributes=attributes,
-            coord_system=coord_system,
-            circular=circular,
-            climatological=climatological,
-        )
-    except ValueError as e_msg:
-        # Attempt graceful loading.
-        msg = (
-            "Failed to create {name!r} dimension coordinate: {error}\n"
-            "Gracefully creating {name!r} auxiliary coordinate instead."
-        )
-        warnings.warn(
-            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=_WarnComboDefaultingCfLoad,
-        )
-        coord = iris.coords.AuxCoord(
-            points_data,
-            standard_name=standard_name,
-            long_name=long_name,
-            var_name=var_name,
-            units=attr_units,
-            bounds=bounds_data,
-            attributes=attributes,
-            coord_system=coord_system,
-            climatological=climatological,
-        )
+    assert coord.var_name is not None
+    # Part 2 - only adding - following on from building in
+    #  actions.action_provides_grid_mapping()
+    _ = _add_or_capture(
+        build_func=partial(lambda: coord_system),
+        add_method=partial(setattr, coord, "coord_system"),
+        # cf_var is usually the variable for the thing we are building.
+        #  In this case coord_system was built earlier; cf_coord_var is here
+        #  only to provide the filename.
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=iris.coords.DimCoord,
+            identifier=coord.var_name,
+        ),
+    )
+
+    return coord
+
+
+def _add_dimension_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    # Determine the name of the dimension/s shared between the CF-netCDF
+    #  data variable and the coordinate being built.
+    common_dims = [
+        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
+    ]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [int(engine.cf_var.dimensions.index(dim)) for dim in common_dims]
+
+    if hasattr(coord, "circular") and data_dims is not None:
+        # Appease MyPy. The check itself uses duck typing to avoid any
+        #  silent errors when Mocking.
+        assert isinstance(coord, iris.coords.DimCoord)
         try:
-            cube.add_aux_coord(coord, data_dims)
-        except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(
-                coord_skipped_msg.format(error=e_msg),
-                category=iris.warnings.IrisCannotAddWarning,
+            (data_dim,) = data_dims
+        except ValueError:
+            message = (
+                "Expected single dimension for dimension coordinate "
+                f"{coord.var_name}, got: {data_dims}."
             )
-            coord_skipped = True
+            raise ValueError(message)
+        engine.cube.add_dim_coord(coord, data_dim)
     else:
-        # Add the dimension coordinate to the cube.
-        try:
-            if data_dims:
-                cube.add_dim_coord(coord, data_dims)
-            else:
-                # Scalar coords are placed in the aux_coords container.
-                cube.add_aux_coord(coord, data_dims)
-        except iris.exceptions.CannotAddError as e_msg:
-            warnings.warn(
-                coord_skipped_msg.format(error=e_msg),
-                category=iris.warnings.IrisCannotAddWarning,
-            )
-            coord_skipped = True
+        # Should work fine for scalar coords - data_dims passed as None.
+        engine.cube.add_aux_coord(coord, data_dims)
 
-    if not coord_skipped:
-        # Update the coordinate to CF-netCDF variable mapping.
-        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+    # Update the coordinate to CF-netCDF variable mapping.
+    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+
+def build_and_add_dimension_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+):
+    """Create a DimCoord instance and add it to the Cube."""
+    assert engine.cf_var is not None
+
+    destination = LoadProblems.Problem.Destination(
+        iris_class=Cube,
+        identifier=engine.cf_var.cf_name,
+    )
+
+    problem = _add_or_capture(
+        build_func=partial(
+            _build_dimension_coordinate,
+            cf_coord_var,
+            coord_name,
+            coord_system,
+        ),
+        add_method=partial(_add_dimension_coordinate, engine, cf_coord_var),
+        cf_var=cf_coord_var,
+        destination=destination,
+    )
+    if problem is not None:
+        coord_var_name = str(cf_coord_var.cf_name)
+        stack_notes = problem.stack_trace.__notes__
+        if stack_notes is None:
+            stack_notes = []
+        stack_notes.append(
+            f"Failed to create {coord_var_name} dimension coordinate:\n"
+            f"Gracefully creating {coord_var_name!r} auxiliary coordinate instead."
+        )
+        problem.stack_trace.__notes__ = stack_notes
+        problem.handled = True
+
+        _ = _add_or_capture(
+            build_func=partial(
+                _build_auxiliary_coordinate,
+                engine,
+                cf_coord_var,
+                coord_name,
+                coord_system,
+            ),
+            add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
+            cf_var=cf_coord_var,
+            destination=destination,
+        )
 
 
 ################################################################################
-def build_auxiliary_coordinate(
-    engine, cf_coord_var, coord_name=None, coord_system=None
-):
-    """Create an auxiliary coordinate (AuxCoord) and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable | cf.CFAuxiliaryCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+) -> iris.coords.AuxCoord:
+    assert engine.cf_var is not None
+
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_coord_var, attributes)
 
     # Get any coordinate point data.
     if isinstance(cf_coord_var, cf.CFLabelVariable):
-        points_data = cf_coord_var.cf_label_data(cf_var)
+        points_data = cf_coord_var.cf_label_data(engine.cf_var)
     else:
-        points_data = _get_cf_var_data(cf_coord_var, engine.filename)
+        points_data = _get_cf_var_data(cf_coord_var)
 
     # Get any coordinate bounds.
     cf_bounds_var, climatological = get_cf_bounds_var(cf_coord_var)
     if cf_bounds_var is not None:
-        bounds_data = _get_cf_var_data(cf_bounds_var, engine.filename)
+        bounds_data = _get_cf_var_data(cf_bounds_var)
 
         # Handle transposed bounds where the vertex dimension is not
         # the last one. Test based on shape to support different
@@ -1257,14 +1598,6 @@ def build_auxiliary_coordinate(
     else:
         bounds_data = None
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_coord_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
-
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_coord_var, coord_name, attributes)
 
@@ -1277,44 +1610,88 @@ def build_auxiliary_coordinate(
         units=attr_units,
         bounds=bounds_data,
         attributes=attributes,
-        coord_system=coord_system,
         climatological=climatological,
     )
 
-    # Add it to the cube
-    try:
-        cube.add_aux_coord(coord, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} coordinate not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_coord_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+    assert coord.var_name is not None
+    # Part 2 - only adding - following on from building in
+    #  actions.action_provides_grid_mapping()
+    _ = _add_or_capture(
+        build_func=partial(lambda: coord_system),
+        add_method=partial(setattr, coord, "coord_system"),
+        # cf_var is usually the variable for the thing we are building.
+        #  In this case coord_system was built earlier; cf_coord_var is here
+        #  only to provide the filename.
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=iris.coords.AuxCoord,
+            identifier=coord.var_name,
+        ),
+    )
+
+    return coord
+
+
+def _add_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFCoordinateVariable | cf.CFAuxiliaryCoordinateVariable,
+    coord: iris.coords.DimCoord | iris.coords.AuxCoord,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data variable
+    # and the coordinate being built.
+    common_dims = [
+        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
+    ]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [engine.cf_var.dimensions.index(dim) for dim in common_dims]
+
+    engine.cube.add_aux_coord(coord, data_dims)
+
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["coordinates"].append((coord, cf_coord_var.cf_name))
+
+
+def build_and_add_auxiliary_coordinate(
+    engine: Engine,
+    cf_coord_var: cf.CFAuxiliaryCoordinateVariable,
+    coord_name: Optional[str] = None,
+    coord_system: Optional[iris.coord_systems.CoordSystem] = None,
+):
+    """Create a AuxCoord instance and add it to the Cube."""
+    assert engine.cf_var is not None
+
+    _ = _add_or_capture(
+        build_func=partial(
+            _build_auxiliary_coordinate,
+            engine,
+            cf_coord_var,
+            coord_name,
+            coord_system,
+        ),
+        add_method=partial(_add_auxiliary_coordinate, engine, cf_coord_var),
+        cf_var=cf_coord_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
-def build_cell_measures(engine, cf_cm_var):
-    """Create a CellMeasure instance and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_cell_measure(cf_cm_var: cf.CFMeasureVariable) -> iris.coords.CellMeasure:
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_cm_var, attributes)
 
     # Get (lazy) content array
-    data = _get_cf_var_data(cf_cm_var, engine.filename)
-
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    common_dims = [dim for dim in cf_cm_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    data = _get_cf_var_data(cf_cm_var)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_cm_var, None, attributes)
@@ -1333,40 +1710,64 @@ def build_cell_measures(engine, cf_cm_var):
         measure=measure,
     )
 
+    return cell_measure
+
+
+def _add_cell_measure(
+    engine: Engine,
+    cf_cm_var: cf.CFMeasureVariable,
+    cell_measure: iris.coords.CellMeasure,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    cf_var = engine.cf_var
+    cube = engine.cube
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data
+    #  variable and the coordinate being built.
+    common_dims = [dim for dim in cf_cm_var.dimensions if dim in cf_var.dimensions]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
     # Add it to the cube
-    try:
-        cube.add_cell_measure(cell_measure, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} cell measure not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_cm_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["cell_measures"].append((cell_measure, cf_cm_var.cf_name))
+    cube.add_cell_measure(cell_measure, data_dims)
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["cell_measures"].append((cell_measure, cf_cm_var.cf_name))
+
+
+def build_and_add_cell_measure(
+    engine: Engine,
+    cf_cm_var: cf.CFMeasureVariable,
+) -> None:
+    """Create a CellMeasure instance and add it to the Cube."""
+    assert engine.cf_var is not None
+
+    _ = _add_or_capture(
+        build_func=partial(_build_cell_measure, cf_cm_var),
+        add_method=partial(_add_cell_measure, engine, cf_cm_var),
+        cf_var=cf_cm_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
-def build_ancil_var(engine, cf_av_var):
-    """Create an AncillaryVariable instance and add it to the cube."""
-    cf_var = engine.cf_var
-    cube = engine.cube
-    attributes = {}
+def _build_ancil_var(
+    cf_av_var: cf.CFAncillaryDataVariable,
+) -> iris.coords.AncillaryVariable:
+    attributes: dict[str, Any] = {}
 
     # Get units
     attr_units = get_attr_units(cf_av_var, attributes)
 
     # Get (lazy) content array
-    data = _get_cf_var_data(cf_av_var, engine.filename)
-
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the AV being built.
-    common_dims = [dim for dim in cf_av_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    data = _get_cf_var_data(cf_av_var)
 
     # Determine the standard_name, long_name and var_name
     standard_name, long_name, var_name = get_names(cf_av_var, None, attributes)
@@ -1381,18 +1782,51 @@ def build_ancil_var(engine, cf_av_var):
         attributes=attributes,
     )
 
+    return av
+
+
+def _add_ancil_var(
+    engine: Engine,
+    cf_av_var: cf.CFAncillaryDataVariable,
+    av: iris.coords.AncillaryVariable,
+) -> None:
+    assert engine.cf_var is not None
+    assert engine.cube is not None
+    assert engine.cube_parts is not None
+
+    cf_var = engine.cf_var
+    cube = engine.cube
+
+    # Determine the name of the dimension/s shared between the CF-netCDF data variable
+    #  and the AV being built.
+    common_dims = [dim for dim in cf_av_var.dimensions if dim in cf_var.dimensions]
+    data_dims = None
+    if common_dims:
+        # Calculate the offset of each common dimension.
+        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+
     # Add it to the cube
-    try:
-        cube.add_ancillary_variable(av, data_dims)
-    except iris.exceptions.CannotAddError as e_msg:
-        msg = "{name!r} ancillary variable not added to Cube: {error}"
-        warnings.warn(
-            msg.format(name=str(cf_av_var.cf_name), error=e_msg),
-            category=iris.warnings.IrisCannotAddWarning,
-        )
-    else:
-        # Make a list with names, stored on the engine, so we can find them all later.
-        engine.cube_parts["ancillary_variables"].append((av, cf_av_var.cf_name))
+    cube.add_ancillary_variable(av, data_dims)
+    # Make a list with names, stored on the engine, so we can find them all later.
+    engine.cube_parts["ancillary_variables"].append((av, cf_av_var.cf_name))
+
+
+def build_and_add_ancil_var(
+    engine: Engine,
+    cf_av_var: cf.CFAncillaryDataVariable,
+) -> None:
+    """Create an AncillaryVariable instance and add it to the Cube."""
+    assert engine.cf_var is not None
+
+    _ = _add_or_capture(
+        build_func=partial(_build_ancil_var, cf_av_var),
+        add_method=partial(_add_ancil_var, engine, cf_av_var),
+        cf_var=cf_av_var,
+        destination=LoadProblems.Problem.Destination(
+            iris_class=Cube,
+            identifier=engine.cf_var.cf_name,
+        ),
+    )
 
 
 ################################################################################
@@ -1408,7 +1842,7 @@ def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
     is_valid = False
     attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
 
-    if attr_units is not None:
+    if isinstance(attr_units, str):
         attr_units = attr_units.lower()
         is_valid = attr_units in ud_units
 
@@ -1540,6 +1974,41 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
         is_valid = attr_mapping_name.lower() == grid_mapping
 
     return is_valid
+
+
+################################################################################
+def _parse_extended_grid_mapping(grid_mapping: str) -> dict[None | str, str]:
+    """Parse `grid_mapping` attribute and return list of coordinate system variables and associated coords."""
+    # Handles extended grid_mapping too. Possibilities:
+    #  grid_mapping = "crs"  : simple mapping; a single variable name with no coords
+    #  grid_mapping = "crs: lat lon"  : extended mapping; a variable name and list of coords
+    #  grid_mapping = "crs: lat lon other: var1 var2"  : multiple extended mappings
+
+    mappings: dict[None | str, str]
+
+    # try simple mapping first
+    if _GRID_MAPPING_PARSE_SIMPLE.match(grid_mapping):
+        mappings = {None: grid_mapping}  # simple single grid mapping variable
+    else:
+        # Try extended mapping:
+        # 1. Run validators to check for invalid expressions:
+        for v_re, v_msg in _GRID_MAPPING_VALIDATORS:
+            if len(match := v_re.findall(grid_mapping)):
+                msg = f"Invalid syntax in extended grid_mapping: {grid_mapping!r}\n{v_msg} : {match}"
+                raise iris.exceptions.CFParseError(msg)
+
+        # 2. Parse grid_mapping into list of [cs, (coords, ...)]:
+        result = _GRID_MAPPING_PARSE_EXTENDED.findall(grid_mapping)
+        if len(result) == 0:
+            msg = f"Failed to parse grid_mapping: {grid_mapping!r}"
+            raise iris.exceptions.CFParseError(msg)
+
+        # split second match group into list of coordinates:
+        mappings = {}
+        for cs, coords in result:
+            mappings.update({coord: cs for coord in coords.split()})
+
+    return mappings
 
 
 ################################################################################

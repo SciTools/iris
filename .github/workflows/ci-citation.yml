@@ -1,3 +1,7 @@
+# Reference:
+#   - https://github.com/actions/checkout
+#   - https://github.com/citation-file-format/cffconvert-github-action
+
 name: ci-citation
 
 on:
@@ -15,14 +19,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   validate:
     name: "validate"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: "check CITATION.cff"
         uses: citation-file-format/cffconvert-github-action@4cf11baa70a673bfdf9dad0acc7ee33b3f4b6084

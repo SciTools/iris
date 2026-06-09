@@ -2,9 +2,16 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`."""
+"""Provides Creation and saving of DOT graphs for a :class:`iris.cube.Cube`.
+
+.. z_reference:: iris.fileformats.dot
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import os
+from pathlib import Path
 import subprocess
 
 import iris
@@ -34,8 +41,8 @@ def _dot_path():
         path = _DOT_EXECUTABLE_PATH
     else:
         path = iris.config.get_option("System", "dot_path", default="dot")
-        if not os.path.exists(path):
-            if not os.path.isabs(path):
+        if not Path(path).exists():
+            if not Path(path).is_absolute():
                 try:
                     # Check PATH
                     subprocess.check_output([path, "-V"], stderr=subprocess.STDOUT)
@@ -43,7 +50,7 @@ def _dot_path():
                     path = None
             else:
                 path = None
-        _DOT_EXECUTABLE_PATH = path
+        _DOT_EXECUTABLE_PATH = str(path)
         _DOT_CHECKED = True
     return path
 
@@ -117,7 +124,7 @@ def save_png(source, target, launch=False):
     # Create png data
     if not _dot_path():
         raise ValueError(
-            'Executable "dot" not found: ' "Review dot_path setting in site.cfg."
+            'Executable "dot" not found: Review dot_path setting in site.cfg.'
         )
     # To filename or open file handle?
     if isinstance(target, str):

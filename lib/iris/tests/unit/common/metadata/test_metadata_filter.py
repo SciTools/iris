@@ -5,120 +5,113 @@
 """Unit tests for the :func:`iris.common.metadata_filter`."""
 
 import numpy as np
+import pytest
 
 from iris.common.metadata import CoordMetadata, DimCoordMetadata, metadata_filter
 from iris.coords import AuxCoord
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests
 
-Mock = tests.mock.Mock
-
-
-class Test_standard(tests.IrisTest):
-    def test_instances_non_iterable(self):
-        item = Mock()
+class Test_standard:
+    def test_instances_non_iterable(self, mocker):
+        item = mocker.Mock()
         item.name.return_value = "one"
         result = metadata_filter(item, item="one")
-        self.assertEqual(1, len(result))
-        self.assertIn(item, result)
+        assert len(result) == 1
+        assert item in result
 
-    def test_name(self):
-        name_one = Mock()
+    def test_name(self, mocker):
+        name_one = mocker.Mock()
         name_one.name.return_value = "one"
-        name_two = Mock()
+        name_two = mocker.Mock()
         name_two.name.return_value = "two"
         input_list = [name_one, name_two]
         result = metadata_filter(input_list, item="one")
-        self.assertIn(name_one, result)
-        self.assertNotIn(name_two, result)
+        assert name_one in result
+        assert name_two not in result
 
-    def test_item(self):
-        coord = Mock(__class__=AuxCoord)
-        mock = Mock()
+    def test_item(self, mocker):
+        coord = mocker.Mock(__class__=AuxCoord)
+        mock = mocker.Mock()
         input_list = [coord, mock]
         result = metadata_filter(input_list, item=coord)
-        self.assertIn(coord, result)
-        self.assertNotIn(mock, result)
+        assert coord in result
+        assert mock not in result
 
-    def test_item_metadata(self):
-        coord = Mock(metadata=CoordMetadata)
-        dim_coord = Mock(metadata=DimCoordMetadata)
+    def test_item_metadata(self, mocker):
+        coord = mocker.Mock(metadata=CoordMetadata)
+        dim_coord = mocker.Mock(metadata=DimCoordMetadata)
         input_list = [coord, dim_coord]
         result = metadata_filter(input_list, item=coord)
-        self.assertIn(coord, result)
-        self.assertNotIn(dim_coord, result)
+        assert coord in result
+        assert dim_coord not in result
 
-    def test_standard_name(self):
-        name_one = Mock(standard_name="one")
-        name_two = Mock(standard_name="two")
+    def test_standard_name(self, mocker):
+        name_one = mocker.Mock(standard_name="one")
+        name_two = mocker.Mock(standard_name="two")
         input_list = [name_one, name_two]
         result = metadata_filter(input_list, standard_name="one")
-        self.assertIn(name_one, result)
-        self.assertNotIn(name_two, result)
+        assert name_one in result
+        assert name_two not in result
 
-    def test_long_name(self):
-        name_one = Mock(long_name="one")
-        name_two = Mock(long_name="two")
+    def test_long_name(self, mocker):
+        name_one = mocker.Mock(long_name="one")
+        name_two = mocker.Mock(long_name="two")
         input_list = [name_one, name_two]
         result = metadata_filter(input_list, long_name="one")
-        self.assertIn(name_one, result)
-        self.assertNotIn(name_two, result)
+        assert name_one in result
+        assert name_two not in result
 
-    def test_var_name(self):
-        name_one = Mock(var_name="one")
-        name_two = Mock(var_name="two")
+    def test_var_name(self, mocker):
+        name_one = mocker.Mock(var_name="one")
+        name_two = mocker.Mock(var_name="two")
         input_list = [name_one, name_two]
         result = metadata_filter(input_list, var_name="one")
-        self.assertIn(name_one, result)
-        self.assertNotIn(name_two, result)
+        assert name_one in result
+        assert name_two not in result
 
-    def test_attributes(self):
+    def test_attributes(self, mocker):
         # Confirm that this can handle attrib dicts including np arrays.
-        attrib_one_two = Mock(attributes={"one": np.arange(1), "two": np.arange(2)})
-        attrib_three_four = Mock(
+        attrib_one_two = mocker.Mock(
+            attributes={"one": np.arange(1), "two": np.arange(2)}
+        )
+        attrib_three_four = mocker.Mock(
             attributes={"three": np.arange(3), "four": np.arange(4)}
         )
         input_list = [attrib_one_two, attrib_three_four]
         result = metadata_filter(input_list, attributes=attrib_one_two.attributes)
-        self.assertIn(attrib_one_two, result)
-        self.assertNotIn(attrib_three_four, result)
+        assert attrib_one_two in result
+        assert attrib_three_four not in result
 
-    def test_invalid_attributes(self):
-        attrib_one = Mock(attributes={"one": 1})
+    def test_invalid_attributes(self, mocker):
+        attrib_one = mocker.Mock(attributes={"one": 1})
         input_list = [attrib_one]
-        self.assertRaisesRegex(
-            ValueError,
-            ".*expecting a dictionary.*",
-            metadata_filter,
-            input_list,
-            attributes="one",
-        )
+        emsg = ".*expecting a dictionary.*"
+        with pytest.raises(ValueError, match=emsg):
+            _ = metadata_filter(input_list, attributes="one")
 
-    def test_axis__by_guess(self):
+    def test_axis__by_guess(self, mocker):
         # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
-        axis_lon = Mock(standard_name="longitude")
+        axis_lon = mocker.Mock(standard_name="longitude")
         del axis_lon.axis
-        axis_lat = Mock(standard_name="latitude")
+        axis_lat = mocker.Mock(standard_name="latitude")
         del axis_lat.axis
         input_list = [axis_lon, axis_lat]
         result = metadata_filter(input_list, axis="x")
-        self.assertIn(axis_lon, result)
-        self.assertNotIn(axis_lat, result)
+        assert axis_lon in result
+        assert axis_lat not in result
 
-    def test_axis__by_member(self):
-        axis_x = Mock(axis="x")
-        axis_y = Mock(axis="y")
+    def test_axis__by_member(self, mocker):
+        axis_x = mocker.Mock(axis="x")
+        axis_y = mocker.Mock(axis="y")
         input_list = [axis_x, axis_y]
         result = metadata_filter(input_list, axis="x")
-        self.assertEqual(1, len(result))
-        self.assertIn(axis_x, result)
+        assert len(result) == 1
+        assert axis_x in result
 
-    def test_multiple_args(self):
-        coord_one = Mock(__class__=AuxCoord, long_name="one")
-        coord_two = Mock(__class__=AuxCoord, long_name="two")
+    def test_multiple_args(self, mocker):
+        coord_one = mocker.Mock(__class__=AuxCoord, long_name="one")
+        coord_two = mocker.Mock(__class__=AuxCoord, long_name="two")
         input_list = [coord_one, coord_two]
         result = metadata_filter(input_list, item=coord_one, long_name="one")
-        self.assertIn(coord_one, result)
-        self.assertNotIn(coord_two, result)
+        assert coord_one in result
+        assert coord_two not in result

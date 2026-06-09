@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test plots with two dimensional coordinates."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,22 +12,23 @@ import iris
 from iris.analysis.cartography import unrotate_pole
 from iris.coords import AuxCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.quickplot as qplt
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 def simple_cube_w_2d_coords():
-    path = tests.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
+    path = _shared_utils.get_data_path(("NetCDF", "ORCA2", "votemper.nc"))
     cube = iris.load_cube(path)
     return cube
 
 
-@tests.skip_plot
-@tests.skip_data
-class Test(tests.GraphicsTest):
+@_shared_utils.skip_plot
+@_shared_utils.skip_data
+class Test(_shared_utils.GraphicsTest):
     def test_2d_coord_bounds_platecarree(self):
         # To avoid a problem with Cartopy smearing the data where the
         #  longitude wraps, we set the central_longitude.
@@ -56,8 +53,8 @@ class Test(tests.GraphicsTest):
         self.check_graphic()
 
 
-@tests.skip_plot
-class Test2dContour(tests.GraphicsTest):
+@_shared_utils.skip_plot
+class Test2dContour(_shared_utils.GraphicsTest):
     def test_2d_coords_contour(self):
         ny, nx = 4, 6
         x1 = np.linspace(-20, 70, nx)
@@ -77,7 +74,3 @@ class Test2dContour(tests.GraphicsTest):
         ax.gridlines(draw_labels=True)
         ax.set_extent((0, 180, 0, 90))
         self.check_graphic()
-
-
-if __name__ == "__main__":
-    tests.main()

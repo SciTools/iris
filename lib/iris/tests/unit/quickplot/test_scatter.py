@@ -4,29 +4,27 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.quickplot.scatter` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
+
+from iris.tests import _shared_utils
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.quickplot as qplt
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
-    def setUp(self):
-        super().setUp()
+    parent_setup = TestGraphicStringCoord._setup
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, parent_setup):
         self.cube = self.cube[0, :]
 
     def test_xaxis_labels(self):
         qplt.scatter(self.cube.coord("str_coord"), self.cube)
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
     def test_yaxis_labels(self):
         qplt.scatter(self.cube, self.cube.coord("str_coord"))
-        self.assertBoundsTickLabels("yaxis")
-
-
-if __name__ == "__main__":
-    tests.main()
+        self.assert_bounds_tick_labels("yaxis")

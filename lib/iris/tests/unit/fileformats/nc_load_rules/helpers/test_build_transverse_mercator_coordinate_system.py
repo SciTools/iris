@@ -7,20 +7,15 @@ build_transverse_mercator_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import TransverseMercator
 from iris.fileformats._nc_load_rules.helpers import (
     build_transverse_mercator_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
+class TestBuildTransverseMercatorCoordinateSystem(MockerMixin):
     def _test(self, inverse_flattening=False, no_options=False):
         test_easting = -100
         test_northing = 200
@@ -51,7 +46,7 @@ class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
             test_northing = 0
             test_scale_factor = 1.0
 
-        cf_grid_var = mock.Mock(spec=[], **gridvar_props)
+        cf_grid_var = self.mocker.Mock(spec=[], **gridvar_props)
 
         cs = build_transverse_mercator_coordinate_system(None, cf_grid_var)
 
@@ -64,7 +59,7 @@ class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
             ellipsoid=expected_ellipsoid,
         )
 
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
     def test_basic(self):
         self._test()
@@ -74,7 +69,3 @@ class TestBuildTransverseMercatorCoordinateSystem(tests.IrisTest):
 
     def test_missing_optionals(self):
         self._test(no_options=True)
-
-
-if __name__ == "__main__":
-    tests.main()

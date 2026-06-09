@@ -4,23 +4,22 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.mesh.Connectivity` class."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from platform import python_version
 from xml.dom import minidom
 
 import numpy as np
 from numpy import ma
 from packaging import version
+import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.mesh import Connectivity
+from iris.tests import _shared_utils
 
 
-class TestStandard(tests.IrisTest):
-    def setUp(self):
+class TestStandard:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Crete an instance, with non-default arguments to allow testing of
         # correct property setting.
         self.kwargs = {
@@ -35,24 +34,26 @@ class TestStandard(tests.IrisTest):
         self.connectivity = Connectivity(**self.kwargs)
 
     def test_cf_role(self):
-        self.assertEqual(self.kwargs["cf_role"], self.connectivity.cf_role)
+        assert self.kwargs["cf_role"] == self.connectivity.cf_role
 
     def test_location(self):
         expected = self.kwargs["cf_role"].split("_")[0]
-        self.assertEqual(expected, self.connectivity.location)
+        assert expected == self.connectivity.location
 
     def test_connected(self):
         expected = self.kwargs["cf_role"].split("_")[1]
-        self.assertEqual(expected, self.connectivity.connected)
+        assert expected == self.connectivity.connected
 
     def test_start_index(self):
-        self.assertEqual(self.kwargs["start_index"], self.connectivity.start_index)
+        assert self.kwargs["start_index"] == self.connectivity.start_index
 
     def test_location_axis(self):
-        self.assertEqual(self.kwargs["location_axis"], self.connectivity.location_axis)
+        assert self.kwargs["location_axis"] == self.connectivity.location_axis
 
     def test_indices(self):
-        self.assertArrayEqual(self.kwargs["indices"], self.connectivity.indices)
+        _shared_utils.assert_array_equal(
+            self.kwargs["indices"], self.connectivity.indices
+        )
 
     def test_read_only(self):
         attributes = ("indices", "cf_role", "start_index", "location_axis")
@@ -61,37 +62,33 @@ class TestStandard(tests.IrisTest):
         else:
             msg = "can't set attribute"
         for attribute in attributes:
-            self.assertRaisesRegex(
-                AttributeError,
-                msg,
-                setattr,
-                self.connectivity,
-                attribute,
-                1,
-            )
+            with pytest.raises(AttributeError, match=msg):
+                setattr(self.connectivity, attribute, 1)
 
     def test_transpose(self):
         expected_dim = 1 - self.kwargs["location_axis"]
         expected_indices = self.kwargs["indices"].transpose()
         new_connectivity = self.connectivity.transpose()
-        self.assertEqual(expected_dim, new_connectivity.location_axis)
-        self.assertArrayEqual(expected_indices, new_connectivity.indices)
+        assert expected_dim == new_connectivity.location_axis
+        _shared_utils.assert_array_equal(expected_indices, new_connectivity.indices)
 
     def test_lazy_indices(self):
-        self.assertTrue(is_lazy_data(self.connectivity.lazy_indices()))
+        assert is_lazy_data(self.connectivity.lazy_indices())
 
     def test_core_indices(self):
-        self.assertArrayEqual(self.kwargs["indices"], self.connectivity.core_indices())
+        _shared_utils.assert_array_equal(
+            self.kwargs["indices"], self.connectivity.core_indices()
+        )
 
     def test_has_lazy_indices(self):
-        self.assertFalse(self.connectivity.has_lazy_indices())
+        assert not self.connectivity.has_lazy_indices()
 
     def test_lazy_location_lengths(self):
-        self.assertTrue(is_lazy_data(self.connectivity.lazy_location_lengths()))
+        assert is_lazy_data(self.connectivity.lazy_location_lengths())
 
     def test_location_lengths(self):
         expected = [4, 4, 4]
-        self.assertArrayEqual(expected, self.connectivity.location_lengths())
+        _shared_utils.assert_array_equal(expected, self.connectivity.location_lengths())
 
     def test___str__(self):
         expected = "\n".join(
@@ -113,67 +110,71 @@ class TestStandard(tests.IrisTest):
                 "    location_axis: 1",
             ]
         )
-        self.assertEqual(expected, self.connectivity.__str__())
+        assert expected == self.connectivity.__str__()
 
     def test___repr__(self):
         expected = (
             "<Connectivity: my_face_nodes / (unknown)  [[1, 2, 3], ...]  shape(4, 3)>"
         )
-        self.assertEqual(expected, self.connectivity.__repr__())
+        assert expected == self.connectivity.__repr__()
 
     def test_xml_element(self):
         doc = minidom.Document()
         connectivity_element = self.connectivity.xml_element(doc)
-        self.assertEqual(connectivity_element.tagName, "connectivity")
+        assert connectivity_element.tagName == "connectivity"
         for attribute in ("cf_role", "start_index", "location_axis"):
-            self.assertIn(attribute, connectivity_element.attributes)
+            assert attribute in connectivity_element.attributes
 
     def test___eq__(self):
         equivalent_kwargs = self.kwargs
         equivalent_kwargs["indices"] = self.kwargs["indices"].transpose()
         equivalent_kwargs["location_axis"] = 1 - self.kwargs["location_axis"]
         equivalent = Connectivity(**equivalent_kwargs)
-        self.assertFalse(np.array_equal(equivalent.indices, self.connectivity.indices))
-        self.assertEqual(equivalent, self.connectivity)
+        assert not np.array_equal(equivalent.indices, self.connectivity.indices)
+        assert equivalent == self.connectivity
 
     def test_different(self):
         different_kwargs = self.kwargs
         different_kwargs["indices"] = self.kwargs["indices"].transpose()
         different = Connectivity(**different_kwargs)
-        self.assertNotEqual(different, self.connectivity)
+        assert different != self.connectivity
 
     def test_no_cube_dims(self):
-        self.assertRaises(NotImplementedError, self.connectivity.cube_dims, 1)
+        with pytest.raises(NotImplementedError):
+            self.connectivity.cube_dims(1)
 
     def test_shape(self):
-        self.assertEqual(self.kwargs["indices"].shape, self.connectivity.shape)
+        assert self.kwargs["indices"].shape == self.connectivity.shape
 
     def test_ndim(self):
-        self.assertEqual(self.kwargs["indices"].ndim, self.connectivity.ndim)
+        assert self.kwargs["indices"].ndim == self.connectivity.ndim
 
     def test___getitem_(self):
         subset = self.connectivity[:, 0:1]
-        self.assertArrayEqual(self.kwargs["indices"][:, 0:1], subset.indices)
+        _shared_utils.assert_array_equal(self.kwargs["indices"][:, 0:1], subset.indices)
 
     def test_copy(self):
         new_indices = np.linspace(11, 16, 6, dtype=int).reshape((3, -1))
         copy_connectivity = self.connectivity.copy(new_indices)
-        self.assertArrayEqual(new_indices, copy_connectivity.indices)
+        _shared_utils.assert_array_equal(new_indices, copy_connectivity.indices)
 
     def test_indices_by_location(self):
         expected = self.kwargs["indices"].transpose()
-        self.assertArrayEqual(expected, self.connectivity.indices_by_location())
+        _shared_utils.assert_array_equal(
+            expected, self.connectivity.indices_by_location()
+        )
 
     def test_indices_by_location_input(self):
         expected = as_lazy_data(self.kwargs["indices"].transpose())
         by_location = self.connectivity.indices_by_location(
             self.connectivity.lazy_indices()
         )
-        self.assertArrayEqual(expected, by_location)
+        _shared_utils.assert_array_equal(expected, by_location)
 
 
-class TestAltIndices(tests.IrisTest):
-    def setUp(self):
+class TestAltIndices:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         mask = ([0, 0, 0, 0, 1] * 2) + [0, 0, 0, 1, 1]
         data = np.linspace(1, 15, 15, dtype=int).reshape((-1, 5))
         self.masked_indices = ma.array(data=data, mask=mask)
@@ -181,7 +182,7 @@ class TestAltIndices(tests.IrisTest):
 
     def common(self, indices):
         connectivity = Connectivity(indices=indices, cf_role="face_node_connectivity")
-        self.assertArrayEqual(indices, connectivity.indices)
+        _shared_utils.assert_array_equal(indices, connectivity.indices)
 
     def test_int32(self):
         indices = np.linspace(1, 9, 9, dtype=np.int32).reshape((-1, 3))
@@ -204,19 +205,18 @@ class TestAltIndices(tests.IrisTest):
         connectivity = Connectivity(
             indices=self.lazy_indices, cf_role="face_node_connectivity"
         )
-        self.assertTrue(connectivity.has_lazy_indices())
+        assert connectivity.has_lazy_indices()
 
 
-class TestValidations(tests.IrisTest):
+class TestValidations:
     def test_start_index(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
             "start_index": 2,
         }
-        self.assertRaisesRegex(
-            ValueError, "Invalid start_index .", Connectivity, **kwargs
-        )
+        with pytest.raises(ValueError, match="Invalid start_index ."):
+            Connectivity(**kwargs)
 
     def test_location_axis(self):
         kwargs = {
@@ -224,101 +224,84 @@ class TestValidations(tests.IrisTest):
             "cf_role": "face_node_connectivity",
             "location_axis": 2,
         }
-        self.assertRaisesRegex(
-            ValueError, "Invalid location_axis .", Connectivity, **kwargs
-        )
+        with pytest.raises(ValueError, match="Invalid location_axis ."):
+            Connectivity(**kwargs)
 
     def test_cf_role(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "error",
         }
-        self.assertRaisesRegex(ValueError, "Invalid cf_role .", Connectivity, **kwargs)
+        with pytest.raises(ValueError, match="Invalid cf_role ."):
+            Connectivity(**kwargs)
 
     def test_indices_int(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "dtype must be numpy integer subtype",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(ValueError, match="dtype must be numpy integer subtype"):
+            Connectivity(**kwargs)
 
     def test_indices_start_index(self):
         kwargs = {
             "indices": np.linspace(-9, -1, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(ValueError, " < start_index", Connectivity, **kwargs)
+        with pytest.raises(ValueError, match="< start_index"):
+            Connectivity(**kwargs)
 
     def test_indices_dims_low(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError, "Expected 2-dimensional shape,", Connectivity, **kwargs
-        )
+        with pytest.raises(ValueError, match="Expected 2-dimensional shape,"):
+            Connectivity(**kwargs)
 
     def test_indices_dims_high(self):
         kwargs = {
             "indices": np.linspace(1, 12, 12, dtype=int).reshape((-1, 3, 2)),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError, "Expected 2-dimensional shape,", Connectivity, **kwargs
-        )
+        with pytest.raises(ValueError, match="Expected 2-dimensional shape,"):
+            Connectivity(**kwargs)
 
     def test_indices_locations_edge(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "edge_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all edges meet requirement: len=2",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(ValueError, match="Not all edges meet requirement: len=2"):
+            Connectivity(**kwargs)
 
     def test_indices_locations_face(self):
         kwargs = {
             "indices": np.linspace(1, 6, 6, dtype=int).reshape((-1, 2)),
             "cf_role": "face_node_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all faces meet requirement: len>=3",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(ValueError, match="Not all faces meet requirement: len>=3"):
+            Connectivity(**kwargs)
 
     def test_indices_locations_volume_face(self):
         kwargs = {
             "indices": np.linspace(1, 9, 9, dtype=int).reshape((-1, 3)),
             "cf_role": "volume_face_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all volumes meet requirement: len>=4",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(
+            ValueError, match="Not all volumes meet requirement: len>=4"
+        ):
+            Connectivity(**kwargs)
 
     def test_indices_locations_volume_edge(self):
         kwargs = {
             "indices": np.linspace(1, 12, 12, dtype=int).reshape((-1, 3)),
             "cf_role": "volume_edge_connectivity",
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all volumes meet requirement: len>=6",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(
+            ValueError, match="Not all volumes meet requirement: len>=6"
+        ):
+            Connectivity(**kwargs)
 
     def test_indices_locations_alt_dim(self):
         """The transposed equivalent of `test_indices_locations_volume_face`."""
@@ -327,12 +310,10 @@ class TestValidations(tests.IrisTest):
             "cf_role": "volume_face_connectivity",
             "location_axis": 1,
         }
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all volumes meet requirement: len>=4",
-            Connectivity,
-            **kwargs,
-        )
+        with pytest.raises(
+            ValueError, match="Not all volumes meet requirement: len>=4"
+        ):
+            Connectivity(**kwargs)
 
     def test_indices_locations_masked(self):
         mask = ([0, 0, 0] * 2) + [0, 0, 1]
@@ -344,12 +325,5 @@ class TestValidations(tests.IrisTest):
         # Validation of individual location sizes (denoted by masks) only
         # available through explicit call of Connectivity.validate_indices().
         connectivity = Connectivity(**kwargs)
-        self.assertRaisesRegex(
-            ValueError,
-            "Not all faces meet requirement: len>=3",
-            connectivity.validate_indices,
-        )
-
-
-if __name__ == "__main__":
-    tests.main()
+        with pytest.raises(ValueError, match="Not all faces meet requirement: len>=3"):
+            connectivity.validate_indices()

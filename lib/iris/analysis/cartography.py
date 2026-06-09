@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Various utilities and numeric transformations relevant to cartography."""
+"""Various utilities and numeric transformations relevant to cartography.
+
+.. z_reference:: iris.analysis.cartography
+   :tags: topic_maths_stats
+
+   API reference
+"""
 
 from collections import namedtuple
 import copy
@@ -75,7 +81,7 @@ def wrap_lons(lons, base, period):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
     # numbers range.
@@ -279,7 +285,7 @@ def get_xy_grids(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -317,7 +323,7 @@ def get_xy_contiguous_bounded_grids(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -382,7 +388,10 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
     dimensions.
 
-    The cube must have coordinates 'latitude' and 'longitude' with bounds.
+    The cube must include a 1-dimensional coordinate with 'latitude' in its
+    :meth:`~iris.coords.Coord.name`, and another 1-dimensional coordinate with
+    'longitude' in its :meth:`~iris.coords.Coord.name`. Both of these coordinates must
+    have bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
@@ -405,9 +414,8 @@ def area_weights(cube, normalize=False, compute=True, chunks=None):
         If False, return a lazy dask array. If True, return a numpy array.
     chunks : tuple, optional
         If compute is False and a value is provided, then the result will use
-        these chunks instead of the same chunks as the cube data. The values
-        provided here will only be used along dimensions that are not latitude
-        or longitude.
+        these chunks. The values provided here will only be used along
+        dimensions that are not latitude or longitude.
 
     Returns
     -------
@@ -553,7 +561,7 @@ def cosine_latitude_weights(cube):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
     lat_coords = [coord for coord in cube.coords() if "latitude" in coord.name()]
@@ -657,7 +665,7 @@ def project(cube, target_proj, nx=None, ny=None):
     .. note::
 
         This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 
@@ -1078,8 +1086,9 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     """
     if x.shape != y.shape:
         raise ValueError(
-            "Arrays do not have matching shapes. "
-            "x.shape is {}, y.shape is {}.".format(x.shape, y.shape)
+            "Arrays do not have matching shapes. x.shape is {}, y.shape is {}.".format(
+                x.shape, y.shape
+            )
         )
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
@@ -1128,7 +1137,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     Returns
     -------
-    (u', v') tuple of :class:`iris.cube.Cube`
+    tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.
@@ -1149,7 +1158,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
     .. note::
 
             This function does not maintain laziness when called; it realises data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 

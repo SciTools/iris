@@ -7,6 +7,9 @@
 .. note:: This module needs to control the matplotlib backend, so it
           **must** be imported before ``matplotlib.pyplot``.
 
+.. note:: Iris is currently undergoing conversion to PyTest. Once that
+          conversion is complete, this module will eventually be removed.
+
 The primary class for this module is :class:`IrisTest`.
 
 """
@@ -23,7 +26,6 @@ import io
 import json
 import math
 import os
-import os.path
 from pathlib import Path
 import re
 import shutil
@@ -85,7 +87,8 @@ except ImportError:
     STRATIFY_AVAILABLE = False
 
 #: Basepath for test results.
-_RESULT_PATH = os.path.join(os.path.dirname(__file__), "results")
+_RESULT_PATH = Path(__file__).parent / "results"
+MIN_PICKLE_PROTOCOL = 4
 
 if "--data-files-used" in sys.argv:
     sys.argv.remove("--data-files-used")
@@ -164,7 +167,14 @@ def assert_masked_array_equal(a, b, strict=False):
         If False (default), the data array equality considers only unmasked
         elements.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_masked_array_equal()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "assert_masked_array_equal()` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest."
+        "Please use `_shared_utils.assert_masked_array_equal()` instead."
+    )
     _assert_masked_array(np.testing.assert_array_equal, a, b, strict)
 
 
@@ -186,7 +196,14 @@ def assert_masked_array_almost_equal(a, b, decimal=6, strict=False):
         :meth:`numpy.testing.assert_array_almost_equal`, with the meaning
         'abs(desired-actual) < 0.5 * 10**(-decimal)'
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_masked_array_almost_equal()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "assert_masked_array_almost_equal()` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest."
+        "Please use `_shared_utils.assert_masked_array_almost_equal()` instead."
+    )
     _assert_masked_array(
         np.testing.assert_array_almost_equal, a, b, strict, decimal=decimal
     )
@@ -212,14 +229,30 @@ def assert_cml(cubes, reference_filename=None, checksum=True):
         When True, causes the CML to include a checksum for each
         Cube's data. Defaults to True.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.assert_CML()`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`assert_cml` is now deprecated as part of the efforts "
+        "to convert from unittest to pytest. Please use `_shared_utils.assert_CML()` instead."
+    )
     test = IrisTest()
     test.assertCML(cubes, reference_filename, checksum)
 
 
 class IrisTest(unittest.TestCase):
-    """A subclass of unittest.TestCase which provides Iris specific testing functionality."""
+    """A subclass of unittest.TestCase which provides Iris specific testing functionality.
 
+    .. deprecated:: v3.15.0 in favour of the private module `_shared_utils`, which contains
+    the majority of these methods converted to pytest-compliant functions.
+
+    """
+
+    iris._deprecation.warn_deprecated(
+        "IrisTest class is now deprecated as part of the efforts to migrate from unittest to pytest. "
+        "The majority of these methods can be found as functions (converted "
+        "to snake_case) in `_shared_utils`."
+    )
     _assertion_counts: collections.defaultdict[str, int] = collections.defaultdict(int)
 
     def _assert_str_same(
@@ -253,34 +286,35 @@ class IrisTest(unittest.TestCase):
 
         """
         if not isinstance(relative_path, str):
-            relative_path = os.path.join(*relative_path)
+            relative_path = Path(*relative_path)
         test_data_dir = iris.config.TEST_DATA_DIR
         if test_data_dir is None:
             test_data_dir = ""
-        data_path = os.path.join(test_data_dir, relative_path)
+        data_path = Path(test_data_dir) / relative_path
+        data_path_str = str(data_path)
 
         if _EXPORT_DATAPATHS_FILE is not None:
-            _EXPORT_DATAPATHS_FILE.write(data_path + "\n")
+            _EXPORT_DATAPATHS_FILE.write(data_path_str + "\n")
 
-        if isinstance(data_path, str) and not os.path.exists(data_path):
+        if isinstance(data_path_str, str) and not data_path.exists():
             # if the file is gzipped, ungzip it and return the path of the ungzipped
             # file.
-            gzipped_fname = data_path + ".gz"
-            if os.path.exists(gzipped_fname):
-                with gzip.open(gzipped_fname, "rb") as gz_fh:
+            gzipped_fname = Path(data_path_str + ".gz")
+            if gzipped_fname.exists():
+                with gzip.open(str(gzipped_fname), "rb") as gz_fh:
                     try:
-                        with open(data_path, "wb") as fh:
+                        with open(data_path_str, "wb") as fh:
                             fh.writelines(gz_fh)
                     except IOError:
                         # Put ungzipped data file in a temporary path, since we
                         # can't write to the original path (maybe it is owned by
                         # the system.)
-                        _, ext = os.path.splitext(data_path)
+                        ext = data_path.suffix
                         data_path = iris.util.create_temp_filename(suffix=ext)
                         with open(data_path, "wb") as fh:
                             fh.writelines(gz_fh)
 
-        return data_path
+        return data_path_str
 
     @staticmethod
     def get_result_path(relative_path):
@@ -289,8 +323,8 @@ class IrisTest(unittest.TestCase):
 
         """
         if not isinstance(relative_path, str):
-            relative_path = os.path.join(*relative_path)
-        return os.path.abspath(os.path.join(_RESULT_PATH, relative_path))
+            relative_path = Path(*relative_path)
+        return str(Path(_RESULT_PATH).absolute() / relative_path)
 
     def result_path(self, basename=None, ext=""):
         """Return the full path to a test result, generated from the \
@@ -308,8 +342,8 @@ class IrisTest(unittest.TestCase):
             ext = "." + ext
 
         # Generate the folder name from the calling file name.
-        path = os.path.abspath(inspect.getfile(self.__class__))
-        path = os.path.splitext(path)[0]
+        path = Path(inspect.getfile(self, __class__)).absolute().parent
+        sub_path = path.name
         sub_path = path.rsplit("iris", 1)[1].split("tests", 1)[1][1:]
 
         # Generate the file name from the calling function name?
@@ -321,11 +355,11 @@ class IrisTest(unittest.TestCase):
                     break
         filename = basename + ext
 
-        result = os.path.join(
-            self.get_result_path(""),
-            sub_path.replace("test_", ""),
-            self.__class__.__name__.replace("Test_", ""),
-            filename,
+        result = Path(
+            self.get_result_path("")
+            / sub_path.replace("test_", "")
+            / self.__class__.__name__.replace("Test_", "")
+            / filename
         )
         return result
 
@@ -339,8 +373,7 @@ class IrisTest(unittest.TestCase):
         for i, cube in enumerate(cubes):
             fname = list(reference_filename)
             # don't want the ".cml" for the json stats file
-            if fname[-1].endswith(".cml"):
-                fname[-1] = fname[-1][:-4]
+            fname[-1] = fname[-1].removesuffix(".cml")
             fname[-1] += ".data.%d.json" % i
             self.assertDataAlmostEqual(cube.data, fname, **kwargs)
         self.assertCML(cubes, reference_filename, checksum=False)
@@ -548,9 +581,7 @@ class IrisTest(unittest.TestCase):
     def _check_same(self, item, reference_path, type_comparison_name="CML"):
         if self._check_reference_file(reference_path):
             with open(reference_path, "rb") as reference_fh:
-                reference = "".join(
-                    part.decode("utf-8") for part in reference_fh.readlines()
-                )
+                reference = "".join(part.decode("utf-8") for part in reference_fh)
             self._assert_str_same(reference, item, reference_path, type_comparison_name)
         else:
             self._ensure_folder(reference_path)
@@ -565,7 +596,7 @@ class IrisTest(unittest.TestCase):
         # this is to be compatible with stored test output where xml attrs are stored in alphabetical order,
         # (which was default behaviour in python <3.8, but changed to insert order in >3.8)
         doc = iris.cube.Cube._sort_xml_attrs(doc)
-        pretty_xml = doc.toprettyxml(indent="  ")
+        pretty_xml = iris.util._print_xml(doc)
         reference_path = self.get_result_path(reference_filename)
         self._check_same(pretty_xml, reference_path, type_comparison_name="XML")
 
@@ -727,13 +758,13 @@ class IrisTest(unittest.TestCase):
         #   ird -t => 'iris.tests.test_plot.TestContourf.test_tx'
         bits = self.id().split(".")
         if bits[0] == "__main__":
-            floc = sys.modules["__main__"].__file__
-            path, file_name = os.path.split(os.path.abspath(floc))
-            bits[0] = os.path.splitext(file_name)[0]
-            folder, location = os.path.split(path)
+            floc = Path(sys.modules["__main__"].__file__).absolute()
+            path, bits[0] = floc.parent, floc.stem
+
+            folder, location = path.parent, path.name
             bits = [location] + bits
             while location not in ["iris", "gallery_tests"]:
-                folder, location = os.path.split(folder)
+                folder, location = folder.parent, folder.name
                 bits = [location] + bits
         test_id = ".".join(bits)
 
@@ -744,16 +775,16 @@ class IrisTest(unittest.TestCase):
         return test_id + "." + str(assertion_id)
 
     def _check_reference_file(self, reference_path):
-        reference_exists = os.path.isfile(reference_path)
+        reference_exists = Path(reference_path).is_file()
         if not (reference_exists or os.environ.get("IRIS_TEST_CREATE_MISSING")):
             msg = "Missing test result: {}".format(reference_path)
             raise AssertionError(msg)
         return reference_exists
 
     def _ensure_folder(self, path):
-        dir_path = os.path.dirname(path)
-        if not os.path.exists(dir_path):
-            os.makedirs(dir_path)
+        dir_path = Path(path).parent
+        if not dir_path.exists():
+            os.makedirs(str(dir_path))
 
     def check_graphic(self):
         """Check the hash of the current matplotlib figure matches the expected
@@ -905,11 +936,25 @@ get_result_path = IrisTest.get_result_path
 
 
 class GraphicsTest(graphics.GraphicsTestMixin, IrisTest):
+    """.. deprecated:: v3.15.0 in favour of `_shared_utils.GraphicsTest`."""
+
+    iris._deprecation.warn_deprecated(
+        "`GraphicsTest` has been moved to `_shared_utils` as part of the efforts to convert "
+        "from unittest to pytest."
+    )
     pass
 
 
 class PPTest:
-    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest."""
+    """A mixin class to provide PP-specific utilities to subclasses of tests.IrisTest.
+
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.pp_cube_save_test()
+    """
+
+    iris._deprecation.warn_deprecated(
+        "PPTest class is now deprecated as part of the efforts to migrate from unittest to pytest. "
+        "`cube_save_test()` has been moved to `_shared_utils` as `pp_cube_save_test()`"
+    )
 
     @contextlib.contextmanager
     def cube_save_test(
@@ -943,7 +988,7 @@ class PPTest:
 
         """
         # Watch out for a missing reference text file
-        if not os.path.isfile(reference_txt_path):
+        if not Path(reference_txt_path).is_file():
             if reference_cubes:
                 temp_pp_path = iris.util.create_temp_filename(".pp")
                 try:
@@ -1004,10 +1049,17 @@ def skip_data(fn):
         class MyDataTests(tests.IrisTest):
             ...
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.skip_data`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`skip_data` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
+
     no_data = (
         not iris.config.TEST_DATA_DIR
-        or not os.path.isdir(iris.config.TEST_DATA_DIR)
+        or not Path(iris.config.TEST_DATA_DIR).is_dir()
         or os.environ.get("IRIS_TEST_NO_DATA")
     )
 
@@ -1025,7 +1077,13 @@ def skip_gdal(fn):
         class MyGeoTiffTests(test.IrisTest):
             ...
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.skip_gdal`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`skip_gdal` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
     skip = unittest.skipIf(condition=not GDAL_AVAILABLE, reason="Test requires 'gdal'.")
     return skip(fn)
 
@@ -1035,7 +1093,7 @@ skip_plot = graphics.skip_plot
 
 skip_sample_data = unittest.skipIf(
     not SAMPLE_DATA_AVAILABLE,
-    ('Test(s) require "iris-sample-data", ' "which is not available."),
+    ('Test(s) require "iris-sample-data", which is not available.'),
 )
 
 
@@ -1047,7 +1105,7 @@ skip_nc_time_axis = unittest.skipIf(
 
 skip_inet = unittest.skipIf(
     not INET_AVAILABLE,
-    ('Test(s) require an "internet connection", ' "which is not available."),
+    ('Test(s) require an "internet connection", which is not available.'),
 )
 
 
@@ -1061,7 +1119,13 @@ def no_warnings(func):
     """Provides a decorator to ensure that there are no warnings raised
     within the test, otherwise the test will fail.
 
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.no_warnings`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`no_warnings` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
 
     @functools.wraps(func)
     def wrapped(self, *args, **kwargs):
@@ -1095,7 +1159,14 @@ def env_bin_path(exe_name: str | None = None) -> Path | None:
     For use in tests which spawn commands which should call executables within
     the Python environment, since many IDEs (Eclipse, PyCharm) don't
     automatically include this location in $PATH (as opposed to $PYTHONPATH).
+
+    .. deprecated:: v3.15.0 in favour of `_shared_utils.env_bin_path`
+
     """
+    iris._deprecation.warn_deprecated(
+        "`env_bin_path` has been moved to `_shared_utils` as part of the efforts "
+        "to convert from unittest to pytest."
+    )
     exe_path = Path(os.__file__)
     exe_path = (exe_path / "../../../bin").resolve()
     if exe_name is not None:

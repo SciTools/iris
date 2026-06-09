@@ -4,24 +4,22 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for NetCDF-UGRID file saving."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import glob
 from pathlib import Path
-import shutil
-import tempfile
+
+import pytest
 
 import iris
 import iris.fileformats.netcdf
+from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import _add_standard_data, ncgen_from_cdl
 
 
-class TestBasicSave(tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        cls.temp_dir = Path(tempfile.mkdtemp())
+class TestBasicSave:
+    @pytest.fixture(autouse=True, scope="class")
+    def _setup_class(self, request, tmp_path_factory):
+        cls = request.cls
+        cls.temp_dir = tmp_path_factory.mktemp("test_basic_save")
         cls.examples_dir = (
             Path(__file__).absolute().parent / "ugrid_conventions_examples"
         )
@@ -34,11 +32,7 @@ class TestBasicSave(tests.IrisTest):
             name: path for name, path in zip(example_names, example_paths)
         }
 
-    @classmethod
-    def tearDownClass(cls):
-        shutil.rmtree(cls.temp_dir)
-
-    def test_example_result_cdls(self):
+    def test_example_result_cdls(self, request):
         # Snapshot the result of saving the example cases.
         for ex_name, cdl_path in self.example_names_paths.items():
             # Create a test netcdf file.
@@ -55,7 +49,9 @@ class TestBasicSave(tests.IrisTest):
             refdir_relpath = "integration/experimental/ugrid_save/TestBasicSave/"
             reffile_name = str(Path(cdl_path).name).replace(".nc", ".cdl")
             reffile_path = refdir_relpath + reffile_name
-            self.assertCDL(resave_ncfile_path, reference_filename=reffile_path)
+            _shared_utils.assert_CDL(
+                request, resave_ncfile_path, reference_filename=reffile_path
+            )
 
     def test_example_roundtrips(self):
         # Check that save-and-loadback leaves Iris data unchanged,
@@ -89,22 +85,15 @@ class TestBasicSave(tests.IrisTest):
                     cube.var_name = None
 
                 # Compare the mesh contents (as we can't compare actual meshes)
-                self.assertEqual(orig.location, reloaded.location)
+                assert orig.location == reloaded.location
                 orig_mesh = orig.mesh
                 reloaded_mesh = reloaded.mesh
-                self.assertEqual(orig_mesh.all_coords, reloaded_mesh.all_coords)
-                self.assertEqual(
-                    orig_mesh.all_connectivities,
-                    reloaded_mesh.all_connectivities,
-                )
+                assert orig_mesh.all_coords == reloaded_mesh.all_coords
+                assert orig_mesh.all_connectivities == reloaded_mesh.all_connectivities
                 # Index the cubes to replace meshes with meshcoord-derived aux coords.
                 # This needs [:0] on the mesh dim, so do that on all dims.
                 keys = tuple([slice(0, None)] * orig.ndim)
                 orig = orig[keys]
                 reloaded = reloaded[keys]
                 # Resulting cubes, with collapsed mesh, should be IDENTICAL.
-                self.assertEqual(orig, reloaded)
-
-
-if __name__ == "__main__":
-    tests.main()
+                assert orig == reloaded

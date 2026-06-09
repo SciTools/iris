@@ -2,6 +2,11 @@
 Tri-Polar Grid Projected Plotting
 =================================
 
+.. how-to:: Tri-Polar Grid Projected Plotting
+   :tags: topic_plotting
+
+   How to visualise data defined on a tri-polar grid using different map projections.
+
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
 grid.
 

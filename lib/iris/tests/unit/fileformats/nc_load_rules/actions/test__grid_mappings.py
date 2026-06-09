@@ -9,10 +9,14 @@ Here, *specifically* testcases relating to grid-mappings and dim-coords.
 
 """
 
-import iris.tests as tests  # isort: skip
+import re
 
+import pytest
+
+import iris.coord_systems
 import iris.coord_systems as ics
 import iris.fileformats._nc_load_rules.helpers as hh
+from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.actions import Mixin__nc_load_actions
 
 
@@ -26,6 +30,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         mapping_missingradius=False,
         mapping_type_name=None,
         mapping_scalefactor=None,
+        phenom_grid_mapping="grid",
         yco_values=None,
         xco_name=None,
         yco_name=None,
@@ -172,7 +177,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 {g_varname}:{lonpo_name} = 0.0 ;
             """
         # Those which require 'longitude of central meridian'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_TRANSVERSE,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_TRANSVERSE:
             latcm_name = hh.CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
             g_string += f"""
                 {g_varname}:{latcm_name} = 0.0 ;
@@ -187,7 +192,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 {g_varname}:{pph_name} = 600000.0 ;
             """
         # Those which require 'sweep angle axis'
-        if mapping_type_name in (hh.CF_GRID_MAPPING_GEOSTATIONARY,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_GEOSTATIONARY:
             saa_name = hh.CF_ATTR_GRID_SWEEP_ANGLE_AXIS
             g_string += f"""
                 {g_varname}:{saa_name} = "y" ;
@@ -195,7 +200,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         # Polar stereo needs a special 'latitude of projection origin', a
         # 'straight_vertical_longitude_from_pole' and a `standard_parallel` or
         # `scale_factor_at_projection_origin` so treat it specially
-        if mapping_type_name in (hh.CF_GRID_MAPPING_POLAR,):
+        if mapping_type_name == hh.CF_GRID_MAPPING_POLAR:
             latpo_name = hh.CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
             g_string += f"""
                 {g_varname}:{latpo_name} = 90.0 ;
@@ -225,7 +230,7 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
                 double phenom({ydim_name}, {xdim_name}) ;
                     phenom:standard_name = "air_temperature" ;
                     phenom:units = "K" ;
-                    phenom:grid_mapping = "grid" ;
+                    phenom:grid_mapping = "{phenom_grid_mapping}" ;
 {phenom_coords_string}
                 double yco({ydim_name}) ;
                     yco:axis = "Y" ;
@@ -255,13 +260,14 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         yco_is_aux=False,
         xco_stdname=True,
         yco_stdname=True,
+        load_problems_regex=None,
     ):
         """Check key properties of a result cube.
 
         Various options control the expected things which are tested.
         """
-        self.assertEqual(cube.standard_name, "air_temperature")
-        self.assertEqual(cube.var_name, "phenom")
+        assert cube.standard_name == "air_temperature"
+        assert cube.var_name == "phenom"
 
         x_coords = cube.coords(dimensions=(1,))
         y_coords = cube.coords(dimensions=(0,))
@@ -276,40 +282,40 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
         else:
             expected_dim_coords += x_coords
 
-        self.assertEqual(set(expected_dim_coords), set(cube.coords(dim_coords=True)))
+        assert set(expected_dim_coords) == set(cube.coords(dim_coords=True))
         if cube_no_xycoords:
-            self.assertEqual(expected_dim_coords, [])
+            assert expected_dim_coords == []
             x_coord = None
             y_coord = None
         else:
-            self.assertEqual(len(x_coords), 1)
+            assert len(x_coords) == 1
             (x_coord,) = x_coords
-            self.assertEqual(len(y_coords), 1)
+            assert len(y_coords) == 1
             (y_coord,) = y_coords
 
-        self.assertEqual(set(expected_aux_coords), set(cube.coords(dim_coords=False)))
+        assert set(expected_aux_coords) == set(cube.coords(dim_coords=False))
 
         if x_coord:
             if xco_stdname is None:
                 # no check
                 pass
             elif xco_stdname is True:
-                self.assertIsNotNone(x_coord.standard_name)
+                assert x_coord.standard_name is not None
             elif xco_stdname is False:
-                self.assertIsNone(x_coord.standard_name)
+                assert x_coord.standard_name is None
             else:
-                self.assertEqual(x_coord.standard_name, xco_stdname)
+                assert x_coord.standard_name == xco_stdname
 
         if y_coord:
             if yco_stdname is None:
                 # no check
                 pass
             if yco_stdname is True:
-                self.assertIsNotNone(y_coord.standard_name)
+                assert y_coord.standard_name is not None
             elif yco_stdname is False:
-                self.assertIsNone(y_coord.standard_name)
+                assert y_coord.standard_name is None
             else:
-                self.assertEqual(y_coord.standard_name, yco_stdname)
+                assert y_coord.standard_name == yco_stdname
 
         cube_cs = cube.coord_system()
         if cube_no_xycoords:
@@ -319,31 +325,29 @@ class Mixin__grid_mapping(Mixin__nc_load_actions):
             yco_cs = y_coord.coord_system
             xco_cs = x_coord.coord_system
         if cube_no_cs:
-            self.assertIsNone(cube_cs)
-            self.assertIsNone(yco_cs)
-            self.assertIsNone(xco_cs)
+            assert cube_cs is None
+            assert yco_cs is None
+            assert xco_cs is None
         else:
+            assert cube_cs is not None
             if cube_cstype is not None:
-                self.assertIsInstance(cube_cs, cube_cstype)
+                assert isinstance(cube_cs, cube_cstype)
             if xco_no_cs:
-                self.assertIsNone(xco_cs)
+                assert xco_cs is None
             else:
-                self.assertEqual(xco_cs, cube_cs)
+                assert xco_cs == cube_cs
             if yco_no_cs:
-                self.assertIsNone(yco_cs)
+                assert yco_cs is None
             else:
-                self.assertEqual(yco_cs, cube_cs)
+                assert yco_cs == cube_cs
+
+        if load_problems_regex is not None:
+            load_problem = LOAD_PROBLEMS.problems[-1]
+            assert re.search(load_problems_regex, str(load_problem.stack_trace))
 
 
-class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
+class Test__grid_mapping(Mixin__grid_mapping):
     # Various testcases for translation of grid-mappings
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_basic_latlon(self):
         # A basic reference example with a lat-long grid.
@@ -367,8 +371,11 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         # One of very few cases where activation may encounter an error.
         # N.B. doesn't really test rules-activation, but maybe worth doing.
         # (no rules trigger)
-        with self.assertRaisesRegex(ValueError, "No ellipsoid"):
-            self.run_testcase(mapping_missingradius=True)
+        result = self.run_testcase(
+            mapping_missingradius=True,
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(result, cube_no_cs=True, load_problems_regex="No ellipsoid")
 
     def test_bad_gridmapping_nameproperty(self):
         # Fix the 'grid' var so it does not register as a grid-mapping.
@@ -383,8 +390,15 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     * grid-mapping identified :  NONE  (thus, no coord-system)
         #     * dim-coords identified : lat+lon
         #     * coords built : lat+lon coords, with NO coord-system
-        result = self.run_testcase(gridmapvar_mappropertyname="mappy")
-        self.check_result(result, cube_no_cs=True)
+        result = self.run_testcase(
+            gridmapvar_mappropertyname="mappy",
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(
+            result,
+            cube_no_cs=True,
+            load_problems_regex="no grid-mapping attr",
+        )
 
     def test_latlon_bad_gridmapping_varname(self):
         # rename the grid-mapping variable so it is effectively 'missing'
@@ -517,9 +531,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
         # Notes:
         #     * NO grid-mapping is identified (or coord-system built)
-        #     * There is no warning for this : it fails silently.
-        #         TODO: perhaps there _should_ be a warning in such cases ?
-        result = self.run_testcase(mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL)
+        warn_regex = "Not all file objects were parsed correctly."
+        result = self.run_testcase(
+            mapping_type_name=hh.CF_GRID_MAPPING_AZIMUTHAL, warning_regex=warn_regex
+        )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     def test_mapping_undefined(self):
@@ -532,10 +547,10 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         #     004 : fc_provides_coordinate_(projection_x)
         #     005 : fc_build_coordinate_(projection_y)(FAILED projected coord with non-projected cs)
         #     006 : fc_build_coordinate_(projection_x)(FAILED projected coord with non-projected cs)
-        # Notes:
-        #     * There is no warning for this : it fails silently.
-        #         TODO: perhaps there _should_ be a warning in such cases ?
-        result = self.run_testcase(mapping_type_name="unknown")
+        warn_regex = "Not all file objects were parsed correctly."
+        result = self.run_testcase(
+            mapping_type_name="unknown", warning_regex=warn_regex
+        )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
     #
@@ -579,6 +594,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             xco_units="degrees_east",
             yco_name="latitude",
             yco_units="degrees_north",
+            warning_regex="Not all file objects were parsed correctly.",
         )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
@@ -636,6 +652,7 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
             xco_units="degrees",
             yco_name="grid_latitude",
             yco_units="degrees",
+            warning_regex="Not all file objects were parsed correctly.",
         )
         self.check_result(result, cube_no_cs=True, cube_no_xycoords=True)
 
@@ -736,16 +753,48 @@ class Test__grid_mapping(Mixin__grid_mapping, tests.IrisTest):
         )
         self.check_result(result, cube_no_cs=True, xco_stdname=False, yco_stdname=False)
 
+    def test_extended_mapping_basic_latlon(self):
+        # A basic reference example with a lat-long grid, but using extended
+        # grid mapping syntax on phenomenon.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
+        # Notes:
+        #     * grid-mapping identified : regular latlon
+        #     * dim-coords identified : lat+lon
+        #     * coords built : standard latlon (with latlon coord-system)
+        result = self.run_testcase(phenom_grid_mapping="grid: yco xco")
+        self.check_result(result)
 
-class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
+    def test_extended_mapping_basic_latlon_missing_coords(self):
+        # A basic reference example with a lat-long grid, but using extended
+        # grid mapping syntax on phenomenon.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_provides_coordinate_(longitude)
+        #     005 : fc_build_coordinate_(latitude)
+        #     006 : fc_build_coordinate_(longitude)
+        # Notes:
+        #     * grid-mapping identified : regular latlon
+        #     * dim-coords identified : lat+lon
+        #     * coords built : standard latlon (with latlon coord-system)
+        result = self.run_testcase(
+            phenom_grid_mapping="grid: yco bad_coord",
+            warning_regex="Missing CF-netCDF coordinate variable 'bad_coord'",
+        )
+        self.check_result(result, xco_no_cs=True)
+
+
+class Test__aux_latlons(Mixin__grid_mapping):
     # Testcases for translating auxiliary latitude+longitude variables
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
 
     def test_aux_lon(self):
         # Change the name of xdim, and put xco on the coords list.
@@ -819,16 +868,57 @@ class Test__aux_latlons(Mixin__grid_mapping, tests.IrisTest):
         )
         self.check_result(result, yco_is_aux=True, yco_no_cs=True)
 
+    def test_extended_grid_mapping_aux_lon(self):
+        # Change the name of xdim, and put xco on the coords list.
+        # Uses extended grid mapping syntax.
+        # In this case, the Aux coord WILL have a coordinate system
+        # as extended grid mapping allows for specification of
+        # explicit coordinate_systems for individual coordinate.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(latitude)
+        #     004 : fc_build_coordinate_(latitude)
+        #     005 : fc_build_auxiliary_coordinate_longitude
+        result = self.run_testcase(
+            xco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, xco_is_aux=True, xco_no_cs=False)
 
-class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
+    def test_extended_grid_mapping_aux_lat(self):
+        # As previous, but with the Y coord.
+        # Uses extended grid mapping syntax
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_provides_coordinate_(longitude)
+        #     004 : fc_build_coordinate_(longitude)
+        #     005 : fc_build_auxiliary_coordinate_latitude
+        result = self.run_testcase(
+            yco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, yco_is_aux=True, yco_no_cs=False)
 
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
+    def test_extended_grid_mapping_aux_lat_and_lon(self):
+        # Make *both* X and Y coords into aux-coords.
+        # Uses extended grid mapping syntax; allows coord_system
+        # to be added to an AuxCoord, so cube.coord_system() returns
+        # a valid coordinate_system.
+        #
+        # Rules Triggered:
+        #     001 : fc_default
+        #     002 : fc_provides_grid_mapping_(latitude_longitude)
+        #     003 : fc_build_auxiliary_coordinate_longitude
+        #     004 : fc_build_auxiliary_coordinate_latitude
+        result = self.run_testcase(
+            xco_is_dim=False, yco_is_dim=False, phenom_grid_mapping="grid: yco xco"
+        )
+        self.check_result(result, xco_is_aux=True, yco_is_aux=True, cube_no_cs=False)
 
+
+class Test__nondimcoords(Mixin__grid_mapping):
     def test_nondim_lats(self):
         # Fix a coord's values so it cannot be a dim-coord.
         #
@@ -842,10 +932,283 @@ class Test__nondimcoords(Mixin__grid_mapping, tests.IrisTest):
         # Notes:
         #     * in terms of rule triggering, this is not distinct from the
         #       "normal" case : but latitude is now created as an aux-coord.
-        warning = "must be.* monotonic"
-        result = self.run_testcase(warning_regex=warning, yco_values=[0.0, 0.0])
-        self.check_result(result, yco_is_aux=True)
+        error = "must be.* monotonic"
+        result = self.run_testcase(
+            yco_values=[0.0, 0.0],
+            warning_regex="Not all file objects were parsed correctly.",
+        )
+        self.check_result(result, yco_is_aux=True, load_problems_regex=error)
 
 
-if __name__ == "__main__":
-    tests.main()
+@pytest.fixture
+def latlon_cs():
+    return """
+        int crsWGS84 ;
+            crsWGS84:grid_mapping_name = "latitude_longitude" ;
+            crsWGS84:longitude_of_prime_meridian = 0. ;
+            crsWGS84:semi_major_axis = 6378137. ;
+            crsWGS84:inverse_flattening = 298.257223563 ;
+        double lat(x,y) ;
+            lat:standard_name = "latitude" ;
+            lat:units = "degrees_north" ;
+        double lon(x,y) ;
+            lon:standard_name = "longitude" ;
+            lon:units = "degrees_east" ;
+    """
+
+
+@pytest.fixture
+def latlon_cs_missing_coord(latlon_cs):
+    # Trin last 3 lines of latlon_cs to remove longitude coord
+    return "\n".join(latlon_cs.splitlines()[:-4])
+
+
+@pytest.fixture
+def osgb_cs():
+    return """
+        int crsOSGB ;
+            crsOSGB:grid_mapping_name = "transverse_mercator" ;
+            crsOSGB:semi_major_axis = 6377563.396 ;
+            crsOSGB:inverse_flattening = 299.3249646 ;
+            crsOSGB:longitude_of_prime_meridian = 0. ;
+            crsOSGB:latitude_of_projection_origin = 49. ;
+            crsOSGB:longitude_of_central_meridian = -2. ;
+            crsOSGB:scale_factor_at_central_meridian = 0.9996012717 ;
+            crsOSGB:false_easting = 400000. ;
+            crsOSGB:false_northing = -100000. ;
+            crsOSGB:unit = "metre" ;
+        double x(x) ;
+            x:standard_name = "projection_x_coordinate" ;
+            x:long_name = "Easting" ;
+            x:units = "m" ;
+        double y(y) ;
+            y:standard_name = "projection_y_coordinate" ;
+            y:long_name = "Northing" ;
+            y:units = "m" ;
+    """
+
+
+class Test_multi_coordinate_system_grid_mapping(Mixin__nc_load_actions):
+    def test_two_coord_systems(self, osgb_cs, latlon_cs, mocker, tmp_path):
+        """Test load a well described multi coordinate system variable."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+        cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coord_systems()) == 2
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["longitude", "latitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+        # Loading multiple coord systems or using extended grid mapping implies ordered axes:
+        assert cube.extended_grid_mapping is True
+
+    def test_two_coord_systems_missing_coord(
+        self, osgb_cs, latlon_cs_missing_coord, mocker, tmp_path
+    ):
+        """Test missing coord in grid_mapping raises warning."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat" ;
+                phenom:grid_mapping = "crsOSGB: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs_missing_coord}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF coordinate variable 'lon'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 3
+        assert len(cube.coord_systems()) == 2
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["latitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+        assert cube.extended_grid_mapping is True
+
+    def test_two_coord_systems_missing_aux_crs(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid coordinate system mapping for Aux coords."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: x y non_existent_crs: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF grid mapping variable 'non_existent_crs'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 4
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["latitude", "longitude"]:
+            assert cube.coord(coord_name).coord_system is None
+
+        assert cube.extended_grid_mapping is True
+
+    def test_two_coord_systems_missing_dim_crs(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid coordinate system mapping for Dim coords."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "non_existent_crs: x y crsWGS84: lat lon" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that it can't find the longitude coord
+        with pytest.warns(
+            iris.warnings.IrisCfWarning,
+            match="Missing CF-netCDF grid mapping variable 'non_existent_crs'",
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 2  # DimCoords won't be found
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["latitude", "longitude"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system, iris.coord_systems.GeogCS
+            )
+
+        assert cube.extended_grid_mapping is True
+
+    def test_two_coord_systems_invalid_grid_mapping(
+        self, osgb_cs, latlon_cs, mocker, tmp_path
+    ):
+        """Test invalid grid mapping doesn't load any coord systems and warns."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB: crsWGS84:" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+
+        # loader will warn that grid_mapping is invalid
+        with pytest.warns(
+            iris.warnings.IrisCfWarning, match="Error parsing `grid_mapping` attribute"
+        ):
+            cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coords()) == 2
+        assert len(cube.coord_systems()) == 0
+        for coord in cube.coords():
+            assert coord.coord_system is None
+
+        assert cube.extended_grid_mapping is False
+
+    def test_one_coord_system_simple(self, osgb_cs, latlon_cs, mocker, tmp_path):
+        """Make sure the simple coord system syntax still works."""
+        cdl = f"""
+        netcdf tmp {{
+        dimensions:
+            x = 4 ;
+            y = 3 ;
+        variables:
+            float phenom(y, x) ;
+                phenom:standard_name = "air_pressure" ;
+                phenom:units = "Pa" ;
+                phenom:coordinates = "lat lon" ;
+                phenom:grid_mapping = "crsOSGB" ;
+            {osgb_cs}
+            {latlon_cs}
+        }}
+        """
+        nc_path = str(tmp_path / "tmp.nc")
+        cube = self.load_cube_from_cdl(cdl, None, nc_path, mocker)
+
+        assert len(cube.coord_systems()) == 1
+
+        for coord_name in ["projection_x_coordinate", "projection_x_coordinate"]:
+            assert isinstance(
+                cube.coord(coord_name).coord_system,
+                iris.coord_systems.TransverseMercator,
+            )
+        for coord_name in ["longitude", "latitude"]:
+            assert cube.coord(coord_name).coord_system is None
+
+        # Loading multiple coord systems or using extended grid mapping implies ordered axes:
+        assert cube.extended_grid_mapping is False

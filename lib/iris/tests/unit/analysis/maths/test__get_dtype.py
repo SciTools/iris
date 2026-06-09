@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the function :func:`iris.analysis.maths._get_dtype`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 from numpy import ma
 
@@ -16,10 +12,10 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 
 
-class Test(tests.IrisTest):
+class Test:
     def _check_call(self, obj, expected_dtype):
         result = _get_dtype(obj)
-        self.assertEqual(expected_dtype, result)
+        assert expected_dtype == result
 
     def test_int8(self):
         n = -128
@@ -88,7 +84,3 @@ class Test(tests.IrisTest):
         points = np.array([1, 2, 3], dtype=dtype)
         dim_coord = DimCoord(points)
         self._check_call(dim_coord, dtype)
-
-
-if __name__ == "__main__":
-    tests.main()

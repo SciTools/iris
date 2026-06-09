@@ -4,71 +4,68 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.reverse`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-import unittest
-
 import numpy as np
+import pytest
 
 import iris
+from iris.tests import _shared_utils
 from iris.util import reverse
 
 
-class Test_array(tests.IrisTest):
+class Test_array:
     def test_simple_array(self):
         a = np.arange(12).reshape(3, 4)
-        self.assertArrayEqual(a[::-1], reverse(a, 0))
-        self.assertArrayEqual(a[::-1, ::-1], reverse(a, [0, 1]))
-        self.assertArrayEqual(a[:, ::-1], reverse(a, 1))
-        self.assertArrayEqual(a[:, ::-1], reverse(a, [1]))
+        _shared_utils.assert_array_equal(a[::-1], reverse(a, 0))
+        _shared_utils.assert_array_equal(a[::-1, ::-1], reverse(a, [0, 1]))
+        _shared_utils.assert_array_equal(a[:, ::-1], reverse(a, 1))
+        _shared_utils.assert_array_equal(a[:, ::-1], reverse(a, [1]))
 
         msg = "Reverse was expecting a single axis or a 1d array *"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [])
 
         msg = "An axis value out of range for the number of dimensions *"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, -1)
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, 10)
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [-1])
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [0, -1])
 
         msg = "To reverse an array, provide an int *"
-        with self.assertRaisesRegex(TypeError, msg):
+        with pytest.raises(TypeError, match=msg):
             reverse(a, "latitude")
 
     def test_single_array(self):
         a = np.arange(36).reshape(3, 4, 3)
-        self.assertArrayEqual(a[::-1], reverse(a, 0))
-        self.assertArrayEqual(a[::-1, ::-1], reverse(a, [0, 1]))
-        self.assertArrayEqual(a[:, ::-1, ::-1], reverse(a, [1, 2]))
-        self.assertArrayEqual(a[..., ::-1], reverse(a, 2))
+        _shared_utils.assert_array_equal(a[::-1], reverse(a, 0))
+        _shared_utils.assert_array_equal(a[::-1, ::-1], reverse(a, [0, 1]))
+        _shared_utils.assert_array_equal(a[:, ::-1, ::-1], reverse(a, [1, 2]))
+        _shared_utils.assert_array_equal(a[..., ::-1], reverse(a, 2))
 
         msg = "Reverse was expecting a single axis or a 1d array *"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [])
 
         msg = "An axis value out of range for the number of dimensions *"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, -1)
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, 10)
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [-1])
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(a, [0, -1])
 
-        with self.assertRaisesRegex(TypeError, "To reverse an array, provide an int *"):
+        with pytest.raises(TypeError, match="To reverse an array, provide an int *"):
             reverse(a, "latitude")
 
 
-class Test_cube(tests.IrisTest):
-    def setUp(self):
+class Test_cube:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # On this cube pair, the coordinates to perform operations on have
         # matching long names but the points array on one cube is reversed
         # with respect to that on the other.
@@ -95,81 +92,99 @@ class Test_cube(tests.IrisTest):
         self.cube2 = iris.cube.Cube(data, dim_coords_and_dims=[(a2, 0), (b2, 1)])
 
     def check_coorda_reversed(self, result):
-        self.assertArrayEqual(self.cube2.coord("a").points, result.coord("a").points)
-        self.assertArrayEqual(self.cube2.coord("a").bounds, result.coord("a").bounds)
+        _shared_utils.assert_array_equal(
+            self.cube2.coord("a").points, result.coord("a").points
+        )
+        _shared_utils.assert_array_equal(
+            self.cube2.coord("a").bounds, result.coord("a").bounds
+        )
 
     def check_coorda_unchanged(self, result):
-        self.assertArrayEqual(self.cube1.coord("a").points, result.coord("a").points)
-        self.assertArrayEqual(self.cube1.coord("a").bounds, result.coord("a").bounds)
+        _shared_utils.assert_array_equal(
+            self.cube1.coord("a").points, result.coord("a").points
+        )
+        _shared_utils.assert_array_equal(
+            self.cube1.coord("a").bounds, result.coord("a").bounds
+        )
 
     def check_coordb_reversed(self, result):
-        self.assertArrayEqual(self.cube2.coord("b").points, result.coord("b").points)
+        _shared_utils.assert_array_equal(
+            self.cube2.coord("b").points, result.coord("b").points
+        )
 
     def check_coordb_unchanged(self, result):
-        self.assertArrayEqual(self.cube1.coord("b").points, result.coord("b").points)
+        _shared_utils.assert_array_equal(
+            self.cube1.coord("b").points, result.coord("b").points
+        )
 
     def test_cube_dim0(self):
         cube1_reverse0 = reverse(self.cube1, 0)
 
-        self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
+        _shared_utils.assert_array_equal(self.cube1.data[::-1], cube1_reverse0.data)
         self.check_coorda_reversed(cube1_reverse0)
         self.check_coordb_unchanged(cube1_reverse0)
 
     def test_cube_dim1(self):
         cube1_reverse1 = reverse(self.cube1, 1)
 
-        self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
+        _shared_utils.assert_array_equal(self.cube1.data[:, ::-1], cube1_reverse1.data)
         self.check_coordb_reversed(cube1_reverse1)
         self.check_coorda_unchanged(cube1_reverse1)
 
     def test_cube_dim_both(self):
         cube1_reverse_both = reverse(self.cube1, (0, 1))
 
-        self.assertArrayEqual(self.cube1.data[::-1, ::-1], cube1_reverse_both.data)
+        _shared_utils.assert_array_equal(
+            self.cube1.data[::-1, ::-1], cube1_reverse_both.data
+        )
         self.check_coorda_reversed(cube1_reverse_both)
         self.check_coordb_reversed(cube1_reverse_both)
 
     def test_cube_coord0(self):
         cube1_reverse0 = reverse(self.cube1, self.a1)
 
-        self.assertArrayEqual(self.cube1.data[::-1], cube1_reverse0.data)
+        _shared_utils.assert_array_equal(self.cube1.data[::-1], cube1_reverse0.data)
         self.check_coorda_reversed(cube1_reverse0)
         self.check_coordb_unchanged(cube1_reverse0)
 
     def test_cube_coord1(self):
         cube1_reverse1 = reverse(self.cube1, "b")
 
-        self.assertArrayEqual(self.cube1.data[:, ::-1], cube1_reverse1.data)
+        _shared_utils.assert_array_equal(self.cube1.data[:, ::-1], cube1_reverse1.data)
         self.check_coordb_reversed(cube1_reverse1)
         self.check_coorda_unchanged(cube1_reverse1)
 
     def test_cube_coord_both(self):
         cube1_reverse_both = reverse(self.cube1, (self.a1, self.b1))
 
-        self.assertArrayEqual(self.cube1.data[::-1, ::-1], cube1_reverse_both.data)
+        _shared_utils.assert_array_equal(
+            self.cube1.data[::-1, ::-1], cube1_reverse_both.data
+        )
         self.check_coorda_reversed(cube1_reverse_both)
         self.check_coordb_reversed(cube1_reverse_both)
 
     def test_cube_coord_spanning(self):
         cube1_reverse_spanning = reverse(self.cube1, "spanning")
 
-        self.assertArrayEqual(self.cube1.data[::-1, ::-1], cube1_reverse_spanning.data)
+        _shared_utils.assert_array_equal(
+            self.cube1.data[::-1, ::-1], cube1_reverse_spanning.data
+        )
         self.check_coorda_reversed(cube1_reverse_spanning)
         self.check_coordb_reversed(cube1_reverse_spanning)
 
-        self.assertArrayEqual(
+        _shared_utils.assert_array_equal(
             self.span.points[::-1, ::-1],
             cube1_reverse_spanning.coord("spanning").points,
         )
 
     def test_wrong_coord_name(self):
         msg = "Expected to find exactly 1 'latitude' coordinate, but found none."
-        with self.assertRaisesRegex(iris.exceptions.CoordinateNotFoundError, msg):
+        with pytest.raises(iris.exceptions.CoordinateNotFoundError, match=msg):
             reverse(self.cube1, "latitude")
 
     def test_empty_list(self):
         msg = "Reverse was expecting a single axis or a 1d array *"
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             reverse(self.cube1, [])
 
     def test_wrong_type_cube(self):
@@ -177,14 +192,10 @@ class Test_cube(tests.IrisTest):
             "coords_or_dims must be int, str, coordinate or sequence of "
             "these.  Got cube."
         )
-        with self.assertRaisesRegex(TypeError, msg):
+        with pytest.raises(TypeError, match=msg):
             reverse(self.cube1, self.cube1)
 
     def test_wrong_type_float(self):
         msg = "coords_or_dims must be int, str, coordinate or sequence of these."
-        with self.assertRaisesRegex(TypeError, msg):
+        with pytest.raises(TypeError, match=msg):
             reverse(self.cube1, 3.0)
-
-
-if __name__ == "__main__":
-    unittest.main()

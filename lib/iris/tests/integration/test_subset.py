@@ -4,11 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for subset."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.coords import DimCoord
 from iris.cube import Cube
@@ -30,15 +27,12 @@ def _make_test_cube():
     )
 
 
-class TestSubset(tests.IrisTest):
-    def setUp(self):
+class TestSubset:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cube = _make_test_cube()
 
     def test_coordinate_subset(self):
         coord = self.cube.coord("pressure")
         subsetted = self.cube.subset(coord)
-        self.assertEqual(self.cube, subsetted)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert self.cube == subsetted

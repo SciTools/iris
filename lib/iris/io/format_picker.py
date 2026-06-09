@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide convenient file format identification.
 
+.. z_reference:: iris.io.format_picker
+   :tags: topic_load_save
+
+   API reference
+
 A module to provide convenient file format identification through a combination
 of filename extension and file based *magic* numbers.
 
@@ -43,7 +48,7 @@ original specification and can be customised to your project's needs.
 
 from collections.abc import Callable
 import functools
-import os
+from pathlib import Path
 import struct
 
 
@@ -83,6 +88,19 @@ class FormatAgent:
         return prefix + "\n * ".join(
             ["%s" % format_spec for format_spec in self._format_specs]
         )
+
+    def __eq__(self, other):
+        return self._format_specs == other._format_specs
+
+    def copy(self):
+        """Return a copy of the format agent.
+
+        Returns
+        -------
+        FormatAgent
+            A copy of the format agent.
+        """
+        return FormatAgent(self._format_specs.copy())
 
     def get_spec(self, basename, buffer_obj):
         """Pick the first FormatSpecification.
@@ -330,7 +348,7 @@ class FileExtension(FileElement):
 
     def get_element(self, basename, file_handle):
         # noqa D102
-        return os.path.splitext(basename)[1]
+        return Path(basename).suffix
 
 
 class LeadingLine(FileElement):

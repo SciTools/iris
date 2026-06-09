@@ -4,142 +4,142 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the main loading API."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 import pathlib
-from unittest import mock
+
+import pytest
 
 import iris
 from iris.fileformats.netcdf import _thread_safe_nc
 import iris.io
+from iris.tests import _shared_utils
 
 
-@tests.skip_data
-class TestLoad(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoad:
     def test_normal(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_path_object(self):
-        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        paths = (
+            pathlib.Path(_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         cubes = iris.load(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_nonexist(self):
         paths = (
-            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
-            tests.get_data_path(["PP", "_guaranteed_non_exist.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            _shared_utils.get_data_path(["PP", "_guaranteed_non_exist.pp"]),
         )
-        with self.assertRaises(IOError) as error_trap:
+        with pytest.raises(IOError, match="files specified did not exist"):
             _ = iris.load(paths)
-        self.assertIn(
-            "One or more of the files specified did not exist",
-            str(error_trap.exception),
-        )
 
     def test_nonexist_wild(self):
         paths = (
-            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
-            tests.get_data_path(["PP", "_guaranteed_non_exist_*.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            _shared_utils.get_data_path(["PP", "_guaranteed_non_exist_*.pp"]),
         )
-        with self.assertRaises(IOError) as error_trap:
+        with pytest.raises(IOError, match="files specified did not exist"):
             _ = iris.load(paths)
-        self.assertIn(
-            "One or more of the files specified did not exist",
-            str(error_trap.exception),
-        )
 
     def test_bogus(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load(paths, "wibble")
-        self.assertEqual(len(cubes), 0)
+        assert len(cubes) == 0
 
     def test_real_and_bogus(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load(paths, ("air_temperature", "wibble"))
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_duplicate(self):
         paths = (
-            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
-            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
         cubes = iris.load(paths)
-        self.assertEqual(len(cubes), 2)
+        assert len(cubes) == 2
 
 
-@tests.skip_data
-class TestLoadCube(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoadCube:
     def test_normal(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         _ = iris.load_cube(paths)
 
     def test_path_object(self):
-        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        paths = (
+            pathlib.Path(_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         _ = iris.load_cube(paths)
 
     def test_not_enough(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        with pytest.raises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths, "wibble")
 
     def test_too_many(self):
         paths = (
-            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
-            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
-        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+        with pytest.raises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
 
 
-@tests.skip_data
-class TestLoadCubes(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoadCubes:
     def test_normal(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load_cubes(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_path_object(self):
-        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        paths = (
+            pathlib.Path(_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         cubes = iris.load_cubes(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_not_enough(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        with pytest.raises(iris.exceptions.ConstraintMismatchError):
             iris.load_cubes(paths, "wibble")
 
     def test_not_enough_multi(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
-        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        with pytest.raises(iris.exceptions.ConstraintMismatchError):
             iris.load_cubes(paths, ("air_temperature", "wibble"))
 
     def test_too_many(self):
         paths = (
-            tests.get_data_path(["PP", "aPPglob1", "global.pp"]),
-            tests.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),
+            _shared_utils.get_data_path(["PP", "aPPglob1", "gl?bal.pp"]),
         )
-        with self.assertRaises(iris.exceptions.ConstraintMismatchError):
+        with pytest.raises(iris.exceptions.ConstraintMismatchError):
             iris.load_cube(paths)
 
 
-@tests.skip_data
-class TestLoadRaw(tests.IrisTest):
+@_shared_utils.skip_data
+class TestLoadRaw:
     def test_normal(self):
-        paths = (tests.get_data_path(["PP", "aPPglob1", "global.pp"]),)
+        paths = (_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"]),)
         cubes = iris.load_raw(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
     def test_path_object(self):
-        paths = (pathlib.Path(tests.get_data_path(["PP", "aPPglob1", "global.pp"])),)
+        paths = (
+            pathlib.Path(_shared_utils.get_data_path(["PP", "aPPglob1", "global.pp"])),
+        )
         cubes = iris.load_raw(paths)
-        self.assertEqual(len(cubes), 1)
+        assert len(cubes) == 1
 
 
-class TestOPeNDAP(tests.IrisTest):
-    def setUp(self):
+class TestOPeNDAP:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.url = "https://geoport.whoi.edu:80/thredds/dodsC/bathy/gom15"
 
     def test_load_http_called(self):
@@ -150,8 +150,8 @@ class TestOPeNDAP(tests.IrisTest):
             pass
 
         def new_load_http(passed_urls, *args, **kwargs):
-            self.assertEqual(len(passed_urls), 1)
-            self.assertEqual(self.url, passed_urls[0])
+            assert len(passed_urls) == 1
+            assert self.url == passed_urls[0]
             raise LoadHTTPCalled()
 
         try:
@@ -164,31 +164,27 @@ class TestOPeNDAP(tests.IrisTest):
                 iris.load_cube,
                 iris.load_cubes,
             ]:
-                with self.assertRaises(LoadHTTPCalled):
+                with pytest.raises(LoadHTTPCalled):
                     fn(self.url)
 
         finally:
             iris.io.load_http = orig
 
-    @tests.skip_data
-    def test_netCDF_Dataset_call(self):
+    @_shared_utils.skip_data
+    def test_net_cdf_dataset_call(self, mocker):
         # Check that load_http calls netCDF4.Dataset and supplies the expected URL.
 
         # To avoid making a request to an OPeNDAP server in a test, instead
         # mock the call to netCDF.Dataset so that it returns a dataset for a
         # local file.
-        filename = tests.get_data_path(
+        filename = _shared_utils.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
         fake_dataset = _thread_safe_nc.DatasetWrapper(filename)
 
-        with mock.patch(
+        dataset_loader = mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=fake_dataset,
-        ) as dataset_loader:
-            next(iris.io.load_http([self.url], callback=None))
+        )
+        next(iris.io.load_http([self.url], callback=None))
         dataset_loader.assert_called_with(self.url, mode="r")
-
-
-if __name__ == "__main__":
-    tests.main()

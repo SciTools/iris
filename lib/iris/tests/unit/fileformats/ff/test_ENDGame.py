@@ -4,29 +4,26 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformat.ff.ENDGame`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 
 from iris.fileformats._ff import ENDGame
+from iris.tests import _shared_utils
 
 
-class Test(tests.IrisTest):
+class Test:
     def test_class_attributes(self):
         reals = np.arange(6) + 100
         grid = ENDGame(None, None, reals, None)
-        self.assertEqual(grid._v_offset, -0.5)
+        assert grid._v_offset == -0.5
 
 
-class Test__y_vectors(tests.IrisTest):
+class Test__y_vectors:
     def _test(self, row, yp, yv):
         reals = np.arange(6) + 100
         grid = ENDGame(None, row, reals, None)
         result_yp, result_yv = grid._y_vectors()
-        self.assertArrayEqual(result_yp, yp)
-        self.assertArrayEqual(result_yv, yv)
+        _shared_utils.assert_array_equal(result_yp, yp)
+        _shared_utils.assert_array_equal(result_yv, yv)
 
     def test_none(self):
         self._test(row=None, yp=None, yv=None)
@@ -40,7 +37,3 @@ class Test__y_vectors(tests.IrisTest):
             yp=np.array([0, 1, 2]),
             yv=np.array([0, 10, 20, 30]),
         )
-
-
-if __name__ == "__main__":
-    tests.main()

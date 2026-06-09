@@ -19,7 +19,10 @@
 
 """Config for sphinx."""
 
+import ast
+import contextlib
 import datetime
+import importlib
 from importlib.metadata import version as get_version
 from inspect import getsource
 import ntpath
@@ -29,6 +32,7 @@ import re
 from subprocess import run
 import sys
 from tempfile import gettempdir
+import textwrap
 from urllib.parse import quote
 import warnings
 
@@ -75,13 +79,13 @@ if on_rtd:
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(os.path.abspath("sphinxext"))
+sys.path.append(str((Path("sphinxext").absolute())))
 
 # add some sample files from the developers guide..
-sys.path.append(os.path.abspath(os.path.join("developers_guide")))
+sys.path.append(str(Path("developers_guide").absolute()))
 
 # why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
@@ -141,28 +145,31 @@ rst_epilog = f"""
 .. |python_version| replace:: {build_python_version}
 .. |python_support| replace:: {python_support}
 .. |iris_version| replace:: v{version}
-.. |build_date| replace:: ({datetime.datetime.now().strftime('%d %b %Y')})
+.. |build_date| replace:: ({datetime.datetime.now().strftime("%d %b %Y")})
 """
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinx.ext.todo",
-    "sphinx.ext.duration",
-    "sphinx.ext.coverage",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.extlinks",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
-    "sphinx_copybutton",
-    "sphinx.ext.napoleon",
-    "sphinx_design",
-    "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_gallery.gen_gallery",
+    "sphinx_needs",
+    "sphinx_reredirects",
+    "user_manual_directives",
 ]
 
 if skip_api == "1":
@@ -170,6 +177,47 @@ if skip_api == "1":
 else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
+
+# -- sphinx-llm ---------------------------------------------------------------
+# See https://github.com/NVIDIA/sphinx-llm
+
+if on_rtd:
+    autolog("[READTHEDOCS] [sphinx_llm.txt] Loading extension and configuring.")
+    extensions.append("sphinx_llm.txt")
+
+    llms_txt_enabled = True
+    llms_txt_build_parallel = True
+    llms_txt_suffix_mode = "auto"
+    llms_txt_full_build = True
+    llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
+
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+
+if on_rtd and rtd_version in ["latest", "stable"]:
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = f"https://scitools-iris.readthedocs.io/en/{rtd_version}/"
+    autolog(
+        "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
+    )
+
+    sitemap_show_lastmod = True
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
+else:
+    autolog(
+        (
+            "[sphinx_sitemap] Must be running on READTHEDOCS and version is "
+            "either 'latest' or 'stable', skipping sitemap creation."
+        )
+    )
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -206,17 +254,23 @@ autodoc_default_options = {
     "undoc-members": True,
     "private-members": "_MeshIndexSet",
     "special-members": False,
-    "inherited-members": True,
+    # Enums are most valuable when documented as concisely as possible.
+    "inherited-members": "Enum,IntEnum,ReprEnum,StrEnum",
     "show-inheritance": True,
 }
 
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autodoc_typehints
-autodoc_typehints = "none"
+autodoc_typehints = "description"
 autosummary_generate = True
 autosummary_imported_members = True
 autopackage_name = ["iris"]
 autoclass_content = "both"
 modindex_common_prefix = ["iris"]
+
+# if geovista is not installed we need to mock the imports so the autodoc build works:
+if importlib.util.find_spec("geovista") is None:
+    autodoc_mock_imports = ["geovista", "pyvista"]
+
 
 # -- apidoc extension ---------------------------------------------------------
 # See https://github.com/sphinx-contrib/apidoc
@@ -245,17 +299,18 @@ templates_path = ["_templates"]
 # -- intersphinx extension ----------------------------------------------------
 # See https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html
 intersphinx_mapping = {
-    "cartopy": ("https://scitools.org.uk/cartopy/docs/latest/", None),
+    "cartopy": ("https://cartopy.readthedocs.io/stable/", None),
+    "cf_units": ("https://cf-units.readthedocs.io/en/stable/", None),
+    "cftime": ("https://unidata.github.io/cftime/", None),
     "dask": ("https://docs.dask.org/en/stable/", None),
+    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
     "iris-esmf-regrid": ("https://iris-esmf-regrid.readthedocs.io/en/stable/", None),
     "matplotlib": ("https://matplotlib.org/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
-    "python": ("https://docs.python.org/3/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
     "pandas": ("https://pandas.pydata.org/docs/", None),
-    "dask": ("https://docs.dask.org/en/stable/", None),
-    "geovista": ("https://geovista.readthedocs.io/en/latest/", None),
+    "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
+    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -277,11 +332,20 @@ extlinks = {
         "https://github.com/SciTools/iris/discussions/%s",
         "Discussion #%s",
     ),
+    "user": ("https://github.com/%s", "@%s"),
 }
 
 # -- Doctest ("make doctest")--------------------------------------------------
 
-doctest_global_setup = "import iris"
+doctest_global_setup = """
+import iris
+
+# To handle conditional doctest skipping if geovista is not installed:
+try:
+    import geovista as gv
+except ImportError:
+    gv = None
+"""
 
 # -- Options for HTML output --------------------------------------------------
 
@@ -295,7 +359,7 @@ html_theme = "pydata_sphinx_theme"
 html_sidebars = {
     "**": [
         "custom_sidebar_logo_version",
-        "search-field",
+        "sidebar-collapse",
         "sidebar-nav-bs",
         "sidebar-ethical-ads",
     ]
@@ -310,14 +374,17 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
-    # removes the search box from the top bar
-    "navbar_persistent": [],
+    "navbar_persistent": ["search-field"],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
-    "twitter_url": "https://twitter.com/scitools_iris",
     # icons available: https://fontawesome.com/v5.15/icons?d=gallery&m=free
     "icon_links": [
+        {
+            "name": "Bluesky",
+            "url": "https://bsky.app/profile/scitools.bsky.social",
+            "icon": "fa-brands fa-bluesky",
+        },
         {
             "name": "GitHub Discussions",
             "url": "https://github.com/SciTools/iris/discussions",
@@ -381,30 +448,6 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 
-# url link checker.  Some links work but report as broken, lets ignore them.
-# See https://www.sphinx-doc.org/en/1.2/config.html#options-for-the-linkcheck-builder
-linkcheck_ignore = [
-    "https://catalogue.ceda.ac.uk/uuid/82adec1f896af6169112d09cc1174499",
-    "https://cfconventions.org",
-    "https://code.google.com/p/msysgit/downloads/list",
-    "https://effbot.org",
-    "https://help.github.com",
-    "https://docs.github.com",
-    "https://github.com",
-    "https://www.personal.psu.edu/cab38/ColorBrewer/ColorBrewer_updates.html",
-    "https://scitools.github.com/cartopy",
-    "https://www.wmo.int/pages/prog/www/DPFS/documents/485_Vol_I_en_colour.pdf",
-    "https://software.ac.uk/how-cite-software",
-    "https://www.esrl.noaa.gov/psd/data/gridded/conventions/cdc_netcdf_standard.shtml",
-    "https://www.nationalarchives.gov.uk/doc/open-government-licence",
-    "https://www.metoffice.gov.uk/",
-    "https://biggus.readthedocs.io/",
-    "https://stickler-ci.com/",
-    "https://twitter.com/scitools_iris",
-    "https://stackoverflow.com/questions/tagged/python-iris",
-    "https://www.flaticon.com/",
-]
-
 # list of sources to exclude from the build.
 exclude_patterns = []
 
@@ -430,12 +473,14 @@ reset_modules_dir.mkdir(exist_ok=True)
 )
 sys.path.insert(0, str(reset_modules_dir))
 
+GALLERY_CODE: str = "../gallery_code"
+GALLERY_DIRS: str = "generated/gallery"
 
 sphinx_gallery_conf = {
     # path to your example scripts
-    "examples_dirs": ["../gallery_code"],
+    "examples_dirs": GALLERY_CODE,
     # path to where to save gallery generated output
-    "gallery_dirs": ["generated/gallery"],
+    "gallery_dirs": GALLERY_DIRS,
     # filename pattern for the files in the gallery
     "filename_pattern": "/plot_",
     # filename pattern to ignore in the gallery
@@ -443,6 +488,8 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
+    # disable the computation reports
+    "write_computation_times": False,
 }
 
 # -----------------------------------------------------------------------------
@@ -459,3 +506,272 @@ numfig_format = {
     "section": "Section %s",
     "table": "Table %s",
 }
+
+# ============================================================================
+# |                        Copyright GeoVista                                |
+# | Code from this point unto the termination banner is copyright GeoVista.  |
+# | Minimal code changes made to make it generic.                            |
+# |                                                                          |
+# | License details can be found at:                                         |
+# |    https://github.com/bjlittle/geovista/blob/main/LICENSE                |
+# ============================================================================
+
+# Source: https://github.com/bjlittle/geovista/blob/main/docs/src/conf.py
+
+
+def _bool_eval(*, arg: str | bool) -> bool:
+    """Sanitise to a boolean only configuration."""
+    if isinstance(arg, str):
+        with contextlib.suppress(TypeError):
+            arg = ast.literal_eval(arg.capitalize())
+
+    return bool(arg)
+
+
+def generate_carousel(
+    app: Sphinx,
+    fname: Path,
+    ncards: int | None = None,
+    margin: int | None = None,
+    width: int | None = None,
+) -> None:
+    """Generate and write the gallery carousel RST file."""
+    if ncards is None:
+        ncards = 3
+
+    if margin is None:
+        margin = 4
+
+    if width is None:
+        width = "25%"
+
+    base = Path(app.srcdir, *GALLERY_DIRS.split("/"))
+    cards_by_link = {}
+
+    card = r""".. card::
+    :img-background: {image}
+    :link: {link}
+    :link-type: ref
+    :width: {width}
+    :margin: {margin}
+    :class-card: align-self-center
+    :class-body: d-none
+"""
+    # :class-body: d-none = remove the text space, since we have no text.
+
+    # TODO @bjlittle: use Path.walk when python >=3.12
+    for root, _, files in os.walk(str(base)):
+        root = Path(root)  # noqa: PLW2901
+        if root.name == "images":
+            root_relative = root.relative_to(app.srcdir)
+            link_relative = root.parent.relative_to(app.srcdir)
+
+            for file in files:
+                path = Path(file)
+                if path.suffix == ".png":
+                    # generate the card "img-background" filename
+                    image = root_relative / path
+
+                    # generate the card "link" reference
+                    # remove numeric gallery image index e.g., "001"
+                    parts = path.stem.split("_")[:-1]
+                    link = parts[:2] + list(link_relative.parts) + parts[2:]
+                    link = f"{'_'.join(link)}.py"
+
+                    # needed in case a gallery filename has mixed case
+                    link = link.lower()
+
+                    kwargs = {
+                        "image": image,
+                        "link": link,
+                        "width": width,
+                        "margin": margin,
+                    }
+
+                    cards_by_link[link] = card.format(**kwargs)
+
+    # sort the cards by their link
+    cards = [cards_by_link[link] for link in sorted(cards_by_link.keys())]
+    cards = textwrap.indent("\n".join(cards), prefix=" " * 4)
+
+    # now, create the card carousel
+    carousel = f""".. card-carousel:: {ncards}
+
+{cards}
+
+.. rst-class:: center
+
+    :fa:`images` Gallery Carousel
+
+"""
+
+    # finally, write the rst for the gallery carousel
+    Path(app.srcdir, fname).write_text(carousel)
+
+
+def gallery_carousel(
+    app: Sphinx,
+    env: BuildEnvironment,  # noqa: ARG001
+    docnames: list[str],  # noqa: ARG001
+) -> None:
+    """Create the gallery carousel."""
+    # create empty or truncate existing file
+    fname = Path(app.srcdir, "gallery_carousel.txt")
+
+    with fname.open("w"):
+        pass
+
+    if _bool_eval(arg=app.builder.config.plot_gallery):
+        # only generate the carousel if we have a gallery
+        generate_carousel(app, fname)
+
+
+# ============================================================================
+# |                        END GeoVista copyright                            |
+# ============================================================================
+
+
+# -- sphinx-reredirects config ------------------------------------------------
+
+redirects = {
+    # explanation
+    "further_topics/dataless_cubes": "/user_manual/explanation/dataless_cubes.html",
+    "userguide/iris_cubes": "/user_manual/explanation/iris_cubes.html",
+    "userguide/iris_philosophy": "/user_manual/explanation/iris_philosophy.html",
+    "community/iris_xarray": "/user_manual/explanation/iris_xarray.html",
+    "further_topics/lenient_maths": "/user_manual/explanation/lenient_maths.html",
+    "further_topics/lenient_metadata": "/user_manual/explanation/lenient_metadata.html",
+    "further_topics/ugrid/data_model": "/user_manual/explanation/mesh_data_model.html",
+    "further_topics/ugrid/partner_packages": "/user_manual/explanation/mesh_partners.html",
+    "further_topics/metadata": "/user_manual/explanation/metadata.html",
+    "further_topics/missing_data_handling": "/user_manual/explanation/missing_data_handling.html",
+    "further_topics/netcdf_io": "/user_manual/explanation/netcdf_io.html",
+    "userguide/real_and_lazy_data": "/user_manual/explanation/real_and_lazy_data.html",
+    "further_topics/um_files_loading": "/user_manual/explanation/um_files_loading.html",
+    "further_topics/ux_guide": "/user_manual/explanation/ux_guide.html",
+    "further_topics/which_regridder_to_use": "/user_manual/explanation/which_regridder_to_use.html",
+    "why_iris": "/user_manual/explanation/why_iris.html",
+    # how_to
+    "further_topics/filtering_warnings": "/user_manual/how_to/filtering_warnings.html",
+    "installing": "/user_manual/how_to/installing.html",
+    "further_topics/ugrid/other_meshes": "/user_manual/how_to/mesh_conversions.html",
+    "further_topics/ugrid/operations": "/user_manual/how_to/mesh_operations.html",
+    "userguide/navigating_a_cube": "/user_manual/how_to/navigating_a_cube.html",
+    "community/plugins": "/user_manual/how_to/plugins.html",
+    # reference
+    "userguide/citation": "/user_manual/reference/citation.html",
+    "userguide/glossary": "/user_manual/reference/glossary.html",
+    "community/phrasebook": "/user_manual/reference/phrasebook.html",
+    # section indexes
+    "community/index": "/user_manual/section_indexes/community.html",
+    "further_topics/dask_best_practices/index": "/user_manual/section_indexes/dask_best_practices.html",
+    "further_topics/ugrid/index": "/user_manual/section_indexes/mesh_support.html",
+    "userguide/index": "/user_manual/section_indexes/userguide.html",
+    # tutorial
+    "further_topics/controlling_merge": "/user_manual/tutorial/controlling_merge.html",
+    "userguide/cube_maths": "/user_manual/tutorial/cube_maths.html",
+    "userguide/cube_statistics": "/user_manual/tutorial/cube_statistics.html",
+    "further_topics/dask_best_practices/dask_bags_and_greed": "/user_manual/tutorial/dask_bags_and_greed.html",
+    "further_topics/dask_best_practices/dask_parallel_loop": "/user_manual/tutorial/dask_parallel_loop.html",
+    "further_topics/dask_best_practices/dask_pp_to_netcdf": "/user_manual/tutorial/dask_pp_to_netcdf.html",
+    "userguide/interpolation_and_regridding": "/user_manual/tutorial/interpolation_and_regridding.html",
+    "userguide/loading_iris_cubes": "/user_manual/tutorial/loading_iris_cubes.html",
+    "userguide/merge_and_concat": "/user_manual/tutorial/merge_and_concat.html",
+    "userguide/plotting_a_cube": "/user_manual/tutorial/plotting_a_cube.html",
+    "userguide/saving_iris_cubes": "/user_manual/tutorial/saving_iris_cubes.html",
+    "userguide/subsetting_a_cube": "/user_manual/tutorial/subsetting_a_cube.html",
+}
+
+# -- sphinx-needs config ------------------------------------------------------
+# See https://sphinx-needs.readthedocs.io/en/latest/configuration.html
+
+# TODO: namespace these types as Diataxis for max clarity?
+needs_types = [
+    {
+        "directive": "tutorial",
+        "title": "Tutorial",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "how-to",
+        "title": "How To",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        "directive": "explanation",
+        "title": "Explanation",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+    {
+        # z_ prefix to force to the end of sorted lists.
+        "directive": "z_reference",
+        "title": "Reference",
+        "prefix": "",
+        "color": "",
+        "style": "node",
+    },
+]
+# The layout whenever a 'need item' directive is used. I.e. at the top of each
+#  user manual page.
+needs_default_layout = "focus"
+# The `tags_links` jinja template displays a list of tags where every topic_*
+#  tag is a link to the relevant section in user_manual/index.rst.
+needs_template_folder = "_templates"
+needs_fields = {
+    "post_template": {"default": "tags_links"},
+}
+
+from sphinx_needs.data import NeedsCoreFields
+
+# Known bug in sphinx-needs pre v6.0.
+#  https://github.com/useblocks/sphinx-needs/issues/1420
+if "allow_default" not in NeedsCoreFields["post_template"]:
+    NeedsCoreFields["post_template"]["allow_default"] = "str"
+
+
+# ------------------------------------------------------------------------------
+
+
+def setup(app: Sphinx) -> None:
+    """Configure sphinx application."""
+    # Monkeypatch for https://github.com/useblocks/sphinx-needs/issues/723
+    import sphinx_needs.directives.needtable as nt
+
+    orig_row_col_maker = nt.row_col_maker
+
+    def row_col_maker_link_title(
+        app,
+        fromdocname,
+        all_needs,
+        need_info,
+        need_key,
+        make_ref=False,
+        ref_lookup=False,
+        prefix="",
+    ):
+        if need_key == "title":
+            make_ref = True
+        return orig_row_col_maker(
+            app,
+            fromdocname,
+            all_needs,
+            need_info,
+            need_key,
+            make_ref,
+            ref_lookup,
+            prefix,
+        )
+
+    nt.row_col_maker = row_col_maker_link_title
+
+    # we require the output of this extension
+    app.setup_extension("sphinx_gallery.gen_gallery")
+
+    # register callback to generate gallery carousel
+    app.connect("env-before-read-docs", gallery_carousel)

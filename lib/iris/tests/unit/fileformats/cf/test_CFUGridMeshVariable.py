@@ -4,10 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridMeshVariable`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import re
 import warnings
 
@@ -24,8 +20,9 @@ def named_variable(name):
     return netcdf_variable(name, "", int)
 
 
-class TestIdentify(tests.IrisTest):
-    def setUp(self):
+class TestIdentify:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.cf_identity = "mesh"
 
     def test_cf_role(self):
@@ -43,7 +40,7 @@ class TestIdentify(tests.IrisTest):
         # ONLY expecting match, excluding not_match.
         expected = {match_name: CFUGridMeshVariable(match_name, match)}
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_cf_identity(self):
         # Test that mesh variables can be identified by being another variable's
@@ -61,7 +58,7 @@ class TestIdentify(tests.IrisTest):
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_cf_role_and_identity(self):
         # Test that identification can successfully handle a combination of
@@ -92,7 +89,7 @@ class TestIdentify(tests.IrisTest):
             subject_name: CFUGridMeshVariable(subject_name, ref_subject),
         }
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_duplicate_refs(self):
         subject_name = "ref_subject"
@@ -113,7 +110,7 @@ class TestIdentify(tests.IrisTest):
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_refs(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -136,7 +133,7 @@ class TestIdentify(tests.IrisTest):
             for name, var in ref_subject_vars.items()
         }
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_two_part_ref_ignored(self):
         # Not expected to handle more than one variable for a mesh
@@ -151,7 +148,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual({}, result)
+        assert {} == result
 
     def test_string_type_ignored(self):
         subject_name = "ref_subject"
@@ -164,7 +161,7 @@ class TestIdentify(tests.IrisTest):
         }
 
         result = CFUGridMeshVariable.identify(vars_all)
-        self.assertDictEqual({}, result)
+        assert {} == result
 
     def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -189,7 +186,7 @@ class TestIdentify(tests.IrisTest):
             )
         }
         result = CFUGridMeshVariable.identify(vars_all, ignore=subject_names[1])
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -213,7 +210,7 @@ class TestIdentify(tests.IrisTest):
             )
         }
         result = CFUGridMeshVariable.identify(vars_all, target=source_names[0])
-        self.assertDictEqual(expected, result)
+        assert expected == result
 
     def test_warn(self):
         subject_name = "ref_subject"
@@ -230,7 +227,7 @@ class TestIdentify(tests.IrisTest):
                 category=iris.warnings.IrisUserWarning,
             )
             result = CFUGridMeshVariable.identify(vars_all, warn=warn)
-            self.assertDictEqual({}, result)
+            assert {} == result
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"

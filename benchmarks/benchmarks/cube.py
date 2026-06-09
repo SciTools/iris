@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Cube benchmark tests."""
 
+from collections.abc import Iterable
+
 from iris import coords
 from iris.cube import Cube
 
@@ -21,9 +23,9 @@ class CubeCreation:
         source_cube = realistic_4d_w_everything(w_mesh=w_mesh)
 
         def get_coords_and_dims(
-            coords_tuple: tuple[coords._DimensionalMetadata, ...],
+            coords_iter: Iterable[coords._DimensionalMetadata],
         ) -> list[tuple[coords._DimensionalMetadata, tuple[int, ...]]]:
-            return [(c, c.cube_dims(source_cube)) for c in coords_tuple]
+            return [(c, c.cube_dims(source_cube)) for c in coords_iter]
 
         self.cube_kwargs = dict(
             data=source_cube.data,

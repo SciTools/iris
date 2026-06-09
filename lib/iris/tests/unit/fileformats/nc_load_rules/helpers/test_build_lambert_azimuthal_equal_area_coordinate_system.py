@@ -7,20 +7,15 @@ build_lambert_azimuthal_equal_area_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import LambertAzimuthalEqualArea
 from iris.fileformats._nc_load_rules.helpers import (
     build_lambert_azimuthal_equal_area_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
 
 
-class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(tests.IrisTest):
+class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(MockerMixin):
     def _test(self, inverse_flattening=False, no_optionals=False):
         if no_optionals:
             # Most properties are optional for this system.
@@ -54,7 +49,7 @@ class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(tests.IrisTest):
             gridvar_props["semi_minor_axis"] = 6356256.909
             expected_ellipsoid = iris.coord_systems.GeogCS(6377563.396, 6356256.909)
 
-        cf_grid_var = mock.Mock(spec=[], **gridvar_props)
+        cf_grid_var = self.mocker.Mock(spec=[], **gridvar_props)
 
         cs = build_lambert_azimuthal_equal_area_coordinate_system(None, cf_grid_var)
 
@@ -66,7 +61,7 @@ class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(tests.IrisTest):
             ellipsoid=expected_ellipsoid,
         )
 
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
     def test_basic(self):
         self._test()
@@ -78,7 +73,3 @@ class TestBuildLambertAzimuthalEqualAreaCoordinateSystem(tests.IrisTest):
     def test_no_optionals(self):
         # Check defaults, when all optional attributes are absent.
         self._test(no_optionals=True)
-
-
-if __name__ == "__main__":
-    tests.main()
