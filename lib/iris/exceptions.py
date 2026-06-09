@@ -161,3 +161,9 @@ class CannotAddError(ValueError):
     """Raised when an object (e.g. coord) cannot be added to a :class:`~iris.cube.Cube`."""
 
     pass
+
+
+class MonotonicityError(ValueError):
+    """Raised when a coordinate values are not monotonic."""
+
+    pass

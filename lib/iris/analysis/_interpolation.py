@@ -13,6 +13,7 @@ from numpy.lib.stride_tricks import as_strided
 import numpy.ma as ma
 
 from iris.coords import AuxCoord, DimCoord
+from iris.exceptions import MonotonicityError
 import iris.util
 
 _DEFAULT_DTYPE = np.float16
@@ -456,7 +457,7 @@ class RectilinearInterpolator:
                 # Check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
                     msg = "Cannot interpolate over the non-monotonic coordinate {}."
-                    raise ValueError(msg.format(coord.name()))
+                    raise MonotonicityError(msg.format(coord.name()))
 
     def _interpolated_dtype(self, dtype):
         """Determine the minimum base dtype required by the underlying interpolator."""

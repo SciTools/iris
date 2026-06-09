@@ -19,6 +19,7 @@ from osgeo import gdal, osr
 import iris
 from iris._deprecation import warn_deprecated
 import iris.coord_systems
+from iris.exceptions import MonotonicityError
 
 wmsg = (
     "iris.experimental.raster is deprecated since version 3.2, and will be "
@@ -174,7 +175,7 @@ def export_geotiff(cube, fname):
             raise ValueError(msg)
 
     if coord_x.points[0] > coord_x.points[-1]:
-        raise ValueError(
+        raise MonotonicityError(
             "Coordinate {!r} x-points must be monotonically increasing.".format(name)
         )
 
