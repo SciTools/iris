@@ -1935,7 +1935,7 @@ class Coord(_DimensionalMetadata):
         Parameters
         ----------
         pydate : bool, default=False,
-            Generate built-in :class:`~datetime.datetime` objects for a temporal
+            Generate :class:`~datetime.datetime` compatible objects for a temporal
             coordinate with either a ``standard``, ``gregorian`` or
             ``proleptic_gregorian`` calendar. Defaults to creating :mod:`cftime`
             objects for temporal coordinates.
@@ -2262,7 +2262,7 @@ class Coord(_DimensionalMetadata):
         index : int
             The `index` of the coordinate to generate a :class:`~iris.coords.Cell`.
         pydate : bool, default=False
-            Generate built-in :class:`~datetime.datetime` objects for a temporal
+            Generate :class:`~datetime.datetime` compatible objects for a temporal
             coordinate with either a ``standard``, ``gregorian`` or
             ``proleptic_gregorian`` calendar. Defaults to creating :mod:`cftime`
             objects for temporal coordinates.
