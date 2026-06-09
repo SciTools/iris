@@ -680,6 +680,21 @@ class TestWriteParticularCases:
         with pytest.raises(ValueError, match=msg):
             iris.save(cube, filepath)
 
+    def test_write_unexpected_dtype_itemsize(self, mocker, tmp_path):
+        # Test unexpected form of numpy character data.  Not clear if this can actually
+        #  happen, but we do have a runtime test for it, so this just exercises that.
+        mock_dtype = mocker.Mock(spec=np.dtype, kind="U", itemsize=3)
+        mock_data = mocker.MagicMock(spec=np.ndarray, dtype=mock_dtype)
+        mocker.patch("numpy.asarray", return_value=mock_data)
+        cube = Cube(mock_data)
+        filepath = tmp_path / "write_unexpected_dtype_itemsize.nc"
+        msg = (
+            r"Unexpected numpy string 'dtype\.itemsize' for element 'unknown': "
+            r"'dtype\.itemsize = 3, expected a multiple of four \(always\)\."
+        )
+        with pytest.raises(ValueError, match=msg):
+            iris.save(cube, filepath)
+
 
 class TestSaveloadBadUnicodeAsBytes:
     def test_save_load_bad_unicode(self, tmp_path):

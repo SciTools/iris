@@ -1847,8 +1847,8 @@ class Saver:
             # For numpy strings, itemsize is **always** a multiple of 4
             if string_dimension_depth % 4 != 0:
                 msg = (
-                    "Unexpected numpy string 'itemsize' for element "
-                    f"{cube_or_mesh.name()}: "
+                    "Unexpected numpy string 'dtype.itemsize' for element "
+                    f"{cube_or_mesh.name()!r}: "
                     f"'dtype.itemsize = {string_dimension_depth}, expected "
                     "a multiple of four (always)."
                 )
