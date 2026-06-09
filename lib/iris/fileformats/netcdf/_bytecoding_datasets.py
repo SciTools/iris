@@ -116,7 +116,6 @@ def encode_stringarray_as_bytearray(
             raise ValueError(msg) from err
 
         n_bytes = len(bytes)
-        # TODO: may want to issue warning or error if we overflow the length?
         if n_bytes > string_dimension_length:
             from iris.exceptions import TranslationError
 

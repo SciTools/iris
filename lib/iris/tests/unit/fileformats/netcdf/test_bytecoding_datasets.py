@@ -14,7 +14,6 @@ import pytest
 from iris import tests
 from iris.exceptions import TranslationError
 from iris.fileformats.netcdf._bytecoding_datasets import (
-    DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,
     EncodedDataset,
     EncodedGroup,
@@ -29,7 +28,10 @@ import iris.tests._shared_utils as testutils
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
-encoding_options = [None] + SUPPORTED_ENCODINGS
+# Note: for test options, include "no encoding" and an alias name
+ENCODING_NONE = None
+ENCODING_UTF8_ALIAS = "UTF8"
+encoding_options = [ENCODING_NONE, ENCODING_UTF8_ALIAS] + SUPPORTED_ENCODINGS
 
 samples_3_ascii = np.array(
     ["one", "", "seven"],  # N.B. include empty!
@@ -135,7 +137,7 @@ class TestWriteStrings:
 
     def test_encodings(self, encoding, tempdir):
         # Create a dataset with the variable
-        path = tempdir / f"test_writestrings_encoding_{encoding!s}.nc"
+        path = tempdir / f"test_bytecoded_writestrings_encoding_{encoding!s}.nc"
 
         if encoding in [None, "ascii"]:
             writedata = samples_3_ascii
@@ -165,7 +167,7 @@ class TestWriteStrings:
 
     def test_scalar(self, tempdir):
         # Like 'test_write_strings', but the variable has *only* the string dimension.
-        path = tempdir / "test_writestrings_scalar.nc"
+        path = tempdir / "test_bytecoded_writestrings_scalar.nc"
 
         strlen = 5
         ds_encoded = make_encoded_dataset(path, strlen=strlen)
@@ -181,7 +183,7 @@ class TestWriteStrings:
 
     def test_multidim(self, tempdir):
         # Like 'test_write_strings', but the variable has additional dimensions.
-        path = tempdir / "test_writestrings_multidim.nc"
+        path = tempdir / "test_bytecoded_writestrings_multidim.nc"
 
         strlen = 5
         ds_encoded = make_encoded_dataset(path, strlen=strlen)
@@ -210,7 +212,7 @@ class TestWriteStrings:
 
     @pytest.mark.parametrize("encoding", [None, "ascii"])
     def test_write_encoding_failure(self, tempdir, encoding):
-        path = tempdir / f"test_writestrings_encoding_{encoding}_fail.nc"
+        path = tempdir / f"test_bytecoded_writestrings_encoding_{encoding}_fail.nc"
         ds = make_encoded_dataset(path, strlen=5, encoding=encoding)
         v = ds.variables["vxs"]
         encoding_name = encoding
@@ -224,7 +226,7 @@ class TestWriteStrings:
             v[:] = samples_3_nonascii
 
     def test_write_badencoding_ignore(self, tempdir):
-        path = tempdir / "test_writestrings_badencoding_ignore.nc"
+        path = tempdir / "test_bytecoded_writestrings_badencoding_ignore.nc"
         ds = make_encoded_dataset(path, strlen=5, encoding="unknown")
         v = ds.variables["vxs"]
         msg = (
@@ -236,7 +238,7 @@ class TestWriteStrings:
 
     def test_overlength(self, tempdir):
         # Check expected behaviour with over-length data
-        path = tempdir / "test_writestrings_overlength.nc"
+        path = tempdir / "test_bytecoded_writestrings_overlength.nc"
         strlen = 6
         ds = make_encoded_dataset(path, strlen=strlen, encoding="utf8")
         v = ds.variables["vxs"]
@@ -249,7 +251,7 @@ class TestWriteStrings:
 
     def test_overlength_splitcoding(self, tempdir):
         # Check expected behaviour when non-ascii multibyte coding gets truncated
-        path = tempdir / "test_writestrings_overlength_splitcoding.nc"
+        path = tempdir / "test_bytecoded_writestrings_overlength_splitcoding.nc"
         strlen = 5
         ds = make_encoded_dataset(path, strlen=strlen, encoding="utf-8")
         v = ds.variables["vxs"]
@@ -292,7 +294,7 @@ class TestWriteChars:
         strlen = strings_maxbytes(write_strings, encoding)
         write_bytes = make_bytearray(write_strings, strlen, encoding=encoding)
         # NOTE: 'flexi' form util decides the width needs to be 7 !!
-        path = tempdir / f"test_writechars_{write_form}.nc"
+        path = tempdir / f"test_bytecoded_writechars_{write_form}.nc"
         ds = make_encoded_dataset(path, encoding=encoding, strlen=strlen)
         v = ds.variables["vxs"]
 
@@ -314,8 +316,8 @@ class TestRead:
     datafiles with 'make_dataset' and assigning raw bytes, as-per 'TestWriteChars'.
 
     We are mostly checking here that reading back produces string arrays as expected.
-    However, it is simple + convenient to also check the 'DECODE_TO_STRINGS_ON_READ'
-    function here, i.e. "raw" bytes reads.  So that is also done in this class.
+    However, each testcase also reads and checks the "raw" byte content by re-opening
+    with a non-encoded _thread_safe_nc.DatasetWrapper, to check content is as expected.
     """
 
     @pytest.fixture(params=["strings", "bytes"])
@@ -332,7 +334,7 @@ class TestRead:
 
     def test_encodings(self, encoding, tempdir, readmode):
         # Create a dataset with the variable
-        path = tempdir / f"test_read_encodings_{encoding!s}_{readmode}.nc"
+        path = tempdir / f"test_bytecoded_read_encodings_{encoding!s}_{readmode}.nc"
 
         if encoding in [None, "ascii"]:
             write_strings = samples_3_ascii
@@ -353,10 +355,10 @@ class TestRead:
             # Test "normal" read --> string array
             result = v[:]
             expected = write_strings
-            if encoding in ("utf-8", "utf-16"):
+            if encoding in ("utf-8", ENCODING_UTF8_ALIAS, "utf-16"):
                 # In these cases, with the given non-ascii sample data, the
                 #  "default minimum string length" is overestimated.
-                if encoding == "utf-8":
+                if encoding in ["utf-8", ENCODING_UTF8_ALIAS]:
                     assert strlen == 7
                     assert result.dtype == "U7"
                     # correct the result dtype to pass the write_strings comparison below
@@ -379,7 +381,7 @@ class TestRead:
 
     def test_scalar(self, tempdir, readmode):
         # Like 'test_write_strings', but the variable has *only* the string dimension.
-        path = tempdir / f"test_read_scalar_{readmode}.nc"
+        path = tempdir / f"test_bytecoded_read_scalar_{readmode}.nc"
 
         strlen = 5
         ds_encoded = make_encoded_dataset(path, strlen=strlen)
@@ -405,7 +407,7 @@ class TestRead:
 
     def test_multidim(self, tempdir, readmode):
         # Like 'test_write_strings', but the variable has additional dimensions.
-        path = tempdir / f"test_read_multidim_{readmode}.nc"
+        path = tempdir / f"test_bytecoded_read_multidim_{readmode}.nc"
 
         strlen = 5
         ds_encoded = make_encoded_dataset(path, strlen=strlen)
@@ -441,7 +443,7 @@ class TestRead:
         check_array_matching(result, expected)
 
     def test_read_encoding_failure(self, tempdir, readmode):
-        path = tempdir / f"test_read_encoding_failure_{readmode}.nc"
+        path = tempdir / f"test_bytecoded_read_encoding_failure_{readmode}.nc"
         strlen = 10
         ds_encoded = make_encoded_dataset(path, strlen=strlen, encoding="ascii")
         v = ds_encoded.variables["vxs"]
@@ -464,7 +466,7 @@ class TestRead:
             assert np.all(result == test_utf8_bytes)
 
     def test_read_badencoding_ignore(self, tempdir):
-        path = tempdir / f"test_read_badencoding_ignore.nc"
+        path = tempdir / f"test_bytecoded_read_badencoding_ignore.nc"
         strlen = 10
         ds = make_encoded_dataset(path, strlen=strlen, encoding="unknown")
         v = ds.variables["vxs"]

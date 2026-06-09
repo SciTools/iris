@@ -1719,20 +1719,23 @@ class Saver:
         if element.units.calendar:
             _setncattr(cf_var, "calendar", str(element.units.calendar))
 
+        # Take a copy so we can remove things
+        element_attrs = element.attributes.copy()
+
         # Note: when writing UGRID, "element" can be a Mesh which has no "dtype",
         # and for dataless cubes it will have a 'None' dtype.
         if getattr(element, "dtype", None) is not None:
             # Most attributes are dealt with later.  But _Encoding needs to be defined
             #  *before* we can write to a character variable.
-            if element.dtype.kind in "SU" and "_Encoding" in element.attributes:
-                encoding = element.attributes.pop("_Encoding")
+            if element.dtype.kind in "SU" and "_Encoding" in element_attrs:
+                encoding = element_attrs.pop("_Encoding")
                 _setncattr(cf_var, "_Encoding", encoding)
 
         if not isinstance(element, Cube):
             # Add any other custom coordinate attributes.
             # N.B. not Cube, which has specific handling in  _create_cf_data_variable
-            for name in sorted(element.attributes):
-                value = element.attributes[name]
+            for name in sorted(element_attrs):
+                value = element_attrs[name]
 
                 if name == "STASH":
                     # Adopting provisional Metadata Conventions for representing MO
@@ -1830,8 +1833,8 @@ class Saver:
         if cube is not None and data is not None and cube.shape != data.shape:
             compression_kwargs = {}
 
-        if not is_dataless and np.issubdtype(data.dtype, np.str_):
-            # Deal with string-type variables.
+        if not is_dataless and data.dtype.kind == "U":
+            # Deal with unicode-string-type variables.
             # Typically CF label variables, but also possibly ancil-vars ?
 
             # NOTE: all we are doing here is to calculate the byte dimension length,
@@ -1840,37 +1843,26 @@ class Saver:
             # being a _bytecoding_datasets.EncodedVariable.
             string_dimension_depth = data.dtype.itemsize
 
-            if data.dtype.kind == "U":
-                # String content (U) instead of bytes (S).
-                # For numpy strings, itemsize is **always** a multiple of 4
-                if string_dimension_depth % 4 != 0:
-                    msg = (
-                        "Unexpected numpy string 'itemsize' for element "
-                        f"{cube_or_mesh.name()}: "
-                        f"'dtype.itemsize = {string_dimension_depth}, expected "
-                        "a multiple of four (always)."
-                    )
-                    raise ValueError(msg)
-                nchars = string_dimension_depth // 4
-
-                encoding_attr = element.attributes.get("_Encoding", "ascii")
-                # Look this up + return a supported encoding name
-                # NB implements defaults and raises a warning if given not recognised.
-                encoding = bytecoding_datasets._identify_encoding(
-                    encoding=encoding_attr, var_name=cf_name, writing=True
+            # String content (U) instead of bytes (S).
+            # For numpy strings, itemsize is **always** a multiple of 4
+            if string_dimension_depth % 4 != 0:
+                msg = (
+                    "Unexpected numpy string 'itemsize' for element "
+                    f"{cube_or_mesh.name()}: "
+                    f"'dtype.itemsize = {string_dimension_depth}, expected "
+                    "a multiple of four (always)."
                 )
-                width_fns = bytecoding_datasets._ENCODING_WIDTH_TRANSLATIONS[encoding]
-                string_dimension_depth = width_fns.nchars_2_nbytes(nchars)
-            else:
-                if data.dtype.kind != "S" or data.dtype.itemsize != 1:
-                    # Some type of data we don't "understand".
-                    # NB this includes "Sxx" types other than "S1" :  It seems that
-                    # netCDF4 saves Sxx as variable-length strings.  But we don't support that type in Iris.
-                    msg = (
-                        f"Variable {cf_name!r} has unexpected string/character dtype, "
-                        f"{data.dtype} -- should be either 'S' or 'U' type."
-                    )
-                    raise ValueError(msg)
+                raise ValueError(msg)
+            nchars = string_dimension_depth // 4
+
+            encoding_attr = element.attributes.get("_Encoding", "ascii")
+            # Look this up + return a supported encoding name
+            # NB implements defaults and raises a warning if given not recognised.
+            encoding = bytecoding_datasets._identify_encoding(
+                encoding=encoding_attr, var_name=cf_name, writing=True
+            )
+            width_fns = bytecoding_datasets._ENCODING_WIDTH_TRANSLATIONS[encoding]
+            string_dimension_depth = width_fns.nchars_2_nbytes(nchars)
 
             string_dimension_name = "string%d" % string_dimension_depth
 
@@ -1890,12 +1882,32 @@ class Saver:
             # Create the label coordinate variable.
             cf_var = self._dataset.createVariable(cf_name, "|S1", element_dims)
         else:
-            # A normal (numeric) variable.
+            # A non-string variable.
             # ensure a valid datatype for the file format.
             if is_dataless:
                 dtype = self._DATALESS_DTYPE
                 fill_value = self._DATALESS_FILLVALUE
             else:
+                # Normal non-string data.
+                # NOTE: this includes byte-arrays (S1 only) : however these must
+                # use an actual cube dimension for the 'string dimension', which
+                # seriously limits the utility of DECODE_TO_STRINGS_ON_READ.
+                # TODO: also support netCDF variable-length strings ("string" type).
+                #  Currently hit a **write error here**, being numpy object dtype ("O").
+                if data.dtype.kind not in "iufSU" or (
+                    data.dtype.kind == "S" and data.dtype.itemsize != 1
+                ):
+                    # This is a type of data we don't "understand".
+                    # NB this includes "Sxx" types other than "S1" :  It seems that
+                    # netCDF4 saves Sxx as variable-length strings.
+                    # But we don't support that type in Iris.
+                    msg = (
+                        f"Variable {cf_name!r} has unexpected dtype, {data.dtype!r}."
+                        f"Data content arrays must be numeric, or contain "
+                        "single-bytes (dtype 'S1'), or unicode strings (dtype 'U<n>')."
+                    )
+                    raise ValueError(msg)
+
                 element_type = type(element).__name__
                 data = self._ensure_valid_dtype(data, element_type, element)
                 if not packing_controls:
