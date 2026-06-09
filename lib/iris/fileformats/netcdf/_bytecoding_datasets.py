@@ -327,7 +327,17 @@ def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
     return result
 
 
-class EncodedVariable(VariableWrapper):
+class Mixin_Block_AutoChartostring:
+    # Adjusted support for "set_auto_chartostring", for all of variable/group/dataset.
+    def set_auto_chartostring(self, onoff: bool):
+        # Though the concept doesn't really apply, support the method for simplicity's
+        #  sake, but forbid turning it *on*.
+        if onoff:
+            msg = '"auto_chartostring" is not supported by Iris EncodedDataset\'s.'
+            raise TypeError(msg)
+
+
+class EncodedVariable(Mixin_Block_AutoChartostring, VariableWrapper):
     """A variable wrapper that translates variable data according to byte encodings."""
 
     def __init__(self, *args, **kwargs):
@@ -380,26 +390,18 @@ class EncodedVariable(VariableWrapper):
         data = encoding_spec.encode_strings_as_bytearray(data)
         super().__setitem__(keys, data)
 
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedVariable' type."
-        raise TypeError(msg)
 
-
-class EncodedGroup(GroupWrapper):
+class EncodedGroup(Mixin_Block_AutoChartostring, GroupWrapper):
     """A specialised GroupWrapper whose variables are EncodedVariables."""
 
     VAR_WRAPPER_CLS = EncodedVariable
     GRP_WRAPPER_CLS: Any | None = None
 
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
-        raise TypeError(msg)
-
 
 EncodedGroup.GRP_WRAPPER_CLS = EncodedGroup
 
 
-class EncodedDataset(DatasetWrapper):
+class EncodedDataset(Mixin_Block_AutoChartostring, DatasetWrapper):
     """A specialised DatasetWrapper.
 
     Its groups are EncodedGroups and variables are EncodedVariables.
@@ -407,10 +409,6 @@ class EncodedDataset(DatasetWrapper):
 
     VAR_WRAPPER_CLS = EncodedVariable
     GRP_WRAPPER_CLS = EncodedGroup
-
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
-        raise TypeError(msg)
 
 
 class EncodedNetCDFDataProxy(NetCDFDataProxy):

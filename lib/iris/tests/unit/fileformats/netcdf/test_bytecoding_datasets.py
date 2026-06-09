@@ -541,3 +541,19 @@ class TestObjectTypes:
 
         finally:
             ds.close()
+
+    @pytest.mark.parametrize("is_on", [True, False], ids=["c2sOn", "c2sOff"])
+    @pytest.mark.parametrize("component_type", ["ds", "var", "group"])
+    def test_auto_chartostring(self, samplefile_path, classtype, component_type, is_on):
+        ds = self.dataset_class(samplefile_path)
+        var = ds.variables["vx"]
+        grp = ds.groups["grp_a"]
+        component = {"ds": ds, "var": var, "group": grp}[component_type]
+        if classtype == "encoded" and is_on:
+            # In this case cannot turn "on": expect error
+            msg = '"auto_chartostring" is not supported by Iris EncodedDataset'
+            with pytest.raises(TypeError, match=msg):
+                component.set_auto_chartostring(is_on)
+        else:
+            # Just check method exists +  doesn't error.
+            component.set_auto_chartostring(is_on)
