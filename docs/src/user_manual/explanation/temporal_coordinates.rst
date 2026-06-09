@@ -277,7 +277,7 @@ For example, let's generate a list containing only the ``point`` (ignoring the
 
 .. warning::
 
-    A temporal :class:`~iris.coords.Cell` will **always** contain
+    By default a temporal :class:`~iris.coords.Cell` will **always** contain
     :doc:`cftime <cftime:index>` objects rather than native ``python``
     :class:`~datetime.datetime` objects.
 
@@ -313,7 +313,7 @@ The direct approach is to leverage either of the :meth:`~iris.coords.Coord.cell`
 or :meth:`~iris.coords.Coord.cells` methods. Both of which provide one or more
 :class:`~iris.coords.Cell` objects.
 
-A temporal :class:`~iris.coords.Cell` will always contain
+By default a temporal :class:`~iris.coords.Cell` will always contain
 :doc:`cftime <cftime:index>` objects for its ``point``, or ``point`` and ``bound``.
 
 .. seealso::
@@ -368,7 +368,8 @@ calendar encoded samples::
     Unit('hours since 1970-01-01 00:00:00', calendar='standard')
 
 We are safe to convert either of its ``points`` or ``bounds`` to
-:class:`~datetime.datetime` objects using :meth:`~cf_units.Unit.num2pydate`::
+:class:`~datetime.datetime` equivalent objects using
+:meth:`~cf_units.Unit.num2pydate`::
 
     >>> tcoord.units.num2pydate(tcoord.points)
     array([real_datetime(2009, 9, 9, 22, 10),
@@ -395,6 +396,25 @@ We are safe to convert either of its ``points`` or ``bounds`` to
 
     Note that :code:`num2pydate(value)` is functionally equivalent to
     :code:`num2date(value, only_use_cftime_datetimes=False, only_use_python_datetimes=True)`.
+
+Alternatively, we can explicitly instruct the :meth:`~iris.coords.Coord.cell` or
+:meth:`~iris.coords.Coord.cells` methods to return :class:`~datetime.datetime`
+compatible objects e.g.,
+
+    >>> [cell.point for cell in tcoord.cells(pydate=True)]
+    [real_datetime(2009, 9, 9, 22, 10),
+     real_datetime(2009, 9, 9, 22, 20),
+     real_datetime(2009, 9, 9, 22, 30),
+     real_datetime(2009, 9, 9, 22, 40),
+     real_datetime(2009, 9, 9, 22, 50),
+     real_datetime(2009, 9, 9, 23, 0)]
+    >>> [cell.bound for cell in tcoord.cells(pydate=True)]
+    [(real_datetime(2009, 9, 9, 22, 5), real_datetime(2009, 9, 9, 22, 15)),
+     (real_datetime(2009, 9, 9, 22, 15), real_datetime(2009, 9, 9, 22, 25)),
+     (real_datetime(2009, 9, 9, 22, 25), real_datetime(2009, 9, 9, 22, 35)),
+     (real_datetime(2009, 9, 9, 22, 35), real_datetime(2009, 9, 9, 22, 45)),
+     (real_datetime(2009, 9, 9, 22, 45), real_datetime(2009, 9, 9, 22, 55)),
+     (real_datetime(2009, 9, 9, 22, 55), real_datetime(2009, 9, 9, 23, 5))]
 
 
 Plotting
@@ -429,7 +449,7 @@ For example:
 .. warning::
 
     Native ``matplotlib`` only supports ``python`` :class:`~datetime.datetime`
-    objects.
+    compatible objects.
 
 Note that, :mod:`iris.plot` and :mod:`iris.quickplot` provide the convenience
 of also understanding ``iris`` objects, such as coordinates and cubes. However
@@ -475,7 +495,7 @@ Alternatively, we can manually convert our time-series values directly to
     cube = iris.load_cube(fname, "air_potential_temperature")
     tcoord = cube.coord("time")
 
-    dates = tcoord.units.num2pydate(tcoord.points)
+    dates = [cell.point for cell in tcoord.cells(pydate=True)]
     data = cube[:, 0, 0, 0].data
 
     plt.scatter(dates, data)
