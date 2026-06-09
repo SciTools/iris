@@ -945,7 +945,6 @@ class Saver:
             MeshEdgeCoords,
             MeshFaceCoords,
             MeshNodeCoords,
-            MeshXY,
         )
 
         # Exclude any mesh coords, which are bundled in with the aux-coords.
@@ -954,12 +953,11 @@ class Saver:
         ]
 
         # Include any relevant mesh location coordinates.
-        mesh: MeshXY | None = getattr(cube, "mesh")
-        mesh_location: str | None = getattr(cube, "location")
+        mesh = getattr(cube, "mesh")
+        mesh_location = getattr(cube, "location")
+        coords_types = typing.Union[MeshNodeCoords, MeshEdgeCoords, MeshFaceCoords]
         if mesh and mesh_location:
-            location_coords: MeshNodeCoords | MeshEdgeCoords | MeshFaceCoords = getattr(
-                mesh, f"{mesh_location}_coords"
-            )
+            location_coords: coords_types = getattr(mesh, f"{mesh_location}_coords")  # type: ignore[annotation-unchecked]
             coords_to_add.extend(list(location_coords))
 
         return self._add_inner_related_vars(
