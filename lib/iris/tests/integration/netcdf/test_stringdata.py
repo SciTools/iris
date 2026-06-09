@@ -600,7 +600,7 @@ class TestReadParticularCases:
         # Check that we can read UTF-8 encoded data, even with no _Encoding attribute.
         # This is a common case in the wild, and now accepted by CF as a default.
         # However, other encodings will FAIL to decode.
-        filepath = tmp_path / "utf8_no_encoding.nc"
+        filepath = tmp_path / f"read_{data_encoding}_no_encoding.nc"
         testdata = make_testfile(
             testfile_path=filepath,
             encoding_str=data_encoding,
@@ -618,7 +618,7 @@ class TestReadParticularCases:
                 cube.data
 
     def test_read_wrong_encoding__fail(self, tmp_path):
-        filepath = tmp_path / "missing_encoding.nc"
+        filepath = tmp_path / "read_wrong_encoding.nc"
         testdata = make_testfile(
             testfile_path=filepath,
             encoding_str="utf-16",
