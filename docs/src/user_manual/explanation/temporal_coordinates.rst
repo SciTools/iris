@@ -399,7 +399,7 @@ We are safe to convert either of its ``points`` or ``bounds`` to
 
 Alternatively, we can explicitly instruct the :meth:`~iris.coords.Coord.cell` or
 :meth:`~iris.coords.Coord.cells` methods to return :class:`~datetime.datetime`
-compatible objects e.g.,
+compatible objects::
 
     >>> [cell.point for cell in tcoord.cells(pydate=True)]
     [real_datetime(2009, 9, 9, 22, 10),
