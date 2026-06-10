@@ -1641,7 +1641,7 @@ class _MeshXYMixin(Mesh, ABC):
 class MeshXY(_MeshXYMixin):
     """A container representing the UGRID ``cf_role`` ``mesh_topology``.
 
-    A container representing the UGRID [1]_ ``cf_role`` ``mesh_topology``, supporting
+    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
     1D network, 2D triangular, and 2D flexible mesh topologies.
 
     Based on the assumption of 2 :attr:`node_coords` - one associated with the
@@ -1656,7 +1656,7 @@ class MeshXY(_MeshXYMixin):
 
     References
     ----------
-    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    1. The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
 
     """
 
@@ -3038,7 +3038,7 @@ Location = Literal["edge", "node", "face"]
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     """A container representing the UGRID ``cf_role``: ``location_index_set``.
 
-    A container representing the UGRID [1]_ ``cf_role``:
+    A container representing the UGRID ``cf_role``:
     ``location_index_set``. Achieved by referencing an original :class:`MeshXY`
     instance (:attr:`super_mesh`), together with a specific :attr:`location`
     (``node``/``edge``/``face``) and a set of :attr:`indices`. This is strictly
@@ -3051,7 +3051,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     References
     ----------
-    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    1. The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
     """
 
     # TODO: implement I/O (iris#6123).
