@@ -86,6 +86,7 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a dependency named sphinx-sitemap to generate sitemap.xml for
    the documentaiton. (:pull:`7100`)
 
+
 📚 Documentation
 ================
 
@@ -113,6 +114,11 @@ This document explains the changes made to Iris for this release
    :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon 
    coordinates on the input :class:`~iris.cube.Cube`. (:pull:`7118`)
 
+#. :user:`bjlittle` Added the custom `sphinx`_ ``readingtime`` directive to
+   automatically estimate the audiance reading time of a page and render a
+   branded banner in-situ. (:pull:`7150`)
+
+
 💼 Internal
 ===========
 
@@ -124,7 +130,6 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ fixed the benchmarking ``asv_delegated.py`` to work with
    Nox release ``2026.04.10`` (which adds more files to the environment parent
    directory, breaking previous assumptions). (:pull:`7046`)
-
 
 #. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
    except for mo_pack.
@@ -139,7 +144,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers` set the link checking workflow to accept redirect HTTP codes, as
    the reports were getting too noisy. (:pull:`7148`)
-   
+
 #. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._LAZY_DERIVED_LOADING` (formerly `.CONCRETE_DERIVED_LOADING`)
    for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
    Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
