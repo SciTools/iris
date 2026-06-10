@@ -136,6 +136,9 @@ This document explains the changes made to Iris for this release
 #. `@bjlittle`_ and `@trexfeathers`_ added the `Zizmor`_ pre-commit hook to monitor for
    security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
    Zizmor's recommendations to harden the workflows. (:pull:`7138`)
+
+#. `@trexfeathers` set the link checking workflow to accept redirect HTTP codes, as
+   the reports were getting too noisy. (:pull:`7148`)
    
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
