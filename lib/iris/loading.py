@@ -22,12 +22,12 @@ from iris.common import CFVariableMixin
 from iris.warnings import IrisLoadWarning
 
 
-class _ConcreteDerivedLoading(threading.local):
+class _LazyDerivedLoading(threading.local):
     """An object to control whether factory references are loaded with lazy or real data.
 
-    Use via the run-time switch :const:`~iris.loading._CONCRETE_DERIVED_LOADING`.
+    Use via the run-time switch :const:`~iris.loading._LAZY_DERIVED_LOADING`.
     Use :meth:`context` to temporarily activate or assign the property
-    `load_real_references` to True.
+    `load_lazy_references` to True.
 
     Notes
     -----
@@ -37,38 +37,38 @@ class _ConcreteDerivedLoading(threading.local):
     """
 
     def __init__(self):
-        self.load_real_references = False
+        self.load_lazy_references = False
 
     def __bool__(self):
-        return self.load_real_references
+        return self.load_lazy_references
 
     @contextmanager
-    def context(self, load_real=True):
+    def context(self, load_lazy=False):
         """Control whether references are loaded lazily.
 
         Defines a context block within which the setting is applied.
 
         Parameters
         ----------
-        load_real : bool, default True
-            Sets whether references are loaded as concrete data, within the context.
+        load_lazy : bool, default False
+            Sets whether references are loaded as lazy data, within the context.
 
         Example
         -------
-        >>> with _CONCRETE_DERIVED_LOADING.context(load_real=True):
+        >>> with _LAZY_DERIVED_LOADING.context(load_lazy=True):
         ...     <code>
         """
         try:
-            old_value = self.load_real_references
-            self.load_real_references = load_real
+            old_value = self.load_lazy_references
+            self.load_lazy_references = load_lazy
             yield
         finally:
-            self.load_real_references = old_value
+            self.load_lazy_references = old_value
 
 
 # TODO: this is a temporary fix, either remove this when a permanent fix exists
 #  or else make this public if this is deemed necessary.
-_CONCRETE_DERIVED_LOADING = _ConcreteDerivedLoading()
+_LAZY_DERIVED_LOADING = _LazyDerivedLoading()
 
 
 def _generate_cubes(uris, callback, constraints):
