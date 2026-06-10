@@ -18,9 +18,9 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from datetime import datetime
 from copy import copy, deepcopy
-from typing import Any, Iterable, Literal, Literal, Optional, TypeAlias
+from datetime import datetime
+from typing import Any, Iterable, Literal, Optional, TypeAlias
 import warnings
 
 from cf_units import Unit
@@ -28,7 +28,12 @@ from dask import array as da
 import numpy as np
 from numpy.typing import ArrayLike
 
-from iris.common.metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata, MeshIndexSetMetadata
+from iris.common.metadata import (
+    ConnectivityMetadata,
+    MeshCoordMetadata,
+    MeshIndexSetMetadata,
+    MeshMetadata,
+)
 import iris.util
 
 from .. import _lazy_data as _lazy
@@ -603,10 +608,6 @@ class Connectivity(_DimensionalMetadata):
         return element
 
 
-_CoordinateManagerType: TypeAlias = _Mesh1DCoordinateManager | _Mesh2DCoordinateManager
-_ConnectivityManagerType: TypeAlias = _Mesh1DConnectivityManager | _Mesh2DConnectivityManager
-
-
 class Mesh(CFVariableMixin, ABC):
     """A container representing the UGRID ``cf_role`` ``mesh_topology``.
 
@@ -688,7 +689,7 @@ class _MeshXYMixin(Mesh, ABC):
             result = not result
         return result
 
-    def summary(self, shorten=False):
+    def summary(self, *args, **kwargs):
         """Return a string representation of the MeshXY.
 
         Parameters
@@ -702,6 +703,11 @@ class _MeshXYMixin(Mesh, ABC):
         str
 
         """
+        if len(args) > 0:
+            shorten = args[0]
+        else:
+            shorten = kwargs.get("shorten", False)
+
         if shorten:
             result = self._summary_oneline()
         else:
@@ -3061,11 +3067,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         indices: ArrayLike,
         mesh: MeshXY,
         location: Literal["node", "edge", "face"],
-        standard_name: str = None,
-        long_name: str = None,
-        var_name: str = None,
-        units: str = None,
-        attributes: dict = None,
+        standard_name: Optional[str] = None,
+        long_name: Optional[str] = None,
+        var_name: Optional[str] = None,
+        units: Optional[str] = None,
+        attributes: Optional[dict] = None,
         start_index: Literal[0, 1] = 0,
     ):
         self._metadata_manager = metadata_manager_factory(MeshIndexSetMetadata)
@@ -3206,6 +3212,14 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             mesh_id=id(self.mesh),
         )
 
+    @_coord_manager.setter
+    def _coord_manager(self, manager):
+        message = (
+            f"Modification of {self.__class__.__name__} is forbidden - this is only a "
+            f"view onto an original MeshXY: id={id(self.mesh)}."
+        )
+        raise NotImplementedError(message)
+
     @property
     def _connectivity_manager(self):
         # Intended to be a 'view' on the original, and Meshes are mutable, so
@@ -3218,6 +3232,14 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             self._calculate_face_indices(),
             mesh_id=id(self.mesh),
         )
+
+    @_connectivity_manager.setter
+    def _connectivity_manager(self, manager):
+        message = (
+            f"Modification of {self.__class__.__name__} is forbidden - this is only a "
+            f"view onto an original MeshXY: id={id(self.mesh)}."
+        )
+        raise NotImplementedError(message)
 
     def _summary_multiline(self) -> str:
         # Produce a readable multi-line summary of the MeshIndexSet content.
@@ -3271,8 +3293,9 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         -------
         MeshXY
         """
+
         def _coords_and_axes(
-            location: Literal["node", "edge", "face"]
+            location: Literal["node", "edge", "face"],
         ) -> list[tuple[AuxCoord, str]]:
             coords = getattr(self, f"{location}_coords")
             return [
@@ -3294,6 +3317,12 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             units=self.units,
             attributes=self.attributes,
         )
+
+
+_CoordinateManagerType: TypeAlias = _Mesh1DCoordinateManager | _Mesh2DCoordinateManager
+_ConnectivityManagerType: TypeAlias = (
+    _Mesh1DConnectivityManager | _Mesh2DConnectivityManager
+)
 
 
 class MeshCoord(AuxCoord):
@@ -3634,6 +3663,7 @@ class MeshCoord(AuxCoord):
 
     def update_from_mesh(self):
         """Fetch and recalculate the points and bounds from the relevant coord on the mesh.
+
         In most cases, updates should be done automatically, but this method can be used
         if for some reason the points or bounds are out of date.
         """

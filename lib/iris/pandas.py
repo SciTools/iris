@@ -30,8 +30,8 @@ import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
-from iris.util import monotonic, new_axis
 from iris.exceptions import MonotonicityError
+from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
 
 try:

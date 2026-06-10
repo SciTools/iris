@@ -18,7 +18,6 @@ from collections.abc import (
     Container,
     Iterable,
     Iterator,
-    Literal,
     Mapping,
     MutableMapping,
 )
@@ -27,7 +26,7 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypeGuard
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, TypeGuard
 import warnings
 from xml.dom.minidom import Document
 
