@@ -10,6 +10,8 @@
 Temporal Coordinates
 ====================
 
+.. readingtime::
+
 Here we provide some handy patterns and tips for working with temporal
 coordinates i.e., ``time`` coordinates. 
 

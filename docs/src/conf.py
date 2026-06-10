@@ -82,7 +82,7 @@ if on_rtd:
 # documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(str((Path("sphinxext").absolute())))
+sys.path.append(str(Path("sphinxext").absolute()))
 
 # add some sample files from the developers guide..
 sys.path.append(str(Path("developers_guide").absolute()))
@@ -154,6 +154,7 @@ rst_epilog = f"""
 extensions = [
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "readingtime",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",
@@ -447,6 +448,9 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_style = "theme_override.css"
+html_css_files = [
+    "readingtime.css",
+]
 
 # list of sources to exclude from the build.
 exclude_patterns = []

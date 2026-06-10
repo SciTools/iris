@@ -9,6 +9,8 @@
 Cube Statistics
 ===============
 
+.. readingtime::
+
 .. seealso::
 
     Relevant gallery example:

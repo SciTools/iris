@@ -6,6 +6,8 @@
 Contributing a "What's New" Entry
 =================================
 
+.. readingtime::
+
 Iris uses a file named ``latest.rst`` to keep a draft of upcoming development
 changes that will form the next stable release.  Contributions to the
 :ref:`iris_whatsnew` document are written by the developer most familiar

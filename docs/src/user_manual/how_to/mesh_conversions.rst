@@ -8,6 +8,8 @@
 Converting Other Mesh Formats
 *****************************
 
+.. readingtime::
+
 Iris' Mesh Data Model is based primarily on the CF-UGRID conventions  (see
 :doc:`../../user_manual/explanation/mesh_data_model`), but other mesh formats can be converted to fit into this
 model, **enabling use of Iris' specialised mesh support**. Below are some

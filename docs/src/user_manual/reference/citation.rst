@@ -9,6 +9,8 @@
 Citing Iris
 ===========
 
+.. readingtime::
+
 If Iris played an important part in your research then please add us to your
 reference list by using the recommendations below.
 

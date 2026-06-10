@@ -5,6 +5,8 @@
 Pull Request Checklist
 ======================
 
+.. readingtime::
+
 All pull request will be reviewed by a core developer who will manage the
 process of merging. It is the responsibility of the contributor submitting a
 pull request to do their best to deliver a pull request which meets the
