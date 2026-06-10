@@ -25,7 +25,7 @@ Examples
     wanted_roles = ["edge_node_connectivity", "face_node_connectivity"]
     for conn in my_mesh.all_connectivities:
         if conn is not None and conn.cf_role not in wanted_roles:
-            my_mesh.remove_connectivity(conn)
+            my_mesh.remove_connectivities(conn)
 
 Here is a simple :class:`~iris.cube.Cube` with :class:`~iris.mesh.MeshCoord` s:
 
