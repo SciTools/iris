@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Experimental module for alternative modes of indexing a :class:`~iris.mesh.MeshCoord`.
 
+.. z_reference:: iris.experimental.mesh_coord_indexing
+   :tags: topic_mesh
+
+   API reference
+
 :class:`Options` describes the available indexing modes.
 
 Select the desired option using the run-time setting :data:`SETTING`.
