@@ -648,8 +648,10 @@ class _MeshXYMixin(Mesh, ABC):
     # Subclass __init__ methods must define:
     # TODO: Impossible to type hint the return type of metadata_manager_factory().
     _metadata_manager: Any
-    _connectivity_manager_attr: _ConnectivityManagerType
-    _coord_manager_attr: _CoordinateManagerType
+    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
+    _connectivity_manager_attr: Any
+    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
+    _coord_manager_attr: Any
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
     #: The supported mesh axes.
@@ -832,23 +834,27 @@ class _MeshXYMixin(Mesh, ABC):
         self._coord_manager = coord_manager
         self._connectivity_manager = connectivity_manager
 
+    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     @property
-    def _connectivity_manager(self) -> _ConnectivityManagerType:
+    def _connectivity_manager(self):
         # @property enables interruption/customisation in subclasses.
         return self._connectivity_manager_attr
 
+    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     @_connectivity_manager.setter
-    def _connectivity_manager(self, manager: _ConnectivityManagerType) -> None:
+    def _connectivity_manager(self, manager) -> None:
         # @property enables interruption/customisation in subclasses.
         self._connectivity_manager_attr = manager
 
+    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     @property
-    def _coord_manager(self) -> _CoordinateManagerType:
+    def _coord_manager(self):
         # @property enables interruption/customisation in subclasses.
         return self._coord_manager_attr
 
+    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     @_coord_manager.setter
-    def _coord_manager(self, manager: _CoordinateManagerType) -> None:
+    def _coord_manager(self, manager) -> None:
         # @property enables interruption/customisation in subclasses.
         self._coord_manager_attr = manager
 
