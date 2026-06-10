@@ -3036,6 +3036,9 @@ Location = Literal["edge", "node", "face"]
 
 
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
+    # TODO: docstring is out of date with the latest code.
+    # TODO: is a private class more or less appropriate than placing in the experimental
+    #  module?
     """A container representing the UGRID ``cf_role``: ``location_index_set``.
 
     A container representing the UGRID ``cf_role``:
@@ -3058,16 +3061,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     # TODO: validation?
     # TODO: finish type hinting
     # TODO: update the full documentation
-
-    # super_mesh: MeshXY | None = None
-    # """The :class:`MeshXY` instance that this is a view onto."""
-    #
-    # location: Literal["node", "edge", "face", None] = None
-    # """The location on :attr:`super_mesh` that is being indexed."""
-    #
-    # indices: ArrayLike | None = None
-    # """Which elements of the :attr:`location` of :attr:`super_mesh` belong."""
-
+    # TODO: docstrings
+    # TODO: informative error when attempting to save (until iris#6123 is implemented).
     def __init__(
         self,
         indices: ArrayLike,
@@ -3154,7 +3149,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     def _calculate_node_indices(self):
         # Use self.location and self.indices to work out the indices to use
-        #  when indexing the nodes of self.super_mesh.
+        #  when indexing the nodes of self.mesh.
+        # TODO: use match-case instead.
         if self.location == "node":
             result = self.indices
         elif self.location in ["edge", "face"]:
@@ -3325,6 +3321,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         )
 
 
+# TODO: this can only work if the manager classes are defined _before_ the downstream
+#  use in MeshXY. Have avoided re-ordering so far, to avoid polluting the Git diff.
 _CoordinateManagerType: TypeAlias = _Mesh1DCoordinateManager | _Mesh2DCoordinateManager
 _ConnectivityManagerType: TypeAlias = (
     _Mesh1DConnectivityManager | _Mesh2DConnectivityManager

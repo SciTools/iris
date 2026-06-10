@@ -229,6 +229,7 @@ class Test__copy:
             meshcoord.copy(bounds=meshcoord.bounds)
 
 
+# TODO: all failing due to _MeshIndexSet work
 class Test__getitem__:
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
@@ -496,6 +497,7 @@ class Test_cube_containment:
         assert meshco2 == meshcoord
 
     def test_cube_nonmesh_slice(self):
+        # TODO: failing due to _MeshIndexSet work
         # Check that we can slice a cube on a non-mesh dimension, and get a
         # meshcoord == original.
         # Note: currently this must have the *same* mesh, as for .copy().
