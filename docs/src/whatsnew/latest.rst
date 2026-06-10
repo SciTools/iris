@@ -137,7 +137,7 @@ This document explains the changes made to Iris for this release
    security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
    Zizmor's recommendations to harden the workflows. (:pull:`7138`)
    
-#. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._CONCRETE_DERIVED_LOADING`
+#. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._LAZY_DERIVED_LOADING` (formerly `.CONCRETE_DERIVED_LOADING`)
    for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
    Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
    (:issue:`7094`, :pull:`7134`)
