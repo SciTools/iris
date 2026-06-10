@@ -128,7 +128,12 @@ This document explains the changes made to Iris for this release
 
 #. `@SgtVarmint`_ migrated codebase from ``os.path`` to ``pathlib.Path`` where possible
    (:issue:`4523`, :pull:`7087`)
-   
+
+#. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._CONCRETE_DERIVED_LOADING`
+   for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
+   Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
+   (:issue:`7094`, :pull:`7134`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
