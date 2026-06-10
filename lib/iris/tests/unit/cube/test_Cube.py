@@ -3082,6 +3082,7 @@ class Test_coord_division_units:
         cube = Cube(1, units="seconds")
         assert (aux / cube).units == "m.s-1"
 
+
 class Test__getitem_DimCoord:
     @pytest.fixture(autouse=True)
     def _setup(self):
