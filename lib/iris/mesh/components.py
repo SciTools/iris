@@ -1751,6 +1751,8 @@ class MeshXY(_MeshXYMixin):
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
 
+    # TODO: backwards compatibility: make from_coords() perform a no-op if the given
+    #  coords are already MeshCoords.
     @classmethod
     def from_coords(cls, *coords):
         r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
