@@ -106,7 +106,14 @@ class DimensionWrapper(_ThreadSafeWrapper):
     _DUCKTYPE_CHECK_PROPERTIES = ["isunlimited"]
 
 
-class VariableWrapper(_ThreadSafeWrapper):
+class ThreadSafeWrapper_With_AutoChartostring(_ThreadSafeWrapper):
+    # A method supported by all of variables/groups/datasets.
+    def set_auto_chartostring(self, onoff: bool):
+        with _GLOBAL_NETCDF4_LOCK:
+            self._contained_instance.set_auto_chartostring(onoff)
+
+
+class VariableWrapper(ThreadSafeWrapper_With_AutoChartostring):
     """Accessor for a netCDF4.Variable, always acquiring _GLOBAL_NETCDF4_LOCK.
 
     All API calls should be identical to those for netCDF4.Variable.
@@ -150,7 +157,7 @@ class VariableWrapper(_ThreadSafeWrapper):
         return tuple([DimensionWrapper.from_existing(d) for d in dimensions_])
 
 
-class GroupWrapper(_ThreadSafeWrapper):
+class GroupWrapper(ThreadSafeWrapper_With_AutoChartostring):
     """Accessor for a netCDF4.Group, always acquiring _GLOBAL_NETCDF4_LOCK.
 
     All API calls should be identical to those for netCDF4.Group.

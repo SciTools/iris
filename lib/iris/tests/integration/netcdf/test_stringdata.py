@@ -600,7 +600,7 @@ class TestReadParticularCases:
         # Check that we can read UTF-8 encoded data, even with no _Encoding attribute.
         # This is a common case in the wild, and now accepted by CF as a default.
         # However, other encodings will FAIL to decode.
-        filepath = tmp_path / "utf8_no_encoding.nc"
+        filepath = tmp_path / f"read_{data_encoding}_no_encoding.nc"
         testdata = make_testfile(
             testfile_path=filepath,
             encoding_str=data_encoding,
@@ -618,7 +618,7 @@ class TestReadParticularCases:
                 cube.data
 
     def test_read_wrong_encoding__fail(self, tmp_path):
-        filepath = tmp_path / "missing_encoding.nc"
+        filepath = tmp_path / "read_wrong_encoding.nc"
         testdata = make_testfile(
             testfile_path=filepath,
             encoding_str="utf-16",
@@ -676,6 +676,21 @@ class TestWriteParticularCases:
             r"Variable 'unknown' has unexpected dtype, dtype\('O'\)."
             "Data content arrays must be numeric, or contain single-bytes "
             r"\(dtype 'S1'\), or unicode strings \(dtype 'U<n>'\)."
+        )
+        with pytest.raises(ValueError, match=msg):
+            iris.save(cube, filepath)
+
+    def test_write_unexpected_dtype_itemsize(self, mocker, tmp_path):
+        # Test unexpected form of numpy character data.  Not clear if this can actually
+        #  happen, but we do have a runtime test for it, so this just exercises that.
+        mock_dtype = mocker.Mock(spec=np.dtype, kind="U", itemsize=3)
+        mock_data = mocker.MagicMock(spec=np.ndarray, dtype=mock_dtype)
+        mocker.patch("numpy.asarray", return_value=mock_data)
+        cube = Cube(mock_data)
+        filepath = tmp_path / "write_unexpected_dtype_itemsize.nc"
+        msg = (
+            r"Unexpected numpy string 'dtype\.itemsize' for element 'unknown': "
+            r"'dtype\.itemsize = 3, expected a multiple of four \(always\)\."
         )
         with pytest.raises(ValueError, match=msg):
             iris.save(cube, filepath)

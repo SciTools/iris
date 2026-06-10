@@ -304,20 +304,19 @@ def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
         except LookupError:
             pass
 
-        if result is not None:
-            if result not in SUPPORTED_ENCODINGS:
-                # Python "codecs" recognised it, but we don't support it.
-                result = None
+        if result and result not in SUPPORTED_ENCODINGS:
+            # Python "codecs" recognised it, but we don't support it.
+            result = None
 
-    if encoding is not None and result is None:
-        # Unrecognised encoding name : handle this as just a warning
-        msg = (
-            f"Ignoring unsupported encoding for netCDF variable {var_name!r}: "
-            f"_Encoding = {encoding!r}, is not recognised as one of the supported "
-            f"encodings, {SUPPORTED_ENCODINGS}."
-        )
-        warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
-        warnings.warn(msg, category=warntype)
+        if result is None:
+            # Unrecognised encoding name : handle this as just a warning
+            msg = (
+                f"Ignoring unsupported encoding for netCDF variable {var_name!r}: "
+                f"_Encoding = {encoding!r}, is not recognised as one of the supported "
+                f"encodings, {SUPPORTED_ENCODINGS}."
+            )
+            warntype = IrisCfSaveWarning if writing else IrisCfLoadWarning
+            warnings.warn(msg, category=warntype)
 
     if result is None:
         if writing:
@@ -328,7 +327,17 @@ def _identify_encoding(encoding, var_name: str, writing: bool = False) -> str:
     return result
 
 
-class EncodedVariable(VariableWrapper):
+class Mixin_Block_AutoChartostring:
+    # Adjusted support for "set_auto_chartostring", for all of variable/group/dataset.
+    def set_auto_chartostring(self, onoff: bool):
+        # Though the concept doesn't really apply, support the method for simplicity's
+        #  sake, but forbid turning it *on*.
+        if onoff:
+            msg = '"auto_chartostring" is not supported by Iris EncodedDataset\'s.'
+            raise TypeError(msg)
+
+
+class EncodedVariable(Mixin_Block_AutoChartostring, VariableWrapper):
     """A variable wrapper that translates variable data according to byte encodings."""
 
     def __init__(self, *args, **kwargs):
@@ -381,26 +390,18 @@ class EncodedVariable(VariableWrapper):
         data = encoding_spec.encode_strings_as_bytearray(data)
         super().__setitem__(keys, data)
 
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedVariable' type."
-        raise TypeError(msg)
 
-
-class EncodedGroup(GroupWrapper):
+class EncodedGroup(Mixin_Block_AutoChartostring, GroupWrapper):
     """A specialised GroupWrapper whose variables are EncodedVariables."""
 
     VAR_WRAPPER_CLS = EncodedVariable
     GRP_WRAPPER_CLS: Any | None = None
 
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
-        raise TypeError(msg)
-
 
 EncodedGroup.GRP_WRAPPER_CLS = EncodedGroup
 
 
-class EncodedDataset(DatasetWrapper):
+class EncodedDataset(Mixin_Block_AutoChartostring, DatasetWrapper):
     """A specialised DatasetWrapper.
 
     Its groups are EncodedGroups and variables are EncodedVariables.
@@ -408,10 +409,6 @@ class EncodedDataset(DatasetWrapper):
 
     VAR_WRAPPER_CLS = EncodedVariable
     GRP_WRAPPER_CLS = EncodedGroup
-
-    def set_auto_chartostring(self, onoff: bool):
-        msg = "auto_chartostring is not supported by Iris 'EncodedGroup' type."
-        raise TypeError(msg)
 
 
 class EncodedNetCDFDataProxy(NetCDFDataProxy):
