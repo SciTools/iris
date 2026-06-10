@@ -18,6 +18,7 @@ Examples
 .. testsetup::
 
     import iris
+    from iris.experimental.mesh_coord_indexing import SETTING
     my_mesh_cube = iris.load_cube(iris.sample_data_path("mesh_C4_synthetic_float.nc"))
 
     # Remove non-compliant content.
@@ -26,6 +27,14 @@ Examples
     for conn in my_mesh.all_connectivities:
         if conn is not None and conn.cf_role not in wanted_roles:
             my_mesh.remove_connectivities(conn)
+
+    # Capture original state.
+    original_setting = SETTING.value
+
+.. testcleanup::
+
+   # Restore original state.
+   SETTING.value = original_setting
 
 Here is a simple :class:`~iris.cube.Cube` with :class:`~iris.mesh.MeshCoord` s:
 
