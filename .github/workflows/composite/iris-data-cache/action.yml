@@ -16,15 +16,17 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v5
+    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
       id: data-cache
       with:
         path: ~/iris-test-data
         key: ${{ runner.os }}-iris-test-data-${{ inputs.env_name }}-v${{ inputs.version }}-b${{ inputs.cache_build }}
 
     - if: steps.data-cache.outputs.cache-hit != 'true'
+      env:
+        INPUTS_VERSION: ${{ inputs.version }}
       shell: bash
       run: |
-        wget --quiet https://github.com/SciTools/iris-test-data/archive/v${{ inputs.version }}.zip -O iris-test-data.zip
+        wget --quiet https://github.com/SciTools/iris-test-data/archive/v${INPUTS_VERSION}.zip -O iris-test-data.zip
         unzip -q iris-test-data.zip
-        mv iris-test-data-${{ inputs.version }} ~/iris-test-data
+        mv iris-test-data-${INPUTS_VERSION} ~/iris-test-data

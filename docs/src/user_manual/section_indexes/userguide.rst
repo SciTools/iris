@@ -39,6 +39,7 @@ they may serve as a useful reference for future exploration.
    ../tutorial/subsetting_a_cube
    ../explanation/real_and_lazy_data
    ../tutorial/plotting_a_cube
+   ../explanation/temporal_coordinates
    ../tutorial/interpolation_and_regridding
    ../tutorial/merge_and_concat
    ../tutorial/cube_statistics
