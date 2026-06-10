@@ -29,7 +29,7 @@ Examples
 
 Here is a simple :class:`~iris.cube.Cube` with :class:`~iris.mesh.MeshCoord` s:
 
->>> print(my_mesh)
+>>> print(my_mesh_cube)
 synthetic / (1)                     (-- : 96)
     Mesh coordinates:
         latitude                        x
@@ -58,7 +58,7 @@ Set the indexing mode to return a new mesh:
 >>> mesh_coord_indexing.SETTING.value = mesh_coord_indexing.Options.NEW_MESH
 >>> indexed_cube = my_mesh_cube[:36]
 >>> print(indexed_cube.aux_coords)
-(<MeshCoord: latitude / (degrees)  mesh(Topology data of 2D unstructured mesh) location(face)  [...]+bounds  shape(36,)>, <MeshCoord: longitude / (degrees)  mesh(Topology data of 2D unstructured mesh) location(face)  [...]+bounds  shape(36,)>)
+(<MeshCoord: latitude / (degrees)  mesh(<MeshXY object at ...>) location(face)  [...]+bounds  shape(36,)>, <MeshCoord: longitude / (degrees)  mesh(<MeshXY object at ...>) location(face)  [...]+bounds  shape(36,)>)
 
 Or set via a context manager:
 
