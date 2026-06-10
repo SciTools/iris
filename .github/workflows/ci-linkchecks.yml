@@ -35,6 +35,7 @@ jobs:
           args: |
             --verbose
             --max-concurrency 1
+            --accept 301,302,307,308
             './docs/**/*.rst'
             './docs/**/*.inc'
             './lib/**/*.py'
