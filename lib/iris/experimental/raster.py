@@ -173,7 +173,10 @@ def export_geotiff(cube, fname):
             )
         if not coord.is_contiguous():
             raise ValueError("Coordinate {!r} bounds must be contiguous.".format(name))
-        xy_step.append(np.diff(coord.bounds[0]))
+        # Take a Python scalar step value : GDAL's SetGeoTransform requires
+        # plain numbers, and numpy >= 2.4 no longer implicitly converts the
+        # 1-element array which np.diff produces here.
+        xy_step.append(np.diff(coord.bounds[0]).item())
         if not np.allclose(np.diff(coord.bounds), xy_step[-1]):
             msg = "Coordinate {!r} bounds must be regularly spaced.".format(name)
             raise ValueError(msg)
@@ -205,6 +208,6 @@ def export_geotiff(cube, fname):
             x_bounds = x_bounds.copy()
             x_bounds[big_indices] -= 360
 
-    x_min = np.min(x_bounds)
-    y_max = np.max(coord_y.bounds)
+    x_min = np.min(x_bounds).item()
+    y_max = np.max(coord_y.bounds).item()
     _gdal_write_array(x_min, x_step, y_max, y_step, coord_system, data, fname, "GTiff")

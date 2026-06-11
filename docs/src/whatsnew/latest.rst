@@ -36,7 +36,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. `@PraneelBhatia`_ fixed :func:`iris.experimental.raster.export_geotiff`,
+   which failed with a ``TypeError`` under numpy >= 2.4: the geotransform
+   values are now passed to GDAL as Python scalars instead of 1-element
+   arrays. (:issue:`7133`, :pull:`7140`)
 
 
 💣 Incompatible Changes
@@ -155,6 +158,7 @@ This document explains the changes made to Iris for this release
     core dev names are automatically included by the common_links.inc:
 
 .. _@hdyson: https://github.com/hdyson
+.. _@PraneelBhatia: https://github.com/PraneelBhatia
 
 
 .. comment
