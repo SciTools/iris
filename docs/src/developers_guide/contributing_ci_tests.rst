@@ -5,6 +5,8 @@
 Continuous Integration (CI) Testing
 ===================================
 
+.. readingtime::
+
 .. note:: Iris is currently supported and tested against |python_support|
           running on Linux.  We do not currently actively test on other
           platforms such as Windows or macOS.

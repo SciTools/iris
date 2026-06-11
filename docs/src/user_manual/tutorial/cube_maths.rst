@@ -9,6 +9,7 @@
 Cube Maths
 ==========
 
+.. readingtime::
 
 The section :doc:`../how_to/navigating_a_cube` highlighted that
 every cube has a data attribute;

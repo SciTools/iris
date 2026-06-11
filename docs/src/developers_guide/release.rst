@@ -5,6 +5,8 @@
 Releases
 ========
 
+.. readingtime::
+
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
 Below is :ref:`iris_development_releases_steps`, followed by some prose on the

@@ -1,0 +1,12 @@
+.reading-time {
+    padding: 0.6em 1em;
+    background: var(--article-info-bg);
+    color: var(--article-info-fg);
+    border-left: 4px solid #1B8FB7;
+    border-radius: 4px;
+    margin-bottom: 1.2em;
+    font-style: normal;
+    font-weight: bold;
+}
+
+.fa-clock { color: #CADC6D !important; }

@@ -9,6 +9,8 @@
 Merge and Concatenate
 =====================
 
+.. readingtime::
+
 We saw in the :doc:`loading_iris_cubes` chapter that Iris tries to load as few cubes as
 possible. This is done by collecting together multiple fields with a shared standard
 name (and other key metadata) into a single multidimensional cube. The processes that

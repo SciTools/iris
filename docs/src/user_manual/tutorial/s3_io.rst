@@ -8,6 +8,8 @@
 Loading From and Saving To S3 Buckets
 =====================================
 
+.. readingtime::
+
 For cloud computing, it is natural to want to access data storage based on URIs.
 At the present time, by far the most widely used platform for this is
 `Amazon S3 "buckets" <https://aws.amazon.com/s3/>`_.

@@ -11,6 +11,8 @@
 Subsetting a Cube
 =================
 
+.. readingtime::
+
 The :doc:`loading_iris_cubes` section of the user guide showed how to load data into multidimensional Iris cubes.
 However it is often necessary to reduce the dimensionality of a cube down to something more appropriate and/or manageable,
 or only examine and analyse a subset of data in a dimension.

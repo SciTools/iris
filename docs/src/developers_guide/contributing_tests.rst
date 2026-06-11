@@ -6,6 +6,8 @@
 Writing Tests
 *************
 
+.. readingtime::
+
 .. note::
     If you're converting UnitTest tests to PyTest, check out
     :ref:`contributing_pytest_conversions`.

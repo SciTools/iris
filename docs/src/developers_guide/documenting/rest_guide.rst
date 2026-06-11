@@ -6,6 +6,8 @@
 reST Quick Start
 ================
 
+.. readingtime::
+
 `reST`_ is used to create the documentation for Iris_.  It is used to author
 all of the documentation content including use in docstrings where appropriate.
 For more information see :ref:`docstrings`.
