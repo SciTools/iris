@@ -2138,16 +2138,19 @@ class Coord(_DimensionalMetadata):
         if not self.has_bounds():
             if self.ndim == 1:
                 warnings.warn(
-                    "Coordinate {!r} is not bounded, guessing "
-                    "contiguous bounds.".format(self.name()),
+                    f"Coordinate {self.name()!r} is not bounded, "
+                    f"guessing contiguous bounds.",
                     category=iris.warnings.IrisGuessBoundsWarning,
                 )
                 bounds = self._guess_bounds()
             elif self.ndim == 2:
                 raise ValueError(
-                    "2D coordinate {!r} is not bounded. Guessing "
-                    "bounds of 2D coords is not currently "
-                    "supported.".format(self.name())
+                    f"2D coordinate {self.name()!r} is not bounded. "
+                    f"Guessing bounds of 2D coords is not supported "
+                    f"for individual coordinates. See "
+                    f"iris.analysis.cartography.guess_2D_bounds for "
+                    f"a function which guesses bounds for a pair of "
+                    f"coordinates."
                 )
         else:
             self._sanity_check_bounds()
