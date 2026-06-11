@@ -129,7 +129,10 @@ def decode_uri(uri, default="file"):
         # put - last in the brackets so it refers to the character, not a range
         # reference on valid schemes: https://tools.ietf.org/html/std66#section-3.1
         match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
-        if match:
+        if ".zarr" in uri:
+            scheme = "zarr"
+            part = uri
+        elif match:
             scheme = match.group(1)
             part = match.group(2)
         else:
