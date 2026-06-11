@@ -30,7 +30,12 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. :user:`bjlittle` extended the :meth:`~iris.coords.Coord.cell` and
+   :meth:`~iris.coords.Coord.cells` methods to allow users to specify that they
+   want :class:`~datetime.datetime` compatible objects returned within each
+   generated :class:`~iris.coords.Coord.Cell` from a temporal coordinate. This
+   is achieved by passing the keyword argument ``pydate=True``.
+   (:issue:`7112`, :pull:`7146`)
 
 
 🐛 Bugs Fixed
