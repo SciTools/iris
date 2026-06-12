@@ -41,7 +41,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` fixed :func:`iris.analysis.cartography.wrap_lons` so that it
+   preserves the floating-point dtype of its input (e.g. ``float32``) instead of
+   always promoting the result to ``float64``. Integer inputs are still returned
+   as ``float64``. (:issue:`4119`)
 
 
 💣 Incompatible Changes
