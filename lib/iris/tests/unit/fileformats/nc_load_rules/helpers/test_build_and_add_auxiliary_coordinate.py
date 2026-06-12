@@ -41,7 +41,9 @@ class TestBoundsVertexDim(MockerMixin):
 
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar"), cf_data=cf_data),
+            cf_var=mocker.Mock(
+                dimensions=("foo", "bar"), cf_data=cf_data, dtype=np.int32
+            ),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -167,12 +169,12 @@ class TestDtype(MockerMixin):
     def _setup(self, mocker):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
-        cf_data = mocker.MagicMock(_FillValue=None)
+        cf_data = mocker.MagicMock(_FillValue=None, shape=points.shape)
         cf_data.chunking = mocker.MagicMock(return_value=points.shape)
 
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar")),
+            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.int32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -242,7 +244,7 @@ class TestCoordConstruction:
         # Create dummy pyke engine.
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar")),
+            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.float32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )

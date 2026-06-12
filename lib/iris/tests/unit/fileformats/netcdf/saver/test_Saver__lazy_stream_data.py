@@ -16,6 +16,7 @@ import dask.array as da
 import numpy as np
 import pytest
 
+import iris.fileformats.netcdf._bytecoding_datasets as bytecoding_datasets
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf.saver import Saver
 
@@ -29,7 +30,7 @@ class Test__lazy_stream_data:
         mock_dataset = mocker.MagicMock()
         mock_dataset_class = mocker.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
-        target1 = "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
+        target1 = "iris.fileformats.netcdf.saver.bytecoding_datasets.DatasetWrapper"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
@@ -52,9 +53,10 @@ class Test__lazy_stream_data:
         return request.param
 
     @staticmethod
-    def saver(compute) -> Saver:
+    def saver(compute, data_form, tmp_path) -> Saver:
         # Create a test Saver object
-        return Saver(filename="<dummy>", netcdf_format="NETCDF4", compute=compute)
+        filepath = tmp_path / f"tmp_{compute}_{data_form}.nc"
+        return Saver(filename=filepath, netcdf_format="NETCDF4", compute=compute)
 
     @staticmethod
     def mock_var(shape, with_data_array, mocker):
@@ -68,6 +70,7 @@ class Test__lazy_stream_data:
             spec=threadsafe_nc.VariableWrapper,
             shape=tuple(shape),
             dtype=np.dtype(np.float32),
+            _contained_instance=mocker.Mock(dtype="f4"),
             **extra_properties,
         )
         # Give the mock cf-var a name property, as required by '_lazy_stream_data'.
@@ -76,9 +79,9 @@ class Test__lazy_stream_data:
         mock_cfvar.name = "<mock_cfvar>"
         return mock_cfvar
 
-    def test_data_save(self, compute, data_form, mocker):
+    def test_data_save(self, compute, data_form, mocker, tmp_path):
         """Real data is transferred immediately, lazy data creates a delayed write."""
-        saver = self.saver(compute=compute)
+        saver = self.saver(compute, data_form, tmp_path)
 
         data = np.arange(5.0)
         if data_form == "lazydata":
