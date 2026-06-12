@@ -42,6 +42,19 @@ _DECREASING = -1
 _INCREASING = 1
 
 
+def _dtype_for_concat_compare(dtype):
+    """Normalise a dtype for comparing coordinates that are about to be concatenated.
+
+    String coordinates of the same kind but differing width (e.g. ``"<U1"`` and
+    ``"<U5"``) should not prevent concatenation: numpy promotes them to a common
+    width when the points are joined. Collapse such dtypes to their kind so that
+    they compare equal, while leaving every other dtype unchanged. See #6676.
+    """
+    if dtype is not None and dtype.kind in ("U", "S"):
+        return dtype.kind
+    return dtype
+
+
 class _CoordAndDims(namedtuple("CoordAndDims", ["coord", "dims"])):
     """Container for a coordinate and the associated data dimension(s).
 
@@ -131,6 +144,10 @@ class _CoordMetaData(
             sprops, oprops = self._asdict(), other._asdict()
             # Ignore "kwargs" meta-data for the first comparison.
             sprops["kwargs"] = oprops["kwargs"] = None
+            # String coordinates of differing width must not block concatenation.
+            for props in (sprops, oprops):
+                props["points_dtype"] = _dtype_for_concat_compare(props["points_dtype"])
+                props["bounds_dtype"] = _dtype_for_concat_compare(props["bounds_dtype"])
             result = sprops == oprops
             if result:
                 skwargs, okwargs = self.kwargs.copy(), other.kwargs.copy()
