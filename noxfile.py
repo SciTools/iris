@@ -114,6 +114,17 @@ def cache_cartopy(session: nox.sessions.Session) -> None:
         )
 
 
+MPL_URL_RC = (
+    # "https://files.pythonhosted.org/packages/b2/d1/"
+    # "6a9ba3c934b6d272c894db9ea80257527be9a962b18d4b98b2323104b86b/"
+    # "matplotlib-3.11.0rc1.tar.gz"
+    #
+    "https://files.pythonhosted.org/packages/42/b4/"
+    "41b4c812df4c89230465b71cc86217923f904349d803abf67119a471e0ad/"
+    "matplotlib-3.11.0rc2.tar.gz"
+)
+
+
 def prepare_venv(session: nox.sessions.Session) -> None:
     """Create and cache the nox session conda environment.
 
@@ -141,6 +152,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         # populate the environment from the lockfile
         logger.debug(f"Populating conda env at {venv_dir}")
         session.conda_install("--file", str(lockfile))
+        session.install(MPL_URL_RC)
         cache_venv(session)
 
     elif venv_changed(session):
@@ -150,6 +162,7 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         session.virtualenv.reuse_existing = False
         session.virtualenv.create()
         session.conda_install("--file", str(lockfile))
+        session.install(MPL_URL_RC)
         session.virtualenv.reuse_existing = _re_orig
         cache_venv(session)
 
