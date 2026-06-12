@@ -41,7 +41,10 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
-#. N/A
+#. :user:`gaoflow` made :class:`iris.Constraint` raise a ``TypeError`` when used
+   in a boolean context (e.g. with the ``and``/``or``/``not`` keywords) instead
+   of silently discarding one of the constraints. Use the ``&`` operator to
+   combine constraints. (:issue:`4337`)
 
 
 💣 Incompatible Changes
