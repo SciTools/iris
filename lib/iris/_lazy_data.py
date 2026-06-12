@@ -592,7 +592,13 @@ def lazy_elementwise(lazy_array, elementwise_op):
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
     meta = da.utils.meta_from_array(lazy_array).astype(dtype)
 
-    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype, meta=meta)
+    def wrapped_op(block):
+        # Some operations return a Python scalar for a 0-dimensional block
+        # (e.g. cf_units.Unit.convert on a scalar array), which Dask cannot
+        # store. Ensure each block remains an array. See #6965.
+        return np.asanyarray(elementwise_op(block))
+
+    return da.map_blocks(wrapped_op, lazy_array, dtype=dtype, meta=meta)
 
 
 def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):
