@@ -13,7 +13,7 @@ linting on the `SciTools wiki page`_.
 
 ``pre-commit`` compliance is automatically checked on all Iris pull requests
 (more info: :ref:`pre_commit_ci`), but you can also run pre-commit locally as
-Git hooks - every time you make a commit:
+Git hooks - every time you make a commit. Read on to learn more about local running.
 
 You can install ``pre-commit`` in your development environment using ``pip``::
 
