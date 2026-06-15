@@ -1,4 +1,9 @@
-name: Linkcheck
+# References:
+#   - https://github.com/actions/checkout
+#   - https://github.com/lycheeverse/lychee-action
+#   - https://github.com/peter-evans/create-issue-from-file
+
+name: ci-linkchecks
 
 on:
   workflow_dispatch:
@@ -16,7 +21,7 @@ jobs:
       issues: write # required for peter-evans/create-issue-from-file
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -30,6 +35,7 @@ jobs:
           args: |
             --verbose
             --max-concurrency 1
+            --accept 301,302,307,308
             './docs/**/*.rst'
             './docs/**/*.inc'
             './lib/**/*.py'

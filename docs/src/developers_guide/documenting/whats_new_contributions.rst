@@ -6,6 +6,8 @@
 Contributing a "What's New" Entry
 =================================
 
+.. readingtime::
+
 Please include a "What's New" contribution in
 ``docs/src/whatsnew/latest.rst`` for **any** change that you make to Iris.
 **Even if it is not relevant to users** - the `Contribution categories`_

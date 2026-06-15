@@ -7,6 +7,8 @@
 Navigating a Cube
 =================
 
+.. readingtime::
+
 .. testsetup::
 
         import iris

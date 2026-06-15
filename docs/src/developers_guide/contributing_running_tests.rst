@@ -5,6 +5,8 @@
 Running the Tests
 *****************
 
+.. readingtime::
+
 There are two options for running the tests:
 
 * Use an environment you created yourself.  This requires more manual steps to

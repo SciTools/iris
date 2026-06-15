@@ -5,6 +5,8 @@
 Code Formatting
 ===============
 
+.. readingtime::
+
 Also known as 'linting'. This is used to ensure a consistent code format
 throughout Iris, maximising the maintainability and quality. Code formatting
 is checked using the `pre-commit`_ tool, and the full list current formatting

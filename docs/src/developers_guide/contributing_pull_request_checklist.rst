@@ -5,6 +5,8 @@
 Pull Request Checklist
 ======================
 
+.. readingtime::
+
 .. attention::
 
    The checklist has moved!

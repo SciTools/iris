@@ -30,7 +30,12 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. :user:`bjlittle` extended the :meth:`~iris.coords.Coord.cell` and
+   :meth:`~iris.coords.Coord.cells` methods to allow users to specify that they
+   want :class:`~datetime.datetime` compatible objects returned within each
+   generated :class:`~iris.coords.Coord.Cell` from a temporal coordinate. This
+   is achieved by passing the keyword argument ``pydate=True``.
+   (:issue:`7112`, :pull:`7146`)
 
 
 🐛 Bugs Fixed
@@ -56,7 +61,16 @@ This document explains the changes made to Iris for this release
 🔥 Deprecations
 ===============
 
-#. N/A
+#. :user:`bjlittle` deprecated the :mod:`iris.analysis.calculus` module containing
+   the following public functions:
+
+   * :func:`~iris.analysis.calculus.cube_delta`
+   * :func:`~iris.analysis.calculus.curl`
+   * :func:`~iris.analysis.calculus.differentiate`
+   * :func:`~iris.analysis.calculus.spatial_vectors_with_phenom_name`
+
+   Native :class:`~iris.cube.Cube` calculus functionality will not be replaced
+   and is scheduled for removal in ``Iris`` 4.0.0. (:issue:`6262`, :pull:`7102`)
 
 
 🔗 Dependencies
@@ -65,11 +79,18 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ and `@tkknight`_ removed the maximum pin for the
    PyData Sphinx Theme (used in the docs). (:issue:`6885`, :pull:`7053`)
 
-#. `@tkknight`_ added a minimum pin for the PyData Sphinxc Theme as we use the
+#. `@tkknight`_ added a minimum pin for the PyData Sphinx Theme as we use the
    collapse sidebar feature introduced in 0.17.0. (:pull:`7060`)
 
 #. `@tkknight`_ updated a dependency in the Read The Docs configuration file to
    use the latest python. (:pull:`7084`)
+
+#. `@tkknight`_ added a dependency named sphinx-llm to generate summaries
+   that LLMs can understand, `llms.txt` and `llms-full.txt`.  (:pull:`7105`)
+
+#. `@tkknight`_ added a dependency named sphinx-sitemap to generate sitemap.xml for
+   the documentaiton. (:pull:`7100`)
+
 
 📚 Documentation
 ================
@@ -91,6 +112,19 @@ This document explains the changes made to Iris for this release
 #. `@trexfeathers`_ simplified the pull request checklist and moved it directly
    into the GitHub pull request template (read more here: :ref:`pr_check`). Also
    updated several associated pages of more detailed guidance. (:pull:`7096`)
+#. `@tkknight`_ updated the documentation to generate summaries
+   that LLMs can understand, `llms.txt` and `llms-full.txt`. (:pull:`7105`)
+
+#. `@tkknight`_ updated the documentation to generate a sitemap.xml files for the
+   stable version. (:pull:`7100`)
+
+#. `@trexfeathers`_ and `@hdyson`_ clarified that
+   :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon 
+   coordinates on the input :class:`~iris.cube.Cube`. (:pull:`7118`)
+
+#. :user:`bjlittle` Added the custom `sphinx`_ ``readingtime`` directive to
+   automatically estimate the audiance reading time of a page and render a
+   branded banner in-situ. (:pull:`7150`)
 
 
 💼 Internal
@@ -105,21 +139,33 @@ This document explains the changes made to Iris for this release
    Nox release ``2026.04.10`` (which adds more files to the environment parent
    directory, breaking previous assumptions). (:pull:`7046`)
 
-
 #. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
    except for mo_pack.
    (:issue:`6832`, :pull:`6976`)
 
 #. `@SgtVarmint`_ migrated codebase from ``os.path`` to ``pathlib.Path`` where possible
    (:issue:`4523`, :pull:`7087`)
-   
+
+#. `@bjlittle`_ and `@trexfeathers`_ added the `Zizmor`_ pre-commit hook to monitor for
+   security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
+   Zizmor's recommendations to harden the workflows. (:pull:`7138`)
+
+#. `@trexfeathers` set the link checking workflow to accept redirect HTTP codes, as
+   the reports were getting too noisy. (:pull:`7148`)
+
+#. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._LAZY_DERIVED_LOADING` (formerly `.CONCRETE_DERIVED_LOADING`)
+   for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
+   Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
+   (:issue:`7094`, :pull:`7134`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@hdyson: https://github.com/hdyson
 
 
 .. comment
     Whatsnew resources in alphabetical order:
 .. _cf-checker: https://github.com/cedadev/cf-checker
+.. _Zizmor: https://github.com/zizmorcore/zizmor

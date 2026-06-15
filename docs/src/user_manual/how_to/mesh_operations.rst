@@ -8,6 +8,8 @@
 Working with Mesh Data
 **********************
 
+.. readingtime::
+
 .. note:: Several of the operations below rely on the optional dependencies
           mentioned in :doc:`../../user_manual/explanation/mesh_partners`.
 

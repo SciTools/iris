@@ -12,7 +12,7 @@
 
 from abc import ABCMeta, abstractmethod
 from collections import namedtuple
-from collections.abc import Container
+from collections.abc import Container, Iterator
 import copy
 from functools import lru_cache
 from itertools import zip_longest
@@ -1924,13 +1924,42 @@ class Coord(_DimensionalMetadata):
         """
         super().convert_units(unit=unit)
 
-    def cells(self):
-        """Return an iterable of Cell instances for this Coord.
+    def cells(self, /, *, pydate: bool | None = False) -> Iterator[Cell]:
+        """Generate a :class:`~iris.coords.Cell` for each coordinate index.
 
         For example::
 
-           for cell in self.cells():
+           for cell in coord.cells():
               ...
+
+        Parameters
+        ----------
+        pydate : bool, default=False,
+            Generate :class:`~datetime.datetime` compatible objects for a temporal
+            coordinate with either a ``standard``, ``gregorian`` or
+            ``proleptic_gregorian`` calendar. Defaults to creating :mod:`cftime`
+            objects for temporal coordinates.
+
+        Yields
+        ------
+        :class:`~iris.coord.Cell`
+            Contains a single coordinate ``point``, or ``point`` and ``bound``.
+
+        Raises
+        ------
+        :class:`~iris.exceptions.CoordinateMultiDimError`
+            Does not support multi-dimensional coordinates.
+        ValueError
+            Cannot create a :class:`~datetime.datetime` from an invalid
+            calendar for a temporal coordinate.
+
+        Notes
+        -----
+        .. warning::
+
+            For **temporal** coordinates the ``point`` and ``bound`` of the
+            :class:`~iris.coords.Cell` will be a :mod:`cftime` object rather
+            than a native Python :class:`~datetime.datetime` object.
 
         """
         if self.ndim != 1:
@@ -1938,10 +1967,19 @@ class Coord(_DimensionalMetadata):
 
         points = self.points
         bounds = self.bounds
+
         if self.units.is_time_reference():
-            points = self.units.num2date(points)
+            convert = self.units.num2pydate if pydate else self.units.num2date
+
+            try:
+                points = convert(points)
+            except ValueError as err:
+                emsg = err.args[0]
+                # clean limited traceback for user
+                raise ValueError(emsg.capitalize()) from None
+
             if self.has_bounds():
-                bounds = self.units.num2date(bounds)
+                bounds = convert(bounds)
 
         if self.has_bounds():
             for point, bound in zip(points, bounds):
@@ -2216,11 +2254,40 @@ class Coord(_DimensionalMetadata):
         """Return a boolean indicating whether the coord has a bounds array."""
         return self._bounds_dm is not None
 
-    def cell(self, index):
-        """Point/bound cell at the given coordinate index.
+    def cell(self, index: int, /, *, pydate: bool | None = False) -> Cell:
+        """Generate a :class:`~iris.coords.Cell` for the given coordinate `index`.
 
-        Return the single :class:`Cell` instance which results from slicing the
-        points/bounds with the given index.
+        Parameters
+        ----------
+        index : int
+            The `index` of the coordinate to generate a :class:`~iris.coords.Cell`.
+        pydate : bool, default=False
+            Generate :class:`~datetime.datetime` compatible objects for a temporal
+            coordinate with either a ``standard``, ``gregorian`` or
+            ``proleptic_gregorian`` calendar. Defaults to creating :mod:`cftime`
+            objects for temporal coordinates.
+
+        Returns
+        -------
+        :class:`~iris.coord.Cell`
+            Contains the ``point``, or ``point`` and ``bound`` located at the
+            given coordinate `index`.
+
+        Raises
+        ------
+        IndexError
+            Does not support multi-dimensional coordinates.
+        ValueError
+            Cannot create a :class:`~datetime.datetime` from an invalid
+            calendar for a temporal coordinate.
+
+        Notes
+        -----
+        .. warning::
+
+            For **temporal** coordinates the ``point`` and ``bound`` of the
+            :class:`~iris.coords.Cell` will be a :mod:`cftime` object rather
+            than a native Python :class:`~datetime.datetime` object.
 
         """
         index = iris.util._build_full_slice_given_keys(index, self.ndim)
@@ -2238,9 +2305,17 @@ class Coord(_DimensionalMetadata):
             bound = tuple(np.array(self.core_bounds()[index], ndmin=1).flatten())
 
         if self.units.is_time_reference():
-            point = self.units.num2date(point)
+            convert = self.units.num2pydate if pydate else self.units.num2date
+
+            try:
+                point = convert(point)
+            except ValueError as err:
+                emsg = err.args[0]
+                # clean limited traceback for user
+                raise ValueError(emsg.capitalize()) from None
+
             if bound is not None:
-                bound = self.units.num2date(bound)
+                bound = convert(bound)
 
         return Cell(point, bound)
 

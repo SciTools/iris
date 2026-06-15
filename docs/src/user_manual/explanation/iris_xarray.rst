@@ -9,6 +9,8 @@
 Iris ❤️ :term:`Xarray`
 ======================
 
+.. readingtime::
+
 There is a lot of overlap between Iris and :term:`Xarray`, but some important
 differences too. Below is a summary of the most important differences, so that
 you can be prepared, and to help you choose the best package for your use case.
