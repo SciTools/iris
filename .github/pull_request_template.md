@@ -23,4 +23,5 @@ _Please describe your awesome pull request_
 > Things you can trigger on this PR:
 >
 > - Add this label to trigger benchmarks: https://github.com/SciTools/iris/labels/benchmark_this
-> - Visit this URL - swapping `9999` for this PR's number - to re-trigger the [CLA check](https://github.com/SciTools/.github/wiki/Contributor-Licence-Agreement): `https://cla-assistant.io/check/SciTools/iris?pullRequest=9999`
+> - Visit this URL - swapping `9999` for this PR's number - to re-trigger the [CLA check](https://github.com/SciTools/.github/wiki/Contributor-Licence-Agreement):
+>   `https://cla-assistant.io/check/SciTools/iris?pullRequest=9999`
