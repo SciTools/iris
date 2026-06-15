@@ -4,7 +4,8 @@ _Please describe your awesome pull request_
 
 ## Checklist
 
-(In addition to a full set of [passing checks](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_ci_tests.html) :white_check_mark:)
+> [!IMPORTANT]
+> **The Iris core developers are here to help!** If anything below is unclear, just post a comment asking for help 😊
 
 - [ ] Included a [**What's New**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/documenting/whats_new_contributions.html) entry
 - [ ] Incorporated [**type hints**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_code_formatting.html#type-hinting) in any changed code
@@ -14,6 +15,8 @@ _Please describe your awesome pull request_
   - [Docstrings](https://scitools-iris.readthedocs.io/en/latest/developers_guide/documenting/docstrings.html) (we love code examples!)
   - [User Manual](https://scitools-iris.readthedocs.io/en/latest/user_manual/) pages
 - [ ] Checked if [**dependencies**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_ci_tests.html#gha-test-env) need updating
+- [ ] Confirmed that the GitHub **'checks'** on this PR are passing :white_check_mark:
+  _([further reading](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_ci_tests.html))_
 
 ---
 > [!TIP]
