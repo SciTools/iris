@@ -5,6 +5,8 @@
 Code Formatting
 ===============
 
+.. readingtime::
+
 To ensure a consistent code format throughout Iris, we recommend using
 tools to check the source directly.
 

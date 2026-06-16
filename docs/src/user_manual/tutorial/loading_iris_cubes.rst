@@ -9,6 +9,8 @@
 Loading Iris Cubes
 ===================
 
+.. readingtime::
+
 To load a single file into a **list** of Iris cubes
 the :py:func:`iris.load` function is used::
 

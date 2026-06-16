@@ -23,6 +23,8 @@
 Iris Handling of PP and Fieldsfiles
 ===================================
 
+.. readingtime::
+
 This document provides a basic account of how PP and Fieldsfiles data is
 represented within Iris.
 It describes how Iris represents data from the Met Office Unified Model (UM),

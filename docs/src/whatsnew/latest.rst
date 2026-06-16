@@ -30,7 +30,12 @@ This document explains the changes made to Iris for this release
 ✨ Features
 ===========
 
-#. N/A
+#. :user:`bjlittle` extended the :meth:`~iris.coords.Coord.cell` and
+   :meth:`~iris.coords.Coord.cells` methods to allow users to specify that they
+   want :class:`~datetime.datetime` compatible objects returned within each
+   generated :class:`~iris.coords.Coord.Cell` from a temporal coordinate. This
+   is achieved by passing the keyword argument ``pydate=True``.
+   (:issue:`7112`, :pull:`7146`)
 
 
 🐛 Bugs Fixed
@@ -40,6 +45,16 @@ This document explains the changes made to Iris for this release
    in a boolean context (e.g. with the ``and``/``or``/``not`` keywords) instead
    of silently discarding one of the constraints. Use the ``&`` operator to
    combine constraints. (:issue:`4337`)
+
+#. :user:`gaoflow` fixed :meth:`iris.coords.Coord.cell` so that a masked bound
+   is preserved as masked, instead of revealing the value stored underneath the
+   mask. This also corrects the cube/coordinate printout for such bounds.
+   (:issue:`5158`)
+
+#. :user:`gaoflow` fixed :func:`iris.analysis.cartography.wrap_lons` so that it
+   preserves the floating-point dtype of its input (e.g. ``float32``) instead of
+   always promoting the result to ``float64``. Integer inputs are still returned
+   as ``float64``. (:issue:`4119`)
 
 
 💣 Incompatible Changes
@@ -89,6 +104,7 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ added a dependency named sphinx-sitemap to generate sitemap.xml for
    the documentaiton. (:pull:`7100`)
 
+
 📚 Documentation
 ================
 
@@ -112,6 +128,15 @@ This document explains the changes made to Iris for this release
 #. `@tkknight`_ updated the documentation to generate a sitemap.xml files for the
    stable version. (:pull:`7100`)
 
+#. `@trexfeathers`_ and `@hdyson`_ clarified that
+   :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon 
+   coordinates on the input :class:`~iris.cube.Cube`. (:pull:`7118`)
+
+#. :user:`bjlittle` Added the custom `sphinx`_ ``readingtime`` directive to
+   automatically estimate the audiance reading time of a page and render a
+   branded banner in-situ. (:pull:`7150`)
+
+
 💼 Internal
 ===========
 
@@ -124,21 +149,33 @@ This document explains the changes made to Iris for this release
    Nox release ``2026.04.10`` (which adds more files to the environment parent
    directory, breaking previous assumptions). (:pull:`7046`)
 
-
 #. `@ESadek-MO` and `@pp-mo`_ removed unit test reliance on all optional dependencies
    except for mo_pack.
    (:issue:`6832`, :pull:`6976`)
 
 #. `@SgtVarmint`_ migrated codebase from ``os.path`` to ``pathlib.Path`` where possible
    (:issue:`4523`, :pull:`7087`)
-   
+
+#. `@bjlittle`_ and `@trexfeathers`_ added the `Zizmor`_ pre-commit hook to monitor for
+   security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
+   Zizmor's recommendations to harden the workflows. (:pull:`7138`)
+
+#. `@trexfeathers` set the link checking workflow to accept redirect HTTP codes, as
+   the reports were getting too noisy. (:pull:`7148`)
+
+#. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._LAZY_DERIVED_LOADING` (formerly `.CONCRETE_DERIVED_LOADING`)
+   for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
+   Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
+   (:issue:`7094`, :pull:`7134`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
 
-
+.. _@hdyson: https://github.com/hdyson
 
 
 .. comment
     Whatsnew resources in alphabetical order:
 .. _cf-checker: https://github.com/cedadev/cf-checker
+.. _Zizmor: https://github.com/zizmorcore/zizmor

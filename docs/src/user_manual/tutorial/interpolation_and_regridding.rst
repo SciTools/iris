@@ -17,6 +17,8 @@
 Cube Interpolation and Regridding
 =================================
 
+.. readingtime::
+
 Iris provides powerful cube-aware interpolation and regridding functionality,
 exposed through Iris cube methods. This functionality is provided by building
 upon existing interpolation schemes implemented by SciPy.

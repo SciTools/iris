@@ -33,6 +33,8 @@
 NetCDF I/O Handling in Iris
 =============================
 
+.. readingtime::
+
 This document provides a basic account of how Iris loads and saves NetCDF files.
 
 .. admonition:: Under Construction
