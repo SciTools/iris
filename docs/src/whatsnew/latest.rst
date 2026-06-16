@@ -41,6 +41,11 @@ This document explains the changes made to Iris for this release
 🐛 Bugs Fixed
 =============
 
+#. :user:`gaoflow` fixed :meth:`iris.coords.Coord.cell` so that a masked bound
+   is preserved as masked, instead of revealing the value stored underneath the
+   mask. This also corrects the cube/coordinate printout for such bounds.
+   (:issue:`5158`)
+
 #. :user:`gaoflow` fixed :func:`iris.analysis.cartography.wrap_lons` so that it
    preserves the floating-point dtype of its input (e.g. ``float32``) instead of
    always promoting the result to ``float64``. Integer inputs are still returned

@@ -2302,7 +2302,10 @@ class Coord(_DimensionalMetadata):
 
         bound = None
         if self.has_bounds():
-            bound = tuple(np.array(self.core_bounds()[index], ndmin=1).flatten())
+            # Use `np.asanyarray` to preserve any masked values (see #5158):
+            bound = tuple(
+                np.atleast_1d(np.asanyarray(self.core_bounds()[index])).flatten()
+            )
 
         if self.units.is_time_reference():
             convert = self.units.num2pydate if pydate else self.units.num2date

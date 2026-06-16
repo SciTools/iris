@@ -445,6 +445,22 @@ class Test_cell:
             mocker.call((mocker.sentinel.lower, mocker.sentinel.upper)),
         ]
 
+    def test_masked_point(self):
+        # A masked point should be preserved as masked in the cell (#5158).
+        coord = AuxCoord(ma.masked_array([3.0], mask=[True]))
+        cell = coord.cell(0)
+        assert cell.point is ma.masked
+
+    def test_masked_bound(self):
+        # A masked bound should be preserved as masked in the cell, rather
+        # than revealing the value underneath the mask (#5158).
+        coord = AuxCoord(
+            [5.0], bounds=ma.masked_array([[3.0, 7.0]], mask=[[True, False]])
+        )
+        cell = coord.cell(0)
+        assert cell.bound[0] is ma.masked
+        assert cell.bound[1] == 7.0
+
 
 class Test_collapsed(CoordTestMixin):
     def test_serialize(self):
