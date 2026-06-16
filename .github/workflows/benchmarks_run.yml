@@ -2,6 +2,12 @@
 #  - In the last 24 hours' commits.
 #  - Introduced by this pull request.
 
+# Reference
+#    - https://github.com/actions/checkout
+#    - https://github.com/MarceloPrado/has-changed-path
+#    - https://github.com/actions/cache
+#    - https://github.com/actions/upload-artifact
+
 name: benchmarks-run
 run-name: Run benchmarks
 
@@ -19,6 +25,8 @@ on:
     # Add the `labeled` type to the default list.
     types: [labeled, opened, synchronize, reopened]
 
+permissions: {}
+
 jobs:
   pre-checks:
     # This workflow supports two different scenarios (overnight and branch).
@@ -29,9 +37,10 @@ jobs:
       overnight: ${{ steps.overnight.outputs.check }}
       branch: ${{ steps.branch.outputs.check }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 2
+          persist-credentials: false
       - id: files-changed
         uses: marceloprado/has-changed-path@df1b7a3161b8fb9fd8c90403c66a9e66dfde50cb
         with:
@@ -72,16 +81,17 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       - name: Install run dependencies
         run: pip install asv nox!=2025.05.01
 
       - name: Cache environment directories
         id: cache-env-dir
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             .nox
@@ -91,7 +101,7 @@ jobs:
 
       - name: Cache test data directory
         id: cache-test-data
-        uses: actions/cache@v5
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
         with:
           path: |
             ${{ env.IRIS_TEST_DATA_PATH }}
@@ -115,10 +125,11 @@ jobs:
         #  the proposed merge with the base branch.
         if: needs.pre-checks.outputs.branch == 'true'
         env:
+          BASE_REF: ${{ github.base_ref }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.number }}
         run: |
-          nox -s benchmarks -- branch origin/${{ github.base_ref }}
+          nox -s benchmarks -- branch origin/${BASE_REF}
 
       - name: Run overnight benchmarks
         # If the 'overnight' condition(s) are met: use the bm_runner to compare
@@ -126,16 +137,17 @@ jobs:
         id: overnight
         if: needs.pre-checks.outputs.overnight == 'true'
         env:
+          FIRST_COMMIT: ${{ inputs.first_commit }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # The first_commit argument allows a custom starting point - useful
         #  for manual re-running.
         run: |
-          first_commit=${{ inputs.first_commit }}
+          first_commit=${FIRST_COMMIT}
           if [ "$first_commit" == "" ]
           then
             first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
           fi
-          
+
           if [ "$first_commit" != "" ]
           then
             nox -s benchmarks -- overnight $first_commit
@@ -157,7 +169,7 @@ jobs:
       - name: Upload any benchmark reports
         # Uploading enables more downstream processing e.g. posting a PR comment.
         if: success() || steps.overnight.outcome == 'failure'
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
@@ -165,7 +177,7 @@ jobs:
       - name: Archive asv results
         # Store the raw ASV database(s) to help manual investigations.
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: asv-raw-results
           path: benchmarks/.asv/results

@@ -11,6 +11,8 @@
 Which Regridder to Use
 ======================
 
+.. readingtime::
+
 This section compares all the regridding schemes which exist in `Iris`_, and
 externally in `iris-esmf-regrid`_ with a view to helping you to choose the right
 regridder for your workflow. The choice of regridder

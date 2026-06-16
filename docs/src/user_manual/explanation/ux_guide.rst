@@ -8,6 +8,8 @@
 Reviewing the Iris User Experience
 **********************************
 
+.. readingtime::
+
 .. todo:: https://github.com/SciTools/iris/issues/6867; this page belongs in 'Get Involved'
 
 Often, improving and updating the existing user experience can fall behind fixing create new features,

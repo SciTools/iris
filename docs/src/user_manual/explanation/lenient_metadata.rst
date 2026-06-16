@@ -8,6 +8,8 @@
 Lenient Metadata
 ****************
 
+.. readingtime::
+
 This section discusses lenient metadata; what it is, what it means, and how you
 can perform **lenient** rather than **strict** operations with your metadata.
 

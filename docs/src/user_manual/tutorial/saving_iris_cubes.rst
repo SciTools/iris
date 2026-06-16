@@ -9,6 +9,8 @@
 Saving Iris Cubes
 ==================
 
+.. readingtime::
+
 Iris supports the saving of cubes and cube lists to:
 
 * CF netCDF (version 1.7)

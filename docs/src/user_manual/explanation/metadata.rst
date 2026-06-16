@@ -8,6 +8,8 @@
 Metadata
 ********
 
+.. readingtime::
+
 This section provides a detailed overview of how your metadata is managed
 within Iris. In particular, it discusses what metadata is, where it fits
 into Iris, and more importantly how you can create, access, manipulate,

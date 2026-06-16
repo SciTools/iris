@@ -10,6 +10,8 @@
 The Mesh Data Model
 *******************
 
+.. readingtime::
+
 .. important::
 
         This page is intended to summarise the essentials that Iris users need

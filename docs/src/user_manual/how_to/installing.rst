@@ -8,6 +8,8 @@
 Installing
 ==========
 
+.. readingtime::
+
 Iris can be installed using conda or pip.
 
 .. note:: Iris is currently supported and tested against |python_support|

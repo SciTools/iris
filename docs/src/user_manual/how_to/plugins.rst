@@ -10,6 +10,8 @@
 Plugins
 =======
 
+.. readingtime::
+
 Iris supports **plugins** under the ``iris.plugins`` `namespace package`_.
 This allows packages that extend Iris' functionality to be developed and
 maintained independently, while still being installed into ``iris.plugins``
