@@ -218,6 +218,18 @@ class Constraint:
     def __rand__(self, other):
         return ConstraintCombination(other, self, operator.__and__)
 
+    def __bool__(self):
+        # Constraints have no truth value: combining them with the Python
+        # keywords ``and``/``or``/``not`` (which call bool()) silently returns
+        # one of the operands instead of a combined Constraint, losing the
+        # other. Raise an explanatory error so this is not a silent failure;
+        # use the ``&`` operator to combine constraints. See #4337.
+        raise TypeError(
+            "The truth value of a Constraint is ambiguous. Constraints cannot "
+            "be combined with the 'and', 'or' and 'not' keywords; use the '&' "
+            "operator instead, e.g. 'constraint1 & constraint2'."
+        )
+
 
 class ConstraintCombination(Constraint):
     """Represents the binary combination of two Constraint instances."""
