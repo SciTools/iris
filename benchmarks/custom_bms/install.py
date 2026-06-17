@@ -5,7 +5,7 @@
 """Install the SciTools custom benchmarks for detection by ASV.
 
 See the requirements for being detected as an ASV plugin:
-https://asv.readthedocs.io/projects/asv-runner/en/latest/development/benchmark_plugins.html
+https://asv.readthedocs.io/projects/asv-runner/en/stable/development/benchmark_plugins.html
 """
 
 from pathlib import Path
