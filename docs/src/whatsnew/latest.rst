@@ -132,9 +132,15 @@ This document explains the changes made to Iris for this release
    :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon 
    coordinates on the input :class:`~iris.cube.Cube`. (:pull:`7118`)
 
+#. :user:`bjlittle` Added an explanation section for :ref:`explanation-temporal-coordinates`.
+   (:pull:`7131`)
+
 #. :user:`bjlittle` Added the custom `sphinx`_ ``readingtime`` directive to
    automatically estimate the audiance reading time of a page and render a
    branded banner in-situ. (:pull:`7150`)
+
+#. :user:`bjlittle` Updated the :ref:`explanation-temporal-coordinates` section.
+   (:pull:`7159`)
 
 
 💼 Internal
