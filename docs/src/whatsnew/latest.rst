@@ -168,6 +168,9 @@ This document explains the changes made to Iris for this release
    Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
    (:issue:`7094`, :pull:`7134`)
 
+#. :user:`tkknight` Added ``AGENTS.md`` for AI-assisted development guidelines across
+   the project root, ``docs/`` and ``tests/`` directories. (:pull:`7160`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
