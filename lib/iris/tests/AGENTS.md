@@ -1,51 +1,71 @@
-# AGENTS Guide for lib/iris/tests/
+# AGENTS.md
 
-This file applies to everything under `lib/iris/tests/`.
+Agent instructions for `lib/iris/tests/`.
+These rules apply to all test files under this directory tree.
 
 ## Purpose
 
-- Keep test changes targeted, deterministic, and quick to review.
-- Prefer changing tests only; do not modify production code unless the task explicitly requires it.
+This test suite validates Iris behaviour, metadata handling, and regression coverage.
+Keep changes focused, deterministic, and compatible with the existing test style.
+
+## Fast Rules
+
+1. Add or update tests for every production-code change.
+2. Prefer the smallest test that reproduces behaviour.
+3. Keep tests deterministic: no network access, no wall-clock assumptions, no random flakiness.
+4. Use existing fixtures/helpers before introducing new ones.
+5. Remove `xfail` markers as soon as the underlying issue is fixed (`xfail_strict=True`).
 
 
-### Test layout
+## Test Layout
 
-| Path | Content |
-|------|---------|
-| `lib/iris/tests/unit/` | Unit tests, mirroring `lib/iris/` structure |
-| `lib/iris/tests/integration/` | Cross-component integration tests |
-| `lib/iris/tests/graphics/` | Image-comparison (graphics) tests |
-| `lib/iris/tests/conftest.py` | Top-level fixtures |
+- `lib/iris/tests/unit/` for unit-level behaviour.
+- `lib/iris/tests/integration/` for cross-component behaviour.
+- `lib/iris/tests/graphics/` for plotting/image-comparison tests.
+- Legacy top-level tests exist; follow nearby patterns when editing them.
 
-### External test data
+## Writing Tests
 
-Some tests require `iris-test-data`. Set `OVERRIDE_TEST_DATA_REPOSITORY` to the
-`test_data` directory inside that repository. Tests missing the data are skipped.
+- Use `pytest` style and plain assertions.
+- Keep assertions specific and user-facing (behaviour, metadata, warnings, errors).
+- Prefer `pytest.raises(..., match=...)` for exception checks.
+- Prefer warning assertions (`pytest.warns`) for deprecation or user warnings.
+- For lazy-data behaviour, assert laziness explicitly where relevant.
+- Avoid over-mocking; prefer realistic Cube/Coord setup via shared helpers.
 
-### Graphics tests
 
-Graphics tests compare against reference images. Update reference images only when an
-intentional rendering change is made.
+## Markers and Strictness
 
-## Run Commands
+- Respect existing markers and plugin requirements.
+- `xfail` is strict in this repository: unexpected passes fail the run.
+- Only use `xfail` when there is a tracked reason and clear expectation.
 
-Run from repository root unless otherwise noted.
+## Running Tests
 
-- Full test suite: `pytest -n auto lib/iris/tests`
-- Single test file: `pytest -n auto lib/iris/tests/path/to/test_file.py`
-- Single test selection: `pytest -n auto lib/iris/tests/path/to/test_file.py -k "pattern"`
-- Verbose failures: add `-ra`
+Run targeted tests while iterating:
 
-Nox equivalent for CI-like execution:
+```bash
+pytest -n auto lib/iris/tests/unit/<path_or_file>.py
+```
 
-- `nox --session tests`
+Run broader coverage before finishing:
 
-## External Test Data
+```bash
+pytest -n auto lib/iris/tests
+```
 
-Some tests require `iris-test-data`.
+## Style and Lint in Tests
 
-- Preferred env var: `OVERRIDE_TEST_DATA_REPOSITORY=/path/to/iris-test-data/test_data`
+- Follow Ruff formatting and linting used by the repository.
+- Per-file ignores already relax some docstring rules in tests.
+- Avoid unrelated refactors while touching tests.
+
+## Test Data and Environment
+
+- Some tests require external `iris-test-data`; Preferred env var: `OVERRIDE_TEST_DATA_REPOSITORY=/path/to/iris-test-data/test_data`
 - Missing data will skip affected tests by design.
+- Keep new tests independent of local machine paths and optional system state.
+- For optional dependencies, skip gracefully using existing patterns.
 
 ## Editing Rules
 
@@ -66,14 +86,12 @@ Some tests require `iris-test-data`.
 - No unrelated tests were modified.
 - Any required external data setup is documented in the change notes.
 
+## Scope Boundaries
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.
+- Do not modify lock files or environment specs for test-only fixes.
+- Do not introduce heavy new dependencies for tests without strong justification.
+- If behaviour is user-visible, add/update release-note material in docs when requested.
 
----
+## Maintenance
 
-**Last Updated**: 16 June 2026  
-
+If you establish a new repository-wide test rule during this session, update this file with a short, reusable note and remove outdated guidance.

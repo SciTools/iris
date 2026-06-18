@@ -1,55 +1,96 @@
-# AGENTS Guide for docs/
+# docs/AGENTS.md
 
-This file applies to everything under `docs/`.
+Documentation-specific agent instructions for the [Iris](https://scitools-iris.readthedocs.io/) project.
+This file takes precedence over the root [`AGENTS.md`](../AGENTS.md) for everything under `docs/`.
 
-## Purpose
 
-- Keep documentation changes accurate, minimal, and easy to review.
-- Prefer docs-only edits unless a task explicitly requires source-code changes.
+## Structure
 
-## Documentation
-
-```bash
-# From docs/
-make html-quick   # Fast build (skips API and gallery)
-make html-noplot  # Skip gallery only
-make html-noapi   # Skip API only
-make html         # Full build (warnings are errors)
-make doctest      # Run doctests
-make clean        # Remove build artefacts
-make show         # Open built docs in browser
+```
+docs/
+    Makefile               # Top-level doc build entry point
+    gallery_code/          # Gallery example scripts (general/, meteorology/, oceanography/)
+    gallery_tests/         # Tests that execute gallery examples
+    src/
+        conf.py            # Sphinx configuration
+        common_links.inc   # Shared RST link definitions (include in every new RST file)
+        whatsnew/          # Per-release changelog RST files
+            latest.rst     # Current unreleased changes (use latest.rst.template)
+            index.rst      # Whatsnew index
+        developers_guide/  # Contributor documentation
+        userguide/         # User-facing guides
+        user_manual/       # Detailed user reference
+        sphinxext/         # Custom Sphinx extensions
 ```
 
-Gallery example tests (from repo root):
+
+## Building the Docs
 
 ```bash
-pytest -v docs/gallery_tests/test_gallery_examples.py
+# Full build (from docs/ directory)
+make html
+
+# Skip gallery (faster)
+make html-noplot
+
+# Skip API docs (faster)
+make html-noapi
+
+# Skip both gallery and API (fastest)
+make html-quick
+
+# Clean build artifacts
+make clean
+
+# Live rebuild on file changes (requires sphinx-autobuild)
+cd docs/src && make livehtml
 ```
 
-## Key Locations
+Build output goes to `docs/src/_build/html/`.
 
-- `docs/src/`: Sphinx source content.
-- `docs/gallery_code/`: Gallery example scripts.
-- `docs/gallery_tests/`: Tests for gallery examples.
 
-## Editing Rules
+## Whatsnew Entries
 
-- Keep changes focused; avoid unrelated refactors and formatting churn.
-- Follow existing reStructuredText style and section structure in nearby files.
-- Preserve cross-references (`:ref:`, `:doc:`, links) and update targets when moving content.
-- Prefer incremental edits to existing pages over creating new top-level pages.
+- Every **user-visible change** must have an entry in `docs/src/whatsnew/latest.rst`.
+- Use the `latest.rst.template` as the template when starting a new release file.
+- Sections: *New Features*, *Deprecations*, *Bugs Fixed*, *Internal*, *Dependencies*.
+- Reference issues/PRs with ``:issue:`123` `` and `` :pull:`123` `` roles.
+- Keep entries concise — one or two sentences with a code example if helpful.
 
-## Gallery Rules
 
-- Add gallery examples in `docs/gallery_code/<section>/`.
-- Name new gallery scripts with a `plot_` prefix.
-- Keep gallery examples deterministic and testable.
+## RST / Sphinx Conventions
 
-## Safety Checklist Before Finishing
+- All new RST files must include `.. include:: ../common_links.inc` (adjust relative path as needed) to access shared link definitions.
+- Use NumPy-style docstrings for all Python API pages; Sphinx autodoc pulls these automatically.
+- Warnings are treated as errors in the standard build (`-W --keep-going`). Fix all Sphinx warnings before merging.
+- Do **not** commit build artifacts (`docs/src/_build/`).
+- Cross-reference Iris symbols with ``:class:`iris.cube.Cube` ``, ``:func:`iris.load` ``, etc.
+- Gallery scripts live under `docs/gallery_code/` and must be valid standalone Python files executable by `matplotlib` / `sphinx-gallery`.
 
-- The relevant docs build command succeeds.
-- Any changed gallery example has a passing related test.
-- No broken links or references introduced by the change.
+
+## Gallery Examples
+
+- Each gallery script must have a module-level docstring that becomes its title and description.
+- Scripts are grouped by subdirectory: `general/`, `meteorology/`, `oceanography/`.
+- Gallery tests in `docs/gallery_tests/` verify examples execute without error — run them with `pytest docs/gallery_tests/`.
+- Keep examples self-contained; prefer `iris.sample_data_path()` for data files rather than absolute paths.
+
+
+## Doctest / Inline Code Examples
+
+- Doctests in RST files are run via `make doctest` (from `docs/src/`).
+- Use `# doctest: +SKIP` sparingly and only when execution is genuinely impossible (e.g., requires a display).
+- Ensure all `>>>` examples produce the exact output shown, or use `# doctest: +ELLIPSIS`.
+
+
+## Critical Gotchas
+
+1. **Sphinx warnings = errors**: The standard `make html` build uses `-W`. Any new warning breaks CI.
+2. **`common_links.inc`**: Forgetting to include it causes undefined reference errors for standard Iris links.
+3. **`latest.rst` conflicts**: Multiple contributors adding entries may cause merge conflicts — add entries under the correct section heading and keep them alphabetically ordered by PR number.
+4. **Gallery data files**: Use `iris.sample_data_path()` — hard-coded paths will break in CI.
+5. **API doc changes**: Moving or renaming public symbols requires updating any manual cross-references in the RST files.
+
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
@@ -60,4 +101,3 @@ pytest -v docs/gallery_tests/test_gallery_examples.py
 ---
 
 **Last Updated**: 16 June 2026  
-

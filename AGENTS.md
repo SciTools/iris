@@ -45,6 +45,12 @@ requirements/          # Conda environment specs and lock files
 
 ### Conda environment (recommended)
 
+Always use a conda environment, reuse the iris-dev conda environment if it
+already exists but confirm with the user before installing or removing packages.
+
+If a package cannot be installed via conda then you can use pip that is in the conda
+environment.
+
 ```bash
 # Create and activate a development environment
 conda env create -f requirements/py312.yml
@@ -212,5 +218,4 @@ make lockfiles
 
 ---
 
-**Last Updated**: 16 June 2026  
-
+**Last Updated**: 18 June 2026
