@@ -92,6 +92,10 @@ pytest -n auto lib/iris/tests
 - Do not introduce heavy new dependencies for tests without strong justification.
 - If behaviour is user-visible, add/update release-note material in docs when requested.
 
-## Maintenance
 
-If you establish a new repository-wide test rule during this session, update this file with a short, reusable note and remove outdated guidance.
+## ⚠️ Meta-Instruction: Auto-Update Rule
+- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
+- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
+- **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
+- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.
+
