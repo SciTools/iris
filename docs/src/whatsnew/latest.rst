@@ -124,7 +124,7 @@ This document explains the changes made to Iris for this release
 
 #. `@trexfeathers`_ simplified the pull request checklist and moved it directly
    into the GitHub pull request template (read more here: :ref:`pr_check`). Also
-   updated several associated pages of more detailed guidance. (:pull:`7096`, :pull:`7163`)
+   updated several associated pages of more detailed guidance. (:pull:`7096`, :pull:`7164`)
 
 #. `@tkknight`_ updated the documentation to generate summaries
    that LLMs can understand, `llms.txt` and `llms-full.txt`. (:pull:`7105`)
