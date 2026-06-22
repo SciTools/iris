@@ -177,6 +177,8 @@ This document explains the changes made to Iris for this release
    Note: this object is temporary and is likely to be replaced by a permanent solution or else be renamed.
    (:issue:`7094`, :pull:`7134`)
 
+#. `@rcomer`_ fixed the capitalisation of a pytest marker. (:pull:`7163`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:

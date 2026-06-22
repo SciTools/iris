@@ -285,7 +285,7 @@ def skip_plot(fn: Callable) -> Callable:
     ...     pass
 
     """
-    skip = pytest.mark.skipIf(
+    skip = pytest.mark.skipif(
         condition=not MPL_AVAILABLE,
         reason="Graphics tests require the matplotlib library.",
     )
