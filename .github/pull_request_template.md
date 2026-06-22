@@ -10,7 +10,7 @@ _Please describe your awesome pull request_
 - [ ] Included a [**What's New**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/documenting/whats_new_contributions.html) entry
 - [ ] Incorporated [**type hints**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_code_formatting.html#type-hinting) in any changed code
 - [ ] Checked if [**tests**](https://scitools-iris.readthedocs.io/en/latest/developers_guide/contributing_tests.html) need updating
-- [ ] Checked if [**benchmarks**](../benchmarks/README.md#writing-benchmarks) need updating
+- [ ] Checked if [**benchmarks**](https://github.com/SciTools/iris/blob/main/benchmarks/README.md#writing-benchmarks) need updating
 - [ ] Checked if **documentation** needs updating
   - [Docstrings](https://scitools-iris.readthedocs.io/en/latest/developers_guide/documenting/docstrings.html) (we love code examples!)
   - [User Manual](https://scitools-iris.readthedocs.io/en/latest/user_manual/) pages
