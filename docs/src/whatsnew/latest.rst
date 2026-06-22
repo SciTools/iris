@@ -182,6 +182,8 @@ This document explains the changes made to Iris for this release
 #. :user:`tkknight` Added ``AGENTS.md`` for AI-assisted development guidelines across
    the project root, ``docs/`` and ``tests/`` directories. (:pull:`7160`)
 
+#. `@rcomer`_ fixed the capitalisation of a pytest marker. (:pull:`7163`)
+
 .. comment
     Whatsnew author names (@github name) in alphabetical order. Note that,
     core dev names are automatically included by the common_links.inc:
