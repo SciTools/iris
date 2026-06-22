@@ -170,7 +170,7 @@ This document explains the changes made to Iris for this release
    Zizmor's recommendations to harden the workflows. (:pull:`7138`)
 
 #. `@trexfeathers` set the link checking workflow to accept redirect HTTP codes, as
-   the reports were getting too noisy. (:pull:`7148`)
+   the reports were getting too noisy. (:pull:`7148`, :pull:`7165`)
 
 #. `@HGWright`_ changed the default of the private switch :obj:`~iris.loading._LAZY_DERIVED_LOADING` (formerly `.CONCRETE_DERIVED_LOADING`)
    for controlling laziness of coordinates from pp loading, now the switch must be set to True for lazy loading to be enabled.
