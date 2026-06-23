@@ -1,0 +1,2 @@
+:user:`tkknight` added a dependency named sphinx-sitemap to generate sitemap.xml for
+the documentation.

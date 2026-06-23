@@ -1,0 +1,2 @@
+:user:`tkknight` updated a dependency in the Read The Docs configuration file to
+use the latest python.

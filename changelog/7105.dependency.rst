@@ -1,0 +1,2 @@
+:user:`tkknight` added a dependency named sphinx-llm to generate summaries
+that LLMs can understand, ``llms.txt`` and ``llms-full.txt``.
