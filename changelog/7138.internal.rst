@@ -1,0 +1,4 @@
+:user:`bjlittle` and :user:`trexfeathers` added the
+`Zizmor <https://github.com/zizmorcore/zizmor>`_ pre-commit hook to monitor for
+security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
+Zizmor's recommendations to harden the workflows.

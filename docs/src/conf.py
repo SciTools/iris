@@ -166,6 +166,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinx_changelog",
     "sphinx_copybutton",
     "sphinx_design",
     "sphinx_gallery.gen_gallery",
@@ -239,7 +240,7 @@ napoleon_custom_sections = None
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_text = r">>> |\.\.\. |\$ |\> "
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
@@ -328,8 +329,8 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "#%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "#%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
         "Discussion #%s",
@@ -450,11 +451,14 @@ html_context = {
 html_static_path = ["_static"]
 html_style = "theme_override.css"
 html_css_files = [
+    "changelog.css",
     "readingtime.css",
 ]
 
 # list of sources to exclude from the build.
-exclude_patterns = []
+exclude_patterns = [
+    "**/highlights.rst",
+]
 
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html

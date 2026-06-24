@@ -1,0 +1,2 @@
+:user:`tkknight` added a minimum pin for the PyData Sphinx Theme as we use the
+collapse sidebar feature introduced in 0.17.0.

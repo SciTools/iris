@@ -1,0 +1,2 @@
+:user:`trexfeathers` and :user:`tkknight` removed the maximum pin for the
+PyData Sphinx Theme (used in the docs). (:issue:`6885`)

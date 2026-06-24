@@ -439,3 +439,61 @@ local_scheme = "dirty-tag"
 # https://setuptools-scm.readthedocs.io/en/latest/extending/#version-number-construction
 version_scheme = "release-branch-semver"
 write_to = "lib/iris/_version.py"
+
+[tool.towncrier]
+directory = "changelog"
+filename = "docs/src/whatsnew/{version}/{version}.rst"
+package = "iris"
+package_dir = "lib"
+template = "changelog/template.rst"
+underlines = ["=", "-", "~"]
+single_file = false
+
+#
+# important:
+#   the "type" order here defines the final built changelog order
+#
+  [[tool.towncrier.type]]
+  directory = "announcement"
+  name = "📢 Announcements"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "feature"
+  name = "✨ Features"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "bugfix"
+  name = "🐛 Bugs Fixed"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "breaking"
+  name = "💣 Incompatible Changes"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "performance"
+  name = "🚀 Performance Enhancements"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "deprecation"
+  name = "🔥 Deprecations"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "dependency"
+  name = "🔗 Dependencies"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "doc"
+  name = "📚 Documentation"
+  showcontent = true
+
+  [[tool.towncrier.type]]
+  directory = "internal"
+  name = "💼 Internal"
+  showcontent = true

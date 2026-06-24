@@ -1,0 +1,2 @@
+:user:`tkknight` updated the documentation to generate a sitemap.xml files for the
+stable version.

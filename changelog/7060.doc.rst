@@ -1,0 +1,3 @@
+:user:`tkknight` enabled the theme option to collapse the sidebar.  Note, it only
+appears once you click on a link away from the landing page.  Also moved
+the search box to the top navigation bar.

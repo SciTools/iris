@@ -96,6 +96,7 @@ global-exclude __pycache__
 # Local Iris-specific settings
 #
 prune benchmarks
+prune changelog
 prune etc
 prune tools
 

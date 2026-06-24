@@ -1,0 +1,3 @@
+:user:`bjlittle` and :user:`trexfeathers` Added the custom ``sphinx``
+``readingtime`` directive to automatically estimate the audiance reading
+time of a page and render a branded banner in-situ.

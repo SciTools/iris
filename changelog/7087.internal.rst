@@ -1,0 +1,2 @@
+:user:`SgtVarmint` migrated codebase from ``os.path`` to ``pathlib.Path`` where
+possible. (:issue:`4523`)
