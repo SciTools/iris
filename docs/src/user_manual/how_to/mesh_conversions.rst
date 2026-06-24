@@ -135,11 +135,22 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.ugrid import MeshXY
+        >>> from iris.mesh import MeshXY
         >>> import numpy as np
 
 
         >>> wave_cube = iris.load_cube("my_file.nc", "sea_surface_wave_significant_height")
+
+        >>> # Attach the "cell size factor" variables as AuxCoords:
+        >>> for coord_name in ["longitude", "latitude"]:
+        ...     cell_factor = iris.load_cube("my_file.nc", f"{coord_name} cell size factor")
+        ...     wave_cube.add_aux_coord(
+        ...         iris.coords.AuxCoord(
+        ...             points=cell_factor.data,
+        ...             long_name=cell_factor.long_name
+        ...    ), 1
+        ... )
+
         >>> print(wave_cube)
         sea_surface_wave_significant_height / (m) (time: 7; -- : 666328)
             Dimension coordinates:
