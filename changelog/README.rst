@@ -57,7 +57,7 @@ For example, a file named ``7146.feature.rst`` might contain::
 
 Notes
 -----
-
+* You do not need to include the PR number in the fragment as it is already in the filename.
 * Multiple fragments may reference the same PR number if the PR makes
   changes across different categories.
 * For multiple PRs that reference the same change, simply create a separate
