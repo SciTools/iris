@@ -138,9 +138,10 @@ This document explains the changes made to Iris for this release
 #. :user:`bjlittle` Added an explanation section for :ref:`explanation-temporal-coordinates`.
    (:pull:`7131`)
 
-#. :user:`bjlittle` Added the custom `sphinx`_ ``readingtime`` directive to
+#. :user:`bjlittle` and :user:`trexfeathers` added the custom `sphinx`_ ``readingtime`` 
+   directive to
    automatically estimate the audiance reading time of a page and render a
-   branded banner in-situ. (:pull:`7150`)
+   branded banner in-situ. (:pull:`7150`, :pull:`7157`)
 
 #. :user:`bjlittle` Updated the :ref:`explanation-temporal-coordinates` section.
    (:pull:`7159`)
