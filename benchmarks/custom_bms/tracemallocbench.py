@@ -192,5 +192,5 @@ class TracemallocBenchmark(TimeBenchmark):
         return samples, 1
 
 
-# https://asv.readthedocs.io/projects/asv-runner/en/latest/development/benchmark_plugins.html
+# https://asv.readthedocs.io/projects/asv-runner/en/stable/development/benchmark_plugins.html
 export_as_benchmark = [TracemallocBenchmark]

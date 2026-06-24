@@ -7,14 +7,15 @@ Code Formatting
 
 .. readingtime::
 
-To ensure a consistent code format throughout Iris, we recommend using
-tools to check the source directly.
+Also known as 'linting'. This is used to ensure a consistent code format
+throughout Iris, maximising the maintainability and quality. Code formatting
+is checked using the `pre-commit`_ tool, and the full list current formatting
+tools is defined in Iris' `pre-commit-config.yaml`_ file. Read more about
+linting on the `SciTools wiki page`_.
 
-* `black`_ for an opinionated coding auto-formatter
-* `flake8`_ linting checks
-
-The preferred way to run these tools automatically is to setup and configure
-`pre-commit`_.
+``pre-commit`` compliance is automatically checked on all Iris pull requests
+(more info: :ref:`pre_commit_ci`), but you can also run pre-commit locally as
+Git hooks - every time you make a commit. Read on to learn more about local running.
 
 You can install ``pre-commit`` in your development environment using ``pip``::
 
@@ -34,14 +35,13 @@ the root directory of Iris::
 
     $ pre-commit install
 
-Upon performing a ``git commit``, your code will now be automatically formatted
-to the ``black`` configuration defined in our ``pyproject.toml`` file, and
-linted according to our ``.flake8`` configuration file. Note that,
+Upon performing a ``git commit``, your code changes will be automatically
+checked against all Iris' ``pre-commit`` hooks. For some hooks this includes
+automated edits of your code e.g. formatting or sorting of imports; these new
+edits are not staged for you - i.e. you need to run ``git add`` again on that
+file. Note that,
 ``pre-commit`` will automatically download and install the necessary packages
 for each ``.pre-commit-config.yaml`` git hook.
-
-Additionally, you may wish to enable ``black`` for your preferred
-`editor/IDE <https://black.readthedocs.io/en/stable/integrations/editors.html#editor-integration>`_.
 
 With the ``pre-commit`` configured, the output of performing a ``git commit``
 will look similar to::
@@ -56,8 +56,7 @@ will look similar to::
     2 files changed, 10 insertions(+), 9 deletions(-)
 
 
-.. note:: You can also run `black`_ and `flake8`_ manually.  Please see the
-          their officially documentation for more information.
+.. _type_hinting:
 
 Type Hinting
 ------------
@@ -69,3 +68,5 @@ add/improve them.
 
 
 .. _pre-commit: https://pre-commit.com/
+.. _pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
+.. _SciTools wiki page: https://github.com/SciTools/.github/wiki/Linting

@@ -12,8 +12,8 @@ Temporal Coordinates
 
 .. readingtime::
 
-Here we provide some handy patterns and tips for working with temporal
-coordinates i.e., ``time`` coordinates. 
+This page provides practical patterns and tips for working with temporal
+coordinates, that is, ``time`` coordinates.
 
 
 Introduction
@@ -46,10 +46,10 @@ individual components:
 * ``time`` - This is the *name* of the coordinate. The name is derived firstly
   from the coordinate ``standard_name``. Failing that, the ``long_name`` is
   used, otherwise the ``var_name`` before defaulting to a value of ``unknown``.
-* ``hours since 1970-01-01 00:00:00`` - This tells us the coordinates temporal
+* ``hours since 1970-01-01 00:00:00`` - This tells us the coordinate's temporal
   units of measure (``hours``) relative to its epoch (``1970-01-01 00:00:00``).
 * ``[...]`` - Represents the temporal ``points``, the values of which are not
-  displayed in this shortend summary. However, note that if the coordinate had
+  displayed in this shortened summary. However, if the coordinate had
   ``bounds`` this would be represented as ``[...]+bounds``.
 * ``shape(6,)`` - Tells us that the coordinate has one dimension containing
   ``6`` points.
@@ -60,7 +60,7 @@ We can easily inspect the ``points`` contained within our ``tcoord``::
     array([347926.16666667, 347926.33333333, 347926.5       , 347926.66666667,
        347926.83333333, 347927.        ])
 
-However, these raw values are pretty meaningless on their own. As hinted to above,
+However, these raw values are difficult to interpret on their own. As noted above,
 these ``points`` are measured in units of ``hours`` relative to the epoch
 ``1970-01-01 00:00:00``. The metadata defining all this information is available
 from the ``units`` attribute of the :class:`coordinate <iris.coords.Coord>`::
@@ -74,7 +74,7 @@ from the ``units`` attribute of the :class:`coordinate <iris.coords.Coord>`::
     their ``units``.
     
 In this case our ``tcoord`` has a ``standard`` (or ``gregorian``) calendar and
-we can convert its hard to understand raw values into meaningful **date**/**time**
+we can convert its hard-to-interpret raw values into meaningful **date**/**time**
 (``YYYY-MM-DD HH:MM:SS``) representations relative to its ``calendar`` and
 epoch::
 
@@ -87,8 +87,8 @@ epoch::
     dtype: float64
     standard_name: 'time'
 
-Now we can clearly see that our ``tcoord`` time interval commences on ``2009-09-09``
-at ``22:10:00`` with samples that are each ``10`` minutes apart.
+Now we can clearly see that the ``tcoord`` interval starts on ``2009-09-09`` at
+``22:10:00`` with samples spaced ``10`` minutes apart.
 
 Note that our ``tcoord`` does not have any ``bounds`` associated with it::
 
@@ -127,7 +127,7 @@ its :meth:`~iris.coords.Coord.guess_bounds` method::
 Indexing
 --------
 
-:class:`Coordinates <iris.coords.Coord>` are *first-class-citizens* and may be
+:class:`Coordinates <iris.coords.Coord>` are *first-class citizens* and may be
 indexed akin to other ``python`` built-in types such as `lists`_ or `tuples`_.
 
 As an example, let's index the **last** sample of the ``tcoord``::
@@ -157,8 +157,8 @@ In the above example, indexing the ``tcoord`` yields a scalar
 A **lighter-weight** indexing solution is to leverage the :meth:`~iris.coords.Coord.cell`
 method instead::
 
-    >> tcell = tcoord.cell(-1)
-    >> tcell
+    >>> tcell = tcoord.cell(-1)
+    >>> tcell
     Cell(point=cftime.DatetimeGregorian(2009, 9, 9, 23, 0, 0, 0, has_year_zero=False), bound=(cftime.DatetimeGregorian(2009, 9, 9, 22, 55, 0, 0, has_year_zero=False), cftime.DatetimeGregorian(2009, 9, 9, 23, 5, 0, 0, has_year_zero=False)))
 
 This returns a :class:`~iris.coords.Cell` object rather than a
@@ -206,7 +206,7 @@ To convert these ``points`` and ``bounds`` into equivalent ``tcell``
 Iteration
 ---------
 
-Akin to :ref:`indexing <explanation-temporal-coordinates-indexing>`, we can also
+As with :ref:`indexing <explanation-temporal-coordinates-indexing>`, we can also
 iterate over :class:`coordinates <iris.coords.Coord>` just as you would naturally
 with other ``python`` built-in types such as `lists`_ or `tuples`_.
 
@@ -277,7 +277,7 @@ For example, let's generate a list containing only the ``point`` (ignoring the
 
 .. warning::
 
-    A temporal :class:`~iris.coords.Cell` will **always** contain
+    By default a temporal :class:`~iris.coords.Cell` will **always** contain
     :doc:`cftime <cftime:index>` objects rather than native ``python``
     :class:`~datetime.datetime` objects.
 
@@ -302,18 +302,17 @@ Depending on your workflow, you may wish to deal directly with either
 :class:`~datetime.datetime` objects rather than raw temporal values within
 the ``points``/``bounds`` of a :class:`coordinate <iris.coords.Coord>`.
 
-There are several different ways to convert raw temporal values, so let's
-consolidating our understanding and enumerate the various options
-available to us.
+There are several ways to convert raw temporal values, so let's consolidate
+our understanding and enumerate the options available to us.
 
 ``cftime``
 ~~~~~~~~~~
 
-The direct approach is to leverage either of the :meth:`~iris.coords.Coord.cell`
-or :meth:`~iris.coords.Coord.cells` methods. Both of which provide one or more
+The direct approach is to use either :meth:`~iris.coords.Coord.cell`
+or :meth:`~iris.coords.Coord.cells`. Both provide one or more
 :class:`~iris.coords.Cell` objects.
 
-A temporal :class:`~iris.coords.Cell` will always contain
+By default a temporal :class:`~iris.coords.Cell` will always contain
 :doc:`cftime <cftime:index>` objects for its ``point``, or ``point`` and ``bound``.
 
 .. seealso::
@@ -368,7 +367,8 @@ calendar encoded samples::
     Unit('hours since 1970-01-01 00:00:00', calendar='standard')
 
 We are safe to convert either of its ``points`` or ``bounds`` to
-:class:`~datetime.datetime` objects using :meth:`~cf_units.Unit.num2pydate`::
+:class:`~datetime.datetime` equivalent objects using
+:meth:`~cf_units.Unit.num2pydate`::
 
     >>> tcoord.units.num2pydate(tcoord.points)
     array([real_datetime(2009, 9, 9, 22, 10),
@@ -395,6 +395,25 @@ We are safe to convert either of its ``points`` or ``bounds`` to
 
     Note that :code:`num2pydate(value)` is functionally equivalent to
     :code:`num2date(value, only_use_cftime_datetimes=False, only_use_python_datetimes=True)`.
+
+Alternatively, we can explicitly instruct the :meth:`~iris.coords.Coord.cell` or
+:meth:`~iris.coords.Coord.cells` methods to return :class:`~datetime.datetime`
+compatible objects::
+
+    >>> [cell.point for cell in tcoord.cells(pydate=True)]
+    [real_datetime(2009, 9, 9, 22, 10),
+     real_datetime(2009, 9, 9, 22, 20),
+     real_datetime(2009, 9, 9, 22, 30),
+     real_datetime(2009, 9, 9, 22, 40),
+     real_datetime(2009, 9, 9, 22, 50),
+     real_datetime(2009, 9, 9, 23, 0)]
+    >>> [cell.bound for cell in tcoord.cells(pydate=True)]
+    [(real_datetime(2009, 9, 9, 22, 5), real_datetime(2009, 9, 9, 22, 15)),
+     (real_datetime(2009, 9, 9, 22, 15), real_datetime(2009, 9, 9, 22, 25)),
+     (real_datetime(2009, 9, 9, 22, 25), real_datetime(2009, 9, 9, 22, 35)),
+     (real_datetime(2009, 9, 9, 22, 35), real_datetime(2009, 9, 9, 22, 45)),
+     (real_datetime(2009, 9, 9, 22, 45), real_datetime(2009, 9, 9, 22, 55)),
+     (real_datetime(2009, 9, 9, 22, 55), real_datetime(2009, 9, 9, 23, 5))]
 
 
 Plotting
@@ -429,9 +448,9 @@ For example:
 .. warning::
 
     Native ``matplotlib`` only supports ``python`` :class:`~datetime.datetime`
-    objects.
+    compatible objects.
 
-Note that, :mod:`iris.plot` and :mod:`iris.quickplot` provide the convenience
+Note that :mod:`iris.plot` and :mod:`iris.quickplot` provide the convenience
 of also understanding ``iris`` objects, such as coordinates and cubes. However
 they also use the `nc-time-axis`_ package, which provides support for a `cftime`_
 axis in `matplotlib`_.
@@ -475,7 +494,7 @@ Alternatively, we can manually convert our time-series values directly to
     cube = iris.load_cube(fname, "air_potential_temperature")
     tcoord = cube.coord("time")
 
-    dates = tcoord.units.num2pydate(tcoord.points)
+    dates = [cell.point for cell in tcoord.cells(pydate=True)]
     data = cube[:, 0, 0, 0].data
 
     plt.scatter(dates, data)
