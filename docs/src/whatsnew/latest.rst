@@ -117,7 +117,7 @@ This document explains the changes made to Iris for this release
 #. :user:`bjlittle` and :user:`trexfeathers` added the custom `sphinx`_ ``readingtime`` 
    directive to
    automatically estimate the audiance reading time of a page and render a
-   branded banner in-situ. (:pull:`7150`)
+   branded banner in-situ. (:pull:`7150`, :pull:`7157`)
 
 
 💼 Internal
