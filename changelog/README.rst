@@ -1,3 +1,5 @@
+.. readingtime::
+
 Changelog Fragments
 ===================
 
