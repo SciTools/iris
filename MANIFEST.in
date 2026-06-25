@@ -79,6 +79,7 @@ prune docs
 # (2) top-level files to omit
 exclude .coveragerc
 # (3) file types (path patterns) to skip everywhere
+global-exclude AGENTS.md
 global-exclude *.py[cod]
 global-exclude __pycache__
     # principles:

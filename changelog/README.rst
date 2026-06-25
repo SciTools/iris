@@ -3,9 +3,9 @@
 Changelog Fragments
 ===================
 
-The root ``changelog/`` directory contains `towncrier <https://towncrier.readthedocs.io/>`_
-news fragment files. Each file represents a single changelog entry for the
-next release.
+The root ``changelog/`` directory contains 
+`towncrier <https://towncrier.readthedocs.io/>`_ news fragment files. Each
+file represents a single changelog entry for the next release.
 
 Fragment File Naming
 --------------------
