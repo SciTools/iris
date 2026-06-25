@@ -93,7 +93,7 @@ A cube consists of:
 
 * an attributes dictionary which, other than some protected CF names, can
   hold arbitrary extra metadata. This implements the concept of dataset-level
-  and variable-level attributes when loading and and saving NetCDF files (see
+  and variable-level attributes when loading and saving NetCDF files (see
   :class:`~iris.cube.CubeAttrsDict` and NetCDF
   :func:`~iris.fileformats.netcdf.saver.save` for more).
 * a list of cell methods to represent operations which have already been

@@ -105,7 +105,7 @@ S3 bucket **onto** -- e.g.
 Setup AWS credentials
 ~~~~~~~~~~~~~~~~~~~~~
 Provide S3 access credentials in an AWS credentials file, as described
-`here in the the s3-fuse documentation <https://github.com/s3fs-fuse/s3fs-fuse/blob/master/README.md#examples>`_.
+`here in the s3-fuse documentation <https://github.com/s3fs-fuse/s3fs-fuse/blob/master/README.md#examples>`_.
 
 There is a general introduction to AWS credentials
 `here in the AWS documentation <https://docs.aws.amazon.com/cli/latest/userguide/getting-started-quickstart.html>`_

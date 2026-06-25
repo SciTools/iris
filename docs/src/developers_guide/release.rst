@@ -181,7 +181,7 @@ conda-forge
 
 Iris is available on conda-forge as ``iris``.
 
-This is managed via the the Iris conda recipe on the
+This is managed via the Iris conda recipe on the
 `conda-forge iris-feedstock`_, which is updated after the release is cut on
 GitHub, followed by automatic build and publish of the
 conda package on the `conda-forge Anaconda channel`_.
