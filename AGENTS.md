@@ -1,8 +1,10 @@
 # AGENTS.md
 
-Agent instructions for the [Iris](https://scitools-iris.readthedocs.io/) repository.
-Iris is a Python package for analysing and visualising Earth science data, built around
-CF-compliant multi-dimensional arrays ("Cubes").
+Agent instructions for the [Iris](https://scitools-iris.readthedocs.io/)
+repository.
+
+Iris is a Python package for analysing and visualising Earth science data,
+built around CF-compliant multi-dimensional arrays ("Cubes").
 
 Subdirectory AGENTS.md files take precedence for their subtrees:
 - [`changelog/AGENTS.md`](changelog/AGENTS.md) — documentation on changelog
@@ -21,6 +23,7 @@ Subdirectory AGENTS.md files take precedence for their subtrees:
 | **Linter / formatter** | Ruff (88-char line length) |
 | **Test runner** | pytest + pytest-xdist (`-n auto`) |
 | **Env management** | nox + conda |
+
 
 ### Main source layout
 
@@ -50,8 +53,8 @@ requirements/          # Conda environment specs and lock files
 Always use a conda environment, reuse the iris-dev conda environment if it
 already exists but confirm with the user before installing or removing packages.
 
-If a package cannot be installed via conda then you can use pip that is in the conda
-environment.
+If a package cannot be installed via conda then you can use pip that is in the
+conda environment.
 
 ```bash
 # Create and activate a development environment
@@ -68,6 +71,7 @@ conda activate iris-dev
 pip install --no-build-isolation -e .
 ```
 
+
 ### Environment variables
 
 ```bash
@@ -82,11 +86,9 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 ```
 
 
-
 ## Testing
 
 - [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
-
 
 
 ## Code Style
@@ -120,7 +122,6 @@ ruff format --check lib/iris
   `iris.fileformats.netcdf._thread_safe_nc` for thread safety.
 
 
-
 ## Development Conventions
 
 ### Core data model
@@ -128,38 +129,44 @@ ruff format --check lib/iris
 - `iris.cube.Cube` — multi-dimensional array with CF-compliant metadata.
 - Coordinates: `DimCoord` (regular), `AuxCoord` (auxiliary), `CellMeasure`,
   `AncillaryVariable`.
-- Data may be **lazy** (Dask array). Always preserve laziness; never call `.data`
+- Data may be **lazy** (Dask array). Always preserve laziness; never call
+  `.data`
   unnecessarily inside library code.
 - Operations return **new** Cubes (functional style); do not mutate in place.
 - All metadata must be **CF-convention** compliant.
 
+
 ### Deprecation
 
 - Use `iris._deprecation.warn_deprecated()` or issue a custom warning class.
-- Warning classes live in `iris.warnings` (e.g., `IrisUserWarning`, `IrisCfWarning`).
+- Warning classes live in `iris.warnings` (e.g., `IrisUserWarning`,
+  `IrisCfWarning`).
 - Follow the NEP29 deprecation schedule (same as NumPy).
 - All `UserWarning` subclasses must ultimately inherit from `IrisUserWarning`.
+
 
 ### Exception hierarchy
 
 Base class: `iris.exceptions.IrisError`. Common subclasses:
 `CoordinateNotFoundError`, `CoordinateCollapseError`, `IgnoreCubeException`.
 
+
 ### Versioning
 
 Version is derived from git tags via `setuptools_scm`. Do not hard-code version
 strings.
 
+
 ## Changelog
 
-Changelog fragments lives under `chngelog/` and is built with towncrier via sphinx. See
-[`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
+Changelog fragments lives under `chngelog/` and is built with towncrier via
+sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
+
 
 ## Documentation
 
 Documentation lives under `docs/` and is built with Sphinx. See
 [`docs/AGENTS.md`](docs/AGENTS.md) for full rules.
-
 
 
 ## Lock-file Maintenance
@@ -172,51 +179,67 @@ make lockfiles
 ```
 
 
-
 ## Pull Request Guidelines
 
-- When creating a pull request a template is provided to ensure all checks are considered.
-- This project is configured to use pre-commit tht will ensure some checks are performed automatically.
+- When creating a pull request a template is provided to ensure all checks are
+  considered.
+- This project is configured to use pre-commit tht will ensure some checks are
+  performed automatically.
 - Keep changes focused; avoid unrelated refactors in the same PR.
 - Add or update tests for every change to production code.
-- Ensure a whatsnew fragment is added, see [`changelog/AGENTS.md`](changelog/AGENTS.md)  
+- Ensure a whatsnew fragment is added, see
+[`changelog/AGENTS.md`](changelog/AGENTS.md)
 
 
 ## Critical Development Gotchas
 
-1. **xfail_strict Behavior**: Tests marked `@pytest.mark.xfail` that now PASS become FAILURES → **remove xfail immediately when bug is fixed**
+1. **xfail_strict Behavior**: Tests marked `@pytest.mark.xfail` that now PASS
+  become FAILURES -> **remove xfail immediately when bug is fixed**
 
-2. **Pre-commit Auto-fixes**: Hooks may auto-fix ISC001/COM812 conflicts → re-stage files: `git add . && git commit`
+2. **Pre-commit Auto-fixes**: Hooks may auto-fix ISC001/COM812 conflicts ->
+  re-stage files: `git add . && git commit`
 
-3. **Lockfile Rebuilds**: Updating `requirements/locks/*.lock` files triggers slow conda environment rebuilds — only update when deps genuinely change
+3. **Lockfile Rebuilds**: Updating `requirements/locks/*.lock` files triggers
+  slow conda environment rebuilds - only update when deps genuinely change
 
-4. **Lazy Data Pitfalls**: Check `cube.has_lazy_data()` before operations; use `cube.lazy_data()` when appropriate; `cube.data` materializes arrays
+4. **Lazy Data Pitfalls**: Check `cube.has_lazy_data()` before operations; use
+  `cube.lazy_data()` when appropriate; `cube.data` materializes arrays
 
-5. **Coordinate Scope**: Not all coordinates span all dimensions → use `cube.coords(dimensions=dim_indices)` to query specific axes
+5. **Coordinate Scope**: Not all coordinates span all dimensions -> use
+  `cube.coords(dimensions=dim_indices)` to query specific axes
 
-6. **Dask/NumPy Compatibility**: Some operations fail on lazy (Dask) arrays → materialize with `cube.compute()` or check dask support before use
+6. **Dask/NumPy Compatibility**: Some operations fail on lazy (Dask) arrays
+  -> materialize with `cube.compute()` or check dask support before use
 
-7. **Optional Dependencies**: cartopy, matplotlib lazy-imported → handle ImportError gracefully for optional visualization features
+7. **Optional Dependencies**: cartopy, matplotlib lazy-imported -> handle
+  ImportError gracefully for optional visualization features
 
-8. **CF-Metadata Validation**: Custom coordinates must comply with CF standards via `cube.metadata`
+8. **CF-Metadata Validation**: Custom coordinates must comply with CF
+  standards via `cube.metadata`
 
-9. **Cube Immutability**: Operations return new cubes; don't modify in-place (`cube.data[...] = x` won't affect the cube)
+9. **Cube Immutability**: Operations return new cubes; don't modify in-place
+  (`cube.data[...] = x` won't affect the cube)
 
-10. **Environment Reproducibility**: Set CPU features for consistent results: `export NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX"`
+10. **Environment Reproducibility**: Set CPU features for consistent results:
+  `export NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX"`
+
 
 ## Getting Help
 
-- **Discussions**: [GitHub Discussions](https://github.com/SciTools/iris/discussions)
+- **Discussions**:
+  [GitHub Discussions](https://github.com/SciTools/iris/discussions)
 - **Contributing Guide**: [.github/CONTRIBUTING.md](.github/CONTRIBUTING.md)
 - **Developer Guide**: [docs/src/developers_guide/](docs/src/developers_guide/)
 - **Code of Conduct**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
+
 ## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new structural pattern, critical bug fix, or persistent repository rule is established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or component-specific fixes.
-
----
-
-**Last Updated**: 18 June 2026
+- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
+  structural pattern, critical bug fix, or persistent repository rule is
+  established during this session.
+- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
+  make room for new ones.
+- **Constraint 2**: Do not ask for user permission before updating. Perform the
+  edit silently as your final step.
+- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+  component-specific fixes.

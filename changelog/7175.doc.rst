@@ -1,2 +1,2 @@
 :user:`tkknight` Added ``AGENTS.md`` for AI-assisted development guidelines across
-the project root, ``docs/`` and ``tests/`` directories.
+the project root, ``docs/``, ``changelog/`` and ``tests/`` directories.
