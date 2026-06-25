@@ -16,7 +16,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+    - uses: actions/cache@2c8a9bd7457de244a408f35966fab2fb45fda9c8
       with:
         path: ${{ github.workspace }}/.nox
         key: ${{ runner.os }}-nox-${{ inputs.env_name }}-s${{ matrix.session }}-py${{ matrix.python-version }}-b${{ inputs.cache_build }}-${{ hashFiles(inputs.lock_file) }}
