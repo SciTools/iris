@@ -5243,9 +5243,7 @@ x            -               -
                 # window and the bounds are the first and last points in the
                 # window as with numeric coordinates.
                 new_points = np.apply_along_axis(lambda x: "|".join(x), -1, new_bounds)
-                # Index with a list rather than a tuple: a tuple is interpreted
-                # as a multidimensional index by Dask, so lazy coordinates would
-                # otherwise fail here (see #6480).
+                # Use list indexing so Dask selects columns, not dimensions.
                 new_bounds = new_bounds[:, [0, -1]]
             else:
                 # Take the first and last element of the rolled window (i.e.
