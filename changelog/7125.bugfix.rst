@@ -1,0 +1,4 @@
+:user:`gaoflow` fixed :meth:`iris.cube.CubeList.concatenate` so that cubes
+with string coordinates of differing width, such as dtypes ``<U1`` and
+``<U5``, can be concatenated. The result coordinate is promoted to the wider
+dtype. (:issue:`6676`)
