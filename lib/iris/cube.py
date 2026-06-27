@@ -5243,7 +5243,6 @@ x            -               -
                 # window and the bounds are the first and last points in the
                 # window as with numeric coordinates.
                 new_points = np.apply_along_axis(lambda x: "|".join(x), -1, new_bounds)
-                # Use list indexing so Dask selects columns, not dimensions.
                 new_bounds = new_bounds[:, [0, -1]]
             else:
                 # Take the first and last element of the rolled window (i.e.
