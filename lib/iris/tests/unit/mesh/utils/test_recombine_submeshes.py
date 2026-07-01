@@ -274,6 +274,7 @@ class TestRecombine__api:
         with pytest.raises(ValueError, match="'submesh_cubes' must be non-empty"):
             recombine_submeshes(self.mesh_cube, [])
 
+    # TODO: failing due to _MeshIndexSet work
     def test_fail_dims_mismatch_mesh_regions(self):
         self.mesh_cube = self.mesh_cube[0]
         with pytest.raises(
