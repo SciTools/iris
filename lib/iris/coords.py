@@ -380,8 +380,8 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                 # or "years") cannot be converted to a date using
                 # `num2date`, so gracefully fall back to printing
                 # values as numbers.
-                if not self.units.is_long_time_interval():
-                    # Otherwise ... replace all with strings.
+                try:
+                    # Replace all with strings.
                     if ma.is_masked(data):
                         mask = data.mask
                     else:
@@ -391,6 +391,10 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     # Masked datapoints do not survive num2date.
                     if mask is not None:
                         data = np.ma.masked_array(data, mask)
+                except (ValueError, TypeError):
+                    # Fall back to numeric values if num2date fails
+                    # (e.g., for long time intervals like months/years)
+                    pass
 
             if ma.is_masked(data):
                 # Masks are not handled by np.array2string, whereas

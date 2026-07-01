@@ -18,6 +18,13 @@ from iris.coord_systems import GeogCS, LambertConformal
 import iris.coords
 from iris.coords import AuxCoord, DimCoord
 import iris.cube
+
+# Suppress deprecation warnings for experimental.regrid, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.regrid.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.regrid import (
     regrid_weighted_curvilinear_to_rectilinear as regrid,
 )

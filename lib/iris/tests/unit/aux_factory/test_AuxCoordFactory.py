@@ -213,7 +213,7 @@ def chunkspecs(points: _Chunkspec, bounds: _Chunkspec) -> Tuple[_Chunks, _Chunks
 
 
 class Test_rechunk:
-    class TestAuxFact(AuxCoordFactory):
+    class AuxFactImpl(AuxCoordFactory):
         """A minimal AuxCoordFactory that enables us to test the re-chunking logic."""
 
         def __init__(self, nx, ny, nz):
@@ -267,7 +267,7 @@ class Test_rechunk:
         #   (10, 10, 10) = 1,000: ok
         #   (10, 10, 100) = 10,000 --> (5, 10, 100) = 5000 --> rechunk, dividing X by 2
         #   (10, 10, 1000) = 100,000 --> (1, 5, 1000) --> rechunk both X and Y
-        aux_co = self.TestAuxFact(nx, ny, nz)
+        aux_co = self.AuxFactImpl(nx, ny, nz)
 
         if deptypes != "all_lazy":
             # Touch all dependencies to realise
@@ -299,7 +299,7 @@ class Test_rechunk:
         }[nz]
         assert result_pts_bds_chunks == expected_pts_bds_chunks
 
-    class MultiDimTestFactory(TestAuxFact):
+    class MultiDimTestFactory(AuxFactImpl):
         """An extended test factory with an added multidimensional term."""
 
         # Use fixed test dimensions, for simplicity.
