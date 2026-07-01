@@ -1609,24 +1609,6 @@ class _MeshXYMixin(Mesh, ABC):
         result = [self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES]
         return tuple(result)
 
-    def is_view_of(self, other: "MeshXY") -> bool:
-        """Whether this instance is either itself, or a view of the given :class:`MeshXY`.
-
-        Parameters
-        ----------
-        other : iris.mesh.components.MeshXY
-            The :class:`~MeshXY` to compare against.
-
-        Returns
-        -------
-        bool
-        """
-        # The Mesh parent class does not implement any operations for returning
-        #  alternative views of its content, so the only possible 'view' of
-        #  itself IS itself.
-        #  Subclasses may be more sophisticated in this regard.
-        return other is self
-
     @property
     @abstractmethod
     def cf_role(self) -> str:
@@ -3318,20 +3300,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     def cube_dims(self, cube):
         raise NotImplementedError()
-
-    def is_view_of(self, other: MeshXY) -> bool:
-        """Whether this instance is either itself, or a view of the given :class:`MeshXY`.
-
-        Parameters
-        ----------
-        other : MeshXY
-            The :class:`MeshXY` to compare against.
-
-        Returns
-        -------
-        bool
-        """
-        return other is self.mesh or other is self
 
     def as_mesh(self) -> MeshXY:
         """Return a :class:`MeshXY` representation of this instance.
