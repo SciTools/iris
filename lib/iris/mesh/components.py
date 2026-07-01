@@ -2281,32 +2281,30 @@ class _Mesh1DCoordinateManager:
     ):
         # TBD: support coord_systems?
 
-        # Determine locations to include.
-        if location is not None:
-            if location not in ["node", "edge", "face"]:
+        def populated_coords[T](coords_tuple: tuple[T, T]) -> list[T]:
+            return list(filter(None, list(coords_tuple)))
+
+        members: list[AuxCoord] = []
+        match location:
+            case "node":
+                members += populated_coords(self.node_coords)
+            case "edge":
+                members += populated_coords(self.edge_coords)
+            case "face":
+                if hasattr(self, "face_coords"):
+                    members += populated_coords(self.face_coords)
+                else:
+                    dmsg = "Ignoring request to filter non-existent 'face_coords'"
+                    logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
+            case None:  # No specified locations means include them all
+                members += populated_coords(self.node_coords)
+                members += populated_coords(self.edge_coords)
+                if hasattr(self, "face_coords"):
+                    members += populated_coords(self.face_coords)
+            case _:
                 raise ValueError(
                     f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
                 )
-            include_nodes = location == "node"
-            include_edges = location == "edge"
-            include_faces = location == "face"
-        else:
-            include_nodes = include_edges = include_faces = True
-
-        def populated_coords(coords_tuple):
-            return list(filter(None, list(coords_tuple)))
-
-        members = []
-        if include_nodes:
-            members += populated_coords(self.node_coords)
-        if include_edges:
-            members += populated_coords(self.edge_coords)
-        if hasattr(self, "face_coords"):
-            if include_faces:
-                members += populated_coords(self.face_coords)
-        elif location == "face":
-            dmsg = "Ignoring request to filter non-existent 'face_coords'"
-            logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
 
         result = metadata_filter(
             members,
