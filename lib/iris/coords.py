@@ -277,7 +277,18 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     @property
     def _values(self):
         """The _DimensionalMetadata values as a NumPy array."""
-        return self._values_dm.data.view()
+
+        def data_id():
+            return id(self._values_dm.core_data())
+
+        original_id = data_id()
+        result = self._values_dm.data.view()
+        if data_id() != original_id:
+            # Realisation has occurred - potential effect on deferred mesh computations
+            #  (MeshCoord, _MeshIndexSet).
+            for timestamp in self._mesh_timestamps:
+                timestamp.update()
+        return result
 
     @_values.setter
     def _values(self, values):

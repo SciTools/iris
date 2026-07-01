@@ -18,7 +18,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from copy import copy, deepcopy
+from copy import deepcopy
 from datetime import datetime
 from typing import Any, Iterable, Literal, Optional, TypeAlias
 import warnings
@@ -2100,7 +2100,9 @@ class _ManagerMembers(dict):
     def _readonly(self, *args, **kwargs):
         raise RuntimeError(self.read_only_message)
 
-    def _set_mutability(self, mutable: bool) -> None:
+    def set_mutability(self, mutable: bool, message: Optional[str] = None) -> None:
+        if not mutable:
+            self.read_only_message = message or "Members of this manager are read-only."
         for op in (
             self.__setitem__,
             self.__delitem__,
@@ -2116,13 +2118,6 @@ class _ManagerMembers(dict):
             else:
                 new_op = self._readonly
             setattr(self, op_name, new_op)
-
-    def make_mutable(self) -> None:
-        self._set_mutability(True)
-
-    def make_immutable(self, message: Optional[str] = None) -> None:
-        self.read_only_message = message or "Members of this manager are read-only."
-        self._set_mutability(False)
 
 
 class _Mesh1DCoordinateManager:
@@ -2142,8 +2137,14 @@ class _Mesh1DCoordinateManager:
         "edge_y",
     )
 
-    def __init__(self, node_x, node_y, edge_x=None, edge_y=None):
+    def __init__(
+        self, node_x, node_y, edge_x=None, edge_y=None, view: Optional[str] = None
+    ):
         self.timestamp = _Timestamp()
+        # view = an error message informing that the coordinates of this manager
+        #  are only a 'view' onto the coordinates of another Mesh. Message should carry
+        #  useful user-level info from the calling context.
+        self._view_message = view
         # initialise all the coordinates
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members_dict = _ManagerMembers({member: None for member in self.ALL})
@@ -2164,6 +2165,8 @@ class _Mesh1DCoordinateManager:
             self.edge_x._mesh_timestamps.append(self.timestamp)
         if self.edge_y:
             self.edge_y._mesh_timestamps.append(self.timestamp)
+
+        self._set_immutable()
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2216,10 +2219,25 @@ class _Mesh1DCoordinateManager:
 
         return result
 
+    def _set_immutable(self):
+        # Factored out to allow subclasses to set immutability after initialisation.
+        if self.is_view:
+            view_message = f"Coordinate modifications forbidden: {self._view_message}"
+            self._members_dict.set_mutability(False, message=view_message)
+
     def _setter(self, element, axis, coord, shape):
         self.timestamp.update()
         axis = axis.lower()
         member = f"{element}_{axis}"
+
+        if self.is_view:
+            has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
+            if not (coord.has_lazy_points() and has_lazy_bounds):
+                message = (
+                    f"Non-lazy coordinate detected: {member}, which is "
+                    f"inappropriate for a view: {self._view_message}"
+                )
+                raise ValueError(message)
 
         # enforce the UGRID minimum coordinate requirement
         if element == "node" and coord is None:
@@ -2270,6 +2288,16 @@ class _Mesh1DCoordinateManager:
 
     @property
     def _members(self):
+        if self.is_view:
+            # This is the appropriate moment to check for continued laziness.
+            for member, coord in [(m, c) for m, c in self if c is not None]:
+                has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
+                if not (coord.has_lazy_points() and has_lazy_bounds):
+                    message = (
+                        f"Non-lazy coordinate detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
         return self._members_dict
 
     @_members.setter
@@ -2300,6 +2328,10 @@ class _Mesh1DCoordinateManager:
     @edge_y.setter
     def edge_y(self, coord):
         self._setter(element="edge", axis="y", coord=coord, shape=self._edge_shape)
+
+    @property
+    def is_view(self):
+        return self._view_message is not None
 
     @property
     def node_coords(self) -> MeshNodeCoords:
@@ -2448,60 +2480,17 @@ class _Mesh1DCoordinateManager:
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
-    def index(
-        self,
-        node_indices: ArrayLike,
-        edge_indices: ArrayLike,
-        face_indices: ArrayLike,
-        mesh_id: int,
-    ) -> None:
-        """Permanently index the members of this coordinate manager **in-place**.
-
-        Members become read-only - this method is intended to support the creation
-        of indexed views of original meshes. See :meth:`force_mutability` for
-        undoing the read-only nature.
-
-        Parameters
-        ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indices to use when indexing member node, edge or face
-            coordinates respectively.
-        mesh_id : int
-            The ID of the mesh that these indices refer to - used to
-            produce a meaningful read-only error.
-        """
-        indices_dict = {
-            "node": node_indices,
-            "edge": edge_indices,
-            "face": face_indices,
-        }
-        for key, coord in self._members.items():
-            indexing = None
-            indexed = None
-            if coord is not None:
-                indexing = indices_dict[key.split("_")[0]]
-            if indexing is not None:
-                indexed = coord[indexing]
-            self._members[key] = indexed
-
-        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
-        self._members.make_immutable(
-            f"Modification of {mesh_index_set} is forbidden - this is only "
-            f"a view onto an original {mesh_xy}: id={mesh_id}."
-        )
-
     def indexed(
         self,
         node_indices: ArrayLike,
-        edge_indices: ArrayLike,
-        face_indices: ArrayLike,
+        edge_indices: Optional[ArrayLike],
+        face_indices: Optional[ArrayLike],
         mesh_id: int,
     ) -> "_Mesh1DCoordinateManager":
         """Return an indexed copy of this coordinate manager.
 
         Members are read-only - this method is intended to support the creation
-        of indexed views of original meshes. See :meth:`force_mutability` for
-        undoing the read-only nature.
+        of indexed views of original meshes.
 
         Parameters
         ----------
@@ -2516,17 +2505,37 @@ class _Mesh1DCoordinateManager:
         -------
         _Mesh1DCoordinateManager
         """
-        result = copy(self)
-        # Using `index()` avoids modifying private attributes of `result`.
-        result.index(node_indices, edge_indices, face_indices, mesh_id)
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        indexed_members = {}
+        for key, coord in self:
+            indexing = None
+            indexed = None
+            if coord is not None:
+                indexing = indices_dict[key.split("_")[0]]
+            if indexing is not None:
+                indexed = coord.copy(
+                    # Lazy = deferred calculation. Changes to the original coordinate
+                    #  will be reflected in the indexed coordinate. Will be primarily
+                    #  used by MeshCoord, which also maintains laziness.
+                    points=coord.lazy_points()[indexing],
+                    bounds=None
+                    if not coord.has_bounds()
+                    else coord.lazy_bounds()[indexing],
+                )
+            indexed_members[key] = indexed
+
+        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+        view_message = (
+            f"Coordinates on {mesh_index_set} are only 'views' onto the "
+            f"coordinates of an original {mesh_xy}: id={mesh_id}."
+        )
+        result = self.__class__(**indexed_members, view=view_message)
+
         return result
-
-    def force_mutability(self) -> None:
-        """Permanently allow modification of this instance's members **in-place**.
-
-        Intended to support the conversion of mesh views to be independent meshes.
-        """
-        self._members.make_mutable()
 
     def remove(
         self,
@@ -2565,16 +2574,20 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         edge_y=None,
         face_x=None,
         face_y=None,
+        view: Optional[str] = None,
     ):
-        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y, view=view)
 
         # optional coordinates
+        self._members_dict.set_mutability(True)
         self.face_x = face_x
         self.face_y = face_y
         if self.face_x:
             self.face_x._mesh_timestamps.append(self.timestamp)
         if self.face_y:
             self.face_y._mesh_timestamps.append(self.timestamp)
+
+        self._set_immutable()
 
     @property
     def _face_shape(self):
@@ -2642,8 +2655,12 @@ class _MeshConnectivityManagerBase(ABC):
     REQUIRED: tuple = NotImplemented
     OPTIONAL: tuple = NotImplemented
 
-    def __init__(self, *connectivities):
+    def __init__(self, *connectivities, view: Optional[str] = None):
         self.timestamp = _Timestamp()
+        # view = an error message informing that the connectivities of this manager
+        #  are only a 'view' onto the connectivities of another Mesh. Message should
+        #  carry useful user-level info from the calling context.
+        self._view_message = view
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
@@ -2653,6 +2670,10 @@ class _MeshConnectivityManagerBase(ABC):
         self.ALL = self.REQUIRED + self.OPTIONAL
         self._members_dict = _ManagerMembers({member: None for member in self.ALL})
         self.add(*connectivities)
+
+        if self.is_view:
+            view_message = f"Connectivity modifications forbidden: {self._view_message}"
+            self._members_dict.set_mutability(False, message=view_message)
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2698,7 +2719,20 @@ class _MeshConnectivityManagerBase(ABC):
         return NotImplemented
 
     @property
+    def is_view(self):
+        return self._view_message is not None
+
+    @property
     def _members(self):
+        if self.is_view:
+            # This is the appropriate moment to check for continued laziness.
+            for member, connectivity in [(m, c) for m, c in self if c is not None]:
+                if not connectivity.has_lazy_indices():
+                    message = (
+                        f"Non-lazy connectivity detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
         return self._members_dict
 
     @_members.setter
@@ -2843,69 +2877,17 @@ class _MeshConnectivityManagerBase(ABC):
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
-    def index(
-        self,
-        node_indices: ArrayLike,
-        edge_indices: ArrayLike,
-        face_indices: ArrayLike,
-        mesh_id: int,
-    ) -> None:
-        """Permanently index the members of this connectivity manager **in-place**.
-
-        Members become read-only - this method is intended to support the creation
-        of indexed views of original meshes. See :meth:`force_mutability` for
-        undoing the read-only nature.
-
-        Parameters
-        ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indices to use when indexing member connectivities with node,
-            edge or face :attr:`~Connectivity.location` respectively.
-        mesh_id : int
-            The ID of the mesh that these indices refer to - used to
-            produce a meaningful read-only error.
-        """
-        indices_dict = {
-            "node": node_indices,
-            "edge": edge_indices,
-            "face": face_indices,
-        }
-        node_index_mapping = {
-            old_index: new_index for new_index, old_index in enumerate(node_indices)
-        }
-        for key, connectivity in self._members.items():
-            indexing = None
-            indexed = None
-            if connectivity is not None:
-                indexing = indices_dict[connectivity.location]
-            if indexing is not None:
-                new_values = connectivity.indices_by_location()[indexing]
-                new_values = np.vectorize(node_index_mapping.get)(new_values)
-                if connectivity.location_axis == 1:
-                    new_values = new_values.T
-                if connectivity.start_index == 1:
-                    new_values = new_values + 1
-                indexed = connectivity.copy(new_values)
-            self._members[key] = indexed
-
-        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
-        self._members.make_immutable(
-            f"Modification of {mesh_index_set} is forbidden - this is only "
-            f"a view onto an original {mesh_xy}: id={mesh_id}."
-        )
-
     def indexed(
         self,
         node_indices: ArrayLike,
-        edge_indices: ArrayLike,
-        face_indices: ArrayLike,
+        edge_indices: Optional[ArrayLike],
+        face_indices: Optional[ArrayLike],
         mesh_id: int,
     ) -> "_MeshConnectivityManagerBase":
         """Return an indexed copy of this connectivity manager.
 
         Members are read-only - this method is intended to support the creation
-        of indexed views of original meshes. See :meth:`force_mutability` for
-        undoing the read-only nature.
+        of indexed views of original meshes.
 
         Parameters
         ----------
@@ -2920,17 +2902,66 @@ class _MeshConnectivityManagerBase(ABC):
         -------
         _MeshConnectivityManagerBase
         """
-        result = copy(self)
-        # Using `index()` avoids modifying private attributes of `result`.
-        result.index(node_indices, edge_indices, face_indices, mesh_id)
+        indices_dict = {
+            "node": node_indices,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+
+        def remap_node_indices(values: da.Array):
+            # Map node indices in "values" to their new zero-based positions
+            #  in "node_indices".
+            order = node_indices.argsort()
+            old_sorted = node_indices[order]
+            new_ids_sorted = da.arange(len(node_indices))[order]
+
+            if iris.util.is_masked(values):
+                # searchsorted does not support masking; replace masked connectivities
+                #  with something safe for searchsorted.
+                value_mask = da.ma.getmaskarray(values)
+                value_data = da.ma.getdata(values)
+                safe_values = da.where(value_mask, old_sorted[0], value_data)
+                positions = da.searchsorted(old_sorted, safe_values)
+                remapped = new_ids_sorted[positions]
+                result = da.ma.masked_array(remapped, mask=value_mask)
+            else:
+                positions = da.searchsorted(old_sorted, values)
+                remapped = new_ids_sorted[positions]
+                result = remapped
+
+            return result
+
+        indexed_members = {}
+        for key, connectivity in self:
+            indexing = None
+            indexed = None
+            if connectivity is not None:
+                indexing = indices_dict[connectivity.location]
+            if indexing is not None:
+                new_values = connectivity.indices_by_location(
+                    # Lazy = deferred calculation. Changes to the original connectivity
+                    #  will be reflected in the indexed connectivity. Will be primarily
+                    #  used by MeshCoord, which also maintains laziness.
+                    connectivity.lazy_indices()
+                )[indexing]
+                new_values = remap_node_indices(new_values)
+                if connectivity.location_axis == 1:
+                    new_values = new_values.T
+                if connectivity.start_index == 1:
+                    new_values = new_values + 1
+                indexed = connectivity.copy(new_values)
+            indexed_members[key] = indexed
+
+        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+        view_message = (
+            f"Connectivities on {mesh_index_set} are only 'views' onto the "
+            f"connectivities of an original {mesh_xy}: id={mesh_id}."
+        )
+        result = self.__class__(
+            *[c for c in indexed_members.values() if c is not None], view=view_message
+        )
+
         return result
-
-    def force_mutability(self) -> None:
-        """Permanently allow modification of this instance's members **in-place**.
-
-        Intended to support the conversion of mesh views to be independent meshes.
-        """
-        self._members.make_mutable()
 
     def remove(
         self,
@@ -3166,10 +3197,19 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 )
             ]
             # Doesn't matter if connectivity is transposed or not in this case.
-            conn_indices = connectivity.indices[self.indices]
+            # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+            conn_indices = connectivity.core_indices()[self.indices]
             node_set = np.unique(conn_indices)
             if iris.util.is_masked(node_set):
-                node_set_unmasked = node_set.compressed()
+                if _lazy.is_lazy_data(node_set):
+                    # A dask-compatible approach that is compatible with chunking.
+                    #  (compressed() is not implemented because of chunking concerns).
+                    node_set_nans = da.where(
+                        da.ma.getmaskarray(node_set), da.ma.getdata(node_set), da.nan
+                    )
+                    node_set_unmasked = node_set_nans[~da.isnan(node_set_nans)]
+                else:
+                    node_set_unmasked = node_set.compressed()
             else:
                 node_set_unmasked = node_set
             result = node_set_unmasked
@@ -3205,16 +3245,19 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     @property
     def _coord_manager(self):
-        # Intended to be a 'view' on the original, and Meshes are mutable, so
-        #  must re-index every time it is accessed.
-        # TODO: only re-index when the managers have changed (also being
-        #  considered in iris#4757).
-        return self.mesh._coord_manager.indexed(
-            self._calculate_node_indices(),
-            self._calculate_edge_indices(),
-            self._calculate_face_indices(),
-            mesh_id=id(self.mesh),
+        mesh_man: _Mesh1DCoordinateManager = self.mesh._coord_manager
+        self_man: Optional[_Mesh1DCoordinateManager] = getattr(
+            self, "_coord_manager_attr", None
         )
+        update = self_man is None or mesh_man.timestamp != self_man.timestamp
+        if update:
+            self._coord_manager_attr = mesh_man.indexed(
+                self._calculate_node_indices(),
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+                mesh_id=id(self.mesh),
+            )
+        return super()._coord_manager
 
     @_coord_manager.setter
     def _coord_manager(self, manager):
@@ -3226,16 +3269,19 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     @property
     def _connectivity_manager(self):
-        # Intended to be a 'view' on the original, and Meshes are mutable, so
-        #  must re-index every time it is accessed.
-        # TODO: only re-index when the managers have changed (also being
-        #  considered in iris#4757).
-        return self.mesh._connectivity_manager.indexed(
-            self._calculate_node_indices(),
-            self._calculate_edge_indices(),
-            self._calculate_face_indices(),
-            mesh_id=id(self.mesh),
+        mesh_man: _MeshConnectivityManagerBase = self.mesh._connectivity_manager
+        self_man: Optional[_MeshConnectivityManagerBase] = getattr(
+            self, "_connectivity_manager_attr", None
         )
+        update = self_man is None or mesh_man.timestamp != self_man.timestamp
+        if update:
+            self._connectivity_manager_attr = mesh_man.indexed(
+                self._calculate_node_indices(),
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+                mesh_id=id(self.mesh),
+            )
+        return super()._connectivity_manager
 
     @_connectivity_manager.setter
     def _connectivity_manager(self, manager):
@@ -3626,6 +3672,7 @@ class MeshCoord(AuxCoord):
                     kwargs = dict(
                         mesh=mesh_index_set.mesh,
                         location=mesh_index_set.location,
+                        # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
                         indices=mesh_index_set.indices[keys],
                     )
                 case _:
