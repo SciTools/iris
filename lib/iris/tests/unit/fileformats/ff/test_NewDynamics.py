@@ -10,7 +10,7 @@ from iris.fileformats._ff import NewDynamics
 from iris.tests import _shared_utils
 
 
-class Test:
+class TestNewDynamics:
     def test_class_attributes(self):
         reals = np.arange(6) + 100
         grid = NewDynamics(None, None, reals, None)
