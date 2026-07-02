@@ -11,7 +11,7 @@ import pytest
 from iris.common.lenient import _qualname
 
 
-class Test:
+class TestQualname:
     @pytest.fixture(autouse=True)
     def _setup(self):
         module_name = getmodule(self).__name__
