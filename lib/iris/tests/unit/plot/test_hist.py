@@ -16,7 +16,7 @@ if _shared_utils.MPL_AVAILABLE:
 
 
 @_shared_utils.skip_plot
-class Test:
+class TestHist:
     @pytest.fixture(autouse=True)
     def _create_data(self):
         self.data = np.array([0, 100, 110, 120, 200, 320])
