@@ -1,2 +1,2 @@
-:user:`GitRylee` moved duplicated code in :class:`iris.tests.unit.analysis.trajectory.test__nearest_neighbour_indices_ndcoords.TestApiExtras`
+:user:`GitRylee` moved duplicated code in ``iris.tests.unit.analysis.trajectory.test__nearest_neighbour_indices_ndcoords``
 to a setup fixture. (:issue:`6625`)
