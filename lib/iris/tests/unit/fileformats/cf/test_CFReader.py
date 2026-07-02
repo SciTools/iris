@@ -369,10 +369,6 @@ class Test_build_cf_groups__ugrid:
             file_format="NetCDF4", variables=self.variables, ncattrs=ncattrs
         )
 
-        # @pytest.fixture(autouse=True)
-        # def _setup(self, mocker):
-        # Restrict the CFReader functionality to only performing
-        # translations and building first level cf-groups for variables.
         mocker.patch("iris.fileformats.cf.CFReader._reset")
         mocker.patch(
             "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
