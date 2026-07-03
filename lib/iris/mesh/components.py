@@ -19,7 +19,7 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Iterable, Literal
+from typing import Any, Iterable, Literal, Mapping, NamedTuple
 import warnings
 
 from cf_units import Unit
@@ -67,12 +67,25 @@ Mesh2DCoords = namedtuple(
     "Mesh2DCoords",
     ["node_x", "node_y", "edge_x", "edge_y", "face_x", "face_y"],
 )
+
+
 #: Namedtuple for ``node`` :class:`~iris.coords.AuxCoord` coordinates.
-MeshNodeCoords = namedtuple("MeshNodeCoords", ["node_x", "node_y"])
+class MeshNodeCoords(NamedTuple):
+    node_x: AuxCoord | None
+    node_y: AuxCoord | None
+
+
 #: Namedtuple for ``edge`` :class:`~iris.coords.AuxCoord` coordinates.
-MeshEdgeCoords = namedtuple("MeshEdgeCoords", ["edge_x", "edge_y"])
+class MeshEdgeCoords(NamedTuple):
+    edge_x: AuxCoord | None
+    edge_y: AuxCoord | None
+
+
 #: Namedtuple for ``face`` :class:`~iris.coords.AuxCoord` coordinates.
-MeshFaceCoords = namedtuple("MeshFaceCoords", ["face_x", "face_y"])
+class MeshFaceCoords(NamedTuple):
+    face_x: AuxCoord | None
+    face_y: AuxCoord | None
+
 
 #
 # MeshXY connectivity manager namedtuples.
@@ -1623,13 +1636,13 @@ class MeshXY(Mesh):
 
     def coords(
         self,
-        item=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        attributes=None,
-        axis=None,
-        location=None,
+        item: str | object | None = None,
+        standard_name: str | None = None,
+        long_name: str | None = None,
+        var_name: str | None = None,
+        attributes: Mapping | None = None,
+        axis: str | None = None,
+        location: str | None = None,
     ):
         """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`.
 
@@ -1665,8 +1678,8 @@ class MeshXY(Mesh):
         var_name : str, optional
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes : dict, optional
-            A dictionary of attributes desired on the coordinates. If ``None``,
+        attributes : Mapping, optional
+            A mapping of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
         axis : str, optional
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
@@ -2008,7 +2021,7 @@ class _Mesh1DCoordinateManager:
 
     """
 
-    REQUIRED = (
+    REQUIRED: tuple[str, ...] = (
         "node_x",
         "node_y",
     )
@@ -2144,11 +2157,11 @@ class _Mesh1DCoordinateManager:
         return self._shape(element="node")
 
     @property
-    def _members(self):
+    def _members(self) -> dict[str, None] | dict[str, AuxCoord]:
         return self._members_dict
 
     @_members.setter
-    def _members(self, value):
+    def _members(self, value: dict[str, AuxCoord]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -2161,7 +2174,7 @@ class _Mesh1DCoordinateManager:
         return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
 
     @property
-    def edge_x(self):
+    def edge_x(self) -> AuxCoord | None:
         return self._members["edge_x"]
 
     @edge_x.setter
@@ -2169,7 +2182,7 @@ class _Mesh1DCoordinateManager:
         self._setter(element="edge", axis="x", coord=coord, shape=self._edge_shape)
 
     @property
-    def edge_y(self):
+    def edge_y(self) -> AuxCoord | None:
         return self._members["edge_y"]
 
     @edge_y.setter
@@ -2181,7 +2194,7 @@ class _Mesh1DCoordinateManager:
         return MeshNodeCoords(node_x=self.node_x, node_y=self.node_y)
 
     @property
-    def node_x(self):
+    def node_x(self) -> None | AuxCoord:
         return self._members["node_x"]
 
     @node_x.setter
@@ -2189,7 +2202,7 @@ class _Mesh1DCoordinateManager:
         self._setter(element="node", axis="x", coord=coord, shape=self._node_shape)
 
     @property
-    def node_y(self):
+    def node_y(self) -> None | AuxCoord:
         return self._members["node_y"]
 
     @node_y.setter
@@ -2269,42 +2282,61 @@ class _Mesh1DCoordinateManager:
 
         return result
 
-    def filters(
-        self,
-        item=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        attributes=None,
-        axis=None,
-        location=None,
-    ):
-        # TBD: support coord_systems?
+    @staticmethod
+    def _populated_coords(coords_tuple: Iterable[AuxCoord | None]) -> list[AuxCoord]:
+        return list(filter(None, list(coords_tuple)))
 
-        def populated_coords[T](coords_tuple: tuple[T, T]) -> list[T]:
-            return list(filter(None, list(coords_tuple)))
+    def mesh_filters(self, axis: str | None, location: str | None) -> list[AuxCoord]:
+        def get_node(axis: str | None) -> list[AuxCoord]:
+            match axis:
+                case "x":
+                    return self._populated_coords((self.node_x,))
+                case "y":
+                    return self._populated_coords((self.node_y,))
+                case None:
+                    return self._populated_coords(self.node_coords)
+                case _:
+                    return []
+
+        def get_edge(axis: str | None) -> list[AuxCoord]:
+            match axis:
+                case "x":
+                    return self._populated_coords((self.edge_x,))
+                case "y":
+                    return self._populated_coords((self.edge_y,))
+                case None:
+                    return self._populated_coords(self.edge_coords)
+                case _:
+                    return []
 
         members: list[AuxCoord] = []
         match location:
             case "node":
-                members += populated_coords(self.node_coords)
+                members += get_node(axis)
             case "edge":
-                members += populated_coords(self.edge_coords)
-            case "face":
-                if hasattr(self, "face_coords"):
-                    members += populated_coords(self.face_coords)
-                else:
-                    dmsg = "Ignoring request to filter non-existent 'face_coords'"
-                    logger.debug(dmsg, extra=dict(cls=self.__class__.__name__))
+                members += get_edge(axis)
             case None:  # No specified locations means include them all
-                members += populated_coords(self.node_coords)
-                members += populated_coords(self.edge_coords)
-                if hasattr(self, "face_coords"):
-                    members += populated_coords(self.face_coords)
+                members += get_node(axis)
+                members += get_edge(axis)
             case _:
                 raise ValueError(
-                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                    f"Expected location to be one of `node` or `edge`, got `{location}`"
                 )
+
+        return members
+
+    def filters(
+        self,
+        item: str | None | Any = None,
+        standard_name: str | None = None,
+        long_name: str | None = None,
+        var_name: str | None = None,
+        attributes: dict | None = None,
+        axis: str | None = None,
+        location: str | None = None,
+    ):
+        # TBD: support coord_systems?
+        members = self.mesh_filters(axis, location)
 
         result = metadata_filter(
             members,
@@ -2313,7 +2345,6 @@ class _Mesh1DCoordinateManager:
             long_name=long_name,
             var_name=var_name,
             attributes=attributes,
-            axis=axis,
         )
 
         # Use the results to filter the _members dict for returning.
@@ -2382,7 +2413,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
 
     @property
-    def face_x(self):
+    def face_x(self) -> AuxCoord | None:
         return self._members["face_x"]
 
     @face_x.setter
@@ -2390,7 +2421,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         self._setter(element="face", axis="x", coord=coord, shape=self._face_shape)
 
     @property
-    def face_y(self):
+    def face_y(self) -> AuxCoord | None:
         return self._members["face_y"]
 
     @face_y.setter
@@ -2429,6 +2460,29 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
             location=location,
         )
 
+    def mesh_filters(self, axis: str | None, location: str | None) -> list[AuxCoord]:
+        def get_face(axis: str | None) -> list[AuxCoord]:
+            match axis:
+                case "x":
+                    return self._populated_coords((self.face_x,))
+                case "y":
+                    return self._populated_coords((self.face_y,))
+                case None:
+                    return self._populated_coords(self.face_coords)
+                case _:
+                    return []
+
+        if location == "face":
+            return get_face(axis)
+        elif location is None:
+            # super().mesh_filters deals with the node and edge
+            members = super().mesh_filters(axis, location)
+            return members + get_face(axis)
+        else:
+            try:
+                return super().mesh_filters(axis, location)
+            except ValueError: # Update error message (if any) to include mentioning face
+                raise ValueError(f"Expected location to be one of `node`, `edge` or `face`, got `{location}`")
 
 class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
