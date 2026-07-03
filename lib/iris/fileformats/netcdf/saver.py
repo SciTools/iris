@@ -1286,8 +1286,7 @@ class Saver:
                 # coord for nodes, but a connectivity for faces/edges
                 if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
-                    # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(location="node", axis="x")
+                    dim_coords = mesh.coords(location="node")
                 else:
                     # For face/edge, use the relevant "optionally required"
                     # connectivity variable.
@@ -1297,7 +1296,6 @@ class Saver:
                     # As the mesh contains this location, we want to include this
                     # dim in our returned mesh dims.
                     # We should have 1 identifying variable (of either type).
-                    assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
                     if dim_name is None:
@@ -1619,12 +1617,14 @@ class Saver:
 
                     from iris.mesh import Connectivity
 
-                    # At present, a location-coord cannot be nameless, as the
-                    # MeshXY code relies on guess_coord_axis.
-                    assert isinstance(coord, Connectivity)
-                    location = coord.cf_role.split("_")[0]
-                    location_dim_attr = f"{location}_dimension"
-                    name = getattr(mesh, location_dim_attr)
+                    if isinstance(coord, Connectivity):
+                        location = coord.cf_role.split("_")[0]
+                        location_dim_attr = f"{location}_dimension"
+                        name = getattr(mesh, location_dim_attr)
+                    else:
+                        # 'coord' is a nameless coordinate of a mesh,
+                        # so we set it as unknown for saving
+                        name = "unknown"
 
             # Convert to lower case and replace whitespace by underscores.
             cf_name = "_".join(name.lower().split())
