@@ -1711,12 +1711,12 @@ class MeshCoordMetadata(BaseMetadata):
 
 def metadata_filter(
     instances,
-    item=None,
-    standard_name=None,
-    long_name=None,
-    var_name=None,
-    attributes=None,
-    axis=None,
+    item: str | None | Any = None,
+    standard_name: str | None = None,
+    long_name: str | None = None,
+    var_name: str | None = None,
+    attributes: Mapping | None | Any = None,
+    axis: str | None = None,
 ):
     """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
@@ -1746,9 +1746,9 @@ def metadata_filter(
     var_name : optional
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
-    attributes : dict, optional
-        A dictionary of attributes desired on the object. If ``None``,
-        does not check for ``attributes``.
+    attributes : Mapping, optional, Any
+        A mapping of attributes desired on the object. If ``None``,
+        does not check for ``attributes``. Will error if it is anything else.
     axis : optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
