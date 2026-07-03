@@ -2481,8 +2481,12 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         else:
             try:
                 return super().mesh_filters(axis, location)
-            except ValueError: # Update error message (if any) to include mentioning face
-                raise ValueError(f"Expected location to be one of `node`, `edge` or `face`, got `{location}`")
+            except ValueError:
+                # Update error message (if any) to include mentioning face
+                raise ValueError(
+                    f"Expected location to be one of `node`, `edge` or `face`, got `{location}`"
+                )
+
 
 class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
