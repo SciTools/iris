@@ -1,0 +1,1 @@
+:user:`2319bli` has removed assignments to class level variables used in ``test_cell.py``. (:issue:`6625`)

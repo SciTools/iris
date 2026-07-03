@@ -406,8 +406,9 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
 
             if data.dtype.kind == "U":
                 # Strings : N.B. includes all missing data
-                # find the longest.
-                length = max(len(str(x)) for x in data.flatten())
+                # find the longest (an empty array, e.g. a length-0 time
+                # coordinate, has no elements, so fall back to 0). See #6531.
+                length = max((len(str(x)) for x in data.flatten()), default=0)
                 # Pre-apply a common formatting width.
                 formatter = {"all": lambda x: str(x).ljust(length)}
 
