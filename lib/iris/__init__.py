@@ -108,8 +108,6 @@ from typing import Callable, Literal
 from iris._combine import COMBINE_POLICY as _COMBINE_POLICY
 from iris._combine import CombineOptions
 import iris._constraints
-import iris.config
-import iris.io
 from iris.io import save
 from iris.loading import (
     load,
