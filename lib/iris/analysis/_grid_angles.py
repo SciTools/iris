@@ -487,7 +487,7 @@ def _generate_180_mats_from_uvecs(uvecs):
     # to achieve the desired result, we take one from the diagonal.
     np.einsum("jji->ji", mats)[:] -= 1
     # Normalise, just to remove accumulated errors
-    mats /= np.linalg.norm(mats, axis=0)
+    mats /= np.sqrt(np.sum(mats * mats, axis=0))
     return mats
 
 
@@ -508,7 +508,7 @@ def _2D_guess_bounds_first_pass(array):
     result_array[:, :-1, :-1] += array
 
     # Normalise
-    result_array /= np.linalg.norm(result_array, axis=0)
+    result_array /= np.sqrt(np.sum(result_array**2, axis=0))
     return result_array
 
 
