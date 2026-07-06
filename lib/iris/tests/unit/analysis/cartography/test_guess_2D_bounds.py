@@ -155,7 +155,11 @@ def test_2D_guess_bounds_coord_systems():
     mercator_cube.coord("latitude").coord_system = mercator_cs
     mercator_cube.coord("longitude").coord_system = mercator_cs
 
-    with pytest.raises(ValueError, match="Coordinate systems are expected geodetic."):
+    msg = (
+        "Coordinate 'longitude' has a coordinate system of type <class '.*Mercator'> : "
+        r"must be geodetic \(GeogCs / RotatedGeogCS\), or None."
+    )
+    with pytest.raises(ValueError, match=msg):
         _2D_guess_bounds(mercator_cube)
 
 

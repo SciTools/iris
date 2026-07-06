@@ -686,12 +686,14 @@ def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
     if x.coord_system != y.coord_system:
         msg = "Coordinate systems must be the same."
         raise ValueError(msg)
-    if not all(
-        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
-        for coord in [x, y]
-    ):
-        msg = "Coordinate systems are expected geodetic."
-        raise ValueError(msg)
+    for coord in (x, y):
+        if not isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None):
+            msg = (
+                f"Coordinate {coord.name()!r} has a coordinate system of type "
+                f"{type(coord.coord_system)!r} : must be geodetic "
+                "(GeogCs / RotatedGeogCS), or None."
+            )
+            raise ValueError(msg)
 
     if in_place:
         new_x = x
