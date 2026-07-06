@@ -136,46 +136,57 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 Split Attributes
 -----------------
 
-Since Iris does not provide a "dataset" object, it is not possible to represent netcdf
-file-level, aka "global", attributes directly.  Instead, the attributes of *cubes*,
-specifically, are "split" to discriminate between global (i.e. file) and local (i.e.
-variable) attributes.
+Since Iris does not provide a "dataset" object, it is not possible to represent netCDF
+file-level, aka "global", attributes directly.  Instead, when saving to NetCDF,
+the attributes of saved *cubes*, specifically, may be saved as either global
+(i.e. file-level) or local (i.e. variable-specific) attributes.
 
-Prior to Iris v3.8, this was done "automatically" according to a specific lists of
-known attribute names which would normally *only* appear as local (variable) attributes
+This makes no difference to Iris behaviour, but it is relevant when saving cubes to
+netCDF files, as to how the decision is made which kingd of attribute to create.
+
+**Prior to Iris v3.8** this was done automatically, using specific lists of known
+attribute names defined in the `CF Conventions <https://https://cfconventions.org/>`_
+as normally *only* appearing as local (variable) attributes
 (e.g. "valid_min") or *only* as global (file) ones (e.g. "history").
-All other names were saved as "global if the same for all cubes, otherwise local".
+For other names, the rule is _"global if the same for all cubes, otherwise local"_.
 
-Since Iris v3.8, but explicit handling has now been added, so that a ``cube.attributes``
-is a :class:`~iris.cube.CubeAttrsDict` object which combines global and local attributes
-within a single dictionary-like object.
-Finer-grained control of attribute saving is thus now possible, by setting the
-:data:`iris.Future.save_split_attrs` control to ``True``.
-Ideally, anyone who is saving cubes to netcdf files should now set this, and
-a warning is raised if it is not set.
+**Since Iris v3.8**, all cube attributes now have explicit 'global' or 'local' identity.
+This is assigned automatically on creation using similar rules as described above, or
+type-specifically when loading from NetCDF, or explicitly controlled by the user.
+A ``cube.attributes``
+is now a :class:`~iris.cube.CubeAttrsDict` object, which combines global and local
+attributes within a single dictionary-like object.
+
+On saving to NetCDF, finer-grained type-specific control of attribute saving is now
+possible, but this requires setting the ``.save_split_attrs`` property of
+:data:`iris.FUTURE` to ``True`` -- either permanently with :meth:`~iris.Future.set` or
+within a code block with :meth:`~iris.Future.context`.
+Ideally, anyone who is saving cubes to netcdf files **should now set this** : a warning
+is raised if it is not set.
 
 .. note::
     The default setting remains ``iris.FUTURE.save_split_attrs = False``, purely for
-    backwards compatibility, but it is recommended to override this for all new code.
+    backwards compatibility : it is recommended to override this for all new code.
 
 The :class:`~iris.cube.CubeAttrsDict` provides a regular dictionary access which mimics
-the older single dictionary, while also containing separate lists in its ``.global`` and
-``.local`` properties which allow the user to specifically choose the nature of each
-attribute.
-On saving, each cube's ".attributes.local"s become variable-level attributes and its
-".attributes.global"s become file-level attributes -- *except only*, if globals
-have different values in multiple cubes, then global attributes may be 'demoted' to
+the older single dictionary, while also providing access to separate types via its
+``.globals`` and ``.locals`` properties, allowing the user (and NetCDF loads) to
+specifically set the type of each attribute.
+On saving, with ``iris.FUTURE.save_split_attrs`` enabled, each cube's
+``.attributes.locals`` become variable-level attributes and its
+``.attributes.globals`` become file-level attributes -- *except only that* if globals
+have different values across multiple cubes, then global attributes may be 'demoted' to
 local ones.
 
 Summary
 ^^^^^^^
 
-* You should now always set the ``iris.Future.save_split_attrs=True`` unless you have a
+* All Cube attributes are now stored as specifically "global" or "local"
+* You should now always set the ``iris.Future.save_split_attrs = True`` unless you have a
   specific need for backwards compatibility.
-* all Cube attributes are now stored as specifically "global" or "local"
-* you can continue to assign and fetch cube attributes as before, but when required you
-  can also now access ``.global`` and ``.local`` properties specifically.
-* practically, all this is only relevant when **saving to netcdf files**
+* You can continue to assign and fetch cube attributes as before, but when required you
+  can also now access ``.globals`` and ``.locals`` properties specifically.
+* Practically, all this is only relevant when **saving to netcdf files**
 
 
 Deferred Saving
@@ -185,27 +196,27 @@ In some cases it is useful for performance reasons to defer the actual writing o
 data to a NetCDF file's variables, from after the "iris.save" call to a later time.
 
 You can do this by adding a ``compute=False`` keyword to the ``iris.save`` call.  The
-call then returns, instead of None, a :class:``dask.delayed`` object, which can be
-computed later to complete the writing of variable data to the file.
+call then returns, instead of None, a Dask :class:`~dask.delayed.Delayed` object, which
+can be "compute"-d later to complete the writing of variable data to the file.
 
-Where this can be useful is when you are saving multiple cubes whose lazy data is
-computed from shared data, for example multiple statistics over the same data.
+This can be  when you are saving multiple cubes whose lazy data is computed from shared
+data, for example multiple statistics over the same large data array.
 
-To do this, you specify ``compute=False`` to multiple :func:``iris.save`` calls, and
-collect the resulting :class:``dask.delayed`` objects.  You can then complete the saves
-in parallel, by supplying a list of the 'delayed' results to the :func:`Dask.compute`
+To do this, you specify ``compute=False`` to multiple :func:`iris.save` calls, and
+collect the resulting :class:``dask.delayed`` objects.  You can then "complete" the
+saves, in parallel, by supplying a list of 'delayed' results to the :func:`Dask.compute`
 function.
 
 This mechanism allows Dask to calculate the multiple "derived" results while only
 fetching the "common" data from which they derive **once**, whereas otherwise the source
 data may need to be fetched multiple times.  In this respect, the benefit is the same as
-the :meth:``iris.cube.CubeList.realise_cubes`` method.  However there is an additional
-potential benefit in this case, which is that the actual **writing** of data to file can
-be performed in parallel.  The scope of this, however, depends on the parallel
-capabilities of the Python ``netCDF4`` package, the NetCDF C library, the file
-system and the operating system :  *Typically* you can write data arrays in parallel
-to **separate files**, but not to different variables, or variable sections *within a
-single file*.
+the :meth:`iris.cube.CubeList.realise_cubes` method.  However for saving there is an
+additional benefit, in that the actual **writing** of data to file can also be performed
+in parallel.  The scope of this, however, depends on the parallel capabilities of
+several components : the Python ``netCDF4`` package; the NetCDF C library; the file
+system; and the operating system :  **Typically**, you can write data arrays in parallel
+to **separate files**, but not to different variables, or different data sections
+*within a single file*.
 
 
 Character and String data
