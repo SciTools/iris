@@ -18,6 +18,21 @@ from iris.tests import _shared_utils
 
 
 class TestMeshCommon:
+    NODE_LON: AuxCoord
+    NODE_LAT: AuxCoord
+    EDGE_LON: AuxCoord
+    EDGE_LAT: AuxCoord
+    FACE_LON: AuxCoord
+    FACE_LAT: AuxCoord
+    EDGE_NODE: components.Connectivity
+    FACE_NODE: components.Connectivity
+    FACE_EDGE: components.Connectivity
+    FACE_FACE: components.Connectivity
+    EDGE_FACE: components.Connectivity
+    BOUNDARY_NODE: components.Connectivity
+    kwargs: dict
+    mesh: components.MeshXY
+
     @staticmethod
     @pytest.fixture(scope="class", autouse=True)
     def make_common_inputs():
@@ -296,7 +311,43 @@ class TestProperties1D(TestMeshCommon):
             expected = [all_expected[k] for k in expected if k in all_expected]
             assert expected == func(**kwargs)
 
-    def test_coords_face_raises_error(self):
+    def test_coords_elements_no_set_name(self):
+        # Checks that issue found in #4863 is fixed, where previously mesh.coords
+        # would fail when the coords don't have a set standard_name
+        coords = {
+            "node_x": self.NODE_LON.copy(),
+            "node_y": self.NODE_LAT.copy(),
+            "edge_x": self.EDGE_LON.copy(),
+            "edge_y": self.EDGE_LAT.copy(),
+        }
+        for coord in coords.values():
+            coord.standard_name = None
+
+        mesh_kwargs = self.kwargs.copy()
+        mesh_kwargs["node_coords_and_axes"] = (
+            (coords["node_x"], "x"),
+            (coords["node_y"], "y"),
+        )
+        mesh_kwargs["edge_coords_and_axes"] = (
+            (coords["edge_x"], "x"),
+            (coords["edge_y"], "y"),
+        )
+        mesh = components.MeshXY(**mesh_kwargs)
+
+        kwargs_expected = (
+            ({"axis": "x"}, ["node_x", "edge_x"]),
+            ({"axis": "y"}, ["node_y", "edge_y"]),
+            ({"location": "node"}, ["node_x", "node_y"]),
+            ({"location": "edge"}, ["edge_x", "edge_y"]),
+        )
+
+        func = mesh.coords
+        for kwargs, expected in kwargs_expected:
+            expected = [coords[k] for k in expected if k in coords]
+            assert expected == func(**kwargs)
+
+    def test_coords_face(self):
+        # Should raise a value error because 1D meshes don't have faces
         with pytest.raises(
             ValueError,
             match="Expected location to be one of `node` or `edge`, got `face`",
@@ -577,12 +628,59 @@ class TestProperties2D(TestProperties1D):
             ({"axis": "y"}, ["node_y", "edge_y", "face_y"]),
             ({"location": "node"}, ["node_x", "node_y"]),
             ({"location": "edge"}, ["edge_x", "edge_y"]),
+            ({"location": "face"}, ["face_x", "face_y"]),
         )
 
         func = self.mesh.coords
         for kwargs, expected in kwargs_expected:
             expected = [all_expected[k] for k in expected if k in all_expected]
             assert expected == func(**kwargs)
+
+    def test_coords_elements_no_set_name(self):
+        # Checks that issue found in #4863 is fixed, where previously mesh.coords
+        # would fail when the coords don't have a set standard_name
+        coords = {
+            "node_x": self.NODE_LON.copy(),
+            "node_y": self.NODE_LAT.copy(),
+            "edge_x": self.EDGE_LON.copy(),
+            "edge_y": self.EDGE_LAT.copy(),
+            "face_x": self.FACE_LON.copy(),
+            "face_y": self.FACE_LAT.copy(),
+        }
+        for coord in coords.values():
+            coord.standard_name = None
+
+        mesh_kwargs = self.kwargs.copy()
+        mesh_kwargs["node_coords_and_axes"] = (
+            (coords["node_x"], "x"),
+            (coords["node_y"], "y"),
+        )
+        mesh_kwargs["edge_coords_and_axes"] = (
+            (coords["edge_x"], "x"),
+            (coords["edge_y"], "y"),
+        )
+        mesh_kwargs["face_coords_and_axes"] = (
+            (coords["face_x"], "x"),
+            (coords["face_y"], "y"),
+        )
+        mesh = components.MeshXY(**mesh_kwargs)
+
+        kwargs_expected = (
+            ({"axis": "x"}, ["node_x", "edge_x", "face_x"]),
+            ({"axis": "y"}, ["node_y", "edge_y", "face_y"]),
+            ({"location": "node"}, ["node_x", "node_y"]),
+            ({"location": "edge"}, ["edge_x", "edge_y"]),
+            ({"location": "face"}, ["face_x", "face_y"]),
+        )
+
+        func = mesh.coords
+        for kwargs, expected in kwargs_expected:
+            expected = [coords[k] for k in expected if k in coords]
+            assert expected == func(**kwargs)
+
+    def test_coords_face(self):
+        # Tested by test_coords_elements
+        pass
 
     def test_edge_face(self):
         assert self.EDGE_FACE == self.mesh.edge_face_connectivity
