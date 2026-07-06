@@ -1679,8 +1679,8 @@ class MeshXY(Mesh):
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
         attributes : Mapping, optional
-            A mapping of attributes desired on the coordinates. If ``None``,
-            does not check for ``attributes``.
+            A mapping of attributes desired on the coordinates. `dict` is a type of Mapping.
+            If ``None``, does not check for ``attributes``.
         axis : str, optional
             The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
@@ -2331,7 +2331,7 @@ class _Mesh1DCoordinateManager:
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
-        attributes: dict | None = None,
+        attributes: Mapping | None = None,
         axis: str | None = None,
         location: str | None = None,
     ):

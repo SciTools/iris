@@ -26,6 +26,7 @@ import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
 if TYPE_CHECKING:
+    from iris.common.mixin import CFVariableMixin
     from iris.coords import CellMethod
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
@@ -1711,7 +1712,7 @@ class MeshCoordMetadata(BaseMetadata):
 
 def metadata_filter(
     instances,
-    item: str | None | _DimensionalMetadata | BaseMetadata = None,
+    item: str | None | CFVariableMixin | BaseMetadata = None,
     standard_name: str | None = None,
     long_name: str | None = None,
     var_name: str | None = None,
@@ -1747,8 +1748,8 @@ def metadata_filter(
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
     attributes : Mapping, optional, Any
-        A mapping of attributes desired on the object. If ``None``,
-        does not check for ``attributes``. Will error if it is anything else.
+        A mapping of attributes desired on the object. `dict` is a type of Mapping.
+        If ``None``, does not check for ``attributes``. Will error if it is anything else.
     axis : optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
@@ -1821,7 +1822,7 @@ def metadata_filter(
         result = [instance for instance in result if get_axis(instance) == axis]
 
     if obj is not None:
-        if hasattr(obj, "__class__") and issubclass(obj.__class__, BaseMetadata):
+        if isinstance(obj, BaseMetadata):
             target_metadata = obj
         else:
             target_metadata = obj.metadata
