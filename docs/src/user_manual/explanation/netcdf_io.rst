@@ -168,7 +168,7 @@ have different values in multiple cubes, then global attributes may be 'demoted'
 local ones.
 
 Summary
-=======
+^^^^^^^
 
 * You should now always set the ``iris.Future.save_split_attrs=True`` unless you have a
   specific need for backwards compatibility.
