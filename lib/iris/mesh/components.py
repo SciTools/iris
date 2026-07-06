@@ -1636,7 +1636,7 @@ class MeshXY(Mesh):
 
     def coords(
         self,
-        item: str | object | None = None,
+        item: str | None | _DimensionalMetadata | BaseMetadata = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -2327,7 +2327,7 @@ class _Mesh1DCoordinateManager:
 
     def filters(
         self,
-        item: str | None | Any = None,
+        item: str | None | _DimensionalMetadata | BaseMetadata = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,

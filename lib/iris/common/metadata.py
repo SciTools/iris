@@ -1711,7 +1711,7 @@ class MeshCoordMetadata(BaseMetadata):
 
 def metadata_filter(
     instances,
-    item: str | None | Any = None,
+    item: str | None | _DimensionalMetadata | BaseMetadata = None,
     standard_name: str | None = None,
     long_name: str | None = None,
     var_name: str | None = None,
