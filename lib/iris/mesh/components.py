@@ -20,6 +20,7 @@ from collections.abc import Container
 from contextlib import contextmanager
 from copy import deepcopy
 from datetime import datetime
+import functools
 from typing import Any, Iterable, Literal, Optional, TypeAlias
 import warnings
 
@@ -2086,13 +2087,13 @@ class _ManagerMembers(dict):
         if not mutable:
             self.read_only_message = message or "Members of this manager are read-only."
         for op in (
-            self.__setitem__,
-            self.__delitem__,
-            self.pop,
-            self.popitem,
-            self.clear,
-            self.update,
-            self.setdefault,
+            dict.__setitem__,
+            dict.__delitem__,
+            dict.pop,
+            dict.popitem,
+            dict.clear,
+            dict.update,
+            dict.setdefault,
         ):
             op_name = op.__name__
             if mutable:
@@ -2212,15 +2213,6 @@ class _Mesh1DCoordinateManager:
         axis = axis.lower()
         member = f"{element}_{axis}"
 
-        if self.is_view:
-            has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
-            if not (coord.has_lazy_points() and has_lazy_bounds):
-                message = (
-                    f"Non-lazy coordinate detected: {member}, which is "
-                    f"inappropriate for a view: {self._view_message}"
-                )
-                raise ValueError(message)
-
         # enforce the UGRID minimum coordinate requirement
         if element == "node" and coord is None:
             emsg = f"{member!r} is a required coordinate, cannot set to 'None'."
@@ -2230,6 +2222,15 @@ class _Mesh1DCoordinateManager:
             if not isinstance(coord, AuxCoord):
                 emsg = f"{member!r} requires to be an 'AuxCoord', got {type(coord)}."
                 raise TypeError(emsg)
+
+            if self.is_view:
+                has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
+                if not (coord.has_lazy_points() and has_lazy_bounds):
+                    message = (
+                        f"Non-lazy coordinate detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
 
             guess_axis = guess_coord_axis(coord)
 
@@ -2272,7 +2273,9 @@ class _Mesh1DCoordinateManager:
     def _members(self):
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
-            for member, coord in [(m, c) for m, c in self if c is not None]:
+            for member, coord in [
+                (m, c) for m, c in self._members_dict.items() if c is not None
+            ]:
                 has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
                 if not (coord.has_lazy_points() and has_lazy_bounds):
                     message = (
@@ -2632,6 +2635,55 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         )
 
 
+def _index_conn_array(
+    array: np.ndarray | da.Array,
+    indexing: np.ndarray | da.Array,
+    pre_index: functools.partial | None = None,
+) -> np.ndarray | da.Array:
+    """Index a connectivity array, allowing for laziness and masking.
+
+    Convenience used in constructing MeshCoords and views of _MeshConnectivityManagerBase.
+
+    Parameters
+    ----------
+    array : np.ndarray or dask.array.Array
+        The array to be indexed.
+    indexing : np.ndarray or dask.array.Array
+        The array of indices to use for indexing `array`.
+    pre_index : functools.partial, optional
+        A function to apply to the indices before indexing `array`.
+
+    Returns
+    -------
+    np.ndarray or dask.array.Array
+    """
+    # Assumes indices_by_location
+    n_nodes = array.shape[0]
+    # Choose real/lazy array library, to suit array types.
+    lazy = _lazy.is_lazy_data(array) or _lazy.is_lazy_data(indexing)
+    al = da if lazy else np
+    # NOTE: Dask cannot index with a multidimensional array, so we
+    # must flatten it and restore the shape later.
+    flat_inds = indexing.flatten()
+    # NOTE: the connectivity array can have masked points, but we can't
+    # effectively index with those.  So use a non-masked index array
+    # with "safe" index values, and post-mask the results.
+    flat_inds_nomask = al.ma.filled(flat_inds, -1)
+    # Note: *also* mask any places where the index is out of range.
+    missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
+    flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
+    # Execute pre_index operation, if present.
+    if pre_index is not None:
+        flat_inds_safe = pre_index(flat_inds_safe)
+    # Here's the core indexing operation.
+    # The comma applies all inds-array values to the *first* dimension.
+    flat_result = array[flat_inds_safe,]
+    # Fix 'missing' locations, and restore the proper shape.
+    flat_result_masked = al.ma.masked_array(flat_result, missing_inds)
+    result = flat_result_masked.reshape(indexing.shape)
+    return result
+
+
 class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
     REQUIRED: tuple = NotImplemented
@@ -2708,7 +2760,9 @@ class _MeshConnectivityManagerBase(ABC):
     def _members(self):
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
-            for member, connectivity in [(m, c) for m, c in self if c is not None]:
+            for member, connectivity in [
+                (m, c) for m, c in self._members_dict.items() if c is not None
+            ]:
                 if not connectivity.has_lazy_indices():
                     message = (
                         f"Non-lazy connectivity detected: {member}, which is "
@@ -2734,6 +2788,14 @@ class _MeshConnectivityManagerBase(ABC):
             if not isinstance(connectivity, Connectivity):
                 message = f"Expected Connectivity, got: {type(connectivity)} ."
                 raise TypeError(message)
+
+            if self.is_view and not connectivity.has_lazy_indices():
+                message = (
+                    f"Non-lazy connectivity detected: {connectivity!r}, which is "
+                    f"inappropriate for a view: {self._view_message}"
+                )
+                raise ValueError(message)
+
             cf_role = connectivity.cf_role
             if cf_role not in self.ALL:
                 message = (
@@ -2890,29 +2952,6 @@ class _MeshConnectivityManagerBase(ABC):
             "face": face_indices,
         }
 
-        def remap_node_indices(values: da.Array):
-            # Map node indices in "values" to their new zero-based positions
-            #  in "node_indices".
-            order = node_indices.argsort()
-            old_sorted = node_indices[order]
-            new_ids_sorted = da.arange(len(node_indices))[order]
-
-            if iris.util.is_masked(values):
-                # searchsorted does not support masking; replace masked connectivities
-                #  with something safe for searchsorted.
-                value_mask = da.ma.getmaskarray(values)
-                value_data = da.ma.getdata(values)
-                safe_values = da.where(value_mask, old_sorted[0], value_data)
-                positions = da.searchsorted(old_sorted, safe_values)
-                remapped = new_ids_sorted[positions]
-                result = da.ma.masked_array(remapped, mask=value_mask)
-            else:
-                positions = da.searchsorted(old_sorted, values)
-                remapped = new_ids_sorted[positions]
-                result = remapped
-
-            return result
-
         indexed_members = {}
         for key, connectivity in self:
             indexing = None
@@ -2926,7 +2965,19 @@ class _MeshConnectivityManagerBase(ABC):
                     #  used by MeshCoord, which also maintains laziness.
                     connectivity.lazy_indices()
                 )[indexing]
-                new_values = remap_node_indices(new_values)
+
+                # Map node indices in "values" to their new zero-based positions
+                #  in "node_indices".
+                order = node_indices.argsort()
+                old_sorted = da.from_array(node_indices[order])
+                new_ids_sorted = da.arange(len(node_indices))[order]
+                positions = functools.partial(da.searchsorted, old_sorted)
+                new_values = _index_conn_array(
+                    array=new_ids_sorted,
+                    indexing=new_values,
+                    pre_index=positions,
+                )
+
                 if connectivity.location_axis == 1:
                     new_values = new_values.T
                 if connectivity.start_index == 1:
@@ -3187,9 +3238,9 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                     # A dask-compatible approach that is compatible with chunking.
                     #  (compressed() is not implemented because of chunking concerns).
                     node_set_nans = da.where(
-                        da.ma.getmaskarray(node_set), da.ma.getdata(node_set), da.nan
+                        da.ma.getmaskarray(node_set), da.ma.getdata(node_set), -1
                     )
-                    node_set_unmasked = node_set_nans[~da.isnan(node_set_nans)]
+                    node_set_unmasked = node_set_nans[node_set_nans != -1]
                 else:
                     node_set_unmasked = node_set.compressed()
             else:
@@ -3978,25 +4029,6 @@ class MeshCoord(AuxCoord):
             indices = indices - bounds_connectivity.start_index
 
             node_points = node_coord.core_points()
-            n_nodes = node_points.shape[0]
-            # Choose real/lazy array library, to suit array types.
-            lazy = _lazy.is_lazy_data(indices) or _lazy.is_lazy_data(node_points)
-            al = da if lazy else np
-            # NOTE: Dask cannot index with a multidimensional array, so we
-            # must flatten it and restore the shape later.
-            flat_inds = indices.flatten()
-            # NOTE: the connectivity array can have masked points, but we can't
-            # effectively index with those.  So use a non-masked index array
-            # with "safe" index values, and post-mask the results.
-            flat_inds_nomask = al.ma.filled(flat_inds, -1)
-            # Note: *also* mask any places where the index is out of range.
-            missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
-            flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
-            # Here's the core indexing operation.
-            # The comma applies all inds-array values to the *first* dimension.
-            bounds = node_points[flat_inds_safe,]
-            # Fix 'missing' locations, and restore the proper shape.
-            bounds = al.ma.masked_array(bounds, missing_inds)
-            bounds = bounds.reshape(indices.shape)
+            bounds = _index_conn_array(node_points, indices)
 
         return points, bounds
