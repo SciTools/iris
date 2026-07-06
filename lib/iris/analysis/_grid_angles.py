@@ -516,10 +516,10 @@ def _2D_guess_bounds_first_pass(array):
 
 
 def _2D_gb_buffer_outer(array_shape):
-    # Return appropriate numpy slice for outer halo.
-    # This slice preserves the first dimension, which captures the 3D vector points and
+    """Return numpy indexes to select the outer halo."""
+    # Each point in the index list corresponds to a corner or edge bound.
+    # The indexing preserves the first dimension, which captures the 3D vector points and
     # lists a series of indices in the next 2 dimensions.
-    # Each index in this slice corresponds to a corner or edge bound.
 
     # This halo starts at the index [:, 0, 0], the next set of indices increase in the
     # second dimension until the index [:, -1, 0], then the last dimension increases
@@ -534,15 +534,15 @@ def _2D_gb_buffer_outer(array_shape):
 
 
 def _2D_gb_buffer_inner(array_shape):
-    # Return appropriate numpy slice for inner halo.
-    # This slice preserves the first dimension, which captures the 3D vector points and
-    # lists a series of indices in the next 2 dimensions.
-    # Each index in this slice corresponds to an internal bound neighbouring a corner or
-    # edge bound.
+    """Return numpy indexes for the nearest interior points of each halo point."""
+    # Each point in the index list corresponds to an internal bound neighbouring a
+    # corner or edge bound.
     # For every index in the outer halo, this gives the nearest index not in the outer halo.
-    # Note: the internal bounds which are nearest to the corner bounds ar each the nearest
+    # Note: the internal bounds which are nearest to the corner bounds are each the nearest
     # bound for at least two other edge or corner bounds. Therefore, these indices will
     # occur at least 3 times in the returned slice.
+    # The indexing preserves the first dimension, which captures the 3D vector points and
+    # lists a series of indices in the next 2 dimensions.
 
     # This halo starts at the index [:, 1, 1], the next index is also [:, 1, 1]. The
     # next set of indices increase in the second dimension until the index [:, -2, 1],
