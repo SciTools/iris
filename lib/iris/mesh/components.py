@@ -19,7 +19,7 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Any, Iterable, Literal, Mapping, NamedTuple
+from typing import Iterable, Literal, Mapping, NamedTuple
 import warnings
 
 from cf_units import Unit

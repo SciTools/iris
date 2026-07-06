@@ -275,7 +275,7 @@ class TestProperties1D(TestMeshCommon):
         with pytest.raises(ValueError, match="Expected location.*got.*foo"):
             self.mesh.coords(location="foo")
 
-    def test_coords_elements(self, caplog):
+    def test_coords_elements(self):
         # topology_dimension-specific results. Method intended to be overridden.
         all_expected = {
             "node_x": self.NODE_LON,
@@ -289,7 +289,6 @@ class TestProperties1D(TestMeshCommon):
             ({"axis": "y"}, ["node_y", "edge_y"]),
             ({"location": "node"}, ["node_x", "node_y"]),
             ({"location": "edge"}, ["edge_x", "edge_y"]),
-            ({"location": "face"}, ["face_x", "face_y"]),
         )
 
         func = self.mesh.coords
@@ -297,11 +296,12 @@ class TestProperties1D(TestMeshCommon):
             expected = [all_expected[k] for k in expected if k in all_expected]
             assert expected == func(**kwargs)
 
-        log_regex = r".*filter non-existent.*"
-        with _shared_utils.assert_logs(
-            caplog, logger, level="DEBUG", msg_regex=log_regex
+    def test_coords_face_raises_error(self):
+        with pytest.raises(
+            ValueError,
+            match="Expected location to be one of `node` or `edge`, got `face`",
         ):
-            assert [] == func(location="face")
+            self.mesh.coords(location="face")
 
     def test_edge_dimension(self):
         assert self.kwargs["edge_dimension"] == self.mesh.edge_dimension
