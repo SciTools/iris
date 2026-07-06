@@ -3,10 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Implement vector rotation by angles.
+"""Coordinate vector calculations on the unit sphere.
 
 Code to implement vector rotation by angles, and inferring gridcell angles
 from coordinate points and bounds.
+
+Also "guess_2D_bounds", which uses 3D vectors to interpolate and extrapolate the points
+of X and Y coordinates.
 
 """
 
