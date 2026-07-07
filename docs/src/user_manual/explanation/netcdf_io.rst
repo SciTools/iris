@@ -152,11 +152,11 @@ storage characteristics of character data are relevant:
     *   'string' type variables contain a variable-length unicode string at each array element.
 
     *   'char' type variables contain one-byte characters, and generally have a fixed-length
-    "string dimension".  If they contain *only* ascii character values, this is
-    uncomplicated, but they may also be used to contain non-ascii data (i.e.
-    including unicode characters).  There is no universally defined agreement on how
-    to indicate a variable containing non-ascii data, but many datasets have used a
-    suitable ``_Encoding`` attribute.
+        "string dimension".  If they contain *only* ascii character values, this is
+        uncomplicated, but they may also be used to contain non-ascii data (i.e.
+        including unicode characters).  There is no universally defined agreement on how
+        to indicate a variable containing non-ascii data, but many datasets have used a
+        suitable ``_Encoding`` attribute.
 
 The NetCDF documentation also mentions that an ``_Encoding`` attribute may be used to
 represent non-ascii strings in a 'char' type array.  However this is described as
