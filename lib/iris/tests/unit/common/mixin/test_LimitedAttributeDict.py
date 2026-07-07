@@ -10,7 +10,7 @@ import pytest
 from iris.common.mixin import LimitedAttributeDict
 
 
-class Test:
+class TestLimitedAttributeDict:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.forbidden_keys = LimitedAttributeDict.CF_ATTRS_FORBIDDEN

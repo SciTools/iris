@@ -19,6 +19,7 @@ import warnings
 import cf_units
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 import iris.analysis
 from iris.analysis.cartography import (
     DEFAULT_SPHERICAL_EARTH_RADIUS,
@@ -31,6 +32,11 @@ from iris.util import delta
 from iris.warnings import IrisUserWarning
 
 __all__ = ["DIRECTIONAL_NAMES", "cube_delta", "curl", "differentiate"]
+
+warn_deprecated(
+    "iris.analysis.calculus has been deprecated and will be removed without "
+    "replacement in 4.0.0."
+)
 
 
 def _construct_delta_coord(coord):
@@ -157,7 +163,20 @@ def cube_delta(cube, coord):
             This function maintains laziness when called; it does not realise data.
             See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
+    .. deprecated:: 3.16.0
+
+        :func:`iris.analysis.calculus.cube_delta` has been deprecated and will
+        be removed in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
+        will no longer be supported. Subsequently, :mod:`iris.analysis.calculus`
+        is deprecated and will be removed in ``Iris`` 4.0.0.
+
     """
+    wmsg = (
+        "iris.analysis.calculus.cube_delta has been deprecated and will be "
+        "removed without replacement in 4.0.0."
+    )
+    warn_deprecated(wmsg)
+
     # handle the case where a user passes a coordinate name
     if isinstance(coord, str):
         coord = cube.coord(coord)
@@ -268,7 +287,20 @@ def differentiate(cube, coord_to_differentiate):
             This function maintains laziness when called; it does not realise data.
             See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
+    .. deprecated:: 3.16.0
+
+        :func:`iris.analysis.calculus.differentiate` has been deprecated and will
+        be removed in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
+        will no longer be supported. Subsequently, :mod:`iris.analysis.calculus`
+        is deprecated and will be removed in ``Iris`` 4.0.0.
+
     """
+    wmsg = (
+        "iris.analysis.calculus.differentiate has been deprecated and will be "
+        "removed without replacement in 4.0.0."
+    )
+    warn_deprecated(wmsg)
+
     # Get the delta cube in the required differential direction.
     # This operation results in a copy of the original cube.
     delta_cube = cube_delta(cube, coord_to_differentiate)
@@ -556,7 +588,20 @@ def curl(i_cube, j_cube, k_cube=None):
             This function does not maintain laziness when called; it realises data.
             See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
+    .. deprecated:: 3.16.0
+
+        :func:`iris.analysis.calculus.curl` has been deprecated and will be
+        removed in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
+        will no longer be supported. Subsequently :mod:`iris.analysis.calculus`
+        is deprecated and will be removed in ``Iris`` 4.0.0.
+
     """
+    wmsg = (
+        "iris.analysis.calculus.curl has been deprecated and will be removed "
+        "without replacement in 4.0.0."
+    )
+    warn_deprecated(wmsg)
+
     # Get the vector quantity names.
     # (i.e. ['easterly', 'northerly', 'vertical'])
     vector_quantity_names, phenomenon_name = spatial_vectors_with_phenom_name(
@@ -780,8 +825,21 @@ def spatial_vectors_with_phenom_name(i_cube, j_cube, k_cube=None):
     This function maintains laziness when called; it does not realise data.
     See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
+    .. deprecated:: 3.16.0
+
+        :func:`iris.analysis.calculus.spatial_vectors_with_phenom_name` has
+        been deprecated and will be removed in ``Iris`` 4.0.0. Native
+        :class:`~iris.cube.Cube` calculus will no longer be supported.
+        Subsequently, :mod:`iris.analysis.calculus` is deprecated and will be
+        removed in ``Iris`` 4.0.0.
 
     """
+    wmsg = (
+        "iris.analysis.calculus.spatial_vectors_with_phenom_name has been "
+        "deprecated and will be removed without replacement in 4.0.0."
+    )
+    warn_deprecated(wmsg)
+
     # Create a list of the standard_names of our incoming cubes
     # (excluding the k_cube if it is None).
     cube_standard_names = [

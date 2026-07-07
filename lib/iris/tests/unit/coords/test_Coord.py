@@ -445,6 +445,22 @@ class Test_cell:
             mocker.call((mocker.sentinel.lower, mocker.sentinel.upper)),
         ]
 
+    def test_masked_point(self):
+        # A masked point should be preserved as masked in the cell (#5158).
+        coord = AuxCoord(ma.masked_array([3.0], mask=[True]))
+        cell = coord.cell(0)
+        assert cell.point is ma.masked
+
+    def test_masked_bound(self):
+        # A masked bound should be preserved as masked in the cell, rather
+        # than revealing the value underneath the mask (#5158).
+        coord = AuxCoord(
+            [5.0], bounds=ma.masked_array([[3.0, 7.0]], mask=[[True, False]])
+        )
+        cell = coord.cell(0)
+        assert cell.bound[0] is ma.masked
+        assert cell.bound[1] == 7.0
+
 
 class Test_collapsed(CoordTestMixin):
     def test_serialize(self):
@@ -1461,6 +1477,37 @@ class Test___str__:
                 "    shape: (2,)  bounds(2, 2)",
                 "    dtype: int64",
                 "    standard_name: 'time'",
+            ]
+        )
+        result = coord.__str__()
+        assert expected == result
+
+    def test_empty_time_coord(self):
+        # A length-0 time coordinate (an as-yet-unfilled unlimited dimension)
+        # should print rather than raising (#6531).
+        coord = DimCoord([], standard_name="time", units="days since 1970-01-01")
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
+                "    points: []",
+                "    shape: (0,)",
+                "    dtype: float64",
+                "    standard_name: 'time'",
+            ]
+        )
+        result = coord.__str__()
+        assert expected == result
+
+    def test_empty_string_coord(self):
+        # A length-0 string coordinate also exercises the empty-array path.
+        coord = AuxCoord(np.array([], dtype="<U1"), long_name="label")
+        expected = "\n".join(
+            [
+                "AuxCoord :  label / (unknown)",
+                "    points: []",
+                "    shape: (0,)",
+                "    dtype: <U1",
+                "    long_name: 'label'",
             ]
         )
         result = coord.__str__()

@@ -1,0 +1,3 @@
+:user:`trexfeathers` fixed the benchmarking ``asv_delegated.py`` to work with
+Nox release ``2026.04.10`` (which adds more files to the environment parent
+directory, breaking previous assumptions).

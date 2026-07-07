@@ -82,7 +82,7 @@ if on_rtd:
 # documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(str((Path("sphinxext").absolute())))
+sys.path.append(str(Path("sphinxext").absolute()))
 
 # add some sample files from the developers guide..
 sys.path.append(str(Path("developers_guide").absolute()))
@@ -152,24 +152,27 @@ rst_epilog = f"""
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinx.ext.todo",
-    "sphinx.ext.duration",
-    "sphinx.ext.coverage",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.extlinks",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
-    "sphinx_copybutton",
-    "sphinx.ext.napoleon",
-    "sphinx_design",
-    "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "readingtime",
+    "readingtime_validator",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_changelog",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_gallery.gen_gallery",
     "sphinx_needs",
-    "user_manual_directives",
     "sphinx_reredirects",
+    "user_manual_directives",
 ]
 
 if skip_api == "1":
@@ -177,6 +180,47 @@ if skip_api == "1":
 else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
+
+# -- sphinx-llm ---------------------------------------------------------------
+# See https://github.com/NVIDIA/sphinx-llm
+
+if on_rtd:
+    autolog("[READTHEDOCS] [sphinx_llm.txt] Loading extension and configuring.")
+    extensions.append("sphinx_llm.txt")
+
+    llms_txt_enabled = True
+    llms_txt_build_parallel = True
+    llms_txt_suffix_mode = "auto"
+    llms_txt_full_build = True
+    llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
+
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+
+if on_rtd and rtd_version in ["latest", "stable"]:
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = f"https://scitools-iris.readthedocs.io/en/{rtd_version}/"
+    autolog(
+        "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
+    )
+
+    sitemap_show_lastmod = True
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
+else:
+    autolog(
+        (
+            "[sphinx_sitemap] Must be running on READTHEDOCS and version is "
+            "either 'latest' or 'stable', skipping sitemap creation."
+        )
+    )
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -196,7 +240,7 @@ napoleon_custom_sections = None
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_text = r">>> |\.\.\. |\$ |\> "
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
@@ -285,8 +329,8 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "#%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "#%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
         "Discussion #%s",
@@ -406,9 +450,15 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_style = "theme_override.css"
+html_css_files = [
+    "changelog.css",
+    "readingtime.css",
+]
 
 # list of sources to exclude from the build.
-exclude_patterns = []
+exclude_patterns = [
+    "**/highlights.rst",
+]
 
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
@@ -447,6 +497,8 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
+    # disable the computation reports
+    "write_computation_times": False,
 }
 
 # -----------------------------------------------------------------------------

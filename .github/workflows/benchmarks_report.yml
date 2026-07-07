@@ -2,17 +2,32 @@
 # Separated for security:
 #  https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 
+# Reference
+#    - https://github.com/actions/github-script
+#    - https://github.com/actions/upload-artifact
+#    - https://github.com/actions/checkout
+#    - https://github.com/actions/download-artifact
+#    - https://github.com/actions/setup-python
+
 name: benchmarks-report
 run-name: Report benchmark results
 
 on:
-  workflow_run:
+  # Security: it is impossible to fully avoid this exposure, so long as we want results
+  #  from pull request CI to be posted as a comment. `permissions`, and `bm_runner.py`
+  #  are as locked-down as possible, and maintainers must manually approve workflow
+  #  runs from external authors, to mitigate the risk. The remaining vulnerability
+  #  is spam comments.
+  workflow_run: # zizmor: ignore[dangerous-triggers]
     workflows: [benchmarks-run]
     types:
       - completed
 
 jobs:
   download:
+    permissions:
+      actions: read
+      contents: read
     runs-on: ubuntu-latest
     outputs:
       reports_exist: ${{ steps.unzip.outputs.reports_exist }}
@@ -20,7 +35,7 @@ jobs:
       - name: Download artifact
         id: download-artifact
         # https://docs.github.com/en/actions/using-workflows/events-that-trigger-workflows#using-data-from-the-triggering-workflow
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -54,28 +69,33 @@ jobs:
           echo "reports_exist=$reports_exist" >> "$GITHUB_OUTPUT"
 
       - name: Store artifact
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: benchmark_reports
           path: benchmark_reports
 
   post_reports:
+    permissions:
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
     needs: download
     if: needs.download.outputs.reports_exist == 1
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
+        with:
+          persist-credentials: false
 
       - name: Download artifact
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
 
       - name: Set up Python
         # benchmarks/bm_runner.py only needs builtins to run.
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
 
       - name: Post reports
         env:

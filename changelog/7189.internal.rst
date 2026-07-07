@@ -1,0 +1,1 @@
+:user:`king56180468-droid` removed redundant commented codes from ``test_CFReader``. (:issue:`6625`)
