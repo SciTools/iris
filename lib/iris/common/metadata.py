@@ -28,6 +28,7 @@ from xxhash import xxh64_hexdigest
 if TYPE_CHECKING:
     from iris.common.mixin import CFVariableMixin
     from iris.coords import CellMethod
+    from iris.util import Axis
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -1710,15 +1711,15 @@ class MeshCoordMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_filter(
-    instances,
-    item: str | None | CFVariableMixin | BaseMetadata = None,
+def metadata_filter[T: CFVariableMixin](
+    instances: T | list[T],
+    item: str | CFVariableMixin | BaseMetadata | None = None,
     standard_name: str | None = None,
     long_name: str | None = None,
     var_name: str | None = None,
     attributes: Mapping | None | Any = None,
     axis: str | None = None,
-):
+) -> list[T]:
     """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
     Criteria can be either specific properties or other objects with metadata
@@ -1772,8 +1773,7 @@ def metadata_filter(
     else:
         obj = item
 
-    # apply de morgan's law for one less logical operation
-    if not (isinstance(instances, str) or isinstance(instances, Iterable)):
+    if not isinstance(instances, Iterable):
         instances = [instances]
 
     result = instances
@@ -1812,7 +1812,7 @@ def metadata_filter(
     if axis is not None:
         axis = axis.upper()
 
-        def get_axis(instance):
+        def get_axis(instance: T) -> Axis | None:
             if hasattr(instance, "axis"):
                 axis = instance.axis.upper()
             else:

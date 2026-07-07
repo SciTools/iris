@@ -26,6 +26,7 @@ from pathlib import Path
 import re
 import string
 import typing
+from typing import TYPE_CHECKING
 import warnings
 
 import cf_units
@@ -50,15 +51,22 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    DimCoord,
+)
 import iris.exceptions
-import iris.fileformats.cf
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
-import iris.io
 import iris.util
 import iris.warnings
 
+if TYPE_CHECKING:
+    from iris.coords import _DimensionalMetadata
+    from iris.cube import Cube
+    from iris.mesh.components import MeshXY
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
@@ -1568,7 +1576,9 @@ class Saver:
         cf_name = self.cf_valid_var_name(cf_name)
         return cf_name
 
-    def _get_coord_variable_name(self, cube_or_mesh, coord):
+    def _get_coord_variable_name(
+        self, cube_or_mesh: Cube | MeshXY, coord: _DimensionalMetadata
+    ) -> str:
         """Return a CF-netCDF variable name for a given coordinate-like element.
 
         Parameters

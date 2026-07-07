@@ -47,11 +47,18 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.aux_factory import AuxCoordFactory
 from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
-from iris.common.metadata import CoordMetadata, metadata_filter
+from iris.common.metadata import BaseMetadata, CoordMetadata, metadata_filter
 from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    CellMethod,
+    DimCoord,
+    _DimensionalMetadata,
+)
 
 if TYPE_CHECKING:
     from typing import TYPE_CHECKING
@@ -1962,7 +1969,7 @@ class Cube(CFVariableMixin):
             factory.update(old_coord, new_coord)
 
     def coord_dims(
-        self, coord: str | DimCoord | AuxCoord | AuxCoordFactory
+        self, coord: str | _DimensionalMetadata | AuxCoordFactory
     ) -> tuple[int, ...]:
         """Return a tuple of the data dimensions relevant to the given coordinate.
 
@@ -2167,12 +2174,7 @@ class Cube(CFVariableMixin):
 
     def coords(
         self,
-        name_or_coord: str
-        | DimCoord
-        | AuxCoord
-        | AuxCoordFactory
-        | CoordMetadata
-        | None = None,
+        name_or_coord: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -2329,12 +2331,7 @@ class Cube(CFVariableMixin):
 
     def coord(
         self,
-        name_or_coord: str
-        | DimCoord
-        | AuxCoord
-        | AuxCoordFactory
-        | CoordMetadata
-        | None = None,
+        name_or_coord: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -3503,12 +3500,7 @@ class Cube(CFVariableMixin):
 
     def _intersect(
         self,
-        name_or_coord: str
-        | DimCoord
-        | AuxCoord
-        | AuxCoordFactory
-        | CoordMetadata
-        | None,
+        name_or_coord: str | CFVariableMixin | BaseMetadata | None,
         minimum: float | int,
         maximum: float | int,
         min_inclusive: bool = True,

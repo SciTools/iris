@@ -1636,14 +1636,14 @@ class MeshXY(Mesh):
 
     def coords(
         self,
-        item: str | None | _DimensionalMetadata | BaseMetadata = None,
+        item: str | _DimensionalMetadata | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
         attributes: Mapping | None = None,
         axis: str | None = None,
         location: str | None = None,
-    ):
+    ) -> list[AuxCoord | None]:
         """Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`.
 
         Return all :class:`~iris.coords.AuxCoord` coordinates from the :class:`MeshXY`
@@ -2334,7 +2334,7 @@ class _Mesh1DCoordinateManager:
         attributes: Mapping | None = None,
         axis: str | None = None,
         location: str | None = None,
-    ):
+    ) -> dict[str, AuxCoord | None]:
         # TBD: support coord_systems?
         members = self.mesh_filters(axis, location)
 
