@@ -3282,7 +3282,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         self_man: Optional[_Mesh1DCoordinateManager] = getattr(
             self, "_coord_manager_attr", None
         )
-        update = self_man is None or mesh_man.timestamp != self_man.timestamp
+        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._coord_manager_attr = mesh_man.indexed(
                 self._calculate_node_indices(),
@@ -3290,6 +3290,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
             )
+            self._coord_manager_attr.timestamp._dt = mesh_man.timestamp._dt
         return super()._coord_manager
 
     @_coord_manager.setter
@@ -3306,7 +3307,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         self_man: Optional[_MeshConnectivityManagerBase] = getattr(
             self, "_connectivity_manager_attr", None
         )
-        update = self_man is None or mesh_man.timestamp != self_man.timestamp
+        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._connectivity_manager_attr = mesh_man.indexed(
                 self._calculate_node_indices(),
@@ -3314,6 +3315,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
             )
+            self._connectivity_manager_attr.timestamp._dt = mesh_man.timestamp._dt
         return super()._connectivity_manager
 
     @_connectivity_manager.setter
