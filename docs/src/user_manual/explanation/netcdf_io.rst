@@ -137,7 +137,7 @@ Character and String datatypes
 ------------------------------
 
 In NetCDF
-~~~~~~~~~
+^^^^^^^^^
 In the NetCDF v4 implementation, there are three specific areas where the datatype and
 storage characteristics of character data are relevant:
 
@@ -168,7 +168,7 @@ correctly interpret an ``_Encoding`` attribute in most cases, despite this not b
 
 
 In CF
-~~~~~
+^^^^^
 The CF Conventions define a subset of "allowed" datatypes, and describe various data
 elements stored as variables, such as data variables, auxiliary coordinates, cell
 methods, etc.
@@ -192,8 +192,25 @@ Where strings are stored as 'char' type, the array must have a 'string dimension
 which is a normal file dimension.  Thus, these strings always have a *fixed byte width*.
 
 
+In the netCDF4 Python module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+* attributes with string content always appear as Python 'str' (i.e. unicode strings).
+  It is not possible to distinguish or control the 'char' and 'string' type in the file,
+  this is hidden from the user by the Python implementation.
+
+* variable data of type 'string' is presented (read and written) as numpy arrays of dtype
+  "U<xx>", where <xx> is a (maximum) string length.
+
+* variable data of type 'char' is presented (read and written) as numpy arrays of
+  dtype "S1" -- that is, an array of length-1 Python "bytes" objects.
+  The netCDF4 package can also automatically translate this to 'U<xx>' type string
+  arrays, if the variable has an `_Encoding` attribute, but Iris turns this feature
+  *off*, in order to implement its own wider-ranging support (see below).
+
+
 In Iris
-~~~~~~~
+^^^^^^^
 In Iris, the 'string' data type is not fully supported at present, though this is
 planned for future releases.  See the following section `Variable-length datatypes`_ for
 an interim solution enabling you to *load* variable-length string data.
@@ -241,19 +258,6 @@ to more bytes than the above-calculated string dimension, then Iris will raise a
 enforce a longer string dimension by converting the data to a longer "U<xx>" dtype :
 for example, ``cube.data = cube.core_data().astype("U<20>")``.
 
-
-In the netCDF4 Python module
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* attributes with string content always appear as Python 'str' (i.e. unicode strings).
-  It is not possible to distinguish or control the 'char' and 'string' type in the file,
-  this is hidden from the user by the Python implementation.
-* variable data of type 'string' is presented (read and written) as numpy arrays of dtype
-  "U<xx>", where <xx> is a (maximum) string length.
-* variable data of type 'char' is presented (read and written) as numpy arrays of
-  dtype "S1" -- that is, an array of length-1 Python "bytes" objects.
-  The netCDF4 package can also automatically translate this to 'U<xx>' type string
-  arrays, if the variable has an `_Encoding` attribute, but Iris turns this feature
-  *off*, in order to implement its own wider-ranging support (see below).
 
 
 Variable-length datatypes
