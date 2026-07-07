@@ -1086,7 +1086,10 @@ class TestOperations1D(TestMeshCommon):
     def test_to_MeshCoord_face(self):
         location = "face"
         axis = "x"
-        with pytest.raises(CoordinateNotFoundError):
+        with pytest.raises(
+            ValueError,
+            match="Expected location to be one of `node` or `edge`, got `face`",
+        ):
             self.mesh.to_MeshCoord(location, axis)
 
     def test_to_MeshCoords(self):
@@ -1101,7 +1104,10 @@ class TestOperations1D(TestMeshCommon):
 
     def test_to_MeshCoords_face(self):
         location = "face"
-        with pytest.raises(CoordinateNotFoundError):
+        with pytest.raises(
+            ValueError,
+            match="Expected location to be one of `node` or `edge`, got `face`",
+        ):
             self.mesh.to_MeshCoords(location)
 
 
