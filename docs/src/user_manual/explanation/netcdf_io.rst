@@ -133,6 +133,129 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
     (70, 37, 49)
 
 
+Character and String datatypes
+------------------------------
+
+In NetCDF
+~~~~~~~~~
+In the NetCDF v4 implementation, there are three specific areas where the datatype and
+storage characteristics of character data are relevant:
+
+* The **names** of file components (variables, dimensions, and attributes) are
+    natively unicode-capable strings of arbitrary (variable) length.
+
+* **Attributes** with string content likewise *appear* to be natively unicode.  However,
+    the actual datatype may vary, being either 'char' or 'string'.
+
+* The **content of variables** can be either 'char' or 'string'.
+
+    - 'string' type variables contain a variable-length unicode string at each array element.
+
+    - 'char' type variables contain one-byte characters, and generally have a fixed-length
+        'string dimension'.  If they contain *only* ascii character values, this is
+        uncomplicated, but they may also be used to contain non-ascii data (i.e.
+        including unicode characters).  There is no universally defined agreement on how
+        to indicate a variable containing non-ascii data, but many datasets have used a
+        suitable ``_Encoding`` attribute.
+
+The NetCDF documentation also mentions that an '_Encoding' attribute may be used to
+represent non-ascii strings in a 'char' type array.  However this is described as
+"reserved for future use", and its valid values and effects are not explicitly defined.
+
+However, it is also notable that the standard ``ncgen`` and ``ncdump`` tools *do*
+correctly interpret an ``_Encoding`` attribute in most cases, despite this not being an
+"official" solution.
+
+
+In CF
+~~~~~
+The CF Conventions define a subset of "allowed" datatypes, and describe various data
+elements stored as variables, such as data variables, auxiliary coordinates, cell
+methods, etc.
+
+CF currently supports the use of either netcdf 'string' or 'char' arrays for any
+variables.
+
+However, historically CF has had more limited support, and also 'unofficial'
+conventions for the use of 'char' arrays have been used which may be encountered in
+older datasets.
+
+Since v1.8, CF has allowed the use of 'string' data in all variables, but prior to that
+it was required to use 'char' type only, without providing any official means of storing
+non-ascii data.
+
+Since v1.12, CF also mandates a *default* assumption of utf-8 encoding to store non-ascii
+data in 'char form, but it also notes that some data has used an "_Encoding" attribute
+in the past -- though this has never been an official CF usage.
+
+Where strings are stored as 'char' type, the array must have a 'string dimension',
+which is a normal file dimension.  Thus, these strings always have a *fixed byte width*.
+
+
+In Iris
+~~~~~~~
+In Iris, the 'string' data type is not fully supported at present, though this is
+planned for future releases.  See the following section `Variable-length datatypes`_ for
+an interim solution enabling you to *load* variable-length string data.
+
+Iris stores string data in arrays of dtype "U<xx>", where <xx> is a maximum character
+width.  However, this data is currently **only** read and written as 'char' type arrays
+in netCDF files.
+
+Iris provides a set of valid encodings for non-ascii data :
+"ascii" / "utf8" / "utf16" and "utf32".  These (or valid aliases) will appear as the
+"_Encoding" attribute of a file variable, and likewise as a regular attribute of the
+corresponding Iris component object (e.g. cube or coordinate).
+
+**On loading**, if there is a valid ``_Encoding`` attribute this is used to decode the data,
+otherwise a default encoding of "utf8" is applied:  This works transparently if only
+ascii bytes are present, and also allows the ``_Encoding`` attribute to be omitted as
+long as utf8 was used.
+
+**On saving**, any string data with only ascii characters does not require an
+``_Encoding`` attribute.  However if there are non-ascii bytes, and no ``_Encoding``
+attribute, then an error will be raised.
+
+So effectively, the **"default" encodings are 'utf8' for load and 'ascii' for save**.
+
+For each valid encoding there is a definite relation between the string dimension length
+in the file (actually, the number of *bytes*), and the maximum character length in the
+array dtype, i.e. the "<xx>" in the "U<xx>" dtype.
+
+The lengths of string dimensions created on write are calculated as follows:
+
+* ascii : n-bytes = n-characters
+* utf8 : n-bytes = n-characters
+* utf16 : n-bytes = 2 * (n-characters + 1)
+* utf32 : n-bytes = 4 * (n-characters + 1)
+
+For reading, the inverse relations are applied to determine the '"U<xx>"' dtype in which
+the data is presented.  This will round-trip correctly, i.e. is unchanged if written and
+then read back.
+
+For 'ascii' and 'utf32' this relationship is simple + fixed, but for 'utf8' and
+'utf16', the number of encoded bytes depends on the actual characters present
+**and can exceed the numbers given above**.  If any string in the *actual* data encodes
+to more bytes than the above-calculated string dimension, then Iris will raise an
+:class:`iris.exceptions.TranslationError`.  In this case, the user must manually
+enforce a longer string dimension by converting the data to a longer "U<xx>" dtype :
+for example, ``cube.data = cube.core_data().astype("U<20>")``.
+
+
+In the netCDF4 Python module
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* attributes with string content always appear as Python 'str' (i.e. unicode strings).
+  It is not possible to distinguish or control the 'char' and 'string' type in the file,
+  this is hidden from the user by the Python implementation.
+* variable data of type 'string' is presented (read and written) as numpy arrays of dtype
+  "U<xx>", where <xx> is a (maximum) string length.
+* variable data of type 'char' is presented (read and written) as numpy arrays of
+  dtype "S1" -- that is, an array of length-1 Python "bytes" objects.
+  The netCDF4 package can also automatically translate this to 'U<xx>' type string
+  arrays, if the variable has an `_Encoding` attribute, but Iris turns this feature
+  *off*, in order to implement its own wider-ranging support (see below).
+
+
 Variable-length datatypes
 -------------------------
 
