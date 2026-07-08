@@ -1247,8 +1247,8 @@ class ProtoCube:
             stack = np.empty(self._stack_shape, "object")
             all_have_real_data = True
             some_are_dataless = False
-            part_shape: tuple | None = None
-            part_dtype: np.dtype | None = None
+            part_shape: tuple = None
+            part_dtype: np.dtype = None
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known
                 # good source-cube

@@ -36,6 +36,7 @@ from iris.common import (
     metadata_manager_factory,
 )
 import iris.exceptions
+import iris.time
 import iris.util
 from iris.util import CML_SETTINGS
 import iris.warnings
