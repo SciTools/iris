@@ -3500,7 +3500,12 @@ class Cube(CFVariableMixin):
 
     def _intersect(
         self,
-        name_or_coord: str | CFVariableMixin | BaseMetadata | None,
+        name_or_coord: str
+        | DimCoord
+        | AuxCoord
+        | AuxCoordFactory
+        | CoordMetadata
+        | None,
         minimum: float | int,
         maximum: float | int,
         min_inclusive: bool = True,
