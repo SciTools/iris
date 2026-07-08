@@ -93,39 +93,40 @@ class Test1d:
 
 class TestApiExtras:
     # Check operation with alternative calling setups.
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.co_x = DimCoord([1.0, 2.0, 3.0], long_name="x")
+        self.co_y = DimCoord([10.0, 20.0], long_name="y")
+        self.cube = Cube(np.zeros((2, 3)))
+
     def test_no_y_dim(self):
         # Operate in X only, returned slice should be [:, ix].
-        co_x = DimCoord([1.0, 2.0, 3.0], long_name="x")
-        co_y = DimCoord([10.0, 20.0], long_name="y")
-        cube = Cube(np.zeros((2, 3)))
-        cube.add_dim_coord(co_y, 0)
-        cube.add_dim_coord(co_x, 1)
+
+        self.cube.add_dim_coord(self.co_y, 0)
+        self.cube.add_dim_coord(self.co_x, 1)
         sample_point = [("x", 2.8)]
-        result = nn_ndinds(cube, sample_point)
+        result = nn_ndinds(self.cube, sample_point)
         assert result == [(slice(None), 2)]
 
     def test_no_x_dim(self):
         # Operate in Y only, returned slice should be [iy, :].
-        co_x = DimCoord([1.0, 2.0, 3.0], long_name="x")
-        co_y = DimCoord([10.0, 20.0], long_name="y")
-        cube = Cube(np.zeros((2, 3)))
-        cube.add_dim_coord(co_y, 0)
-        cube.add_dim_coord(co_x, 1)
+
+        self.cube.add_dim_coord(self.co_y, 0)
+        self.cube.add_dim_coord(self.co_x, 1)
         sample_point = [("y", 18.5)]
-        result = nn_ndinds(cube, sample_point)
+        result = nn_ndinds(self.cube, sample_point)
         assert result == [(1, slice(None))]
 
     def test_sample_dictionary(self):
         # Pass sample_point arg as a dictionary: this usage mode is deprecated.
-        co_x = AuxCoord([1.0, 2.0, 3.0], long_name="x")
-        co_y = AuxCoord([10.0, 20.0], long_name="y")
-        cube = Cube(np.zeros((2, 3)))
-        cube.add_aux_coord(co_y, 0)
-        cube.add_aux_coord(co_x, 1)
+
+        self.cube.add_aux_coord(self.co_y, 0)
+        self.cube.add_aux_coord(self.co_x, 1)
         sample_point = {"x": 2.8, "y": 18.5}
         exp_emsg = r"must be a list of \(coordinate, value\) pairs"
         with pytest.raises(TypeError, match=exp_emsg):
-            nn_ndinds(cube, sample_point)
+            nn_ndinds(self.cube, sample_point)
 
 
 class TestLatlon:

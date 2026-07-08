@@ -1482,6 +1482,37 @@ class Test___str__:
         result = coord.__str__()
         assert expected == result
 
+    def test_empty_time_coord(self):
+        # A length-0 time coordinate (an as-yet-unfilled unlimited dimension)
+        # should print rather than raising (#6531).
+        coord = DimCoord([], standard_name="time", units="days since 1970-01-01")
+        expected = "\n".join(
+            [
+                "DimCoord :  time / (days since 1970-01-01, standard calendar)",
+                "    points: []",
+                "    shape: (0,)",
+                "    dtype: float64",
+                "    standard_name: 'time'",
+            ]
+        )
+        result = coord.__str__()
+        assert expected == result
+
+    def test_empty_string_coord(self):
+        # A length-0 string coordinate also exercises the empty-array path.
+        coord = AuxCoord(np.array([], dtype="<U1"), long_name="label")
+        expected = "\n".join(
+            [
+                "AuxCoord :  label / (unknown)",
+                "    points: []",
+                "    shape: (0,)",
+                "    dtype: <U1",
+                "    long_name: 'label'",
+            ]
+        )
+        result = coord.__str__()
+        assert expected == result
+
     def test_non_time_unit(self):
         coord = DimCoord([1.0])
         expected = "\n".join(

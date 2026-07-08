@@ -1,6 +1,3 @@
-
-.. include:: ../common_links.inc
-
 .. _iris_whatsnew:
 
 What's New in Iris
