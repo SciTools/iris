@@ -2287,9 +2287,9 @@ class _Mesh1DCoordinateManager:
     def mesh_filters(self, axis: str | None, location: str | None) -> list[AuxCoord]:
         def get_node(axis: str | None) -> list[AuxCoord]:
             match axis:
-                case "x":
+                case "x" | "X":
                     return self._populated_coords((self.node_x,))
-                case "y":
+                case "y" | "Y":
                     return self._populated_coords((self.node_y,))
                 case None:
                     return self._populated_coords(self.node_coords)
@@ -2298,9 +2298,9 @@ class _Mesh1DCoordinateManager:
 
         def get_edge(axis: str | None) -> list[AuxCoord]:
             match axis:
-                case "x":
+                case "x" | "X":
                     return self._populated_coords((self.edge_x,))
-                case "y":
+                case "y" | "Y":
                     return self._populated_coords((self.edge_y,))
                 case None:
                     return self._populated_coords(self.edge_coords)
@@ -2461,9 +2461,9 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
     def mesh_filters(self, axis: str | None, location: str | None) -> list[AuxCoord]:
         def get_face(axis: str | None) -> list[AuxCoord]:
             match axis:
-                case "x":
+                case "x" | "X":
                     return self._populated_coords((self.face_x,))
-                case "y":
+                case "y" | "Y":
                     return self._populated_coords((self.face_y,))
                 case None:
                     return self._populated_coords(self.face_coords)
