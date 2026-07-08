@@ -56,6 +56,7 @@ from iris.coords import (
     AuxCoord,
     CellMeasure,
     DimCoord,
+    _DimensionalMetadata,
 )
 import iris.exceptions
 from iris.fileformats.netcdf import _dask_locks, _thread_safe_nc
@@ -64,7 +65,6 @@ import iris.util
 import iris.warnings
 
 if TYPE_CHECKING:
-    from iris.coords import _DimensionalMetadata
     from iris.cube import Cube
     from iris.mesh.components import MeshXY
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
@@ -1577,8 +1577,11 @@ class Saver:
         return cf_name
 
     def _get_coord_variable_name(
-        self, cube_or_mesh: Cube | MeshXY, coord: _DimensionalMetadata
+        self, cube_or_mesh: "Cube|MeshXY", coord: _DimensionalMetadata
     ) -> str:
+        # keep it as _DimensionalMetadata
+        # Don't want it as CFVariableMixin - implies a cube can be passed in
+        # Could be Coord AncillaryVariable Cellmeasure
         """Return a CF-netCDF variable name for a given coordinate-like element.
 
         Parameters
