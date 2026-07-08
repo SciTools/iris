@@ -66,7 +66,7 @@ Creating a Fragment
 
 3. **Multiple fragments per PR** are allowed if a single pull request makes
    changes across different categories. For example, a PR might have both
-   ``7200.feature.rst`` and ``7200.doc.rst``. If multiple fragment within the same
+   ``7200.feature.rst`` and ``7200.doc.rst``. If multiple fragments within the same
    category are needed, you can append `.0.rst`, `.1.rst`, etc to the end of the file.
 
 4. **Multiple PRs per fragment** are automatically collated by ``towncrier``.
