@@ -1636,7 +1636,7 @@ class MeshXY(Mesh):
 
     def coords(
         self,
-        item: str | _DimensionalMetadata | BaseMetadata | None = None,
+        item: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
@@ -1658,7 +1658,7 @@ class MeshXY(Mesh):
 
         Parameters
         ----------
-        item : str or object, optional
+        item : str or CFVariableMixin or BaseMetadata, optional
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,

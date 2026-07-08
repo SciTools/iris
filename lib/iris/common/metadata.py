@@ -1727,9 +1727,10 @@ def metadata_filter[T: CFVariableMixin](
 
     Parameters
     ----------
-    instances :
-        One or more objects to be filtered.
-    item : optional
+    instances : CFVariableMixin or list of CFVariableMixin:
+        One or more objects to be filtered. The objects should be a subclass of
+        :class:`~iris.common.mixin.CFVariableMixin`.
+    item : str or CFVariableMixin or BaseMetadata, optional
         Either,
 
         * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -1739,26 +1740,26 @@ def metadata_filter[T: CFVariableMixin](
         * a coordinate or metadata instance equal to that of
           the desired objects e.g., :class:`~iris.coords.DimCoord`
           or :class:`CoordMetadata`.
-    standard_name : optional
+    standard_name : str, optional
         The CF standard name of the desired object. If ``None``, does not
         check for ``standard_name``.
-    long_name : optional
+    long_name : str, optional
         An unconstrained description of the object. If ``None``, does not
         check for ``long_name``.
-    var_name : optional
+    var_name : str, optional
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
     attributes : Mapping, optional, Any
         A mapping of attributes desired on the object. `dict` is a type of Mapping.
         If ``None``, does not check for ``attributes``. Will error if it is anything else.
-    axis : optional
+    axis : str, optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
         ``Y``, ``Z`` and ``T`` (case-insensitive).
 
     Returns
     -------
-    list of the objects
+    list of CFVariableMixin
         A list of the objects supplied in the ``instances`` argument, limited
         to only those that matched the given criteria.
 
