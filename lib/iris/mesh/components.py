@@ -1559,14 +1559,14 @@ class MeshXY(Mesh):
 
     def coord(
         self,
-        item=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        attributes=None,
-        axis=None,
-        location=None,
-    ):
+        item: str | CFVariableMixin | BaseMetadata | None = None,
+        standard_name: str | None = None,
+        long_name: str | None = None,
+        var_name: str | None = None,
+        attributes: Mapping | None = None,
+        axis: str | None = None,
+        location: str | None = None,
+    ) -> AuxCoord | None:
         """Return a single :class:`~iris.coords.AuxCoord` coordinate.
 
         Return a single :class:`~iris.coords.AuxCoord` coordinate from the
@@ -1610,9 +1610,8 @@ class MeshXY(Mesh):
             A dictionary of attributes desired on the coordinates. If ``None``,
             does not check for ``attributes``.
         axis : str, optional
-            The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
-            If ``None``, does not check for ``axis``. Accepts the values ``X``,
-            ``Y``, ``Z`` and ``T`` (case-insensitive).
+            The mesh axis that the desired coordinate is associated with. See :attr:`AXES`
+            If ``None``, does not check for ``axis``.
         location : str, optional
             The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
@@ -1682,9 +1681,8 @@ class MeshXY(Mesh):
             A mapping of attributes desired on the coordinates. `dict` is a type of Mapping.
             If ``None``, does not check for ``attributes``.
         axis : str, optional
-            The desired coordinate axis, see :func:`~iris.util.guess_coord_axis`.
-            If ``None``, does not check for ``axis``. Accepts the values ``X``,
-            ``Y``, ``Z`` and ``T`` (case-insensitive).
+            The mesh axis that the desired coordinate is associated with. See :attr:`AXES`
+            If ``None``, does not check for ``axis``.
         location : str, optional
             The desired location. Accepts the values ``node``, ``edge`` or ``face``.
 
@@ -2327,7 +2325,7 @@ class _Mesh1DCoordinateManager:
 
     def filters(
         self,
-        item: str | None | _DimensionalMetadata | BaseMetadata = None,
+        item: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
