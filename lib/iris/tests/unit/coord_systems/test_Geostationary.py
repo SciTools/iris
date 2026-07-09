@@ -11,7 +11,7 @@ from iris.coord_systems import GeogCS, Geostationary
 from iris.tests import _shared_utils
 
 
-class Test:
+class TestGeostationary:
     @pytest.fixture(autouse=True)
     def _setup(self):
         # Set everything to non-default values.

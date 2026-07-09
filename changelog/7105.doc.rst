@@ -1,0 +1,2 @@
+:user:`tkknight` updated the documentation to generate summaries
+that LLMs can understand, ``llms.txt`` and ``llms-full.txt``.

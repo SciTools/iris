@@ -1,0 +1,3 @@
+:user:`trexfeathers` simplified the pull request checklist and moved it directly
+into the GitHub pull request template (read more here: :ref:`pr_check`). Also
+updated several associated pages of more detailed guidance.

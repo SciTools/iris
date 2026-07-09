@@ -18,7 +18,7 @@ from iris.fileformats.nimrod_load_rules import (
 from iris.tests._shared_utils import assert_no_warnings_regexp
 
 
-class Test:
+class TestVerticalCoord:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
         self.field = mocker.Mock(

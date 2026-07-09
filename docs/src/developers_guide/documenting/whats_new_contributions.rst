@@ -6,152 +6,176 @@
 Contributing a "What's New" Entry
 =================================
 
-Iris uses a file named ``latest.rst`` to keep a draft of upcoming development
-changes that will form the next stable release.  Contributions to the
-:ref:`iris_whatsnew` document are written by the developer most familiar
-with the change made.  The contribution should be included as part of
-the Iris Pull Request that introduces the change.
+.. readingtime::
 
-The ``latest.rst`` and the past release notes are kept in the
-``docs/src/whatsnew/`` directory. If you are writing the first contribution after
-an Iris release: **create the new** ``latest.rst`` by copying the content from
-``latest.rst.template`` in the same directory.
+Please include a "What's New" changelog fragment for **any** change that you
+make to Iris. **Even if it is not relevant to users** - the
+`Fragment Types`_ include ``internal`` for this - the page is read by
+contributors as well as users, and it reveals the work needed to keep a
+project going.
 
-Since the `Contribution categories`_ include Internal changes, **all** Iris
-Pull Requests should be accompanied by a "What's New" contribution.
+Iris uses `towncrier <https://towncrier.readthedocs.io/>`_ to manage changelog
+entries. Each pull request adds a small file (a "fragment") to the root
+``changelog/`` directory. At release time, ``towncrier`` collects the fragments
+and renders the full What's New page.
+
+See this docs section for all What's New pages: :ref:`iris_whatsnew`.
+
+How it Works
+============
+
+Instead of editing a shared file, each contributor creates a small
+reStructuredText file in the ``changelog/`` directory at the root of the
+repository. This avoids the merge conflicts that were common with the
+previous approach.
+
+Creating a Fragment
+===================
+
+1. **Name your file** using the pattern::
+
+       <PR-number>.<type>.rst
+
+   For example, if your pull request number is ``7200`` and you are adding a
+   feature, create::
+
+       changelog/7200.feature.rst
+
+   .. hint::
+
+       If you have not yet created the pull request, you can guess what the
+       next PR number may be using::
+
+         > curl -s "https://api.github.com/repos/SciTools/iris/issues?sort=created&direction=desc&per_page=1" | jq -r '.[0].number + 1'
 
 
-Git Conflicts
-=============
+2. **Write a short description** of your change in the file. The content is
+   reStructuredText. For example::
 
-If changes to ``latest.rst`` are being suggested in several simultaneous
-Iris Pull Requests, Git will likely encounter merge conflicts. If this
-situation is thought likely (large PR, high repo activity etc.):
+       :user:`tkknight` added a new option to :func:`iris.plot.pcolormesh`
+       for controlling the colorbar orientation. (:issue:`9999`)
 
-* PR author: Do not include a "What's New" entry. Mention in the PR text that a
-  "What's New" entry is pending
+   Notes:
 
-* PR reviewer: Review the PR as normal. Once the PR is acceptable, ask that
-  a **new pull request** be created specifically for the "What's New" entry,
-  which references the main pull request and titled (e.g. for PR#9999):
+   * Use ``:user:`github-name``` to credit contributors.
+   * Use ``:issue:`NNNN``` to reference issues.
+   * The pull request reference is added automatically by ``towncrier`` based on
+     the fragment filename - you do **not** need to include ``:pull:`` in your
+     content unless you are referencing another pull request.
+   * Where possible, do not exceed **column 80**.
 
-   What's New for #9999
+3. **Multiple fragments per PR** are allowed if a single pull request makes
+   changes across different categories. For example, a PR might have both
+   ``7200.feature.rst`` and ``7200.doc.rst``. If multiple fragments within the same
+   category are needed, you can append `.0.rst`, `.1.rst`, etc to the end of the file.
 
-* PR author: create the "What's New" pull request
+4. **Multiple PRs per fragment** are automatically collated by ``towncrier``.
+   Create separate fragment files per PR with **identical** contents.
 
-* PR reviewer: once the "What's New" PR is created, **merge the main PR**.
-  (this will fix any `Iris GitHub Actions`_ linkcheck errors where the links in the
-  "What's New" PR reference new features introduced in the main PR)
+Fragment Types
+==============
 
-* PR reviewer: review the "What's New" PR, merge once acceptable
+The following fragment types are available, matching the rendered section
+headings in the What's New page:
 
-These measures should mean the suggested ``latest.rst`` changes are outstanding
-for the minimum time, minimising conflicts and minimising the need to rebase or
-merge from trunk.
+``announcement``
+    📢 General news and announcements to the Iris community.
+
+``feature``
+    ✨ Features that are new or changed to add functionality.
+
+``bugfix``
+    🐛 A bug fix.
+
+``breaking``
+    💣 A change that causes an incompatibility with prior versions of Iris.
+
+``performance``
+    🚀 A performance enhancement.
+
+``deprecation``
+    🔥 Deprecation of functionality.
+
+``dependency``
+    🔗 Additions, removals and version changes in Iris' package dependencies.
+
+``doc``
+    📚 Changes to documentation.
+
+``internal``
+    💼 Changes to any internal or development related topics, such as testing,
+    environment dependencies etc.
+
+Highlights
+==========
+
+The release highlights associated with a ``towncrier`` changelog are defined
+in the ``docs/src/whatsnew/highlights.rst`` file.
+
+Manually update the ``hightlights.rst`` with any notable release information
+that you want to share with the community.
+
+Previewing the Changelog
+========================
+
+You can manually preview how the changelog will render by running::
+
+    > towncrier build --draft
+
+This will print the rendered reStructuredText to **stdout** without modifying any
+files or removing fragment files.
+
+.. note::
+
+    The reStructuredText syntax will be checked as part of building the
+    documentation. Any warnings should be corrected. The
+    `Iris GitHub Actions`_ will automatically build the documentation when
+    creating a pull request, however you can also manually
+    :ref:`build <contributing.documentation.building>` the documentation.
+
+.. tip::
+
+    ``towncrier`` and the
+    `sphinx-changlog <https://sphinx-changelog.readthedocs.io/en/latest/#>`__
+    directive will automatically render the latest development changelog
+    whenever the documentation is built.
 
 
-Writing a Contribution
+Building the Changelog
 ======================
 
-A contribution is the short description of a change introduced to Iris
-which improved it in some way. As such, a single Iris Pull Request may
-contain multiple changes that are worth highlighting as contributions to the
-what's new document.
+To build the release changelog
 
-The appropriate contribution for a pull request might in fact be an addition or
-change to an existing "What's New" entry.
+#. Change directory to ``docs/src/whatsnew/``.
 
-Each contribution will ideally be written as a single concise entry using a
-reStructuredText auto-enumerated list ``#.`` directive. Where possible do not
-exceed **column 80** and ensure that any subsequent lines of the same entry are
-aligned with the first. The content should target an Iris user as the audience.
-The required content, in order, is as follows:
+#. Ensure that the ``hightlights.rst`` is populated.
 
-* Use your discretion to decide on the names of all those that you want to
-  acknowledge as part of your contribution. Also consider the efforts of the
-  reviewer. Please use GitHub user names that link to their GitHub profile
-  e.g.,
+#. Create the changelog release directory e.g., ``mkdir <major.minor>``.
 
-  ```@tkknight`_ Lorem ipsum dolor sit amet ...``
+#. Relocate the ``hightlights.rst`` i.e., ``git mv highlights.rst <major.minor>``.
 
-  Also add a full reference in the following section at the end of the ``latest.rst``::
+#. Build the changelog i.e., ``towncrier build --version <major.minor>``. Note
+   that this will create a rendered ``<major.minor>/<major.minor>.rst`` changelog
+   and automatically stage this file with ``git``. The changelog news fragment
+   files will also be automatically removed.
 
-    .. comment
-       Whatsnew author names (@github name) in alphabetical order. Note that,
-       core dev names are automatically included by the common_links.inc:
+#. Remove the latest development changelog i.e., ``git rm latest.rst``.
 
-    .. _@tkknight: https://github.com/tkknight
+#. Update the "What's New" ``index.rst`` replacing all references to ``latest.rst``
+   with ``<major.minor>/<major.minor>.rst``.
 
-  .. hint::
+.. tip::
 
-    Alternatively adopt the ``:user:`` `extlinks`_ convenience instead.
+    Using the ``--keep`` command line argument when building the changelog allows
+    you to review the rendered release changelog and keep all the changelog news
+    fragment files, allowing you to backtrack and make changes, if necessary.
 
-    For example to reference the ``github`` user ``tkknight`` simply use
-    :literal:`:user:\`tkknight\``.
+Configuration
+=============
 
-    This will be rendered as :user:`tkknight`.
+``towncrier`` is configured within the ``[tool.towncrier]`` table of the root
+``pyproject.toml``.
 
-    In addition, there is now no need to add a full reference to the user within
-    the documentation.
-
-* A succinct summary of the new/changed behaviour.
-
-* Context to the change. Possible examples include: what this fixes, why
-  something was added, issue references (e.g. ``:issue:`9999```), more specific
-  detail on the change itself.
-
-* Pull request references, bracketed, following the final period e.g.,
-  ``(:pull:`1111`, :pull:`9999`)``
-
-* A trailing blank line (standard reStructuredText list format).
-
-For example::
-
-  #. `@tkknight <https://github.com/tkknight>`_ and
-     `@trexfeathers <https://github.com/trexfeathers>`_ (reviewer) changed
-     argument ``x`` to be optional in :class:`~iris.module.class` and
-     :meth:`iris.module.method`. This allows greater flexibility as requested in
-     :issue:`9999`. (:pull:`1111`, :pull:`9999`)
-
-
-The above example also demonstrates some of the possible syntax for including
-links to code. For more inspiration on possible content and references, please
-examine past what's :ref:`iris_whatsnew` entries.
-
-.. note:: The reStructuredText syntax will be checked as part of building
-          the documentation.  Any warnings should be corrected. The
-          `Iris GitHub Actions`_ will automatically build the documentation when
-          creating a pull request, however you can also manually
-          :ref:`build <contributing.documentation.building>` the documentation.
-
-
-Contribution Categories
-=======================
-
-The structure of the what's new release note should be easy to read by
-users.  To achieve this several categories may be used.
-
-**📢 Announcements**
-  General news and announcements to the Iris community.
-
-**✨ Features**
-  Features that are new or changed to add functionality.
-
-**🐛 Bug Fixes**
-  A bug fix.
-
-**💣 Incompatible Changes**
-  A change that causes an incompatibility with prior versions of Iris.
-
-**🔥 Deprecations**
-  Deprecations of functionality.
-
-**🔗 Dependencies**
-  Additions, removals and version changes in Iris' package dependencies.
-
-**📚 Documentation**
-  Changes to documentation.
-
-**💼 Internal**
-  Changes to any internal or development related topics, such as testing,
-  environment dependencies etc.
+The ``changelog/template.rst`` file contains the ``jinja2`` template used by
+``towncrier`` to render the changelog news fragments, sections, title and
+include the associated ``hightlights.rst``.

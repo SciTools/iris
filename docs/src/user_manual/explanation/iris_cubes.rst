@@ -9,6 +9,8 @@
 Iris Data Structures
 ====================
 
+.. readingtime::
+
 The top level object in Iris is called a cube. A cube contains data and
 metadata about a phenomenon.
 
