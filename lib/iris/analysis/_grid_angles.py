@@ -489,8 +489,6 @@ def _generate_180_mats_from_uvecs(uvecs):
     # |   2xz      2yz      2z^2   |
     # to achieve the desired result, we take one from the diagonal.
     np.einsum("jji->ji", mats)[:] -= 1
-    # Normalise, just to remove accumulated errors
-    mats /= np.sqrt(np.sum(mats * mats, axis=0))
     return mats
 
 
