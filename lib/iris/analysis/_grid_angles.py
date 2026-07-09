@@ -3,10 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Implement vector rotation by angles.
+"""Coordinate vector calculations on the unit sphere.
 
 Code to implement vector rotation by angles, and inferring gridcell angles
 from coordinate points and bounds.
+
+Also "guess_2D_bounds", which uses 3D vectors to interpolate and extrapolate the points
+of X and Y coordinates.
 
 """
 
@@ -476,6 +479,8 @@ def _generate_180_mats_from_uvecs(uvecs):
     # | 2x^2 - 1   2xy      2xz    |
     # |   2xy    2y^2 - 1   2yz    |
     # |   2xz      2yz    2z^2 - 1 |
+    # See: https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+    #   with theta=pi, so cos(theta)=-1, sin(theta)=0, reduces to R = -I + 2 * (u * u^T)
     mats = np.einsum("ji,ki->jki", uvecs, uvecs) * 2
 
     # At this point the matrix mats[:,:,i] will be:
@@ -496,45 +501,46 @@ def _2D_guess_bounds_first_pass(array):
     # to internal bounds in the final result of `guess_2D_bounds`.
     # Note: if `extrapolate` is False, this array will contain all the bounds in the
     # final result of `guess_2D_bounds`.
-    result_array = np.zeros((array.shape[0], array.shape[1] + 1, array.shape[2] + 1))
-    pads = ((0, 1), (1, 0))
-    for pad_i in pads:
-        for pad_j in pads:
-            result_array += np.pad(array, ((0, 0), pad_i, pad_j))
+    nz, ny, nx = array.shape
+    result_array = np.zeros((nz, ny + 1, nx + 1))
+    result_array[:, 1:, 1:] += array
+    result_array[:, 1:, :-1] += array
+    result_array[:, :-1, 1:] += array
+    result_array[:, :-1, :-1] += array
 
     # Normalise
-    result_array /= np.linalg.norm(result_array, ord=2, axis=0)[np.newaxis, ...]
+    result_array /= np.sqrt(np.sum(result_array**2, axis=0))
     return result_array
 
 
 def _2D_gb_buffer_outer(array_shape):
-    # Return appropriate numpy slice for outer halo.
-    # This slice preserves the first dimension, which captures the 3D vector points and
+    """Return numpy indexes to select the outer halo."""
+    # Each point in the index list corresponds to a corner or edge bound.
+    # The indexing preserves the first dimension, which captures the 3D vector points and
     # lists a series of indices in the next 2 dimensions.
-    # Each index in this slice corresponds to a corner or edge bound.
 
     # This halo starts at the index [:, 0, 0], the next set of indices increase in the
     # second dimension until the index [:, -1, 0], then the last dimension increases
     # until it reaches the index [:, -1, -1], the remaining indices follow the edge of
     # the array anit-clockwise until it reaches the last index at [:, 0, 1].
     _, x, y = array_shape
-    x_i = list(range(x)) + ([x - 1] * (y - 2)) + list(range(x))[::-1] + ([0] * (y - 2))
-    y_i = (
-        ([0] * (x - 1)) + list(range(y)) + ([y - 1] * (x - 2)) + list(range(1, y))[::-1]
-    )
+    xrange = list(range(x))
+    x_i = xrange + ([x - 1] * (y - 2)) + xrange[::-1] + ([0] * (y - 2))
+    yrange = list(range(y))
+    y_i = ([0] * (x - 1)) + yrange + ([y - 1] * (x - 2)) + yrange[:0:-1]
     return np.s_[:, x_i, y_i]
 
 
 def _2D_gb_buffer_inner(array_shape):
-    # Return appropriate numpy slice for inner halo.
-    # This slice preserves the first dimension, which captures the 3D vector points and
-    # lists a series of indices in the next 2 dimensions.
-    # Each index in this slice corresponds to an internal bound neighbouring a corner or
-    # edge bound.
+    """Return numpy indexes for the nearest interior points of each halo point."""
+    # Each point in the index list corresponds to an internal bound neighbouring a
+    # corner or edge bound.
     # For every index in the outer halo, this gives the nearest index not in the outer halo.
-    # Note: the internal bounds which are nearest to the corner bounds ar each the nearest
+    # Note: the internal bounds which are nearest to the corner bounds are each the nearest
     # bound for at least two other edge or corner bounds. Therefore, these indices will
     # occur at least 3 times in the returned slice.
+    # The indexing preserves the first dimension, which captures the 3D vector points and
+    # lists a series of indices in the next 2 dimensions.
 
     # This halo starts at the index [:, 1, 1], the next index is also [:, 1, 1]. The
     # next set of indices increase in the second dimension until the index [:, -2, 1],
@@ -544,16 +550,10 @@ def _2D_gb_buffer_inner(array_shape):
     # the index [:, -2, -2], repeating twice again, the remaining indices follow this
     # pattern until it reaches the last index at [:, 1, 1].
     _, x, y = array_shape
-    x_i = (
-        [1]
-        + list(range(1, x - 1))
-        + ([x - 2] * y)
-        + list(range(1, x - 1))[::-1]
-        + ([1] * (y - 1))
-    )
-    y_i = (
-        ([1] * x) + list(range(1, y - 1)) + ([y - 2] * x) + list(range(1, y - 1))[::-1]
-    )
+    xrange = list(range(1, x - 1))
+    yrange = list(range(1, y - 1))
+    x_i = [1] + xrange + ([x - 2] * y) + xrange[::-1] + ([1] * (y - 1))
+    y_i = ([1] * x) + yrange + ([y - 2] * x) + yrange[::-1]
     return np.s_[:, x_i, y_i]
 
 
@@ -621,7 +621,7 @@ def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
       projected onto that unit sphere and transformed back to 2D lat-lon space. Note that in
       the edge case where the 3D average is precisely the origin, it will not be possible to
       project onto the unit sphere and an error will be raised.
-    - The calculation for edge bounds depends on if the `extrapolate` keyword is True or
+    - The calculation for edge bounds depends on whether the `extrapolate` keyword is True or
       False. When `extrapolate` is False, the edge bound is calculated as the midpoint of
       the 2 neighbouring bounds. This calculation is done, as above, by converting into 3D
       space, averaging, and then converting back to lat-lon space. When `extrapolate` is True,
@@ -646,9 +646,21 @@ def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
     y : class:`~iris.coords.AuxCoord`
         A "latitude" or "grid_latitude" coordinate. Coordinate must be 2D.
     extrapolate : bool, default=True
-        If True, extend the edge bounds beyond the limits of the edge points.
+        If False, limit the edge/corner bounds to the extent of the points.
     in_place : bool, default=False
         If True, modify the coordinate arguments in place.
+
+    Returns
+    -------
+    A pair of of :class:`~iris.coords.AuxCoord`, (new_x, new_y).
+    New X and Y coordinates  -- the inputs, modified, if `in_place` is True.
+
+    Notes
+    -----
+    * The two coordinates must have the same coordinate system.
+    * Any existing coordinate bounds are ignored, and replaced.
+    * Calculations assume a spherical earth, ignoring any geoid.
+
     """
     if x.shape != y.shape:
         msg = "Coordinates do not have the same shape."
@@ -669,12 +681,17 @@ def guess_2D_bounds(x, y, extrapolate=True, in_place=False):
     if x.units != "degrees" or y.units != "degrees":
         msg = "Coordinate units are expected to be degrees."
         raise ValueError(msg)
-    if not all(
-        isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None)
-        for coord in [x, y]
-    ):
-        msg = "Coordinate systems are expected geodetic."
+    if x.coord_system != y.coord_system:
+        msg = "Coordinate systems must be the same."
         raise ValueError(msg)
+    for coord in (x, y):
+        if not isinstance(coord.coord_system, GeogCS | RotatedGeogCS | None):
+            msg = (
+                f"Coordinate {coord.name()!r} has a coordinate system of type "
+                f"{type(coord.coord_system)!r} : must be geodetic "
+                "(GeogCs / RotatedGeogCS), or None."
+            )
+            raise ValueError(msg)
 
     if in_place:
         new_x = x
