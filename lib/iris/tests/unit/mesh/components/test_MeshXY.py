@@ -346,13 +346,14 @@ class TestProperties1D(TestMeshCommon):
             expected = [coords[k] for k in expected if k in coords]
             assert expected == func(**kwargs)
 
-    def test_coords_face(self):
-        # Should raise a value error because 1D meshes don't have faces
+    @pytest.mark.parametrize("location", ["face", "squiggle"])
+    def test_non_supported_coords_location(self, location):
+        # Should raise a value error because 1D meshes don't have faces (nor squiggle)
         with pytest.raises(
             ValueError,
-            match="Expected location to be one of `node` or `edge`, got `face`",
+            match=f"Expected location to be one of `node` or `edge`, got `{location}`",
         ):
-            self.mesh.coords(location="face")
+            self.mesh.coords(location=location)
 
     def test_edge_dimension(self):
         assert self.kwargs["edge_dimension"] == self.mesh.edge_dimension
@@ -678,9 +679,13 @@ class TestProperties2D(TestProperties1D):
             expected = [coords[k] for k in expected if k in coords]
             assert expected == func(**kwargs)
 
-    def test_coords_face(self):
-        # Tested by test_coords_elements
-        pass
+    @pytest.mark.parametrize("location", ["squiggle"])
+    def test_non_supported_coords_location(self, location):
+        with pytest.raises(
+            ValueError,
+            match=f"Expected location to be one of `node`, `edge` or `face`, got `{location}`",
+        ):
+            self.mesh.coords(location=location)
 
     def test_edge_face(self):
         assert self.EDGE_FACE == self.mesh.edge_face_connectivity
