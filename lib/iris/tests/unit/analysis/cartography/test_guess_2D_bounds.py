@@ -172,7 +172,7 @@ def test_invalid_units():
     lat.units = "m"
 
     with pytest.raises(
-            ValueError, match="Coordinate units are expected to be degrees."
+        ValueError, match="Coordinate units are expected to be degrees."
     ):
         guess_2D_bounds(lon, lat)
 
