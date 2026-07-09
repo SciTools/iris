@@ -480,7 +480,7 @@ def _generate_180_mats_from_uvecs(uvecs):
     # |   2xy    2y^2 - 1   2yz    |
     # |   2xz      2yz    2z^2 - 1 |
     # See: https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-    #   with theta=pi, so cos(theta)=-1, sin(theta)=0, reduces to R = -I + 2 * (u * u^T)
+    #   with theta=180, so cos(theta)=-1, sin(theta)=0, reduces to R = -I + 2 * (u * u^T)
     mats = np.einsum("ji,ki->jki", uvecs, uvecs) * 2
 
     # At this point the matrix mats[:,:,i] will be:
@@ -522,7 +522,7 @@ def _2D_gb_buffer_outer(array_shape):
     # This halo starts at the index [:, 0, 0], the next set of indices increase in the
     # second dimension until the index [:, -1, 0], then the last dimension increases
     # until it reaches the index [:, -1, -1], the remaining indices follow the edge of
-    # the array anit-clockwise until it reaches the last index at [:, 0, 1].
+    # the array anti-clockwise until it reaches the last index at [:, 0, 1].
     _, x, y = array_shape
     xrange = list(range(x))
     x_i = xrange + ([x - 1] * (y - 2)) + xrange[::-1] + ([0] * (y - 2))

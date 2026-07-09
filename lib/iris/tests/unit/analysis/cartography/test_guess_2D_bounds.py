@@ -163,6 +163,20 @@ def test_2D_guess_bounds_coord_systems():
         _2D_guess_bounds(mercator_cube)
 
 
+def test_invalid_units():
+    cube = _2d_multicells_testcube()
+    lon = cube.coord("longitude")
+    lat = cube.coord("latitude")
+
+    lon.units = "m"
+    lat.units = "m"
+
+    with pytest.raises(
+            ValueError, match="Coordinate units are expected to be degrees."
+    ):
+        guess_2D_bounds(lon, lat)
+
+
 def test_invalid_coords_1D():
     lat_1D = AuxCoord(np.arange(5), standard_name="latitude")
     lon_1D = AuxCoord(np.arange(5), standard_name="longitude")
@@ -208,3 +222,16 @@ def test_invalid_coords_name():
         ValueError, match="Y coordinate is not 'latitude' or 'grid_latitude'."
     ):
         guess_2D_bounds(lon_valid, lat_invalid)
+
+
+def test_in_place():
+    cube = _2d_multicells_testcube()
+    lon = cube.coord("longitude")
+    lat = cube.coord("latitude")
+    new_lon, new_lat = guess_2D_bounds(lon, lat, in_place=False)
+    assert new_lon != lon
+    assert new_lat != lat
+
+    guess_2D_bounds(lon, lat, in_place=True)
+    assert new_lon == lon
+    assert new_lat == lat
