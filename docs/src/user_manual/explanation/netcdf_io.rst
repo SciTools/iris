@@ -135,8 +135,22 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 
 Character and String datatypes
 ------------------------------
-Summary
-^^^^^^^
+Overview
+^^^^^^^^
+Text appears in NetCDF in a variety of ways, but the key aspect to be explained here is
+the storage of bulk text data in *variables*.
+
+In Iris, all string data appears in Iris' data objects as arrays of numpy dtype "U<xx>",
+where <xx> is a maximum character width.  When reading and writing NetCDF files, only
+the NetCDF ``char`` datatype is currently supported.
+
+String support is fairly simple when strings contain only ASCII characters.
+When strings may include non-ascii characters, this requires a specific encoding to be
+adopted when translating to and from bytes, and rules for determining what the encoding
+is or was.
+
+Summary of Iris string handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 *   Iris currently *only* fully supports the fixed-width ``char`` datatype for strings in
     NetCDF variables
@@ -161,32 +175,35 @@ Summary
     *   it is not needed to *read* 'utf-8' encoded data correctly
     *   it **is** required to *save* any non-ascii characters
 
-The following describes the nature of character and string data handling in :
-NetCDF itself; the CF conventions; the ``netCDF4`` Python module and the Iris
-implementation.  In practice all these are connected.
 
-The details are generally much simpler when strings contain only ASCII characters.
-When strings may include non-ascii characters, this requires a specific encoding to be
-adopted when translating to and from bytes, and rules for determining what the encoding
-is or was.
+Background
+~~~~~~~~~~
+The relevant supporting code libraries and standards provide various facilities for
+translating between bytes and Python/numpy strings, but not all possibilities are
+supported.  The facilities and conventions for this have changed over time, and
+obsolete methods persist in archive datasets, which must therefore be taken into
+consideration.
 
-Another significant factor is the way in which all the relevant projects have changed
-their features and methods over time, so that historic datasets may often use
-non-standard approaches to record string data.
+This documentation explains how Iris handles the different cases, and also relevant
+aspects of the supporting projects, which in practice affect its design.  These are:
+
+*   the NetCDF file format;
+*   the CF conventions; and
+*   the ``netCDF4`` Python module.
 
 
-In the NetCDF file format
-^^^^^^^^^^^^^^^^^^^^^^^^^
+String data in NetCDF
+^^^^^^^^^^^^^^^^^^^^^
 In the NetCDF v4 implementation, there are three specific areas where the datatype and
 storage characteristics of character data are relevant:
 
-*   The **names** of file components (variables, dimensions, and attributes) are
+*   **The names of file components (variables, dimensions, and attributes) :** are
     natively unicode-capable strings of arbitrary (variable) length.
 
-*   **Attributes** with string content are likewise "natively" unicode.  However, the
+*   **Attributes with string content :** are likewise "natively" unicode.  However, the
     actual storage datatype of the attribute may vary, being either ``char`` or ``string``.
 
-*   The **content of variables** can be either ``char`` or ``string``.
+*   **The content of variables :** can be either ``char`` or ``string``.
 
     *   ``string`` type variables contain a variable-length unicode string at each array element.
 
@@ -197,8 +214,14 @@ storage characteristics of character data are relevant:
         how to indicate that bytes are encoded non-ascii data, but many older datasets
         have used a variable attribute ``_Encoding`` indicating the encoding name.
 
-The NetCDF documentation also briefly mentions that an ``_Encoding`` attribute may be used to
-represent non-ascii strings.  However this is described as "reserved for future use",
+.. note::
+
+    Nearly everything here is written assuming NetCDF version 4 files, which is the newer
+    NetCDF storage format based on HDF5.  The older NetCDF3 format did not provide the
+    ``string`` datatype, or support unicode in names and attributes.
+
+The NetCDF documentation does also briefly mention that an ``_Encoding`` attribute may be
+used to represent non-ascii strings, but only to state that it is "reserved for future use",
 and its valid values and effects are not explicitly defined.
 See : `here in the NetCDF v3 description <https://docs.unidata.ucar.edu/n ug/current/file_format_specifications.html>`_
 : "The variable attribute '_Encoding' is reserved ...".
@@ -208,26 +231,32 @@ correctly interpret an ``_Encoding`` attribute in most cases, despite this not b
 "official" solution.
 
 
-In the NetCDF CF Conventions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+String data in the NetCDF CF Conventions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The `CF Conventions <https://cfconventions.org/>`_ define a subset of
 "allowed" datatypes, and various types of data elements represented by variables
 -- such as data variables, auxiliary coordinates, cell methods, etc.
 
-CF currently supports the use of either NetCDF ``string`` or ``char`` type arrays for any
-variables.
-However, *historically*, CF has had more limited support, and also "unofficial
-conventions" have been used for string data encoded as bytes, which may be encountered
-in older datasets.
+CF currently supports the use of either NetCDF ``string`` or ``char`` type arrays for
+**any** variables.
+However, *historically*, CF had more limited support, and also "unofficial conventions"
+have been used for string data encoded as bytes, which may be encountered
+in older datasets, as follows ...
 
-**Prior to v1.8**, CF required to use ``char`` type only, and provided
+Prior to v1.8
+~~~~~~~~~~~~~
+CF required to use ``char`` type only, and provided
 **no official means** of representing non-ascii data.
 
-**Since v1.8**, CF has allowed the use of ``string`` data in all variables.
+Since v1.8
+~~~~~~~~~~
+CF has allowed the use of ``string`` data in all variables.
 However, up to v1.12 there was still no official way of encoding non-ascii data in
 ``char`` arrays.
 
-**Since v1.12**, CF now mandates a *default* assumption of utf-8 encoding to store
+Since v1.12
+~~~~~~~~~~~
+CF now mandates a *default* assumption of utf-8 encoding to store
 non-ascii data in ``char`` form.  It does also note that some data in the past has used an
 ``_Encoding`` attribute -- though this was never an official CF usage.
 
@@ -238,6 +267,8 @@ the array must have a "string dimension", which is a normal file dimension.  Thu
 strings always have a *fixed byte width*.  However, that is not the same as a fixed
 *character* width, since in most encodings non-ascii characters require more bytes to
 store.
+
+CF states that a string dimension is **always the last dimension of the array**.
 
 Although the variable-length ``string`` datatype is now supported in CF, the use of
 fixed-width ``char`` arrays is obviously more efficient for storage and access, and it is
@@ -267,11 +298,10 @@ In the netCDF4 Python module
         **However,** Iris turns this feature *off*, in order to implement its own
         wider-ranging encoding support (described below).
 
-
-In Iris
-^^^^^^^
-Iris stores string data in arrays of dtype "U<xx>", where <xx> is a maximum character
-width.  However, this data is currently **only** read and written in NetCDF files as
+String data in Iris
+^^^^^^^^^^^^^^^^^^^
+Iris stores string data in arrays of numpy dtype "U<xx>", where <xx> is a maximum
+character width.  This data is currently **only** read and written to NetCDF files as
 ``char`` type variables (i.e. byte arrays).
 
 .. note::
@@ -282,19 +312,25 @@ width.  However, this data is currently **only** read and written in NetCDF file
     See the following section `Variable-length datatypes`_
     for an interim solution enabling you at least to *load* variable-length string data.
 
+Encodings
+~~~~~~~~~
+In some cases a record of the storage encoding is needed (though often a default can be
+assumed).
+
 An encoding name can appear in the ``_Encoding`` attribute of a file variable, and
 likewise as an attribute of the corresponding Iris component object (e.g. cube or
 coordinate) :  It is loaded and saved as a normal attribute without modification, but it
 can also control both loading and saving behaviour.
 
-Iris supports *only* a specific set of valid encodings :
+Iris supports only certain encodings :
 
 * "ascii"
 * "utf8"
 * "utf16"
 * "utf32"
 
-Common aliases are also allowed, as recognised by the Python ``codecs`` module.
+(Though, common aliases are also allowed, those recognised by the Python ``codecs``
+module).
 
 When loading
 ~~~~~~~~~~~~
@@ -309,6 +345,7 @@ attribute will still be added to the Iris component object.
 When saving
 ~~~~~~~~~~~
 Any string data with only ascii characters does not require an ``_Encoding`` attribute.
+
 However if there are any non-ascii characters, and no ``_Encoding``
 attribute, then an error will be raised.
 This can be fixed by adding a suitable ``_Encoding`` attribute, for example:
@@ -319,14 +356,13 @@ attribute will still be stored to the file.
 
 So effectively, the **default encoding is 'utf8' for load and 'ascii' for save**.
 
-String width dimensions
-~~~~~~~~~~~~~~~~~~~~~~~
-For each valid encoding there is a definite relation between the string dimension length
-in the file (actually, the number of *bytes*), and the maximum number of characters,
-aka string width, in the array dtype : i.e. the "<xx>" in the "U<xx>" dtype.
+String widths and string dimensions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+For each supported encoding, Iris defines a specific function relating the string
+dimension length in a NetCDF file (i.e. the maximum "byte width"), to the maximum
+number of characters in the array dtype, aka string width
+(i.e. the "<xx>" in the dtype "U<xx>").
 
-Saving
-######
 On write, string dimensions are created with the **minimum number of bytes** which would
 be needed to store ascii-only data of the given width in the given encoding.
 
@@ -337,21 +373,18 @@ These are:
 *   utf16 : n-bytes = 2 * (n-characters + 1)
 *   utf32 : n-bytes = 4 * (n-characters + 1)
 
-For 'ascii' and 'utf32' this character-to-byte relationship is simple + fixed, but for
-'utf8' and 'utf16', the number of encoded bytes depends on the actual characters present
-**and can exceed the numbers given above**.  If any string in the *actual* data encodes
-to more bytes than the above-calculated string dimension, then Iris will raise an
+For 'ascii' and 'utf32' this character-to-byte relationship is simple + fixed.
+
+For 'utf8' and 'utf16', however, the number of encoded bytes depends on the actual
+characters present **and can exceed the numbers given above**.
+
+String widths in Saving
+#######################
+If any string in an actual data array encodes to *more* bytes than the above-calculated
+string dimension, when written, then Iris will raise an
 :class:`iris.exceptions.TranslationError`.  In this case, the user should **explicitly
 specify** a longer string dimension, by converting the data to a longer "U<xx>" dtype :
 for example, ``cube.data = cube.core_data().astype("U20")``.
-
-Loading
-#######
-On reading, the returned data has a '"U<xx>"' dtype of which the <xx> string width is
-determined by **inverting the above relations**.
-The actual maximum number of characters in the data will be less or equal to this, but
-cannot be greater.  The width will always round-trip correctly, i.e. the dimension
-length is unchanged if data is read and then written back.
 
 .. warning::
 
@@ -359,6 +392,17 @@ length is unchanged if data is read and then written back.
     of "U<xx>" type data : instead, some operations will reduce it to the maximum width
     occurring.  So in these cases also, it may be necessary to explicitly re-assert the
     desired "string width" before saving -- use ``.astype()``,  as above.
+
+String widths in Loading
+########################
+On reading, the returned data has a '"U<xx>"' dtype of which the <xx> string width is
+determined by **inverting the above relations**.
+
+The actual maximum number of characters in the data will always be less than or equal to
+this, since the maximum possible character width is for all-ascii data.
+
+The width created by reading will always round-trip correctly, i.e. the dimension
+length is unchanged if data is read and then written back.
 
 
 Variable-length datatypes
