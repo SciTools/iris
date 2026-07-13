@@ -141,7 +141,8 @@ Summary
 *   Iris currently *only* fully supports the fixed-width ``char`` type for strings in
     netCDF variables
 
-    * the ``string`` type (variable-width unicode strings) will be added in a future release
+    *   the ``string`` type (variable-width unicode strings) will be added in a future
+        release. See : `issue #7092 <https://github.com/SciTools/iris/issues/7092>`_.
 
 *   ``char`` variable data is represented as numpy string arrays in Iris objects, such as
     cubes and coordinates.
@@ -198,6 +199,8 @@ storage characteristics of character data are relevant:
 The NetCDF documentation also mentions that an ``_Encoding`` attribute may be used to
 represent non-ascii strings.  However this is described as "reserved for future use",
 and its valid values and effects are not explicitly defined.
+See : `here in the netCDF v3 description <https://docs.unidata.ucar.edu/n ug/current/file_format_specifications.html>`_
+ : "The variable attribute '_Encoding' is reserved ...".
 
 However, it is also notable that the standard ``ncgen`` and ``ncdump`` tools *do*
 correctly interpret an ``_Encoding`` attribute in most cases, despite this not being an
@@ -206,7 +209,7 @@ correctly interpret an ``_Encoding`` attribute in most cases, despite this not b
 
 In the netCDF CF Conventions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The `CF Conventions <https://https://cfconventions.org/>`_ define a subset of
+The `CF Conventions <https://cfconventions.org/>`_ define a subset of
 "allowed" datatypes, and various types of data elements represented by variables
 -- such as data variables, auxiliary coordinates, cell methods, etc.
 
@@ -256,17 +259,21 @@ In the netCDF4 Python module
     .. note::
 
         The netCDF4 package can also automatically translate this to string arrays of
-        dtype "U<xx>", if the variable has an ``_Encoding`` attribute.  **However,**
-        Iris turns this feature *off*, in order to implement its own wider-ranging
-        encoding support (described below).
+        dtype "U<xx>", if the variable has an ``_Encoding`` attribute.
+        See in netCDF-4 python documentation :
+        `Dealing with strings <https://unidata.github.io/netcdf4-python/#dealing-with-strings>`_.
+        **However,** Iris turns this feature *off*, in order to implement its own
+        wider-ranging encoding support (described below).
 
 
 In Iris
 ^^^^^^^
 .. note::
 
-    In Iris, **the ``string`` data type is not supported at present**, though this is
-    planned for future releases.  See the following section `Variable-length datatypes`_
+    In Iris, the NetCDF ``string`` datatype is **not supported at present**, though this
+    is planned for future releases.
+    See : `issue #7092 <https://github.com/SciTools/iris/issues/7092>`_.
+    See the following section `Variable-length datatypes`_
     for an interim solution enabling you at least to *load* variable-length string data.
 
 Iris stores string data in arrays of dtype "U<xx>", where <xx> is a maximum character
