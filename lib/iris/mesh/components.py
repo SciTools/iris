@@ -2471,11 +2471,9 @@ class _Mesh1DCoordinateManager:
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
+        frozen: bool = False,
     ) -> "_Mesh1DCoordinateManager":
         """Return an indexed copy of this coordinate manager.
-
-        Members are read-only - this method is intended to support the creation
-        of indexed views of original meshes.
 
         Parameters
         ----------
@@ -2485,6 +2483,13 @@ class _Mesh1DCoordinateManager:
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
+        frozen : bool, default=False
+            If True, the returned coordinate manager will comprise indexed copies of the
+            original coordinates, which do not change if the original coordinates
+            change. If False, the returned coordinate manager will comprise coordinates
+            that are indexed 'views' of the original coordinates, which will change if
+            the original coordinates change; membership of the returned coordinate
+            manager will also be read-only.
 
         Returns
         -------
@@ -2502,23 +2507,29 @@ class _Mesh1DCoordinateManager:
             if coord is not None:
                 indexing = indices_dict[key.split("_")[0]]
             if indexing is not None:
-                indexed = coord.copy(
-                    # Lazy = deferred calculation. Changes to the original coordinate
-                    #  will be reflected in the indexed coordinate. Will be primarily
-                    #  used by MeshCoord, which also maintains laziness.
-                    points=coord.lazy_points()[indexing],
-                    bounds=None
-                    if not coord.has_bounds()
-                    else coord.lazy_bounds()[indexing],
-                )
+                if frozen:
+                    indexed = coord.copy()[indexing]
+                else:
+                    indexed = coord.copy(
+                        # Lazy = deferred calculation. Changes to the original coordinate
+                        #  will be reflected in the indexed coordinate. Will be primarily
+                        #  used by MeshCoord, which also maintains laziness.
+                        points=coord.lazy_points()[indexing],
+                        bounds=None
+                        if not coord.has_bounds()
+                        else coord.lazy_bounds()[indexing],
+                    )
             indexed_members[key] = indexed
 
-        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
-        view_message = (
-            f"Coordinates on {mesh_index_set} are only 'views' onto the "
-            f"coordinates of an original {mesh_xy}: id={mesh_id}."
-        )
-        result = self.__class__(**indexed_members, view=view_message)
+        kwargs = indexed_members
+        if not frozen:
+            mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+            view_message = (
+                f"Coordinates on {mesh_index_set} are only 'views' onto the "
+                f"coordinates of an original {mesh_xy}: id={mesh_id}."
+            )
+            kwargs["view"] = view_message
+        result = self.__class__(**kwargs)
 
         return result
 
@@ -2927,11 +2938,9 @@ class _MeshConnectivityManagerBase(ABC):
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
+        frozen: bool = False,
     ) -> "_MeshConnectivityManagerBase":
         """Return an indexed copy of this connectivity manager.
-
-        Members are read-only - this method is intended to support the creation
-        of indexed views of original meshes.
 
         Parameters
         ----------
@@ -2941,6 +2950,13 @@ class _MeshConnectivityManagerBase(ABC):
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
+        frozen : bool, default=False
+            If True, the returned connectivity manager will comprise indexed copies of the
+            original connectivities, which do not change if the original connectivities
+            change. If False, the returned connectivity manager will comprise connectivities
+            that are indexed 'views' of the original connectivities, which will change if
+            the original connectivities change; membership of the returned connectivity
+            manager will also be read-only.
 
         Returns
         -------
@@ -2959,19 +2975,29 @@ class _MeshConnectivityManagerBase(ABC):
             if connectivity is not None:
                 indexing = indices_dict[connectivity.location]
             if indexing is not None:
-                new_values = connectivity.indices_by_location(
+                if frozen:
+                    connectivity = connectivity.copy()
+                    indices = connectivity.core_indices()
+                else:
                     # Lazy = deferred calculation. Changes to the original connectivity
                     #  will be reflected in the indexed connectivity. Will be primarily
                     #  used by MeshCoord, which also maintains laziness.
-                    connectivity.lazy_indices()
-                )[indexing]
+                    indices = connectivity.lazy_indices()
+                new_values = connectivity.indices_by_location(indices)[indexing]
 
                 # Map node indices in "values" to their new zero-based positions
                 #  in "node_indices".
+                lazy = _lazy.is_lazy_data(node_indices) or _lazy.is_lazy_data(
+                    new_values
+                )
+                al = da if lazy else np
                 order = node_indices.argsort()
-                old_sorted = da.from_array(node_indices[order])
-                new_ids_sorted = da.arange(len(node_indices))[order]
-                positions = functools.partial(da.searchsorted, old_sorted)
+                if lazy:
+                    old_sorted = da.from_array(node_indices[order])
+                else:
+                    old_sorted = node_indices[order]
+                new_ids_sorted = al.arange(len(node_indices))[order]
+                positions = functools.partial(al.searchsorted, old_sorted)
                 new_values = _index_conn_array(
                     array=new_ids_sorted,
                     indexing=new_values,
@@ -2985,11 +3011,15 @@ class _MeshConnectivityManagerBase(ABC):
                 indexed = connectivity.copy(new_values)
             indexed_members[key] = indexed
 
-        mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
-        view_message = (
-            f"Connectivities on {mesh_index_set} are only 'views' onto the "
-            f"connectivities of an original {mesh_xy}: id={mesh_id}."
-        )
+        if not frozen:
+            mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+            view_message = (
+                f"Connectivities on {mesh_index_set} are only 'views' onto the "
+                f"connectivities of an original {mesh_xy}: id={mesh_id}."
+            )
+        else:
+            view_message = None
+
         result = self.__class__(
             *[c for c in indexed_members.values() if c is not None], view=view_message
         )
@@ -3364,22 +3394,25 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         -------
         MeshXY
         """
+        indices = [
+            self._calculate_node_indices(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+        ]
+        kwargs = dict(mesh_id=id(self.mesh), frozen=True)
+        coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
+        conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
 
         def _coords_and_axes(
             location: Literal["node", "edge", "face"],
         ) -> list[tuple[AuxCoord, str]]:
-            coords = getattr(self, f"{location}_coords")
-            return [
-                (deepcopy(getattr(coords, f"{location}_{axis}")), axis)
-                for axis in self.AXES
-            ]
+            coords = getattr(coord_man, f"{location}_coords")
+            return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
 
         return MeshXY(
             topology_dimension=self.topology_dimension,
             node_coords_and_axes=_coords_and_axes("node"),
-            connectivities=[
-                deepcopy(conn) for conn in self.all_connectivities if conn is not None
-            ],
+            connectivities=[conn for conn in conn_man.all_members if conn is not None],
             edge_coords_and_axes=_coords_and_axes("edge"),
             face_coords_and_axes=_coords_and_axes("face"),
             standard_name=self.standard_name,
