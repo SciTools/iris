@@ -2967,6 +2967,12 @@ class _MeshConnectivityManagerBase(ABC):
             "edge": edge_indices,
             "face": face_indices,
         }
+        # Prep some indexing information for later node indices remapping.
+        order = node_indices.argsort()
+        old_sorted = node_indices[order]
+        al = da if _lazy.is_lazy_data(node_indices) else np
+        new_ids_sorted = al.arange(len(node_indices))[order]
+        positions = functools.partial(al.searchsorted, old_sorted)
 
         indexed_members = {}
         for key, connectivity in self:
@@ -2983,32 +2989,21 @@ class _MeshConnectivityManagerBase(ABC):
                     #  will be reflected in the indexed connectivity. Will be primarily
                     #  used by MeshCoord, which also maintains laziness.
                     indices = connectivity.lazy_indices()
-                new_values = connectivity.indices_by_location(indices)[indexing]
+                reindexed_indices = connectivity.indices_by_location(indices)[indexing]
 
                 # Map node indices in "values" to their new zero-based positions
                 #  in "node_indices".
-                lazy = _lazy.is_lazy_data(node_indices) or _lazy.is_lazy_data(
-                    new_values
-                )
-                al = da if lazy else np
-                order = node_indices.argsort()
-                if lazy:
-                    old_sorted = da.from_array(node_indices[order])
-                else:
-                    old_sorted = node_indices[order]
-                new_ids_sorted = al.arange(len(node_indices))[order]
-                positions = functools.partial(al.searchsorted, old_sorted)
-                new_values = _index_conn_array(
+                reindexed_indices = _index_conn_array(
                     array=new_ids_sorted,
-                    indexing=new_values,
+                    indexing=reindexed_indices,
                     pre_index=positions,
                 )
 
                 if connectivity.location_axis == 1:
-                    new_values = new_values.T
+                    reindexed_indices = reindexed_indices.T
                 if connectivity.start_index == 1:
-                    new_values = new_values + 1
-                indexed = connectivity.copy(new_values)
+                    reindexed_indices += 1
+                indexed = connectivity.copy(reindexed_indices)
             indexed_members[key] = indexed
 
         if not frozen:
