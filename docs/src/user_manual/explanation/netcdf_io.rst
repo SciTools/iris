@@ -370,7 +370,7 @@ Characteristics of CF string storage
 Where strings are stored as ``char`` datatype, which is the more common traditional approach,
 the array must have a "string dimension", which is a normal file dimension.  Thus, these
 strings always have a *fixed byte width*.  However, that is not the same as a fixed
-*character* width, since in most encodings non-ascii characters require more bytes to
+*string* width, since in most encodings non-ascii characters require more bytes to
 store.
 
 CF states that a string dimension is **always the last dimension of the array**.
