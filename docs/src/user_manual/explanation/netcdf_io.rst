@@ -167,7 +167,7 @@ aspects of the supporting projects, which in practice affect its design.  These 
 String data in Iris
 ^^^^^^^^^^^^^^^^^^^
 Iris stores string data in arrays of numpy dtype "U<xx>", where <xx> is a maximum
-character width.  This data is currently **only** read and written to NetCDF files as
+string width.  This data is currently **only** read and written to NetCDF files as
 ``char`` type variables (i.e. byte arrays).
 
 .. note::
