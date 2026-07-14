@@ -31,7 +31,27 @@ class TestDecodeUri:
                 uri[:5],
                 uri[6:],
             ),
+            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"): (
+                "zarr",
+                uri,
+            ),
+            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=zarr,zip"): (
+                "zarr",
+                uri,
+            ),
+            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=xarray,file"): (
+                "zarr",
+                uri,
+            ),
+            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=file"): (
+                "file",
+                uri[5:],
+            ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
+                "file",
+                uri,
+            ),
+            (uri := "/data/local/someDir/air_pressure.zarr"): (
                 "file",
                 uri,
             ),
@@ -148,3 +168,8 @@ class TestFileFormatPicker:
         DAP_URI = "https://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
         assert a.name == "NetCDF OPeNDAP"
+
+    def test_nczarr_url_without_zarr_suffix(self):
+        uri = "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"
+        a = iff.FORMAT_AGENT.get_spec(uri, None)
+        assert a.name == "zarr"

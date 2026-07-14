@@ -161,8 +161,8 @@ FORMAT_AGENT.add_spec(
 FORMAT_AGENT.add_spec(
     FormatSpecification(
         "zarr",
-        FileExtension(requires_fh=False),
-        ".zarr#mode=nczarr,file",
+        UriProtocol(),
+        lambda protocol: protocol == "zarr",
         netcdf.load_cubes,
         priority=3,
     )

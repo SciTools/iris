@@ -388,6 +388,8 @@ class Saver:
             None  # this line just for the API page -- value is set later
         )
 
+        #: Whether the save target is an NCZarr URL.
+        self._is_nczarr = False
         # A list of delayed writes for lazy saving
         # a list of couples (source, target).
         self._delayed_writes = []
@@ -418,16 +420,24 @@ class Saver:
         else:
             # Given a filepath string/path : create a dataset from that
             try:
-                filepath = Path(filename)
-                if ".zarr" not in filepath.suffix:
-                    self.filepath = filepath.absolute()
+                # Lazy import to avoid circular import overhead at module import-time.
+                from iris.io import _is_nczarr_mode
+
+                self._is_nczarr = _is_nczarr_mode(str(filename))
+                if self._is_nczarr:
+                    # NCZarr URLs contain a #mode= fragment; Path() strips it.
+                    # Keep as a plain string and pass directly to DatasetWrapper.
+                    self.filepath = str(filename)
                 else:
-                    self.filepath = filepath
+                    filepath = Path(filename)
+                    self.filepath = filepath.absolute()
                 self._dataset = _thread_safe_nc.DatasetWrapper(
                     self.filepath, mode="w", format=netcdf_format
                 )
             except RuntimeError:
-                dir_name = self.filepath.parent
+                if self._is_nczarr:
+                    raise
+                dir_name = Path(self.filepath).parent
                 if not dir_name.is_dir():
                     msg = "No such file or directory: {}".format(dir_name)
                     raise IOError(msg)

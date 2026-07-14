@@ -16,8 +16,28 @@ from collections import OrderedDict
 import glob
 import pathlib
 import re
+from urllib.parse import urlsplit
 
 import iris.exceptions
+
+
+def _is_nczarr_mode(uri_text):
+    """Return True if the URI fragment requests NCZarr-compatible mode.
+
+    netcdf-c infers ``nczarr`` from ``zarr`` and ``zarr`` from ``xarray``,
+    so all three mode flags activate the NCZarr code path.
+    """
+    parsed = urlsplit(uri_text)
+    if not parsed.fragment:
+        return False
+    # Fragments are ampersand-separated key=value pairs.
+    for item in parsed.fragment.split("&"):
+        key, sep, value = item.partition("=")
+        if sep and key.casefold() == "mode":
+            flags = {token.strip().casefold() for token in value.split(",") if token}
+            if flags.intersection({"nczarr", "zarr", "xarray"}):
+                return True
+    return False
 
 
 # Saving routines, indexed by file extension.
@@ -129,7 +149,7 @@ def decode_uri(uri, default="file"):
         # put - last in the brackets so it refers to the character, not a range
         # reference on valid schemes: https://tools.ietf.org/html/std66#section-3.1
         match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
-        if ".zarr" in uri:
+        if _is_nczarr_mode(uri):
             scheme = "zarr"
             part = uri
         elif match:
@@ -470,9 +490,15 @@ def save(source, target, saver=None, **kwargs):
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
-        # Converts tilde or wildcards to absolute path
-        (target,) = expand_filespecs([str(target)], False)
-        saver = find_saver(target)
+        if _is_nczarr_mode(target):
+            # NCZarr URLs must be passed as-is; do not expand or match by extension.
+            from iris.fileformats.netcdf.saver import save as _nc_save
+
+            saver = _nc_save
+        else:
+            # Converts tilde or wildcards to absolute path
+            (target,) = expand_filespecs([str(target)], False)
+            saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
     elif isinstance(saver, str):
