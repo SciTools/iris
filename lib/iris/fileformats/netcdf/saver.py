@@ -393,6 +393,10 @@ class Saver:
         # A list of delayed writes for lazy saving
         # a list of couples (source, target).
         self._delayed_writes = []
+        # A list of pre-close writes for NCZarr lazy saving.
+        # NCZarr cannot be reopened for deferred writes, so lazy data is
+        # written before __exit__ closes the file.
+        self._nczarr_writes = []
 
         # Detect if we were passed a pre-opened dataset (or something like one)
         self._to_open_dataset = hasattr(filename, "createVariable")
@@ -454,6 +458,11 @@ class Saver:
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-netCDF file before closing."""
+        if self._nczarr_writes:
+            # NCZarr lazy writes must be computed while the file is still open;
+            # the deferred reopen-write pattern used for netCDF is not supported.
+            sources, targets = zip(*self._nczarr_writes)
+            da.store(list(sources), list(targets))
         self._dataset.sync()
         if not self._to_open_dataset:
             # Only close if the Saver created it.
@@ -2545,6 +2554,12 @@ class Saver:
         else:
             doing_delayed_save = is_lazy_data(data)
             if doing_delayed_save:
+                if self._is_nczarr:
+                    # NCZarr cannot be reopened for deferred writes.
+                    # Collect here; da.store() will be called in __exit__.
+                    self._nczarr_writes.append((data, cf_var))
+                    return
+
                 # save lazy data with a delayed operation.  For now, we just record the
                 # necessary information -- a single, complete delayed action is constructed
                 # later by a call to delayed_completion().

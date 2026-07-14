@@ -111,3 +111,37 @@ class Test__lazy_stream_data:
         else:
             assert data_form == "emulateddata"
             cf_var._data_array == mocker.sentinel.exact_data_array
+
+    def test_lazy_data_save_nczarr_uses_preclose_write_list(self, compute, mocker):
+        """NCZarr lazy data should not use deferred reopen writes."""
+        saver = self.saver(compute=compute)
+        saver._is_nczarr = True
+
+        data = da.from_array(np.arange(5.0))
+        cf_var = self.mock_var(data.shape, with_data_array=False, mocker=mocker)
+
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
+
+        assert len(saver._delayed_writes) == 0
+        assert len(saver._nczarr_writes) == 1
+        result_data, result_target = saver._nczarr_writes[0]
+        assert result_data is data
+        assert result_target is cf_var
+        assert cf_var.__setitem__.call_count == 0
+
+    def test_exit_flushes_nczarr_writes(self, mocker):
+        """NCZarr lazy writes should be computed before file close in __exit__."""
+        saver = self.saver(compute=False)
+        saver._is_nczarr = True
+
+        source = mocker.sentinel.source
+        target = mocker.sentinel.target
+        saver._nczarr_writes.append((source, target))
+
+        store_patch = mocker.patch("iris.fileformats.netcdf.saver.da.store")
+
+        saver.__exit__(None, None, None)
+
+        store_patch.assert_called_once_with([source], [target])
+        saver._dataset.sync.assert_called_once_with()
+        saver._dataset.close.assert_called_once_with()
