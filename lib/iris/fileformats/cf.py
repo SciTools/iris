@@ -52,6 +52,9 @@ _CF_PARSE = re.compile(
     re.VERBOSE,
 )
 
+# NCZarr stores scalar variables as size-1 arrays on this pseudo-dimension.
+_NCZARR_SCALAR_DIMENSION = "_scalar_"
+
 # NetCDF variable attributes handled by the netCDF4 module and
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
@@ -171,7 +174,11 @@ class CFVariable(metaclass=ABCMeta):
         bool
 
         """
-        result = set(self.dimensions).issubset(cf_variable.dimensions)
+        dimensions = tuple(self.dimensions)
+        if dimensions == (_NCZARR_SCALAR_DIMENSION,):
+            return True
+
+        result = set(dimensions).issubset(cf_variable.dimensions)
         return result
 
     def __eq__(self, other):
