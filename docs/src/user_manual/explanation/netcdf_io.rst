@@ -141,7 +141,7 @@ Text appears in NetCDF in a variety of ways, but the key aspect to be explained 
 the storage of bulk text data in *variables*.
 
 In Iris, all string data appears in Iris' data objects as arrays of numpy dtype "U<xx>",
-where <xx> is a maximum character width.  When reading and writing NetCDF files, only
+where <xx> is a maximum string width.  When reading and writing NetCDF files, only
 the NetCDF ``char`` datatype is currently supported.
 
 String support is fairly simple when strings contain only ASCII characters.
