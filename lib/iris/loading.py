@@ -83,10 +83,10 @@ def _generate_cubes(uris, callback, constraints):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
-    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str]:
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
         scheme, part, fragment = decoded
         category = "nczarr" if iris.io._is_nczarr_fragment(fragment) else scheme
-        return category, part
+        return category, scheme, part
 
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names
@@ -94,19 +94,15 @@ def _generate_cubes(uris, callback, constraints):
     for category, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
-            part_names = [x[1] for x in groups]
+            part_names = [part for _cat, _scheme, part in groups]
             for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
-        elif category in ["http", "https"]:
-            urls = [":".join(x) for x in groups]
-            for cube in iris.io.load_http(urls, callback):
-                yield cube
-        elif category == "nczarr":
-            urls = [x[1] for x in groups]
+        elif category in ["http", "https", "nczarr"]:
+            urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
         elif category == "data":
-            data_objects = [x[1] for x in groups]
+            data_objects = [part for _cat, _scheme, part in groups]
             for cube in iris.io.load_data_objects(data_objects, callback):
                 yield cube
         else:

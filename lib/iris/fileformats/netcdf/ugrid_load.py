@@ -146,10 +146,10 @@ def load_meshes(uris, var_name=None):
     if isinstance(uris, str):
         uris = [uris]
 
-    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str]:
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
         scheme, part, fragment = decoded
         category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
-        return category, part
+        return category, scheme, part
 
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names.
@@ -158,12 +158,10 @@ def load_meshes(uris, var_name=None):
     for category, groups in groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
-            filenames = [x[1] for x in groups]
+            filenames = [part for _cat, _scheme, part in groups]
             sources = expand_filespecs(filenames)
-        elif category in ["http", "https"]:
-            sources = [":".join(x) for x in groups]
-        elif category == "nczarr":
-            sources = [x[1] for x in groups]
+        elif category in ["http", "https", "nczarr"]:
+            sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
         else:
             message = f"Iris cannot handle the URI scheme: {category}"
             raise ValueError(message)
