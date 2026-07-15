@@ -10,6 +10,7 @@
    API reference
 """
 
+from iris.io import _is_nczarr_fragment
 from iris.io.format_picker import (
     DataSourceObjectProtocol,
     FileExtension,
@@ -31,6 +32,16 @@ FORMAT_AGENT.__doc__ = (
     "format of a given URI. New formats can be added "
     "with the **add_spec** method."
 )
+
+
+def _uri_is_http_not_nczarr(uri_parts):
+    scheme, _part, fragment = uri_parts
+    return scheme in ["http", "https"] and not _is_nczarr_fragment(fragment)
+
+
+def _uri_is_nczarr(uri_parts):
+    _scheme, _part, fragment = uri_parts
+    return _is_nczarr_fragment(fragment)
 
 
 #
@@ -131,7 +142,7 @@ FORMAT_AGENT.add_spec(
     FormatSpecification(
         "NetCDF OPeNDAP",
         UriProtocol(),
-        lambda protocol: protocol in ["http", "https"],
+        _uri_is_http_not_nczarr,
         netcdf.load_cubes,
         priority=6,
         constraint_aware_handler=True,
@@ -162,7 +173,7 @@ FORMAT_AGENT.add_spec(
     FormatSpecification(
         "zarr",
         UriProtocol(),
-        lambda protocol: protocol == "zarr",
+        _uri_is_nczarr,
         netcdf.load_cubes,
         priority=3,
     )

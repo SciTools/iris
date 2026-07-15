@@ -18,7 +18,7 @@ class TestGenerateCubes:
         ]
 
         decode_uri_mock = mocker.patch(
-            "iris.iris.io.decode_uri", return_value=("file", None)
+            "iris.iris.io.decode_uri", return_value=("file", None, None)
         )
         mocker.patch("iris.iris.io.load_files")
 

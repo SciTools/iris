@@ -21,22 +21,20 @@ from urllib.parse import urlsplit
 import iris.exceptions
 
 
-def _is_nczarr_mode(uri_text):
-    """Return True if the URI fragment requests NCZarr-compatible mode.
-
-    netcdf-c infers ``nczarr`` from ``zarr`` and ``zarr`` from ``xarray``,
-    so all three mode flags activate the NCZarr code path.
-    """
-    parsed = urlsplit(uri_text)
-    if not parsed.fragment:
+def _is_nczarr_fragment(fragment):
+    """Return True if a URI fragment requests NCZarr-compatible mode."""
+    if not fragment:
         return False
+
     # Fragments are ampersand-separated key=value pairs.
-    for item in parsed.fragment.split("&"):
+    for item in fragment.split("&"):
         key, sep, value = item.partition("=")
         if sep and key.casefold() == "mode":
-            flags = {token.strip().casefold() for token in value.split(",") if token}
-            if flags.intersection({"nczarr", "zarr", "xarray"}):
-                return True
+            flags = {
+                token.strip().casefold() for token in value.split(",") if token.strip()
+            }
+            return bool(flags.intersection({"nczarr", "zarr", "xarray"}))
+
     return False
 
 
@@ -103,7 +101,7 @@ def run_callback(callback, cube, field, filename):
 
 
 def decode_uri(uri, default="file"):
-    r"""Decode a single URI into scheme and scheme-specific parts.
+    r"""Decode a single URI into scheme, scheme-specific part and fragment.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
@@ -120,39 +118,40 @@ def decode_uri(uri, default="file"):
     --------
     >>> from iris.io import decode_uri
     >>> print(decode_uri('https://www.thing.com:8080/resource?id=a:b'))
-    ('https', '//www.thing.com:8080/resource?id=a:b')
+    ('https', '//www.thing.com:8080/resource?id=a:b', None)
 
     >>> print(decode_uri('file:///data/local/dataZoo/...'))
-    ('file', '///data/local/dataZoo/...')
+    ('file', '///data/local/dataZoo/...', None)
+
+    >>> print(decode_uri('file:///data/local/dataZoo/something#mode=nczarr,file'))
+    ('file', '///data/local/dataZoo/something', 'mode=nczarr,file')
 
     >>> print(decode_uri('/data/local/dataZoo/...'))
-    ('file', '/data/local/dataZoo/...')
+    ('file', '/data/local/dataZoo/...', None)
 
     >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
-    ('file', '///C:\\data\\local\\dataZoo\\...')
+    ('file', '///C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('C:\data\local\dataZoo\...'))
-    ('file', 'C:\\data\\local\\dataZoo\\...')
+    ('file', 'C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('dataZoo/...'))
-    ('file', 'dataZoo/...')
+    ('file', 'dataZoo/...', None)
 
         >>> print(decode_uri({}))
-        ('data', {})
+        ('data', {}, None)
 
     """
     if isinstance(uri, pathlib.PurePath):
         uri = str(uri)
 
     if isinstance(uri, str):
+        fragment = urlsplit(uri).fragment or None
         # make sure scheme has at least 2 letters to avoid windows drives
         # put - last in the brackets so it refers to the character, not a range
         # reference on valid schemes: https://tools.ietf.org/html/std66#section-3.1
         match = re.match(r"^([a-zA-Z][a-zA-Z0-9+.-]+):(.+)", uri)
-        if _is_nczarr_mode(uri):
-            scheme = "zarr"
-            part = uri
-        elif match:
+        if match:
             scheme = match.group(1)
             part = match.group(2)
         else:
@@ -164,8 +163,9 @@ def decode_uri(uri, default="file"):
         # These are simply identified as 'data objects'.
         scheme = "data"
         part = uri
+        fragment = None
 
-    return scheme, part
+    return scheme, part, fragment
 
 
 def expand_filespecs(file_specs, files_expected=True):
@@ -490,7 +490,7 @@ def save(source, target, saver=None, **kwargs):
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
-        if _is_nczarr_mode(target):
+        if _is_nczarr_fragment(urlsplit(target).fragment or None):
             # NCZarr URLs must be passed as-is; do not expand or match by extension.
             from iris.fileformats.netcdf.saver import save as _nc_save
 

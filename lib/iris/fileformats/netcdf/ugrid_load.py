@@ -23,12 +23,13 @@ Extension functions for Iris NetCDF loading, to construct
 from functools import partial
 from itertools import groupby
 from pathlib import Path
+from typing import Iterable
 import warnings
 
 from iris.common.mixin import CFVariableMixin
 from iris.config import get_logger
 from iris.coords import AuxCoord
-from iris.io import decode_uri, expand_filespecs
+from iris.io import _is_nczarr_fragment, decode_uri, expand_filespecs
 from iris.loading import LoadProblems
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
@@ -145,24 +146,30 @@ def load_meshes(uris, var_name=None):
     if isinstance(uris, str):
         uris = [uris]
 
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str]:
+        scheme, part, fragment = decoded
+        category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
+        return category, part
+
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names.
-    uri_tuples = sorted(decode_uri(uri) for uri in uris)
-
+    uri_tuples = sorted(_categorise(decode_uri(uri)) for uri in uris)
     valid_sources = []
-    for scheme, groups in groupby(uri_tuples, key=lambda x: x[0]):
+    for category, groups in groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == "file":
+        if category == "file":
             filenames = [x[1] for x in groups]
             sources = expand_filespecs(filenames)
-        elif scheme in ["http", "https"]:
+        elif category in ["http", "https"]:
             sources = [":".join(x) for x in groups]
+        elif category == "nczarr":
+            sources = [x[1] for x in groups]
         else:
-            message = f"Iris cannot handle the URI scheme: {scheme}"
+            message = f"Iris cannot handle the URI scheme: {category}"
             raise ValueError(message)
 
         for source in sources:
-            if scheme == "file":
+            if category == "file":
                 with open(source, "rb") as fh:
                     handling_format_spec = FORMAT_AGENT.get_spec(Path(source).name, fh)
             else:

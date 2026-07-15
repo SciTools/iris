@@ -131,6 +131,11 @@ class TestLoadErrors:
         meshes = load_meshes(nc_paths)
         assert files_count == len(meshes)
 
+    def test_pathlib_path(self, tmp_path):
+        nc_path = Path(cdl_to_nc(self.ref_cdl, tmp_path))
+        meshes = load_meshes(nc_path)
+        assert 1 == len(meshes)
+
     def test_multi_meshes(self, tmp_path):
         ref_cdl, second_name = self.add_second_mesh()
         nc_path = cdl_to_nc(ref_cdl, tmp_path)
@@ -207,3 +212,8 @@ class TestsHttp:
         file_uris = [call[0][0] for call in self.format_agent_mock.call_args_list]
         for source in (url, Path(file).name):
             assert source in file_uris
+
+    def test_nczarr_uri(self):
+        url = "https://foo#mode=nczarr"
+        _ = load_meshes(url)
+        self.format_agent_mock.assert_called_with(url, None)

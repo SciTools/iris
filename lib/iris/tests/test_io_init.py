@@ -18,42 +18,52 @@ class TestDecodeUri:
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
                 uri,
+                None,
             ),
             (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
                 "file",
                 uri,
+                None,
             ),
             (uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 uri[:4],
                 uri[5:],
+                None,
             ),
             (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
                 uri[:5],
                 uri[6:],
+                None,
             ),
             (uri := "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"): (
-                "zarr",
-                uri,
+                "file",
+                uri[5:],
+                "mode=nczarr,file",
             ),
             (uri := "file:////data/users/joe.bloggs/air_pressure#mode=zarr,zip"): (
-                "zarr",
-                uri,
+                "file",
+                uri[5:],
+                "mode=zarr,zip",
             ),
             (uri := "file:////data/users/joe.bloggs/air_pressure#mode=xarray,file"): (
-                "zarr",
-                uri,
+                "file",
+                uri[5:],
+                "mode=xarray,file",
             ),
             (uri := "file:////data/users/joe.bloggs/air_pressure#mode=file"): (
                 "file",
                 uri[5:],
+                "mode=file",
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
                 uri,
+                None,
             ),
             (uri := "/data/local/someDir/air_pressure.zarr"): (
                 "file",
                 uri,
+                None,
             ),
         }
         for uri, expected in tests.items():
@@ -64,14 +74,17 @@ class TestDecodeUri:
             (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
                 "file",
                 uri,
+                None,
             ),
             (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
                 "file",
                 uri,
+                None,
             ),
             (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
                 "file",
                 uri,
+                None,
             ),
         }
         for uri, expected in tests.items():

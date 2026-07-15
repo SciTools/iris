@@ -26,6 +26,7 @@ from pathlib import Path
 import re
 import string
 import typing
+from urllib.parse import urlsplit
 import warnings
 
 import cf_units
@@ -425,9 +426,11 @@ class Saver:
             # Given a filepath string/path : create a dataset from that
             try:
                 # Lazy import to avoid circular import overhead at module import-time.
-                from iris.io import _is_nczarr_mode
+                from iris.io import _is_nczarr_fragment
 
-                self._is_nczarr = _is_nczarr_mode(str(filename))
+                self._is_nczarr = _is_nczarr_fragment(
+                    urlsplit(str(filename)).fragment or None
+                )
                 if self._is_nczarr:
                     # NCZarr URLs contain a #mode= fragment; Path() strips it.
                     # Keep as a plain string and pass directly to DatasetWrapper.

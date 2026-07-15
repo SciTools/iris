@@ -83,30 +83,34 @@ def _generate_cubes(uris, callback, constraints):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str]:
+        scheme, part, fragment = decoded
+        category = "nczarr" if iris.io._is_nczarr_fragment(fragment) else scheme
+        return category, part
+
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names
-    uri_tuples = sorted(iris.io.decode_uri(uri) for uri in uris)
-
-    for scheme, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
+    uri_tuples = sorted(_categorise(iris.io.decode_uri(uri)) for uri in uris)
+    for category, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == "file":
+        if category == "file":
             part_names = [x[1] for x in groups]
             for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
-        elif scheme in ["http", "https"]:
+        elif category in ["http", "https"]:
             urls = [":".join(x) for x in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
-        elif scheme == "zarr":
+        elif category == "nczarr":
             urls = [x[1] for x in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
-        elif scheme == "data":
+        elif category == "data":
             data_objects = [x[1] for x in groups]
             for cube in iris.io.load_data_objects(data_objects, callback):
                 yield cube
         else:
-            raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)
+            raise ValueError("Iris cannot handle the URI scheme: %s" % category)
 
 
 class _CubeFilter:

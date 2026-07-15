@@ -42,7 +42,11 @@ This document explains the changes made to Iris for this release
 💣 Incompatible Changes
 =======================
 
-#. N/A
+#. `decode_uri` now returns a 3-item tuple: `(scheme, part, fragment)`.
+   The fragment value is now `None` when no URI fragment is present.
+   NCZarr/Zarr detection no longer rewrites the scheme to `zarr`; the
+   transport scheme remains as provided (for example `file`, `http`,
+   `https`, `s3`), and NCZarr mode is inferred from the URI fragment.
 
 
 🚀 Performance Enhancements
