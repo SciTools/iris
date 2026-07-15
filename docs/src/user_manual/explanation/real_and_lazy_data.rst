@@ -3,8 +3,6 @@
 
    Read about how Iris defers data loading from disk.
 
-.. _real_and_lazy_data:
-
 
 .. testsetup:: *
 
@@ -13,6 +11,8 @@
     from iris.cube import CubeList
     import numpy as np
 
+
+.. _real_and_lazy_data:
 
 ==================
 Real and Lazy Data
@@ -27,6 +27,7 @@ is always an array, but the array may be either "real" or "lazy".
 In this section of the user guide we will look specifically at the concepts of
 real and lazy data as they apply to the cube and other data structures in Iris.
 
+.. _real_and_lazy_arrays:
 
 What is Real and Lazy Data?
 ---------------------------

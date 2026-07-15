@@ -136,7 +136,7 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
 Character and String datatypes
 ------------------------------
 Text can be present  in NetCDF in a variety of ways
-(see : `String data in NetCDF <cf_strings>`_ for details).
+(see : :ref:`cf_strings` for details).
 
 The main aspect to be explained here is the storage of bulk text data in *variables*.
 
@@ -146,7 +146,7 @@ Iris objects can store strings in their data arrays, such as a cube ``.data`` or
 coordinate ``.points``.
 
 These are always stored as arrays of numpy dtype "U<xx>", where <xx> is a maximum
-string width (which could be either `real or lazy <real_and_lazy_data>`_).
+string width (either numpy or dask: see :ref:`real_and_lazy_arrays`).
 
 This data is currently **only** read and written to NetCDF files as
 ``char`` type variables (i.e. byte arrays).
