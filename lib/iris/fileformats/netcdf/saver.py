@@ -27,6 +27,7 @@ from pathlib import Path
 import re
 import string
 import typing
+from typing import TYPE_CHECKING
 import warnings
 
 import cf_units
@@ -51,17 +52,25 @@ from iris.aux_factory import (
 import iris.config
 import iris.coord_systems
 import iris.coords
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    DimCoord,
+    _DimensionalMetadata,
+)
 import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf import _dask_locks
 from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
-import iris.io
 import iris.util
 import iris.warnings
 
+if TYPE_CHECKING:
+    from iris.cube import Cube
+    from iris.mesh.components import MeshXY
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
@@ -1289,8 +1298,7 @@ class Saver:
                 # coord for nodes, but a connectivity for faces/edges
                 if location == "node":
                     # For nodes, identify the dim with a coordinate variable.
-                    # Selecting the X-axis one for definiteness.
-                    dim_coords = mesh.coords(location="node", axis="x")
+                    dim_coords = mesh.coords(location="node")
                 else:
                     # For face/edge, use the relevant "optionally required"
                     # connectivity variable.
@@ -1300,7 +1308,6 @@ class Saver:
                     # As the mesh contains this location, we want to include this
                     # dim in our returned mesh dims.
                     # We should have 1 identifying variable (of either type).
-                    assert len(dim_coords) == 1
                     dim_element = dim_coords[0]
                     dim_name = self._dim_names_and_coords.name(dim_element)
                     if dim_name is None:
@@ -1549,7 +1556,12 @@ class Saver:
             )
             self._lazy_stream_data(data=bounds, cf_var=cf_var_bounds)
 
-    def _get_element_variable_name(self, cube_or_mesh, element):
+    def _get_element_variable_name(
+        self, cube_or_mesh: "Cube|MeshXY", element: "_DimensionalMetadata|Cube"
+    ) -> str:
+        # keep it as _DimensionalMetadata
+        # Don't want it as CFVariableMixin - implies a cube can be passed in
+        # Could be Coord AncillaryVariable Cellmeasure
         """Return a CF-netCDF variable name for a given coordinate-like element, or cube.
 
         Parameters
@@ -1602,12 +1614,14 @@ class Saver:
 
                     from iris.mesh import Connectivity
 
-                    # At present, a location-coord cannot be nameless, as the
-                    # MeshXY code relies on guess_coord_axis.
-                    assert isinstance(element, Connectivity)
-                    location = element.cf_role.split("_")[0]
-                    location_dim_attr = f"{location}_dimension"
-                    name = getattr(mesh, location_dim_attr)
+                    if isinstance(element, Connectivity):
+                        location = element.cf_role.split("_")[0]
+                        location_dim_attr = f"{location}_dimension"
+                        name = getattr(mesh, location_dim_attr)
+                    else:
+                        # 'coord' is a nameless coordinate of a mesh,
+                        # so we set it as unknown for saving
+                        name = "unknown"
 
             # Convert to lower case and replace whitespace by underscores.
             cf_name = "_".join(name.lower().split())

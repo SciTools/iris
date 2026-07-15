@@ -47,11 +47,18 @@ import iris.analysis.maths
 import iris.aux_factory
 from iris.aux_factory import AuxCoordFactory
 from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
-from iris.common.metadata import CoordMetadata, metadata_filter
+from iris.common.metadata import BaseMetadata, CoordMetadata, metadata_filter
 from iris.common.mixin import LimitedAttributeDict
 import iris.coord_systems
 import iris.coords
-from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
+from iris.coords import (
+    AncillaryVariable,
+    AuxCoord,
+    CellMeasure,
+    CellMethod,
+    DimCoord,
+    _DimensionalMetadata,
+)
 
 if TYPE_CHECKING:
     from typing import TYPE_CHECKING
@@ -1958,7 +1965,7 @@ class Cube(CFVariableMixin):
             factory.update(old_coord, new_coord)
 
     def coord_dims(
-        self, coord: str | DimCoord | AuxCoord | AuxCoordFactory
+        self, coord: str | _DimensionalMetadata | AuxCoordFactory
     ) -> tuple[int, ...]:
         """Return a tuple of the data dimensions relevant to the given coordinate.
 
@@ -1969,12 +1976,12 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        coord :
+        coord : str or _DimensionalMetadata or AuxCoordFactory
             The (name of the) coord to look for.
 
         Returns
         -------
-        tuple:
+        tuple of int:
              A tuple of the data dimensions relevant to the given coordinate.
         """
         name_provided = False
@@ -2163,20 +2170,15 @@ class Cube(CFVariableMixin):
 
     def coords(
         self,
-        name_or_coord: str
-        | DimCoord
-        | AuxCoord
-        | AuxCoordFactory
-        | CoordMetadata
-        | None = None,
+        name_or_coord: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
         attributes: Mapping | None = None,
         axis: iris.util.Axis | None = None,
-        contains_dimension=None,
+        contains_dimension: int | None = None,
         dimensions: Iterable[int] | int | None = None,
-        coord_system=None,
+        coord_system: iris.coord_systems.CoordSystem | None = None,
         dim_coords: bool | None = None,
         mesh_coords: bool | None = None,
     ) -> list[DimCoord | AuxCoord]:
@@ -2184,7 +2186,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord :
+        name_or_coord : str or CFVariableMixin or BaseMetadata, optional
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2195,39 +2197,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name :
+        standard_name : str, optional
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name :
+        long_name : str, optional
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name :
+        var_name : str, optional
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes :
-            A dictionary of attributes desired on the coordinates. If ``None``,
-            does not check for ``attributes``.
-        axis :
+        attributes : Mapping, optional
+            A mapping of attributes desired on the coordinates. `dict` is a type of Mapping.
+            If ``None``, does not check for ``attributes``.
+        axis : str, optional
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension :
+        contains_dimension : int, optional
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions :
+        dimensions : iterable of int or int, optional
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system :
+        coord_system : CoordSystem, optional
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords :
+        dim_coords : bool, optional
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords :
+        mesh_coords : bool, optional
             Set to ``True`` to return only coordinates which are
             :class:`~iris.mesh.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
@@ -2325,20 +2327,15 @@ class Cube(CFVariableMixin):
 
     def coord(
         self,
-        name_or_coord: str
-        | DimCoord
-        | AuxCoord
-        | AuxCoordFactory
-        | CoordMetadata
-        | None = None,
+        name_or_coord: str | CFVariableMixin | BaseMetadata | None = None,
         standard_name: str | None = None,
         long_name: str | None = None,
         var_name: str | None = None,
         attributes: Mapping | None = None,
         axis: iris.util.Axis | None = None,
-        contains_dimension=None,
+        contains_dimension: int | None = None,
         dimensions: Iterable[int] | int | None = None,
-        coord_system=None,
+        coord_system: iris.coord_systems.CoordSystem | None = None,
         dim_coords: bool | None = None,
         mesh_coords: bool | None = None,
     ) -> DimCoord | AuxCoord:
@@ -2346,7 +2343,7 @@ class Cube(CFVariableMixin):
 
         Parameters
         ----------
-        name_or_coord :
+        name_or_coord : str or CFVariableMixin or BaseMetadata, optional
             Either,
 
             * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -2357,39 +2354,39 @@ class Cube(CFVariableMixin):
             * a coordinate or metadata instance equal to that of the desired
               coordinate e.g., :class:`~iris.coords.DimCoord` or
               :class:`~iris.common.metadata.CoordMetadata`.
-        standard_name :
+        standard_name : str, optional
             The CF standard name of the desired coordinate. If ``None``, does not
             check for ``standard name``.
-        long_name :
+        long_name : str, optional
             An unconstrained description of the coordinate. If ``None``, does not
             check for ``long_name``.
-        var_name :
+        var_name : str, optional
             The NetCDF variable name of the desired coordinate. If ``None``, does
             not check for ``var_name``.
-        attributes :
-            A dictionary of attributes desired on the coordinates. If ``None``,
-            does not check for ``attributes``.
-        axis :
+        attributes : Mapping, optional
+            A mapping of attributes desired on the coordinates. `dict` is a type of Mapping.
+            If ``None``, does not check for ``attributes``.
+        axis : str, optional
             The desired coordinate axis, see :func:`iris.util.guess_coord_axis`.
             If ``None``, does not check for ``axis``. Accepts the values ``X``,
             ``Y``, ``Z`` and ``T`` (case-insensitive).
-        contains_dimension :
+        contains_dimension : int, optional
             The desired coordinate contains the data dimension. If ``None``, does
             not check for the dimension.
-        dimensions :
+        dimensions : iterable of int or int, optional
             The exact data dimensions of the desired coordinate. Coordinates
             with no data dimension can be found with an empty ``tuple`` or
             ``list`` i.e., ``()`` or ``[]``. If ``None``, does not check for
             dimensions.
-        coord_system :
+        coord_system : CoordSystem, optional
             Whether the desired coordinates have a coordinate system equal to
             the given coordinate system. If ``None``, no check is done.
-        dim_coords :
+        dim_coords : bool, optional
             Set to ``True`` to only return coordinates that are the cube's
             dimension coordinates. Set to ``False`` to only return coordinates
             that are the cube's auxiliary, mesh and derived coordinates.
             If ``None``, returns all coordinates.
-        mesh_coords :
+        mesh_coords : bool, optional
             Set to ``True`` to return only coordinates which are
             :class:`~iris.mesh.MeshCoord`\'s.
             Set to ``False`` to return only non-mesh coordinates.
