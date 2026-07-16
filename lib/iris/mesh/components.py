@@ -18,7 +18,6 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from copy import deepcopy
 from datetime import datetime
 import functools
 from typing import Any, Iterable, Literal, Optional, TypeAlias
