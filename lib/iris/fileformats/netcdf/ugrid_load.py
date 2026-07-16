@@ -143,7 +143,12 @@ def load_meshes(uris, var_name=None):
     from iris.fileformats.cf import CFReader
     import iris.fileformats.netcdf.loader as nc_loader
 
-    if isinstance(uris, str):
+    if (
+        isinstance(uris, str)
+        or hasattr(uris, "fromcdl")
+        or not isinstance(uris, Iterable)
+    ):
+        # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
     def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
