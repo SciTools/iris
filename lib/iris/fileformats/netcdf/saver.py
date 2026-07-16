@@ -66,7 +66,12 @@ import iris.warnings
 
 if TYPE_CHECKING:
     from iris.cube import Cube
-    from iris.mesh.components import MeshXY
+    from iris.mesh.components import (
+        MeshEdgeCoords,
+        MeshFaceCoords,
+        MeshNodeCoords,
+        MeshXY,
+    )
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
@@ -990,13 +995,6 @@ class Saver:
             NetCDF data compression keyword arguments.
 
         """
-        from iris.mesh.components import (
-            MeshEdgeCoords,
-            MeshFaceCoords,
-            MeshNodeCoords,
-            MeshXY,
-        )
-
         # Exclude any mesh coords, which are bundled in with the aux-coords.
         coords_to_add = [
             coord for coord in cube.aux_coords if not hasattr(coord, "mesh")
