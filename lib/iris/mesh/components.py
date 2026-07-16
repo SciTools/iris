@@ -678,13 +678,6 @@ class _MeshXYMixin(Mesh, ABC):
         # See https://github.com/SciTools/iris/pull/1772
         return hash(id(self))
 
-    def __getstate__(self):
-        return (
-            self._metadata_manager,
-            self._coord_manager,
-            self._connectivity_manager,
-        )
-
     def __ne__(self, other):
         result = self.__eq__(other)
         if result is not NotImplemented:
@@ -828,11 +821,13 @@ class _MeshXYMixin(Mesh, ABC):
         result = "\n".join(lines)
         return result
 
+    @abstractmethod
+    def __getstate__(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def __setstate__(self, state):
-        metadata_manager, coord_manager, connectivity_manager = state
-        self._metadata_manager = metadata_manager
-        self._coord_manager = coord_manager
-        self._connectivity_manager = connectivity_manager
+        raise NotImplementedError
 
     # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     @property
@@ -1732,6 +1727,19 @@ class MeshXY(_MeshXYMixin):
         else:
             emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
             raise NotImplementedError(emsg)
+
+    def __getstate__(self) -> tuple[Any, Any, Any]:
+        return (
+            self._metadata_manager,
+            self._coord_manager,
+            self._connectivity_manager,
+        )
+
+    def __setstate__(self, state: tuple[Any, Any, Any]):
+        metadata_manager, coord_manager, connectivity_manager = state
+        self._metadata_manager = metadata_manager
+        self._coord_manager = coord_manager
+        self._connectivity_manager = connectivity_manager
 
     # TODO: backwards compatibility: make from_coords() perform a no-op if the given
     #  coords are already MeshCoords.
@@ -3187,8 +3195,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             attributes=attributes,
         )
 
-    # TODO: PyLance reportIncompatibleMethodOverride. Consider make this an abstract
-    #  method then overriding in both subclasses.
     def __getstate__(self) -> tuple[ArrayLike, MeshIndexSetMetadata]:
         return (
             self.indices,
