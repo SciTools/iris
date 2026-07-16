@@ -651,7 +651,7 @@ class _MeshXYMixin(Mesh, ABC):
     # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     _connectivity_manager_attr: Any
     # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
-    _coord_manager_attr: Any
+    _coord_manager_attr: "_MeshCoordinateManager"
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
     #: The supported mesh axes.
@@ -847,9 +847,8 @@ class _MeshXYMixin(Mesh, ABC):
         # @property enables interruption/customisation in subclasses.
         return self._coord_manager_attr
 
-    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     @_coord_manager.setter
-    def _coord_manager(self, manager) -> None:
+    def _coord_manager(self, manager: "_MeshCoordinateManager") -> None:
         # @property enables interruption/customisation in subclasses.
         self._coord_manager_attr = manager
 
@@ -2110,7 +2109,7 @@ class _ManagerMembers(dict):
             setattr(self, op_name, new_op)
 
 
-class _Mesh1DCoordinateManager:
+class _MeshCoordinateManager(ABC):
     """TBD: require clarity on coord_systems validation.
 
     TBD: require clarity on __eq__ support
@@ -2479,7 +2478,7 @@ class _Mesh1DCoordinateManager:
         face_indices: Optional[ArrayLike],
         mesh_id: int,
         frozen: bool = False,
-    ) -> "_Mesh1DCoordinateManager":
+    ) -> "_MeshCoordinateManager":
         """Return an indexed copy of this coordinate manager.
 
         Parameters
@@ -2561,7 +2560,12 @@ class _Mesh1DCoordinateManager:
         )
 
 
-class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
+class _Mesh1DCoordinateManager(_MeshCoordinateManager):
+    # The concrete definition of this is in _MeshCoordinateManager
+    pass
+
+
+class _Mesh2DCoordinateManager(_MeshCoordinateManager):
     OPTIONAL = (
         "edge_x",
         "edge_y",
@@ -3308,8 +3312,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     @property
     def _coord_manager(self):
-        mesh_man: _Mesh1DCoordinateManager = self.mesh._coord_manager
-        self_man: Optional[_Mesh1DCoordinateManager] = getattr(
+        mesh_man: _MeshCoordinateManager = self.mesh._coord_manager
+        self_man: Optional[_MeshCoordinateManager] = getattr(
             self, "_coord_manager_attr", None
         )
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
@@ -3425,7 +3429,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
 # TODO: this can only work if the manager classes are defined _before_ the downstream
 #  use in MeshXY. Have avoided re-ordering so far, to avoid polluting the Git diff.
-_CoordinateManagerType: TypeAlias = _Mesh1DCoordinateManager | _Mesh2DCoordinateManager
 _ConnectivityManagerType: TypeAlias = (
     _Mesh1DConnectivityManager | _Mesh2DConnectivityManager
 )
