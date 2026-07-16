@@ -128,6 +128,8 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
+        # _members are fields that are specific in this NamedTuple.
+        # Add these as fields.
         if "_members" in namespace and not getattr(
             namespace["_members"], "__isabstractmethod__", False
         ):
