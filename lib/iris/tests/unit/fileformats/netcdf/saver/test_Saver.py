@@ -6,6 +6,7 @@
 
 import collections
 from contextlib import contextmanager
+from pathlib import Path
 from types import ModuleType
 
 import numpy as np
@@ -1434,3 +1435,38 @@ class Test_create_cf_grid_mapping(MockerMixin):
 def extended_grid_mapping(request):
     """Fixture for enabling/disabling extended grid mapping."""
     return request.param
+
+
+class TestNcZarr:
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        # Saver init tries to create a DatasetWrapper, but we are using dummy paths.
+        self.mock_dataset = mocker.patch(
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper"
+        )
+
+    def test_file_uri(self):
+        # 'File URLs' get converted to a file path format.
+        url = f"file:///foo#bar=baz"
+        saver = Saver(url, "NETCDF4")
+        assert isinstance(saver.filepath, Path)
+        assert not str(saver.filepath).startswith("file:///")
+
+    @pytest.mark.parametrize("scheme", ["file", "http"])
+    def test_nczarr_uri(self, scheme):
+        # URL should be used raw regardless of file or http scheme.
+        prefix = "://"
+        if scheme == "file":
+            prefix += "/"
+        url = f"{scheme}{prefix}foo#mode=nczarr"
+        saver = Saver(url, "NETCDF4")
+        assert not isinstance(saver.filepath, Path)
+        assert saver.filepath == url
+
+    def test_non_nczarr_uri(self, tmp_path):
+        # Non-nczarr fragments are not interpreted, so are handled exactly the
+        #  same as any other file URL.
+        url = f"file:///foo#bar=baz"
+        saver = Saver(url, "NETCDF4")
+        assert isinstance(saver.filepath, Path)
+        assert not str(saver.filepath).startswith("file:///")

@@ -601,6 +601,7 @@ def realistic_4d():
     lat = icoords.DimCoord(
         lat_pts,
         standard_name="grid_latitude",
+        var_name="grid_latitude",
         units="degrees",
         bounds=lat_bnds,
         coord_system=ll_cs,
@@ -608,13 +609,16 @@ def realistic_4d():
     lon = icoords.DimCoord(
         lon_pts,
         standard_name="grid_longitude",
+        var_name="grid_longitude",
         units="degrees",
         bounds=lon_bnds,
         coord_system=ll_cs,
     )
     level_height = icoords.DimCoord(
         level_height_pts,
+        standard_name="atmosphere_hybrid_height_coordinate",
         long_name="level_height",
+        var_name="level_height",
         units="m",
         bounds=level_height_bnds,
         attributes={"positive": "up"},
@@ -622,16 +626,34 @@ def realistic_4d():
     model_level = icoords.DimCoord(
         model_level_pts,
         standard_name="model_level_number",
+        var_name="model_level_number",
         units="1",
         attributes={"positive": "up"},
     )
-    sigma = icoords.AuxCoord(sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds)
-    orography = icoords.AuxCoord(orography, standard_name="surface_altitude", units="m")
+    sigma = icoords.AuxCoord(
+        sigma_pts,
+        long_name="sigma",
+        var_name="sigma",
+        units="1",
+        bounds=sigma_bnds,
+    )
+    orography = icoords.AuxCoord(
+        orography,
+        standard_name="surface_altitude",
+        var_name="surface_altitude",
+        units="m",
+    )
     time = icoords.DimCoord(
-        time_pts, standard_name="time", units="hours since 1970-01-01 00:00:00"
+        time_pts,
+        standard_name="time",
+        var_name="time",
+        units="hours since 1970-01-01 00:00:00",
     )
     forecast_period = icoords.DimCoord(
-        forecast_period_pts, standard_name="forecast_period", units="hours"
+        forecast_period_pts,
+        standard_name="forecast_period",
+        var_name="forecast_period",
+        units="hours",
     )
 
     hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)
@@ -760,12 +782,14 @@ def realistic_4d_w_everything(w_mesh=False):
     cell_measure = CellMeasure(
         data=cell_areas,
         standard_name="cell_area",
+        var_name="cell_area",
     )
     cube.add_cell_measure(cell_measure, (lat_dim, lon_dim))
 
     ancillary_variable = AncillaryVariable(
-        data=np.remainder(cube.data.astype(int), 2),
+        data=np.remainder(np.ma.filled(cube.data, 0).astype(int), 2),
         standard_name="quality_flag",
+        var_name="quality_flag",
     )
     cube.add_ancillary_variable(ancillary_variable, np.arange(cube.ndim))
 
@@ -812,12 +836,14 @@ def realistic_4d_w_everything(w_mesh=False):
         default_points.x,
         bounds=default_bounds.x,
         standard_name="longitude",
+        var_name="longitude",
         units="degrees",
     )
     default_lat = AuxCoord(
         default_points.y,
         bounds=default_bounds.y,
         standard_name="latitude",
+        var_name="latitude",
         units="degrees",
     )
     cube.add_aux_coord(default_lon, (lat_dim, lon_dim))
@@ -972,6 +998,8 @@ def realistic_4d_w_everything(w_mesh=False):
         }
         aux_factory = aux_factory.updated(coord_mapping)
         mesh_cube.add_aux_factory(aux_factory)
+
+    cube.attributes.globals["Conventions"] = "CF-1.7"
 
     if w_mesh:
         result = mesh_cube
