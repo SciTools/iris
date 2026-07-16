@@ -1,0 +1,2 @@
+:user:`trexfeathers` improved the speed of field iteration when reading PP files.
+Up to 3x speed up has been seen, dependending on the circumstances.

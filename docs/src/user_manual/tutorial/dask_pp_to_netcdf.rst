@@ -9,6 +9,8 @@
 1. Speed up Converting PP Files to NetCDF
 -----------------------------------------
 
+.. readingtime::
+
 Here is an example of how dask objects can be tuned for better performance.
 
 1.1 The Problem - Slow Saving

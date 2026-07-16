@@ -1355,6 +1355,33 @@ class TestSaveUgrid__mesh:
                 "Mesh2d_0_edge_N_nodes",
             ]
 
+    def test_mesh_no_standard_name_coords_saves_as_unknown(self, check_save_mesh):
+        # Tests when the coords of a mesh don't contain a standard that it is possible to save
+        # and that the saved coords are marked as "unknown"
+        face_lat = AuxCoord([2])
+        face_lon = AuxCoord([2])
+        node_lat = AuxCoord([0, 0, 4])
+        node_lon = AuxCoord([0, 4, 2])
+        face_node_conn = [[0, 1, 2]]
+
+        connectivity = Connectivity(
+            indices=face_node_conn,
+            cf_role="face_node_connectivity",
+        )
+        mesh = MeshXY(
+            topology_dimension=2,
+            node_coords_and_axes=[(node_lat, "y"), (node_lon, "x")],
+            connectivities=[connectivity],
+            face_coords_and_axes=[(face_lat, "y"), (face_lon, "x")],
+        )
+
+        filepath = check_save_mesh(mesh)
+        _, vars = scan_dataset(filepath)
+
+        expected_coord_names = ("unknown", "unknown_0", "unknown_1", "unknown_2")
+        for expected_coord_name in expected_coord_names:
+            assert expected_coord_name in vars
+
 
 # WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN
 # :mod:`iris.tests.unit.fileformats.netcdf.test_Saver__lazy.`
