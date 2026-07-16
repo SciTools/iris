@@ -1212,14 +1212,33 @@ class Cube(CFVariableMixin):
         units: Unit | str | None = None,
         attributes: Mapping | None = None,
         cell_methods: Iterable[CellMethod] | None = None,
-        dim_coords_and_dims: Iterable[tuple[DimCoord, int]] | None = None,
-        aux_coords_and_dims: Iterable[tuple[AuxCoord, int | Iterable[int] | None]]
+        dim_coords_and_dims: Iterable[
+            tuple[
+                DimCoord,
+                int,
+            ],
+        ]
+        | None = None,
+        aux_coords_and_dims: Iterable[
+            tuple[
+                AuxCoord,
+                int | Iterable[int] | None,
+            ],
+        ]
         | None = None,
         aux_factories: Iterable[AuxCoordFactory] | None = None,
-        cell_measures_and_dims: Iterable[tuple[CellMeasure, Iterable[int] | int | None]]
+        cell_measures_and_dims: Iterable[
+            tuple[
+                CellMeasure,
+                Iterable[int] | int | None,
+            ],
+        ]
         | None = None,
         ancillary_variables_and_dims: Iterable[
-            tuple[AncillaryVariable, Iterable[int] | int | None]
+            tuple[
+                AncillaryVariable,
+                Iterable[int] | int | None,
+            ],
         ]
         | None = None,
         shape: tuple | None = None,
