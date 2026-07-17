@@ -7,88 +7,97 @@
 from io import BytesIO
 from pathlib import Path
 
+import pytest
+
 import iris.fileformats as iff
 import iris.io
 from iris.tests import _shared_utils
 
 
 class TestDecodeUri:
-    def test_decode_uri__str(self):
-        tests = {
-            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
-                None,
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
-                None,
+            (
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                ("file", r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                uri[:4],
-                uri[5:],
-                None,
+            (
+                "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
-                uri[:5],
-                uri[6:],
-                None,
+            (
+                "https://www.somehost.com:8080/resource/thing.grib",
+                ("https", "//www.somehost.com:8080/resource/thing.grib", None),
             ),
-            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"): (
-                "file",
-                uri[5:],
-                "mode=nczarr,file",
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure#mode=nczarr,file",
+                    "mode=nczarr,file",
+                ),
             ),
-            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=zarr,zip"): (
-                "file",
-                uri[5:],
-                "mode=zarr,zip",
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=zarr,zip",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure#mode=zarr,zip",
+                    "mode=zarr,zip",
+                ),
             ),
-            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=xarray,file"): (
-                "file",
-                uri[5:],
-                "mode=xarray,file",
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=xarray,file",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure#mode=xarray,file",
+                    "mode=xarray,file",
+                ),
             ),
-            (uri := "file:////data/users/joe.bloggs/air_pressure#mode=file"): (
-                "file",
-                uri[5:],
-                "mode=file",
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=file",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure#mode=file",
+                    "mode=file",
+                ),
             ),
-            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
-                "file",
-                uri,
-                None,
+            (
+                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                ("file", "/data/local/someDir/2013-11-25T13:49:17.632797", None),
             ),
-            (uri := "/data/local/someDir/air_pressure.zarr"): (
-                "file",
-                uri,
-                None,
+            (
+                "/data/local/someDir/air_pressure.zarr",
+                ("file", "/data/local/someDir/air_pressure.zarr", None),
             ),
-        }
-        for uri, expected in tests.items():
-            assert expected == iris.io.decode_uri(uri)
+        ],
+    )
+    def test_decode_uri__str(self, uri, expected):
+        assert expected == iris.io.decode_uri(uri)
 
-    def test_decode_uri__path(self):
-        tests = {
-            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
-                None,
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
-                None,
+            (
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                ("file", r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
-                "file",
-                uri,
-                None,
+            (
+                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                ("file", "/data/local/someDir/2013-11-25T13:49:17.632797", None),
             ),
-        }
-        for uri, expected in tests.items():
-            assert expected == iris.io.decode_uri(Path(uri))
+        ],
+    )
+    def test_decode_uri__path(self, uri, expected):
+        assert expected == iris.io.decode_uri(Path(uri))
 
 
 class TestFileFormatPicker:
@@ -100,9 +109,10 @@ class TestFileFormatPicker:
         )
 
     @_shared_utils.skip_data
-    def test_format_picker(self):
+    @pytest.mark.parametrize(
         # ways to test the format picker = list of (format-name, file-spec)
-        test_specs = [
+        ("expected_format_name", "file_spec"),
+        [
             (
                 "NetCDF",
                 ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"],
@@ -146,33 +156,32 @@ class TestFileFormatPicker:
                     "201007020900_u1096_ng_ey00_visibility0180_screen_2km",
                 ],
             ),
-            #            ('NAME',
-            #                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
-            #                 'Fields_grid1_201005110000.txt']),
-        ]
-
+        ],
+        #            ('NAME',
+        #                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
+        #                 'Fields_grid1_201005110000.txt']),
+    )
+    def test_format_picker(self, expected_format_name, file_spec):
         # test that each filespec is identified as the expected format
-        for expected_format_name, file_spec in test_specs:
-            test_path = _shared_utils.get_data_path(file_spec)
-            with open(test_path, "rb") as test_file:
-                a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
-                assert a.name == expected_format_name
+        test_path = _shared_utils.get_data_path(file_spec)
+        with open(test_path, "rb") as test_file:
+            a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
+            assert a.name == expected_format_name
 
-    def test_format_picker_nodata(self):
+    @pytest.mark.parametrize("header_length", [21, 80, 41, 42])
+    def test_format_picker_nodata(self, header_length):
         # The following is to replace the above at some point as no real files
         # are required.
         # (Used binascii.unhexlify() to convert from hex to binary)
 
         # Packaged grib, magic number offset by set length, this length is
         # specific to WMO bulletin headers
-        header_lengths = [21, 80, 41, 42]
-        for header_length in header_lengths:
-            binary_string = header_length * b"\x00" + b"GRIB" + b"\x00" * 100
-            with BytesIO(b"rw") as bh:
-                bh.write(binary_string)
-                bh.name = "fake_file_handle"
-                a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
-            assert a.name == "GRIB"
+        binary_string = header_length * b"\x00" + b"GRIB" + b"\x00" * 100
+        with BytesIO(b"rw") as bh:
+            bh.write(binary_string)
+            bh.name = "fake_file_handle"
+            a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
+        assert a.name == "GRIB"
 
     def test_open_dap(self):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
