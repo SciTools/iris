@@ -55,7 +55,7 @@ def test_roundtrip_cube(tmp_path, realistic_4d_w_everything):
 
 def test_roundtrip_file(tmp_path, zarr_file):
     def _get_json(path: Path):
-        return json.load(path.open())
+        return sorted(json.load(path.open()))
 
     loaded = iris.load(nczarr_uri(zarr_file))
     output_path = tmp_path / "output.zarr"
@@ -68,6 +68,6 @@ def test_roundtrip_file(tmp_path, zarr_file):
         output_file = output_path / relative_path
         assert output_file.exists()
         if original_file.name in (".zattrs", ".zgroup"):
-            assert sorted(_get_json(original_file)) == sorted(_get_json(output_file))
+            assert _get_json(original_file) == _get_json(output_file)
         elif original_file.is_file():
             assert original_file.read_bytes() == output_file.read_bytes()
