@@ -1221,7 +1221,7 @@ class Cube(CFVariableMixin):
         | None = None,
         aux_coords_and_dims: Iterable[
             tuple[
-                AuxCoord,
+                AuxCoord | DimCoord,
                 int | Iterable[int] | None,
             ],
         ]
