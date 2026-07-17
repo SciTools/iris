@@ -124,7 +124,7 @@ def decode_uri(uri, default="file"):
     ('file', '///data/local/dataZoo/...', None)
 
     >>> print(decode_uri('file:///data/local/dataZoo/something#mode=nczarr,file'))
-    ('file', '///data/local/dataZoo/something', 'mode=nczarr,file')
+    ('file', '///data/local/dataZoo/something#mode=nczarr,file', 'mode=nczarr,file')
 
     >>> print(decode_uri('/data/local/dataZoo/...'))
     ('file', '/data/local/dataZoo/...', None)
