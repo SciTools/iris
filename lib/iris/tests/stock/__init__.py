@@ -601,7 +601,6 @@ def realistic_4d():
     lat = icoords.DimCoord(
         lat_pts,
         standard_name="grid_latitude",
-        var_name="grid_latitude",
         units="degrees",
         bounds=lat_bnds,
         coord_system=ll_cs,
@@ -609,16 +608,13 @@ def realistic_4d():
     lon = icoords.DimCoord(
         lon_pts,
         standard_name="grid_longitude",
-        var_name="grid_longitude",
         units="degrees",
         bounds=lon_bnds,
         coord_system=ll_cs,
     )
     level_height = icoords.DimCoord(
         level_height_pts,
-        standard_name="atmosphere_hybrid_height_coordinate",
         long_name="level_height",
-        var_name="level_height",
         units="m",
         bounds=level_height_bnds,
         attributes={"positive": "up"},
@@ -626,33 +622,28 @@ def realistic_4d():
     model_level = icoords.DimCoord(
         model_level_pts,
         standard_name="model_level_number",
-        var_name="model_level_number",
         units="1",
         attributes={"positive": "up"},
     )
     sigma = icoords.AuxCoord(
         sigma_pts,
         long_name="sigma",
-        var_name="sigma",
         units="1",
         bounds=sigma_bnds,
     )
     orography = icoords.AuxCoord(
         orography,
         standard_name="surface_altitude",
-        var_name="surface_altitude",
         units="m",
     )
     time = icoords.DimCoord(
         time_pts,
         standard_name="time",
-        var_name="time",
         units="hours since 1970-01-01 00:00:00",
     )
     forecast_period = icoords.DimCoord(
         forecast_period_pts,
         standard_name="forecast_period",
-        var_name="forecast_period",
         units="hours",
     )
 
@@ -769,6 +760,10 @@ def realistic_4d_w_everything(w_mesh=False):
 
     cube.long_name = "Air Potential Temperature"
     cube.var_name = "air_temp"
+    cube.coord("level_height").standard_name = "atmosphere_hybrid_height_coordinate"
+
+    for coord in [*cube.dim_coords, *cube.aux_coords]:
+        coord.var_name = coord.name()
 
     cell_method = CellMethod("mean", coords="time", intervals="1 hour")
     cube.add_cell_method(cell_method)
