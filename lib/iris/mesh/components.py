@@ -2174,7 +2174,7 @@ class _MeshCoordinateManagerBase(ABC):
     def __getstate__(self):
         return self._members
 
-    def __iter__(self) -> Generator[tuple[str, AuxCoord]]:
+    def __iter__(self) -> Generator[tuple[str, AuxCoord], None, None]:
         for item in self._members.items():
             yield item
 
