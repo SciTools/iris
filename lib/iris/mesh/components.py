@@ -3720,6 +3720,11 @@ class MeshCoord(AuxCoord):
         # TODO: handle problems caused by asking for 1 index
         #  E.g. coord[0:1] works fine, coord[0] causes errors difficult to
         #   understand.
+        if len(keys) != 1:
+            raise Exception("TODO: Acceptable exception")
+        elif type(keys[0]) == slice and keys == (slice(None),):
+            return self.copy()
+
         from ..experimental.mesh_coord_indexing import SETTING, Options
 
         def get_index_set():
