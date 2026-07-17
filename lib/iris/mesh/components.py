@@ -2172,8 +2172,8 @@ class _MeshCoordinateManagerBase(ABC):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)
 
-    def __getstate__(self):
-        return self._members
+    def __getstate__(self) -> tuple[_ManagerMembers, str | None]:
+        return (self._members, self._view_message)
 
     def __iter__(self) -> Generator[tuple[str, AuxCoord], None, None]:
         for item in self._members.items():
@@ -2189,12 +2189,14 @@ class _MeshCoordinateManagerBase(ABC):
         args = [f"{member}={coord!r}" for member, coord in self if coord is not None]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: tuple[_ManagerMembers, str | None]):
         if not hasattr(self, "timestamp"):
             # Create ".timestamp" if missing, as the "._members" setter requires one.
             # Needing during unpickling, where __setstate__ replaces object __init__.
             self.timestamp = _Timestamp()
-        self._members = _ManagerMembers(state)
+        members, view_message = state
+        self._members = _ManagerMembers(members)
+        self._view_message = view_message
 
     def __str__(self):
         args = [f"{member}" for member, coord in self if coord is not None]
@@ -2721,6 +2723,7 @@ class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
     REQUIRED: tuple = NotImplemented
     OPTIONAL: tuple = NotImplemented
+    _view_message: str | None = None
 
     def __init__(self, *connectivities, view: Optional[str] = None):
         self.timestamp = _Timestamp()
