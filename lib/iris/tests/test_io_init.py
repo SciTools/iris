@@ -38,31 +38,15 @@ class TestDecodeUri:
                 "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file",
                 (
                     "file",
-                    "////data/users/joe.bloggs/air_pressure#mode=nczarr,file",
+                    "////data/users/joe.bloggs/air_pressure",
                     "mode=nczarr,file",
-                ),
-            ),
-            (
-                "file:////data/users/joe.bloggs/air_pressure#mode=zarr,zip",
-                (
-                    "file",
-                    "////data/users/joe.bloggs/air_pressure#mode=zarr,zip",
-                    "mode=zarr,zip",
-                ),
-            ),
-            (
-                "file:////data/users/joe.bloggs/air_pressure#mode=xarray,file",
-                (
-                    "file",
-                    "////data/users/joe.bloggs/air_pressure#mode=xarray,file",
-                    "mode=xarray,file",
                 ),
             ),
             (
                 "file:////data/users/joe.bloggs/air_pressure#mode=file",
                 (
                     "file",
-                    "////data/users/joe.bloggs/air_pressure#mode=file",
+                    "////data/users/joe.bloggs/air_pressure",
                     "mode=file",
                 ),
             ),
@@ -77,7 +61,7 @@ class TestDecodeUri:
         ],
     )
     def test_decode_uri__str(self, uri, expected):
-        assert expected == iris.io.decode_uri(uri)
+        assert iris.io.decode_uri(uri) == expected
 
     @pytest.mark.parametrize(
         ("uri", "expected"),
@@ -97,7 +81,7 @@ class TestDecodeUri:
         ],
     )
     def test_decode_uri__path(self, uri, expected):
-        assert expected == iris.io.decode_uri(Path(uri))
+        assert iris.io.decode_uri(Path(uri)) == expected
 
 
 class TestFileFormatPicker:

@@ -124,7 +124,7 @@ def decode_uri(uri, default="file"):
     ('file', '///data/local/dataZoo/...', None)
 
     >>> print(decode_uri('file:///data/local/dataZoo/something#mode=nczarr,file'))
-    ('file', '///data/local/dataZoo/something#mode=nczarr,file', 'mode=nczarr,file')
+    ('file', '///data/local/dataZoo/something', 'mode=nczarr,file')
 
     >>> print(decode_uri('/data/local/dataZoo/...'))
     ('file', '/data/local/dataZoo/...', None)
@@ -146,7 +146,6 @@ def decode_uri(uri, default="file"):
         uri = str(uri)
 
     if isinstance(uri, str):
-        fragment = urlsplit(uri).fragment or None
         # make sure scheme has at least 2 letters to avoid windows drives
         # put - last in the brackets so it refers to the character, not a range
         # reference on valid schemes: https://tools.ietf.org/html/std66#section-3.1
@@ -158,6 +157,9 @@ def decode_uri(uri, default="file"):
             # Catch bare UNIX and Windows paths
             scheme = default
             part = uri
+        fragment = urlsplit(uri).fragment or None
+        if fragment:
+            part = part[: -len(fragment) - 1]  # remove the fragment from the part
     else:
         # We can pass things other than strings, like open files.
         # These are simply identified as 'data objects'.

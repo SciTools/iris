@@ -154,6 +154,8 @@ def load_meshes(uris, var_name=None):
     def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
         scheme, part, fragment = decoded
         category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
+        if fragment:
+            part = f"{part}#{fragment}"
         return category, scheme, part
 
     # Group collections of uris by their iris handler
