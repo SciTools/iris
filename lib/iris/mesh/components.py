@@ -33,7 +33,7 @@ import warnings
 from cf_units import Unit
 from dask import array as da
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 
 from iris.common.metadata import (
     ConnectivityMetadata,
@@ -2955,7 +2955,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def indexed(
         self,
-        node_indices: ArrayLike,
+        node_indices: np.ndarray | da.Array,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -2989,7 +2989,17 @@ class _MeshConnectivityManagerBase(ABC):
             "face": face_indices,
         }
         # Prep some indexing information for later node indices remapping.
-        order = node_indices.argsort()
+        # if isinstance(node_indices, np.ndarray)
+        order: NDArray[np.intp]
+        match node_indices:
+            case np.ndarray():
+                order = node_indices.argsort()
+            case da.Array():
+                # TODO: dask mentions that sorting in parallel is inefficient
+                # https://docs.dask.org/en/latest/array-numpy-compatibility.html#id68
+                order = da.argtopk(node_indices).compute()
+
+        # order = node_indices.argsort()
         old_sorted = node_indices[order]
         al = da if _lazy.is_lazy_data(node_indices) else np
         new_ids_sorted = al.arange(len(node_indices))[order]
