@@ -20,7 +20,14 @@ from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
 import functools
-from typing import Any, Iterable, Literal, Optional, TypeAlias
+from typing import (
+    Any,
+    Generator,
+    Iterable,
+    Literal,
+    Optional,
+    TypedDict,
+)
 import warnings
 
 from cf_units import Unit
@@ -649,9 +656,9 @@ class _MeshXYMixin(Mesh, ABC):
     # TODO: Impossible to type hint the return type of metadata_manager_factory().
     _metadata_manager: Any
     # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
-    _connectivity_manager_attr: Any
+    _connectivity_manager_attr: "_MeshConnectivityManagerBase"
     # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
-    _coord_manager_attr: "_MeshCoordinateManager"
+    _coord_manager_attr: "_MeshCoordinateManagerBase"
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
     #: The supported mesh axes.
@@ -715,12 +722,12 @@ class _MeshXYMixin(Mesh, ABC):
     def __str__(self):
         return self.summary(shorten=False)
 
-    def _summary_oneline(self):
+    def _summary_oneline(self) -> str:
         # We use the repr output to produce short one-line identity summary,
         # similar to the object.__str__ output "<object at xxx>".
         # This form also used in other str() constructions, like MeshCoord.
         # By contrast, __str__ (below) produces a readable multi-line printout.
-        mesh_name = self.name()
+        mesh_name: str | None = self.name()
         if mesh_name in (None, "", "unknown"):
             mesh_name = None
         if mesh_name:
@@ -829,15 +836,13 @@ class _MeshXYMixin(Mesh, ABC):
     def __setstate__(self, state):
         raise NotImplementedError
 
-    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     @property
-    def _connectivity_manager(self):
+    def _connectivity_manager(self) -> "_MeshConnectivityManagerBase":
         # @property enables interruption/customisation in subclasses.
         return self._connectivity_manager_attr
 
-    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     @_connectivity_manager.setter
-    def _connectivity_manager(self, manager) -> None:
+    def _connectivity_manager(self, manager: "_MeshConnectivityManagerBase") -> None:
         # @property enables interruption/customisation in subclasses.
         self._connectivity_manager_attr = manager
 
@@ -848,7 +853,7 @@ class _MeshXYMixin(Mesh, ABC):
         return self._coord_manager_attr
 
     @_coord_manager.setter
-    def _coord_manager(self, manager: "_MeshCoordinateManager") -> None:
+    def _coord_manager(self, manager: "_MeshCoordinateManagerBase") -> None:
         # @property enables interruption/customisation in subclasses.
         self._coord_manager_attr = manager
 
@@ -2109,7 +2114,7 @@ class _ManagerMembers(dict):
             setattr(self, op_name, new_op)
 
 
-class _MeshCoordinateManager(ABC):
+class _MeshCoordinateManagerBase(ABC):
     """TBD: require clarity on coord_systems validation.
 
     TBD: require clarity on __eq__ support
@@ -2117,7 +2122,7 @@ class _MeshCoordinateManager(ABC):
 
     """
 
-    REQUIRED = (
+    REQUIRED: tuple[str, ...] = (
         "node_x",
         "node_y",
     )
@@ -2127,7 +2132,12 @@ class _MeshCoordinateManager(ABC):
     )
 
     def __init__(
-        self, node_x, node_y, edge_x=None, edge_y=None, view: Optional[str] = None
+        self,
+        node_x: AuxCoord,
+        node_y: AuxCoord,
+        edge_x: AuxCoord | None = None,
+        edge_y: AuxCoord | None = None,
+        view: Optional[str] = None,
     ):
         self.timestamp = _Timestamp()
         # view = an error message informing that the coordinates of this manager
@@ -2164,7 +2174,7 @@ class _MeshCoordinateManager(ABC):
     def __getstate__(self):
         return self._members
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[tuple[str, AuxCoord]]:
         for item in self._members.items():
             yield item
 
@@ -2478,7 +2488,7 @@ class _MeshCoordinateManager(ABC):
         face_indices: Optional[ArrayLike],
         mesh_id: int,
         frozen: bool = False,
-    ) -> "_MeshCoordinateManager":
+    ) -> "_MeshCoordinateManagerBase":
         """Return an indexed copy of this coordinate manager.
 
         Parameters
@@ -2506,7 +2516,7 @@ class _MeshCoordinateManager(ABC):
             "edge": edge_indices,
             "face": face_indices,
         }
-        indexed_members = {}
+        indexed_members: dict[str, AuxCoord | None | str] = {}
         for key, coord in self:
             indexing = None
             indexed = None
@@ -2535,7 +2545,7 @@ class _MeshCoordinateManager(ABC):
                 f"coordinates of an original {mesh_xy}: id={mesh_id}."
             )
             kwargs["view"] = view_message
-        result = self.__class__(**kwargs)
+        result = self.__class__(**kwargs)  # type: ignore[arg-type]
 
         return result
 
@@ -2560,12 +2570,12 @@ class _MeshCoordinateManager(ABC):
         )
 
 
-class _Mesh1DCoordinateManager(_MeshCoordinateManager):
+class _Mesh1DCoordinateManager(_MeshCoordinateManagerBase):
     # The concrete definition of this is in _MeshCoordinateManager
     pass
 
 
-class _Mesh2DCoordinateManager(_MeshCoordinateManager):
+class _Mesh2DCoordinateManager(_MeshCoordinateManagerBase):
     OPTIONAL = (
         "edge_x",
         "edge_y",
@@ -3312,8 +3322,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     @property
     def _coord_manager(self):
-        mesh_man: _MeshCoordinateManager = self.mesh._coord_manager
-        self_man: Optional[_MeshCoordinateManager] = getattr(
+        mesh_man: _MeshCoordinateManagerBase = self.mesh._coord_manager
+        self_man: Optional[_MeshCoordinateManagerBase] = getattr(
             self, "_coord_manager_attr", None
         )
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
@@ -3403,7 +3413,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             self._calculate_edge_indices(),
             self._calculate_face_indices(),
         ]
-        kwargs = dict(mesh_id=id(self.mesh), frozen=True)
+        Kwargs = TypedDict("Kwargs", {"mesh_id": int, "frozen": bool})
+        kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}
         coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
         conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
 
@@ -3425,13 +3436,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             units=self.units,
             attributes=self.attributes,
         )
-
-
-# TODO: this can only work if the manager classes are defined _before_ the downstream
-#  use in MeshXY. Have avoided re-ordering so far, to avoid polluting the Git diff.
-_ConnectivityManagerType: TypeAlias = (
-    _Mesh1DConnectivityManager | _Mesh2DConnectivityManager
-)
 
 
 class MeshCoord(AuxCoord):
