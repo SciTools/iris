@@ -3,6 +3,8 @@
 
    A lesson in how Iris loading works.
 
+.. include:: ../../common_links.inc
+
 .. _loading_iris_cubes:
 
 ===================
@@ -34,9 +36,21 @@ of the given files and attempts to produce Iris Cubes from their contents.
 
 .. note::
 
-    Currently there is support for CF NetCDF, GRIB 1 & 2, PP and FieldsFiles
+    Currently there is support for CF NetCDF, GRIB 1 & 2, PP, FieldsFiles and
+    Zarr (via `NcZarr`_)
     file formats with a framework for this to be extended to custom formats.
 
+.. admonition:: NcZarr loading
+
+   NcZarr provides I/O for Zarr files via the NetCDF API, allowing Iris to use
+   its existing NetCDF loading code to read Zarr files. As discussed in the
+   `NcZarr`_ docs, NcZarr receives filepaths as URLs, with the appropriate
+   ``mode`` fragments. Iris will load via NcZarr if it detects a URL with these
+   fragments. For example:
+
+   .. code-block:: python
+
+       cubes = iris.load("file:///path/to/file.zarr#mode=nczarr,file")
 
 In order to find out what has been loaded, the result can be printed:
 

@@ -97,7 +97,7 @@ def load_mesh(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP.
+        must support OpenDAP or NcZarr.
     var_name : str, optional
         Only return a :class:`~iris.mesh.MeshXY` if its
         var_name matches this value.
@@ -123,7 +123,7 @@ def load_meshes(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP.
+        must support OpenDAP nor NcZarr.
     var_name : str, optional
         Only return :class:`~iris.mesh.MeshXY` that have
         var_names matching this value.

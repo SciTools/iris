@@ -650,10 +650,14 @@ def _translate_constraints_to_var_callback(constraints):
 def load_cubes(file_sources, callback=None, constraints=None):
     """Load cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
+    Also supports Zarr files in the NcZarr URL format, e.g.
+    "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
+    https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+
     Parameters
     ----------
     file_sources : str or list
-        One or more NetCDF filenames/OPeNDAP URLs to load from.
+        One or more NetCDF filenames/OPeNDAP URLs/NcZarr URLs to load from.
         OR open datasets.
     callback : function, optional
         Function which can be passed on to :func:`iris.io.run_callback`.
@@ -661,7 +665,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     Returns
     -------
-    Generator of loaded NetCDF :class:`iris.cube.Cube`.
+    Generator of loaded NetCDF/NcZarr :class:`iris.cube.Cube`.
 
     """
     # Deferred import to avoid circular imports.

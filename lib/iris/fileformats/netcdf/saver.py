@@ -318,15 +318,19 @@ CFVariable = typing.Union[_thread_safe_nc.VariableWrapper, VariableEmulator]
 
 
 class Saver:
-    """A manager for saving netcdf files."""
+    """A manager for saving NetCDF/NcZarr files."""
 
     def __init__(self, filename, netcdf_format, compute=True):
         """Manage saving netcdf files.
 
+        Also supports Zarr files in the NcZarr URL format, e.g.
+        "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
+        https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+
         Parameters
         ----------
         filename : str or netCDF4.Dataset
-            Name of the netCDF file to save the cube.
+            Name of the NetCDF file, or an NcZarr URL, to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
         netcdf_format : str
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
@@ -468,7 +472,7 @@ class Saver:
         return self
 
     def __exit__(self, type, value, traceback):
-        """Flush any buffered data to the CF-netCDF file before closing."""
+        """Flush any buffered data to the CF-NetCDF/NcZarr file before closing."""
         if self._nczarr_writes:
             # NCZarr lazy writes must be computed while the file is still open;
             # the deferred reopen-write pattern used for netCDF is not supported.
@@ -500,10 +504,14 @@ class Saver:
     ):
         """Wrap for saving cubes to a NetCDF file.
 
+        Also supports Zarr files in the NcZarr URL format, e.g.
+        "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
+        https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+
         Parameters
         ----------
         cube : :class:`iris.cube.Cube`
-            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+            A :class:`iris.cube.Cube` to be saved to a NetCDF/NcZarr file.
         local_keys : iterable of str, optional
             An iterable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
@@ -2667,7 +2675,11 @@ def save(
     fill_value=None,
     compute=True,
 ):
-    r"""Save cube(s) to a netCDF file, given the cube and the filename.
+    r"""Save cube(s) to a NetCDF file, given the cube and the filename.
+
+    Also supports Zarr files in the NcZarr URL format, e.g.
+    "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
+    https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.
@@ -2693,7 +2705,7 @@ def save(
         A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or other
         iterable of cubes to be saved to a netCDF file.
     filename : str
-        Name of the netCDF file to save the cube(s).
+        Name of the NetCDF file or NcZarr URL to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
         .. note::

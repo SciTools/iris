@@ -27,6 +27,7 @@
 .. _matplotlib: https://matplotlib.org/stable/
 .. _napolean: https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
 .. _nc-time-axis: https://github.com/SciTools/nc-time-axis
+.. _NcZarr: https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
 .. _nox: https://nox.thea.codes/en/stable/
 .. _New Issue: https://github.com/scitools/iris/issues/new/choose
 .. _pre-commit: https://pre-commit.com/

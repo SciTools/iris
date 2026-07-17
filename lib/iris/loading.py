@@ -216,7 +216,7 @@ def load(uris, constraints=None, callback=None):
     ----------
     uris : str or :class:`pathlib.PurePath`
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional
@@ -244,7 +244,7 @@ def load_cube(uris, constraint=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         A constraint.
     callback : optional
@@ -286,7 +286,7 @@ def load_cubes(uris, constraints=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional
@@ -332,7 +332,7 @@ def load_raw(uris, constraints=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional

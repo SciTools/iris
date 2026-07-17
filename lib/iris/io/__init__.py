@@ -252,9 +252,9 @@ def load_files(filenames, callback, constraints=None):
 
 
 def load_http(urls, callback):
-    """Create generator of Cubes from the given OPeNDAP URLs.
+    """Create generator of Cubes from the given OPeNDAP or NcZarr URLs.
 
-    Take a list of OPeNDAP URLs and a callback function, and returns a generator
+    Take a list of OPeNDAP or NcZarr URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
 
     Notes
@@ -407,8 +407,8 @@ def find_saver(filespec):
 def save(source, target, saver=None, **kwargs):
     """Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports three file formats for saving, which it can
-    recognise by filename extension:
+    Iris currently supports four file formats for saving. Three are
+    recognised by filename extension:
 
     * **netCDF** - the Unidata network Common Data Format,
       see :func:`iris.fileformats.netcdf.save`
@@ -416,6 +416,15 @@ def save(source, target, saver=None, **kwargs):
       see :func:`iris_grib.save_grib2`.
     * **PP** - the Met Office UM Post Processing Format,
       see :func:`iris.fileformats.pp.save`
+
+    The fourth format is recognised differently:
+
+    * **Zarr** - "The open foundation for chunked, compressed, N-dimensional
+      arrays". Saved via the NcZarr utility of the NetCDF library, see
+      :func:`iris.fileformats.netcdf.save`. NcZarr recognises format via URL
+      fragments e.g. "file:///path/to/file#mode=nczarr,file". See the NcZarr
+      docs for more:
+      https://docs.unidata.ucar.edu/nug/current/nczarr_head.html.
 
     A custom saver can be provided to the function to write to a different
     file format.
