@@ -26,6 +26,7 @@ from typing import (
     Iterable,
     Literal,
     Optional,
+    Sequence,
     TypedDict,
 )
 import warnings
@@ -3720,8 +3721,8 @@ class MeshCoord(AuxCoord):
         # TODO: handle problems caused by asking for 1 index
         #  E.g. coord[0:1] works fine, coord[0] causes errors difficult to
         #   understand.
-        if len(keys) != 1:
-            raise Exception("TODO: Acceptable exception")
+        if not isinstance(keys, Sequence) or len(keys) != 1:
+            raise ValueError("Cannot index")
         elif type(keys[0]) == slice and keys == (slice(None),):
             return self.copy()
 
