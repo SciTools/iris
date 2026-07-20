@@ -741,7 +741,7 @@ class _MeshXYMixin(Mesh, ABC):
 
         return mesh_string
 
-    def _summary_multiline(self):
+    def _summary_multiline(self) -> str:
         # Produce a readable multi-line summary of the Mesh content.
         lines = []
         n_indent = 4
@@ -755,29 +755,32 @@ class _MeshXYMixin(Mesh, ABC):
         line(f"topology_dimension: {self.topology_dimension}", 1)
         for element in ("node", "edge", "face"):
             if element == "node":
-                element_exists = True
+                main_conn_string = None
             else:
                 main_conn_name = f"{element}_node_connectivity"
-                main_conn = getattr(self, main_conn_name, None)
-                element_exists = main_conn is not None
-            if element_exists:
-                # Include a section for this element
-                line(element, 1)
-                # Print element dimension
-                dim_name = f"{element}_dimension"
-                dim = getattr(self, dim_name)
-                line(f"{dim_name}: '{dim}'", 2)
-                # Print defining connectivity (except node)
-                if element != "node":
-                    main_conn_string = main_conn.summary(shorten=True, linewidth=0)
-                    line(f"{main_conn_name}: {main_conn_string}", 2)
-                # Print coords
-                coords = self.coords(location=element)
-                if coords:
-                    line(f"{element} coordinates", 2)
-                    for coord in coords:
-                        coord_string = coord.summary(shorten=True, linewidth=0)
-                        line(coord_string, 3)
+                main_conn: Connectivity | None = getattr(self, main_conn_name, None)
+                if main_conn is None:
+                    continue
+
+                main_conn_string = main_conn.summary(shorten=True, linewidth=0)
+                main_conn_string = f"{main_conn_name}: {main_conn_string}"
+
+            # Include a section for this element
+            line(element, 1)
+            # Print element dimension
+            dim_name = f"{element}_dimension"
+            dim = getattr(self, dim_name)
+            line(f"{dim_name}: '{dim}'", 2)
+            # Print defining connectivity (except node)
+            if main_conn_string:
+                line(main_conn_string, 2)
+            # Print coords
+            coords = self.coords(location=element)
+            if coords:
+                line(f"{element} coordinates", 2)
+                for coord in coords:
+                    coord_string = coord.summary(shorten=True, linewidth=0)
+                    line(coord_string, 3)
 
         # Having dealt with essential info, now add any optional connectivities
         # N.B. includes boundaries: as optional connectivity, not an "element"
@@ -787,10 +790,10 @@ class _MeshXYMixin(Mesh, ABC):
             "face_edge_connectivity",
             "edge_face_connectivity",
         )
-        optional_conns = [getattr(self, name, None) for name in optional_conn_names]
+        optional_conn_keys = [getattr(self, name, None) for name in optional_conn_names]
         optional_conns = {
             name: conn
-            for conn, name in zip(optional_conns, optional_conn_names)
+            for conn, name in zip(optional_conn_keys, optional_conn_names)
             if conn is not None
         }
         if optional_conns:
@@ -3348,7 +3351,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         return result
 
     @property
-    def _coord_manager(self):
+    def _coord_manager(self) -> _MeshCoordinateManagerBase:
         mesh_man: _MeshCoordinateManagerBase = self.mesh._coord_manager
         self_man: Optional[_MeshCoordinateManagerBase] = getattr(
             self, "_coord_manager_attr", None
@@ -3373,7 +3376,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         raise NotImplementedError(message)
 
     @property
-    def _connectivity_manager(self):
+    def _connectivity_manager(self) -> _MeshConnectivityManagerBase:
         mesh_man: _MeshConnectivityManagerBase = self.mesh._connectivity_manager
         self_man: Optional[_MeshConnectivityManagerBase] = getattr(
             self, "_connectivity_manager_attr", None

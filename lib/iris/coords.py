@@ -17,6 +17,7 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
+from typing import cast
 import warnings
 import zlib
 
@@ -330,7 +331,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         precision=None,
         convert_dates=True,
         _section_indices=None,
-    ):
+    ) -> str:
         r"""Make a printable text summary.
 
         Parameters
@@ -619,6 +620,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     show = val is not None and val is not False
                 if show:
                     if name == "attributes":
+                        val = cast(dict, val)
                         # Use a multi-line form for this.
                         add_output(newline_indent)
                         add_output("attributes:", section="attributes")
