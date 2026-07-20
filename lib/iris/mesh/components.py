@@ -3291,45 +3291,37 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     def _calculate_node_indices(self):
         # Use self.location and self.indices to work out the indices to use
         #  when indexing the nodes of self.mesh.
-        # TODO: use match-case instead.
-        if self.location == "node":
-            result = self.indices
-        elif self.location in ["edge", "face"]:
-            (connectivity,) = [
-                c
-                for c in self.mesh.all_connectivities
-                if (
-                    c is not None
-                    and c.location == self.location
-                    and c.connected == "node"
-                )
-            ]
-            # Doesn't matter if connectivity is transposed or not in this case.
-            # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-            conn_indices = connectivity.core_indices()[self.indices]
-            node_set = np.unique(conn_indices)
-            if iris.util.is_masked(node_set):
-                if _lazy.is_lazy_data(node_set):
-                    # A dask-compatible approach that is compatible with chunking.
-                    #  (compressed() is not implemented because of chunking concerns).
-                    node_set_nans = da.where(
-                        da.ma.getmaskarray(node_set), da.ma.getdata(node_set), -1
+
+        match self.location:
+            case "node":
+                result = self.indices
+            case "edge" | "face":
+                (connectivity,) = [
+                    c
+                    for c in self.mesh.all_connectivities
+                    if (
+                        c is not None
+                        and c.location == self.location
+                        and c.connected == "node"
                     )
-                    node_set_unmasked = node_set_nans[node_set_nans != -1]
+                ]
+                # Doesn't matter if connectivity is transposed or not in this case.
+                # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+                conn_indices = connectivity.core_indices()[self.indices]
+                node_set = np.unique(conn_indices)
+                if iris.util.is_masked(node_set):
+                    if _lazy.is_lazy_data(node_set):
+                        # A dask-compatible approach that is compatible with chunking.
+                        #  (compressed() is not implemented because of chunking concerns).
+                        node_set_nans = da.where(
+                            da.ma.getmaskarray(node_set), da.ma.getdata(node_set), -1
+                        )
+                        node_set_unmasked = node_set_nans[node_set_nans != -1]
+                    else:
+                        node_set_unmasked = node_set.compressed()
                 else:
-                    node_set_unmasked = node_set.compressed()
-            else:
-                node_set_unmasked = node_set
-            result = node_set_unmasked
-        else:
-            result = None
-            # TODO: should this be validated earlier?
-            #  Maybe even with an Enum?
-            message = (
-                f"Expected location to be one of `node`, `edge` or `face`, "
-                f"got `{self.location}`"
-            )
-            raise NotImplementedError(message)
+                    node_set_unmasked = node_set
+                result = node_set_unmasked
 
         return result
 
