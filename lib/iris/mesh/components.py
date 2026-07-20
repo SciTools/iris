@@ -20,11 +20,13 @@ from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
 import functools
+from types import NotImplementedType
 from typing import (
     Any,
     Generator,
     Iterable,
     Literal,
+    NamedTuple,
     Optional,
     Sequence,
     TypedDict,
@@ -669,8 +671,8 @@ class _MeshXYMixin(Mesh, ABC):
     #: Valid mesh elements.
     ELEMENTS = ("edge", "node", "face")
 
-    def __eq__(self, other):
-        result = NotImplemented
+    def __eq__(self, other) -> bool | NotImplementedType:
+        result: bool | NotImplementedType = NotImplemented
 
         if isinstance(other, _MeshXYMixin):
             result = self.metadata == other.metadata
@@ -681,18 +683,18 @@ class _MeshXYMixin(Mesh, ABC):
 
         return result
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
         # See https://github.com/SciTools/iris/pull/1772
         return hash(id(self))
 
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool | NotImplementedType:
         result = self.__eq__(other)
         if result is not NotImplemented:
             result = not result
         return result
 
-    def summary(self, *args, **kwargs):
+    def summary(self, *args, **kwargs) -> str:
         """Return a string representation of the MeshXY.
 
         Parameters
@@ -852,7 +854,7 @@ class _MeshXYMixin(Mesh, ABC):
 
     # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     @property
-    def _coord_manager(self):
+    def _coord_manager(self) -> "_MeshCoordinateManagerBase":
         # @property enables interruption/customisation in subclasses.
         return self._coord_manager_attr
 
@@ -862,24 +864,24 @@ class _MeshXYMixin(Mesh, ABC):
         self._coord_manager_attr = manager
 
     @property
-    def all_connectivities(self):
+    def all_connectivities(self) -> NamedTuple:
         """All the :class:`~iris.mesh.Connectivity` instances of the :class:`MeshXY`."""
         return self._connectivity_manager.all_members
 
     @property
-    def _last_modified(self):
+    def _last_modified(self) -> datetime:
         """The time and date that the mesh coordinates and or connecitivities were last edited."""
         return max(
             self._coord_manager.timestamp._dt, self._connectivity_manager.timestamp._dt
         )
 
     @property
-    def all_coords(self):
+    def all_coords(self) -> NamedTuple:
         """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.all_members
 
     @property
-    def boundary_node_connectivity(self):
+    def boundary_node_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``boundary_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``boundary_node_connectivity``
@@ -887,10 +889,10 @@ class _MeshXYMixin(Mesh, ABC):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.boundary_node
+        return self._connectivity_manager.boundary_node  # type:ignore[attr-defined]
 
     @property
-    def edge_coords(self):
+    def edge_coords(self) -> MeshEdgeCoords:
         """The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.edge_coords
 
@@ -900,7 +902,7 @@ class _MeshXYMixin(Mesh, ABC):
         raise NotImplementedError()
 
     @property
-    def edge_face_connectivity(self):
+    def edge_face_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``edge_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``edge_face_connectivity``
@@ -908,10 +910,10 @@ class _MeshXYMixin(Mesh, ABC):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.edge_face
+        return self._connectivity_manager.edge_face  # type:ignore[attr-defined]
 
     @property
-    def edge_node_connectivity(self):
+    def edge_node_connectivity(self) -> Connectivity:
         """The UGRID ``edge_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The UGRID ``edge_node_connectivity``
@@ -921,12 +923,12 @@ class _MeshXYMixin(Mesh, ABC):
         :attr:`MeshXY.topology_dimension` ``>=2``.
 
         """
-        return self._connectivity_manager.edge_node
+        return self._connectivity_manager.edge_node  # type:ignore[attr-defined]
 
     @property
-    def face_coords(self):
+    def face_coords(self) -> AuxCoord:
         """The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
-        return self._coord_manager.face_coords
+        return self._coord_manager.face_coords  # type:ignore[attr-defined]
 
     @property
     @abstractmethod
@@ -934,7 +936,7 @@ class _MeshXYMixin(Mesh, ABC):
         raise NotImplementedError()
 
     @property
-    def face_edge_connectivity(self):
+    def face_edge_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``face_edge_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_edge_connectivity``
@@ -943,10 +945,10 @@ class _MeshXYMixin(Mesh, ABC):
 
         """
         # optional
-        return self._connectivity_manager.face_edge
+        return self._connectivity_manager.face_edge  # type:ignore[attr-defined]
 
     @property
-    def face_face_connectivity(self):
+    def face_face_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_face_connectivity``
@@ -954,10 +956,10 @@ class _MeshXYMixin(Mesh, ABC):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.face_face
+        return self._connectivity_manager.face_face  # type:ignore[attr-defined]
 
     @property
-    def face_node_connectivity(self):
+    def face_node_connectivity(self) -> Connectivity:
         """Return ``face_node_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The UGRID ``face_node_connectivity``
@@ -967,10 +969,10 @@ class _MeshXYMixin(Mesh, ABC):
         of ``3``.
 
         """
-        return self._connectivity_manager.face_node
+        return self._connectivity_manager.face_node  # type:ignore[attr-defined]
 
     @property
-    def node_coords(self):
+    def node_coords(self) -> MeshNodeCoords:
         """The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.node_coords
 
@@ -2791,8 +2793,8 @@ class _MeshConnectivityManagerBase(ABC):
 
     @property
     @abstractmethod
-    def all_members(self):
-        return NotImplemented
+    def all_members(self) -> NamedTuple:
+        raise NotImplementedError
 
     @property
     def is_view(self):
