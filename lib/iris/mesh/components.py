@@ -48,7 +48,7 @@ from .. import _lazy_data as _lazy
 from ..common import CFVariableMixin, metadata_filter, metadata_manager_factory
 from ..common.metadata import BaseMetadata
 from ..config import get_logger
-from ..coords import AuxCoord, _DimensionalMetadata
+from ..coords import AuxCoord, Coord, _DimensionalMetadata
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import array_equal, clip_string, guess_coord_axis
 from ..warnings import IrisVagueMetadataWarning
@@ -1749,7 +1749,7 @@ class MeshXY(_MeshXYMixin):
     # TODO: backwards compatibility: make from_coords() perform a no-op if the given
     #  coords are already MeshCoords.
     @classmethod
-    def from_coords(cls, *coords):
+    def from_coords(cls, *coords: Coord):
         r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
 
         The :attr:`~MeshXY.topology_dimension`, :class:`~iris.coords.Coord`
@@ -1849,6 +1849,8 @@ class MeshXY(_MeshXYMixin):
             longitude: MeshCoord
 
         """
+        if isinstance(coords, MeshCoord):
+            raise ValueError("The coords passed in are already MeshCoords")
 
         # Validate points and bounds shape match.
         def check_shape(array_name):
@@ -1917,12 +1919,13 @@ class MeshXY(_MeshXYMixin):
 
         #####
         # TODO: remove axis assignment once Mesh supports arbitrary coords.
-        # TODO: consider filtering coords as the first action in this method.
         axes_present = [guess_coord_axis(coord) for coord in coords]
-        axes_required = ("X", "Y")
-        if all([req in axes_present for req in axes_required]):
+        # Explicit for mypy
+        axes_required: tuple[Literal["X"], Literal["Y"]] = ("X", "Y")
+        axis_indices: list[int] | range
+        try:
             axis_indices = [axes_present.index(req) for req in axes_required]
-        else:
+        except ValueError:
             message = (
                 "Unable to find 'X' and 'Y' using guess_coord_axis. Assuming "
                 "X=coords[0], Y=coords[1] ."
