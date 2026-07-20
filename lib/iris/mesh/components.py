@@ -3499,9 +3499,9 @@ class MeshCoord(AuxCoord):
 
     def __init__(
         self,
-        mesh,
-        location,
-        axis,
+        mesh: _MeshXYMixin,
+        location: Literal["edge", "node", "face"],
+        axis: Literal["x", "y"],
     ):
         self._last_modified = None
         self._updating = True
@@ -3525,6 +3525,9 @@ class MeshCoord(AuxCoord):
                 f"'location' of {location} is not a valid MeshXY location', "
                 f"must be one of {_MeshXYMixin.ELEMENTS}."
             )
+            raise ValueError(msg)
+        elif isinstance(mesh, _MeshIndexSet) and location != mesh.location:
+            msg = f"'location' of {location} does not match the location of the mesh location: {mesh.location}"
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
         self._metadata_manager_temp.location = location
@@ -3754,9 +3757,6 @@ class MeshCoord(AuxCoord):
                 case _MeshIndexSet():
                     # Should not base an index set on another index set - base
                     #  on the original mesh instead.
-                    # TODO: do we need to double-check that self.location
-                    #  matches mesh_index_set.location? Any other matching to
-                    #  check too?
                     mesh_index_set = mesh
                     kwargs = dict(
                         mesh=mesh_index_set.mesh,
