@@ -3189,6 +3189,8 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     1. The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
     """
 
+    _NOT_IMPLEMENTED = "_MeshIndexSet_NotImplemented"
+
     # TODO: implement I/O (iris#6123).
     # TODO: update the full documentation
     # TODO: docstrings
@@ -3256,16 +3258,15 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     @property
     def edge_dimension(self) -> str:
-        # TODO: standardise string as a constant
-        return "_MeshIndexSet_NotImplemented"
+        return self._NOT_IMPLEMENTED
 
     @property
     def face_dimension(self) -> str:
-        return "_MeshIndexSet_NotImplemented"
+        return self._NOT_IMPLEMENTED
 
     @property
     def node_dimension(self) -> str:
-        return "_MeshIndexSet_NotImplemented"
+        return self._NOT_IMPLEMENTED
 
     @property
     def indices(self) -> ArrayLike:
