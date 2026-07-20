@@ -3187,14 +3187,12 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     """
 
     # TODO: implement I/O (iris#6123).
-    # TODO: validation?
-    # TODO: finish type hinting
     # TODO: update the full documentation
     # TODO: docstrings
     # TODO: informative error when attempting to save (until iris#6123 is implemented).
     def __init__(
         self,
-        indices: ArrayLike,
+        indices: np.ndarray | da.Array,
         mesh: MeshXY,
         location: Literal["node", "edge", "face"],
         standard_name: Optional[str] = None,
@@ -3204,6 +3202,18 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         attributes: Optional[dict] = None,
         start_index: Literal[0, 1] = 0,
     ):
+        if type(indices) not in [np.ndarray, da.Array]:
+            raise TypeError("`indices` must be either Numpy or Dask arrays")
+
+        if not isinstance(mesh, MeshXY):
+            raise TypeError("`mesh` must be a `MeshXY`")
+
+        if location not in _MeshXYMixin.ELEMENTS:
+            raise ValueError(f"`location` must be in {_MeshXYMixin.ELEMENTS}")
+
+        if start_index not in [0, 1]:
+            raise ValueError("`start_index 0 or 1")
+
         self._metadata_manager = metadata_manager_factory(MeshIndexSetMetadata)
         # 'structure' is immutable after creation, so assign directly to the
         #  metadata manager. Desired changes should be made by creating a new
