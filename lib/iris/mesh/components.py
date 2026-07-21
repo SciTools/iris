@@ -3267,7 +3267,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         attributes: Optional[dict] = None,
         start_index: Literal[0, 1] = 0,
     ):
-        if type(indices) not in [np.ndarray, da.Array]:
+        if not (isinstance(indices, np.ndarray) or isinstance(indices, da.Array)):
             raise TypeError("`indices` must be either Numpy or Dask arrays")
 
         if not isinstance(mesh, MeshXY):
