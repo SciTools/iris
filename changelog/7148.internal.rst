@@ -1,0 +1,2 @@
+:user:`trexfeathers` set the link checking workflow to accept redirect HTTP codes,
+as the reports were getting too noisy.

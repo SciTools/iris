@@ -1,0 +1,1 @@
+:user:`2319bli` has partially improved the names of various test classes. (:issue:`6625`)

@@ -8,6 +8,8 @@
 2. Parallelising a Loop of Multiple Calls to a Third Party Library
 ------------------------------------------------------------------
 
+.. readingtime::
+
 Whilst Iris does provide extensive functionality for performing statistical and
 mathematical operations on your data, it is sometimes necessary to use a third
 party library.

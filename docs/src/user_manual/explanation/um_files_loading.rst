@@ -23,6 +23,8 @@
 Iris Handling of PP and Fieldsfiles
 ===================================
 
+.. readingtime::
+
 This document provides a basic account of how PP and Fieldsfiles data is
 represented within Iris.
 It describes how Iris represents data from the Met Office Unified Model (UM),
@@ -98,7 +100,7 @@ as follows:
     The complete details are implemented as follows:
 
     *   The conversion of fields to raw cubes is performed by the function
-        :func:`iris.fileformats.pp_rules.convert`, which is called from
+        :func:`iris.fileformats.pp_load_rules.convert`, which is called from
         :func:`iris.fileformats.pp.load_cubes` during loading.
     *   The corresponding save functionality for PP output is implemented by
         the :func:`iris.fileformats.pp.save` function.  The relevant

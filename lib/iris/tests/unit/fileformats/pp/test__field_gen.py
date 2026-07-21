@@ -21,7 +21,7 @@ _HEADER_BYTES = pp.PP_WORD_DEPTH * (1 + pp.NUM_LONG_HEADERS + pp.NUM_FLOAT_HEADE
 _DATA_LEN_WORD = struct.pack(">L", 4)
 
 
-class Test:
+class TestFieldGen:
     @pytest.fixture
     def mock_for_field_gen(self, mocker):
         @contextlib.contextmanager

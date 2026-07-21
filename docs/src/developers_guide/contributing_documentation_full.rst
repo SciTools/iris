@@ -5,6 +5,8 @@
 Contributing to the Documentation
 ---------------------------------
 
+.. readingtime::
+
 This guide is for those comfortable with the development process, looking for
 the specifics of how to apply that knowledge to Iris. You may instead find it
 easier to use the :ref:`contributing.documentation_easy`.
@@ -169,3 +171,58 @@ The reStructuredText (rst) output of the gallery is located in
 For more information on the directory structure and options please see the
 `sphinx-gallery getting started
 <https://sphinx-gallery.github.io/stable/getting_started.html>`_ documentation.
+
+
+.. _contributing.documentation.directives:
+
+Sphinx Directives
+~~~~~~~~~~~~~~~~~
+
+The following custom ``sphinx`` `reStructuredText`_ (``rst``) directives
+are available to documentation authors.
+
+``readingtime``
+""""""""""""""""
+
+**Usage:**
+
+.. code:: console
+
+   .. readingtime:: [<duration>|<wpm>]
+
+Calculates an *estimated* reading time of an entire page based on the
+number of words and a default *words-per-minute* reading heuristic for
+technical documents.
+
+Accepts an optional ``<duration>`` reading time (in minutes), a literal
+reading time to be quoted rather than calculated.
+
+The directive then creates a branded ``readingtime`` banner in-situ e.g.,
+
+.. code:: console
+
+   .. readingtime:: 5
+
+Generates the banner:
+
+.. readingtime:: 5
+
+Alternatively, provide an optional *words-per-minute* to override
+the directive default when calculating the reading time estimation e.g.,
+
+.. code:: console
+
+   ... readingtime:: 1000wpm
+
+Generates the following banner, using ``1,000`` words-per-minute to calculate
+the estimate to read this :ref:`contributing.documentation_full` page:
+
+.. readingtime:: 1000wpm
+
+.. note::
+
+   A default *words-per-minute* value will always be used to generate a reading
+   time for a directive with no arguments i.e., ``.. readingtime::``
+
+
+.. _reStructuredText: https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html

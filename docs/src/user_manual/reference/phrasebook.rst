@@ -10,6 +10,8 @@
 Package Phrasebook
 ===================
 
+.. readingtime::
+
 There are a number of similar packages to Iris, and a lot of these have their own
 terminology for similar things. Whether you're coming or going, we hope this might
 be a helpful guide to these differences!

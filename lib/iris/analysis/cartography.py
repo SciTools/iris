@@ -27,7 +27,7 @@ import iris.exceptions
 from iris.util import _meshgrid
 import iris.warnings
 
-from ._grid_angles import gridcell_angles, rotate_grid_vectors
+from ._grid_angles import gridcell_angles, guess_2D_bounds, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
@@ -39,6 +39,7 @@ __all__ = [
     "get_xy_contiguous_bounded_grids",
     "get_xy_grids",
     "gridcell_angles",
+    "guess_2D_bounds",
     "project",
     "rotate_grid_vectors",
     "rotate_pole",
@@ -84,9 +85,15 @@ def wrap_lons(lons, base, period):
     See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
-    # numbers range.
+    # numbers range, but the original floating-point dtype is preserved so that
+    # e.g. float32 longitudes are not promoted to float64 (see #4119). Integer
+    # (and other non-floating) inputs still return float64.
+    orig_dtype = lons.dtype
     lons = lons.astype(np.float64)
-    return ((lons - base) % period) + base
+    result = ((lons - base) % period) + base
+    if orig_dtype.kind == "f":
+        result = result.astype(orig_dtype)
+    return result
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
