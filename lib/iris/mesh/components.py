@@ -2503,7 +2503,7 @@ class _Mesh1DCoordinateManager:
 
     def indexed(
         self,
-        node_indexing: ArrayLike,
+        node_bool_index: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -2513,7 +2513,7 @@ class _Mesh1DCoordinateManager:
 
         Parameters
         ----------
-        node_indexing : ArrayLike
+        node_bool_index : ArrayLike
             Array of boolean membership, over the full length of original nodes,
             to use when indexing member node coordinates.
         edge_indices, face_indices : ArrayLike, optional
@@ -2535,7 +2535,7 @@ class _Mesh1DCoordinateManager:
         _Mesh1DCoordinateManager
         """
         indices_dict = {
-            "node": node_indexing,
+            "node": node_bool_index,
             "edge": edge_indices,
             "face": face_indices,
         }
@@ -2996,7 +2996,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def indexed(
         self,
-        node_indexing: ArrayLike,
+        node_bool_index: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -3006,7 +3006,7 @@ class _MeshConnectivityManagerBase(ABC):
 
         Parameters
         ----------
-        node_indexing : ArrayLike
+        node_bool_index : ArrayLike
             Array of boolean membership, over the full length of original nodes,
             to support the construction of indexed connectivities.
         edge_indices, face_indices : ArrayLike, optional
@@ -3028,15 +3028,15 @@ class _MeshConnectivityManagerBase(ABC):
         _MeshConnectivityManagerBase
         """
         indices_dict = {
-            "node": node_indexing,
+            "node": node_bool_index,
             "edge": edge_indices,
             "face": face_indices,
         }
 
         # Prep an inverse-lookup table (original node id -> new node id) for later
-        #  node indices remapping. ``node_indexing`` is a fixed-shape boolean
-        #  membership array over the original nodes (see _calculate_node_indexing).
-        node_mask = node_indexing
+        #  node indices remapping. ``node_bool_index`` is a fixed-shape boolean
+        #  membership array over the original nodes (see _calculate_node_bool_index).
+        node_mask = node_bool_index
         al = da if _lazy.is_lazy_data(node_mask) else np
         node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
         # Mask unselected nodes - for graceful handling of unexpected scenarios;
@@ -3307,7 +3307,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     def topology_dimension(self) -> int:
         return self.mesh.topology_dimension
 
-    def _calculate_node_indexing(self):
+    def _calculate_node_bool_index(self):
         # Use self.location and self.indices to work out the indices to use
         #  when indexing the nodes of self.mesh.
         # Returns a boolean membership array of fixed shape (n_original_nodes,),
@@ -3397,7 +3397,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._coord_manager_attr = mesh_man.indexed(
-                self._calculate_node_indexing(),
+                self._calculate_node_bool_index(),
                 self._calculate_edge_indices(),
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
@@ -3422,7 +3422,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._connectivity_manager_attr = mesh_man.indexed(
-                self._calculate_node_indexing(),
+                self._calculate_node_bool_index(),
                 self._calculate_edge_indices(),
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
@@ -3477,7 +3477,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         MeshXY
         """
         indices = [
-            self._calculate_node_indexing(),
+            self._calculate_node_bool_index(),
             self._calculate_edge_indices(),
             self._calculate_face_indices(),
         ]
