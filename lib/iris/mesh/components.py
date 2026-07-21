@@ -792,10 +792,13 @@ class _MeshXYMixin(Mesh, ABC):
                 line(main_conn_string, 2)
             # Print coords
             coords = self.coords(location=element)
-            line(f"{element} coordinates", 2)
-            for coord in coords:
-                if coord:
-                    coord_string = coord.summary(shorten=True, linewidth=0)
+            if coords:
+                line(f"{element} coordinates", 2)
+                for coord in coords:
+                    if coord:
+                        coord_string = coord.summary(shorten=True, linewidth=0)
+                    else:
+                        coord_string = "None"
                     line(coord_string, 3)
 
         # Having dealt with essential info, now add any optional connectivities
