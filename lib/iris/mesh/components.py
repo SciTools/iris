@@ -2503,7 +2503,7 @@ class _Mesh1DCoordinateManager:
 
     def indexed(
         self,
-        node_indices: ArrayLike,
+        node_indexing: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -2513,11 +2513,12 @@ class _Mesh1DCoordinateManager:
 
         Parameters
         ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indexings to use when indexing member node, edge or face
-            coordinates respectively. ``node_indices`` is a boolean membership
-            array over the original nodes; ``edge_indices``/``face_indices`` are
-            integer gathers (preserving order and repeats).
+        node_indexing : ArrayLike
+            Array of boolean membership, over the full length of original nodes,
+            to use when indexing member node coordinates.
+        edge_indices, face_indices : ArrayLike, optional
+            The indices to use when indexing member edge or face
+            coordinates respectively.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
@@ -2534,7 +2535,7 @@ class _Mesh1DCoordinateManager:
         _Mesh1DCoordinateManager
         """
         indices_dict = {
-            "node": node_indices,
+            "node": node_indexing,
             "edge": edge_indices,
             "face": face_indices,
         }
@@ -2995,7 +2996,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def indexed(
         self,
-        node_indices: ArrayLike,
+        node_indexing: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -3005,12 +3006,12 @@ class _MeshConnectivityManagerBase(ABC):
 
         Parameters
         ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indexings to use when indexing member connectivities with node,
-            edge or face :attr:`~Connectivity.location` respectively.
-            ``node_indices`` is a boolean membership array over the original
-            nodes; ``edge_indices``/``face_indices`` are integer gathers
-            (preserving order and repeats).
+        node_indexing : ArrayLike
+            Array of boolean membership, over the full length of original nodes,
+            to support the construction of indexed connectivities.
+        edge_indices, face_indices : ArrayLike, optional
+            The indices to use when indexing member connectivities with edge or
+            face :attr:`~Connectivity.location` respectively.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
@@ -3027,15 +3028,15 @@ class _MeshConnectivityManagerBase(ABC):
         _MeshConnectivityManagerBase
         """
         indices_dict = {
-            "node": node_indices,
+            "node": node_indexing,
             "edge": edge_indices,
             "face": face_indices,
         }
 
         # Prep an inverse-lookup table (original node id -> new node id) for later
-        #  node indices remapping. ``node_indices`` is a fixed-shape boolean
+        #  node indices remapping. ``node_indexing`` is a fixed-shape boolean
         #  membership array over the original nodes (see _calculate_node_indexing).
-        node_mask = node_indices
+        node_mask = node_indexing
         al = da if _lazy.is_lazy_data(node_mask) else np
         node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
         # Mask unselected nodes - for graceful handling of unexpected scenarios;
@@ -3316,6 +3317,21 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         if self.location == "node":
             # self.indices is a user-supplied index array over the nodes; convert
             #  it to a fixed-shape boolean membership mask.
+            monotonic, direction = iris.util.monotonic(
+                self.indices, strict=True, return_direction=True
+            )
+            if not (monotonic and direction == 1):
+                # TODO: boolean 'mask' array precludes non-monotonic indexing,
+                #  but is only needed to support connectivity construction, and
+                #  only causes problems for coordinate construction. Separate
+                #  logic to allow array of integer indices for coordinate
+                #  construction.
+                message = (
+                    "Indexing the nodes on a Mesh currently requires monotonic "
+                    "increasing indices. Contact the Iris developers if this "
+                    "causes you problems."
+                )
+                raise ValueError(message)
             indices = self.indices
             al = da if _lazy.is_lazy_data(indices) else np
             node_mask = al.zeros(n_original_nodes, dtype=bool)
