@@ -26,7 +26,9 @@ import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
 if TYPE_CHECKING:
+    from iris.common.mixin import CFVariableMixin
     from iris.coords import CellMethod
+    from iris.util import Axis
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -1819,15 +1821,15 @@ class MeshCoordMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_filter(
-    instances,
-    item=None,
-    standard_name=None,
-    long_name=None,
-    var_name=None,
-    attributes=None,
-    axis=None,
-):
+def metadata_filter[T: CFVariableMixin](
+    instances: T | list[T],
+    item: str | CFVariableMixin | BaseMetadata | None = None,
+    standard_name: str | None = None,
+    long_name: str | None = None,
+    var_name: str | None = None,
+    attributes: Mapping | None | Any = None,
+    axis: str | None = None,
+) -> list[T]:
     """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
     Criteria can be either specific properties or other objects with metadata
@@ -1835,9 +1837,10 @@ def metadata_filter(
 
     Parameters
     ----------
-    instances :
-        One or more objects to be filtered.
-    item : optional
+    instances : CFVariableMixin or list of CFVariableMixin:
+        One or more objects to be filtered. The objects should be a subclass of
+        :class:`~iris.common.mixin.CFVariableMixin`.
+    item : str or CFVariableMixin or BaseMetadata, optional
         Either,
 
         * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -1847,26 +1850,26 @@ def metadata_filter(
         * a coordinate or metadata instance equal to that of
           the desired objects e.g., :class:`~iris.coords.DimCoord`
           or :class:`CoordMetadata`.
-    standard_name : optional
+    standard_name : str, optional
         The CF standard name of the desired object. If ``None``, does not
         check for ``standard_name``.
-    long_name : optional
+    long_name : str, optional
         An unconstrained description of the object. If ``None``, does not
         check for ``long_name``.
-    var_name : optional
+    var_name : str, optional
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
-    attributes : dict, optional
-        A dictionary of attributes desired on the object. If ``None``,
-        does not check for ``attributes``.
-    axis : optional
+    attributes : Mapping, optional, Any
+        A mapping of attributes desired on the object. `dict` is a type of Mapping.
+        If ``None``, does not check for ``attributes``. Will error if it is anything else.
+    axis : str, optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
         ``Y``, ``Z`` and ``T`` (case-insensitive).
 
     Returns
     -------
-    list of the objects
+    list of CFVariableMixin
         A list of the objects supplied in the ``instances`` argument, limited
         to only those that matched the given criteria.
 
@@ -1881,8 +1884,7 @@ def metadata_filter(
     else:
         obj = item
 
-    # apply de morgan's law for one less logical operation
-    if not (isinstance(instances, str) or isinstance(instances, Iterable)):
+    if not isinstance(instances, Iterable):
         instances = [instances]
 
     result = instances
@@ -1921,7 +1923,7 @@ def metadata_filter(
     if axis is not None:
         axis = axis.upper()
 
-        def get_axis(instance):
+        def get_axis(instance: T) -> Axis | None:
             if hasattr(instance, "axis"):
                 axis = instance.axis.upper()
             else:
@@ -1931,7 +1933,7 @@ def metadata_filter(
         result = [instance for instance in result if get_axis(instance) == axis]
 
     if obj is not None:
-        if hasattr(obj, "__class__") and issubclass(obj.__class__, BaseMetadata):
+        if isinstance(obj, BaseMetadata):
             target_metadata = obj
         else:
             target_metadata = obj.metadata

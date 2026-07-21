@@ -1,0 +1,3 @@
+:user:`trexfeathers` switched to using the official URL of the
+`cf-checker <https://github.com/cedadev/cf-checker>`_, after our previous URL
+of choice was taken down.

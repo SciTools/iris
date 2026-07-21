@@ -1,0 +1,2 @@
+:user:`trexfeathers` and :user:`tkknight` made the docs compatible with the latest
+versions of PyData Sphinx Theme (>=0.16). (:issue:`6885`)

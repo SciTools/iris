@@ -10,7 +10,7 @@ from iris.fileformats._ff import ENDGame
 from iris.tests import _shared_utils
 
 
-class Test:
+class TestENDGame:
     def test_class_attributes(self):
         reals = np.arange(6) + 100
         grid = ENDGame(None, None, reals, None)

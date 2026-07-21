@@ -9,6 +9,8 @@
 Cube Statistics
 ===============
 
+.. readingtime::
+
 .. seealso::
 
     Relevant gallery example:
@@ -152,7 +154,7 @@ These areas can now be passed to the ``collapsed`` method as weights:
             forecast_reference_time     2009-11-19 04:00:00
             grid_latitude               1.5145501 degrees, bound=(0.13755022, 2.89155) degrees
             grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
-            surface_altitude            <lazy>+bound
+            surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
             0                           grid_longitude: grid_latitude: mean
         Attributes:
@@ -198,7 +200,7 @@ the units of the resulting cube are multiplied by an area unit:
             forecast_reference_time     2009-11-19 04:00:00
             grid_latitude               1.5145501 degrees, bound=(0.13755022, 2.89155) degrees
             grid_longitude              358.74948 degrees, bound=(357.48724, 360.01172) degrees
-            surface_altitude            <lazy>+bound
+            surface_altitude            399.625 m, bound=(-14.0, 813.25) m
         Cell methods:
             0                           grid_longitude: grid_latitude: sum
         Attributes:

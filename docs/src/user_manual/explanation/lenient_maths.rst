@@ -8,6 +8,8 @@
 Lenient Cube Maths
 ******************
 
+.. readingtime::
+
 This section provides an overview of lenient cube maths. In particular, it explains
 what lenient maths involves, clarifies how it differs from normal or strict cube
 maths, and demonstrates how you can exercise fine control over whether your cube
