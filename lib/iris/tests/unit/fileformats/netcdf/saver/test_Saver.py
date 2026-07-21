@@ -1447,10 +1447,10 @@ class TestNcZarr:
 
     def test_file_uri(self):
         # 'File URLs' get converted to a file path format.
-        url = f"file:///foo#bar=baz"
+        url = f"file:///foo"
         saver = Saver(url, "NETCDF4")
         assert isinstance(saver.filepath, Path)
-        assert not str(saver.filepath).startswith("file:///")
+        assert not str(saver.filepath).startswith("file:")
 
     @pytest.mark.parametrize("scheme", ["file", "http"])
     def test_nczarr_uri(self, scheme):

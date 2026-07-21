@@ -625,26 +625,13 @@ def realistic_4d():
         units="1",
         attributes={"positive": "up"},
     )
-    sigma = icoords.AuxCoord(
-        sigma_pts,
-        long_name="sigma",
-        units="1",
-        bounds=sigma_bnds,
-    )
-    orography = icoords.AuxCoord(
-        orography,
-        standard_name="surface_altitude",
-        units="m",
-    )
+    sigma = icoords.AuxCoord(sigma_pts, long_name="sigma", units="1", bounds=sigma_bnds)
+    orography = icoords.AuxCoord(orography, standard_name="surface_altitude", units="m")
     time = icoords.DimCoord(
-        time_pts,
-        standard_name="time",
-        units="hours since 1970-01-01 00:00:00",
+        time_pts, standard_name="time", units="hours since 1970-01-01 00:00:00"
     )
     forecast_period = icoords.DimCoord(
-        forecast_period_pts,
-        standard_name="forecast_period",
-        units="hours",
+        forecast_period_pts, standard_name="forecast_period", units="hours"
     )
 
     hybrid_height = iris.aux_factory.HybridHeightFactory(level_height, sigma, orography)

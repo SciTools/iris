@@ -13,9 +13,11 @@ import iris
 from iris.coord_systems import GeogCS
 from iris.tests import stock
 
+pytestmark = pytest.mark.parametrize("zarr_mode", ["nczarr", "xarray"])
 
-def nczarr_uri(path: Path) -> str:
-    return path.as_uri() + "#mode=nczarr,file"
+
+def zarr_uri(path: Path, mode: str) -> str:
+    return path.as_uri() + f"#mode={mode},file"
 
 
 @pytest.fixture
@@ -30,17 +32,17 @@ def realistic_4d_w_everything():
 
 
 @pytest.fixture
-def zarr_file(tmp_path, realistic_4d_w_everything):
+def zarr_file(tmp_path, realistic_4d_w_everything, zarr_mode):
     """Return a Zarr file path containing a realistic 4D cube with all the bells and whistles."""
     output_path = tmp_path / "sample.zarr"
     with iris.FUTURE.context(save_split_attrs=True):
-        iris.save(realistic_4d_w_everything, nczarr_uri(output_path))
+        iris.save(realistic_4d_w_everything, zarr_uri(output_path, zarr_mode))
     return output_path
 
 
-def test_roundtrip_cube(tmp_path, realistic_4d_w_everything):
+def test_roundtrip_cube(tmp_path, realistic_4d_w_everything, zarr_mode):
     output_path = tmp_path / "output.zarr"
-    output_uri = nczarr_uri(output_path)
+    output_uri = zarr_uri(output_path, zarr_mode)
     with iris.FUTURE.context(save_split_attrs=True):
         iris.save(realistic_4d_w_everything, output_uri)
 
@@ -53,13 +55,14 @@ def test_roundtrip_cube(tmp_path, realistic_4d_w_everything):
     assert loaded == realistic_4d_w_everything
 
 
-def test_roundtrip_file(tmp_path, zarr_file):
+def test_roundtrip_file(tmp_path, zarr_file, zarr_mode):
     def _get_json(path: Path):
-        return sorted(json.load(path.open()))
+        with path.open() as file_handle:
+            return sorted(json.load(file_handle))
 
-    loaded = iris.load(nczarr_uri(zarr_file))
+    loaded = iris.load(zarr_uri(zarr_file, zarr_mode))
     output_path = tmp_path / "output.zarr"
-    output_uri = nczarr_uri(output_path)
+    output_uri = zarr_uri(output_path, zarr_mode)
     with iris.FUTURE.context(save_split_attrs=True):
         iris.save(loaded, output_uri)
 

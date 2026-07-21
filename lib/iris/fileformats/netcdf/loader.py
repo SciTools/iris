@@ -651,8 +651,10 @@ def load_cubes(file_sources, callback=None, constraints=None):
     """Load cubes from a list of NetCDF filenames/OPeNDAP URLs.
 
     Also supports Zarr files in the NcZarr URL format, e.g.
-    "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
-    https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+    ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+    Zarr version 2. See the
+    `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+    for more.
 
     Parameters
     ----------

@@ -171,7 +171,7 @@ FORMAT_AGENT.add_spec(
 #
 FORMAT_AGENT.add_spec(
     FormatSpecification(
-        "zarr",
+        "NcZarr",
         UriProtocol(),
         _uri_is_nczarr,
         netcdf.load_cubes,

@@ -324,8 +324,10 @@ class Saver:
         """Manage saving netcdf files.
 
         Also supports Zarr files in the NcZarr URL format, e.g.
-        "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
-        https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+        ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+        Zarr version 2. See the
+        `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+        for more.
 
         Parameters
         ----------
@@ -505,8 +507,10 @@ class Saver:
         """Wrap for saving cubes to a NetCDF file.
 
         Also supports Zarr files in the NcZarr URL format, e.g.
-        "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
-        https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+        ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+        Zarr version 2. See the
+        `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+        for more.
 
         Parameters
         ----------
@@ -2678,8 +2682,10 @@ def save(
     r"""Save cube(s) to a NetCDF file, given the cube and the filename.
 
     Also supports Zarr files in the NcZarr URL format, e.g.
-    "file:///path/to/file#mode=nczarr,file". See the NcZarr docs for more:
-    https://docs.unidata.ucar.edu/nug/current/nczarr_head.html
+    ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+    Zarr version 2. See the
+    `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+    for more.
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.

@@ -33,7 +33,7 @@ def _is_nczarr_fragment(fragment):
             flags = {
                 token.strip().casefold() for token in value.split(",") if token.strip()
             }
-            return bool(flags.intersection({"nczarr", "zarr", "xarray"}))
+            return bool(flags.intersection({"nczarr", "xarray"}))
 
     return False
 
@@ -421,7 +421,8 @@ def save(source, target, saver=None, **kwargs):
 
     The fourth format is recognised differently:
 
-    * **Zarr** - "The open foundation for chunked, compressed, N-dimensional
+    * **Zarr (via NcZarr)** - "The open foundation for chunked, compressed,
+      N-dimensional
       arrays". Saved via the NcZarr utility of the NetCDF library, see
       :func:`iris.fileformats.netcdf.save`. NcZarr recognises format via URL
       fragments e.g. "file:///path/to/file#mode=nczarr,file". See the NcZarr
