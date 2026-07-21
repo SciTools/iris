@@ -119,6 +119,7 @@ class _NamedTupleMeta(ABCMeta):
     def __new__(mcs, name, bases, namespace):
         names = []
 
+        # "Inherit" the base classes' `_fields`
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
