@@ -3252,7 +3252,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     def _calculate_node_indexing(self):
         # Use self.location and self.indices to work out the indices to use
-        #  when indexing the edges of self.mesh.
+        #  when indexing the nodes of self.mesh.
         # Returns a boolean membership array of fixed shape (n_original_nodes,),
         #  True where a node is selected.
         # TODO: use match-case instead.
