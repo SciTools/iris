@@ -18,9 +18,7 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
-from copy import deepcopy
 from datetime import datetime
-import functools
 import math
 from typing import Any, Iterable, Literal, Mapping, NamedTuple, Optional, TypeAlias
 import warnings
@@ -2088,7 +2086,7 @@ class MeshXY(_MeshXYMixin):
         return self._metadata_manager.topology_dimension
 
 
-class _ManagerMembers(dict):
+class _ManagerMembers[VT](dict[str, VT]):
     # TODO: docstrings
     read_only_message: str
 
@@ -2142,7 +2140,9 @@ class _Mesh1DCoordinateManager:
         self._view_message = view
         # initialise all the coordinates
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = _ManagerMembers({member: None for member in self.ALL})
+        self._members_dict: _ManagerMembers[AuxCoord | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
 
         # required coordinates
         self.node_x = node_x
@@ -2290,7 +2290,7 @@ class _Mesh1DCoordinateManager:
         return self._shape(element="node")
 
     @property
-    def _members(self) -> dict[str, None] | dict[str, AuxCoord]:
+    def _members(self) -> _ManagerMembers[AuxCoord | None]:
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
             for member, coord in [
@@ -2306,7 +2306,7 @@ class _Mesh1DCoordinateManager:
         return self._members_dict
 
     @_members.setter
-    def _members(self, value: dict[str, AuxCoord]):
+    def _members(self, value: _ManagerMembers[AuxCoord | None]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -2772,7 +2772,9 @@ class _MeshConnectivityManagerBase(ABC):
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = _ManagerMembers({member: None for member in self.ALL})
+        self._members_dict: _ManagerMembers[Connectivity | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
         self.add(*connectivities)
 
         if self.is_view:
@@ -2827,7 +2829,7 @@ class _MeshConnectivityManagerBase(ABC):
         return self._view_message is not None
 
     @property
-    def _members(self):
+    def _members(self) -> _ManagerMembers[Connectivity | None]:
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
             for member, connectivity in [
@@ -2842,7 +2844,7 @@ class _MeshConnectivityManagerBase(ABC):
         return self._members_dict
 
     @_members.setter
-    def _members(self, value):
+    def _members(self, value: _ManagerMembers[Connectivity | None]):
         self.timestamp.update()
         self._members_dict = value
 
