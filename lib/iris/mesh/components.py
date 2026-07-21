@@ -792,9 +792,9 @@ class _MeshXYMixin(Mesh, ABC):
                 line(main_conn_string, 2)
             # Print coords
             coords = self.coords(location=element)
-            if coords:
-                line(f"{element} coordinates", 2)
-                for coord in coords:
+            line(f"{element} coordinates", 2)
+            for coord in coords:
+                if coord:
                     coord_string = coord.summary(shorten=True, linewidth=0)
                     line(coord_string, 3)
 
@@ -2309,7 +2309,7 @@ class _MeshCoordinateManagerBase(ABC):
         return self._shape(element="node")
 
     @property
-    def _members(self) -> dict[str, None] | dict[str, AuxCoord]:
+    def _members(self) -> _ManagerMembers:
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
             for member, coord in [
@@ -2325,7 +2325,7 @@ class _MeshCoordinateManagerBase(ABC):
         return self._members_dict
 
     @_members.setter
-    def _members(self, value: dict[str, AuxCoord]):
+    def _members(self, value: _ManagerMembers):
         self.timestamp.update()
         self._members_dict = value
 
