@@ -3327,7 +3327,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 #  logic to allow array of integer indices for coordinate
                 #  construction.
                 message = (
-                    "Indexing the nodes on a Mesh currently requires monotonic "
+                    "Indexing the nodes on a Mesh currently requires strictly "
                     "increasing indices. Contact the Iris developers if this "
                     "causes you problems."
                 )
