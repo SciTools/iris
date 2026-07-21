@@ -8,6 +8,8 @@
 3. Dask Bags and Greedy Parallelism
 -----------------------------------
 
+.. readingtime::
+
 Here is a journey that demonstrates:
 
 * How to apply dask.bags to an existing script

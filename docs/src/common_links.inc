@@ -51,6 +51,7 @@
 .. _SciTools Contributor's License Agreement (CLA): https://cla-assistant.io/SciTools/
 .. _extlinks: https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 .. _Diataxis: https://diataxis.fr/
+.. _towncrier: https://towncrier.readthedocs.io/
 
 
 .. comment

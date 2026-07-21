@@ -6,6 +6,8 @@
 Converting From ``unittest`` to ``pytest``
 *******************************************
 
+.. readingtime::
+
 Conversion Checklist
 --------------------
 .. note::

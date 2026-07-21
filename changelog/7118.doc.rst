@@ -1,0 +1,3 @@
+:user:`trexfeathers` and :user:`hdyson` clarified that
+:func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon
+coordinates on the input :class:`~iris.cube.Cube`.

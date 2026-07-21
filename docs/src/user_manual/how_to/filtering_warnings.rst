@@ -9,6 +9,8 @@
 Filtering Warnings
 ==================
 
+.. readingtime::
+
 Since Iris cannot predict your specific needs, it by default raises Warnings
 for anything that might be a problem for **any** user, and is designed to work with
 you to ``ignore`` Warnings which you do not find helpful.
