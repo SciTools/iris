@@ -3792,10 +3792,6 @@ class MeshCoord(AuxCoord):
         return self._metadata_manager_temp
 
     def __getitem__(self, keys):
-        # TODO: validate keys as 1-dimensional?
-        # TODO: handle problems caused by asking for 1 index
-        #  E.g. coord[0:1] works fine, coord[0] causes errors difficult to
-        #   understand.
         if not isinstance(keys, Sequence) or len(keys) != 1:
             raise ValueError("Cannot index")
         elif type(keys[0]) == slice and keys == (slice(None),):
