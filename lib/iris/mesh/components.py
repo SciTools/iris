@@ -3362,62 +3362,52 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         #  when indexing the nodes of self.mesh.
         # Returns a boolean membership array of fixed shape (n_original_nodes,),
         #  True where a node is selected.
-        # TODO: use match-case instead.
         n_original_nodes = self.mesh.node_coords.node_x.shape[0]
-        if self.location == "node":
-            # self.indices is a user-supplied index array over the nodes; convert
-            #  it to a fixed-shape boolean membership mask.
-            monotonic, direction = iris.util.monotonic(
-                self.indices, strict=True, return_direction=True
-            )
-            if not (monotonic and direction == 1):
-                # TODO: boolean 'mask' array precludes non-monotonic indexing,
-                #  but is only needed to support connectivity construction, and
-                #  only causes problems for coordinate construction. Separate
-                #  logic to allow array of integer indices for coordinate
-                #  construction.
-                message = (
-                    "Indexing the nodes on a Mesh currently requires strictly "
-                    "increasing indices. Contact the Iris developers if this "
-                    "causes you problems."
+        match self.location:
+            case "node":
+                # self.indices is a user-supplied index array over the nodes; convert
+                #  it to a fixed-shape boolean membership mask.
+                monotonic, direction = iris.util.monotonic(
+                    self.indices, strict=True, return_direction=True
                 )
-                raise ValueError(message)
-            indices = self.indices
-            al = da if _lazy.is_lazy_data(indices) else np
-            node_mask = al.zeros(n_original_nodes, dtype=bool)
-            node_mask[indices] = True
-            result = node_mask
-        elif self.location in ["edge", "face"]:
-            (connectivity,) = [
-                c
-                for c in self.mesh.all_connectivities
-                if (
-                    c is not None
-                    and c.location == self.location
-                    and c.connected == "node"
-                )
-            ]
-            # Doesn't matter if connectivity is transposed or not in this case.
-            # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-            conn_indices = connectivity.core_indices()[self.indices]
-            al = da if _lazy.is_lazy_data(conn_indices) else np
-            # Flatten and drop masked padding (ragged connectivities) by scattering
-            #  membership into a fixed-shape boolean mask.
-            flat = al.ma.filled(conn_indices, -1).flatten()
-            valid = flat >= 0
-            node_mask = al.zeros(n_original_nodes, dtype=bool)
-            node_mask[flat[valid]] = True
-            result = node_mask
-        else:
-            result = None
-            # TODO: should this be validated earlier?
-            #  Maybe even with an Enum?
-            message = (
-                f"Expected location to be one of `node`, `edge` or `face`, "
-                f"got `{self.location}`"
-            )
-            raise NotImplementedError(message)
-
+                if not (monotonic and direction == 1):
+                    # TODO: boolean 'mask' array precludes non-monotonic indexing,
+                    #  but is only needed to support connectivity construction, and
+                    #  only causes problems for coordinate construction. Separate
+                    #  logic to allow array of integer indices for coordinate
+                    #  construction.
+                    message = (
+                        "Indexing the nodes on a Mesh currently requires strictly "
+                        "increasing indices. Contact the Iris developers if this "
+                        "causes you problems."
+                    )
+                    raise ValueError(message)
+                indices = self.indices
+                al = da if _lazy.is_lazy_data(indices) else np
+                node_mask = al.zeros(n_original_nodes, dtype=bool)
+                node_mask[indices] = True
+                result = node_mask
+            case "edge" | "face":
+                (connectivity,) = [
+                    c
+                    for c in self.mesh.all_connectivities
+                    if (
+                        c is not None
+                        and c.location == self.location
+                        and c.connected == "node"
+                    )
+                ]
+                # Doesn't matter if connectivity is transposed or not in this case.
+                # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+                conn_indices = connectivity.core_indices()[self.indices]
+                al = da if _lazy.is_lazy_data(conn_indices) else np
+                # Flatten and drop masked padding (ragged connectivities) by scattering
+                #  membership into a fixed-shape boolean mask.
+                flat = al.ma.filled(conn_indices, -1).flatten()
+                valid = flat >= 0
+                node_mask = al.zeros(n_original_nodes, dtype=bool)
+                node_mask[flat[valid]] = True
+                result = node_mask
         return result
 
     def _calculate_edge_indices(self):
