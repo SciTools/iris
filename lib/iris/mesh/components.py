@@ -672,9 +672,7 @@ class _MeshXYMixin(Mesh, ABC):
     # Subclass __init__ methods must define:
     # TODO: Impossible to type hint the return type of metadata_manager_factory().
     _metadata_manager: Any
-    # TODO: type hint with _ConnectivityManagerType once the file is appropriately re-ordered.
     _connectivity_manager_attr: "_MeshConnectivityManagerBase"
-    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     _coord_manager_attr: "_MeshCoordinateManagerBase"
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
@@ -869,7 +867,6 @@ class _MeshXYMixin(Mesh, ABC):
         # @property enables interruption/customisation in subclasses.
         self._connectivity_manager_attr = manager
 
-    # TODO: type hint with _CoordinateManagerType once the file is appropriately re-ordered.
     @property
     def _coord_manager(self) -> "_MeshCoordinateManagerBase":
         # @property enables interruption/customisation in subclasses.
@@ -1766,8 +1763,6 @@ class MeshXY(_MeshXYMixin):
         self._coord_manager = coord_manager
         self._connectivity_manager = connectivity_manager
 
-    # TODO: backwards compatibility: make from_coords() perform a no-op if the given
-    #  coords are already MeshCoords.
     @classmethod
     def from_coords(cls, *coords: Coord):
         r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
@@ -3241,8 +3236,6 @@ Location = Literal["edge", "node", "face"]
 
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     # TODO: docstring is out of date with the latest code.
-    # TODO: is a private class more or less appropriate than placing in the experimental
-    #  module?
     """A container representing the UGRID ``cf_role``: ``location_index_set``.
 
     A container representing the UGRID ``cf_role``:
