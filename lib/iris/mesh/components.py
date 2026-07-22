@@ -2574,25 +2574,28 @@ class _MeshCoordinateManagerBase(ABC):
         indexed_members: dict[str, AuxCoord | None | str] = {}
         for key, coord in self:
             indexed = None
-            if coord is not None:
-                indexing = indices_dict[key.split("_")[0]]
-                if indexing is not None:
-                    if frozen:
-                        indexed = coord.copy()[indexing]
+            if (
+                coord is not None
+                and (indexing := indices_dict[key.split("_")[0]]) is not None
+            ):
+                if frozen:
+                    indexed = coord.copy()[indexing]
+                else:
+                    lazy_points = coord.lazy_points()
+                    points = lazy_points[indexing] if lazy_points is not None else None
+
+                    if (
+                        coord.has_bounds()
+                        and (lazy_bounds := coord.lazy_bounds()) is not None
+                    ):
+                        bounds = lazy_bounds[indexing]
                     else:
-                        lazy_points = coord.lazy_points()
-                        if coord.has_bounds():
-                            lazy_bounds = coord.lazy_bounds()
-                            bounds = lazy_bounds[indexing] if lazy_bounds else None
-                        else:
-                            bounds = None
-                        indexed = coord.copy(
-                            # Lazy = deferred calculation. Changes to the original coordinate
-                            #  will be reflected in the indexed coordinate. Will be primarily
-                            #  used by MeshCoord, which also maintains laziness.
-                            points=lazy_points[indexing] if lazy_points else None,
-                            bounds=bounds,
-                        )
+                        bounds = None
+
+                    # Lazy = deferred calculation. Changes to the original coordinate
+                    #  will be reflected in the indexed coordinate. Will be primarily
+                    #  used by MeshCoord, which also maintains laziness.
+                    indexed = coord.copy(points, bounds)
             indexed_members[key] = indexed
 
         kwargs = indexed_members
