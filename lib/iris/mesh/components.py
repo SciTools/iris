@@ -19,7 +19,7 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
-import functools
+import math
 from types import NotImplementedType
 from typing import (
     Any,
@@ -2111,7 +2111,7 @@ class MeshXY(_MeshXYMixin):
         return self._metadata_manager.topology_dimension
 
 
-class _ManagerMembers(dict):
+class _ManagerMembers[VT](dict[str, VT]):
     # TODO: docstrings
     read_only_message: str
 
@@ -2170,7 +2170,9 @@ class _MeshCoordinateManagerBase(ABC):
         self._view_message = view
         # initialise all the coordinates
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = _ManagerMembers({member: None for member in self.ALL})
+        self._members_dict: _ManagerMembers[AuxCoord | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
 
         # required coordinates
         self.node_x = node_x
@@ -2198,7 +2200,7 @@ class _MeshCoordinateManagerBase(ABC):
     def __getstate__(self) -> tuple[_ManagerMembers, str | None]:
         return (self._members, self._view_message)
 
-    def __iter__(self) -> Generator[tuple[str, AuxCoord], None, None]:
+    def __iter__(self) -> Generator[tuple[str, AuxCoord | None], None, None]:
         for item in self._members.items():
             yield item
 
@@ -2285,10 +2287,18 @@ class _MeshCoordinateManagerBase(ABC):
                 raise TypeError(emsg)
 
             if shape is not None and coord.shape != shape:
-                emsg = (
-                    f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
+                # NaN dimensions arise from lazy boolean-mask indexing,
+                #  where the length is not known until computed.
+                compatible = len(coord.shape) == len(shape) and all(
+                    math.isnan(x) or math.isnan(y) or x == y
+                    for x, y in zip(coord.shape, shape)
                 )
-                raise ValueError(emsg)
+                if not compatible:
+                    emsg = (
+                        f"{member!r} requires to have shape {shape!r}, "
+                        f"got {coord.shape!r}."
+                    )
+                    raise ValueError(emsg)
             # if the coordinate attached to the mesh hasn't been linked
             if self.timestamp not in coord._mesh_timestamps:
                 coord._mesh_timestamps.append(self.timestamp)
@@ -2312,7 +2322,7 @@ class _MeshCoordinateManagerBase(ABC):
         return self._shape(element="node")
 
     @property
-    def _members(self) -> _ManagerMembers:
+    def _members(self) -> _ManagerMembers[AuxCoord | None]:
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
             for member, coord in [
@@ -2328,7 +2338,7 @@ class _MeshCoordinateManagerBase(ABC):
         return self._members_dict
 
     @_members.setter
-    def _members(self, value: _ManagerMembers):
+    def _members(self, value: _ManagerMembers[AuxCoord | None]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -2525,7 +2535,7 @@ class _MeshCoordinateManagerBase(ABC):
 
     def indexed(
         self,
-        node_indices: ArrayLike,
+        node_bool_index: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -2535,8 +2545,11 @@ class _MeshCoordinateManagerBase(ABC):
 
         Parameters
         ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indices to use when indexing member node, edge or face
+        node_bool_index : ArrayLike
+            Array of boolean membership, over the full length of original nodes,
+            to use when indexing member node coordinates.
+        edge_indices, face_indices : ArrayLike, optional
+            The indices to use when indexing member edge or face
             coordinates respectively.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
@@ -2554,29 +2567,32 @@ class _MeshCoordinateManagerBase(ABC):
         _Mesh1DCoordinateManager
         """
         indices_dict = {
-            "node": node_indices,
+            "node": node_bool_index,
             "edge": edge_indices,
             "face": face_indices,
         }
         indexed_members: dict[str, AuxCoord | None | str] = {}
         for key, coord in self:
-            indexing = None
             indexed = None
             if coord is not None:
                 indexing = indices_dict[key.split("_")[0]]
-            if indexing is not None:
-                if frozen:
-                    indexed = coord.copy()[indexing]
-                else:
-                    indexed = coord.copy(
-                        # Lazy = deferred calculation. Changes to the original coordinate
-                        #  will be reflected in the indexed coordinate. Will be primarily
-                        #  used by MeshCoord, which also maintains laziness.
-                        points=coord.lazy_points()[indexing],
-                        bounds=None
-                        if not coord.has_bounds()
-                        else coord.lazy_bounds()[indexing],
-                    )
+                if indexing is not None:
+                    if frozen:
+                        indexed = coord.copy()[indexing]
+                    else:
+                        lazy_points = coord.lazy_points()
+                        if coord.has_bounds():
+                            lazy_bounds = coord.lazy_bounds()
+                            bounds = lazy_bounds[indexing] if lazy_bounds else None
+                        else:
+                            bounds = None
+                        indexed = coord.copy(
+                            # Lazy = deferred calculation. Changes to the original coordinate
+                            #  will be reflected in the indexed coordinate. Will be primarily
+                            #  used by MeshCoord, which also maintains laziness.
+                            points=lazy_points[indexing] if lazy_points else None,
+                            bounds=bounds,
+                        )
             indexed_members[key] = indexed
 
         kwargs = indexed_members
@@ -2739,7 +2755,6 @@ class _Mesh2DCoordinateManager(_MeshCoordinateManagerBase):
 def _index_conn_array(
     array: np.ndarray | da.Array,
     indexing: np.ndarray | da.Array,
-    pre_index: functools.partial | None = None,
 ) -> np.ndarray | da.Array:
     """Index a connectivity array, allowing for laziness and masking.
 
@@ -2751,8 +2766,6 @@ def _index_conn_array(
         The array to be indexed.
     indexing : np.ndarray or dask.array.Array
         The array of indices to use for indexing `array`.
-    pre_index : functools.partial, optional
-        A function to apply to the indices before indexing `array`.
 
     Returns
     -------
@@ -2773,9 +2786,6 @@ def _index_conn_array(
     # Note: *also* mask any places where the index is out of range.
     missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
     flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
-    # Execute pre_index operation, if present.
-    if pre_index is not None:
-        flat_inds_safe = pre_index(flat_inds_safe)
     # Here's the core indexing operation.
     # The comma applies all inds-array values to the *first* dimension.
     flat_result = array[flat_inds_safe,]
@@ -2804,7 +2814,9 @@ class _MeshConnectivityManagerBase(ABC):
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = _ManagerMembers({member: None for member in self.ALL})
+        self._members_dict: _ManagerMembers[Connectivity | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
         self.add(*connectivities)
 
         if self.is_view:
@@ -2859,7 +2871,7 @@ class _MeshConnectivityManagerBase(ABC):
         return self._view_message is not None
 
     @property
-    def _members(self):
+    def _members(self) -> _ManagerMembers[Connectivity | None]:
         if self.is_view:
             # This is the appropriate moment to check for continued laziness.
             for member, connectivity in [
@@ -2874,7 +2886,7 @@ class _MeshConnectivityManagerBase(ABC):
         return self._members_dict
 
     @_members.setter
-    def _members(self, value):
+    def _members(self, value: _ManagerMembers[Connectivity | None]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -3025,7 +3037,7 @@ class _MeshConnectivityManagerBase(ABC):
 
     def indexed(
         self,
-        node_indices: np.ndarray | da.Array,
+        node_bool_index: ArrayLike,
         edge_indices: Optional[ArrayLike],
         face_indices: Optional[ArrayLike],
         mesh_id: int,
@@ -3035,9 +3047,12 @@ class _MeshConnectivityManagerBase(ABC):
 
         Parameters
         ----------
-        node_indices, edge_indices, face_indices : ArrayLike
-            The indices to use when indexing member connectivities with node,
-            edge or face :attr:`~Connectivity.location` respectively.
+        node_bool_index : ArrayLike
+            Array of boolean membership, over the full length of original nodes,
+            to support the construction of indexed connectivities.
+        edge_indices, face_indices : ArrayLike, optional
+            The indices to use when indexing member connectivities with edge or
+            face :attr:`~Connectivity.location` respectively.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
@@ -3054,26 +3069,20 @@ class _MeshConnectivityManagerBase(ABC):
         _MeshConnectivityManagerBase
         """
         indices_dict = {
-            "node": node_indices,
+            "node": node_bool_index,
             "edge": edge_indices,
             "face": face_indices,
         }
-        # Prep some indexing information for later node indices remapping.
-        # if isinstance(node_indices, np.ndarray)
-        order: NDArray[np.intp]
-        match node_indices:
-            case np.ndarray():
-                order = node_indices.argsort()
-            case da.Array():
-                # TODO: dask mentions that sorting in parallel is inefficient
-                # https://docs.dask.org/en/latest/array-numpy-compatibility.html#id68
-                order = da.argtopk(node_indices).compute()
 
-        # order = node_indices.argsort()
-        old_sorted = node_indices[order]
-        al = da if _lazy.is_lazy_data(node_indices) else np
-        new_ids_sorted = al.arange(len(node_indices))[order]
-        positions = functools.partial(al.searchsorted, old_sorted)
+        # Prep an inverse-lookup table (original node id -> new node id) for later
+        #  node indices remapping. ``node_bool_index`` is a fixed-shape boolean
+        #  membership array over the original nodes (see _calculate_node_bool_index).
+        node_mask = node_bool_index
+        al = da if _lazy.is_lazy_data(node_mask) else np
+        node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
+        # Mask unselected nodes - for graceful handling of unexpected scenarios;
+        #  we normally expect downstream indexing to remove these anyway.
+        node_lookup = al.ma.masked_array(node_lookup_data, ~node_mask)
 
         indexed_members = {}
         for key, connectivity in self:
@@ -3090,21 +3099,21 @@ class _MeshConnectivityManagerBase(ABC):
                     #  will be reflected in the indexed connectivity. Will be primarily
                     #  used by MeshCoord, which also maintains laziness.
                     indices = connectivity.lazy_indices()
-                reindexed_indices = connectivity.indices_by_location(indices)[indexing]
+                indices_indexed = connectivity.indices_by_location(indices)[indexing]
 
                 # Map node indices in "values" to their new zero-based positions
-                #  in "node_indices".
-                reindexed_indices = _index_conn_array(
-                    array=new_ids_sorted,
-                    indexing=reindexed_indices,
-                    pre_index=positions,
+                #  via the inverse-lookup table. This creates a contiguous
+                #  collection of nodes, and collapses duplicates.
+                indices_remapped = _index_conn_array(
+                    array=node_lookup,
+                    indexing=indices_indexed,
                 )
 
                 if connectivity.location_axis == 1:
-                    reindexed_indices = reindexed_indices.T
+                    indices_remapped = indices_remapped.T
                 if connectivity.start_index == 1:
-                    reindexed_indices += 1
-                indexed = connectivity.copy(reindexed_indices)
+                    indices_remapped += 1
+                indexed = connectivity.copy(indices_remapped)
             indexed_members[key] = indexed
 
         if not frozen:
@@ -3348,40 +3357,66 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     def topology_dimension(self) -> int:
         return self.mesh.topology_dimension
 
-    def _calculate_node_indices(self):
+    def _calculate_node_bool_index(self):
         # Use self.location and self.indices to work out the indices to use
         #  when indexing the nodes of self.mesh.
-
-        match self.location:
-            case "node":
-                result = self.indices
-            case "edge" | "face":
-                (connectivity,) = [
-                    c
-                    for c in self.mesh.all_connectivities
-                    if (
-                        c is not None
-                        and c.location == self.location
-                        and c.connected == "node"
-                    )
-                ]
-                # Doesn't matter if connectivity is transposed or not in this case.
-                # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-                conn_indices = connectivity.core_indices()[self.indices]
-                node_set = np.unique(conn_indices)
-                if iris.util.is_masked(node_set):
-                    if _lazy.is_lazy_data(node_set):
-                        # A dask-compatible approach that is compatible with chunking.
-                        #  (compressed() is not implemented because of chunking concerns).
-                        node_set_nans = da.where(
-                            da.ma.getmaskarray(node_set), da.ma.getdata(node_set), -1
-                        )
-                        node_set_unmasked = node_set_nans[node_set_nans != -1]
-                    else:
-                        node_set_unmasked = node_set.compressed()
-                else:
-                    node_set_unmasked = node_set
-                result = node_set_unmasked
+        # Returns a boolean membership array of fixed shape (n_original_nodes,),
+        #  True where a node is selected.
+        # TODO: use match-case instead.
+        n_original_nodes = self.mesh.node_coords.node_x.shape[0]
+        if self.location == "node":
+            # self.indices is a user-supplied index array over the nodes; convert
+            #  it to a fixed-shape boolean membership mask.
+            monotonic, direction = iris.util.monotonic(
+                self.indices, strict=True, return_direction=True
+            )
+            if not (monotonic and direction == 1):
+                # TODO: boolean 'mask' array precludes non-monotonic indexing,
+                #  but is only needed to support connectivity construction, and
+                #  only causes problems for coordinate construction. Separate
+                #  logic to allow array of integer indices for coordinate
+                #  construction.
+                message = (
+                    "Indexing the nodes on a Mesh currently requires strictly "
+                    "increasing indices. Contact the Iris developers if this "
+                    "causes you problems."
+                )
+                raise ValueError(message)
+            indices = self.indices
+            al = da if _lazy.is_lazy_data(indices) else np
+            node_mask = al.zeros(n_original_nodes, dtype=bool)
+            node_mask[indices] = True
+            result = node_mask
+        elif self.location in ["edge", "face"]:
+            (connectivity,) = [
+                c
+                for c in self.mesh.all_connectivities
+                if (
+                    c is not None
+                    and c.location == self.location
+                    and c.connected == "node"
+                )
+            ]
+            # Doesn't matter if connectivity is transposed or not in this case.
+            # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+            conn_indices = connectivity.core_indices()[self.indices]
+            al = da if _lazy.is_lazy_data(conn_indices) else np
+            # Flatten and drop masked padding (ragged connectivities) by scattering
+            #  membership into a fixed-shape boolean mask.
+            flat = al.ma.filled(conn_indices, -1).flatten()
+            valid = flat >= 0
+            node_mask = al.zeros(n_original_nodes, dtype=bool)
+            node_mask[flat[valid]] = True
+            result = node_mask
+        else:
+            result = None
+            # TODO: should this be validated earlier?
+            #  Maybe even with an Enum?
+            message = (
+                f"Expected location to be one of `node`, `edge` or `face`, "
+                f"got `{self.location}`"
+            )
+            raise NotImplementedError(message)
 
         return result
 
@@ -3412,7 +3447,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._coord_manager_attr = mesh_man.indexed(
-                self._calculate_node_indices(),
+                self._calculate_node_bool_index(),
                 self._calculate_edge_indices(),
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
@@ -3437,7 +3472,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
         if update:
             self._connectivity_manager_attr = mesh_man.indexed(
-                self._calculate_node_indices(),
+                self._calculate_node_bool_index(),
                 self._calculate_edge_indices(),
                 self._calculate_face_indices(),
                 mesh_id=id(self.mesh),
@@ -3492,7 +3527,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         MeshXY
         """
         indices = [
-            self._calculate_node_indices(),
+            self._calculate_node_bool_index(),
             self._calculate_edge_indices(),
             self._calculate_face_indices(),
         ]
