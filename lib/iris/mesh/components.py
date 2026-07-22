@@ -2567,7 +2567,7 @@ class _MeshCoordinateManagerBase(ABC):
             "edge": edge_indices,
             "face": face_indices,
         }
-        indexed_members: dict[str, AuxCoord | None | str] = {}
+        indexed_members: dict[str, AuxCoord | None] = {}
         for key, coord in self:
             indexed = None
             if (
@@ -2578,31 +2578,23 @@ class _MeshCoordinateManagerBase(ABC):
                     indexed = coord.copy()[indexing]
                 else:
                     lazy_points = coord.lazy_points()
+                    lazy_bounds = coord.lazy_bounds()
                     points = lazy_points[indexing] if lazy_points is not None else None
-
-                    if (
-                        coord.has_bounds()
-                        and (lazy_bounds := coord.lazy_bounds()) is not None
-                    ):
-                        bounds = lazy_bounds[indexing]
-                    else:
-                        bounds = None
-
+                    bounds = lazy_bounds[indexing] if lazy_bounds is not None else None
                     # Lazy = deferred calculation. Changes to the original coordinate
                     #  will be reflected in the indexed coordinate. Will be primarily
                     #  used by MeshCoord, which also maintains laziness.
                     indexed = coord.copy(points, bounds)
             indexed_members[key] = indexed
 
-        kwargs = indexed_members
+        view_message: str | None = None
         if not frozen:
             mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
             view_message = (
                 f"Coordinates on {mesh_index_set} are only 'views' onto the "
                 f"coordinates of an original {mesh_xy}: id={mesh_id}."
             )
-            kwargs["view"] = view_message
-        result = self.__class__(**kwargs)  # type: ignore[arg-type]
+        result = self.__class__(**indexed_members, view_message=view_message)  # type: ignore[arg-type]
 
         return result
 
