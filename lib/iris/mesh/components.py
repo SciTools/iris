@@ -2594,7 +2594,7 @@ class _MeshCoordinateManagerBase(ABC):
                 f"Coordinates on {mesh_index_set} are only 'views' onto the "
                 f"coordinates of an original {mesh_xy}: id={mesh_id}."
             )
-        result = self.__class__(**indexed_members, view_message=view_message)  # type: ignore[arg-type]
+        result = self.__class__(**indexed_members, view=view_message)  # type: ignore[arg-type]
 
         return result
 
@@ -3828,7 +3828,7 @@ class MeshCoord(AuxCoord):
                     kwargs = dict(
                         mesh=mesh,
                         location=self.location,
-                        indices=np.arange(length)[keys],
+                        indices=np.asanyarray(np.arange(length)[keys]),
                     )
                 case _MeshIndexSet():
                     # Should not base an index set on another index set - base
@@ -3838,7 +3838,7 @@ class MeshCoord(AuxCoord):
                         mesh=mesh_index_set.mesh,
                         location=mesh_index_set.location,
                         # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-                        indices=mesh_index_set.indices[keys],
+                        indices=np.asanyarray(mesh_index_set.indices[keys]),
                     )
                 case _:
                     message = (

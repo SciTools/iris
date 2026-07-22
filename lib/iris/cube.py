@@ -1638,7 +1638,13 @@ class Cube(CFVariableMixin):
                             ownval=location,
                         )
                     )
-                mesh_dims = (self.mesh_dim(),)
+                mesh_dim = self.mesh_dim()
+                mesh_dims: tuple[int] | tuple[()]
+                if mesh_dim is None:
+                    # Scalar coordinate.
+                    mesh_dims = ()
+                else:
+                    mesh_dims = (mesh_dim,)
                 if data_dims != mesh_dims:
                     raise iris.exceptions.CannotAddError(
                         msg.format(
@@ -2605,7 +2611,7 @@ class Cube(CFVariableMixin):
         if coord is None:
             result = None
         else:
-            (result,) = self.coord_dims(coord)  # result is a 1-tuple
+            (result,) = self.coord_dims(coord) or (None,)
         return result
 
     def cell_measures(
