@@ -3815,8 +3815,13 @@ class MeshCoord(AuxCoord):
         return self._metadata_manager_temp
 
     def __getitem__(self, keys):
-        if not isinstance(keys, Sequence) or len(keys) != 1:
-            raise ValueError("Cannot index")
+        if not isinstance(keys, Sequence):
+            msg = f"MeshCoord indexing expected a Slice or 1-dimensional index array. Got: {type(keys)}"
+            raise ValueError(msg)
+        elif len(keys) != 1:
+            raise ValueError(
+                f"MeshCoord indexing expected a 1-dimensional index array. Got: {keys}"
+            )
         elif type(keys[0]) == slice and keys == (slice(None),):
             return self.copy()
 
