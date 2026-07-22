@@ -1864,8 +1864,9 @@ class MeshXY(_MeshXYMixin):
             longitude: MeshCoord
 
         """
-        if isinstance(coords, MeshCoord):
-            raise ValueError("The coords passed in are already MeshCoords")
+        if any(isinstance(coord, MeshCoord) for coord in coords):
+            msg = "Expected coords to be DimCoord or AuxCoord, got: MeshCoord."
+            raise ValueError(msg)
 
         # Validate points and bounds shape match.
         def check_shape(array_name):
