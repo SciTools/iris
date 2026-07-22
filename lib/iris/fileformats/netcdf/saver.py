@@ -822,7 +822,8 @@ class Saver:
             mesh = cube_or_mesh
 
         if isinstance(mesh, _MeshIndexSet):
-            raise ValueError("Cannot save `MeshIndexSet`")
+            msg = "_MeshIndexSet saving is not yet supported. See https://github.com/SciTools/iris/issues/6123"
+            raise ValueError(msg)
 
         if mesh:
             cf_mesh_name = self._name_coord_map.name(mesh)
