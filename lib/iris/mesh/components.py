@@ -3274,16 +3274,18 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         start_index: Literal[0, 1] = 0,
     ):
         if not (isinstance(indices, np.ndarray) or isinstance(indices, da.Array)):
-            raise TypeError("`indices` must be either Numpy or Dask arrays")
+            msg = f"`indices` must be either Numpy or Dask arrays. Got {type(indices)}"
+            raise TypeError(msg)
 
         if not isinstance(mesh, MeshXY):
-            raise TypeError("`mesh` must be a `MeshXY`")
+            raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
 
         if location not in _MeshXYMixin.ELEMENTS:
-            raise ValueError(f"`location` must be in {_MeshXYMixin.ELEMENTS}")
+            msg = f"`location` must be in {_MeshXYMixin.ELEMENTS}. Got {location}"
+            raise ValueError(msg)
 
         if start_index not in [0, 1]:
-            raise ValueError("`start_index 0 or 1")
+            raise ValueError(f"`start_index must be 0 or 1. Got {start_index}")
 
         self._metadata_manager = metadata_manager_factory(MeshIndexSetMetadata)
         # 'structure' is immutable after creation, so assign directly to the
