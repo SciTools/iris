@@ -3260,7 +3260,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     # TODO: implement I/O (iris#6123).
     # TODO: update the full documentation
     # TODO: docstrings
-    # TODO: informative error when attempting to save (until iris#6123 is implemented).
     def __init__(
         self,
         indices: np.ndarray | da.Array,
