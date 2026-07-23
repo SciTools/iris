@@ -3299,7 +3299,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             Units; defaults to ``mesh.units``.
         attributes : dict, optional
             Arbitrary metadata attributes.
-        start_index : 0 or 1, optional
+        start_index : 0 or 1, default=0
             Index origin; default is ``0``.
 
         """
