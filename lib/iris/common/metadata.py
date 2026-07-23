@@ -119,6 +119,7 @@ class _NamedTupleMeta(ABCMeta):
     def __new__(mcs, name, bases, namespace):
         names = []
 
+        # "Inherit" the base classes' `_fields`
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
@@ -130,6 +131,8 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
+        # _members are fields that are specific in this NamedTuple.
+        # Add these as fields.
         if "_members" in namespace and not getattr(
             namespace["_members"], "__isabstractmethod__", False
         ):
