@@ -242,12 +242,18 @@ class Test__getitem__:
     def test_slice_whole_slice_singlekey(self):
         # A slice(None) also fails, if not presented in a 1-tuple.
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:]
 
     def test_fail_slice_part(self):
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:1]
 
 
