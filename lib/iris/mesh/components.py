@@ -669,6 +669,15 @@ class Mesh(CFVariableMixin, ABC):
 
 
 class _MeshXYMixin(Mesh, ABC):
+    """Mixin providing XY-coordinate behaviour for :class:`Mesh` subclasses.
+
+    Implements the shared logic for meshes that carry explicit X and Y
+    coordinates (nodes, and optionally edges/faces).  Concrete subclasses must
+    populate :attr:`_metadata_manager`, :attr:`_connectivity_manager_attr` and
+    :attr:`_coord_manager_attr` in their ``__init__``.
+
+    """
+
     # Subclass __init__ methods must define:
     # TODO: Impossible to type hint the return type of metadata_manager_factory().
     _metadata_manager: Any
@@ -2108,7 +2117,13 @@ class MeshXY(_MeshXYMixin):
 
 
 class _ManagerMembers[VT](dict[str, VT]):
-    # TODO: docstrings
+    """A mutable/immutable dict backing a coordinate or connectivity manager.
+
+    Mutation can be toggled via :meth:`set_mutability`; when immutable every
+    write operation raises :class:`RuntimeError`.
+
+    """
+
     read_only_message: str
 
     def _readonly(self, *args, **kwargs):
@@ -2541,10 +2556,10 @@ class _MeshCoordinateManagerBase(ABC):
 
         Parameters
         ----------
-        node_bool_index : ArrayLike
+        node_bool_index : :obj:`~numpy.typing.ArrayLike`
             Array of boolean membership, over the full length of original nodes,
             to use when indexing member node coordinates.
-        edge_indices, face_indices : ArrayLike, optional
+        edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
             The indices to use when indexing member edge or face
             coordinates respectively.
         mesh_id : int
@@ -3038,10 +3053,10 @@ class _MeshConnectivityManagerBase(ABC):
 
         Parameters
         ----------
-        node_bool_index : ArrayLike
+        node_bool_index : :obj:`~numpy.typing.ArrayLike`
             Array of boolean membership, over the full length of original nodes,
             to support the construction of indexed connectivities.
-        edge_indices, face_indices : ArrayLike, optional
+        edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
             The indices to use when indexing member connectivities with edge or
             face :attr:`~Connectivity.location` respectively.
         mesh_id : int
@@ -3228,15 +3243,16 @@ Location = Literal["edge", "node", "face"]
 
 
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
-    # TODO: docstring is out of date with the latest code.
-    """A container representing the UGRID ``cf_role``: ``location_index_set``.
+    """A sub-mesh defined by an index set into a parent :class:`MeshXY`.
 
-    A container representing the UGRID ``cf_role``:
-    ``location_index_set``. Achieved by referencing an original :class:`MeshXY`
-    instance (:attr:`super_mesh`), together with a specific :attr:`location`
-    (``node``/``edge``/``face``) and a set of :attr:`indices`. This is strictly
-    a view onto the original :class:`MeshXY` - it does not store its own
-    coordinates or connectivities.
+    Represents the UGRID ``cf_role``: ``location_index_set``. This is used
+    to associate a subset of mesh elements (nodes, edges, or faces) with a
+    data variable, e.g. 3 temperature readings associated with faces 0, 4, and
+    15 from the original mesh. Rather than
+    storing its own coordinates or connectivities, a :class:`_MeshIndexSet`
+    references a parent :class:`MeshXY` (:attr:`mesh`), a :attr:`location`
+    (``node`` / ``edge`` / ``face``), and an array of :attr:`indices` that
+    select the relevant elements from that parent mesh.
 
     Warnings
     --------
@@ -3251,7 +3267,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
     # TODO: implement I/O (iris#6123).
     # TODO: update the full documentation
-    # TODO: docstrings
     def __init__(
         self,
         indices: ArrayLike,
@@ -3264,6 +3279,30 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         attributes: Optional[dict] = None,
         start_index: Literal[0, 1] = 0,
     ):
+        """Create a :class:`_MeshIndexSet`.
+
+        Parameters
+        ----------
+        indices : :obj:`~numpy.typing.ArrayLike`
+            Indices selecting elements from ``mesh`` at ``location``.
+        mesh : MeshXY
+            The parent mesh being indexed.
+        location : "node", "edge" or "face"
+            The element type being indexed.
+        standard_name : str, optional
+            CF standard name for the index variable.
+        long_name : str, optional
+            Descriptive name.
+        var_name : str, optional
+            NetCDF variable name.
+        units : str, optional
+            Units; defaults to ``mesh.units``.
+        attributes : dict, optional
+            Arbitrary metadata attributes.
+        start_index : 0 or 1, default=0
+            Index origin; default is ``0``.
+
+        """
         if not isinstance(mesh, MeshXY):
             raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
 
