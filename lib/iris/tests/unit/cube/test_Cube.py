@@ -3996,37 +3996,32 @@ class Test_coord_dims:
 
     @pytest.fixture(autouse=True)
     def _setup(self):
-        # Build a 3D cube with dimension coordinates, auxiliary coordinates
-        # spanning one and multiple dimensions, and a derived auxiliary
-        # coordinate provided by a hybrid-height factory.
+        # Build a 3D cube with dimension coordinates and auxiliary
+        # coordinates spanning one and multiple dimensions.
+
+        # Set-up the cube.
         data = np.arange(24).reshape(2, 3, 4)
+        cube = Cube(data)
+
+        # Set-up the DimCoords and add them to the cube.
         x_coord = DimCoord(points=np.array([0, 1]), long_name="x")
         y_coord = DimCoord(points=np.array([0, 1, 2]), long_name="y")
         z_coord = DimCoord(points=np.array([0, 1, 2, 3]), long_name="z")
-        aux_1d = AuxCoord(points=np.array([0, 1]), long_name="aux_1d")
-        aux_2d = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="aux_2d")
-        cube = Cube(data)
         cube.add_dim_coord(x_coord, 0)
         cube.add_dim_coord(y_coord, 1)
         cube.add_dim_coord(z_coord, 2)
+
+        # Set-up the AuxCoords and add them to the cube.
+        aux_1d = AuxCoord(points=np.array([0, 1]), long_name="aux_1d")
+        aux_2d = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="aux_2d")
         cube.add_aux_coord(aux_1d, 0)
         cube.add_aux_coord(aux_2d, (0, 1))
-        # Dependencies for a hybrid-height derived coordinate ("altitude").
-        delta = AuxCoord(points=np.array([0, 1]), long_name="delta", units="m")
-        sigma = AuxCoord(points=np.array([0, 1]), long_name="sigma")
-        orography = AuxCoord(
-            np.arange(12).reshape(3, 4), units="m", long_name="orography"
-        )
-        cube.add_aux_coord(delta, 0)
-        cube.add_aux_coord(sigma, 0)
-        cube.add_aux_coord(orography, (1, 2))
-        factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orography)
-        cube.add_aux_factory(factory)
+
+        # Assign them all to class variables.
         self.cube = cube
         self.x_coord = x_coord
         self.aux_1d = aux_1d
         self.aux_2d = aux_2d
-        self.factory = factory
 
     def test_dim_coord(self):
         # A dimension coordinate is found by object identity.
@@ -4046,7 +4041,18 @@ class Test_coord_dims:
 
     def test_aux_factory(self):
         # A derived coordinate provided by an aux factory.
-        derived_coord = self.factory.make_coord(self.cube.coord_dims)
+        # Dependencies for a hybrid-height derived coordinate ("altitude").
+        delta = AuxCoord(points=np.array([0, 1]), long_name="delta", units="m")
+        sigma = AuxCoord(points=np.array([0, 1]), long_name="sigma")
+        orography = AuxCoord(
+            np.arange(12).reshape(3, 4), units="m", long_name="orography"
+        )
+        self.cube.add_aux_coord(delta, 0)
+        self.cube.add_aux_coord(sigma, 0)
+        self.cube.add_aux_coord(orography, (1, 2))
+        factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orography)
+        self.cube.add_aux_factory(factory)
+        derived_coord = factory.make_coord(self.cube.coord_dims)
         assert self.cube.coord_dims(derived_coord) == (0, 1, 2)
 
     def test_equivalent_coord_not_instance(self):
