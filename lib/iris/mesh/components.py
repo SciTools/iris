@@ -3215,7 +3215,10 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     #  module?
     """A sub-mesh defined by an index set into a parent :class:`MeshXY`.
 
-    Represents the UGRID ``cf_role``: ``location_index_set``.  Rather than
+    Represents the UGRID ``cf_role``: ``location_index_set``. This is used
+    to associate a subset of mesh elements (nodes, edges, or faces) with a
+    data variable, e.g. 3 temperature readings associated with faces 0, 4, and
+    15 from the original mesh. Rather than
     storing its own coordinates or connectivities, a :class:`_MeshIndexSet`
     references a parent :class:`MeshXY` (:attr:`mesh`), a :attr:`location`
     (``node`` / ``edge`` / ``face``), and an array of :attr:`indices` that
