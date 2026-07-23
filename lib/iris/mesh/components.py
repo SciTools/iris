@@ -3453,21 +3453,22 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             case "node":
                 # self.indices is a user-supplied index array over the nodes; convert
                 #  it to a fixed-shape boolean membership mask.
-                monotonic, direction = iris.util.monotonic(
-                    self.indices, strict=True, return_direction=True
-                )
-                if not (monotonic and direction == 1):
-                    # TODO: boolean 'mask' array precludes non-monotonic indexing,
-                    #  but is only needed to support connectivity construction, and
-                    #  only causes problems for coordinate construction. Separate
-                    #  logic to allow array of integer indices for coordinate
-                    #  construction.
-                    message = (
-                        "Indexing the nodes on a Mesh currently requires strictly "
-                        "increasing indices. Contact the Iris developers if this "
-                        "causes you problems."
+                if len(self.indices) > 1:  # Single value index is fine
+                    monotonic, direction = iris.util.monotonic(
+                        self.indices, strict=True, return_direction=True
                     )
-                    raise ValueError(message)
+                    if not (monotonic and direction == 1):
+                        # TODO: boolean 'mask' array precludes non-monotonic indexing,
+                        #  but is only needed to support connectivity construction, and
+                        #  only causes problems for coordinate construction. Separate
+                        #  logic to allow array of integer indices for coordinate
+                        #  construction.
+                        message = (
+                            "Indexing the nodes on a Mesh currently requires strictly "
+                            "increasing indices. Contact the Iris developers if this "
+                            "causes you problems."
+                        )
+                        raise ValueError(message)
                 indices = self.indices
                 al = da if _lazy.is_lazy_data(indices) else np
                 node_mask = al.zeros(n_original_nodes, dtype=bool)

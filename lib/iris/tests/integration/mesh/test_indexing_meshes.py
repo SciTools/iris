@@ -51,8 +51,8 @@ def cube_mesh_face():
 )
 def test_subset_indexing_auxcoord(fixture, request):
     (cube, _) = request.getfixturevalue(fixture)
-    mesh_coord_indexing.SETTING.value = mesh_coord_indexing.Options.AUX_COORD
-    indexed_cube = cube[0, 0:1]
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.AUX_COORD):
+        indexed_cube = cube[0, 0:1]
     # The mesh's lat/lon should be represented as AuxCoord
     assert isinstance(indexed_cube.coord(standard_name="latitude"), AuxCoord)
     assert isinstance(indexed_cube.coord(standard_name="longitude"), AuxCoord)
@@ -64,8 +64,8 @@ def test_subset_indexing_auxcoord(fixture, request):
 )
 def test_subset_indexing_new_mesh(fixture, request):
     (cube, _) = request.getfixturevalue(fixture)
-    mesh_coord_indexing.SETTING.value = mesh_coord_indexing.Options.NEW_MESH
-    indexed_cube = cube[0, 0:1]
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
+        indexed_cube = cube[0, 0:1]
     # The mesh's lat/lon should be represented as MeshCoord
     assert isinstance(indexed_cube.coord(standard_name="latitude"), MeshCoord)
     assert isinstance(indexed_cube.coord(standard_name="longitude"), MeshCoord)
@@ -77,8 +77,16 @@ def test_subset_indexing_new_mesh(fixture, request):
 )
 def test_subset_indexing_mesh_index_set(fixture, request):
     (cube, _) = request.getfixturevalue(fixture)
-    mesh_coord_indexing.SETTING.value = mesh_coord_indexing.Options.MESH_INDEX_SET
-    indexed_cube = cube[0, 0:1]
-    # The mesh's lat/lon should be represented as _MeshIndexSet
-    assert isinstance(indexed_cube.coord(standard_name="latitude"), _MeshIndexSet)
-    assert isinstance(indexed_cube.coord(standard_name="longitude"), _MeshIndexSet)
+    with mesh_coord_indexing.SETTING.context(
+        mesh_coord_indexing.Options.MESH_INDEX_SET
+    ):
+        indexed_cube = cube[0, 0:1]
+    # The mesh's lat/lon should be represented as MeshCoord, but they are based on
+    # _MeshIndexSet
+    lat = indexed_cube.coord(standard_name="latitude")
+    lon = indexed_cube.coord(standard_name="longitude")
+    assert isinstance(lat, MeshCoord)
+    assert isinstance(lon, MeshCoord)
+
+    assert isinstance(lat.mesh, _MeshIndexSet)
+    assert isinstance(lon.mesh, _MeshIndexSet)
