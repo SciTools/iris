@@ -3254,7 +3254,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     # TODO: docstrings
     def __init__(
         self,
-        indices: np.ndarray | da.Array,
+        indices: ArrayLike,
         mesh: MeshXY,
         location: Literal["node", "edge", "face"],
         standard_name: Optional[str] = None,
@@ -3264,10 +3264,6 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         attributes: Optional[dict] = None,
         start_index: Literal[0, 1] = 0,
     ):
-        if not (isinstance(indices, np.ndarray) or isinstance(indices, da.Array)):
-            msg = f"`indices` must be either Numpy or Dask arrays. Got {type(indices)}"
-            raise TypeError(msg)
-
         if not isinstance(mesh, MeshXY):
             raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
 
