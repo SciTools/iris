@@ -3615,9 +3615,15 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
         def _coords_and_axes(
             location: Literal["node", "edge", "face"],
-        ) -> list[tuple[AuxCoord, str]]:
-            coords = getattr(coord_man, f"{location}_coords")
-            return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
+        ) -> list[tuple[AuxCoord, str]] | None:
+            attr = f"{location}_coords"
+            if hasattr(coord_man, attr):
+                coords = getattr(coord_man, attr)
+                return [
+                    (getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES
+                ]
+            else:
+                return None
 
         return MeshXY(
             topology_dimension=self.topology_dimension,
