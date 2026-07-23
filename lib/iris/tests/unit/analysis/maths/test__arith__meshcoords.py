@@ -50,7 +50,6 @@ class MeshLocationsMixin:
         return self.cube
 
 
-# TODO: failing due to _MeshIndexSet work
 @_shared_utils.skip_data
 class TestBroadcastingWithMesh(
     MeshLocationsMixin,
@@ -65,7 +64,6 @@ class TestBroadcastingWithMesh(
     """
 
 
-# TODO: failing due to _MeshIndexSet work
 @_shared_utils.skip_data
 class TestBroadcastingWithMeshAndDerived(
     MeshLocationsMixin,

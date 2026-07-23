@@ -229,7 +229,6 @@ class Test__copy:
             meshcoord.copy(bounds=meshcoord.bounds)
 
 
-# TODO: all failing due to _MeshIndexSet work
 class Test__getitem__:
     def test_slice_wholeslice_1tuple(self):
         # The only slicing case that we support, to enable cube slicing.
@@ -243,12 +242,18 @@ class Test__getitem__:
     def test_slice_whole_slice_singlekey(self):
         # A slice(None) also fails, if not presented in a 1-tuple.
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:]
 
     def test_fail_slice_part(self):
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:1]
 
 
@@ -497,7 +502,6 @@ class Test_cube_containment:
         assert meshco2 == meshcoord
 
     def test_cube_nonmesh_slice(self):
-        # TODO: failing due to _MeshIndexSet work
         # Check that we can slice a cube on a non-mesh dimension, and get a
         # meshcoord == original.
         # Note: currently this must have the *same* mesh, as for .copy().

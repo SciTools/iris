@@ -855,7 +855,7 @@ def realistic_4d_w_everything(w_mesh=False):
         # Processed nodes: [a, b, c, d]
         # Processed faces: [[0, 1, 2, 3], [0, 2, 1, 3]]
 
-        nodes = np.stack([c.points for c in mesh.node_coords])
+        nodes = np.stack([c.points for c in mesh.node_coords if c is not None])
         face_node = mesh.face_node_connectivity
 
         # first_instances = a full length array but always with the index of
@@ -876,6 +876,7 @@ def realistic_4d_w_everything(w_mesh=False):
         node_x, node_y = [
             AuxCoord(nodes_unique[i], **c.metadata._asdict())
             for i, c in enumerate(mesh.node_coords)
+            if c is not None
         ]
         mesh.add_coords(node_x=node_x, node_y=node_y)
         conn_kwargs = dict(indices=indices_unique, start_index=0)
