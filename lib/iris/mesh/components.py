@@ -2779,7 +2779,16 @@ def _index_conn_array(
     flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
     # Here's the core indexing operation.
     # The comma applies all inds-array values to the *first* dimension.
-    flat_result = array[flat_inds_safe,]
+    try:
+        flat_result = array[flat_inds_safe,]
+    except NotImplementedError:
+        # Protect against Dask NotImplementedError:
+        #  "Slicing an array with unknown chunks with a dask.array of ints is
+        #  not supported"
+        if not lazy:
+            raise
+        array.compute_chunk_sizes()
+        flat_result = array[flat_inds_safe,]
     # Fix 'missing' locations, and restore the proper shape.
     flat_result_masked = al.ma.masked_array(flat_result, missing_inds)
     result = flat_result_masked.reshape(indexing.shape)
@@ -2788,8 +2797,8 @@ def _index_conn_array(
 
 class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
-    REQUIRED: tuple = NotImplemented
-    OPTIONAL: tuple = NotImplemented
+    REQUIRED: tuple[str, ...] | tuple[()] = NotImplemented
+    OPTIONAL: tuple[str, ...] | tuple[()] = NotImplemented
     _view_message: str | None = None
 
     def __init__(self, *connectivities, view: Optional[str] = None):
@@ -3026,6 +3035,18 @@ class _MeshConnectivityManagerBase(ABC):
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        """Identify appropriate Manager for a subsetted list of connectivities.
+
+        Supports :meth:`indexed`. Required because removing connectivities may
+        violate the minimum requirements for the original manager class, so
+        we might need to 'downgrade'. Should be overridden as appropriate in
+        subclasses.
+        """
+        return self.__class__
+
     def indexed(
         self,
         node_bool_index: ArrayLike,
@@ -3116,7 +3137,10 @@ class _MeshConnectivityManagerBase(ABC):
         else:
             view_message = None
 
-        result = self.__class__(
+        manager_class = self._indexed_manager(
+            [c.cf_role for c in indexed_members.values() if c is not None]
+        )
+        result = manager_class(
             *[c for c in indexed_members.values() if c is not None], view=view_message
         )
 
@@ -3165,9 +3189,20 @@ class _MeshConnectivityManagerBase(ABC):
         return removal_dict
 
 
-class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
-    REQUIRED = ("edge_node_connectivity",)
-    OPTIONAL = ()
+class _MeshNodeConnectivityManager(_MeshConnectivityManagerBase):
+    """Manager specifically to support node-based _MeshIndexSet i.e. no connectivities."""
+
+    REQUIRED: tuple[str, ...] | tuple[()] = ()
+    OPTIONAL: tuple[str, ...] | tuple[()] = ()
+
+    @property
+    def all_members(self):
+        return ()
+
+
+class _Mesh1DConnectivityManager(_MeshNodeConnectivityManager):
+    REQUIRED: tuple[str, ...] | tuple[()] = ("edge_node_connectivity",)
+    OPTIONAL: tuple[str, ...] | tuple[()] = ()
 
     @property
     def all_members(self):
@@ -3177,10 +3212,26 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
     def edge_node(self):
         return self._members["edge_node_connectivity"]
 
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        result: type["_MeshConnectivityManagerBase"]
+        if "edge_node_connectivity" in cf_roles:
+            result = _Mesh1DConnectivityManager
+        elif len(cf_roles) == 0:
+            result = _MeshNodeConnectivityManager
+        else:
+            message = (
+                f"Unhandled combination of connectivities: {cf_roles}. "
+                f"Cannot determine appropriate connectivity manager class."
+            )
+            raise NotImplementedError(message)
+        return result
 
-class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
-    REQUIRED = ("face_node_connectivity",)
-    OPTIONAL = (
+
+class _Mesh2DConnectivityManager(_Mesh1DConnectivityManager):
+    REQUIRED: tuple[str, ...] | tuple[()] = ("face_node_connectivity",)
+    OPTIONAL: tuple[str, ...] | tuple[()] = (
         "edge_node_connectivity",
         "face_edge_connectivity",
         "face_face_connectivity",
@@ -3222,6 +3273,16 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     @property
     def face_node(self):
         return self._members["face_node_connectivity"]
+
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        result: type["_MeshConnectivityManagerBase"]
+        if "face_node_connectivity" in cf_roles:
+            result = _Mesh2DConnectivityManager
+        else:
+            result = super()._indexed_manager(cf_roles)
+        return result
 
 
 Location = Literal["edge", "node", "face"]
