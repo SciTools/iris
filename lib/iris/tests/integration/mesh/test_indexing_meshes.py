@@ -1,3 +1,8 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+
 import pytest
 
 from iris.coords import AuxCoord
@@ -5,7 +10,7 @@ from iris.experimental import mesh_coord_indexing
 from iris.loading import load_cube
 from iris.mesh.components import MeshCoord, _MeshIndexSet
 from iris.tests import _shared_utils
-from iris.tests.stock.mesh import sample_mesh_cube
+from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 
 # using a cube with a mesh from file and building one from scratch (an example for each location):
 # Index the cube to get back the auxcoord, meshxy, meshindexset (by using the setting)
@@ -30,19 +35,22 @@ def cube_mesh_from_file():
 @pytest.fixture
 def cube_mesh_node():
     location = "node"
-    return (sample_mesh_cube(location=location), location)
+    mesh = sample_mesh()  # Cannot have a node only mesh
+    return (sample_mesh_cube(location=location, mesh=mesh), location)
 
 
 @pytest.fixture
 def cube_mesh_edge():
     location = "edge"
-    return (sample_mesh_cube(location=location), location)
+    mesh = sample_mesh(n_nodes=15, n_edges=3, n_faces=0)
+    return (sample_mesh_cube(location=location, mesh=mesh), location)
 
 
 @pytest.fixture
 def cube_mesh_face():
     location = "face"
-    return (sample_mesh_cube(location=location), location)
+    mesh = sample_mesh(n_nodes=15, n_edges=0, n_faces=3)
+    return (sample_mesh_cube(location=location, mesh=mesh), location)
 
 
 @pytest.mark.parametrize(
