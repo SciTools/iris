@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.mesh.components._MeshIndexSet` class."""
 
+import itertools
+
 import numpy as np
 import pytest
 
@@ -11,22 +13,56 @@ from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.mesh import MeshCoord, MeshXY
 from iris.mesh.components import _MeshIndexSet
 from iris.tests import _shared_utils
-import iris.tests.stock.mesh
+from iris.tests.stock.mesh import sample_mesh
 
 
 @pytest.fixture
-def mesh():
-    return iris.tests.stock.mesh.sample_mesh()
+def mesh_2d():
+    return sample_mesh()
+
+
+@pytest.fixture
+def mesh_1d():
+    return sample_mesh(n_faces=0)
+
+
+@pytest.fixture(params=["mesh_1d", "mesh_2d"])
+def meshes_all(request):
+    return request.getfixturevalue(request.param)
+
+
+@pytest.fixture(params=["node", "edge", "face"])
+def locations_all(request):
+    return request.param
+
+
+_MESH_LOCATION_COMBINED = [
+    (mesh, loc)
+    for mesh, loc in itertools.product(["mesh_1d", "mesh_2d"], ["node", "edge", "face"])
+    if not (mesh == "mesh_1d" and loc == "face")
+]
+
+
+@pytest.fixture(params=_MESH_LOCATION_COMBINED, ids=lambda x: f"{x[0]}-{x[1]}")
+def meshes_locs_all(request):
+    mesh_name, loc = request.param
+    mesh = request.getfixturevalue(mesh_name)
+    return mesh, loc
+
+
+def test_dummy(meshes_all):
+    assert isinstance(meshes_all, MeshXY)
 
 
 class Test___init__:
-    def test_basic(self, mesh):
+    def test_basic(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
         indices = np.array([0, 2])
-        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location="face")
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
 
         assert index_set.cf_role == "location_index_set"
         assert index_set.mesh is mesh
-        assert index_set.location == "face"
+        assert index_set.location == location
         assert index_set.start_index == 0
         assert index_set.topology_dimension == mesh.topology_dimension
         _shared_utils.assert_array_equal(index_set.indices, indices)
@@ -35,16 +71,21 @@ class Test___init__:
         with pytest.raises(TypeError, match="`mesh` must be `MeshXY`"):
             _MeshIndexSet(indices=[0], mesh="not-a-mesh", location="face")
 
-    def test_fail_invalid_location(self, mesh):
+    def test_fail_invalid_location(self, mesh_2d):
         with pytest.raises(ValueError, match="`location` must be in"):
-            _MeshIndexSet(indices=[0], mesh=mesh, location="bad")
+            _MeshIndexSet(indices=[0], mesh=mesh_2d, location="bad")
 
-    def test_fail_invalid_start_index(self, mesh):
+    def test_fail_location_mismatch(self, mesh_1d):
+        with pytest.raises(ValueError, match="`location` cannot be 'face'"):
+            _MeshIndexSet(indices=[0], mesh=mesh_1d, location="face")
+
+    def test_fail_invalid_start_index(self, mesh_2d):
         with pytest.raises(ValueError, match="`start_index must be 0 or 1"):
-            _MeshIndexSet(indices=[0], mesh=mesh, location="face", start_index=3)
+            _MeshIndexSet(indices=[0], mesh=mesh_2d, location="face", start_index=3)
 
-    def test___getstate____setstate__(self, mesh):
-        original = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location="edge")
+    def test___getstate____setstate__(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        original = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location=location)
         state = original.__getstate__()
 
         recreated = _MeshIndexSet.__new__(_MeshIndexSet)
@@ -61,161 +102,228 @@ class Test___init__:
         assert recreated.location == original.location
         assert recreated.start_index == original.start_index
 
-    def test_scalar_index(self, mesh):
-        index_set = _MeshIndexSet(indices=2, mesh=mesh, location="face")
+    def test_scalar_index(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=2, mesh=mesh, location=location)
 
         _shared_utils.assert_array_equal(index_set.indices, np.array([2]))
-        coord = index_set.coord(location="face", axis="x")
-        _shared_utils.assert_array_equal(coord.points, [3102])
+        coord = index_set.coord(location=location, axis="x")
+        assert coord.shape == (1,)
 
 
 class Test_properties:
-    def test_cf_role(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="node")
+    def test_cf_role(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location=location)
         assert index_set.cf_role == "location_index_set"
 
-    def test_dimension_properties(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="node")
+    def test_dimension_properties(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location=location)
         assert index_set.node_dimension == "_MeshIndexSet_NotImplemented"
         assert index_set.edge_dimension == "_MeshIndexSet_NotImplemented"
         assert index_set.face_dimension == "_MeshIndexSet_NotImplemented"
 
-    def test_metadata_properties(self, mesh):
+    def test_metadata_properties(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
         indices = np.array([0, 2])
         index_set = _MeshIndexSet(
             indices=indices,
             mesh=mesh,
-            location="face",
+            location=location,
             long_name="my-index-set",
             start_index=1,
         )
         _shared_utils.assert_array_equal(index_set.indices, indices)
         assert index_set.mesh is mesh
-        assert index_set.location == "face"
+        assert index_set.location == location
         assert index_set.start_index == 1
         assert index_set.topology_dimension == mesh.topology_dimension
         assert index_set.long_name == "my-index-set"
 
 
 class Test_index_calculations:
-    def test_node_location_calculate_node_bool_index(self, mesh):
+    def test_node_location_calculate_node_bool_index(self, meshes_all):
         index_set = _MeshIndexSet(
-            indices=np.array([0, 2, 4]), mesh=mesh, location="node"
+            indices=np.array([0, 2, 4]), mesh=meshes_all, location="node"
         )
         result = index_set._calculate_node_bool_index()
 
-        expected = np.zeros(mesh.node_coords.node_x.shape[0], dtype=bool)
+        expected = np.zeros(meshes_all.node_coords.node_x.shape[0], dtype=bool)
         expected[[0, 2, 4]] = True
         _shared_utils.assert_array_equal(result, expected)
 
-    def test_node_location_requires_monotonic_indices(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([2, 1]), mesh=mesh, location="node")
+    def test_node_location_requires_monotonic_indices(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(
+            indices=np.array([2, 1]), mesh=mesh, location=location
+        )
 
-        with pytest.raises(ValueError, match="requires strictly increasing indices"):
-            index_set._calculate_node_bool_index()
+        if location == "node":
+            with pytest.raises(
+                ValueError, match="requires strictly increasing indices"
+            ):
+                index_set._calculate_node_bool_index()
+        else:
+            result = index_set._calculate_node_bool_index()
+            assert isinstance(result, np.ndarray)
+            assert result.dtype == bool
 
-    def test_edge_location_calculate_node_bool_index(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location="edge")
+    def test_edge_location_calculate_node_bool_index(self, meshes_all):
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 1]), mesh=meshes_all, location="edge"
+        )
         result = index_set._calculate_node_bool_index()
 
-        expected = np.zeros(mesh.node_coords.node_x.shape[0], dtype=bool)
+        expected = np.zeros(meshes_all.node_coords.node_x.shape[0], dtype=bool)
         expected[[5, 6, 7, 8]] = True
         _shared_utils.assert_array_equal(result, expected)
 
-    def test_face_location_calculate_node_bool_index(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh, location="face")
+    def test_face_location_calculate_node_bool_index(self, mesh_2d):
+        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh_2d, location="face")
         result = index_set._calculate_node_bool_index()
 
-        expected = np.zeros(mesh.node_coords.node_x.shape[0], dtype=bool)
+        expected = np.zeros(mesh_2d.node_coords.node_x.shape[0], dtype=bool)
         expected[[4, 5, 6, 7]] = True
         _shared_utils.assert_array_equal(result, expected)
 
-    def test_calculate_edge_indices(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh, location="edge")
-        _shared_utils.assert_array_equal(
-            index_set._calculate_edge_indices(), np.array([1])
-        )
+    def test_calculate_edge_indices(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh, location=location)
+        result = index_set._calculate_edge_indices()
 
-        node_index_set = _MeshIndexSet(
-            indices=np.array([1]), mesh=mesh, location="node"
-        )
-        assert node_index_set._calculate_edge_indices() is None
+        if location == "edge":
+            _shared_utils.assert_array_equal(result, np.array([1]))
+        else:
+            assert result is None
 
-    def test_calculate_face_indices(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh, location="face")
-        _shared_utils.assert_array_equal(
-            index_set._calculate_face_indices(), np.array([1])
+    def test_calculate_face_indices(self, mesh_2d, locations_all):
+        index_set = _MeshIndexSet(
+            indices=np.array([1]), mesh=mesh_2d, location=locations_all
         )
+        result = index_set._calculate_face_indices()
 
-        node_index_set = _MeshIndexSet(
-            indices=np.array([1]), mesh=mesh, location="node"
-        )
-        assert node_index_set._calculate_face_indices() is None
+        if locations_all == "face":
+            _shared_utils.assert_array_equal(result, np.array([1]))
+        else:
+            assert result is None
 
 
 class Test_managers_and_views:
-    def test_coord_manager_subset_for_face_index(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
-
-        assert mesh.node_coords.node_x.shape == (15,)
-        assert mesh.face_coords.face_x.shape == (3,)
+    def test_coord_manager_subset(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh, location=location)
 
         coord_manager = index_set._coord_manager
-        assert coord_manager.node_x.shape == (8,)
-        assert coord_manager.node_y.shape == (8,)
-        assert coord_manager.face_x.shape == (2,)
-        assert coord_manager.face_y.shape == (2,)
+        assert coord_manager.node_x.shape < mesh.node_coords.node_x.shape
+        assert coord_manager.node_y.shape < mesh.node_coords.node_y.shape
+        assert coord_manager.node_x.core_points()[0] in mesh.node_coords.node_x.points
+        match location:
+            case "edge":
+                assert coord_manager.edge_x.shape < mesh.edge_coords.edge_x.shape
+                assert coord_manager.edge_y.shape < mesh.edge_coords.edge_y.shape
+                assert (
+                    coord_manager.edge_x.core_points()[0]
+                    in mesh.edge_coords.edge_x.points
+                )
+            case "face":
+                assert coord_manager.face_x.shape < mesh.face_coords.face_x.shape
+                assert coord_manager.face_y.shape < mesh.face_coords.face_y.shape
+                assert (
+                    coord_manager.face_x.core_points()[0]
+                    in mesh.face_coords.face_x.points
+                )
 
-        _shared_utils.assert_array_equal(
-            coord_manager.face_x.points,
-            mesh.face_coords.face_x.points[[0, 2]],
+    def test_connectivity_manager_subset(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 2]), mesh=mesh, location=location
         )
 
-    def test_connectivity_manager_subset_for_face_index(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
-
-        assert mesh.face_node_connectivity.shape == (3, 4)
-
         connectivity_manager = index_set._connectivity_manager
-        assert connectivity_manager.face_node is not None
-        assert connectivity_manager.edge_node is None
         assert connectivity_manager.is_view
-        assert connectivity_manager.face_node.shape == (2, 4)
+        match location:
+            case "node":
+                assert len(connectivity_manager.all_members) == 0
+            case "edge":
+                assert connectivity_manager.edge_node is not None
+                assert not hasattr(connectivity_manager, "face_node")
+                assert (
+                    connectivity_manager.edge_node.shape[0]
+                    < mesh.edge_node_connectivity.shape[0]
+                )
+            case "face":
+                assert connectivity_manager.face_node is not None
+                assert connectivity_manager.edge_node is None
+                assert (
+                    connectivity_manager.face_node.shape[0]
+                    < mesh.face_node_connectivity.shape[0]
+                )
 
-    def test_coord_manager_setter_forbidden(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="face")
+    def test_coord_manager_setter_forbidden(self, mesh_2d):
+        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh_2d, location="face")
 
         with pytest.raises(NotImplementedError, match="Modification of _MeshIndexSet"):
-            index_set._coord_manager = mesh._coord_manager
+            index_set._coord_manager = mesh_2d._coord_manager
 
-    def test_connectivity_manager_setter_forbidden(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="face")
+    def test_connectivity_manager_setter_forbidden(self, mesh_2d):
+        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh_2d, location="face")
 
         with pytest.raises(NotImplementedError, match="Modification of _MeshIndexSet"):
-            index_set._connectivity_manager = mesh._connectivity_manager
+            index_set._connectivity_manager = mesh_2d._connectivity_manager
 
 
 class Test_as_mesh:
-    def test_basic(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
-        new_mesh = index_set.as_mesh()
+    def test_creation(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 2]), mesh=mesh, location=location
+        )
+        if location == "node":
+            with pytest.raises(NotImplementedError, match="with no edge or face"):
+                _ = index_set.as_mesh()
+        else:
+            new_mesh = index_set.as_mesh()
 
-        assert isinstance(new_mesh, MeshXY)
-        assert new_mesh is not mesh
-        assert new_mesh.face_coords.face_x.shape == index_set.face_coords.face_x.shape
-        assert new_mesh.face_coords.face_y.shape == index_set.face_coords.face_y.shape
-        assert new_mesh.node_coords.node_x.shape == index_set.node_coords.node_x.shape
-        assert new_mesh.node_coords.node_y.shape == index_set.node_coords.node_x.shape
+            assert isinstance(new_mesh, MeshXY)
+            assert new_mesh is not mesh
+            assert (
+                new_mesh.node_coords.node_x.shape == index_set.node_coords.node_x.shape
+            )
+            assert (
+                new_mesh.node_coords.node_y.shape == index_set.node_coords.node_x.shape
+            )
+            match location:
+                case "edge":
+                    assert (
+                        new_mesh.edge_coords.edge_x.shape
+                        == index_set.edge_coords.edge_x.shape
+                    )
+                    assert (
+                        new_mesh.edge_coords.edge_y.shape
+                        == index_set.edge_coords.edge_y.shape
+                    )
+                case "face":
+                    assert (
+                        new_mesh.face_coords.face_x.shape
+                        == index_set.face_coords.face_x.shape
+                    )
+                    assert (
+                        new_mesh.face_coords.face_y.shape
+                        == index_set.face_coords.face_y.shape
+                    )
 
-    def test_deep_copy_not_view(self, mesh):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
+    def test_deep_copy_not_view(self, mesh_2d):
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
+        )
         new_mesh = index_set.as_mesh()
 
         _shared_utils.assert_array_equal(
             new_mesh.face_coords.face_x.points, [3100, 3102]
         )
         # Changing the original mesh should not affect the new mesh.
-        mesh.face_coords.face_x.points = np.array([999, 998, 997])
+        mesh_2d.face_coords.face_x.points = np.array([999, 998, 997])
         _shared_utils.assert_array_equal(
             new_mesh.face_coords.face_x.points, [3100, 3102]
         )
@@ -223,16 +331,25 @@ class Test_as_mesh:
 
 class Test_meshcoord_interop:
     @pytest.mark.parametrize("creator", [MeshCoord, _MeshIndexSet.to_MeshCoord])
-    def test_meshcoord_from_index_set_location_must_match(self, mesh, creator):
-        index_set = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location="face")
+    def test_meshcoord_from_index_set_location_must_match(
+        self, meshes_locs_all, mesh_2d, creator
+    ):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 1]), mesh=mesh, location=location
+        )
 
+        wrong_location = "face" if location != "face" else "edge"
         with pytest.raises(ValueError, match="does not match the location"):
-            creator(index_set, location="edge", axis="x")
+            creator(index_set, location=wrong_location, axis="x")
 
     @pytest.mark.parametrize("creator", [MeshCoord, _MeshIndexSet.to_MeshCoord])
-    def test_meshcoord_from_index_set(self, mesh, creator):
-        index_set = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location="face")
-        meshcoord = creator(index_set, location="face", axis="x")
+    def test_meshcoord_from_index_set(self, meshes_locs_all, mesh_2d, creator):
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 1]), mesh=mesh, location=location
+        )
+        meshcoord = creator(index_set, location=location, axis="x")
 
         assert meshcoord.mesh is index_set
         assert meshcoord.shape == (2,)
@@ -240,8 +357,10 @@ class Test_meshcoord_interop:
 
 class Test_deferred_views:
     @pytest.mark.parametrize("update_mode", ["edit", "replace"])
-    def test_coord_view_is_lazy_and_updates(self, mesh, update_mode):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
+    def test_coord_view_is_lazy_and_updates(self, mesh_2d, update_mode):
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
+        )
 
         coord_before = index_set.coord(location="face", axis="x")
         assert coord_before.has_lazy_points()
@@ -251,13 +370,13 @@ class Test_deferred_views:
         new_points = [4400, 4401, 4402]
         new_bounds = [[4400, 4401], [4401, 4402], [4402, 4403]]
         if update_mode == "edit":
-            mesh.face_coords.face_x.points = new_points
-            mesh.face_coords.face_x.bounds = new_bounds
+            mesh_2d.face_coords.face_x.points = new_points
+            mesh_2d.face_coords.face_x.bounds = new_bounds
         else:
-            replacement = mesh.face_coords.face_x.copy(
+            replacement = mesh_2d.face_coords.face_x.copy(
                 points=new_points, bounds=new_bounds
             )
-            mesh.add_coords(face_x=replacement)
+            mesh_2d.add_coords(face_x=replacement)
 
         coord_after = index_set.coord(location="face", axis="x")
         assert coord_after.has_lazy_points()
@@ -267,8 +386,10 @@ class Test_deferred_views:
         )
 
     @pytest.mark.parametrize("update_mode", ["edit", "replace"])
-    def test_connectivity_view_is_lazy_and_updates(self, mesh, update_mode):
-        index_set = _MeshIndexSet(indices=np.array([0, 2]), mesh=mesh, location="face")
+    def test_connectivity_view_is_lazy_and_updates(self, mesh_2d, update_mode):
+        index_set = _MeshIndexSet(
+            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
+        )
 
         conn_before = index_set.connectivity(cf_role="face_node_connectivity")
         assert conn_before.has_lazy_indices()
@@ -284,10 +405,10 @@ class Test_deferred_views:
             ]
         )
         if update_mode == "edit":
-            mesh.face_node_connectivity._values = new_indices
+            mesh_2d.face_node_connectivity._values = new_indices
         else:
-            replacement = mesh.face_node_connectivity.copy(new_indices)
-            mesh.add_connectivities(replacement)
+            replacement = mesh_2d.face_node_connectivity.copy(new_indices)
+            mesh_2d.add_connectivities(replacement)
 
         conn_after = index_set.connectivity(cf_role="face_node_connectivity")
         assert conn_after.has_lazy_indices()

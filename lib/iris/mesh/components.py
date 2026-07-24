@@ -3371,6 +3371,12 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             msg = f"`location` must be in {_MeshXYMixin.ELEMENTS}. Got {location}"
             raise ValueError(msg)
 
+        if location == "face" and mesh.topology_dimension < 2:
+            raise ValueError(
+                f"`location` cannot be 'face' for a mesh with topology_dimension < 2. "
+                f"Got {location} and topology_dimension={mesh.topology_dimension}"
+            )
+
         if start_index not in [0, 1]:
             raise ValueError(f"`start_index must be 0 or 1. Got {start_index}")
 
@@ -3453,10 +3459,14 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             case "node":
                 # self.indices is a user-supplied index array over the nodes; convert
                 #  it to a fixed-shape boolean membership mask.
-                monotonic, direction = iris.util.monotonic(
-                    self.indices, strict=True, return_direction=True
-                )
-                if not (monotonic and direction == 1):
+                if len(self.indices) > 1:
+                    monotonic, direction = iris.util.monotonic(
+                        self.indices, strict=True, return_direction=True
+                    )
+                    increasing = monotonic and direction == 1
+                else:
+                    increasing = True
+                if not increasing:
                     # TODO: boolean 'mask' array precludes non-monotonic indexing,
                     #  but is only needed to support connectivity construction, and
                     #  only causes problems for coordinate construction. Separate
@@ -3611,6 +3621,18 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}
         coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
         conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
+        has_edges = hasattr(conn_man, "edge_node")
+        has_faces = hasattr(conn_man, "face_node")
+        if has_faces:
+            topology_dimension = 2
+        elif has_edges:
+            topology_dimension = 1
+        else:
+            message = (
+                f"Cannot create a MeshXY from a MeshIndexSet with no edge or face "
+                f"connectivities. This is a *{self.location}* MeshIndexSet."
+            )
+            raise NotImplementedError(message)
 
         def _coords_and_axes(
             location: Literal["node", "edge", "face"],
@@ -3619,11 +3641,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
 
         return MeshXY(
-            topology_dimension=self.topology_dimension,
+            topology_dimension=topology_dimension,
             node_coords_and_axes=_coords_and_axes("node"),
             connectivities=[conn for conn in conn_man.all_members if conn is not None],
-            edge_coords_and_axes=_coords_and_axes("edge"),
-            face_coords_and_axes=_coords_and_axes("face"),
+            edge_coords_and_axes=_coords_and_axes("edge") if has_edges else None,
+            face_coords_and_axes=_coords_and_axes("face") if has_faces else None,
             standard_name=self.standard_name,
             long_name=self.long_name,
             var_name=self.var_name,
