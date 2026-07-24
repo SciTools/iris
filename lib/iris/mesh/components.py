@@ -3364,6 +3364,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             Index origin; default is ``0``.
 
         """
+        if np.asanyarray(indices).ndim > 1:
+            raise ValueError(
+                f"`indices` must be 1D. Got {np.asanyarray(indices).ndim} dimensions."
+            )
+
         if not isinstance(mesh, MeshXY):
             raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
 

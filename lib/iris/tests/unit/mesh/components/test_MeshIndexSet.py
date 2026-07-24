@@ -58,7 +58,7 @@ def test_dummy(meshes_all):
 class Test___init__:
     def test_basic(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        indices = np.array([0, 2])
+        indices = [0, 2]
         index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
 
         assert index_set.cf_role == "location_index_set"
@@ -67,6 +67,18 @@ class Test___init__:
         assert index_set.start_index == 0
         assert index_set.topology_dimension == mesh.topology_dimension
         _shared_utils.assert_array_equal(index_set.indices, indices)
+
+    def test_numpy_array_indices(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        indices = np.array([0, 2])
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        _shared_utils.assert_array_equal(index_set.indices, indices)
+
+    def test_fail_multidim_indices(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        with pytest.raises(ValueError, match="`indices` must be 1D"):
+            _MeshIndexSet(indices=[[0, 1], [2, 3]], mesh=mesh, location=location)
 
     def test_fail_invalid_mesh(self):
         with pytest.raises(TypeError, match="`mesh` must be `MeshXY`"):
@@ -86,7 +98,7 @@ class Test___init__:
 
     def test___getstate____setstate__(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        original = _MeshIndexSet(indices=np.array([0, 1]), mesh=mesh, location=location)
+        original = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
         state = original.__getstate__()
 
         recreated = _MeshIndexSet.__new__(_MeshIndexSet)
@@ -115,19 +127,19 @@ class Test___init__:
 class Test_properties:
     def test_cf_role(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location=location)
+        index_set = _MeshIndexSet([0], mesh=mesh, location=location)
         assert index_set.cf_role == "location_index_set"
 
     def test_dimension_properties(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location=location)
+        index_set = _MeshIndexSet([0], mesh=mesh, location=location)
         assert index_set.node_dimension == "_MeshIndexSet_NotImplemented"
         assert index_set.edge_dimension == "_MeshIndexSet_NotImplemented"
         assert index_set.face_dimension == "_MeshIndexSet_NotImplemented"
 
     def test_metadata_properties(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        indices = np.array([0, 2])
+        indices = [0, 2]
         index_set = _MeshIndexSet(
             indices=indices,
             mesh=mesh,
@@ -145,9 +157,7 @@ class Test_properties:
 
 class Test_index_calculations:
     def test_node_location_calculate_node_bool_index(self, meshes_all):
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2, 4]), mesh=meshes_all, location="node"
-        )
+        index_set = _MeshIndexSet(indices=[0, 2, 4], mesh=meshes_all, location="node")
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(meshes_all.node_coords.node_x.shape[0], dtype=bool)
@@ -156,9 +166,7 @@ class Test_index_calculations:
 
     def test_node_location_requires_monotonic_indices(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(
-            indices=np.array([2, 1]), mesh=mesh, location=location
-        )
+        index_set = _MeshIndexSet(indices=[2, 1], mesh=mesh, location=location)
 
         if location == "node":
             with pytest.raises(
@@ -171,9 +179,7 @@ class Test_index_calculations:
             assert result.dtype == bool
 
     def test_edge_location_calculate_node_bool_index(self, meshes_all):
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 1]), mesh=meshes_all, location="edge"
-        )
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=meshes_all, location="edge")
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(meshes_all.node_coords.node_x.shape[0], dtype=bool)
@@ -181,7 +187,7 @@ class Test_index_calculations:
         _shared_utils.assert_array_equal(result, expected)
 
     def test_face_location_calculate_node_bool_index(self, mesh_2d):
-        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh_2d, location="face")
+        index_set = _MeshIndexSet(indices=[1], mesh=mesh_2d, location="face")
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(mesh_2d.node_coords.node_x.shape[0], dtype=bool)
@@ -190,7 +196,7 @@ class Test_index_calculations:
 
     def test_calculate_edge_indices(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(indices=np.array([1]), mesh=mesh, location=location)
+        index_set = _MeshIndexSet(indices=[1], mesh=mesh, location=location)
         result = index_set._calculate_edge_indices()
 
         if location == "edge":
@@ -199,9 +205,7 @@ class Test_index_calculations:
             assert result is None
 
     def test_calculate_face_indices(self, mesh_2d, locations_all):
-        index_set = _MeshIndexSet(
-            indices=np.array([1]), mesh=mesh_2d, location=locations_all
-        )
+        index_set = _MeshIndexSet(indices=[1], mesh=mesh_2d, location=locations_all)
         result = index_set._calculate_face_indices()
 
         if locations_all == "face":
@@ -237,9 +241,7 @@ class Test_managers_and_views:
 
     def test_connectivity_manager_subset(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2]), mesh=mesh, location=location
-        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
 
         connectivity_manager = index_set._connectivity_manager
         assert connectivity_manager.is_view
@@ -262,13 +264,13 @@ class Test_managers_and_views:
                 )
 
     def test_coord_manager_setter_forbidden(self, mesh_2d):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh_2d, location="face")
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh_2d, location="face")
 
         with pytest.raises(NotImplementedError, match="Modification of _MeshIndexSet"):
             index_set._coord_manager = mesh_2d._coord_manager
 
     def test_connectivity_manager_setter_forbidden(self, mesh_2d):
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh_2d, location="face")
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh_2d, location="face")
 
         with pytest.raises(NotImplementedError, match="Modification of _MeshIndexSet"):
             index_set._connectivity_manager = mesh_2d._connectivity_manager
@@ -277,9 +279,7 @@ class Test_managers_and_views:
 class Test_as_mesh:
     def test_creation(self, meshes_locs_all):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2]), mesh=mesh, location=location
-        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
         if location == "node":
             with pytest.raises(NotImplementedError, match="with no edge or face"):
                 _ = index_set.as_mesh()
@@ -315,9 +315,7 @@ class Test_as_mesh:
                     )
 
     def test_deep_copy_not_view(self, mesh_2d):
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
-        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
         new_mesh = index_set.as_mesh()
 
         _shared_utils.assert_array_equal(
@@ -336,9 +334,7 @@ class Test_meshcoord_interop:
         self, meshes_locs_all, mesh_2d, creator
     ):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 1]), mesh=mesh, location=location
-        )
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
 
         wrong_location = "face" if location != "face" else "edge"
         with pytest.raises(ValueError, match="does not match the location"):
@@ -347,9 +343,7 @@ class Test_meshcoord_interop:
     @pytest.mark.parametrize("creator", [MeshCoord, _MeshIndexSet.to_MeshCoord])
     def test_meshcoord_from_index_set(self, meshes_locs_all, mesh_2d, creator):
         mesh, location = meshes_locs_all
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 1]), mesh=mesh, location=location
-        )
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
         meshcoord = creator(index_set, location=location, axis="x")
 
         assert meshcoord.mesh is index_set
@@ -363,9 +357,7 @@ class Test__str_repr:
         mesh.rename("test_mesh")
         self.mesh = mesh
         self.location = location
-        self.index_set = _MeshIndexSet(
-            indices=np.array([0, 1]), mesh=mesh, location=location
-        )
+        self.index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
 
     def test_repr_unnamed(self):
         # When the index set has no name, repr mimics object.__str__ style.
@@ -402,7 +394,7 @@ class Test__str_repr:
 
     def test_str_contains_start_index_nonzero(self):
         index_set = _MeshIndexSet(
-            indices=np.array([1, 2]),
+            indices=[1, 2],
             mesh=self.mesh,
             location=self.location,
             start_index=1,
@@ -420,7 +412,7 @@ class Test__str_repr:
 
     def test_str_nameless_mesh_uses_object_repr(self):
         mesh = sample_mesh()  # no name
-        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="node")
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh, location="node")
         result = str(index_set)
         assert re.search(r"mesh: <MeshXY object at 0x[0-9a-f]+>", result)
 
@@ -442,9 +434,7 @@ class Test__str_repr:
 class Test_deferred_views:
     @pytest.mark.parametrize("update_mode", ["edit", "replace"])
     def test_coord_view_is_lazy_and_updates(self, mesh_2d, update_mode):
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
-        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
 
         coord_before = index_set.coord(location="face", axis="x")
         assert coord_before.has_lazy_points()
@@ -471,9 +461,7 @@ class Test_deferred_views:
 
     @pytest.mark.parametrize("update_mode", ["edit", "replace"])
     def test_connectivity_view_is_lazy_and_updates(self, mesh_2d, update_mode):
-        index_set = _MeshIndexSet(
-            indices=np.array([0, 2]), mesh=mesh_2d, location="face"
-        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
 
         conn_before = index_set.connectivity(cf_role="face_node_connectivity")
         assert conn_before.has_lazy_indices()
