@@ -13,7 +13,7 @@ import pytest
 
 from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.mesh import MeshCoord, MeshXY
-from iris.mesh.components import _MeshIndexSet
+from iris.mesh.components import Connectivity, _MeshIndexSet
 from iris.tests import _shared_utils
 from iris.tests.stock.mesh import sample_mesh
 
@@ -284,6 +284,73 @@ class Test_managers_and_views:
 
         with pytest.raises(NotImplementedError, match="Modification of _MeshIndexSet"):
             index_set._connectivity_manager = mesh_2d._connectivity_manager
+
+    def test_coord_manager_fail_non_lazy(self, mesh_2d):
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh_2d, location="face")
+
+        coord_manager = index_set._coord_manager
+        assert is_lazy_data(coord_manager.node_x.core_points())
+        # Force realisation.
+        _ = coord_manager.node_x.points
+        # Attempting to access a second time triggers a laziness check,
+        #  which fails.
+        with pytest.raises(ValueError, match="Non-lazy coordinate detected"):
+            _ = coord_manager.node_x.points
+
+    def test_connectivity_manager_fail_non_lazy(self, mesh_2d):
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh_2d, location="face")
+
+        connectivity_manager = index_set._connectivity_manager
+        assert is_lazy_data(connectivity_manager.face_node.core_indices())
+        # Force realisation.
+        _ = connectivity_manager.face_node.indices
+        # Attempting to access a second time triggers a laziness check,
+        #  which fails.
+        with pytest.raises(ValueError, match="Non-lazy connectivity detected"):
+            _ = connectivity_manager.face_node.indices
+
+
+class Test_unusual_connectivities:
+    @pytest.fixture
+    def mis_unusual_start_index(self):
+        mesh = sample_mesh()
+        face_node = mesh.face_node_connectivity
+        assert face_node.start_index == 0
+        mesh.add_connectivities(
+            Connectivity(
+                indices=face_node.indices + 1,
+                cf_role=face_node.cf_role,
+                start_index=1,
+            )
+        )
+        index_set = _MeshIndexSet(
+            indices=[0, 2], mesh=mesh, location="face", start_index=1
+        )
+        return index_set
+
+    def test_unusual_start_index(self, mis_unusual_start_index):
+        index_set = mis_unusual_start_index
+        _shared_utils.assert_array_equal(index_set.indices, np.array([0, 2]))
+        _shared_utils.assert_array_equal(
+            index_set.connectivity(cf_role="face_node_connectivity").indices,
+            np.array([[1, 2, 3, 4], [5, 6, 7, 8]]),
+        )
+
+    @pytest.fixture
+    def mis_unusual_transposition(self):
+        mesh = sample_mesh()
+        face_node = mesh.face_node_connectivity
+        mesh.add_connectivities(face_node.transpose())
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+        return index_set
+
+    def test_unusual_transposition(self, mis_unusual_transposition):
+        index_set = mis_unusual_transposition
+        _shared_utils.assert_array_equal(index_set.indices, np.array([0, 2]))
+        _shared_utils.assert_array_equal(
+            index_set.connectivity(cf_role="face_node_connectivity").indices,
+            np.array([[0, 1, 2, 3], [4, 5, 6, 7]]).T,
+        )
 
 
 class Test_as_mesh:

@@ -3498,9 +3498,13 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                         and c.connected == "node"
                     )
                 ]
-                # Doesn't matter if connectivity is transposed or not in this case.
                 # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-                conn_indices = connectivity.core_indices()[self.indices]
+                # Respect the connectivity's location_axis before selecting the
+                # requested edges/faces. This preserves the connectivity's stored
+                # orientation while still handling transposed connectivities.
+                conn_indices = connectivity.indices_by_location(
+                    connectivity.core_indices()
+                )[self.indices]
                 al = da if _lazy.is_lazy_data(conn_indices) else np
                 # Flatten and drop masked padding (ragged connectivities) by scattering
                 #  membership into a fixed-shape boolean mask.
