@@ -186,19 +186,19 @@ class Test_index_calculations:
             assert result.dtype == bool
 
     def test_edge_location_calculate_node_bool_index(self, meshes_all):
-        index_set = _MeshIndexSet(indices=[0, 1], mesh=meshes_all, location="edge")
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=meshes_all, location="edge")
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(meshes_all.node_coords.node_x.shape[0], dtype=bool)
-        expected[[5, 6, 7, 8]] = True
+        expected[[5, 6, 9, 10]] = True
         _shared_utils.assert_array_equal(result, expected)
 
     def test_face_location_calculate_node_bool_index(self, mesh_2d):
-        index_set = _MeshIndexSet(indices=[1], mesh=mesh_2d, location="face")
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(mesh_2d.node_coords.node_x.shape[0], dtype=bool)
-        expected[[4, 5, 6, 7]] = True
+        expected[[0, 1, 2, 3, 8, 8, 10, 11]] = True
         _shared_utils.assert_array_equal(result, expected)
 
     def test_calculate_edge_indices(self, meshes_locs_all):
@@ -373,24 +373,14 @@ class Test_unusual_connectivities:
             [1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0, 0.0, 1.0],
             standard_name="longitude",
         )
-        node_y = AuxCoord(
-            [
-                0.0,
-                0.0,
-                -1.0,
-                -1.0,
-                -2.0,
-                -2.0,
-                -2.0,
-                -3.0,
-                -3.0,
-                -3.0,
-                -3.0,
-                -4.0,
-                -4.0,
-            ],
-            standard_name="latitude",
+        # Appease the linter.
+        ys = np.concat(
+            (
+                np.array([0.0, 0.0, -1.0, -1.0, -2.0, -2.0, -2.0]),
+                np.array([-3.0, -3.0, -3.0, -3.0, -4.0, -4.0]),
+            )
         )
+        node_y = AuxCoord(ys, standard_name="latitude")
         if lazy_values:
             node_x.points = node_x.lazy_points()
             node_y.points = node_y.lazy_points()
