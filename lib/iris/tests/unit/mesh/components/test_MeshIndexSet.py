@@ -7,6 +7,7 @@
 import itertools
 import re
 
+from dask import array as da
 import numpy as np
 import pytest
 
@@ -17,14 +18,19 @@ from iris.tests import _shared_utils
 from iris.tests.stock.mesh import sample_mesh
 
 
-@pytest.fixture
-def mesh_2d():
-    return sample_mesh()
+@pytest.fixture(params=[False, True], ids=["real", "lazy"], autouse=True)
+def lazy_values(request):
+    return request.param
 
 
 @pytest.fixture
-def mesh_1d():
-    return sample_mesh(n_faces=0)
+def mesh_2d(lazy_values):
+    return sample_mesh(lazy_values=lazy_values)
+
+
+@pytest.fixture
+def mesh_1d(lazy_values):
+    return sample_mesh(n_faces=0, lazy_values=lazy_values)
 
 
 @pytest.fixture(params=["mesh_1d", "mesh_2d"])
@@ -175,7 +181,7 @@ class Test_index_calculations:
                 index_set._calculate_node_bool_index()
         else:
             result = index_set._calculate_node_bool_index()
-            assert isinstance(result, np.ndarray)
+            assert isinstance(result, (np.ndarray, da.Array))
             assert result.dtype == bool
 
     def test_edge_location_calculate_node_bool_index(self, meshes_all):
@@ -220,10 +226,14 @@ class Test_managers_and_views:
         index_set = _MeshIndexSet(indices=[0], mesh=mesh, location=location)
 
         coord_manager = index_set._coord_manager
-        assert coord_manager.node_x.shape < mesh.node_coords.node_x.shape
-        assert coord_manager.node_y.shape < mesh.node_coords.node_y.shape
-        assert coord_manager.node_x.core_points()[0] in mesh.node_coords.node_x.points
         match location:
+            case "node":
+                assert coord_manager.node_x.shape < mesh.node_coords.node_x.shape
+                assert coord_manager.node_y.shape < mesh.node_coords.node_y.shape
+                assert (
+                    coord_manager.node_x.core_points()[0]
+                    in mesh.node_coords.node_x.points
+                )
             case "edge":
                 assert coord_manager.edge_x.shape < mesh.edge_coords.edge_x.shape
                 assert coord_manager.edge_y.shape < mesh.edge_coords.edge_y.shape
@@ -288,13 +298,16 @@ class Test_as_mesh:
 
             assert isinstance(new_mesh, MeshXY)
             assert new_mesh is not mesh
-            assert (
-                new_mesh.node_coords.node_x.shape == index_set.node_coords.node_x.shape
-            )
-            assert (
-                new_mesh.node_coords.node_y.shape == index_set.node_coords.node_x.shape
-            )
             match location:
+                case "node":
+                    assert (
+                        new_mesh.node_coords.node_x.shape
+                        == index_set.node_coords.node_x.shape
+                    )
+                    assert (
+                        new_mesh.node_coords.node_y.shape
+                        == index_set.node_coords.node_x.shape
+                    )
                 case "edge":
                     assert (
                         new_mesh.edge_coords.edge_x.shape
