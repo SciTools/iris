@@ -2563,6 +2563,22 @@ class Test_mesh:
         result = self.cube.mesh
         assert result is None
 
+    def test_mesh_scalar_index(self):
+        # Test correct scalar indexing of a mesh dimension.
+        from iris.experimental.mesh_coord_indexing import SETTING, Options
+
+        cube = self.cube
+        mesh_dim = cube.mesh_dim()
+        indexing = [slice(None)] * cube.ndim
+        indexing[mesh_dim] = 0
+        with SETTING.context(Options.MESH_INDEX_SET):
+            result = cube[tuple(indexing)]
+        assert result.mesh is not None
+        assert result.mesh_dim() is None
+        mesh_coords = result.coords(mesh_coords=True)
+        for mesh_coord in mesh_coords:
+            assert mesh_coord.shape == (1,)
+
 
 class Test_location:
     @pytest.fixture(autouse=True)

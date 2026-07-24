@@ -18,7 +18,7 @@ from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
 from iris.experimental import mesh_coord_indexing
 from iris.mesh import Connectivity, MeshCoord, MeshXY
-from iris.mesh.components import _MeshIndexSet
+from iris.mesh.components import _MeshIndexSet, _MeshXYMixin
 from iris.tests._shared_utils import (
     assert_array_all_close,
     assert_array_almost_equal,
@@ -233,7 +233,6 @@ class Test__copy:
 
 class Test__getitem__:
     def test_slice_wholeslice_1tuple(self):
-        # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
         meshcoord2 = meshcoord[:,]
         assert meshcoord2 is not meshcoord
@@ -242,7 +241,7 @@ class Test__getitem__:
         assert meshcoord2.mesh is meshcoord.mesh
 
     def test_slice_whole_slice_singlekey(self):
-        # A slice(None) also fails, if not presented in a 1-tuple.
+        # A slice(None) fails, if not presented in a 1-tuple.
         meshcoord = sample_meshcoord()
         with pytest.raises(
             ValueError,

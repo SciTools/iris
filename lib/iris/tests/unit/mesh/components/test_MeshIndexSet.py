@@ -11,7 +11,8 @@ from dask import array as da
 import numpy as np
 import pytest
 
-from iris._lazy_data import as_lazy_data, is_lazy_data
+from iris._lazy_data import is_lazy_data
+from iris.coords import AuxCoord
 from iris.mesh import MeshCoord, MeshXY
 from iris.mesh.components import Connectivity, _MeshIndexSet
 from iris.tests import _shared_utils
@@ -312,8 +313,8 @@ class Test_managers_and_views:
 
 class Test_unusual_connectivities:
     @pytest.fixture
-    def mis_unusual_start_index(self):
-        mesh = sample_mesh()
+    def mis_unusual_start_index(self, lazy_values):
+        mesh = sample_mesh(lazy_values=lazy_values)
         face_node = mesh.face_node_connectivity
         assert face_node.start_index == 0
         mesh.add_connectivities(
@@ -337,8 +338,8 @@ class Test_unusual_connectivities:
         )
 
     @pytest.fixture
-    def mis_unusual_transposition(self):
-        mesh = sample_mesh()
+    def mis_unusual_transposition(self, lazy_values):
+        mesh = sample_mesh(lazy_values=lazy_values)
         face_node = mesh.face_node_connectivity
         mesh.add_connectivities(face_node.transpose())
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
@@ -350,6 +351,108 @@ class Test_unusual_connectivities:
         _shared_utils.assert_array_equal(
             index_set.connectivity(cf_role="face_node_connectivity").indices,
             np.array([[0, 1, 2, 3], [4, 5, 6, 7]]).T,
+        )
+
+    @pytest.fixture
+    def varied_faces(self, lazy_values):
+        r"""A mesh with variable-sided faces, some sharing nodes.
+
+        Two squares joined by a triangle, with a separate irregular pentagon:
+         0 1 2 3 4
+        0* *-* * *
+           | |
+        1* *-* * *
+            \|
+        2* * *-* *
+         |\  | |
+        3*-* *-* *
+         | |
+        4*-* * * *
+        """
+        node_x = AuxCoord(
+            [1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0, 0.0, 1.0],
+            standard_name="longitude",
+        )
+        node_y = AuxCoord(
+            [
+                0.0,
+                0.0,
+                -1.0,
+                -1.0,
+                -2.0,
+                -2.0,
+                -2.0,
+                -3.0,
+                -3.0,
+                -3.0,
+                -3.0,
+                -4.0,
+                -4.0,
+            ],
+            standard_name="latitude",
+        )
+        if lazy_values:
+            node_x.points = node_x.lazy_points()
+            node_y.points = node_y.lazy_points()
+
+        # Face sizes vary (4/3/4/5), so unused slots are masked.
+        face_node_indices = np.ma.masked_array(
+            data=[
+                [0, 1, 3, 2, -1],
+                [3, 5, 4, -1, -1],
+                [2, 4, 7, 11, 12],
+                [5, 6, 10, 9, -1],
+            ],
+            mask=[
+                [False, False, False, False, True],
+                [False, False, False, True, True],
+                [False, False, False, False, False],
+                [False, False, False, False, True],
+            ],
+            dtype=np.int64,
+        )
+        if lazy_values:
+            face_node_indices = da.from_array(face_node_indices)
+
+        face_coords = [
+            # approximate face centroids
+            (AuxCoord([1.5, 1.67, 0.75, 2.0], standard_name="longitude"), "x"),
+            (AuxCoord([-0.5, -1.67, -2.5, -2.5], standard_name="latitude"), "y"),
+        ]
+        if lazy_values:
+            for coord, _ in face_coords:
+                coord.points = coord.lazy_points()
+
+        mesh = MeshXY(
+            topology_dimension=2,
+            node_coords_and_axes=[(node_x, "x"), (node_y, "y")],
+            connectivities=[
+                Connectivity(
+                    indices=face_node_indices,
+                    cf_role="face_node_connectivity",
+                )
+            ],
+            face_coords_and_axes=face_coords,
+        )
+        return mesh
+
+    def test_varied_faces(self, varied_faces):
+        mesh = varied_faces
+        index_set = _MeshIndexSet(indices=[1, 3], mesh=mesh, location="face")
+        _shared_utils.assert_array_equal(index_set.indices, np.array([1, 3]))
+        _shared_utils.assert_array_equal(
+            index_set.connectivity(cf_role="face_node_connectivity").indices,
+            np.ma.masked_array(
+                data=[[0, 2, 1, -1, -1], [2, 3, 5, 4, -1]],
+                mask=[[0, 0, 0, 1, 1], [0, 0, 0, 0, 1]],
+            ),
+        )
+        _shared_utils.assert_array_equal(
+            index_set.node_coords[0].points, np.array([2.0, 1.0, 2.0, 3.0, 2.0, 3.0])
+        )
+        _shared_utils.assert_array_equal(
+            index_set.node_coords[1].points,
+            np.array([-1.0, -2.0, -2.0, -2.0, -3.0, -3.0]),
         )
 
 
@@ -521,6 +624,16 @@ class Test_deferred_views:
         _shared_utils.assert_array_equal(coord_before.points, [3100, 3102])
         assert coord_before.bounds is None
 
+        # Attempting edits on the index set has no effect.
+        ignored_points = [2000, 2002]
+        ignored_bounds = [[2000, 2001], [2002, 2003]]
+        coord_before.points = ignored_points
+        coord_before.bounds = ignored_bounds
+        coord_unchanged = index_set.coord(location="face", axis="x")
+        assert coord_unchanged.has_lazy_points()
+        _shared_utils.assert_array_equal(coord_unchanged.points, [3100, 3102])
+        assert coord_unchanged.bounds is None
+
         new_points = [4400, 4401, 4402]
         new_bounds = [[4400, 4401], [4401, 4402], [4402, 4403]]
         if update_mode == "edit":
@@ -547,6 +660,15 @@ class Test_deferred_views:
         assert conn_before.has_lazy_indices()
         _shared_utils.assert_array_equal(
             conn_before.indices, [[0, 1, 2, 3], [4, 5, 6, 7]]
+        )
+
+        # Attempting edits on the index set has no effect.
+        ignored_indices = [[100, 101, 102, 103], [104, 105, 106, 107]]
+        conn_before._values = ignored_indices
+        conn_unchanged = index_set.connectivity(cf_role="face_node_connectivity")
+        assert conn_unchanged.has_lazy_indices()
+        _shared_utils.assert_array_equal(
+            conn_unchanged.indices, [[0, 1, 2, 3], [4, 5, 6, 7]]
         )
 
         new_indices = np.array(
