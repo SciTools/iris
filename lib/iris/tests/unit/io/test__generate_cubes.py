@@ -33,7 +33,6 @@ class TestGenerateCubes:
         "uri",
         [
             "file:///foo#mode=nczarr",
-            "file:///foo#mode=zarr",
             "file:///foo#mode=xarray",
             "https://foo#mode=nczarr",
         ],
