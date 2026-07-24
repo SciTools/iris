@@ -3612,25 +3612,31 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}
         coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
         conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
+        has_edges = hasattr(conn_man, "edge_node")
+        has_faces = hasattr(conn_man, "face_node")
+        if has_faces:
+            topology_dimension = 2
+        elif has_edges:
+            topology_dimension = 1
+        else:
+            message = (
+                f"Cannot create a MeshXY from a MeshIndexSet with no edge or face "
+                f"connectivities. This is a *{self.location}* MeshIndexSet."
+            )
+            raise NotImplementedError(message)
 
         def _coords_and_axes(
             location: Literal["node", "edge", "face"],
-        ) -> list[tuple[AuxCoord, str]] | None:
-            attr = f"{location}_coords"
-            if hasattr(coord_man, attr):
-                coords = getattr(coord_man, attr)
-                return [
-                    (getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES
-                ]
-            else:
-                return None
+        ) -> list[tuple[AuxCoord, str]]:
+            coords = getattr(coord_man, f"{location}_coords")
+            return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
 
         return MeshXY(
-            topology_dimension=self.topology_dimension,
+            topology_dimension=topology_dimension,
             node_coords_and_axes=_coords_and_axes("node"),
             connectivities=[conn for conn in conn_man.all_members if conn is not None],
-            edge_coords_and_axes=_coords_and_axes("edge"),
-            face_coords_and_axes=_coords_and_axes("face"),
+            edge_coords_and_axes=_coords_and_axes("edge") if has_edges else None,
+            face_coords_and_axes=_coords_and_axes("face") if has_faces else None,
             standard_name=self.standard_name,
             long_name=self.long_name,
             var_name=self.var_name,
