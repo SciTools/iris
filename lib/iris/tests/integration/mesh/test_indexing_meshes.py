@@ -5,10 +5,11 @@
 
 import pytest
 
-from iris.coords import AuxCoord
+from iris.coords import AuxCoord, Coord
+from iris.cube import Cube
 from iris.experimental import mesh_coord_indexing
 from iris.loading import load_cube
-from iris.mesh.components import MeshCoord, _MeshIndexSet
+from iris.mesh.components import Mesh, MeshCoord, _MeshIndexSet
 from iris.tests import _shared_utils
 from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
 
@@ -35,7 +36,7 @@ def cube_mesh_from_file():
 @pytest.fixture
 def cube_mesh_node():
     location = "node"
-    mesh = sample_mesh()  # Cannot have a node only mesh
+    mesh = sample_mesh(n_nodes=15, n_edges=3, n_faces=3)  # Cannot have a node only mesh
     return (sample_mesh_cube(location=location, mesh=mesh), location)
 
 
@@ -53,6 +54,22 @@ def cube_mesh_face():
     return (sample_mesh_cube(location=location, mesh=mesh), location)
 
 
+def change_and_assert_no_change_in_right(left: Coord, right: Coord, value: int):
+    left.points[0] = value
+    assert right.points[0] != value
+
+
+def change_and_assert_change_in_right(left: Coord, right: Coord, value: int):
+    left.points[0] = value
+    assert right.points[0] == value
+
+
+def assert_change_raises_exception(mesh_coord: MeshCoord):
+    assert mesh_coord.points
+    with pytest.raises(Exception, match="test"):
+        mesh_coord.points[0] = 0
+
+
 @pytest.mark.parametrize(
     "fixture",
     ["cube_mesh_from_file", "cube_mesh_node", "cube_mesh_edge", "cube_mesh_face"],
@@ -61,9 +78,26 @@ def test_subset_indexing_auxcoord(fixture, request):
     (cube, _) = request.getfixturevalue(fixture)
     with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.AUX_COORD):
         indexed_cube = cube[0, 0:1]
+
+    indexed_lat = indexed_cube.coord(standard_name="latitude")
+    indexed_lon = indexed_cube.coord(standard_name="longitude")
     # The mesh's lat/lon should be represented as AuxCoord
-    assert isinstance(indexed_cube.coord(standard_name="latitude"), AuxCoord)
-    assert isinstance(indexed_cube.coord(standard_name="longitude"), AuxCoord)
+    assert isinstance(indexed_lat, AuxCoord)
+    assert isinstance(indexed_lon, AuxCoord)
+    # And no mesh in cube
+    assert indexed_cube.mesh is None
+
+    original_lat = cube.coord(standard_name="latitude")
+    original_lon = cube.coord(standard_name="longitude")
+
+    # Any changes to the indexed cube's mesh should not be reflected in the original
+    value = 9999
+    change_and_assert_no_change_in_right(indexed_lat, original_lat, value)
+    change_and_assert_no_change_in_right(indexed_lon, original_lon, value)
+    # and vice versa
+    value = -9999
+    change_and_assert_no_change_in_right(original_lat, indexed_lat, value)
+    change_and_assert_no_change_in_right(original_lon, indexed_lon, value)
 
 
 # Excluding "cube_mesh_node" from this test because it is an invalid thing to do
@@ -73,12 +107,29 @@ def test_subset_indexing_auxcoord(fixture, request):
     ["cube_mesh_from_file", "cube_mesh_edge", "cube_mesh_face"],
 )
 def test_subset_indexing_new_mesh(fixture, request):
+    cube: Cube
     (cube, _) = request.getfixturevalue(fixture)
+
     with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
         indexed_cube = cube[0, 0:1]
-    # The mesh's lat/lon should be represented as MeshCoord
-    assert isinstance(indexed_cube.coord(standard_name="latitude"), MeshCoord)
-    assert isinstance(indexed_cube.coord(standard_name="longitude"), MeshCoord)
+    # The mesh's lat/lon should be represented as MeshCoord with a Mesh as the mesh
+    indexed_lat = indexed_cube.coord(standard_name="latitude")
+    indexed_lon = indexed_cube.coord(standard_name="longitude")
+    assert isinstance(indexed_lat, MeshCoord)
+    assert isinstance(indexed_lon, MeshCoord)
+    assert isinstance(indexed_lat.mesh, Mesh)
+    assert isinstance(indexed_lon.mesh, Mesh)
+
+    original_lat = cube.coord(standard_name="latitude")
+    original_lon = cube.coord(standard_name="longitude")
+    # Any changes to the indexed cube's mesh should not be reflected in the original
+    value = 9999
+    change_and_assert_no_change_in_right(indexed_lat, original_lat, value)
+    change_and_assert_no_change_in_right(indexed_lon, original_lon, value)
+    # and vice versa
+    value = -9999
+    change_and_assert_no_change_in_right(original_lat, indexed_lat, value)
+    change_and_assert_no_change_in_right(original_lon, indexed_lon, value)
 
 
 @pytest.mark.parametrize(
@@ -91,12 +142,24 @@ def test_subset_indexing_mesh_index_set(fixture, request):
         mesh_coord_indexing.Options.MESH_INDEX_SET
     ):
         indexed_cube = cube[0, 0:1]
-    # The mesh's lat/lon should be represented as MeshCoord, but they are based on
-    # _MeshIndexSet
-    lat = indexed_cube.coord(standard_name="latitude")
-    lon = indexed_cube.coord(standard_name="longitude")
-    assert isinstance(lat, MeshCoord)
-    assert isinstance(lon, MeshCoord)
+    # The mesh's lat/lon should be represented as MeshCoord,
+    # with a _MeshIndexSet as the mesh
+    indexed_lat = indexed_cube.coord(standard_name="latitude")
+    indexed_lon = indexed_cube.coord(standard_name="longitude")
+    assert isinstance(indexed_lat, MeshCoord)
+    assert isinstance(indexed_lon, MeshCoord)
+    assert isinstance(indexed_lat.mesh, _MeshIndexSet)
+    assert isinstance(indexed_lon.mesh, _MeshIndexSet)
 
-    assert isinstance(lat.mesh, _MeshIndexSet)
-    assert isinstance(lon.mesh, _MeshIndexSet)
+    # You cannot change the values of a _MeshIndexSet
+    # Not raising exception for some reason
+    assert_change_raises_exception(indexed_lat)
+    assert_change_raises_exception(indexed_lon)
+
+    original_lat = cube.coord(standard_name="latitude")
+    original_lon = cube.coord(standard_name="longitude")
+    # Changing the original mesh is reflected in the _MeshIndexSet
+    # Change not reflected for some reason
+    value = 9999
+    change_and_assert_change_in_right(original_lat, indexed_lat, value)
+    change_and_assert_change_in_right(original_lon, indexed_lon, value)
