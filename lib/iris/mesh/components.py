@@ -696,11 +696,16 @@ class _MeshXYMixin(Mesh, ABC):
         result: bool | NotImplementedType = NotImplemented
 
         if isinstance(other, _MeshXYMixin):
-            result = self.metadata == other.metadata
-            if result:
-                result = self.all_coords == other.all_coords
-            if result:
-                result = self.all_connectivities == other.all_connectivities
+            # Using identity speeds up several real-world equality checks
+            #  for _MeshIndexSet and MeshCoord.
+            result = self is other
+
+            if not result:
+                result = self.metadata == other.metadata
+                if result:
+                    result = self.all_coords == other.all_coords
+                if result:
+                    result = self.all_connectivities == other.all_connectivities
 
         return result
 
@@ -3395,6 +3400,18 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             units=units or mesh.units,
             attributes=attributes,
         )
+
+    def __eq__(self, other) -> bool | NotImplementedType:
+        result: bool | NotImplementedType = NotImplemented
+
+        if isinstance(other, _MeshIndexSet):
+            result = self.metadata == other.metadata
+            # Don't check coords or connectivities as these are
+            #  fully derived using metadata.
+            if result:
+                result = self.indices == other.indices
+
+        return result
 
     def __getstate__(self) -> tuple[ArrayLike, MeshIndexSetMetadata]:
         return (
