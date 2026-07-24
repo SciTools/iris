@@ -5,6 +5,7 @@
 """Unit tests for the :class:`iris.mesh.components._MeshIndexSet` class."""
 
 import itertools
+import re
 
 import numpy as np
 import pytest
@@ -353,6 +354,89 @@ class Test_meshcoord_interop:
 
         assert meshcoord.mesh is index_set
         assert meshcoord.shape == (2,)
+
+
+class Test__str_repr:
+    @pytest.fixture(autouse=True)
+    def _setup(self, meshes_locs_all):
+        mesh, location = meshes_locs_all
+        mesh.rename("test_mesh")
+        self.mesh = mesh
+        self.location = location
+        self.index_set = _MeshIndexSet(
+            indices=np.array([0, 1]), mesh=mesh, location=location
+        )
+
+    def test_repr_unnamed(self):
+        # When the index set has no name, repr mimics object.__str__ style.
+        result = repr(self.index_set)
+        assert re.match(r"<_MeshIndexSet object at 0x[0-9a-f]+>", result)
+
+    def test_repr_named(self):
+        # When the index set has a name, repr uses the human-readable form.
+        self.index_set.long_name = "my_index_set"
+        result = repr(self.index_set)
+        assert result == "<_MeshIndexSet: 'my_index_set'>"
+
+    def test_repr_var_name(self):
+        # var_name is used as the name when long_name is absent.
+        self.index_set.var_name = "idx"
+        result = repr(self.index_set)
+        assert result == "<_MeshIndexSet: 'idx'>"
+
+    def test_str_contains_class_name(self):
+        result = str(self.index_set)
+        assert result.startswith("_MeshIndexSet : ")
+
+    def test_str_contains_mesh_repr(self):
+        result = str(self.index_set)
+        assert "mesh: <MeshXY: 'test_mesh'>" in result
+
+    def test_str_contains_location(self):
+        result = str(self.index_set)
+        assert f"location: {self.location}" in result
+
+    def test_str_contains_start_index_default(self):
+        result = str(self.index_set)
+        assert "start_index: 0" in result
+
+    def test_str_contains_start_index_nonzero(self):
+        index_set = _MeshIndexSet(
+            indices=np.array([1, 2]),
+            mesh=self.mesh,
+            location=self.location,
+            start_index=1,
+        )
+        result = str(index_set)
+        assert "start_index: 1" in result
+
+    def test_str_contains_mesh_info_summary(self):
+        result = str(self.index_set)
+        assert "mesh info summary:" in result
+
+    def test_str_mesh_info_includes_topology_dimension(self):
+        result = str(self.index_set)
+        assert f"topology_dimension: {self.mesh.topology_dimension}" in result
+
+    def test_str_nameless_mesh_uses_object_repr(self):
+        mesh = sample_mesh()  # no name
+        index_set = _MeshIndexSet(indices=np.array([0]), mesh=mesh, location="node")
+        result = str(index_set)
+        assert re.search(r"mesh: <MeshXY object at 0x[0-9a-f]+>", result)
+
+    def test_str_structure(self):
+        # Coarse structure check: the key header lines appear together at the top.
+        result = str(self.index_set)
+        expected_header = "\n".join(
+            [
+                "_MeshIndexSet : 'unknown'",
+                "    mesh: <MeshXY: 'test_mesh'>",
+                f"    location: {self.location}",
+                "    start_index: 0",
+                "    mesh info summary:",
+            ]
+        )
+        assert result.startswith(expected_header)
 
 
 class Test_deferred_views:
