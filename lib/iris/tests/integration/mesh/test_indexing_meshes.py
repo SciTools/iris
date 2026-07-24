@@ -66,9 +66,11 @@ def test_subset_indexing_auxcoord(fixture, request):
     assert isinstance(indexed_cube.coord(standard_name="longitude"), AuxCoord)
 
 
+# Excluding "cube_mesh_node" from this test because it is an invalid thing to do
+# Test for the raised exception exists in unit tests
 @pytest.mark.parametrize(
     "fixture",
-    ["cube_mesh_from_file", "cube_mesh_node", "cube_mesh_edge", "cube_mesh_face"],
+    ["cube_mesh_from_file", "cube_mesh_edge", "cube_mesh_face"],
 )
 def test_subset_indexing_new_mesh(fixture, request):
     (cube, _) = request.getfixturevalue(fixture)
