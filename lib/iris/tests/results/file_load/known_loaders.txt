@@ -9,6 +9,7 @@
  * ABF (priority 3)
  * ABL (priority 3)
  * NIMROD (priority 3)
+ * NcZarr (priority 3)
  * UM Fieldsfile (FF) ancillary (priority 3)
  * UM Fieldsfile (FF) ancillary converted with ieee to 32 bit (priority 3)
  * UM Fieldsfile (FF) converted with ieee to 32 bit (priority 3)
