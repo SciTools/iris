@@ -185,3 +185,9 @@ class CFParseError(IrisError):
     """Raised when a string associated with a CF defined syntax could not be parsed."""
 
     pass
+
+
+class NcParallelError(IrisError):
+    """Raised when a netCDF operation fails due to parallel I/O issues."""
+
+    pass
