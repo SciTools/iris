@@ -1,0 +1,107 @@
+# Temporary workflow to generate lockfiles since local runs are not working currently (26/7/26).
+
+name: Refresh Lockfiles
+
+
+on:
+  push
+
+
+permissions: {}
+
+jobs:
+  get_python_matrix:
+    # Determines which Python versions should be included in the matrix used in
+    # the gen_lockfiles job.
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.get_py.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - id: get_py
+        run: echo "MATRIX=$(ls -1 requirements/py*.yml | xargs -n1 basename | sed 's/....$//' | jq -cnR '[inputs]')" >> ${GITHUB_OUTPUT}
+
+  gen_lockfiles:
+    # This is a matrix job: it splits to create new lockfiles for each
+    # of the CI test python versions.
+    runs-on: ubuntu-latest
+    needs: get_python_matrix
+
+    strategy:
+      matrix:
+        python: ${{ fromJSON(needs.get_python_matrix.outputs.MATRIX) }}
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: install requirements
+        run: |
+          source $CONDA/bin/activate base
+          conda update -n base --all
+
+      - name: generate lockfile
+        env:
+          MATRIX_PYTHON: ${{ matrix.python }}
+        run: |
+          pipx run conda-lock -k explicit -p linux-64 -f requirements/${MATRIX_PYTHON}.yml
+          mv conda-linux-64.lock ${MATRIX_PYTHON}-linux-64.lock
+
+      - name: output lockfile
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: lock-artifacts-${{matrix.python}}
+          path: ${{matrix.python}}-linux-64.lock
+
+  create_pr:
+    # Once the matrix job has completed all the lock files will have been
+    # uploaded as artifacts.
+    # Download the artifacts, add them to the repo, and create a PR.
+    runs-on: ubuntu-latest
+    needs: gen_lockfiles
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
+        with:
+          persist-credentials: false
+
+      - name: get artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          path: ${{ github.workspace }}/requirements/locks
+          merge-multiple: true
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1
+        with:
+          token: ${{ steps.generate-token.outputs.token }}
+          commit-message: Updated environment lockfiles
+          committer: "Lockfile bot <noreply@github.com>"
+          author: "Lockfile bot <noreply@github.com>"
+          delete-branch: true
+          branch: auto-update-lockfiles
+          title: "[CI Bot] environment lockfiles auto-update"
+          body: |
+            Lockfiles updated to the latest resolvable environment.
+            ### If the CI tasks fail, create a new branch based on this PR and add the required fixes to that branch.
+
+      - name: Check Pull Request
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          CPR_PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+          CPR_PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
+          CPR_PR_OPERATION: ${{ steps.cpr.outputs.pull-request-operation }}
+          CPR_PR_HEAD_SHA: ${{ steps.cpr.outputs.pull-request-head-sha }}
+        run: |
+          echo "### :rocket: Pull-Request Summary" >> ${GITHUB_STEP_SUMMARY}
+          echo "" >> ${GITHUB_STEP_SUMMARY}
+          echo "The following lock-files pull-request has been auto-generated:"
+          echo "- **PR** #${CPR_PR_NUMBER}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **URL** ${CPR_PR_URL}" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **Operation** [${CPR_PR_OPERATION}]" >> ${GITHUB_STEP_SUMMARY}
+          echo "- **SHA** ${CPR_PR_HEAD_SHA}" >> ${GITHUB_STEP_SUMMARY}
