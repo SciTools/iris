@@ -42,8 +42,8 @@ from numpy.typing import ArrayLike
 from iris.common.metadata import (
     ConnectivityMetadata,
     MeshCoordMetadata,
-    MeshIndexSetMetadata,
     MeshMetadata,
+    _MeshIndexSetMetadata,
 )
 import iris.util
 
@@ -3385,7 +3385,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         if start_index not in [0, 1]:
             raise ValueError(f"`start_index must be 0 or 1. Got {start_index}")
 
-        self._metadata_manager = metadata_manager_factory(MeshIndexSetMetadata)
+        self._metadata_manager = metadata_manager_factory(_MeshIndexSetMetadata)
         # 'structure' is immutable after creation, so assign directly to the
         #  metadata manager. Desired changes should be made by creating a new
         #  instance.
@@ -3407,13 +3407,13 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             attributes=attributes,
         )
 
-    def __getstate__(self) -> tuple[ArrayLike, MeshIndexSetMetadata]:
+    def __getstate__(self) -> tuple[ArrayLike, _MeshIndexSetMetadata]:
         return (
             self.indices,
             self._metadata_manager,
         )
 
-    def __setstate__(self, state: tuple[ArrayLike, MeshIndexSetMetadata]):
+    def __setstate__(self, state: tuple[ArrayLike, _MeshIndexSetMetadata]):
         indices, metadata_manager = state
         self._values = indices
         self._metadata_manager = metadata_manager

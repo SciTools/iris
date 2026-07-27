@@ -2,14 +2,14 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :class:`iris.common.metadata.MeshIndexSetMetadata`."""
+"""Unit tests for the :class:`iris.common.metadata._MeshIndexSetMetadata`."""
 
 from copy import deepcopy
 
 import pytest
 
 from iris.common.lenient import _LENIENT, _qualname
-from iris.common.metadata import BaseMetadata, MeshIndexSetMetadata
+from iris.common.metadata import BaseMetadata, _MeshIndexSetMetadata
 
 
 class Test__identity:
@@ -23,7 +23,7 @@ class Test__identity:
         self.mesh = mocker.sentinel.mesh
         self.location = mocker.sentinel.location
         self.start_index = mocker.sentinel.start_index
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
 
     def test_repr(self, mocker):
         metadata = self.cls(
@@ -37,7 +37,7 @@ class Test__identity:
             start_index=self.start_index,
         )
         fmt = (
-            "MeshIndexSetMetadata(standard_name={!r}, long_name={!r}, "
+            "_MeshIndexSetMetadata(standard_name={!r}, long_name={!r}, "
             "var_name={!r}, units={!r}, attributes={!r}, "
             "mesh={!r}, location={!r}, start_index={!r})"
         )
@@ -84,7 +84,7 @@ class Test__eq__:
             start_index=mocker.sentinel.start_index,
         )
         self.dummy = mocker.sentinel.dummy
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
 
     def test_wraps_docstring(self, mocker):
         assert BaseMetadata.__eq__.__doc__ == self.cls.__eq__.__doc__
@@ -179,7 +179,7 @@ class Test__eq__:
 class Test___lt__:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
         values = [1] * len(self.cls._fields)
         self.one = self.cls(*values)
 
@@ -221,7 +221,7 @@ class Test___lt__:
 class Test_combine:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
         self.values = dict(
             standard_name=mocker.sentinel.standard_name,
             long_name=mocker.sentinel.long_name,
@@ -348,7 +348,7 @@ class Test_combine:
 class Test_difference:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
         self.values = dict(
             standard_name=mocker.sentinel.standard_name,
             long_name=mocker.sentinel.long_name,
@@ -492,7 +492,7 @@ class Test_difference:
 class Test_equal:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        self.cls = MeshIndexSetMetadata
+        self.cls = _MeshIndexSetMetadata
         self.none = self.cls(*(None,) * len(self.cls._fields))
 
     def test_wraps_docstring(self, mocker):

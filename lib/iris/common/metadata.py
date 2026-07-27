@@ -1599,8 +1599,11 @@ class MeshMetadata(BaseMetadata):
         return super().equal(other, lenient=lenient)
 
 
-class MeshIndexSetMetadata(BaseMetadata):
-    """Metadata container for a :class:`~iris.mesh.components._MeshIndexSet`."""
+class _MeshIndexSetMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.mesh.components._MeshIndexSet`.
+
+    **Classed as experimental until ``_MeshIndexSet`` is no longer experimental.**
+    """
 
     _members = ("mesh", "location", "start_index")
 
@@ -1616,7 +1619,7 @@ class MeshIndexSetMetadata(BaseMetadata):
 
         Parameters
         ----------
-        other : MeshIndexSetMetadata
+        other : _MeshIndexSetMetadata
             The other metadata participating in the lenient combination.
 
         Returns
@@ -1644,7 +1647,7 @@ class MeshIndexSetMetadata(BaseMetadata):
 
         Parameters
         ----------
-        other : MeshIndexSetMetadata
+        other : _MeshIndexSetMetadata
             The other metadata participating in the lenient comparison.
 
         Returns
@@ -1668,7 +1671,7 @@ class MeshIndexSetMetadata(BaseMetadata):
 
         Parameters
         ----------
-        other : MeshIndexSetMetadata
+        other : _MeshIndexSetMetadata
             The other metadata participating in the lenient difference.
 
         Returns
