@@ -363,8 +363,8 @@ class Saver:
         -------
         None
 
-        Example
-        -------
+        Examples
+        --------
         >>> import iris
         >>> from iris.fileformats.netcdf.saver import Saver
         >>> cubes = iris.load(iris.sample_data_path('atlantic_profiles.nc'))
@@ -2422,14 +2422,14 @@ class Saver:
         fill_value : optional
             See :func:`iris.fileformats.netcdf.Saver.write`.
 
+        Returns
+        -------
+        The newly created CF-netCDF data variable.
+
         Notes
         -----
         All other keywords are passed through to the dataset's `createVariable`
         method.
-
-        Returns
-        -------
-        The newly created CF-netCDF data variable.
 
         """
         # TODO: when iris.FUTURE.save_split_attrs is removed, the 'local_keys' arg can
