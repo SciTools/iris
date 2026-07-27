@@ -1086,6 +1086,20 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
+    def test_lazy_aux_coord(self):
+        window = 2
+        self.cube.add_aux_coord(AuxCoord(da.arange(6), long_name="lazy_extra"), 0)
+        res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, window, mdtol=0)
+        result_coord = res_cube.coord("lazy_extra")
+        assert result_coord.has_lazy_points()
+        assert result_coord.has_lazy_bounds()
+        expected = AuxCoord(
+            np.array([0.5, 1.5, 2.5, 3.5, 4.5]),
+            bounds=np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]),
+            long_name="lazy_extra",
+        )
+        assert result_coord == expected
+
     def test_ancillary_variables_and_cell_measures_kept(self, dataless):
         if dataless:
             self.cube.data = None
@@ -3618,6 +3632,16 @@ class Test__eq__data:
     def test_data_bool_not_eq(self):
         cube1 = Cube([True, False])
         cube2 = Cube([True, True])
+        assert cube1 != cube2
+
+    def test_data_string_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "c"])
+        assert cube1 == cube2
+
+    def test_data_string_not_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "d"])
         assert cube1 != cube2
 
 
