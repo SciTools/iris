@@ -131,6 +131,78 @@ class Test___init__:
         assert coord.shape == (1,)
 
 
+class Test___eq__:
+    def test_equal_same_object(self, meshes_locs_all):
+        """An instance is equal to itself."""
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
+        assert index_set == index_set
+
+    def test_equal_identical(self, meshes_locs_all):
+        """Two independently constructed instances with identical args are equal."""
+        mesh, location = meshes_locs_all
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
+        b = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
+        assert a == b
+
+    def test_equal_with_metadata(self, meshes_locs_all):
+        """Equality holds when optional metadata fields also match."""
+        mesh, location = meshes_locs_all
+        kwargs = dict(
+            indices=[1, 3],
+            mesh=mesh,
+            location=location,
+            long_name="test",
+            var_name="v",
+            attributes={"source": "test"},
+        )
+        assert _MeshIndexSet(**kwargs) == _MeshIndexSet(**kwargs)
+
+    def test_not_equal_different_indices(self, meshes_locs_all):
+        """Instances with different indices are not equal."""
+        mesh, location = meshes_locs_all
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
+        b = _MeshIndexSet(indices=[0, 3], mesh=mesh, location=location)
+        assert a != b
+
+    def test_not_equal_different_metadata(self, meshes_locs_all):
+        """Instances with differing metadata are not equal even if indices match."""
+        mesh, location = meshes_locs_all
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location, long_name="foo")
+        b = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location, long_name="bar")
+        assert a != b
+
+    def test_not_equal_different_start_index(self, meshes_locs_all):
+        """Instances with different start_index values are not equal."""
+        mesh, location = meshes_locs_all
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location, start_index=0)
+        b = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location, start_index=1)
+        assert a != b
+
+    def test_not_equal_different_mesh(self, lazy_values):
+        """Instances referencing different meshes are not equal."""
+        mesh_a = sample_mesh(lazy_values=lazy_values)
+        mesh_b = sample_mesh(lazy_values=lazy_values)
+        # Give the meshes distinct var_names so their metadata differs.
+        mesh_b.var_name = "different_mesh"
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh_a, location="node")
+        b = _MeshIndexSet(indices=[0, 2], mesh=mesh_b, location="node")
+        assert a != b
+
+    def test_not_equal_different_location(self, mesh_2d):
+        """Instances with different locations are not equal."""
+        a = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="node")
+        b = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
+        assert a != b
+
+    def test_not_equal_non_mesh_index_set(self, meshes_locs_all):
+        """Comparing with a non-_MeshIndexSet object returns NotImplemented."""
+        mesh, location = meshes_locs_all
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
+        result = index_set.__eq__("not-a-mesh-index-set")
+        assert result is NotImplemented
+
+
 class Test_properties:
     def test_cf_role(self, meshes_locs_all):
         mesh, location = meshes_locs_all

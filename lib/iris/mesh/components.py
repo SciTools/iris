@@ -3420,7 +3420,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             # Don't check coords or connectivities as these are
             #  fully derived using metadata.
             if result:
-                result = self.indices == other.indices
+                result = iris.util.array_equal(self.indices, other.indices)
 
         return result
 
